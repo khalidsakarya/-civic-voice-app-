@@ -36,7 +36,7 @@ function App() {
   const fetchMPs = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/mps');
+      const response = await fetch('https://civic-voice-backend-e3sz.onrender.com/api/mps');
       const result = await response.json();
       
       if (result.success) {
