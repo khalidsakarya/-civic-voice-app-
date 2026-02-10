@@ -55,7 +55,7 @@ function App() {
 
   const fetchBills = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/bills');
+      const response = await fetch('https://civic-voice-backend-e3sz.onrender.com/api/bills');
       const result = await response.json();
       
       if (result.success) {
