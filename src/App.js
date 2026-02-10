@@ -69,7 +69,7 @@ function App() {
 
   const fetchGovernmentData = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/government-data');
+      const response = await fetch('https://civic-voice-backend-e3sz.onrender.com/api/government-data');
       const result = await response.json();
       
       if (result.success) {
@@ -83,7 +83,7 @@ function App() {
 
   const fetchLaws = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/laws');
+      const response = await fetch('https://civic-voice-backend-e3sz.onrender.com/api/laws');
       const result = await response.json();
       
       if (result.success) {
@@ -97,7 +97,7 @@ function App() {
 
   const fetchContracts = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/contracts');
+      const response = await fetch('https://civic-voice-backend-e3sz.onrender.com/api/contracts');
       const result = await response.json();
       
       if (result.success) {
@@ -111,7 +111,7 @@ function App() {
 
   const voteBill = async (billId, vote) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/bills/${billId}/vote`, {
+      const response = await fetch(`https://civic-voice-backend-e3sz.onrender.com/api/bills/${billId}/vote`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -134,7 +134,7 @@ function App() {
 
   const voteMP = async (mpIndex, vote) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/mps/${mpIndex}/vote`, {
+      const response = await fetch(`https://civic-voice-backend-e3sz.onrender.com/api/mps/${mpIndex}/vote`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
