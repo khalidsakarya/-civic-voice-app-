@@ -25,12 +25,244 @@ function App() {
   const [selectedLaw, setSelectedLaw] = useState(null);
   const [selectedContract, setSelectedContract] = useState(null);
   
+  // Location-based MP finder states
+  const [userMP, setUserMP] = useState(null);
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  
+  // Ministries state
+  const [selectedMinistry, setSelectedMinistry] = useState(null);
+  const [ministries, setMinistries] = useState([
+    {
+      id: 1,
+      name: 'Health Canada',
+      minister: 'Mark Holland',
+      budget: '$6.8 Billion',
+      budgetRaw: 6800000000,
+      grants: '$2.1 Billion',
+      employees: 12500,
+      description: 'Responsible for helping Canadians maintain and improve their health',
+      responsibilities: ['Public health', 'Healthcare policy', 'Drug regulation', 'Medical devices'],
+      approveVotes: 245,
+      disapproveVotes: 189,
+      userVote: null
+    },
+    {
+      id: 2,
+      name: 'National Defence',
+      minister: 'Bill Blair',
+      budget: '$26.5 Billion',
+      budgetRaw: 26500000000,
+      grants: '$890 Million',
+      employees: 68000,
+      description: 'Responsible for defending Canada and Canadian interests and values',
+      responsibilities: ['Canadian Armed Forces', 'Military operations', 'Defence policy', 'National security'],
+      approveVotes: 312,
+      disapproveVotes: 201,
+      userVote: null
+    },
+    {
+      id: 3,
+      name: 'Finance Canada',
+      minister: 'Chrystia Freeland',
+      budget: '$120.5 Billion',
+      budgetRaw: 120500000000,
+      grants: '$45.2 Billion',
+      employees: 1850,
+      description: 'Responsible for economic and fiscal policy',
+      responsibilities: ['Economic policy', 'Federal budget', 'Tax policy', 'Financial sector regulation'],
+      approveVotes: 278,
+      disapproveVotes: 356,
+      userVote: null
+    },
+    {
+      id: 4,
+      name: 'Immigration, Refugees and Citizenship',
+      minister: 'Marc Miller',
+      budget: '$3.2 Billion',
+      budgetRaw: 3200000000,
+      grants: '$1.5 Billion',
+      employees: 9500,
+      description: 'Facilitating entry of people and their integration into Canadian society',
+      responsibilities: ['Immigration policy', 'Refugee protection', 'Citizenship services', 'Settlement programs'],
+      approveVotes: 401,
+      disapproveVotes: 298,
+      userVote: null
+    },
+    {
+      id: 5,
+      name: 'Environment and Climate Change',
+      minister: 'Steven Guilbeault',
+      budget: '$4.1 Billion',
+      budgetRaw: 4100000000,
+      grants: '$2.8 Billion',
+      employees: 7200,
+      description: 'Preserving and enhancing the quality of the natural environment',
+      responsibilities: ['Climate policy', 'Environmental protection', 'Parks Canada', 'Wildlife conservation'],
+      approveVotes: 389,
+      disapproveVotes: 267,
+      userVote: null
+    },
+    {
+      id: 6,
+      name: 'Public Safety Canada',
+      minister: 'Dominic LeBlanc',
+      budget: '$10.2 Billion',
+      budgetRaw: 10200000000,
+      grants: '$3.4 Billion',
+      employees: 15600,
+      description: 'Protecting Canadians and maintaining a peaceful and safe society',
+      responsibilities: ['RCMP oversight', 'Border security', 'Emergency management', 'Crime prevention'],
+      approveVotes: 334,
+      disapproveVotes: 278,
+      userVote: null
+    },
+    {
+      id: 7,
+      name: 'Employment and Social Development',
+      minister: 'Randy Boissonnault',
+      budget: '$135.6 Billion',
+      budgetRaw: 135600000000,
+      grants: '$89.2 Billion',
+      employees: 28000,
+      description: 'Responsible for social programs and the labour market',
+      responsibilities: ['Employment Insurance', 'Canada Pension Plan', 'Old Age Security', 'Labour standards'],
+      approveVotes: 412,
+      disapproveVotes: 245,
+      userVote: null
+    },
+    {
+      id: 8,
+      name: 'Transport Canada',
+      minister: 'Pablo Rodriguez',
+      budget: '$8.9 Billion',
+      budgetRaw: 8900000000,
+      grants: '$4.2 Billion',
+      employees: 5800,
+      description: 'Responsible for transportation policies and programs',
+      responsibilities: ['Aviation safety', 'Marine safety', 'Rail safety', 'Road safety'],
+      approveVotes: 301,
+      disapproveVotes: 198,
+      userVote: null
+    },
+    {
+      id: 9,
+      name: 'Innovation, Science and Economic Development',
+      minister: 'François-Philippe Champagne',
+      budget: '$11.3 Billion',
+      budgetRaw: 11300000000,
+      grants: '$7.8 Billion',
+      employees: 6400,
+      description: 'Fostering a growing, competitive and knowledge-based Canadian economy',
+      responsibilities: ['Innovation policy', 'Science funding', 'Telecommunications', 'Intellectual property'],
+      approveVotes: 356,
+      disapproveVotes: 223,
+      userVote: null
+    },
+    {
+      id: 10,
+      name: 'Natural Resources Canada',
+      minister: 'Jonathan Wilkinson',
+      budget: '$5.7 Billion',
+      budgetRaw: 5700000000,
+      grants: '$3.1 Billion',
+      employees: 4200,
+      description: 'Ensuring natural resources development is sustainable',
+      responsibilities: ['Energy policy', 'Mining regulation', 'Forestry', 'Geological surveys'],
+      approveVotes: 289,
+      disapproveVotes: 267,
+      userVote: null
+    },
+    {
+      id: 11,
+      name: 'Justice Canada',
+      minister: 'Arif Virani',
+      budget: '$2.8 Billion',
+      budgetRaw: 2800000000,
+      grants: '$890 Million',
+      employees: 4800,
+      description: 'Supporting the Minister in ensuring a fair and accessible justice system',
+      responsibilities: ['Legal advice to government', 'Criminal law policy', 'Human rights', 'Family law'],
+      approveVotes: 298,
+      disapproveVotes: 301,
+      userVote: null
+    },
+    {
+      id: 12,
+      name: 'Indigenous Services Canada',
+      minister: 'Patty Hajdu',
+      budget: '$18.2 Billion',
+      budgetRaw: 18200000000,
+      grants: '$12.4 Billion',
+      employees: 8900,
+      description: 'Working to improve access to services for First Nations, Inuit and Métis',
+      responsibilities: ['Indigenous health', 'Education funding', 'Infrastructure', 'Child and family services'],
+      approveVotes: 378,
+      disapproveVotes: 298,
+      userVote: null
+    },
+    {
+      id: 13,
+      name: 'Agriculture and Agri-Food Canada',
+      minister: 'Lawrence MacAulay',
+      budget: '$4.5 Billion',
+      budgetRaw: 4500000000,
+      grants: '$2.9 Billion',
+      employees: 6100,
+      description: 'Responsible for policies governing agriculture production',
+      responsibilities: ['Farm support programs', 'Food safety', 'Agricultural research', 'Trade'],
+      approveVotes: 312,
+      disapproveVotes: 201,
+      userVote: null
+    },
+    {
+      id: 14,
+      name: 'Global Affairs Canada',
+      minister: 'Mélanie Joly',
+      budget: '$7.9 Billion',
+      budgetRaw: 7900000000,
+      grants: '$5.2 Billion',
+      employees: 11200,
+      description: 'Managing diplomatic relations and providing consular services',
+      responsibilities: ['Foreign policy', 'International development', 'Trade promotion', 'Consular services'],
+      approveVotes: 289,
+      disapproveVotes: 334,
+      userVote: null
+    },
+    {
+      id: 15,
+      name: 'Canadian Heritage',
+      minister: 'Pascale St-Onge',
+      budget: '$2.1 Billion',
+      budgetRaw: 2100000000,
+      grants: '$1.3 Billion',
+      employees: 2100,
+      description: 'Promoting Canadian culture and heritage',
+      responsibilities: ['Arts funding', 'Broadcasting', 'Official languages', 'Sport'],
+      approveVotes: 267,
+      disapproveVotes: 245,
+      userVote: null
+    }
+  ]);
+  
   useEffect(() => {
     fetchMPs();
     fetchBills();
     fetchGovernmentData();
     fetchLaws();
     fetchContracts();
+  }, []);
+  
+  // Load user's saved MP from localStorage
+  useEffect(() => {
+    const savedMP = localStorage.getItem('userMP');
+    if (savedMP) {
+      try {
+        setUserMP(JSON.parse(savedMP));
+      } catch (e) {
+        console.error('Error loading saved MP:', e);
+      }
+    }
   }, []);
   
   const fetchMPs = async () => {
@@ -107,6 +339,130 @@ function App() {
     } catch (err) {
       console.error('Error fetching contracts:', err);
     }
+  };
+
+  // Get user's location and find their MP
+  const findMyMP = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation({ latitude, longitude });
+          
+          // Find MP by location
+          const foundMP = findMPByLocation(latitude, longitude);
+          
+          if (foundMP) {
+            setUserMP(foundMP);
+            localStorage.setItem('userMP', JSON.stringify(foundMP));
+            alert(`✅ Found your MP: ${foundMP.name} (${foundMP.riding})`);
+          } else {
+            // Show manual selector if can't determine automatically
+            setShowLocationPrompt(true);
+          }
+        },
+        (error) => {
+          console.error('Location error:', error);
+          // If location denied, show manual selector
+          setShowLocationPrompt(true);
+        }
+      );
+    } else {
+      alert('Geolocation is not supported by your browser');
+      setShowLocationPrompt(true);
+    }
+  };
+
+  // Simplified location to riding mapping (approximate)
+  const findMPByLocation = (lat, lon) => {
+    // Toronto area (rough boundaries)
+    if (lat >= 43.6 && lat <= 43.9 && lon >= -79.6 && lon <= -79.2) {
+      const torontoMPs = mps.filter(mp => 
+        mp.riding && mp.riding.toLowerCase().includes('toronto')
+      );
+      if (torontoMPs.length > 0) return torontoMPs[0];
+    }
+    
+    // Ottawa area
+    if (lat >= 45.3 && lat <= 45.5 && lon >= -75.8 && lon <= -75.6) {
+      const ottawaMPs = mps.filter(mp => 
+        mp.riding && mp.riding.toLowerCase().includes('ottawa')
+      );
+      if (ottawaMPs.length > 0) return ottawaMPs[0];
+    }
+    
+    // Montreal area
+    if (lat >= 45.4 && lat <= 45.7 && lon >= -73.8 && lon <= -73.5) {
+      const montrealMPs = mps.filter(mp => 
+        mp.riding && (mp.riding.toLowerCase().includes('montreal') || mp.riding.toLowerCase().includes('montréal'))
+      );
+      if (montrealMPs.length > 0) return montrealMPs[0];
+    }
+    
+    // Vancouver area
+    if (lat >= 49.2 && lat <= 49.3 && lon >= -123.2 && lon <= -123.0) {
+      const vancouverMPs = mps.filter(mp => 
+        mp.riding && mp.riding.toLowerCase().includes('vancouver')
+      );
+      if (vancouverMPs.length > 0) return vancouverMPs[0];
+    }
+    
+    // Calgary area
+    if (lat >= 50.9 && lat <= 51.2 && lon >= -114.2 && lon <= -113.9) {
+      const calgaryMPs = mps.filter(mp => 
+        mp.riding && mp.riding.toLowerCase().includes('calgary')
+      );
+      if (calgaryMPs.length > 0) return calgaryMPs[0];
+    }
+    
+    // If no match, show manual selector
+    return null;
+  };
+
+  // Manual riding selection
+  const selectRiding = (ridingName) => {
+    const mp = mps.find(m => m.riding === ridingName);
+    if (mp) {
+      setUserMP(mp);
+      localStorage.setItem('userMP', JSON.stringify(mp));
+      setShowLocationPrompt(false);
+      alert(`✅ Set your MP: ${mp.name} (${mp.riding})`);
+    }
+  };
+
+  // Vote on ministry performance
+  const voteMinistry = (ministryId, vote) => {
+    setMinistries(ministries.map(ministry => {
+      if (ministry.id === ministryId) {
+        const newMinistry = { ...ministry };
+        
+        // Remove previous vote if exists
+        if (ministry.userVote === 'approve') {
+          newMinistry.approveVotes--;
+        } else if (ministry.userVote === 'disapprove') {
+          newMinistry.disapproveVotes--;
+        }
+        
+        // Add new vote
+        if (vote === 'approve') {
+          newMinistry.approveVotes++;
+          newMinistry.userVote = 'approve';
+        } else if (vote === 'disapprove') {
+          newMinistry.disapproveVotes++;
+          newMinistry.userVote = 'disapprove';
+        } else {
+          newMinistry.userVote = null;
+        }
+        
+        // Update selectedMinistry if viewing detail
+        if (selectedMinistry && selectedMinistry.id === ministryId) {
+          setSelectedMinistry(newMinistry);
+        }
+        
+        return newMinistry;
+      }
+      return ministry;
+    }));
   };
 
   const voteBill = async (billId, vote) => {
@@ -424,49 +780,113 @@ function App() {
 
   const renderCategories = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <button
           onClick={() => setView('countries')}
-          className="mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2"
+          className="mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2 font-medium"
         >
           ← Back to Countries
         </button>
         
-        <h1 className="text-4xl font-bold text-gray-800 mb-2">Government Levels</h1>
-        <p className="text-gray-600 mb-8">Select a government level to explore</p>
+        <h1 className="text-4xl font-bold text-gray-800 mb-2">Canadian Government</h1>
+        <p className="text-gray-600 mb-8 text-lg">Explore different aspects of federal governance</p>
         
-        <div className="space-y-4">
-          {categories.map(category => (
-            <div
-              key={category.id}
-              onClick={() => {
-                setSelectedCategory(category);
-                if (category.type === 'laws') {
-                  setView('laws');
-                } else if (category.type === 'contracts') {
-                  setView('contracts');
-                } else {
-                  setView('parties');
-                }
-              }}
-              className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500 flex items-center justify-between"
-            >
-              <div className="flex items-center gap-4">
-                <div className="text-blue-600">{category.icon}</div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">{category.name}</h2>
-                  <p className="text-gray-600">
-                    {category.type === 'laws' 
-                      ? `${category.count} recent laws` 
-                      : category.type === 'contracts'
-                      ? `${category.count} active contracts`
-                      : `${category.count} members`}
-                  </p>
-                </div>
-              </div>
-              <ChevronRight className="w-6 h-6 text-gray-400" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Federal Parliament */}
+          <div
+            onClick={() => setView('parties')}
+            className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-blue-500 transform hover:-translate-y-1"
+          >
+            <div className="text-blue-600 mb-4">
+              <Users className="w-12 h-12" />
             </div>
-          ))}
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Federal Parliament</h2>
+            <p className="text-gray-600 mb-3">Explore 325 Members of Parliament across all parties</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>325 MPs</span>
+              <ChevronRight className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Analytics Dashboard */}
+          <div
+            onClick={() => setView('analytics')}
+            className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-purple-500 transform hover:-translate-y-1"
+          >
+            <div className="text-purple-600 mb-4">
+              <BarChart3 className="w-12 h-12" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Analytics Dashboard</h2>
+            <p className="text-gray-600 mb-3">View economic impact, immigration, crime trends & spending</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>11 Charts</span>
+              <ChevronRight className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Parliamentary Bills */}
+          <div
+            onClick={() => setView('bills')}
+            className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 transform hover:-translate-y-1"
+          >
+            <div className="text-green-600 mb-4">
+              <FileText className="w-12 h-12" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Parliamentary Bills</h2>
+            <p className="text-gray-600 mb-3">Track and vote on upcoming legislation</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>{bills.length} Bills</span>
+              <ChevronRight className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Government Ministries */}
+          <div
+            onClick={() => setView('ministries')}
+            className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-orange-500 transform hover:-translate-y-1"
+          >
+            <div className="text-orange-600 mb-4">
+              <Building2 className="w-12 h-12" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Government Ministries</h2>
+            <p className="text-gray-600 mb-3">Review budgets, grants & approve ministerial performance</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>15 Ministries</span>
+              <ChevronRight className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Latest Laws & Regulations */}
+          <div
+            onClick={() => setView('laws')}
+            className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-indigo-500 transform hover:-translate-y-1"
+          >
+            <div className="text-indigo-600 mb-4">
+              <FileText className="w-12 h-12" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Latest Laws & Regulations</h2>
+            <p className="text-gray-600 mb-3">Recently implemented legislation affecting Canadians</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>{laws.length} Laws</span>
+              <ChevronRight className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Government Contracts */}
+          <div
+            onClick={() => setView('contracts')}
+            className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 transform hover:-translate-y-1"
+          >
+            <div className="text-red-600 mb-4">
+              <DollarSign className="w-12 h-12" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Government Contracts</h2>
+            <p className="text-gray-600 mb-3">Follow taxpayer money and major government spending</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>{contracts.length} Contracts</span>
+              <ChevronRight className="w-5 h-5" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -476,40 +896,93 @@ function App() {
     const parties = getParties();
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-        <div className="max-w-4xl mx-auto">
-          <button
-            onClick={() => setView('categories')}
-            className="mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2"
-          >
-            ← Back to Government Levels
-          </button>
-          
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Political Parties</h1>
-          <p className="text-gray-600 mb-8">Select a party to view its members</p>
-          
-          <div className="space-y-4">
-            {parties.map(party => (
-              <div
-                key={party.name}
-                onClick={() => {
-                  setSelectedParty(party);
-                  setView('members');
-                }}
-                className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500 flex items-center justify-between"
-              >
-                <div className="flex items-center gap-4">
-                  <div style={{backgroundColor: party.color}} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                    {party.name[0]}
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-800">{party.name}</h2>
-                    <p className="text-gray-600">{party.count} members</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-6 h-6 text-gray-400" />
+      <div className="min-h-screen bg-gray-50">
+        {/* Header without menu */}
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <button
+              onClick={() => setView('categories')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              ← Back to Government Levels
+            </button>
+            
+            <h1 className="text-2xl font-bold text-gray-800">Federal Parliament</h1>
+            
+            <div className="w-20"></div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          {/* Find Your MP Section */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-6 mb-6 shadow-md">
+            <h2 className="text-2xl font-bold text-gray-800 mb-3">👤 Find Your Representative</h2>
+            
+            {!userMP ? (
+              <div>
+                <p className="text-gray-700 mb-4 text-lg">
+                  📍 Allow location access to automatically find your MP, or select manually.
+                </p>
+                <button
+                  onClick={findMyMP}
+                  className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-bold text-lg transition-colors shadow-md hover:shadow-lg flex items-center gap-2"
+                >
+                  📍 Use My Location
+                </button>
               </div>
-            ))}
+            ) : (
+              <div className="bg-white rounded-lg p-5 border-2 border-blue-300 shadow-sm">
+                <p className="text-sm text-gray-600 mb-2 font-medium">Your Representative:</p>
+                <p className="text-2xl font-bold text-gray-800">{userMP.name}</p>
+                <p className="text-lg text-gray-600 mb-1">{userMP.riding}</p>
+                <p className="text-gray-700">🎗️ {userMP.party}</p>
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <p className="text-sm text-gray-700 mb-1">📞 Parliament: {userMP.phone}</p>
+                  {userMP.constituencyPhone && (
+                    <p className="text-sm text-gray-700 mb-1">📞 Constituency: {userMP.constituencyPhone}</p>
+                  )}
+                  <p className="text-sm text-gray-700">📧 {userMP.email}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setUserMP(null);
+                    localStorage.removeItem('userMP');
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-800 mt-3 font-medium underline"
+                >
+                  Change Representative
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Political Parties Section */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Select a Political Party</h2>
+            
+            <div className="space-y-4">
+              {parties.map(party => (
+                <div
+                  key={party.name}
+                  onClick={() => {
+                    setSelectedParty(party);
+                    setView('members');
+                  }}
+                  className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-4">
+                    <div style={{backgroundColor: party.color}} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                      {party.name[0]}
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">{party.name}</h2>
+                      <p className="text-gray-600">{party.count} members</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-gray-400" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -859,6 +1332,66 @@ function App() {
             <h3 className="font-bold text-gray-800 mb-2">Summary</h3>
             <p className="text-gray-700">{selectedBill.summary}</p>
           </div>
+
+          {/* TAKE ACTION SECTION */}
+          {userMP && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-lg p-6 mb-6 shadow-md">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">📞 Take Action on This Bill</h3>
+              <div className="bg-white rounded-lg p-5 mb-4 border-2 border-green-300">
+                <p className="text-sm text-gray-600 mb-2 font-medium uppercase">Contact YOUR Representative:</p>
+                <p className="text-2xl font-bold text-gray-800">{userMP.name}</p>
+                <p className="text-lg text-gray-600 mb-4">{userMP.riding} • {userMP.party}</p>
+                
+                <div className="space-y-3">
+                  <a 
+                    href={`tel:${userMP.phone}`}
+                    className="flex items-center gap-3 text-blue-600 hover:text-blue-800 font-medium text-lg transition-colors"
+                  >
+                    📞 Parliament: {userMP.phone}
+                  </a>
+                  {userMP.constituencyPhone && (
+                    <a 
+                      href={`tel:${userMP.constituencyPhone}`}
+                      className="flex items-center gap-3 text-blue-600 hover:text-blue-800 font-medium text-lg transition-colors"
+                    >
+                      📞 Constituency: {userMP.constituencyPhone}
+                    </a>
+                  )}
+                  <a 
+                    href={`mailto:${userMP.email}?subject=${encodeURIComponent(`Regarding ${selectedBill.billNumber}`)}`}
+                    className="flex items-center gap-3 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                  >
+                    📧 {userMP.email}
+                  </a>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-5">
+                <p className="font-bold text-gray-800 mb-3 text-lg flex items-center gap-2">
+                  💬 Sample Script:
+                </p>
+                <p className="text-gray-800 leading-relaxed">
+                  "Hi, my name is <strong>[YOUR NAME]</strong> and I'm a constituent from <strong>{userMP.riding}</strong>. 
+                  I'm calling about <strong>{selectedBill.billNumber} - {selectedBill.title}</strong>. 
+                  I <strong>[support/oppose]</strong> this bill because <strong>[YOUR REASON]</strong>. 
+                  I'd like to know how you plan to vote on this bill. Thank you."
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!userMP && (
+            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-5 mb-6">
+              <p className="text-gray-800 text-lg">
+                📍 <button 
+                  onClick={findMyMP}
+                  className="text-blue-600 hover:text-blue-800 font-bold underline"
+                >
+                  Find your MP
+                </button> to contact them about this bill!
+              </p>
+            </div>
+          )}
 
           <div className="border-t pt-6">
             <div className="flex items-center justify-between mb-4">
@@ -2099,6 +2632,346 @@ function App() {
     </div>
   );
 
+  // Render Ministries List
+  const renderMinistries = () => {
+    const totalBudget = ministries.reduce((sum, m) => sum + m.budgetRaw, 0);
+    const totalEmployees = ministries.reduce((sum, m) => sum + m.employees, 0);
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <button
+              onClick={() => setView('categories')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
+            >
+              ← Back to Government Levels
+            </button>
+            <h1 className="text-3xl font-bold text-gray-800">Government Ministries</h1>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Overview Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <Building2 className="w-8 h-8 text-blue-600" />
+                <h3 className="text-lg font-bold text-gray-800">Total Ministries</h3>
+              </div>
+              <p className="text-3xl font-bold text-blue-600">{ministries.length}</p>
+            </div>
+            <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-300 rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <DollarSign className="w-8 h-8 text-green-600" />
+                <h3 className="text-lg font-bold text-gray-800">Combined Budget</h3>
+              </div>
+              <p className="text-3xl font-bold text-green-600">${(totalBudget / 1000000000).toFixed(1)}B</p>
+            </div>
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-300 rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <Users className="w-8 h-8 text-purple-600" />
+                <h3 className="text-lg font-bold text-gray-800">Total Employees</h3>
+              </div>
+              <p className="text-3xl font-bold text-purple-600">{totalEmployees.toLocaleString()}</p>
+            </div>
+          </div>
+
+          {/* Ministries List */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {ministries.map(ministry => {
+              const totalVotes = ministry.approveVotes + ministry.disapproveVotes;
+              const approvalRate = totalVotes > 0 
+                ? Math.round((ministry.approveVotes / totalVotes) * 100) 
+                : 0;
+
+              return (
+                <div
+                  key={ministry.id}
+                  onClick={() => {
+                    setSelectedMinistry(ministry);
+                    setView('ministry-detail');
+                  }}
+                  className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-orange-500"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-800 mb-1">{ministry.name}</h3>
+                      <p className="text-gray-600 mb-2">Minister: {ministry.minister}</p>
+                      <p className="text-sm text-gray-500">{ministry.description}</p>
+                    </div>
+                    <ChevronRight className="w-6 h-6 text-gray-400 flex-shrink-0" />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Budget</p>
+                      <p className="text-lg font-bold text-green-600">{ministry.budget}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Grants</p>
+                      <p className="text-lg font-bold text-blue-600">{ministry.grants}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Employees</p>
+                      <p className="text-lg font-bold text-purple-600">{ministry.employees.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Public Approval</span>
+                      <span className={`text-lg font-bold ${
+                        approvalRate >= 60 ? 'text-green-600' :
+                        approvalRate >= 40 ? 'text-yellow-600' :
+                        'text-red-600'
+                      }`}>
+                        {approvalRate}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                      <div 
+                        className={`h-2 rounded-full ${
+                          approvalRate >= 60 ? 'bg-green-500' :
+                          approvalRate >= 40 ? 'bg-yellow-500' :
+                          'bg-red-500'
+                        }`}
+                        style={{ width: `${approvalRate}%` }}
+                      ></div>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
+                      <span>👍 {ministry.approveVotes}</span>
+                      <span>👎 {ministry.disapproveVotes}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Render Ministry Detail
+  const renderMinistryDetail = () => {
+    if (!selectedMinistry) return null;
+
+    const totalVotes = selectedMinistry.approveVotes + selectedMinistry.disapproveVotes;
+    const approvalRate = totalVotes > 0 
+      ? Math.round((selectedMinistry.approveVotes / totalVotes) * 100) 
+      : 0;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <button
+              onClick={() => {
+                setSelectedMinistry(null);
+                setView('ministries');
+              }}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
+            >
+              ← Back to Ministries
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          {/* Ministry Header */}
+          <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h1 className="text-4xl font-bold text-gray-800 mb-2">{selectedMinistry.name}</h1>
+                <p className="text-xl text-gray-600 mb-4">Minister: {selectedMinistry.minister}</p>
+                <p className="text-gray-700 max-w-3xl">{selectedMinistry.description}</p>
+              </div>
+            </div>
+
+            {/* Key Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <DollarSign className="w-8 h-8 text-green-600" />
+                  <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
+                </div>
+                <p className="text-3xl font-bold text-green-600">{selectedMinistry.budget}</p>
+              </div>
+
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <TrendingUp className="w-8 h-8 text-blue-600" />
+                  <h3 className="text-lg font-bold text-gray-800">Grants Given</h3>
+                </div>
+                <p className="text-3xl font-bold text-blue-600">{selectedMinistry.grants}</p>
+              </div>
+
+              <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Users className="w-8 h-8 text-purple-600" />
+                  <h3 className="text-lg font-bold text-gray-800">Employees</h3>
+                </div>
+                <p className="text-3xl font-bold text-purple-600">{selectedMinistry.employees.toLocaleString()}</p>
+              </div>
+            </div>
+
+            {/* Responsibilities */}
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Key Responsibilities</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {selectedMinistry.responsibilities.map((resp, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700">{resp}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Approval Voting */}
+          <div className="bg-white rounded-lg shadow-md p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Do You Approve of This Ministry's Performance?</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <ThumbsUp className="w-10 h-10 text-green-600" />
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">Approve</h3>
+                      <p className="text-sm text-gray-600">They're doing a good job</p>
+                    </div>
+                  </div>
+                  <div className="text-3xl font-bold text-green-600">{selectedMinistry.approveVotes}</div>
+                </div>
+                <button
+                  onClick={() => voteMinistry(
+                    selectedMinistry.id, 
+                    selectedMinistry.userVote === 'approve' ? 'remove' : 'approve'
+                  )}
+                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${
+                    selectedMinistry.userVote === 'approve'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                  }`}
+                >
+                  {selectedMinistry.userVote === 'approve' ? '✓ You Approve' : 'Vote Approve'}
+                </button>
+              </div>
+
+              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <ThumbsDown className="w-10 h-10 text-red-600" />
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
+                      <p className="text-sm text-gray-600">They need to improve</p>
+                    </div>
+                  </div>
+                  <div className="text-3xl font-bold text-red-600">{selectedMinistry.disapproveVotes}</div>
+                </div>
+                <button
+                  onClick={() => voteMinistry(
+                    selectedMinistry.id,
+                    selectedMinistry.userVote === 'disapprove' ? 'remove' : 'disapprove'
+                  )}
+                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${
+                    selectedMinistry.userVote === 'disapprove'
+                      ? 'bg-red-600 text-white'
+                      : 'bg-red-100 text-red-700 hover:bg-red-200'
+                  }`}
+                >
+                  {selectedMinistry.userVote === 'disapprove' ? '✓ You Disapprove' : 'Vote Disapprove'}
+                </button>
+              </div>
+            </div>
+
+            {/* Approval Stats */}
+            <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-800">Overall Approval Rating</h3>
+                <span className={`text-3xl font-bold ${
+                  approvalRate >= 60 ? 'text-green-600' :
+                  approvalRate >= 40 ? 'text-yellow-600' :
+                  'text-red-600'
+                }`}>
+                  {approvalRate}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-300 rounded-full h-4">
+                <div 
+                  className={`h-4 rounded-full transition-all ${
+                    approvalRate >= 60 ? 'bg-green-500' :
+                    approvalRate >= 40 ? 'bg-yellow-500' :
+                    'bg-red-500'
+                  }`}
+                  style={{ width: `${approvalRate}%` }}
+                ></div>
+              </div>
+              <div className="flex items-center justify-between mt-4 text-gray-600">
+                <span>{totalVotes.toLocaleString()} total votes</span>
+                <span>{selectedMinistry.approveVotes} approve • {selectedMinistry.disapproveVotes} disapprove</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Manual riding selector if location fails
+  const renderRidingSelector = () => {
+    const [ridingSearch, setRidingSearch] = useState('');
+    const allRidings = Array.from(new Set(mps.map(mp => mp.riding))).sort();
+    const filteredRidings = ridingSearch 
+      ? allRidings.filter(r => r.toLowerCase().includes(ridingSearch.toLowerCase()))
+      : allRidings;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
+          <h2 className="text-3xl font-bold text-gray-800 mb-4">Select Your Riding</h2>
+          <p className="text-gray-600 mb-6 text-lg">
+            We couldn't determine your location automatically. Please select your riding from the list below:
+          </p>
+          
+          <input
+            type="text"
+            placeholder="🔍 Search for your riding..."
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg mb-4 text-lg focus:border-blue-500 focus:outline-none"
+            value={ridingSearch}
+            onChange={(e) => setRidingSearch(e.target.value)}
+          />
+
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {filteredRidings.map(riding => {
+              const mp = mps.find(m => m.riding === riding);
+              return (
+                <button
+                  key={riding}
+                  onClick={() => selectRiding(riding)}
+                  className="w-full text-left px-4 py-3 hover:bg-blue-50 rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-colors"
+                >
+                  <p className="font-bold text-gray-800">{riding}</p>
+                  {mp && <p className="text-sm text-gray-600">{mp.name} • {mp.party}</p>}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={() => setShowLocationPrompt(false)}
+            className="mt-6 w-full px-4 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-bold transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="App">
       {view === 'countries' && renderCountrySelection()}
@@ -2113,6 +2986,11 @@ function App() {
       {view === 'law-detail' && selectedLaw && renderLawDetail()}
       {view === 'contracts' && renderContracts()}
       {view === 'contract-detail' && selectedContract && renderContractDetail()}
+      {view === 'ministries' && renderMinistries()}
+      {view === 'ministry-detail' && selectedMinistry && renderMinistryDetail()}
+      
+      {/* Riding selector modal */}
+      {showLocationPrompt && renderRidingSelector()}
     </div>
   );
 }
