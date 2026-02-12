@@ -1161,10 +1161,10 @@ function App() {
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button
-            onClick={() => setView('parties')}
+            onClick={() => setView('categories')}
             className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
           >
-            ← Back
+            ← Back to Government Levels
           </button>
           
           <h1 className="text-2xl font-bold text-gray-800">Parliamentary Bills</h1>
@@ -1236,8 +1236,8 @@ function App() {
                   </div>
 
                   <div className="border-t pt-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex gap-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="flex gap-4 sm:gap-6">
                         <div className="flex items-center gap-2">
                           <ThumbsUp className="w-5 h-5 text-green-600" />
                           <span className="font-semibold text-gray-800">{bill.supportVotes}</span>
@@ -1250,28 +1250,28 @@ function App() {
                         </div>
                       </div>
 
-                      <div className="flex gap-3">
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                         <button
                           onClick={() => voteBill(bill.id, bill.userVote === 'support' ? 'remove' : 'support')}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                          className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
                             bill.userVote === 'support'
                               ? 'bg-green-600 text-white'
                               : 'bg-green-50 text-green-700 hover:bg-green-100'
                           }`}
                         >
                           <ThumbsUp className="w-4 h-4" />
-                          {bill.userVote === 'support' ? 'Supporting' : 'Support'}
+                          <span>{bill.userVote === 'support' ? 'Supporting' : 'Support'}</span>
                         </button>
                         <button
                           onClick={() => voteBill(bill.id, bill.userVote === 'oppose' ? 'remove' : 'oppose')}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                          className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
                             bill.userVote === 'oppose'
                               ? 'bg-red-600 text-white'
                               : 'bg-red-50 text-red-700 hover:bg-red-100'
                           }`}
                         >
                           <ThumbsDown className="w-4 h-4" />
-                          {bill.userVote === 'oppose' ? 'Opposing' : 'Oppose'}
+                          <span>{bill.userVote === 'oppose' ? 'Opposing' : 'Oppose'}</span>
                         </button>
                       </div>
                     </div>
@@ -1489,10 +1489,10 @@ function App() {
         <div className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <button
-              onClick={() => setView('parties')}
+              onClick={() => setView('categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back
+              ← Back to Government Levels
             </button>
             
             <h1 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
