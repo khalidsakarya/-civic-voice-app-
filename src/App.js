@@ -779,29 +779,29 @@ function App() {
   );
 
   const renderCategories = () => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
         <button
           onClick={() => setView('countries')}
-          className="mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2 font-medium"
+          className="mb-4 sm:mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2 font-medium text-sm sm:text-base"
         >
           ← Back to Countries
         </button>
         
-        <h1 className="text-4xl font-bold text-gray-800 mb-2">Canadian Government</h1>
-        <p className="text-gray-600 mb-8 text-lg">Explore different aspects of federal governance</p>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2">Canadian Government</h1>
+        <p className="text-gray-600 mb-6 sm:mb-8 text-base sm:text-lg">Explore different aspects of federal governance</p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Federal Parliament */}
           <div
             onClick={() => setView('parties')}
-            className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-blue-500 transform hover:-translate-y-1"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-blue-500 active:scale-95"
           >
-            <div className="text-blue-600 mb-4">
-              <Users className="w-12 h-12" />
+            <div className="text-blue-600 mb-3 sm:mb-4">
+              <Users className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Federal Parliament</h2>
-            <p className="text-gray-600 mb-3">Explore 325 Members of Parliament across all parties</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Federal Parliament</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Explore 325 Members of Parliament across all parties</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
               <span>325 MPs</span>
               <ChevronRight className="w-5 h-5" />
@@ -811,13 +811,13 @@ function App() {
           {/* Analytics Dashboard */}
           <div
             onClick={() => setView('analytics')}
-            className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-purple-500 transform hover:-translate-y-1"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-purple-500 active:scale-95"
           >
-            <div className="text-purple-600 mb-4">
-              <BarChart3 className="w-12 h-12" />
+            <div className="text-purple-600 mb-3 sm:mb-4">
+              <BarChart3 className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Analytics Dashboard</h2>
-            <p className="text-gray-600 mb-3">View economic impact, immigration, crime trends & spending</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Analytics Dashboard</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">View economic impact, immigration, crime trends & spending</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
               <span>11 Charts</span>
               <ChevronRight className="w-5 h-5" />
@@ -827,13 +827,13 @@ function App() {
           {/* Parliamentary Bills */}
           <div
             onClick={() => setView('bills')}
-            className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 transform hover:-translate-y-1"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
           >
-            <div className="text-green-600 mb-4">
-              <FileText className="w-12 h-12" />
+            <div className="text-green-600 mb-3 sm:mb-4">
+              <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Parliamentary Bills</h2>
-            <p className="text-gray-600 mb-3">Track and vote on upcoming legislation</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Parliamentary Bills</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Track and vote on upcoming legislation</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
               <span>{bills.length} Bills</span>
               <ChevronRight className="w-5 h-5" />
@@ -843,13 +843,13 @@ function App() {
           {/* Government Ministries */}
           <div
             onClick={() => setView('ministries')}
-            className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-orange-500 transform hover:-translate-y-1"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95"
           >
-            <div className="text-orange-600 mb-4">
-              <Building2 className="w-12 h-12" />
+            <div className="text-orange-600 mb-3 sm:mb-4">
+              <Building2 className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Government Ministries</h2>
-            <p className="text-gray-600 mb-3">Review budgets, grants & approve ministerial performance</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Ministries</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Review budgets, grants & approve ministerial performance</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
               <span>15 Ministries</span>
               <ChevronRight className="w-5 h-5" />
@@ -859,13 +859,13 @@ function App() {
           {/* Latest Laws & Regulations */}
           <div
             onClick={() => setView('laws')}
-            className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-indigo-500 transform hover:-translate-y-1"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-indigo-500 active:scale-95"
           >
-            <div className="text-indigo-600 mb-4">
-              <FileText className="w-12 h-12" />
+            <div className="text-indigo-600 mb-3 sm:mb-4">
+              <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Latest Laws & Regulations</h2>
-            <p className="text-gray-600 mb-3">Recently implemented legislation affecting Canadians</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Latest Laws & Regulations</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Recently implemented legislation affecting Canadians</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
               <span>{laws.length} Laws</span>
               <ChevronRight className="w-5 h-5" />
@@ -875,13 +875,13 @@ function App() {
           {/* Government Contracts */}
           <div
             onClick={() => setView('contracts')}
-            className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 transform hover:-translate-y-1"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 active:scale-95"
           >
-            <div className="text-red-600 mb-4">
-              <DollarSign className="w-12 h-12" />
+            <div className="text-red-600 mb-3 sm:mb-4">
+              <DollarSign className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Government Contracts</h2>
-            <p className="text-gray-600 mb-3">Follow taxpayer money and major government spending</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Contracts</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Follow taxpayer money and major government spending</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
               <span>{contracts.length} Contracts</span>
               <ChevronRight className="w-5 h-5" />
@@ -1412,28 +1412,28 @@ function App() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => voteBill(selectedBill.id, selectedBill.userVote === 'support' ? 'remove' : 'support')}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+                  className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
                     selectedBill.userVote === 'support'
                       ? 'bg-green-600 text-white'
                       : 'bg-green-50 text-green-700 hover:bg-green-100'
                   }`}
                 >
                   <ThumbsUp className="w-5 h-5" />
-                  {selectedBill.userVote === 'support' ? 'Supporting' : 'Support This Bill'}
+                  <span className="text-sm sm:text-base">{selectedBill.userVote === 'support' ? 'Supporting' : 'Support This Bill'}</span>
                 </button>
                 <button
                   onClick={() => voteBill(selectedBill.id, selectedBill.userVote === 'oppose' ? 'remove' : 'oppose')}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+                  className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
                     selectedBill.userVote === 'oppose'
                       ? 'bg-red-600 text-white'
                       : 'bg-red-50 text-red-700 hover:bg-red-100'
                   }`}
                 >
                   <ThumbsDown className="w-5 h-5" />
-                  {selectedBill.userVote === 'oppose' ? 'Opposing' : 'Oppose This Bill'}
+                  <span className="text-sm sm:text-base">{selectedBill.userVote === 'oppose' ? 'Opposing' : 'Oppose This Bill'}</span>
                 </button>
               </div>
             </div>
@@ -2640,45 +2640,45 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
             <button
               onClick={() => setView('categories')}
-              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-2 sm:mb-4 text-sm sm:text-base"
             >
               ← Back to Government Levels
             </button>
-            <h1 className="text-3xl font-bold text-gray-800">Government Ministries</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Government Ministries</h1>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8">
           {/* Overview Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <Building2 className="w-8 h-8 text-blue-600" />
-                <h3 className="text-lg font-bold text-gray-800">Total Ministries</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-lg p-4 sm:p-6">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+                <h3 className="text-base sm:text-lg font-bold text-gray-800">Total Ministries</h3>
               </div>
-              <p className="text-3xl font-bold text-blue-600">{ministries.length}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-blue-600">{ministries.length}</p>
             </div>
-            <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-300 rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <DollarSign className="w-8 h-8 text-green-600" />
-                <h3 className="text-lg font-bold text-gray-800">Combined Budget</h3>
+            <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-300 rounded-lg p-4 sm:p-6">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+                <h3 className="text-base sm:text-lg font-bold text-gray-800">Combined Budget</h3>
               </div>
-              <p className="text-3xl font-bold text-green-600">${(totalBudget / 1000000000).toFixed(1)}B</p>
+              <p className="text-2xl sm:text-3xl font-bold text-green-600">${(totalBudget / 1000000000).toFixed(1)}B</p>
             </div>
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-300 rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <Users className="w-8 h-8 text-purple-600" />
-                <h3 className="text-lg font-bold text-gray-800">Total Employees</h3>
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-300 rounded-lg p-4 sm:p-6">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <Users className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
+                <h3 className="text-base sm:text-lg font-bold text-gray-800">Total Employees</h3>
               </div>
-              <p className="text-3xl font-bold text-purple-600">{totalEmployees.toLocaleString()}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-purple-600">{totalEmployees.toLocaleString()}</p>
             </div>
           </div>
 
           {/* Ministries List */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {ministries.map(ministry => {
               const totalVotes = ministry.approveVotes + ministry.disapproveVotes;
               const approvalRate = totalVotes > 0 
@@ -2692,36 +2692,36 @@ function App() {
                     setSelectedMinistry(ministry);
                     setView('ministry-detail');
                   }}
-                  className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-orange-500"
+                  className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95"
                 >
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start justify-between mb-3 sm:mb-4">
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-800 mb-1">{ministry.name}</h3>
-                      <p className="text-gray-600 mb-2">Minister: {ministry.minister}</p>
-                      <p className="text-sm text-gray-500">{ministry.description}</p>
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{ministry.name}</h3>
+                      <p className="text-sm sm:text-base text-gray-600 mb-2">Minister: {ministry.minister}</p>
+                      <p className="text-xs sm:text-sm text-gray-500">{ministry.description}</p>
                     </div>
-                    <ChevronRight className="w-6 h-6 text-gray-400 flex-shrink-0" />
+                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 flex-shrink-0" />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-3 sm:mb-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Budget</p>
-                      <p className="text-lg font-bold text-green-600">{ministry.budget}</p>
+                      <p className="text-sm sm:text-lg font-bold text-green-600">{ministry.budget}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Grants</p>
-                      <p className="text-lg font-bold text-blue-600">{ministry.grants}</p>
+                      <p className="text-sm sm:text-lg font-bold text-blue-600">{ministry.grants}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Employees</p>
-                      <p className="text-lg font-bold text-purple-600">{ministry.employees.toLocaleString()}</p>
+                      <p className="text-sm sm:text-lg font-bold text-purple-600">{ministry.employees.toLocaleString()}</p>
                     </div>
                   </div>
 
-                  <div className="border-t pt-4">
+                  <div className="border-t pt-3 sm:pt-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Public Approval</span>
-                      <span className={`text-lg font-bold ${
+                      <span className="text-xs sm:text-sm text-gray-600">Public Approval</span>
+                      <span className={`text-base sm:text-lg font-bold ${
                         approvalRate >= 60 ? 'text-green-600' :
                         approvalRate >= 40 ? 'text-yellow-600' :
                         'text-red-600'
