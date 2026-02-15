@@ -41,6 +41,11 @@ function App() {
   const [selectedLaw, setSelectedLaw] = useState(null);
   const [selectedContract, setSelectedContract] = useState(null);
   
+  // US Contracts filter states
+  const [contractSearch, setContractSearch] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('All');
+  const [typeFilter, setTypeFilter] = useState('All');
+  
   // Location-based MP finder states
   const [userMP, setUserMP] = useState(null);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
@@ -2897,10 +2902,6 @@ function App() {
 
   // US Federal Contracts Render Function
   const renderUSContracts = () => {
-    const [contractSearch, setContractSearch] = useState('');
-    const [departmentFilter, setDepartmentFilter] = useState('All');
-    const [typeFilter, setTypeFilter] = useState('All');
-
     const totalValue = usContracts.reduce((sum, contract) => sum + contract.amountRaw, 0);
     
     // Get unique departments and types
