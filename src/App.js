@@ -43,6 +43,13 @@ function App() {
       employees: 12500,
       description: 'Responsible for helping Canadians maintain and improve their health',
       responsibilities: ['Public health', 'Healthcare policy', 'Drug regulation', 'Medical devices'],
+      grantsDetail: [
+        { recipient: 'Provincial Healthcare Transfer Programs', amount: '$850 Million', purpose: 'Support provincial healthcare systems and reduce wait times', date: 'January 2025' },
+        { recipient: 'Canadian Institutes of Health Research', amount: '$450 Million', purpose: 'Medical research and clinical trials funding', date: 'October 2024' },
+        { recipient: 'Mental Health Initiative Fund', amount: '$380 Million', purpose: 'Expand mental health services and crisis intervention', date: 'September 2024' },
+        { recipient: 'Indigenous Health Services', amount: '$250 Million', purpose: 'Improve healthcare access for First Nations communities', date: 'August 2024' },
+        { recipient: 'COVID-19 Response Programs', amount: '$170 Million', purpose: 'Ongoing pandemic preparedness and vaccine distribution', date: 'July 2024' }
+      ],
       approveVotes: 245,
       disapproveVotes: 189,
       userVote: null
@@ -57,6 +64,13 @@ function App() {
       employees: 68000,
       description: 'Responsible for defending Canada and Canadian interests and values',
       responsibilities: ['Canadian Armed Forces', 'Military operations', 'Defence policy', 'National security'],
+      grantsDetail: [
+        { recipient: 'Defence Research and Development Canada', amount: '$320 Million', purpose: 'Advanced military technology and cybersecurity research', date: 'December 2024' },
+        { recipient: 'Veterans Support Programs', amount: '$280 Million', purpose: 'Mental health services and transition assistance for veterans', date: 'November 2024' },
+        { recipient: 'Canadian Ranger Program', amount: '$150 Million', purpose: 'Arctic sovereignty and northern community defense', date: 'October 2024' },
+        { recipient: 'Military Equipment Modernization', amount: '$90 Million', purpose: 'Upgrade communications and tactical equipment', date: 'September 2024' },
+        { recipient: 'International Peacekeeping Initiatives', amount: '$50 Million', purpose: 'UN peacekeeping missions and humanitarian operations', date: 'August 2024' }
+      ],
       approveVotes: 312,
       disapproveVotes: 201,
       userVote: null
@@ -71,6 +85,13 @@ function App() {
       employees: 1850,
       description: 'Responsible for economic and fiscal policy',
       responsibilities: ['Economic policy', 'Federal budget', 'Tax policy', 'Financial sector regulation'],
+      grantsDetail: [
+        { recipient: 'Canada Child Benefit Programs', amount: '$25.8 Billion', purpose: 'Monthly child support payments to eligible families', date: 'Ongoing 2024' },
+        { recipient: 'GST/HST Tax Credits', amount: '$8.5 Billion', purpose: 'Tax relief for low and moderate-income Canadians', date: 'Quarterly 2024' },
+        { recipient: 'Provincial Fiscal Transfers', amount: '$6.2 Billion', purpose: 'Equalization payments to provinces', date: 'January 2025' },
+        { recipient: 'Small Business Support Fund', amount: '$2.9 Billion', purpose: 'Grants and loans for Canadian small businesses', date: 'December 2024' },
+        { recipient: 'Clean Economy Investment Tax Credits', amount: '$1.8 Billion', purpose: 'Incentives for green technology adoption', date: 'November 2024' }
+      ],
       approveVotes: 278,
       disapproveVotes: 356,
       userVote: null
@@ -85,6 +106,13 @@ function App() {
       employees: 9500,
       description: 'Facilitating entry of people and their integration into Canadian society',
       responsibilities: ['Immigration policy', 'Refugee protection', 'Citizenship services', 'Settlement programs'],
+      grantsDetail: [
+        { recipient: 'Settlement and Integration Programs', amount: '$680 Million', purpose: 'Language training and employment services for newcomers', date: 'January 2025' },
+        { recipient: 'Refugee Assistance Programs', amount: '$420 Million', purpose: 'Support for government-assisted refugees', date: 'December 2024' },
+        { recipient: 'Temporary Foreign Worker Support', amount: '$210 Million', purpose: 'Worker protection and employer compliance programs', date: 'November 2024' },
+        { recipient: 'Citizenship Application Processing', amount: '$120 Million', purpose: 'Expedite citizenship processing and reduce backlogs', date: 'October 2024' },
+        { recipient: 'Immigration Legal Aid Services', amount: '$70 Million', purpose: 'Free legal assistance for refugee claimants', date: 'September 2024' }
+      ],
       approveVotes: 401,
       disapproveVotes: 298,
       userVote: null
@@ -99,6 +127,13 @@ function App() {
       employees: 7200,
       description: 'Preserving and enhancing the quality of the natural environment',
       responsibilities: ['Climate policy', 'Environmental protection', 'Parks Canada', 'Wildlife conservation'],
+      grantsDetail: [
+        { recipient: 'Clean Technology Fund', amount: '$980 Million', purpose: 'Support clean energy projects and carbon reduction', date: 'January 2025' },
+        { recipient: 'Nature Conservancy Programs', amount: '$650 Million', purpose: 'Protect endangered species and habitats', date: 'December 2024' },
+        { recipient: 'Climate Adaptation Projects', amount: '$520 Million', purpose: 'Infrastructure resilience against climate change', date: 'November 2024' },
+        { recipient: 'Parks Canada Conservation', amount: '$380 Million', purpose: 'National park maintenance and ecological restoration', date: 'October 2024' },
+        { recipient: 'Environmental Monitoring Network', amount: '$270 Million', purpose: 'Air and water quality monitoring systems', date: 'September 2024' }
+      ],
       approveVotes: 389,
       disapproveVotes: 267,
       userVote: null
@@ -113,6 +148,13 @@ function App() {
       employees: 15600,
       description: 'Protecting Canadians and maintaining a peaceful and safe society',
       responsibilities: ['RCMP oversight', 'Border security', 'Emergency management', 'Crime prevention'],
+      grantsDetail: [
+        { recipient: 'RCMP Operations Funding', amount: '$1.4 Billion', purpose: 'National policing and contract services', date: 'Ongoing 2024' },
+        { recipient: 'Border Security Enhancement', amount: '$820 Million', purpose: 'Advanced screening technology and personnel', date: 'January 2025' },
+        { recipient: 'Emergency Preparedness Programs', amount: '$690 Million', purpose: 'Disaster response and community resilience', date: 'December 2024' },
+        { recipient: 'Crime Prevention Initiatives', amount: '$310 Million', purpose: 'Gang intervention and youth programs', date: 'November 2024' },
+        { recipient: 'Cybersecurity Threat Response', amount: '$180 Million', purpose: 'Protect critical infrastructure from cyber attacks', date: 'October 2024' }
+      ],
       approveVotes: 334,
       disapproveVotes: 278,
       userVote: null
@@ -127,6 +169,13 @@ function App() {
       employees: 28000,
       description: 'Responsible for social programs and the labour market',
       responsibilities: ['Employment Insurance', 'Canada Pension Plan', 'Old Age Security', 'Labour standards'],
+      grantsDetail: [
+        { recipient: 'Old Age Security Payments', amount: '$62.5 Billion', purpose: 'Monthly pension payments to seniors 65+', date: 'Ongoing 2024' },
+        { recipient: 'Employment Insurance Benefits', amount: '$18.3 Billion', purpose: 'Income support for unemployed Canadians', date: 'Ongoing 2024' },
+        { recipient: 'Canada Pension Plan Disability', amount: '$5.1 Billion', purpose: 'Support for Canadians with disabilities', date: 'Ongoing 2024' },
+        { recipient: 'Workforce Development Programs', amount: '$2.4 Billion', purpose: 'Skills training and job placement services', date: 'January 2025' },
+        { recipient: 'Social Assistance Programs', amount: '$900 Million', purpose: 'Support for low-income families and individuals', date: 'December 2024' }
+      ],
       approveVotes: 412,
       disapproveVotes: 245,
       userVote: null
@@ -141,6 +190,13 @@ function App() {
       employees: 5800,
       description: 'Responsible for transportation policies and programs',
       responsibilities: ['Aviation safety', 'Marine safety', 'Rail safety', 'Road safety'],
+      grantsDetail: [
+        { recipient: 'Public Transit Infrastructure', amount: '$1.8 Billion', purpose: 'Support for municipal transit expansion projects', date: 'January 2025' },
+        { recipient: 'Airport Improvement Program', amount: '$920 Million', purpose: 'Safety upgrades at regional airports', date: 'December 2024' },
+        { recipient: 'Marine Port Modernization', amount: '$680 Million', purpose: 'Port infrastructure and environmental compliance', date: 'November 2024' },
+        { recipient: 'Rail Safety Initiatives', amount: '$520 Million', purpose: 'Grade crossing improvements and track upgrades', date: 'October 2024' },
+        { recipient: 'Active Transportation Fund', amount: '$280 Million', purpose: 'Bike lanes and pedestrian infrastructure', date: 'September 2024' }
+      ],
       approveVotes: 301,
       disapproveVotes: 198,
       userVote: null
@@ -155,6 +211,13 @@ function App() {
       employees: 6400,
       description: 'Fostering a growing, competitive and knowledge-based Canadian economy',
       responsibilities: ['Innovation policy', 'Science funding', 'Telecommunications', 'Intellectual property'],
+      grantsDetail: [
+        { recipient: 'Strategic Innovation Fund', amount: '$3.2 Billion', purpose: 'Support large-scale innovation projects and R&D', date: 'January 2025' },
+        { recipient: 'Natural Sciences and Engineering Research', amount: '$1.9 Billion', purpose: 'University research grants and scholarships', date: 'December 2024' },
+        { recipient: 'Regional Development Agencies', amount: '$1.4 Billion', purpose: 'Economic development in rural and remote areas', date: 'November 2024' },
+        { recipient: 'Broadband Connectivity Programs', amount: '$820 Million', purpose: 'Expand high-speed internet to underserved communities', date: 'October 2024' },
+        { recipient: 'Startup and Scale-up Programs', amount: '$480 Million', purpose: 'Support for tech startups and growth companies', date: 'September 2024' }
+      ],
       approveVotes: 356,
       disapproveVotes: 223,
       userVote: null
@@ -169,6 +232,13 @@ function App() {
       employees: 4200,
       description: 'Ensuring natural resources development is sustainable',
       responsibilities: ['Energy policy', 'Mining regulation', 'Forestry', 'Geological surveys'],
+      grantsDetail: [
+        { recipient: 'Clean Energy Transition Fund', amount: '$1.2 Billion', purpose: 'Support renewable energy projects and grid modernization', date: 'January 2025' },
+        { recipient: 'Forestry Sector Support', amount: '$680 Million', purpose: 'Sustainable forestry practices and wildfire prevention', date: 'December 2024' },
+        { recipient: 'Critical Minerals Strategy', amount: '$590 Million', purpose: 'Development of battery and tech mineral supply chains', date: 'November 2024' },
+        { recipient: 'Energy Efficiency Programs', amount: '$420 Million', purpose: 'Home retrofits and commercial building upgrades', date: 'October 2024' },
+        { recipient: 'Geological Mapping Initiatives', amount: '$210 Million', purpose: 'Resource exploration and land use planning', date: 'September 2024' }
+      ],
       approveVotes: 289,
       disapproveVotes: 267,
       userVote: null
@@ -183,6 +253,13 @@ function App() {
       employees: 4800,
       description: 'Supporting the Minister in ensuring a fair and accessible justice system',
       responsibilities: ['Legal advice to government', 'Criminal law policy', 'Human rights', 'Family law'],
+      grantsDetail: [
+        { recipient: 'Legal Aid Programs', amount: '$340 Million', purpose: 'Free legal representation for low-income Canadians', date: 'January 2025' },
+        { recipient: 'Victims Support Services', amount: '$210 Million', purpose: 'Counseling and assistance for crime victims', date: 'December 2024' },
+        { recipient: 'Indigenous Justice Programs', amount: '$150 Million', purpose: 'Culturally appropriate justice services', date: 'November 2024' },
+        { recipient: 'Court Modernization Fund', amount: '$110 Million', purpose: 'Digital court systems and case management', date: 'October 2024' },
+        { recipient: 'Access to Justice Initiatives', amount: '$80 Million', purpose: 'Community legal clinics and public education', date: 'September 2024' }
+      ],
       approveVotes: 298,
       disapproveVotes: 301,
       userVote: null
@@ -197,6 +274,13 @@ function App() {
       employees: 8900,
       description: 'Working to improve access to services for First Nations, Inuit and Métis',
       responsibilities: ['Indigenous health', 'Education funding', 'Infrastructure', 'Child and family services'],
+      grantsDetail: [
+        { recipient: 'First Nations Education Programs', amount: '$4.8 Billion', purpose: 'K-12 education funding for on-reserve schools', date: 'Ongoing 2024' },
+        { recipient: 'Indigenous Health Services', amount: '$3.2 Billion', purpose: 'Healthcare delivery in remote communities', date: 'Ongoing 2024' },
+        { recipient: 'Infrastructure Development Fund', amount: '$2.1 Billion', purpose: 'Housing, water systems, and roads on reserves', date: 'January 2025' },
+        { recipient: 'Child and Family Services', amount: '$1.6 Billion', purpose: 'Support for Indigenous child welfare agencies', date: 'December 2024' },
+        { recipient: 'Indigenous Skills and Training', amount: '$700 Million', purpose: 'Employment programs and capacity building', date: 'November 2024' }
+      ],
       approveVotes: 378,
       disapproveVotes: 298,
       userVote: null
@@ -211,6 +295,13 @@ function App() {
       employees: 6100,
       description: 'Responsible for policies governing agriculture production',
       responsibilities: ['Farm support programs', 'Food safety', 'Agricultural research', 'Trade'],
+      grantsDetail: [
+        { recipient: 'AgriStability Program', amount: '$1.2 Billion', purpose: 'Income stabilization for farmers facing market volatility', date: 'Ongoing 2024' },
+        { recipient: 'Sustainable Agriculture Initiative', amount: '$690 Million', purpose: 'Environmental stewardship and climate adaptation', date: 'January 2025' },
+        { recipient: 'Agricultural Research Funding', amount: '$480 Million', purpose: 'Crop development and livestock disease prevention', date: 'December 2024' },
+        { recipient: 'Farm Debt Mediation Service', amount: '$320 Million', purpose: 'Support for farmers facing financial difficulties', date: 'November 2024' },
+        { recipient: 'Export Market Development', amount: '$210 Million', purpose: 'Help farmers access international markets', date: 'October 2024' }
+      ],
       approveVotes: 312,
       disapproveVotes: 201,
       userVote: null
@@ -225,6 +316,13 @@ function App() {
       employees: 11200,
       description: 'Managing diplomatic relations and providing consular services',
       responsibilities: ['Foreign policy', 'International development', 'Trade promotion', 'Consular services'],
+      grantsDetail: [
+        { recipient: 'International Development Assistance', amount: '$2.8 Billion', purpose: 'Humanitarian aid and poverty reduction programs', date: 'Ongoing 2024' },
+        { recipient: 'Peace and Stabilization Fund', amount: '$920 Million', purpose: 'Conflict prevention and peace-building initiatives', date: 'January 2025' },
+        { recipient: 'Trade Promotion Programs', amount: '$650 Million', purpose: 'Support Canadian exporters and businesses abroad', date: 'December 2024' },
+        { recipient: 'Climate Finance Initiative', amount: '$520 Million', purpose: 'Help developing countries address climate change', date: 'November 2024' },
+        { recipient: 'Democracy and Human Rights Fund', amount: '$310 Million', purpose: 'Support civil society and governance worldwide', date: 'October 2024' }
+      ],
       approveVotes: 289,
       disapproveVotes: 334,
       userVote: null
@@ -239,6 +337,13 @@ function App() {
       employees: 2100,
       description: 'Promoting Canadian culture and heritage',
       responsibilities: ['Arts funding', 'Broadcasting', 'Official languages', 'Sport'],
+      grantsDetail: [
+        { recipient: 'Canada Council for the Arts', amount: '$420 Million', purpose: 'Grants to artists, musicians, and cultural organizations', date: 'Ongoing 2024' },
+        { recipient: 'Official Languages Programs', amount: '$380 Million', purpose: 'Support for French and English minority communities', date: 'January 2025' },
+        { recipient: 'Sport Canada Funding', amount: '$260 Million', purpose: 'Athlete support and high-performance programs', date: 'December 2024' },
+        { recipient: 'Heritage Infrastructure Fund', amount: '$150 Million', purpose: 'Preservation of historic sites and museums', date: 'November 2024' },
+        { recipient: 'Broadcasting and Media Support', amount: '$90 Million', purpose: 'Support for Canadian content creation', date: 'October 2024' }
+      ],
       approveVotes: 267,
       disapproveVotes: 245,
       userVote: null
@@ -2292,8 +2397,8 @@ function App() {
           {selectedMember.supportVotes !== undefined && (
             <div className="border-t pt-6 mt-6">
               <h3 className="text-lg font-bold text-gray-800 mb-4">Citizen Opinion</h3>
-              <div className="flex items-center justify-between">
-                <div className="flex gap-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex gap-6 sm:gap-8">
                   <div className="flex items-center gap-3">
                     <ThumbsUp className="w-6 h-6 text-green-600" />
                     <div>
@@ -2310,34 +2415,34 @@ function App() {
                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => {
                       const mpIndex = mps.findIndex(m => m.name === selectedMember.name);
                       voteMP(mpIndex, selectedMember.userVote === 'support' ? 'remove' : 'support');
                     }}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
                       selectedMember.userVote === 'support'
                         ? 'bg-green-600 text-white'
                         : 'bg-green-50 text-green-700 hover:bg-green-100'
                     }`}
                   >
                     <ThumbsUp className="w-5 h-5" />
-                    {selectedMember.userVote === 'support' ? 'Supporting' : 'Support This MP'}
+                    <span className="text-sm sm:text-base">{selectedMember.userVote === 'support' ? 'Supporting' : 'Support This MP'}</span>
                   </button>
                   <button
                     onClick={() => {
                       const mpIndex = mps.findIndex(m => m.name === selectedMember.name);
                       voteMP(mpIndex, selectedMember.userVote === 'oppose' ? 'remove' : 'oppose');
                     }}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
                       selectedMember.userVote === 'oppose'
                         ? 'bg-red-600 text-white'
                         : 'bg-red-50 text-red-700 hover:bg-red-100'
                     }`}
                   >
                     <ThumbsDown className="w-5 h-5" />
-                    {selectedMember.userVote === 'oppose' ? 'Opposing' : 'Oppose This MP'}
+                    <span className="text-sm sm:text-base">{selectedMember.userVote === 'oppose' ? 'Opposing' : 'Oppose This MP'}</span>
                   </button>
                 </div>
               </div>
@@ -2828,6 +2933,31 @@ function App() {
                 ))}
               </div>
             </div>
+
+            {/* Grants Breakdown */}
+            {selectedMinistry.grantsDetail && selectedMinistry.grantsDetail.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">💰 Grants & Funding Breakdown</h3>
+                <p className="text-gray-600 mb-4">Detailed transparency on where grant money is allocated</p>
+                
+                <div className="space-y-3">
+                  {selectedMinistry.grantsDetail.map((grant, index) => (
+                    <div key={index} className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                        <div className="flex-1">
+                          <h4 className="text-lg font-bold text-gray-800">{grant.recipient}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{grant.purpose}</p>
+                        </div>
+                        <div className="text-right sm:text-right flex-shrink-0">
+                          <p className="text-2xl font-bold text-green-600">{grant.amount}</p>
+                          <p className="text-xs text-gray-500">{grant.date}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Approval Voting */}
