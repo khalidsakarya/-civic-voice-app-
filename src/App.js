@@ -1188,7 +1188,8 @@ function App() {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   const renderParties = () => {
     const parties = getParties();
