@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star } from 'lucide-react';
+import { Menu, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale } from 'lucide-react';
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import './App.css';
 
@@ -24,6 +24,11 @@ function App() {
   const [usBills, setUsBills] = useState([]);
   const [usDepartments, setUsDepartments] = useState([]);
   const [usAnalyticsData, setUsAnalyticsData] = useState(null);
+  const [usSupremeCourt, setUsSupremeCourt] = useState(null);
+  
+  // Canadian Supreme Court data
+  const [canadaSupremeCourt, setCanadaSupremeCourt] = useState(null);
+  const [selectedCase, setSelectedCase] = useState(null);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -457,6 +462,8 @@ function App() {
     initializeUSCongress();
     initializeUSDepartments();
     initializeUSAnalytics();
+    initializeCanadaSupremeCourt();
+    initializeUSSupremeCourt();
   }, []);
   
   // Load user's saved MP from localStorage
@@ -978,6 +985,297 @@ function App() {
     };
     
     setUsAnalyticsData(analyticsData);
+  };
+  
+  const initializeCanadaSupremeCourt = () => {
+    const supremeCourtData = {
+      justices: [
+        { name: 'Richard Wagner', role: 'Chief Justice', appointedBy: 'Justin Trudeau', year: 2017, province: 'Quebec' },
+        { name: 'Rosalie Silberman Abella', role: 'Justice', appointedBy: 'Paul Martin', year: 2004, province: 'Ontario' },
+        { name: 'Andromache Karakatsanis', role: 'Justice', appointedBy: 'Stephen Harper', year: 2011, province: 'Ontario' },
+        { name: 'Sheilah Martin', role: 'Justice', appointedBy: 'Justin Trudeau', year: 2017, province: 'Alberta' },
+        { name: 'Nicholas Kasirer', role: 'Justice', appointedBy: 'Justin Trudeau', year: 2019, province: 'Quebec' },
+        { name: 'Mahmud Jamal', role: 'Justice', appointedBy: 'Justin Trudeau', year: 2021, province: 'Ontario' },
+        { name: 'Michelle O\'Bonsawin', role: 'Justice', appointedBy: 'Justin Trudeau', year: 2022, province: 'Ontario' },
+        { name: 'Mary Moreau', role: 'Justice', appointedBy: 'Justin Trudeau', year: 2023, province: 'Alberta' },
+        { name: 'Mahmud Jamal', role: 'Justice', appointedBy: 'Justin Trudeau', year: 2024, province: 'Quebec' }
+      ],
+      
+      casesInProcess: [
+        {
+          id: 'scc-2024-01',
+          name: 'Attorney General of Canada v. Power Workers\' Union',
+          caseNumber: '40381',
+          topic: 'Constitutional Law - Federal Jurisdiction',
+          dateArgued: 'November 2024',
+          status: 'In Process',
+          issue: 'Whether federal government can regulate greenhouse gas emissions from provincial power plants',
+          summary: 'Challenge to federal environmental regulations affecting provincially-regulated electricity sector. Questions federal jurisdiction over climate policy.'
+        },
+        {
+          id: 'scc-2024-02',
+          name: 'R. v. Northern Gateway Project Inc.',
+          caseNumber: '40394',
+          topic: 'Indigenous Rights - Consultation',
+          dateArgued: 'October 2024',
+          status: 'In Process',
+          issue: 'Adequacy of Crown consultation with Indigenous peoples on major resource projects',
+          summary: 'Appeal examining duty to consult Indigenous communities before approving pipeline projects through traditional territories.'
+        },
+        {
+          id: 'scc-2024-03',
+          name: 'Quebec v. 9147-0732 Québec inc.',
+          caseNumber: '40402',
+          topic: 'Freedom of Expression - Bill 21',
+          dateArgued: 'January 2025',
+          status: 'In Process',
+          issue: 'Constitutional challenge to Quebec\'s religious symbols law',
+          summary: 'Challenge to Quebec law banning religious symbols for public servants. Tests limits of provincial jurisdiction and Charter rights.'
+        }
+      ],
+      
+      recentDecisions: [
+        {
+          id: 'scc-2024-04',
+          name: 'R. v. Schneider',
+          caseNumber: '40156',
+          topic: 'Criminal Law - Search and Seizure',
+          dateDecided: 'December 2024',
+          status: 'Decided',
+          voteSplit: '7-2',
+          decision: 'Appeal allowed',
+          issue: 'Legality of warrantless searches of cell phones at border crossings',
+          summary: 'Supreme Court ruled that warrantless cell phone searches at Canadian borders violate Charter rights, requiring reasonable suspicion standard.',
+          impact: 'Significant privacy protection for cross-border travelers'
+        },
+        {
+          id: 'scc-2024-05',
+          name: 'Reference re: Impact Assessment Act',
+          caseNumber: '40615',
+          topic: 'Constitutional Law - Environmental Assessment',
+          dateDecided: 'October 2024',
+          status: 'Decided',
+          voteSplit: '5-4',
+          decision: 'Act partially unconstitutional',
+          issue: 'Federal environmental assessment powers vs provincial jurisdiction',
+          summary: 'Court found major portions of federal Impact Assessment Act exceeded federal jurisdiction over environmental matters.',
+          impact: 'Major setback for federal climate policy, limits federal environmental powers'
+        },
+        {
+          id: 'scc-2024-06',
+          name: 'Toronto (City) v. Ontario',
+          caseNumber: '39427',
+          topic: 'Constitutional Law - Municipal Autonomy',
+          dateDecided: 'September 2024',
+          status: 'Decided',
+          voteSplit: 'Unanimous',
+          decision: 'Appeal dismissed',
+          issue: 'Provincial power to interfere in municipal elections',
+          summary: 'Court upheld provincial authority to change Toronto city council size mid-election, confirming provinces control municipalities.',
+          impact: 'Clarifies limited constitutional protection for municipal governments'
+        },
+        {
+          id: 'scc-2024-07',
+          name: 'R. v. Bissonnette',
+          caseNumber: '39817',
+          topic: 'Criminal Law - Sentencing',
+          dateDecided: 'May 2024',
+          status: 'Decided',
+          voteSplit: 'Unanimous',
+          decision: 'Appeal allowed',
+          issue: 'Constitutionality of consecutive life sentences without parole eligibility',
+          summary: 'Court struck down consecutive periods of parole ineligibility exceeding 25 years as cruel and unusual punishment.',
+          impact: 'Affects sentencing for mass murders, limits consecutive life sentences'
+        }
+      ],
+      
+      upcomingCases: [
+        {
+          id: 'scc-2025-01',
+          name: 'Canadian Broadcasting Corporation v. Ferrier',
+          caseNumber: '40518',
+          topic: 'Freedom of Press - Source Protection',
+          dateScheduled: 'March 2025',
+          status: 'Upcoming',
+          issue: 'Journalist privilege to protect confidential sources',
+          summary: 'Case will determine extent of constitutional protection for journalists refusing to reveal sources in criminal investigations.'
+        },
+        {
+          id: 'scc-2025-02',
+          name: 'British Columbia v. Council of Canadians with Disabilities',
+          caseNumber: '40631',
+          topic: 'Charter Rights - Accessibility',
+          dateScheduled: 'April 2025',
+          status: 'Upcoming',
+          issue: 'Provincial obligation to provide accessible public transit',
+          summary: 'Challenge to BC transit system accessibility. May establish new standards for disability accommodation.'
+        },
+        {
+          id: 'scc-2025-03',
+          name: 'Alberta v. Prairies Economic Development Canada',
+          caseNumber: '40645',
+          topic: 'Constitutional Law - Federal Spending Power',
+          dateScheduled: 'June 2025',
+          status: 'Upcoming',
+          issue: 'Limits on federal spending in areas of provincial jurisdiction',
+          summary: 'Alberta challenges federal infrastructure spending programs, questioning constitutional limits of federal spending power.'
+        }
+      ]
+    };
+    
+    setCanadaSupremeCourt(supremeCourtData);
+  };
+  
+  const initializeUSSupremeCourt = () => {
+    const supremeCourtData = {
+      justices: [
+        { name: 'John Roberts', role: 'Chief Justice', appointedBy: 'George W. Bush', year: 2005, ideology: 'Conservative' },
+        { name: 'Clarence Thomas', role: 'Associate Justice', appointedBy: 'George H.W. Bush', year: 1991, ideology: 'Conservative' },
+        { name: 'Samuel Alito', role: 'Associate Justice', appointedBy: 'George W. Bush', year: 2006, ideology: 'Conservative' },
+        { name: 'Sonia Sotomayor', role: 'Associate Justice', appointedBy: 'Barack Obama', year: 2009, ideology: 'Liberal' },
+        { name: 'Elena Kagan', role: 'Associate Justice', appointedBy: 'Barack Obama', year: 2010, ideology: 'Liberal' },
+        { name: 'Neil Gorsuch', role: 'Associate Justice', appointedBy: 'Donald Trump', year: 2017, ideology: 'Conservative' },
+        { name: 'Brett Kavanaugh', role: 'Associate Justice', appointedBy: 'Donald Trump', year: 2018, ideology: 'Conservative' },
+        { name: 'Amy Coney Barrett', role: 'Associate Justice', appointedBy: 'Donald Trump', year: 2020, ideology: 'Conservative' },
+        { name: 'Ketanji Brown Jackson', role: 'Associate Justice', appointedBy: 'Joe Biden', year: 2022, ideology: 'Liberal' }
+      ],
+      
+      casesInProcess: [
+        {
+          id: 'scotus-2024-01',
+          name: 'Trump v. United States',
+          caseNumber: '23-939',
+          topic: 'Presidential Immunity',
+          dateArgued: 'December 2024',
+          status: 'In Process',
+          issue: 'Whether former presidents have immunity from criminal prosecution for official acts',
+          summary: 'Landmark case examining scope of presidential immunity in context of Jan. 6 prosecutions. Could reshape executive accountability.'
+        },
+        {
+          id: 'scotus-2024-02',
+          name: 'NetChoice v. Paxton',
+          caseNumber: '22-555',
+          topic: 'First Amendment - Social Media',
+          dateArgued: 'November 2024',
+          status: 'In Process',
+          issue: 'Can states regulate content moderation by social media platforms?',
+          summary: 'Challenge to Texas and Florida laws restricting how platforms like Facebook and Twitter can moderate content. Major free speech case.'
+        },
+        {
+          id: 'scotus-2024-03',
+          name: 'Murthy v. Missouri',
+          caseNumber: '23-411',
+          topic: 'First Amendment - Government Speech',
+          dateArgued: 'January 2025',
+          status: 'In Process',
+          issue: 'Government pressure on social media companies to remove content',
+          summary: 'Case examining whether government requests to remove "misinformation" violate First Amendment. Tests limits of government influence over private platforms.'
+        }
+      ],
+      
+      recentDecisions: [
+        {
+          id: 'scotus-2024-04',
+          name: 'Students for Fair Admissions v. Harvard',
+          caseNumber: '20-1199',
+          topic: 'Affirmative Action',
+          dateDecided: 'June 2024',
+          status: 'Decided',
+          voteSplit: '6-3',
+          decision: 'Affirmative action struck down',
+          issue: 'Constitutionality of race-conscious college admissions',
+          summary: 'Supreme Court ruled that considering race in college admissions violates Equal Protection Clause, ending affirmative action in higher education.',
+          impact: 'Historic decision eliminating race-based admissions nationwide'
+        },
+        {
+          id: 'scotus-2024-05',
+          name: 'Biden v. Nebraska',
+          caseNumber: '22-506',
+          topic: 'Executive Power - Student Loans',
+          dateDecided: 'June 2024',
+          status: 'Decided',
+          voteSplit: '6-3',
+          decision: 'Biden plan blocked',
+          issue: 'Presidential authority to cancel student loan debt',
+          summary: 'Court struck down Biden\'s $400 billion student loan forgiveness plan, ruling executive branch exceeded statutory authority.',
+          impact: 'Blocked debt relief for 40 million borrowers, limited executive power'
+        },
+        {
+          id: 'scotus-2024-06',
+          name: '303 Creative LLC v. Elenis',
+          caseNumber: '21-476',
+          topic: 'First Amendment - Religious Freedom',
+          dateDecided: 'June 2024',
+          status: 'Decided',
+          voteSplit: '6-3',
+          decision: 'Business can refuse service',
+          issue: 'Can businesses refuse services for same-sex weddings on religious grounds?',
+          summary: 'Court ruled web designer can refuse to create wedding websites for same-sex couples, citing First Amendment protection of expression.',
+          impact: 'Expands religious exemptions from anti-discrimination laws'
+        },
+        {
+          id: 'scotus-2024-07',
+          name: 'Moore v. Harper',
+          caseNumber: '21-1271',
+          topic: 'Elections - Independent State Legislature Theory',
+          dateDecided: 'June 2024',
+          status: 'Decided',
+          voteSplit: '6-3',
+          decision: 'Theory rejected',
+          issue: 'Can state legislatures set election rules without judicial review?',
+          summary: 'Court rejected "independent state legislature theory," confirming state courts can review election maps and laws.',
+          impact: 'Major victory for voting rights, preserves checks on gerrymandering'
+        },
+        {
+          id: 'scotus-2024-08',
+          name: 'United States v. Texas',
+          caseNumber: '22-58',
+          topic: 'Immigration - Border Policy',
+          dateDecided: 'September 2024',
+          status: 'Decided',
+          voteSplit: '5-4',
+          decision: 'Biden policy upheld',
+          issue: 'Federal immigration enforcement priorities',
+          summary: 'Court allowed Biden administration to prioritize certain immigrants for deportation over others, affirming executive discretion.',
+          impact: 'Maintains executive flexibility in immigration enforcement'
+        }
+      ],
+      
+      upcomingCases: [
+        {
+          id: 'scotus-2025-01',
+          name: 'FDA v. Alliance for Hippocratic Medicine',
+          caseNumber: '23-235',
+          topic: 'Abortion - Medication Access',
+          dateScheduled: 'March 2025',
+          status: 'Upcoming',
+          issue: 'FDA authority to approve abortion medication (mifepristone)',
+          summary: 'First major abortion case since Dobbs. Challenges FDA approval of widely-used abortion pill. Could affect medication access nationwide.'
+        },
+        {
+          id: 'scotus-2025-02',
+          name: 'National Rifle Association v. Vullo',
+          caseNumber: '22-842',
+          topic: 'First Amendment - Advocacy',
+          dateScheduled: 'April 2025',
+          status: 'Upcoming',
+          issue: 'Government pressure on businesses to sever ties with advocacy groups',
+          summary: 'NRA claims New York officials violated First Amendment by pressuring banks and insurers to cut ties. Tests limits of government advocacy.'
+        },
+        {
+          id: 'scotus-2025-03',
+          name: 'Gonzalez v. Google',
+          caseNumber: '21-1333',
+          topic: 'Section 230 - Tech Liability',
+          dateScheduled: 'May 2025',
+          status: 'Upcoming',
+          issue: 'Whether Section 230 protects algorithmic recommendations',
+          summary: 'Could reshape internet as we know it. Challenges whether platforms are liable for algorithm-recommended content promoting terrorism.'
+        }
+      ]
+    };
+    
+    setUsSupremeCourt(supremeCourtData);
   };
   
   const fetchMPs = async () => {
@@ -2121,6 +2419,414 @@ function App() {
     );
   };
 
+  // Supreme Court Render Functions
+  const renderCanadaSupremeCourt = () => {
+    if (!canadaSupremeCourt) return <div className="p-8 text-center">Loading Supreme Court data...</div>;
+
+    const totalCases = canadaSupremeCourt.casesInProcess.length + 
+                       canadaSupremeCourt.recentDecisions.length + 
+                       canadaSupremeCourt.upcomingCases.length;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <button
+              onClick={() => setView('categories')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              ← Back to Government Levels
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-300 rounded-lg p-6 mb-8">
+            <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
+              <Scale className="w-10 h-10 text-yellow-600" />
+              Supreme Court of Canada
+            </h2>
+            <p className="text-gray-600">The highest court of appeal in Canada, final interpreter of the Constitution and Charter of Rights</p>
+          </div>
+
+          {/* Justices Section */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4">9 Supreme Court Justices</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {canadaSupremeCourt.justices.map((justice, index) => (
+                <div key={index} className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    {justice.role === 'Chief Justice' && <Crown className="w-5 h-5 text-yellow-600" />}
+                    <h4 className="font-bold text-gray-800">{justice.name}</h4>
+                  </div>
+                  <p className="text-sm text-gray-600">{justice.role}</p>
+                  <p className="text-sm text-gray-500 mt-1">Appointed by: {justice.appointedBy} ({justice.year})</p>
+                  <p className="text-sm text-gray-500">Province: {justice.province}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Cases In Process */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Clock className="w-6 h-6 text-blue-600" />
+              Cases In Process ({canadaSupremeCourt.casesInProcess.length})
+            </h3>
+            <p className="text-gray-600 mb-4">Currently being argued or awaiting decision</p>
+            <div className="space-y-4">
+              {canadaSupremeCourt.casesInProcess.map((case_) => (
+                <div 
+                  key={case_.id}
+                  onClick={() => {
+                    setSelectedCase(case_);
+                    setView('case-detail');
+                  }}
+                  className="border-l-4 border-blue-500 bg-blue-50 p-4 rounded-r-lg cursor-pointer hover:shadow-md transition-shadow"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-bold text-gray-800 text-lg">{case_.name}</h4>
+                    <span className="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {case_.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">Case #{case_.caseNumber} • {case_.topic}</p>
+                  <p className="text-gray-700 mb-2">{case_.issue}</p>
+                  <p className="text-sm text-gray-500">Argued: {case_.dateArgued}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Decisions */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+              Recent Decisions (Last 12 Months)
+            </h3>
+            <p className="text-gray-600 mb-4">Major rulings and their impact</p>
+            <div className="space-y-4">
+              {canadaSupremeCourt.recentDecisions.map((case_) => (
+                <div 
+                  key={case_.id}
+                  onClick={() => {
+                    setSelectedCase(case_);
+                    setView('case-detail');
+                  }}
+                  className="border-l-4 border-green-500 bg-green-50 p-4 rounded-r-lg cursor-pointer hover:shadow-md transition-shadow"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-bold text-gray-800 text-lg">{case_.name}</h4>
+                    <div className="text-right">
+                      <span className="bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm font-medium block mb-1">
+                        {case_.status}
+                      </span>
+                      <span className="text-sm font-bold text-gray-700">{case_.voteSplit}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">Case #{case_.caseNumber} • {case_.topic}</p>
+                  <p className="text-gray-700 mb-2">{case_.issue}</p>
+                  <p className="text-sm font-semibold text-green-700 mb-1">Decision: {case_.decision}</p>
+                  <p className="text-sm text-gray-500">Decided: {case_.dateDecided} • Impact: {case_.impact}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Upcoming Cases */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Calendar className="w-6 h-6 text-purple-600" />
+              Upcoming Cases ({canadaSupremeCourt.upcomingCases.length})
+            </h3>
+            <p className="text-gray-600 mb-4">Scheduled to be heard</p>
+            <div className="space-y-4">
+              {canadaSupremeCourt.upcomingCases.map((case_) => (
+                <div 
+                  key={case_.id}
+                  onClick={() => {
+                    setSelectedCase(case_);
+                    setView('case-detail');
+                  }}
+                  className="border-l-4 border-purple-500 bg-purple-50 p-4 rounded-r-lg cursor-pointer hover:shadow-md transition-shadow"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-bold text-gray-800 text-lg">{case_.name}</h4>
+                    <span className="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {case_.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">Case #{case_.caseNumber} • {case_.topic}</p>
+                  <p className="text-gray-700 mb-2">{case_.issue}</p>
+                  <p className="text-sm text-gray-500">Scheduled: {case_.dateScheduled}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderUSSupremeCourt = () => {
+    if (!usSupremeCourt) return <div className="p-8 text-center">Loading Supreme Court data...</div>;
+
+    const conservativeJustices = usSupremeCourt.justices.filter(j => j.ideology === 'Conservative').length;
+    const liberalJustices = usSupremeCourt.justices.filter(j => j.ideology === 'Liberal').length;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <button
+              onClick={() => setView('categories')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              ← Back to Government Levels
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-gradient-to-r from-blue-50 to-red-50 border border-blue-300 rounded-lg p-6 mb-8">
+            <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
+              <Scale className="w-10 h-10 text-blue-600" />
+              United States Supreme Court
+            </h2>
+            <p className="text-gray-600">The highest federal court, final interpreter of the US Constitution</p>
+          </div>
+
+          {/* Justices Section */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-bold text-gray-800">9 Supreme Court Justices</h3>
+              <div className="flex gap-4 text-sm">
+                <span className="text-red-600 font-bold">{conservativeJustices} Conservative</span>
+                <span className="text-blue-600 font-bold">{liberalJustices} Liberal</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {usSupremeCourt.justices.map((justice, index) => (
+                <div key={index} className={`border-2 rounded-lg p-4 ${
+                  justice.ideology === 'Conservative' ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-300'
+                }`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    {justice.role === 'Chief Justice' && <Crown className="w-5 h-5 text-yellow-600" />}
+                    <h4 className="font-bold text-gray-800">{justice.name}</h4>
+                  </div>
+                  <p className="text-sm text-gray-600">{justice.role}</p>
+                  <p className="text-sm text-gray-500 mt-1">Appointed by: {justice.appointedBy} ({justice.year})</p>
+                  <p className={`text-sm font-medium mt-1 ${
+                    justice.ideology === 'Conservative' ? 'text-red-600' : 'text-blue-600'
+                  }`}>{justice.ideology}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Cases In Process */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Clock className="w-6 h-6 text-blue-600" />
+              Cases In Process ({usSupremeCourt.casesInProcess.length})
+            </h3>
+            <p className="text-gray-600 mb-4">Currently being argued or awaiting decision</p>
+            <div className="space-y-4">
+              {usSupremeCourt.casesInProcess.map((case_) => (
+                <div 
+                  key={case_.id}
+                  onClick={() => {
+                    setSelectedCase(case_);
+                    setView('case-detail');
+                  }}
+                  className="border-l-4 border-blue-500 bg-blue-50 p-4 rounded-r-lg cursor-pointer hover:shadow-md transition-shadow"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-bold text-gray-800 text-lg">{case_.name}</h4>
+                    <span className="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {case_.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">Case #{case_.caseNumber} • {case_.topic}</p>
+                  <p className="text-gray-700 mb-2">{case_.issue}</p>
+                  <p className="text-sm text-gray-500">Argued: {case_.dateArgued}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Decisions */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+              Recent Decisions (Last 12 Months)
+            </h3>
+            <p className="text-gray-600 mb-4">Major rulings and their impact</p>
+            <div className="space-y-4">
+              {usSupremeCourt.recentDecisions.map((case_) => (
+                <div 
+                  key={case_.id}
+                  onClick={() => {
+                    setSelectedCase(case_);
+                    setView('case-detail');
+                  }}
+                  className="border-l-4 border-green-500 bg-green-50 p-4 rounded-r-lg cursor-pointer hover:shadow-md transition-shadow"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-bold text-gray-800 text-lg">{case_.name}</h4>
+                    <div className="text-right">
+                      <span className="bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm font-medium block mb-1">
+                        {case_.status}
+                      </span>
+                      <span className="text-sm font-bold text-gray-700">{case_.voteSplit}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">Case #{case_.caseNumber} • {case_.topic}</p>
+                  <p className="text-gray-700 mb-2">{case_.issue}</p>
+                  <p className="text-sm font-semibold text-green-700 mb-1">Decision: {case_.decision}</p>
+                  <p className="text-sm text-gray-500">Decided: {case_.dateDecided} • Impact: {case_.impact}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Upcoming Cases */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Calendar className="w-6 h-6 text-purple-600" />
+              Upcoming Cases ({usSupremeCourt.upcomingCases.length})
+            </h3>
+            <p className="text-gray-600 mb-4">Scheduled to be heard</p>
+            <div className="space-y-4">
+              {usSupremeCourt.upcomingCases.map((case_) => (
+                <div 
+                  key={case_.id}
+                  onClick={() => {
+                    setSelectedCase(case_);
+                    setView('case-detail');
+                  }}
+                  className="border-l-4 border-purple-500 bg-purple-50 p-4 rounded-r-lg cursor-pointer hover:shadow-md transition-shadow"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-bold text-gray-800 text-lg">{case_.name}</h4>
+                    <span className="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {case_.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">Case #{case_.caseNumber} • {case_.topic}</p>
+                  <p className="text-gray-700 mb-2">{case_.issue}</p>
+                  <p className="text-sm text-gray-500">Scheduled: {case_.dateScheduled}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderCaseDetail = () => {
+    if (!selectedCase) return null;
+
+    const isDecided = selectedCase.status === 'Decided';
+    const isUpcoming = selectedCase.status === 'Upcoming';
+    const isInProcess = selectedCase.status === 'In Process';
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <button
+              onClick={() => {
+                setSelectedCase(null);
+                setView(selectedCountry?.type === 'usa' ? 'us-supreme-court' : 'supreme-court');
+              }}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              ← Back to Supreme Court
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-md p-8">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">{selectedCase.name}</h1>
+                <p className="text-gray-600">Case #{selectedCase.caseNumber}</p>
+              </div>
+              <span className={`px-4 py-2 rounded-full font-bold text-lg ${
+                isDecided ? 'bg-green-200 text-green-800' :
+                isUpcoming ? 'bg-purple-200 text-purple-800' :
+                'bg-blue-200 text-blue-800'
+              }`}>
+                {selectedCase.status}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-2">Topic</h3>
+                <p className="text-gray-700">{selectedCase.topic}</p>
+              </div>
+
+              {selectedCase.voteSplit && (
+                <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">Vote Split</h3>
+                  <p className="text-3xl font-bold text-green-700">{selectedCase.voteSplit}</p>
+                </div>
+              )}
+
+              {selectedCase.dateArgued && (
+                <div className="bg-gray-50 border-2 border-gray-300 rounded-lg p-6">
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">
+                    {isDecided ? 'Date Argued' : isUpcoming ? 'Scheduled For' : 'Date Argued'}
+                  </h3>
+                  <p className="text-gray-700">{selectedCase.dateArgued || selectedCase.dateScheduled}</p>
+                </div>
+              )}
+
+              {selectedCase.dateDecided && (
+                <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">Date Decided</h3>
+                  <p className="text-gray-700">{selectedCase.dateDecided}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Legal Issue</h3>
+              <p className="text-lg text-gray-700 bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
+                {selectedCase.issue}
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Summary</h3>
+              <p className="text-gray-700 leading-relaxed">
+                {selectedCase.summary}
+              </p>
+            </div>
+
+            {selectedCase.decision && (
+              <div className="mb-6 bg-green-50 border-2 border-green-400 rounded-lg p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-3">Decision</h3>
+                <p className="text-lg font-semibold text-green-700">{selectedCase.decision}</p>
+              </div>
+            )}
+
+            {selectedCase.impact && (
+              <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-3">Impact & Significance</h3>
+                <p className="text-gray-700 leading-relaxed">{selectedCase.impact}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderCountrySelection = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
       <div className="max-w-4xl mx-auto">
@@ -2295,6 +3001,27 @@ function App() {
             </div>
           </div>
           )}
+
+          {/* Supreme Court - Available for both countries */}
+          <div
+            onClick={() => setView(isUSA ? 'us-supreme-court' : 'supreme-court')}
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-yellow-500 active:scale-95"
+          >
+            <div className="text-yellow-600 mb-3 sm:mb-4">
+              <Scale className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Supreme Court</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">
+              {isUSA 
+                ? 'Track major cases, decisions & constitutional rulings'
+                : 'Track major cases, decisions & Charter challenges'
+              }
+            </p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>9 Justices • {isUSA ? '10' : '10'} Cases</span>
+              <ChevronRight className="w-5 h-5" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -4458,6 +5185,9 @@ function App() {
       {view === 'ministry-detail' && selectedMinistry && renderMinistryDetail()}
       {view === 'departments' && renderDepartments()}
       {view === 'department-detail' && selectedDepartment && renderDepartmentDetail()}
+      {view === 'supreme-court' && renderCanadaSupremeCourt()}
+      {view === 'us-supreme-court' && renderUSSupremeCourt()}
+      {view === 'case-detail' && selectedCase && renderCaseDetail()}
       
       {/* Riding selector modal */}
       {showLocationPrompt && renderRidingSelector()}
