@@ -5,17 +5,25 @@ import './App.css';
 
 function App() {
   const [view, setView] = useState('countries');
+  const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedParty, setSelectedParty] = useState(null);
   const [selectedMember, setSelectedMember] = useState(null);
   const [selectedBill, setSelectedBill] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
   
+  // Canadian data
   const [mps, setMps] = useState([]);
   const [bills, setBills] = useState([]);
   const [laws, setLaws] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [governmentData, setGovernmentData] = useState(null);
+  
+  // US data
+  const [congressMembers, setCongressMembers] = useState([]);
+  const [usBills, setUsBills] = useState([]);
+  const [usDepartments, setUsDepartments] = useState([]);
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -444,6 +452,7 @@ function App() {
     fetchGovernmentData();
     fetchLaws();
     fetchContracts();
+    initializeUSCongress();
   }, []);
   
   // Load user's saved MP from localStorage
@@ -462,6 +471,56 @@ function App() {
   useEffect(() => {
     setGrantsExpanded(false);
   }, [selectedMinistry]);
+  
+  const initializeUSCongress = () => {
+    // Sample US Congress members (simplified dataset)
+    const sampleCongress = [
+      // Prominent Senators
+      { name: 'Chuck Schumer', state: 'New York', district: 'Senator', party: 'Democrat', yearsInOffice: 25, email: 'senator@schumer.senate.gov', phone: '(202) 224-6542', committees: ['Finance', 'Rules'], supportVotes: 2847, opposeVotes: 1923, userVote: null },
+      { name: 'Mitch McConnell', state: 'Kentucky', district: 'Senator', party: 'Republican', yearsInOffice: 39, email: 'senator@mcconnell.senate.gov', phone: '(202) 224-2541', committees: ['Appropriations', 'Rules'], supportVotes: 3102, opposeVotes: 2456, userVote: null },
+      { name: 'Bernie Sanders', state: 'Vermont', district: 'Senator', party: 'Independent', yearsInOffice: 17, email: 'senator@sanders.senate.gov', phone: '(202) 224-5141', committees: ['Budget', 'Health'], supportVotes: 4521, opposeVotes: 892, userVote: null },
+      
+      { name: 'Elizabeth Warren', state: 'Massachusetts', district: 'Senator', party: 'Democrat', yearsInOffice: 12, email: 'senator@warren.senate.gov', phone: '(202) 224-4543', committees: ['Finance', 'Banking'], supportVotes: 3845, opposeVotes: 1267, userVote: null },
+      { name: 'Ted Cruz', state: 'Texas', district: 'Senator', party: 'Republican', yearsInOffice: 12, email: 'senator@cruz.senate.gov', phone: '(202) 224-5922', committees: ['Judiciary', 'Commerce'], supportVotes: 2934, opposeVotes: 2178, userVote: null },
+      { name: 'Marco Rubio', state: 'Florida', district: 'Senator', party: 'Republican', yearsInOffice: 14, email: 'senator@rubio.senate.gov', phone: '(202) 224-3041', committees: ['Foreign Relations', 'Intelligence'], supportVotes: 2756, opposeVotes: 1892, userVote: null },
+      { name: 'Amy Klobuchar', state: 'Minnesota', district: 'Senator', party: 'Democrat', yearsInOffice: 18, email: 'senator@klobuchar.senate.gov', phone: '(202) 224-3244', committees: ['Judiciary', 'Commerce'], supportVotes: 3234, opposeVotes: 1456, userVote: null },
+      
+      { name: 'Lindsey Graham', state: 'South Carolina', district: 'Senator', party: 'Republican', yearsInOffice: 22, email: 'senator@graham.senate.gov', phone: '(202) 224-5972', committees: ['Judiciary', 'Armed Services'], supportVotes: 2845, opposeVotes: 2134, userVote: null },
+      { name: 'Cory Booker', state: 'New Jersey', district: 'Senator', party: 'Democrat', yearsInOffice: 11, email: 'senator@booker.senate.gov', phone: '(202) 224-3224', committees: ['Foreign Relations', 'Judiciary'], supportVotes: 3456, opposeVotes: 1234, userVote: null },
+      { name: 'Rand Paul', state: 'Kentucky', district: 'Senator', party: 'Republican', yearsInOffice: 14, email: 'senator@paul.senate.gov', phone: '(202) 224-4343', committees: ['Foreign Relations', 'Health'], supportVotes: 2678, opposeVotes: 2345, userVote: null },
+      
+      // House Representatives
+      { name: 'Nancy Pelosi', state: 'California', district: 'CA-11', party: 'Democrat', yearsInOffice: 37, email: 'rep@pelosi.house.gov', phone: '(202) 225-4965', committees: ['Leadership'], supportVotes: 4234, opposeVotes: 1567, userVote: null },
+      { name: 'Kevin McCarthy', state: 'California', district: 'CA-20', party: 'Republican', yearsInOffice: 17, email: 'rep@mccarthy.house.gov', phone: '(202) 225-2915', committees: ['Leadership'], supportVotes: 3567, opposeVotes: 2134, userVote: null },
+      
+      { name: 'Alexandria Ocasio-Cortez', state: 'New York', district: 'NY-14', party: 'Democrat', yearsInOffice: 6, email: 'rep@ocasio-cortez.house.gov', phone: '(202) 225-3965', committees: ['Financial Services', 'Oversight'], supportVotes: 5234, opposeVotes: 1892, userVote: null },
+      { name: 'Marjorie Taylor Greene', state: 'Georgia', district: 'GA-14', party: 'Republican', yearsInOffice: 4, email: 'rep@greene.house.gov', phone: '(202) 225-5211', committees: ['Oversight', 'Homeland Security'], supportVotes: 2845, opposeVotes: 3456, userVote: null },
+      
+      { name: 'Adam Schiff', state: 'California', district: 'CA-30', party: 'Democrat', yearsInOffice: 24, email: 'rep@schiff.house.gov', phone: '(202) 225-4176', committees: ['Intelligence', 'Judiciary'], supportVotes: 3678, opposeVotes: 1456, userVote: null },
+      { name: 'Jim Jordan', state: 'Ohio', district: 'OH-4', party: 'Republican', yearsInOffice: 17, email: 'rep@jordan.house.gov', phone: '(202) 225-2676', committees: ['Judiciary', 'Oversight'], supportVotes: 2934, opposeVotes: 2567, userVote: null },
+      
+      { name: 'Hakeem Jeffries', state: 'New York', district: 'NY-8', party: 'Democrat', yearsInOffice: 11, email: 'rep@jeffries.house.gov', phone: '(202) 225-5936', committees: ['Leadership'], supportVotes: 3845, opposeVotes: 1234, userVote: null },
+      { name: 'Steve Scalise', state: 'Louisiana', district: 'LA-1', party: 'Republican', yearsInOffice: 15, email: 'rep@scalise.house.gov', phone: '(202) 225-3015', committees: ['Leadership'], supportVotes: 3123, opposeVotes: 1892, userVote: null },
+      
+      // More representatives from various states
+      { name: 'Katie Porter', state: 'California', district: 'CA-47', party: 'Democrat', yearsInOffice: 6, email: 'rep@porter.house.gov', phone: '(202) 225-5611', committees: ['Oversight', 'Natural Resources'], supportVotes: 4123, opposeVotes: 1345, userVote: null },
+      { name: 'Matt Gaetz', state: 'Florida', district: 'FL-1', party: 'Republican', yearsInOffice: 8, email: 'rep@gaetz.house.gov', phone: '(202) 225-4136', committees: ['Judiciary', 'Armed Services'], supportVotes: 2567, opposeVotes: 2934, userVote: null },
+      
+      { name: 'Ilhan Omar', state: 'Minnesota', district: 'MN-5', party: 'Democrat', yearsInOffice: 6, email: 'rep@omar.house.gov', phone: '(202) 225-4755', committees: ['Foreign Affairs', 'Education'], supportVotes: 3892, opposeVotes: 2134, userVote: null },
+      { name: 'Lauren Boebert', state: 'Colorado', district: 'CO-3', party: 'Republican', yearsInOffice: 4, email: 'rep@boebert.house.gov', phone: '(202) 225-4761', committees: ['Natural Resources', 'Oversight'], supportVotes: 2456, opposeVotes: 3234, userVote: null },
+      
+      { name: 'Rashida Tlaib', state: 'Michigan', district: 'MI-12', party: 'Democrat', yearsInOffice: 6, email: 'rep@tlaib.house.gov', phone: '(202) 225-5126', committees: ['Financial Services', 'Oversight'], supportVotes: 3678, opposeVotes: 2012, userVote: null },
+      { name: 'Dan Crenshaw', state: 'Texas', district: 'TX-2', party: 'Republican', yearsInOffice: 6, email: 'rep@crenshaw.house.gov', phone: '(202) 225-6565', committees: ['Energy', 'Homeland Security'], supportVotes: 3234, opposeVotes: 1892, userVote: null },
+      
+      { name: 'Pramila Jayapal', state: 'Washington', district: 'WA-7', party: 'Democrat', yearsInOffice: 8, email: 'rep@jayapal.house.gov', phone: '(202) 225-3106', committees: ['Judiciary', 'Budget'], supportVotes: 3892, opposeVotes: 1456, userVote: null },
+      { name: 'Chip Roy', state: 'Texas', district: 'TX-21', party: 'Republican', yearsInOffice: 6, email: 'rep@roy.house.gov', phone: '(202) 225-4236', committees: ['Judiciary', 'Budget'], supportVotes: 2678, opposeVotes: 2567, userVote: null },
+      
+      { name: 'Ayanna Pressley', state: 'Massachusetts', district: 'MA-7', party: 'Democrat', yearsInOffice: 6, email: 'rep@pressley.house.gov', phone: '(202) 225-5111', committees: ['Financial Services', 'Oversight'], supportVotes: 3756, opposeVotes: 1678, userVote: null },
+      { name: 'Paul Gosar', state: 'Arizona', district: 'AZ-9', party: 'Republican', yearsInOffice: 14, email: 'rep@gosar.house.gov', phone: '(202) 225-2315', committees: ['Natural Resources', 'Oversight'], supportVotes: 2456, opposeVotes: 2892, userVote: null }
+    ];
+    
+    setCongressMembers(sampleCongress);
+  };
   
   const fetchMPs = async () => {
     try {
@@ -727,9 +786,12 @@ function App() {
 
   // Get parties with counts
   const getParties = () => {
+    // Use appropriate member list based on selected country
+    const members = selectedCountry?.type === 'usa' ? congressMembers : mps;
+    
     const partyCounts = {};
-    mps.forEach(mp => {
-      partyCounts[mp.party] = (partyCounts[mp.party] || 0) + 1;
+    members.forEach(member => {
+      partyCounts[member.party] = (partyCounts[member.party] || 0) + 1;
     });
 
     return Object.entries(partyCounts).map(([name, count]) => ({
@@ -739,39 +801,54 @@ function App() {
     })).sort((a, b) => b.count - a.count);
   };
 
-  // Get MPs for selected party, sorted by role
-  const getPartyMPs = () => {
+  // Get members for selected party, sorted appropriately
+  const getPartyMembers = () => {
     if (!selectedParty) return [];
     
-    let filtered = mps.filter(mp => mp.party === selectedParty.name);
+    const members = selectedCountry?.type === 'usa' ? congressMembers : mps;
+    let filtered = members.filter(member => member.party === selectedParty.name);
 
     if (searchQuery) {
-      filtered = filtered.filter(mp =>
-        mp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        mp.riding.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(member => {
+        if (selectedCountry?.type === 'usa') {
+          return member.name.toLowerCase().includes(query) ||
+                 member.state.toLowerCase().includes(query) ||
+                 member.district.toLowerCase().includes(query);
+        } else {
+          return member.name.toLowerCase().includes(query) ||
+                 member.riding.toLowerCase().includes(query);
+        }
+      });
     }
 
-    // Sort by role hierarchy
-    filtered.sort((a, b) => {
-      // PM first
-      if (a.isPrimeMinister) return -1;
-      if (b.isPrimeMinister) return 1;
-      
-      // Then Cabinet
-      if (a.isCabinet && !b.isCabinet) return -1;
-      if (b.isCabinet && !a.isCabinet) return 1;
-      
-      // Then Party Leaders
-      if (a.isPartyLeader && !b.isPartyLeader) return -1;
-      if (b.isPartyLeader && !a.isPartyLeader) return 1;
-      
-      // Then alphabetically
-      return a.name.localeCompare(b.name);
-    });
+    // Sort differently for US vs Canada
+    if (selectedCountry?.type === 'usa') {
+      // For US: Senators first, then House by state
+      filtered.sort((a, b) => {
+        if (a.district === 'Senator' && b.district !== 'Senator') return -1;
+        if (b.district === 'Senator' && a.district !== 'Senator') return 1;
+        if (a.state !== b.state) return a.state.localeCompare(b.state);
+        return a.name.localeCompare(b.name);
+      });
+    } else {
+      // For Canada: PM first, then Cabinet, then Party Leaders, then alphabetical
+      filtered.sort((a, b) => {
+        if (a.isPrimeMinister) return -1;
+        if (b.isPrimeMinister) return 1;
+        if (a.isCabinet && !b.isCabinet) return -1;
+        if (b.isCabinet && !a.isCabinet) return 1;
+        if (a.isPartyLeader && !b.isPartyLeader) return -1;
+        if (b.isPartyLeader && !a.isPartyLeader) return 1;
+        return a.name.localeCompare(b.name);
+      });
+    }
 
     return filtered;
   };
+
+  // Keep old function name for compatibility
+  const getPartyMPs = getPartyMembers;
 
   const [expandedSections, setExpandedSections] = useState({
     voting: false,
@@ -861,7 +938,8 @@ function App() {
   };
 
   const countries = [
-    { id: 1, name: 'Canada', flag: '🇨🇦', members: mps.length || 338 }
+    { id: 1, name: 'Canada', flag: '🇨🇦', members: mps.length || 338, type: 'canada' },
+    { id: 2, name: 'United States', flag: '🇺🇸', members: congressMembers.length || 535, type: 'usa' }
   ];
 
   const categories = [
@@ -947,7 +1025,7 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-gray-800 mb-2">Civic Voice</h1>
-        <p className="text-gray-600 mb-8">Full Government Transparency Platform</p>
+        <p className="text-gray-600 mb-8">Full Government Transparency Platform - North America</p>
         
         {error && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center gap-2">
@@ -963,12 +1041,16 @@ function App() {
           {countries.map(country => (
             <div
               key={country.id}
-              onClick={() => setView('categories')}
-              className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
+              onClick={() => {
+                setSelectedCountry(country);
+                setView('categories');
+              }}
+              className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-blue-500 transform hover:-translate-y-1"
             >
               <div className="text-6xl mb-4">{country.flag}</div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">{country.name}</h2>
               <p className="text-gray-600">{country.members} elected members</p>
+              <p className="text-sm text-blue-600 mt-2 font-medium">Explore →</p>
             </div>
           ))}
         </div>
@@ -976,7 +1058,15 @@ function App() {
     </div>
   );
 
-  const renderCategories = () => (
+  const renderCategories = () => {
+    const isUSA = selectedCountry?.type === 'usa';
+    const countryName = isUSA ? 'United States' : 'Canadian';
+    const legislatureName = isUSA ? 'Congress' : 'Federal Parliament';
+    const memberCount = isUSA ? (congressMembers.length || 535) : (mps.length || 325);
+    const memberTitle = isUSA ? 'Members of Congress' : 'Members of Parliament';
+    const legislativeBody = isUSA ? 'Bills' : 'Parliamentary Bills';
+    
+    return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
         <button
@@ -986,11 +1076,11 @@ function App() {
           ← Back to Countries
         </button>
         
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2">Canadian Government</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2">{countryName} Government</h1>
         <p className="text-gray-600 mb-6 sm:mb-8 text-base sm:text-lg">Explore different aspects of federal governance</p>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {/* Federal Parliament */}
+          {/* Legislature (Congress/Parliament) */}
           <div
             onClick={() => setView('parties')}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-blue-500 active:scale-95"
@@ -998,35 +1088,38 @@ function App() {
             <div className="text-blue-600 mb-3 sm:mb-4">
               <Users className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Federal Parliament</h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">Explore 325 Members of Parliament across all parties</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">{legislatureName}</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Explore {memberCount} {memberTitle} across all parties</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>325 MPs</span>
+              <span>{memberCount} {isUSA ? 'Members' : 'MPs'}</span>
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
 
-          {/* Analytics Dashboard */}
-          <div
-            onClick={() => setView('analytics')}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-purple-500 active:scale-95"
-          >
-            <div className="text-purple-600 mb-3 sm:mb-4">
-              <BarChart3 className="w-10 h-10 sm:w-12 sm:h-12" />
+          {/* Analytics Dashboard - Only for Canada for now */}
+          {!isUSA && (
+            <div
+              onClick={() => setView('analytics')}
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-purple-500 active:scale-95"
+            >
+              <div className="text-purple-600 mb-3 sm:mb-4">
+                <BarChart3 className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Analytics Dashboard</h2>
+              <p className="text-gray-600 mb-3 text-sm sm:text-base">View economic impact, immigration, crime trends & spending</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>11 Charts</span>
+                <ChevronRight className="w-5 h-5" />
+              </div>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Analytics Dashboard</h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">View economic impact, immigration, crime trends & spending</p>
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>11 Charts</span>
-              <ChevronRight className="w-5 h-5" />
-            </div>
-          </div>
+          )}
 
-          {/* Parliamentary Bills */}
-          <div
-            onClick={() => setView('bills')}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
-          >
+          {/* Bills - Only for Canada for now */}
+          {!isUSA && (
+            <div
+              onClick={() => setView('bills')}
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
+            >
             <div className="text-green-600 mb-3 sm:mb-4">
               <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
@@ -1037,8 +1130,10 @@ function App() {
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
+          )}
 
-          {/* Government Ministries */}
+          {/* Government Ministries/Departments - Only Canada for now */}
+          {!isUSA && (
           <div
             onClick={() => setView('ministries')}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95"
@@ -1053,8 +1148,10 @@ function App() {
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
+          )}
 
-          {/* Latest Laws & Regulations */}
+          {/* Latest Laws & Regulations - Only Canada for now */}
+          {!isUSA && (
           <div
             onClick={() => setView('laws')}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-indigo-500 active:scale-95"
@@ -1069,8 +1166,10 @@ function App() {
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
+          )}
 
-          {/* Government Contracts */}
+          {/* Government Contracts - Only Canada for now */}
+          {!isUSA && (
           <div
             onClick={() => setView('contracts')}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 active:scale-95"
@@ -1085,6 +1184,7 @@ function App() {
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>
@@ -1092,6 +1192,10 @@ function App() {
 
   const renderParties = () => {
     const parties = getParties();
+    const isUSA = selectedCountry?.type === 'usa';
+    const legislatureName = isUSA ? 'U.S. Congress' : 'Federal Parliament';
+    const memberTitle = isUSA ? 'Representative' : 'MP';
+    const ridingLabel = isUSA ? 'District' : 'Riding';
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -1105,14 +1209,15 @@ function App() {
               ← Back to Government Levels
             </button>
             
-            <h1 className="text-2xl font-bold text-gray-800">Federal Parliament</h1>
+            <h1 className="text-2xl font-bold text-gray-800">{legislatureName}</h1>
             
             <div className="w-20"></div>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-6">
-          {/* Find Your MP Section */}
+          {/* Find Your Representative Section - Only for Canada for now */}
+          {!isUSA && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg p-6 mb-6 shadow-md">
             <h2 className="text-2xl font-bold text-gray-800 mb-3">👤 Find Your Representative</h2>
             
@@ -1153,6 +1258,7 @@ function App() {
               </div>
             )}
           </div>
+          )}
 
           {/* Political Parties Section */}
           <div className="bg-white rounded-lg shadow-md p-6">
