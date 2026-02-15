@@ -492,50 +492,232 @@ function App() {
   }, [selectedMinistry]);
   
   const initializeUSCongress = () => {
-    // Sample US Congress members (simplified dataset)
+    // US Congress members with stock trading transparency
     const sampleCongress = [
       // Prominent Senators
-      { name: 'Chuck Schumer', state: 'New York', district: 'Senator', party: 'Democrat', yearsInOffice: 25, email: 'senator@schumer.senate.gov', phone: '(202) 224-6542', committees: ['Finance', 'Rules'], supportVotes: 2847, opposeVotes: 1923, userVote: null },
-      { name: 'Mitch McConnell', state: 'Kentucky', district: 'Senator', party: 'Republican', yearsInOffice: 39, email: 'senator@mcconnell.senate.gov', phone: '(202) 224-2541', committees: ['Appropriations', 'Rules'], supportVotes: 3102, opposeVotes: 2456, userVote: null },
-      { name: 'Bernie Sanders', state: 'Vermont', district: 'Senator', party: 'Independent', yearsInOffice: 17, email: 'senator@sanders.senate.gov', phone: '(202) 224-5141', committees: ['Budget', 'Health'], supportVotes: 4521, opposeVotes: 892, userVote: null },
+      { 
+        name: 'Chuck Schumer', state: 'New York', district: 'Senator', party: 'Democrat', yearsInOffice: 25, 
+        email: 'senator@schumer.senate.gov', phone: '(202) 224-6542', committees: ['Finance', 'Rules'], 
+        supportVotes: 2847, opposeVotes: 1923, userVote: null,
+        bio: 'Senate Majority Leader, representing New York since 1999',
+        stockTrades: []
+      },
+      { 
+        name: 'Mitch McConnell', state: 'Kentucky', district: 'Senator', party: 'Republican', yearsInOffice: 39, 
+        email: 'senator@mcconnell.senate.gov', phone: '(202) 224-2541', committees: ['Appropriations', 'Rules'], 
+        supportVotes: 3102, opposeVotes: 2456, userVote: null,
+        bio: 'Senate Minority Leader, longest-serving Senate Republican Leader',
+        stockTrades: []
+      },
+      { 
+        name: 'Bernie Sanders', state: 'Vermont', district: 'Senator', party: 'Independent', yearsInOffice: 17, 
+        email: 'senator@sanders.senate.gov', phone: '(202) 224-5141', committees: ['Budget', 'Health'], 
+        supportVotes: 4521, opposeVotes: 892, userVote: null,
+        bio: 'Independent Senator, former presidential candidate',
+        stockTrades: []
+      },
       
-      { name: 'Elizabeth Warren', state: 'Massachusetts', district: 'Senator', party: 'Democrat', yearsInOffice: 12, email: 'senator@warren.senate.gov', phone: '(202) 224-4543', committees: ['Finance', 'Banking'], supportVotes: 3845, opposeVotes: 1267, userVote: null },
-      { name: 'Ted Cruz', state: 'Texas', district: 'Senator', party: 'Republican', yearsInOffice: 12, email: 'senator@cruz.senate.gov', phone: '(202) 224-5922', committees: ['Judiciary', 'Commerce'], supportVotes: 2934, opposeVotes: 2178, userVote: null },
-      { name: 'Marco Rubio', state: 'Florida', district: 'Senator', party: 'Republican', yearsInOffice: 14, email: 'senator@rubio.senate.gov', phone: '(202) 224-3041', committees: ['Foreign Relations', 'Intelligence'], supportVotes: 2756, opposeVotes: 1892, userVote: null },
-      { name: 'Amy Klobuchar', state: 'Minnesota', district: 'Senator', party: 'Democrat', yearsInOffice: 18, email: 'senator@klobuchar.senate.gov', phone: '(202) 224-3244', committees: ['Judiciary', 'Commerce'], supportVotes: 3234, opposeVotes: 1456, userVote: null },
+      { 
+        name: 'Elizabeth Warren', state: 'Massachusetts', district: 'Senator', party: 'Democrat', yearsInOffice: 12, 
+        email: 'senator@warren.senate.gov', phone: '(202) 224-4543', committees: ['Finance', 'Banking'], 
+        supportVotes: 3845, opposeVotes: 1267, userVote: null,
+        bio: 'Senator from Massachusetts, former Harvard law professor',
+        stockTrades: []
+      },
+      { 
+        name: 'Ted Cruz', state: 'Texas', district: 'Senator', party: 'Republican', yearsInOffice: 12, 
+        email: 'senator@cruz.senate.gov', phone: '(202) 224-5922', committees: ['Judiciary', 'Commerce'], 
+        supportVotes: 2934, opposeVotes: 2178, userVote: null,
+        bio: 'Senator from Texas, former Solicitor General of Texas',
+        stockTrades: []
+      },
+      { 
+        name: 'Marco Rubio', state: 'Florida', district: 'Senator', party: 'Republican', yearsInOffice: 14, 
+        email: 'senator@rubio.senate.gov', phone: '(202) 224-3041', committees: ['Foreign Relations', 'Intelligence'], 
+        supportVotes: 2756, opposeVotes: 1892, userVote: null,
+        bio: 'Senator from Florida, former Speaker of Florida House',
+        stockTrades: []
+      },
+      { 
+        name: 'Amy Klobuchar', state: 'Minnesota', district: 'Senator', party: 'Democrat', yearsInOffice: 18, 
+        email: 'senator@klobuchar.senate.gov', phone: '(202) 224-3244', committees: ['Judiciary', 'Commerce'], 
+        supportVotes: 3234, opposeVotes: 1456, userVote: null,
+        bio: 'Senator from Minnesota, former Hennepin County Attorney',
+        stockTrades: []
+      },
       
-      { name: 'Lindsey Graham', state: 'South Carolina', district: 'Senator', party: 'Republican', yearsInOffice: 22, email: 'senator@graham.senate.gov', phone: '(202) 224-5972', committees: ['Judiciary', 'Armed Services'], supportVotes: 2845, opposeVotes: 2134, userVote: null },
-      { name: 'Cory Booker', state: 'New Jersey', district: 'Senator', party: 'Democrat', yearsInOffice: 11, email: 'senator@booker.senate.gov', phone: '(202) 224-3224', committees: ['Foreign Relations', 'Judiciary'], supportVotes: 3456, opposeVotes: 1234, userVote: null },
-      { name: 'Rand Paul', state: 'Kentucky', district: 'Senator', party: 'Republican', yearsInOffice: 14, email: 'senator@paul.senate.gov', phone: '(202) 224-4343', committees: ['Foreign Relations', 'Health'], supportVotes: 2678, opposeVotes: 2345, userVote: null },
+      { 
+        name: 'Lindsey Graham', state: 'South Carolina', district: 'Senator', party: 'Republican', yearsInOffice: 22, 
+        email: 'senator@graham.senate.gov', phone: '(202) 224-5972', committees: ['Judiciary', 'Armed Services'], 
+        supportVotes: 2845, opposeVotes: 2134, userVote: null,
+        bio: 'Senator from South Carolina, Chairman of Armed Services Committee',
+        stockTrades: [
+          { date: '2024-12-15', company: 'Lockheed Martin', ticker: 'LMT', type: 'Purchase', valueRange: '$15,001-$50,000', assetType: 'Stock', conflict: true, conflictReason: 'Armed Services Committee member trading defense contractor stock' },
+          { date: '2024-11-20', company: 'Raytheon Technologies', ticker: 'RTX', type: 'Purchase', valueRange: '$15,001-$50,000', assetType: 'Stock', conflict: true, conflictReason: 'Armed Services Committee member trading defense contractor stock' }
+        ]
+      },
+      { 
+        name: 'Cory Booker', state: 'New Jersey', district: 'Senator', party: 'Democrat', yearsInOffice: 11, 
+        email: 'senator@booker.senate.gov', phone: '(202) 224-3224', committees: ['Foreign Relations', 'Judiciary'], 
+        supportVotes: 3456, opposeVotes: 1234, userVote: null,
+        bio: 'Senator from New Jersey, former Mayor of Newark',
+        stockTrades: []
+      },
+      { 
+        name: 'Rand Paul', state: 'Kentucky', district: 'Senator', party: 'Republican', yearsInOffice: 14, 
+        email: 'senator@paul.senate.gov', phone: '(202) 224-4343', committees: ['Foreign Relations', 'Health'], 
+        supportVotes: 2678, opposeVotes: 2345, userVote: null,
+        bio: 'Senator from Kentucky, ophthalmologist',
+        stockTrades: []
+      },
       
       // House Representatives
-      { name: 'Nancy Pelosi', state: 'California', district: 'CA-11', party: 'Democrat', yearsInOffice: 37, email: 'rep@pelosi.house.gov', phone: '(202) 225-4965', committees: ['Leadership'], supportVotes: 4234, opposeVotes: 1567, userVote: null },
-      { name: 'Kevin McCarthy', state: 'California', district: 'CA-20', party: 'Republican', yearsInOffice: 17, email: 'rep@mccarthy.house.gov', phone: '(202) 225-2915', committees: ['Leadership'], supportVotes: 3567, opposeVotes: 2134, userVote: null },
+      { 
+        name: 'Nancy Pelosi', state: 'California', district: 'CA-11', party: 'Democrat', yearsInOffice: 37, 
+        email: 'rep@pelosi.house.gov', phone: '(202) 225-4965', committees: ['Leadership'], 
+        supportVotes: 4234, opposeVotes: 1567, userVote: null,
+        bio: 'Former Speaker of the House, representing San Francisco',
+        stockTrades: [
+          { date: '2024-12-01', company: 'NVIDIA Corporation', ticker: 'NVDA', type: 'Purchase', valueRange: '$1,000,001-$5,000,000', assetType: 'Stock', conflict: true, conflictReason: 'Tech regulation oversight while trading major tech stocks' },
+          { date: '2024-11-15', company: 'Microsoft Corporation', ticker: 'MSFT', type: 'Purchase', valueRange: '$500,001-$1,000,000', assetType: 'Call Options', conflict: true, conflictReason: 'Tech regulation oversight while trading major tech stocks' },
+          { date: '2024-10-28', company: 'Tesla Inc.', ticker: 'TSLA', type: 'Purchase', valueRange: '$250,001-$500,000', assetType: 'Stock', conflict: false, conflictReason: null },
+          { date: '2024-10-10', company: 'Apple Inc.', ticker: 'AAPL', type: 'Sale', valueRange: '$100,001-$250,000', assetType: 'Stock', conflict: true, conflictReason: 'Tech regulation oversight while trading major tech stocks' },
+          { date: '2024-09-22', company: 'Alphabet Inc. (Google)', ticker: 'GOOGL', type: 'Purchase', valueRange: '$500,001-$1,000,000', assetType: 'Stock', conflict: true, conflictReason: 'Tech regulation oversight while trading major tech stocks' }
+        ]
+      },
+      { 
+        name: 'Kevin McCarthy', state: 'California', district: 'CA-20', party: 'Republican', yearsInOffice: 17, 
+        email: 'rep@mccarthy.house.gov', phone: '(202) 225-2915', committees: ['Leadership'], 
+        supportVotes: 3567, opposeVotes: 2134, userVote: null,
+        bio: 'Former Speaker of the House, representing California',
+        stockTrades: []
+      },
       
-      { name: 'Alexandria Ocasio-Cortez', state: 'New York', district: 'NY-14', party: 'Democrat', yearsInOffice: 6, email: 'rep@ocasio-cortez.house.gov', phone: '(202) 225-3965', committees: ['Financial Services', 'Oversight'], supportVotes: 5234, opposeVotes: 1892, userVote: null },
-      { name: 'Marjorie Taylor Greene', state: 'Georgia', district: 'GA-14', party: 'Republican', yearsInOffice: 4, email: 'rep@greene.house.gov', phone: '(202) 225-5211', committees: ['Oversight', 'Homeland Security'], supportVotes: 2845, opposeVotes: 3456, userVote: null },
+      { 
+        name: 'Alexandria Ocasio-Cortez', state: 'New York', district: 'NY-14', party: 'Democrat', yearsInOffice: 6, 
+        email: 'rep@ocasio-cortez.house.gov', phone: '(202) 225-3965', committees: ['Financial Services', 'Oversight'], 
+        supportVotes: 5234, opposeVotes: 1892, userVote: null,
+        bio: 'Progressive Democrat from New York, former bartender and activist',
+        stockTrades: []
+      },
+      { 
+        name: 'Marjorie Taylor Greene', state: 'Georgia', district: 'GA-14', party: 'Republican', yearsInOffice: 4, 
+        email: 'rep@greene.house.gov', phone: '(202) 225-5211', committees: ['Oversight', 'Homeland Security'], 
+        supportVotes: 2845, opposeVotes: 3456, userVote: null,
+        bio: 'Representative from Georgia, businesswoman',
+        stockTrades: []
+      },
       
-      { name: 'Adam Schiff', state: 'California', district: 'CA-30', party: 'Democrat', yearsInOffice: 24, email: 'rep@schiff.house.gov', phone: '(202) 225-4176', committees: ['Intelligence', 'Judiciary'], supportVotes: 3678, opposeVotes: 1456, userVote: null },
-      { name: 'Jim Jordan', state: 'Ohio', district: 'OH-4', party: 'Republican', yearsInOffice: 17, email: 'rep@jordan.house.gov', phone: '(202) 225-2676', committees: ['Judiciary', 'Oversight'], supportVotes: 2934, opposeVotes: 2567, userVote: null },
+      { 
+        name: 'Adam Schiff', state: 'California', district: 'CA-30', party: 'Democrat', yearsInOffice: 24, 
+        email: 'rep@schiff.house.gov', phone: '(202) 225-4176', committees: ['Intelligence', 'Judiciary'], 
+        supportVotes: 3678, opposeVotes: 1456, userVote: null,
+        bio: 'Representative from California, former federal prosecutor',
+        stockTrades: []
+      },
+      { 
+        name: 'Jim Jordan', state: 'Ohio', district: 'OH-4', party: 'Republican', yearsInOffice: 17, 
+        email: 'rep@jordan.house.gov', phone: '(202) 225-2676', committees: ['Judiciary', 'Oversight'], 
+        supportVotes: 2934, opposeVotes: 2567, userVote: null,
+        bio: 'Representative from Ohio, former college wrestling coach',
+        stockTrades: []
+      },
       
-      { name: 'Hakeem Jeffries', state: 'New York', district: 'NY-8', party: 'Democrat', yearsInOffice: 11, email: 'rep@jeffries.house.gov', phone: '(202) 225-5936', committees: ['Leadership'], supportVotes: 3845, opposeVotes: 1234, userVote: null },
-      { name: 'Steve Scalise', state: 'Louisiana', district: 'LA-1', party: 'Republican', yearsInOffice: 15, email: 'rep@scalise.house.gov', phone: '(202) 225-3015', committees: ['Leadership'], supportVotes: 3123, opposeVotes: 1892, userVote: null },
+      { 
+        name: 'Hakeem Jeffries', state: 'New York', district: 'NY-8', party: 'Democrat', yearsInOffice: 11, 
+        email: 'rep@jeffries.house.gov', phone: '(202) 225-5936', committees: ['Leadership'], 
+        supportVotes: 3845, opposeVotes: 1234, userVote: null,
+        bio: 'House Democratic Leader, representing Brooklyn',
+        stockTrades: []
+      },
+      { 
+        name: 'Steve Scalise', state: 'Louisiana', district: 'LA-1', party: 'Republican', yearsInOffice: 15, 
+        email: 'rep@scalise.house.gov', phone: '(202) 225-3015', committees: ['Leadership'], 
+        supportVotes: 3123, opposeVotes: 1892, userVote: null,
+        bio: 'House Majority Leader, representing Louisiana',
+        stockTrades: []
+      },
       
       // More representatives from various states
-      { name: 'Katie Porter', state: 'California', district: 'CA-47', party: 'Democrat', yearsInOffice: 6, email: 'rep@porter.house.gov', phone: '(202) 225-5611', committees: ['Oversight', 'Natural Resources'], supportVotes: 4123, opposeVotes: 1345, userVote: null },
-      { name: 'Matt Gaetz', state: 'Florida', district: 'FL-1', party: 'Republican', yearsInOffice: 8, email: 'rep@gaetz.house.gov', phone: '(202) 225-4136', committees: ['Judiciary', 'Armed Services'], supportVotes: 2567, opposeVotes: 2934, userVote: null },
+      { 
+        name: 'Katie Porter', state: 'California', district: 'CA-47', party: 'Democrat', yearsInOffice: 6, 
+        email: 'rep@porter.house.gov', phone: '(202) 225-5611', committees: ['Oversight', 'Natural Resources'], 
+        supportVotes: 4123, opposeVotes: 1345, userVote: null,
+        bio: 'Representative from California, consumer protection advocate',
+        stockTrades: []
+      },
+      { 
+        name: 'Matt Gaetz', state: 'Florida', district: 'FL-1', party: 'Republican', yearsInOffice: 8, 
+        email: 'rep@gaetz.house.gov', phone: '(202) 225-4136', committees: ['Judiciary', 'Armed Services'], 
+        supportVotes: 2567, opposeVotes: 2934, userVote: null,
+        bio: 'Representative from Florida, former Florida House member',
+        stockTrades: []
+      },
       
-      { name: 'Ilhan Omar', state: 'Minnesota', district: 'MN-5', party: 'Democrat', yearsInOffice: 6, email: 'rep@omar.house.gov', phone: '(202) 225-4755', committees: ['Foreign Affairs', 'Education'], supportVotes: 3892, opposeVotes: 2134, userVote: null },
-      { name: 'Lauren Boebert', state: 'Colorado', district: 'CO-3', party: 'Republican', yearsInOffice: 4, email: 'rep@boebert.house.gov', phone: '(202) 225-4761', committees: ['Natural Resources', 'Oversight'], supportVotes: 2456, opposeVotes: 3234, userVote: null },
+      { 
+        name: 'Ilhan Omar', state: 'Minnesota', district: 'MN-5', party: 'Democrat', yearsInOffice: 6, 
+        email: 'rep@omar.house.gov', phone: '(202) 225-4755', committees: ['Foreign Affairs', 'Education'], 
+        supportVotes: 3892, opposeVotes: 2134, userVote: null,
+        bio: 'Representative from Minnesota, former refugee',
+        stockTrades: []
+      },
+      { 
+        name: 'Lauren Boebert', state: 'Colorado', district: 'CO-3', party: 'Republican', yearsInOffice: 4, 
+        email: 'rep@boebert.house.gov', phone: '(202) 225-4761', committees: ['Natural Resources', 'Oversight'], 
+        supportVotes: 2456, opposeVotes: 3234, userVote: null,
+        bio: 'Representative from Colorado, restaurant owner',
+        stockTrades: []
+      },
       
-      { name: 'Rashida Tlaib', state: 'Michigan', district: 'MI-12', party: 'Democrat', yearsInOffice: 6, email: 'rep@tlaib.house.gov', phone: '(202) 225-5126', committees: ['Financial Services', 'Oversight'], supportVotes: 3678, opposeVotes: 2012, userVote: null },
-      { name: 'Dan Crenshaw', state: 'Texas', district: 'TX-2', party: 'Republican', yearsInOffice: 6, email: 'rep@crenshaw.house.gov', phone: '(202) 225-6565', committees: ['Energy', 'Homeland Security'], supportVotes: 3234, opposeVotes: 1892, userVote: null },
+      { 
+        name: 'Rashida Tlaib', state: 'Michigan', district: 'MI-12', party: 'Democrat', yearsInOffice: 6, 
+        email: 'rep@tlaib.house.gov', phone: '(202) 225-5126', committees: ['Financial Services', 'Oversight'], 
+        supportVotes: 3678, opposeVotes: 2012, userVote: null,
+        bio: 'Representative from Michigan, former state legislator',
+        stockTrades: []
+      },
+      { 
+        name: 'Dan Crenshaw', state: 'Texas', district: 'TX-2', party: 'Republican', yearsInOffice: 6, 
+        email: 'rep@crenshaw.house.gov', phone: '(202) 225-6565', committees: ['Energy', 'Homeland Security'], 
+        supportVotes: 3234, opposeVotes: 1892, userVote: null,
+        bio: 'Representative from Texas, former Navy SEAL',
+        stockTrades: [
+          { date: '2024-12-10', company: 'Raytheon Technologies', ticker: 'RTX', type: 'Purchase', valueRange: '$50,001-$100,000', assetType: 'Stock', conflict: false, conflictReason: null },
+          { date: '2024-11-25', company: 'Lockheed Martin', ticker: 'LMT', type: 'Purchase', valueRange: '$100,001-$250,000', assetType: 'Stock', conflict: false, conflictReason: null },
+          { date: '2024-10-18', company: 'Boeing Company', ticker: 'BA', type: 'Purchase', valueRange: '$15,001-$50,000', assetType: 'Stock', conflict: false, conflictReason: null },
+          { date: '2024-09-30', company: 'General Dynamics', ticker: 'GD', type: 'Purchase', valueRange: '$50,001-$100,000', assetType: 'Stock', conflict: false, conflictReason: null }
+        ]
+      },
       
-      { name: 'Pramila Jayapal', state: 'Washington', district: 'WA-7', party: 'Democrat', yearsInOffice: 8, email: 'rep@jayapal.house.gov', phone: '(202) 225-3106', committees: ['Judiciary', 'Budget'], supportVotes: 3892, opposeVotes: 1456, userVote: null },
-      { name: 'Chip Roy', state: 'Texas', district: 'TX-21', party: 'Republican', yearsInOffice: 6, email: 'rep@roy.house.gov', phone: '(202) 225-4236', committees: ['Judiciary', 'Budget'], supportVotes: 2678, opposeVotes: 2567, userVote: null },
+      { 
+        name: 'Pramila Jayapal', state: 'Washington', district: 'WA-7', party: 'Democrat', yearsInOffice: 8, 
+        email: 'rep@jayapal.house.gov', phone: '(202) 225-3106', committees: ['Judiciary', 'Budget'], 
+        supportVotes: 3892, opposeVotes: 1456, userVote: null,
+        bio: 'Representative from Washington, Chair of Progressive Caucus',
+        stockTrades: []
+      },
+      { 
+        name: 'Chip Roy', state: 'Texas', district: 'TX-21', party: 'Republican', yearsInOffice: 6, 
+        email: 'rep@roy.house.gov', phone: '(202) 225-4236', committees: ['Judiciary', 'Budget'], 
+        supportVotes: 2678, opposeVotes: 2567, userVote: null,
+        bio: 'Representative from Texas, former Chief of Staff to Ted Cruz',
+        stockTrades: []
+      },
       
-      { name: 'Ayanna Pressley', state: 'Massachusetts', district: 'MA-7', party: 'Democrat', yearsInOffice: 6, email: 'rep@pressley.house.gov', phone: '(202) 225-5111', committees: ['Financial Services', 'Oversight'], supportVotes: 3756, opposeVotes: 1678, userVote: null },
-      { name: 'Paul Gosar', state: 'Arizona', district: 'AZ-9', party: 'Republican', yearsInOffice: 14, email: 'rep@gosar.house.gov', phone: '(202) 225-2315', committees: ['Natural Resources', 'Oversight'], supportVotes: 2456, opposeVotes: 2892, userVote: null }
+      { 
+        name: 'Ayanna Pressley', state: 'Massachusetts', district: 'MA-7', party: 'Democrat', yearsInOffice: 6, 
+        email: 'rep@pressley.house.gov', phone: '(202) 225-5111', committees: ['Financial Services', 'Oversight'], 
+        supportVotes: 3756, opposeVotes: 1678, userVote: null,
+        bio: 'Representative from Massachusetts, former Boston City Councilor',
+        stockTrades: []
+      },
+      { 
+        name: 'Paul Gosar', state: 'Arizona', district: 'AZ-9', party: 'Republican', yearsInOffice: 14, 
+        email: 'rep@gosar.house.gov', phone: '(202) 225-2315', committees: ['Natural Resources', 'Oversight'], 
+        supportVotes: 2456, opposeVotes: 2892, userVote: null,
+        bio: 'Representative from Arizona, dentist',
+        stockTrades: []
+      }
     ];
     
     setCongressMembers(sampleCongress);
@@ -1685,7 +1867,8 @@ function App() {
     expenses: false,
     financial: false,
     lobbying: false,
-    corporate: false
+    corporate: false,
+    stockTrades: false
   });
 
   const toggleSection = (section) => {
@@ -5033,6 +5216,162 @@ function App() {
                     <p className="text-sm text-gray-600">{conn.description}</p>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Stock Trading Activity - USA ONLY */}
+        {selectedMember.stockTrades !== undefined && selectedCountry?.type === 'usa' && (
+          <div className="bg-white rounded-lg shadow-md mb-6">
+            <div
+              onClick={() => toggleSection('stockTrades')}
+              className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50"
+            >
+              <div className="flex items-center gap-3">
+                <TrendingUp className="w-6 h-6 text-green-600" />
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800">📈 Stock Trading Activity</h2>
+                  <p className="text-sm text-gray-600">
+                    {selectedMember.stockTrades.length} trades in last 90 days
+                    {selectedMember.stockTrades.filter(t => t.conflict).length > 0 && (
+                      <span className="ml-2 text-red-600 font-bold">
+                        • {selectedMember.stockTrades.filter(t => t.conflict).length} potential conflicts
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              {expandedSections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+            </div>
+
+            {expandedSections.stockTrades && (
+              <div className="px-6 pb-6">
+                {selectedMember.stockTrades.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600">No stock trades reported in the last 90 days</p>
+                    <p className="text-sm text-gray-500 mt-2">This member either did not trade stocks or has not filed required disclosures</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Summary Stats */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                      <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                        <p className="text-sm text-gray-600 mb-1">Total Trades</p>
+                        <p className="text-3xl font-bold text-blue-600">{selectedMember.stockTrades.length}</p>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+                        <p className="text-sm text-gray-600 mb-1">Purchases</p>
+                        <p className="text-3xl font-bold text-green-600">
+                          {selectedMember.stockTrades.filter(t => t.type === 'Purchase').length}
+                        </p>
+                      </div>
+                      <div className="bg-orange-50 p-4 rounded-lg border-2 border-orange-200">
+                        <p className="text-sm text-gray-600 mb-1">Sales</p>
+                        <p className="text-3xl font-bold text-orange-600">
+                          {selectedMember.stockTrades.filter(t => t.type === 'Sale').length}
+                        </p>
+                      </div>
+                      <div className={`p-4 rounded-lg border-2 ${
+                        selectedMember.stockTrades.filter(t => t.conflict).length > 0 
+                          ? 'bg-red-50 border-red-300' 
+                          : 'bg-gray-50 border-gray-200'
+                      }`}>
+                        <p className="text-sm text-gray-600 mb-1">Conflicts</p>
+                        <p className={`text-3xl font-bold ${
+                          selectedMember.stockTrades.filter(t => t.conflict).length > 0 
+                            ? 'text-red-600' 
+                            : 'text-gray-600'
+                        }`}>
+                          {selectedMember.stockTrades.filter(t => t.conflict).length}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Conflict Warning */}
+                    {selectedMember.stockTrades.filter(t => t.conflict).length > 0 && (
+                      <div className="bg-red-50 border-2 border-red-400 rounded-lg p-4 mb-6">
+                        <div className="flex items-start gap-3">
+                          <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <h3 className="text-lg font-bold text-red-800 mb-2">⚠️ Potential Conflicts of Interest Detected</h3>
+                            <p className="text-red-700 text-sm">
+                              This member has made stock trades that may conflict with their committee assignments or legislative responsibilities. 
+                              Review the flagged trades below for details.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Trade List */}
+                    <div className="space-y-3">
+                      {selectedMember.stockTrades.map((trade, index) => (
+                        <div 
+                          key={index} 
+                          className={`border-2 rounded-lg p-4 ${
+                            trade.conflict 
+                              ? 'bg-red-50 border-red-400' 
+                              : 'bg-gray-50 border-gray-200'
+                          }`}
+                        >
+                          {/* Conflict Badge */}
+                          {trade.conflict && (
+                            <div className="mb-3 flex items-center gap-2">
+                              <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                                🚨 POTENTIAL CONFLICT
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="text-xl font-bold text-gray-800">{trade.company}</h3>
+                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-mono">
+                                  {trade.ticker}
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                  trade.type === 'Purchase' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-orange-100 text-orange-800'
+                                }`}>
+                                  {trade.type}
+                                </span>
+                                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                                  {trade.assetType}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-2xl font-bold text-green-600">{trade.valueRange}</p>
+                              <p className="text-sm text-gray-500 mt-1">{trade.date}</p>
+                            </div>
+                          </div>
+
+                          {/* Conflict Explanation */}
+                          {trade.conflict && trade.conflictReason && (
+                            <div className="bg-red-100 border-l-4 border-red-600 p-3 rounded">
+                              <p className="text-sm font-semibold text-red-800 mb-1">Why this is flagged:</p>
+                              <p className="text-sm text-red-700">{trade.conflictReason}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Disclaimer */}
+                    <div className="mt-6 bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
+                      <p className="text-sm text-blue-800">
+                        <strong>Note:</strong> Stock trades are reported by members of Congress as required by the STOCK Act. 
+                        Trade values are reported in ranges, not exact amounts. Conflict flags are automatically generated 
+                        based on committee assignments and may not represent actual violations.
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
