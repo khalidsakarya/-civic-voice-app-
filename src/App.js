@@ -32,6 +32,7 @@ function App() {
   
   // Ministries state
   const [selectedMinistry, setSelectedMinistry] = useState(null);
+  const [grantsExpanded, setGrantsExpanded] = useState(false);
   const [ministries, setMinistries] = useState([
     {
       id: 1,
@@ -456,6 +457,11 @@ function App() {
       }
     }
   }, []);
+  
+  // Reset grants expansion when ministry changes
+  useEffect(() => {
+    setGrantsExpanded(false);
+  }, [selectedMinistry]);
   
   const fetchMPs = async () => {
     try {
@@ -2948,8 +2954,6 @@ function App() {
   // Render Ministry Detail
   const renderMinistryDetail = () => {
     if (!selectedMinistry) return null;
-    
-    const [grantsExpanded, setGrantsExpanded] = React.useState(false);
 
     const totalVotes = selectedMinistry.approveVotes + selectedMinistry.disapproveVotes;
     const approvalRate = totalVotes > 0 
