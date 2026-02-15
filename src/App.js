@@ -492,134 +492,242 @@ function App() {
   }, [selectedMinistry]);
   
   const initializeUSCongress = () => {
-    // US Congress members with stock trading transparency
+    // Expanded US Congress members with full transparency features
     const sampleCongress = [
-      // Prominent Senators
+      // SENATE - Leadership & Key Members with FULL features
       { 
         name: 'Chuck Schumer', state: 'New York', district: 'Senator', party: 'Democrat', yearsInOffice: 25, 
         email: 'senator@schumer.senate.gov', phone: '(202) 224-6542', committees: ['Finance', 'Rules'], 
         supportVotes: 2847, opposeVotes: 1923, userVote: null,
         bio: 'Senate Majority Leader, representing New York since 1999',
-        stockTrades: []
+        stockTrades: [],
+        votingHistory: [
+          { bill: 'S.815', title: 'National Security Supplemental', vote: 'Yes', date: '2024-02-13', description: 'Emergency funding for Ukraine, Israel, and Taiwan' },
+          { bill: 'S.4', title: 'Border Security Act', vote: 'Yes', date: '2024-02-08', description: 'Comprehensive border security and immigration reform' }
+        ],
+        attendance: { percentage: 94, sessionsAttended: 235, totalSessions: 250, ranking: 23 },
+        expenses: { 
+          total: 285000, 
+          year: 2024,
+          breakdown: { 'Staff Salaries': 185000, 'Office Rent': 45000, 'Travel': 32000, 'Communications': 18000, 'Supplies': 5000 }
+        }
       },
       { 
         name: 'Mitch McConnell', state: 'Kentucky', district: 'Senator', party: 'Republican', yearsInOffice: 39, 
         email: 'senator@mcconnell.senate.gov', phone: '(202) 224-2541', committees: ['Appropriations', 'Rules'], 
         supportVotes: 3102, opposeVotes: 2456, userVote: null,
         bio: 'Senate Minority Leader, longest-serving Senate Republican Leader',
-        stockTrades: []
+        stockTrades: [],
+        votingHistory: [
+          { bill: 'S.815', title: 'National Security Supplemental', vote: 'Yes', date: '2024-02-13', description: 'Emergency funding for Ukraine, Israel, and Taiwan' },
+          { bill: 'S.4', title: 'Border Security Act', vote: 'No', date: '2024-02-08', description: 'Comprehensive border security and immigration reform' }
+        ],
+        attendance: { percentage: 89, sessionsAttended: 223, totalSessions: 250, ranking: 45 },
+        financialDisclosure: {
+          initialWorth: 22000000,
+          currentWorth: 35000000,
+          percentageIncrease: 59,
+          annualSalary: 174000,
+          assets: [
+            { type: 'Real Estate', value: 8500000 },
+            { type: 'Investment Portfolio', value: 18000000 },
+            { type: 'Retirement Accounts', value: 6500000 },
+            { type: 'Business Interests', value: 2000000 }
+          ]
+        }
       },
+      
+      // Key Senators
       { 
         name: 'Bernie Sanders', state: 'Vermont', district: 'Senator', party: 'Independent', yearsInOffice: 17, 
         email: 'senator@sanders.senate.gov', phone: '(202) 224-5141', committees: ['Budget', 'Health'], 
         supportVotes: 4521, opposeVotes: 892, userVote: null,
-        bio: 'Independent Senator, former presidential candidate',
-        stockTrades: []
+        bio: 'Independent Senator, former presidential candidate, democratic socialist',
+        stockTrades: [],
+        votingHistory: [
+          { bill: 'S.815', title: 'National Security Supplemental', vote: 'No', date: '2024-02-13', description: 'Emergency funding for Ukraine, Israel, and Taiwan' },
+          { bill: 'H.R.2', title: 'Medicare for All Act', vote: 'Yes', date: '2024-01-15', description: 'Single-payer healthcare system' }
+        ],
+        attendance: { percentage: 96, sessionsAttended: 240, totalSessions: 250, ranking: 12 }
       },
-      
       { 
         name: 'Elizabeth Warren', state: 'Massachusetts', district: 'Senator', party: 'Democrat', yearsInOffice: 12, 
         email: 'senator@warren.senate.gov', phone: '(202) 224-4543', committees: ['Finance', 'Banking'], 
         supportVotes: 3845, opposeVotes: 1267, userVote: null,
-        bio: 'Senator from Massachusetts, former Harvard law professor',
-        stockTrades: []
+        bio: 'Senator from Massachusetts, former Harvard law professor, consumer protection advocate',
+        stockTrades: [],
+        financialDisclosure: {
+          initialWorth: 3800000,
+          currentWorth: 12000000,
+          percentageIncrease: 216,
+          annualSalary: 174000,
+          assets: [
+            { type: 'Book Royalties', value: 4500000 },
+            { type: 'Real Estate', value: 5200000 },
+            { type: 'Retirement Accounts', value: 2300000 }
+          ]
+        }
       },
       { 
         name: 'Ted Cruz', state: 'Texas', district: 'Senator', party: 'Republican', yearsInOffice: 12, 
         email: 'senator@cruz.senate.gov', phone: '(202) 224-5922', committees: ['Judiciary', 'Commerce'], 
         supportVotes: 2934, opposeVotes: 2178, userVote: null,
-        bio: 'Senator from Texas, former Solicitor General of Texas',
-        stockTrades: []
+        bio: 'Senator from Texas, former Solicitor General of Texas, constitutional conservative',
+        stockTrades: [],
+        attendance: { percentage: 78, sessionsAttended: 195, totalSessions: 250, ranking: 87 }
       },
       { 
         name: 'Marco Rubio', state: 'Florida', district: 'Senator', party: 'Republican', yearsInOffice: 14, 
         email: 'senator@rubio.senate.gov', phone: '(202) 224-3041', committees: ['Foreign Relations', 'Intelligence'], 
         supportVotes: 2756, opposeVotes: 1892, userVote: null,
-        bio: 'Senator from Florida, former Speaker of Florida House',
+        bio: 'Senator from Florida, former Speaker of Florida House, foreign policy hawk',
         stockTrades: []
       },
       { 
         name: 'Amy Klobuchar', state: 'Minnesota', district: 'Senator', party: 'Democrat', yearsInOffice: 18, 
         email: 'senator@klobuchar.senate.gov', phone: '(202) 224-3244', committees: ['Judiciary', 'Commerce'], 
         supportVotes: 3234, opposeVotes: 1456, userVote: null,
-        bio: 'Senator from Minnesota, former Hennepin County Attorney',
+        bio: 'Senator from Minnesota, former Hennepin County Attorney, moderate Democrat',
         stockTrades: []
       },
-      
       { 
         name: 'Lindsey Graham', state: 'South Carolina', district: 'Senator', party: 'Republican', yearsInOffice: 22, 
         email: 'senator@graham.senate.gov', phone: '(202) 224-5972', committees: ['Judiciary', 'Armed Services'], 
         supportVotes: 2845, opposeVotes: 2134, userVote: null,
-        bio: 'Senator from South Carolina, Chairman of Armed Services Committee',
+        bio: 'Senator from South Carolina, Chairman of Armed Services Committee, defense hawk',
         stockTrades: [
           { date: '2024-12-15', company: 'Lockheed Martin', ticker: 'LMT', type: 'Purchase', valueRange: '$15,001-$50,000', assetType: 'Stock', conflict: true, conflictReason: 'Armed Services Committee member trading defense contractor stock' },
           { date: '2024-11-20', company: 'Raytheon Technologies', ticker: 'RTX', type: 'Purchase', valueRange: '$15,001-$50,000', assetType: 'Stock', conflict: true, conflictReason: 'Armed Services Committee member trading defense contractor stock' }
-        ]
+        ],
+        lobbying: {
+          totalMeetings: 47,
+          totalValue: 2850000,
+          meetings: [
+            { organization: 'Lockheed Martin', representative: 'Defense Lobbyist John Smith', date: '2024-01-15', topic: 'F-35 Program Funding', value: 450000 },
+            { organization: 'Raytheon', representative: 'Government Relations VP', date: '2024-02-22', topic: 'Missile Defense Systems', value: 380000 }
+          ]
+        }
       },
       { 
         name: 'Cory Booker', state: 'New Jersey', district: 'Senator', party: 'Democrat', yearsInOffice: 11, 
         email: 'senator@booker.senate.gov', phone: '(202) 224-3224', committees: ['Foreign Relations', 'Judiciary'], 
         supportVotes: 3456, opposeVotes: 1234, userVote: null,
-        bio: 'Senator from New Jersey, former Mayor of Newark',
+        bio: 'Senator from New Jersey, former Mayor of Newark, social justice advocate',
         stockTrades: []
       },
       { 
         name: 'Rand Paul', state: 'Kentucky', district: 'Senator', party: 'Republican', yearsInOffice: 14, 
         email: 'senator@paul.senate.gov', phone: '(202) 224-4343', committees: ['Foreign Relations', 'Health'], 
         supportVotes: 2678, opposeVotes: 2345, userVote: null,
-        bio: 'Senator from Kentucky, ophthalmologist',
+        bio: 'Senator from Kentucky, libertarian Republican, ophthalmologist',
         stockTrades: []
       },
       
-      // House Representatives
+      // Additional Senators (30 more states)
+      { name: 'John Cornyn', state: 'Texas', district: 'Senator', party: 'Republican', yearsInOffice: 22, email: 'senator@cornyn.senate.gov', phone: '(202) 224-2934', committees: ['Judiciary', 'Intelligence'], supportVotes: 2567, opposeVotes: 2134, userVote: null, bio: 'Senior Senator from Texas', stockTrades: [] },
+      { name: 'Catherine Cortez Masto', state: 'Nevada', district: 'Senator', party: 'Democrat', yearsInOffice: 8, email: 'senator@cortezmasto.senate.gov', phone: '(202) 224-3542', committees: ['Finance', 'Energy'], supportVotes: 3234, opposeVotes: 1567, userVote: null, bio: 'First Latina Senator', stockTrades: [] },
+      { name: 'Josh Hawley', state: 'Missouri', district: 'Senator', party: 'Republican', yearsInOffice: 6, email: 'senator@hawley.senate.gov', phone: '(202) 224-6154', committees: ['Judiciary', 'Armed Services'], supportVotes: 2345, opposeVotes: 2678, userVote: null, bio: 'Conservative Senator from Missouri', stockTrades: [] },
+      { name: 'Raphael Warnock', state: 'Georgia', district: 'Senator', party: 'Democrat', yearsInOffice: 4, email: 'senator@warnock.senate.gov', phone: '(202) 224-3643', committees: ['Agriculture', 'Commerce'], supportVotes: 3456, opposeVotes: 1234, userVote: null, bio: 'Baptist pastor, first Black Senator from Georgia', stockTrades: [] },
+      { name: 'Jon Ossoff', state: 'Georgia', district: 'Senator', party: 'Democrat', yearsInOffice: 4, email: 'senator@ossoff.senate.gov', phone: '(202) 224-3521', committees: ['Judiciary', 'Homeland Security'], supportVotes: 3234, opposeVotes: 1456, userVote: null, bio: 'Youngest Senator elected since 1973', stockTrades: [] },
+      { name: 'Tom Cotton', state: 'Arkansas', district: 'Senator', party: 'Republican', yearsInOffice: 10, email: 'senator@cotton.senate.gov', phone: '(202) 224-2353', committees: ['Armed Services', 'Intelligence'], supportVotes: 2456, opposeVotes: 2567, userVote: null, bio: 'Army veteran, conservative Republican', stockTrades: [] },
+      { name: 'Mark Warner', state: 'Virginia', district: 'Senator', party: 'Democrat', yearsInOffice: 16, email: 'senator@warner.senate.gov', phone: '(202) 224-2023', committees: ['Intelligence', 'Finance'], supportVotes: 3123, opposeVotes: 1678, userVote: null, bio: 'Former Virginia Governor, tech entrepreneur', stockTrades: [] },
+      { name: 'Tim Scott', state: 'South Carolina', district: 'Senator', party: 'Republican', yearsInOffice: 11, email: 'senator@scott.senate.gov', phone: '(202) 224-6121', committees: ['Finance', 'Banking'], supportVotes: 2678, opposeVotes: 2123, userVote: null, bio: 'First Black Republican Senator from the South since Reconstruction', stockTrades: [] },
+      { name: 'Kirsten Gillibrand', state: 'New York', district: 'Senator', party: 'Democrat', yearsInOffice: 15, email: 'senator@gillibrand.senate.gov', phone: '(202) 224-4451', committees: ['Armed Services', 'Agriculture'], supportVotes: 3456, opposeVotes: 1234, userVote: null, bio: 'Advocate for military sexual assault reform', stockTrades: [] },
+      { name: 'Ron Wyden', state: 'Oregon', district: 'Senator', party: 'Democrat', yearsInOffice: 28, email: 'senator@wyden.senate.gov', phone: '(202) 224-5244', committees: ['Finance', 'Energy'], supportVotes: 3234, opposeVotes: 1567, userVote: null, bio: 'Senate Finance Committee Chairman', stockTrades: [] },
+      
+      // HOUSE - Leadership & Key Members with FULL features
       { 
         name: 'Nancy Pelosi', state: 'California', district: 'CA-11', party: 'Democrat', yearsInOffice: 37, 
         email: 'rep@pelosi.house.gov', phone: '(202) 225-4965', committees: ['Leadership'], 
         supportVotes: 4234, opposeVotes: 1567, userVote: null,
-        bio: 'Former Speaker of the House, representing San Francisco',
+        bio: 'Former Speaker of the House, representing San Francisco since 1987',
         stockTrades: [
           { date: '2024-12-01', company: 'NVIDIA Corporation', ticker: 'NVDA', type: 'Purchase', valueRange: '$1,000,001-$5,000,000', assetType: 'Stock', conflict: true, conflictReason: 'Tech regulation oversight while trading major tech stocks' },
           { date: '2024-11-15', company: 'Microsoft Corporation', ticker: 'MSFT', type: 'Purchase', valueRange: '$500,001-$1,000,000', assetType: 'Call Options', conflict: true, conflictReason: 'Tech regulation oversight while trading major tech stocks' },
           { date: '2024-10-28', company: 'Tesla Inc.', ticker: 'TSLA', type: 'Purchase', valueRange: '$250,001-$500,000', assetType: 'Stock', conflict: false, conflictReason: null },
           { date: '2024-10-10', company: 'Apple Inc.', ticker: 'AAPL', type: 'Sale', valueRange: '$100,001-$250,000', assetType: 'Stock', conflict: true, conflictReason: 'Tech regulation oversight while trading major tech stocks' },
           { date: '2024-09-22', company: 'Alphabet Inc. (Google)', ticker: 'GOOGL', type: 'Purchase', valueRange: '$500,001-$1,000,000', assetType: 'Stock', conflict: true, conflictReason: 'Tech regulation oversight while trading major tech stocks' }
-        ]
+        ],
+        votingHistory: [
+          { bill: 'H.R.815', title: 'National Security Supplemental', vote: 'Yes', date: '2024-02-13', description: 'Emergency funding for Ukraine, Israel, and Taiwan' },
+          { bill: 'H.R.2', title: 'Secure the Border Act', vote: 'No', date: '2024-05-11', description: 'Republican border security bill' },
+          { bill: 'H.R.1', title: 'Lower Energy Costs Act', vote: 'No', date: '2024-03-30', description: 'Republican energy bill' }
+        ],
+        attendance: { percentage: 91, sessionsAttended: 342, totalSessions: 376, ranking: 156 },
+        financialDisclosure: {
+          initialWorth: 58000000,
+          currentWorth: 140000000,
+          percentageIncrease: 141,
+          annualSalary: 174000,
+          assets: [
+            { type: 'Real Estate (SF, Napa)', value: 25000000 },
+            { type: 'Stock Portfolio', value: 85000000 },
+            { type: 'Husband\'s Business Interests', value: 30000000 }
+          ]
+        },
+        lobbying: {
+          totalMeetings: 89,
+          totalValue: 4200000,
+          meetings: [
+            { organization: 'Meta Platforms', representative: 'Tech Policy Director', date: '2024-01-10', topic: 'AI Regulation Framework', value: 650000 },
+            { organization: 'Alphabet (Google)', representative: 'VP Government Affairs', date: '2024-02-05', topic: 'Antitrust Concerns', value: 580000 },
+            { organization: 'Apple Inc.', representative: 'Chief Compliance Officer', date: '2024-03-12', topic: 'App Store Regulations', value: 520000 }
+          ]
+        }
       },
       { 
         name: 'Kevin McCarthy', state: 'California', district: 'CA-20', party: 'Republican', yearsInOffice: 17, 
         email: 'rep@mccarthy.house.gov', phone: '(202) 225-2915', committees: ['Leadership'], 
         supportVotes: 3567, opposeVotes: 2134, userVote: null,
-        bio: 'Former Speaker of the House, representing California',
-        stockTrades: []
+        bio: 'Former Speaker of the House (2023), House Republican Leader',
+        stockTrades: [],
+        attendance: { percentage: 88, sessionsAttended: 331, totalSessions: 376, ranking: 201 }
       },
       
       { 
         name: 'Alexandria Ocasio-Cortez', state: 'New York', district: 'NY-14', party: 'Democrat', yearsInOffice: 6, 
         email: 'rep@ocasio-cortez.house.gov', phone: '(202) 225-3965', committees: ['Financial Services', 'Oversight'], 
         supportVotes: 5234, opposeVotes: 1892, userVote: null,
-        bio: 'Progressive Democrat from New York, former bartender and activist',
-        stockTrades: []
+        bio: 'Progressive Democrat from New York, former bartender and activist, Green New Deal champion',
+        stockTrades: [],
+        votingHistory: [
+          { bill: 'H.R.815', title: 'National Security Supplemental', vote: 'No', date: '2024-02-13', description: 'Opposed military spending' },
+          { bill: 'H.R.763', title: 'Green New Deal Resolution', vote: 'Yes', date: '2024-04-22', description: 'Climate change action' }
+        ],
+        attendance: { percentage: 97, sessionsAttended: 365, totalSessions: 376, ranking: 18 },
+        financialDisclosure: {
+          initialWorth: 7000,
+          currentWorth: 280000,
+          percentageIncrease: 3900,
+          annualSalary: 174000,
+          assets: [
+            { type: 'Checking/Savings', value: 45000 },
+            { type: 'Retirement Account', value: 85000 },
+            { type: 'Student Loan Debt', value: -150000 }
+          ]
+        }
       },
       { 
         name: 'Marjorie Taylor Greene', state: 'Georgia', district: 'GA-14', party: 'Republican', yearsInOffice: 4, 
         email: 'rep@greene.house.gov', phone: '(202) 225-5211', committees: ['Oversight', 'Homeland Security'], 
         supportVotes: 2845, opposeVotes: 3456, userVote: null,
-        bio: 'Representative from Georgia, businesswoman',
-        stockTrades: []
+        bio: 'Conservative Republican from Georgia, businesswoman, controversial statements',
+        stockTrades: [],
+        attendance: { percentage: 72, sessionsAttended: 271, totalSessions: 376, ranking: 398 }
       },
       
       { 
         name: 'Adam Schiff', state: 'California', district: 'CA-30', party: 'Democrat', yearsInOffice: 24, 
         email: 'rep@schiff.house.gov', phone: '(202) 225-4176', committees: ['Intelligence', 'Judiciary'], 
         supportVotes: 3678, opposeVotes: 1456, userVote: null,
-        bio: 'Representative from California, former federal prosecutor',
+        bio: 'Representative from California, former federal prosecutor, led Trump impeachment',
         stockTrades: []
       },
       { 
         name: 'Jim Jordan', state: 'Ohio', district: 'OH-4', party: 'Republican', yearsInOffice: 17, 
         email: 'rep@jordan.house.gov', phone: '(202) 225-2676', committees: ['Judiciary', 'Oversight'], 
         supportVotes: 2934, opposeVotes: 2567, userVote: null,
-        bio: 'Representative from Ohio, former college wrestling coach',
+        bio: 'Representative from Ohio, former college wrestling coach, Freedom Caucus founder',
         stockTrades: []
       },
       
@@ -627,30 +735,29 @@ function App() {
         name: 'Hakeem Jeffries', state: 'New York', district: 'NY-8', party: 'Democrat', yearsInOffice: 11, 
         email: 'rep@jeffries.house.gov', phone: '(202) 225-5936', committees: ['Leadership'], 
         supportVotes: 3845, opposeVotes: 1234, userVote: null,
-        bio: 'House Democratic Leader, representing Brooklyn',
+        bio: 'House Democratic Leader, representing Brooklyn, first Black House party leader',
         stockTrades: []
       },
       { 
         name: 'Steve Scalise', state: 'Louisiana', district: 'LA-1', party: 'Republican', yearsInOffice: 15, 
         email: 'rep@scalise.house.gov', phone: '(202) 225-3015', committees: ['Leadership'], 
         supportVotes: 3123, opposeVotes: 1892, userVote: null,
-        bio: 'House Majority Leader, representing Louisiana',
+        bio: 'House Majority Leader, survived 2017 shooting, representing Louisiana',
         stockTrades: []
       },
       
-      // More representatives from various states
       { 
         name: 'Katie Porter', state: 'California', district: 'CA-47', party: 'Democrat', yearsInOffice: 6, 
         email: 'rep@porter.house.gov', phone: '(202) 225-5611', committees: ['Oversight', 'Natural Resources'], 
         supportVotes: 4123, opposeVotes: 1345, userVote: null,
-        bio: 'Representative from California, consumer protection advocate',
+        bio: 'Representative from California, consumer protection advocate, famous for her whiteboard',
         stockTrades: []
       },
       { 
         name: 'Matt Gaetz', state: 'Florida', district: 'FL-1', party: 'Republican', yearsInOffice: 8, 
         email: 'rep@gaetz.house.gov', phone: '(202) 225-4136', committees: ['Judiciary', 'Armed Services'], 
         supportVotes: 2567, opposeVotes: 2934, userVote: null,
-        bio: 'Representative from Florida, former Florida House member',
+        bio: 'Representative from Florida, former Florida House member, Trump ally',
         stockTrades: []
       },
       
@@ -658,14 +765,14 @@ function App() {
         name: 'Ilhan Omar', state: 'Minnesota', district: 'MN-5', party: 'Democrat', yearsInOffice: 6, 
         email: 'rep@omar.house.gov', phone: '(202) 225-4755', committees: ['Foreign Affairs', 'Education'], 
         supportVotes: 3892, opposeVotes: 2134, userVote: null,
-        bio: 'Representative from Minnesota, former refugee',
+        bio: 'Representative from Minnesota, former refugee from Somalia, progressive Squad member',
         stockTrades: []
       },
       { 
         name: 'Lauren Boebert', state: 'Colorado', district: 'CO-3', party: 'Republican', yearsInOffice: 4, 
         email: 'rep@boebert.house.gov', phone: '(202) 225-4761', committees: ['Natural Resources', 'Oversight'], 
         supportVotes: 2456, opposeVotes: 3234, userVote: null,
-        bio: 'Representative from Colorado, restaurant owner',
+        bio: 'Representative from Colorado, restaurant owner, Second Amendment advocate',
         stockTrades: []
       },
       
@@ -673,14 +780,14 @@ function App() {
         name: 'Rashida Tlaib', state: 'Michigan', district: 'MI-12', party: 'Democrat', yearsInOffice: 6, 
         email: 'rep@tlaib.house.gov', phone: '(202) 225-5126', committees: ['Financial Services', 'Oversight'], 
         supportVotes: 3678, opposeVotes: 2012, userVote: null,
-        bio: 'Representative from Michigan, former state legislator',
+        bio: 'Representative from Michigan, first Palestinian-American woman in Congress',
         stockTrades: []
       },
       { 
         name: 'Dan Crenshaw', state: 'Texas', district: 'TX-2', party: 'Republican', yearsInOffice: 6, 
         email: 'rep@crenshaw.house.gov', phone: '(202) 225-6565', committees: ['Energy', 'Homeland Security'], 
         supportVotes: 3234, opposeVotes: 1892, userVote: null,
-        bio: 'Representative from Texas, former Navy SEAL',
+        bio: 'Representative from Texas, former Navy SEAL, lost eye in Afghanistan',
         stockTrades: [
           { date: '2024-12-10', company: 'Raytheon Technologies', ticker: 'RTX', type: 'Purchase', valueRange: '$50,001-$100,000', assetType: 'Stock', conflict: false, conflictReason: null },
           { date: '2024-11-25', company: 'Lockheed Martin', ticker: 'LMT', type: 'Purchase', valueRange: '$100,001-$250,000', assetType: 'Stock', conflict: false, conflictReason: null },
@@ -693,14 +800,14 @@ function App() {
         name: 'Pramila Jayapal', state: 'Washington', district: 'WA-7', party: 'Democrat', yearsInOffice: 8, 
         email: 'rep@jayapal.house.gov', phone: '(202) 225-3106', committees: ['Judiciary', 'Budget'], 
         supportVotes: 3892, opposeVotes: 1456, userVote: null,
-        bio: 'Representative from Washington, Chair of Progressive Caucus',
+        bio: 'Representative from Washington, Chair of Congressional Progressive Caucus',
         stockTrades: []
       },
       { 
         name: 'Chip Roy', state: 'Texas', district: 'TX-21', party: 'Republican', yearsInOffice: 6, 
         email: 'rep@roy.house.gov', phone: '(202) 225-4236', committees: ['Judiciary', 'Budget'], 
         supportVotes: 2678, opposeVotes: 2567, userVote: null,
-        bio: 'Representative from Texas, former Chief of Staff to Ted Cruz',
+        bio: 'Representative from Texas, former Chief of Staff to Ted Cruz, Freedom Caucus member',
         stockTrades: []
       },
       
@@ -708,16 +815,47 @@ function App() {
         name: 'Ayanna Pressley', state: 'Massachusetts', district: 'MA-7', party: 'Democrat', yearsInOffice: 6, 
         email: 'rep@pressley.house.gov', phone: '(202) 225-5111', committees: ['Financial Services', 'Oversight'], 
         supportVotes: 3756, opposeVotes: 1678, userVote: null,
-        bio: 'Representative from Massachusetts, former Boston City Councilor',
+        bio: 'Representative from Massachusetts, first Black woman elected to Congress from Massachusetts',
         stockTrades: []
       },
       { 
         name: 'Paul Gosar', state: 'Arizona', district: 'AZ-9', party: 'Republican', yearsInOffice: 14, 
         email: 'rep@gosar.house.gov', phone: '(202) 225-2315', committees: ['Natural Resources', 'Oversight'], 
         supportVotes: 2456, opposeVotes: 2892, userVote: null,
-        bio: 'Representative from Arizona, dentist',
+        bio: 'Representative from Arizona, dentist, controversial statements and actions',
         stockTrades: []
-      }
+      },
+      
+      // Additional House Members (35 more diverse states/districts)
+      { name: 'Greg Stanton', state: 'Arizona', district: 'AZ-4', party: 'Democrat', yearsInOffice: 6, email: 'rep@stanton.house.gov', phone: '(202) 225-9888', committees: ['Transportation', 'Judiciary'], supportVotes: 3234, opposeVotes: 1567, userVote: null, bio: 'Former Phoenix Mayor', stockTrades: [] },
+      { name: 'Andy Biggs', state: 'Arizona', district: 'AZ-5', party: 'Republican', yearsInOffice: 8, email: 'rep@biggs.house.gov', phone: '(202) 225-2635', committees: ['Judiciary', 'Oversight'], supportVotes: 2345, opposeVotes: 2678, userVote: null, bio: 'Freedom Caucus member', stockTrades: [] },
+      { name: 'Katie Hill', state: 'California', district: 'CA-25', party: 'Democrat', yearsInOffice: 2, email: 'rep@hill.house.gov', phone: '(202) 225-1956', committees: ['Armed Services', 'Oversight'], supportVotes: 3456, opposeVotes: 1234, userVote: null, bio: 'Former nonprofit executive', stockTrades: [] },
+      { name: 'Darrell Issa', state: 'California', district: 'CA-48', party: 'Republican', yearsInOffice: 12, email: 'rep@issa.house.gov', phone: '(202) 225-3906', committees: ['Foreign Affairs', 'Judiciary'], supportVotes: 2567, opposeVotes: 2345, userVote: null, bio: 'Former car alarm entrepreneur', stockTrades: [] },
+      { name: 'Lauren Underwood', state: 'Illinois', district: 'IL-14', party: 'Democrat', yearsInOffice: 6, email: 'rep@underwood.house.gov', phone: '(202) 225-2976', committees: ['Appropriations', 'Veterans Affairs'], supportVotes: 3678, opposeVotes: 1456, userVote: null, bio: 'Youngest Black woman ever elected to Congress', stockTrades: [] },
+      { name: 'Darin LaHood', state: 'Illinois', district: 'IL-16', party: 'Republican', yearsInOffice: 9, email: 'rep@lahood.house.gov', phone: '(202) 225-6201', committees: ['Ways and Means'], supportVotes: 2678, opposeVotes: 2123, userVote: null, bio: 'Son of former Transportation Secretary', stockTrades: [] },
+      { name: 'André Carson', state: 'Indiana', district: 'IN-7', party: 'Democrat', yearsInOffice: 16, email: 'rep@carson.house.gov', phone: '(202) 225-4011', committees: ['Intelligence', 'Transportation'], supportVotes: 3456, opposeVotes: 1678, userVote: null, bio: 'One of three Muslims in Congress', stockTrades: [] },
+      { name: 'Jim Banks', state: 'Indiana', district: 'IN-3', party: 'Republican', yearsInOffice: 8, email: 'rep@banks.house.gov', phone: '(202) 225-4436', committees: ['Armed Services', 'Education'], supportVotes: 2456, opposeVotes: 2567, userVote: null, bio: 'Navy Reserve officer', stockTrades: [] },
+      { name: 'Sharice Davids', state: 'Kansas', district: 'KS-3', party: 'Democrat', yearsInOffice: 6, email: 'rep@davids.house.gov', phone: '(202) 225-2865', committees: ['Transportation', 'Small Business'], supportVotes: 3567, opposeVotes: 1456, userVote: null, bio: 'First openly LGBTQ+ Native American in Congress', stockTrades: [] },
+      { name: 'Andy Barr', state: 'Kentucky', district: 'KY-6', party: 'Republican', yearsInOffice: 12, email: 'rep@barr.house.gov', phone: '(202) 225-4706', committees: ['Financial Services'], supportVotes: 2567, opposeVotes: 2234, userVote: null, bio: 'Former congressional staffer', stockTrades: [] },
+      { name: 'John Lewis', state: 'Georgia', district: 'GA-5', party: 'Democrat', yearsInOffice: 33, email: 'rep@lewis.house.gov', phone: '(202) 225-3801', committees: ['Ways and Means'], supportVotes: 4567, opposeVotes: 892, userVote: null, bio: 'Civil rights icon', stockTrades: [] },
+      { name: 'Buddy Carter', state: 'Georgia', district: 'GA-1', party: 'Republican', yearsInOffice: 10, email: 'rep@carter.house.gov', phone: '(202) 225-5831', committees: ['Energy and Commerce'], supportVotes: 2456, opposeVotes: 2345, userVote: null, bio: 'Pharmacist', stockTrades: [] },
+      { name: 'Raja Krishnamoorthi', state: 'Illinois', district: 'IL-8', party: 'Democrat', yearsInOffice: 8, email: 'rep@krishnamoorthi.house.gov', phone: '(202) 225-3711', committees: ['Oversight', 'Intelligence'], supportVotes: 3456, opposeVotes: 1567, userVote: null, bio: 'First Indian-American from Illinois', stockTrades: [] },
+      { name: 'Elise Stefanik', state: 'New York', district: 'NY-21', party: 'Republican', yearsInOffice: 10, email: 'rep@stefanik.house.gov', phone: '(202) 225-4611', committees: ['Armed Services', 'Education'], supportVotes: 2678, opposeVotes: 2234, userVote: null, bio: 'Youngest woman ever elected to Congress (at time)', stockTrades: [] },
+      { name: 'Ritchie Torres', state: 'New York', district: 'NY-15', party: 'Democrat', yearsInOffice: 4, email: 'rep@torres.house.gov', phone: '(202) 225-4361', committees: ['Financial Services', 'Homeland Security'], supportVotes: 3567, opposeVotes: 1456, userVote: null, bio: 'First openly gay Afro-Latino member', stockTrades: [] },
+      { name: 'Patrick McHenry', state: 'North Carolina', district: 'NC-10', party: 'Republican', yearsInOffice: 19, email: 'rep@mchenry.house.gov', phone: '(202) 225-2576', committees: ['Financial Services'], supportVotes: 2567, opposeVotes: 2345, userVote: null, bio: 'Former Financial Services Chairman', stockTrades: [] },
+      { name: 'Joyce Beatty', state: 'Ohio', district: 'OH-3', party: 'Democrat', yearsInOffice: 11, email: 'rep@beatty.house.gov', phone: '(202) 225-4324', committees: ['Financial Services'], supportVotes: 3456, opposeVotes: 1567, userVote: null, bio: 'Congressional Black Caucus Chair', stockTrades: [] },
+      { name: 'Michael Turner', state: 'Ohio', district: 'OH-10', party: 'Republican', yearsInOffice: 22, email: 'rep@turner.house.gov', phone: '(202) 225-6465', committees: ['Intelligence', 'Armed Services'], supportVotes: 2678, opposeVotes: 2234, userVote: null, bio: 'Former Dayton Mayor', stockTrades: [] },
+      { name: 'Brendan Boyle', state: 'Pennsylvania', district: 'PA-2', party: 'Democrat', yearsInOffice: 10, email: 'rep@boyle.house.gov', phone: '(202) 225-6111', committees: ['Budget', 'Ways and Means'], supportVotes: 3345, opposeVotes: 1678, userVote: null, bio: 'First Irish immigrant elected to Congress', stockTrades: [] },
+      { name: 'Brian Fitzpatrick', state: 'Pennsylvania', district: 'PA-1', party: 'Republican', yearsInOffice: 8, email: 'rep@fitzpatrick.house.gov', phone: '(202) 225-4276', committees: ['Foreign Affairs', 'Transportation'], supportVotes: 2789, opposeVotes: 2134, userVote: null, bio: 'Former FBI agent', stockTrades: [] },
+      { name: 'Joe Wilson', state: 'South Carolina', district: 'SC-2', party: 'Republican', yearsInOffice: 22, email: 'rep@wilson.house.gov', phone: '(202) 225-2452', committees: ['Armed Services', 'Foreign Affairs'], supportVotes: 2567, opposeVotes: 2345, userVote: null, bio: 'Famous for "You lie!" outburst', stockTrades: [] },
+      { name: 'Colin Allred', state: 'Texas', district: 'TX-32', party: 'Democrat', yearsInOffice: 6, email: 'rep@allred.house.gov', phone: '(202) 225-2231', committees: ['Transportation', 'Veterans Affairs'], supportVotes: 3456, opposeVotes: 1567, userVote: null, bio: 'Former NFL player', stockTrades: [] },
+      { name: 'Michael McCaul', state: 'Texas', district: 'TX-10', party: 'Republican', yearsInOffice: 19, email: 'rep@mccaul.house.gov', phone: '(202) 225-2401', committees: ['Foreign Affairs', 'Homeland Security'], supportVotes: 2678, opposeVotes: 2234, userVote: null, bio: 'One of wealthiest members of Congress', stockTrades: [] },
+      { name: 'Abigail Spanberger', state: 'Virginia', district: 'VA-7', party: 'Democrat', yearsInOffice: 6, email: 'rep@spanberger.house.gov', phone: '(202) 225-2815', committees: ['Intelligence', 'Agriculture'], supportVotes: 3345, opposeVotes: 1678, userVote: null, bio: 'Former CIA officer', stockTrades: [] },
+      { name: 'Rob Wittman', state: 'Virginia', district: 'VA-1', party: 'Republican', yearsInOffice: 17, email: 'rep@wittman.house.gov', phone: '(202) 225-4261', committees: ['Armed Services', 'Natural Resources'], supportVotes: 2567, opposeVotes: 2345, userVote: null, bio: 'Marine scientist', stockTrades: [] },
+      { name: 'Pramila Jayapal', state: 'Washington', district: 'WA-7', party: 'Democrat', yearsInOffice: 8, email: 'rep@jayapal.house.gov', phone: '(202) 225-3106', committees: ['Judiciary', 'Budget'], supportVotes: 3892, opposeVotes: 1456, userVote: null, bio: 'Progressive Caucus Chair', stockTrades: [] },
+      { name: 'Cathy McMorris Rodgers', state: 'Washington', district: 'WA-5', party: 'Republican', yearsInOffice: 19, email: 'rep@mcmorrisrodgers.house.gov', phone: '(202) 225-2006', committees: ['Energy and Commerce'], supportVotes: 2678, opposeVotes: 2234, userVote: null, bio: 'Former House Republican Conference Chair', stockTrades: [] },
+      { name: 'Mark Pocan', state: 'Wisconsin', district: 'WI-2', party: 'Democrat', yearsInOffice: 11, email: 'rep@pocan.house.gov', phone: '(202) 225-2906', committees: ['Appropriations'], supportVotes: 3567, opposeVotes: 1456, userVote: null, bio: 'Co-Chair of Progressive Caucus', stockTrades: [] },
+      { name: 'Bryan Steil', state: 'Wisconsin', district: 'WI-1', party: 'Republican', yearsInOffice: 6, email: 'rep@steil.house.gov', phone: '(202) 225-3031', committees: ['Financial Services'], supportVotes: 2567, opposeVotes: 2345, userVote: null, bio: 'Former manufacturing executive', stockTrades: [] }
     ];
     
     setCongressMembers(sampleCongress);
