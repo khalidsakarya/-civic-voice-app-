@@ -23,6 +23,7 @@ function App() {
   const [congressMembers, setCongressMembers] = useState([]);
   const [usBills, setUsBills] = useState([]);
   const [usDepartments, setUsDepartments] = useState([]);
+  const [usAnalyticsData, setUsAnalyticsData] = useState(null);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -455,6 +456,7 @@ function App() {
     fetchContracts();
     initializeUSCongress();
     initializeUSDepartments();
+    initializeUSAnalytics();
   }, []);
   
   // Load user's saved MP from localStorage
@@ -848,6 +850,134 @@ function App() {
     ];
     
     setUsDepartments(departments);
+  };
+  
+  const initializeUSAnalytics = () => {
+    const analyticsData = {
+      // Federal Revenue Sources (FY 2024 - $4.9 Trillion total revenue)
+      revenue: [
+        { source: 'Individual Income Tax', amount: 2400, percentage: 49 },
+        { source: 'Payroll Taxes (SS/Medicare)', amount: 1700, percentage: 35 },
+        { source: 'Corporate Income Tax', amount: 530, percentage: 11 },
+        { source: 'Customs & Excise Taxes', amount: 155, percentage: 3 },
+        { source: 'Estate & Gift Taxes', amount: 45, percentage: 1 },
+        { source: 'Other Revenue', amount: 70, percentage: 1 }
+      ],
+      
+      // Federal Spending Categories (FY 2024 - $6.5 Trillion total spending)
+      spending: [
+        { category: 'Social Security', amount: 1350, percentage: 21 },
+        { category: 'Medicare', amount: 839, percentage: 13 },
+        { category: 'Defense (DOD)', amount: 842, percentage: 13 },
+        { category: 'Interest on National Debt', amount: 658, percentage: 10 },
+        { category: 'Medicaid', amount: 616, percentage: 9 },
+        { category: 'Income Security (SNAP, Unemployment)', amount: 505, percentage: 8 },
+        { category: 'Veterans Benefits', amount: 301, percentage: 5 },
+        { category: 'Education & Training', amount: 305, percentage: 5 },
+        { category: 'Transportation', amount: 108, percentage: 2 },
+        { category: 'Health Research & Services', amount: 92, percentage: 1 },
+        { category: 'Agriculture', amount: 151, percentage: 2 },
+        { category: 'International Affairs', amount: 58, percentage: 1 },
+        { category: 'Science & Technology', amount: 45, percentage: 1 },
+        { category: 'Energy & Environment', amount: 64, percentage: 1 },
+        { category: 'Other Spending', amount: 566, percentage: 9 }
+      ],
+      
+      // Budget Deficit History (2014-2024, in billions)
+      deficitHistory: [
+        { year: 2014, deficit: -485 },
+        { year: 2015, deficit: -438 },
+        { year: 2016, deficit: -585 },
+        { year: 2017, deficit: -665 },
+        { year: 2018, deficit: -779 },
+        { year: 2019, deficit: -984 },
+        { year: 2020, deficit: -3132 }, // COVID-19
+        { year: 2021, deficit: -2772 }, // COVID-19
+        { year: 2022, deficit: -1375 },
+        { year: 2023, deficit: -1695 },
+        { year: 2024, deficit: -1700 }
+      ],
+      
+      // National Debt History (2014-2024, in trillions)
+      debtHistory: [
+        { year: 2014, debt: 17.8 },
+        { year: 2015, debt: 18.2 },
+        { year: 2016, debt: 19.6 },
+        { year: 2017, debt: 20.2 },
+        { year: 2018, debt: 21.5 },
+        { year: 2019, debt: 22.7 },
+        { year: 2020, debt: 27.7 },
+        { year: 2021, debt: 28.4 },
+        { year: 2022, debt: 30.9 },
+        { year: 2023, debt: 33.2 },
+        { year: 2024, debt: 34.5 }
+      ],
+      
+      // Unemployment Rate Trends (2020-2024, monthly average %)
+      unemploymentTrends: [
+        { year: 2020, rate: 8.1, context: 'COVID-19 Pandemic' },
+        { year: 2021, rate: 5.4, context: 'Economic Recovery' },
+        { year: 2022, rate: 3.6, context: 'Strong Job Market' },
+        { year: 2023, rate: 3.7, context: 'Stable Employment' },
+        { year: 2024, rate: 4.1, context: 'Current Rate' }
+      ],
+      
+      // Foreign Aid by Country (FY 2024 Top Recipients, in billions)
+      foreignAid: [
+        { country: 'Ukraine', amount: 44.2, purpose: 'Military and humanitarian aid' },
+        { country: 'Israel', amount: 3.8, purpose: 'Military assistance' },
+        { country: 'Egypt', amount: 1.4, purpose: 'Military and economic support' },
+        { country: 'Jordan', amount: 1.7, purpose: 'Economic and military aid' },
+        { country: 'Afghanistan', amount: 3.3, purpose: 'Humanitarian assistance' },
+        { country: 'Kenya', amount: 1.1, purpose: 'Security and development' },
+        { country: 'Ethiopia', amount: 1.4, purpose: 'Humanitarian and development' },
+        { country: 'Nigeria', amount: 1.2, purpose: 'Security and health programs' },
+        { country: 'South Sudan', amount: 1.1, purpose: 'Humanitarian relief' },
+        { country: 'Syria', amount: 1.9, purpose: 'Humanitarian assistance' }
+      ],
+      
+      // US Government Loans to Foreign Governments (Active loans, in billions)
+      foreignLoans: [
+        { country: 'Ukraine', amount: 61.4, purpose: 'Economic stabilization and reconstruction', status: 'Active' },
+        { country: 'Pakistan', amount: 6.8, purpose: 'Economic development', status: 'Active' },
+        { country: 'Iraq', amount: 4.5, purpose: 'Infrastructure reconstruction', status: 'Active' },
+        { country: 'Colombia', amount: 3.2, purpose: 'Counter-narcotics and security', status: 'Active' },
+        { country: 'Philippines', amount: 2.1, purpose: 'Infrastructure development', status: 'Active' },
+        { country: 'Tunisia', amount: 1.8, purpose: 'Economic reform support', status: 'Active' },
+        { country: 'Lebanon', amount: 1.5, purpose: 'Economic assistance', status: 'Active' },
+        { country: 'Jordan', amount: 2.6, purpose: 'Budget support and development', status: 'Active' }
+      ],
+      
+      // Grant Spending by Department (FY 2024, in billions)
+      grantsByDepartment: [
+        { department: 'Health & Human Services', grants: 1200, percentage: 45 },
+        { department: 'Education', grants: 68, percentage: 3 },
+        { department: 'Defense', grants: 420, percentage: 16 },
+        { department: 'Veterans Affairs', grants: 125, percentage: 5 },
+        { department: 'Treasury', grants: 890, percentage: 33 },
+        { department: 'Transportation', grants: 78, percentage: 3 },
+        { department: 'Agriculture', grants: 124, percentage: 5 },
+        { department: 'Housing & Urban Development', grants: 59, percentage: 2 },
+        { department: 'Energy', grants: 28, percentage: 1 },
+        { department: 'Homeland Security', grants: 22, percentage: 1 },
+        { department: 'State Department', grants: 42, percentage: 2 },
+        { department: 'Labor', grants: 9, percentage: 0.3 },
+        { department: 'Interior', grants: 9, percentage: 0.3 },
+        { department: 'Justice', grants: 15, percentage: 0.6 },
+        { department: 'Commerce', grants: 8, percentage: 0.3 }
+      ],
+      
+      // Department Spending Trends (2020-2024, select departments, in billions)
+      departmentTrends: [
+        { year: 2020, defense: 714, hhs: 1495, education: 102, veterans: 220 },
+        { year: 2021, defense: 753, hhs: 1622, education: 238, veterans: 240 },
+        { year: 2022, defense: 766, hhs: 1639, education: 79, veterans: 273 },
+        { year: 2023, defense: 816, hhs: 1686, education: 90, veterans: 296 },
+        { year: 2024, defense: 842, hhs: 1700, education: 79, veterans: 301 }
+      ]
+    };
+    
+    setUsAnalyticsData(analyticsData);
   };
   
   const fetchMPs = async () => {
@@ -1674,6 +1804,323 @@ function App() {
     );
   };
 
+  // US Budget Analytics Render Function
+  const renderUSAnalytics = () => {
+    if (!usAnalyticsData) return <div className="p-8 text-center">Loading analytics data...</div>;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <button
+              onClick={() => setView('categories')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              ← Back to Government Levels
+            </button>
+            
+            <h1 className="text-2xl font-bold text-gray-800">US Budget Analytics</h1>
+            
+            <div className="w-20"></div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">📊 Federal Budget Overview (FY 2024)</h2>
+            <p className="text-gray-600">Comprehensive analysis of the $6.5 trillion US federal budget</p>
+          </div>
+
+          {/* Revenue Sources Chart */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <DollarSign className="w-6 h-6 text-green-600" />
+              Federal Revenue Sources ($4.9 Trillion)
+            </h3>
+            <p className="text-gray-600 mb-4">Where the federal government gets its money</p>
+            <div className="space-y-3">
+              {usAnalyticsData.revenue.map((item, index) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">{item.source}</span>
+                    <span className="font-bold text-gray-800">${item.amount}B ({item.percentage}%)</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-green-500 h-3 rounded-full"
+                      style={{width: `${item.percentage}%`}}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 p-4 bg-red-50 border-2 border-red-300 rounded-lg">
+              <p className="text-red-800 font-bold">⚠️ Budget Deficit: $1.7 Trillion</p>
+              <p className="text-sm text-red-700">Government spends $1.7T more than it collects (borrowed money)</p>
+            </div>
+          </div>
+
+          {/* Federal Spending Chart */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <TrendingUp className="w-6 h-6 text-blue-600" />
+              Federal Spending by Category ($6.5 Trillion)
+            </h3>
+            <p className="text-gray-600 mb-4">Where your tax dollars go</p>
+            <div className="space-y-3">
+              {usAnalyticsData.spending.map((item, index) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">{item.category}</span>
+                    <span className="font-bold text-gray-800">${item.amount}B ({item.percentage}%)</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className={`h-3 rounded-full ${
+                        item.category.includes('Social Security') ? 'bg-purple-500' :
+                        item.category.includes('Medicare') ? 'bg-blue-500' :
+                        item.category.includes('Defense') ? 'bg-red-500' :
+                        item.category.includes('Debt') ? 'bg-orange-500' :
+                        'bg-gray-500'
+                      }`}
+                      style={{width: `${item.percentage}%`}}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Deficit History Chart */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <AlertCircle className="w-6 h-6 text-red-600" />
+              Budget Deficit History (2014-2024)
+            </h3>
+            <p className="text-gray-600 mb-4">Annual budget deficits over the past decade</p>
+            <div className="space-y-2">
+              {usAnalyticsData.deficitHistory.map((item, index) => (
+                <div key={index} className="flex items-center gap-4">
+                  <span className="text-gray-700 font-medium w-16">{item.year}</span>
+                  <div className="flex-1">
+                    <div className="w-full bg-gray-200 rounded-full h-6">
+                      <div
+                        className={`h-6 rounded-full ${
+                          item.deficit < -2000 ? 'bg-red-700' :
+                          item.deficit < -1000 ? 'bg-red-500' :
+                          'bg-red-400'
+                        }`}
+                        style={{width: `${Math.min((Math.abs(item.deficit) / 3200) * 100, 100)}%`}}
+                      />
+                    </div>
+                  </div>
+                  <span className="font-bold text-red-600 w-32 text-right">-${Math.abs(item.deficit)}B</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                <strong>Note:</strong> 2020-2021 saw historic deficits due to COVID-19 pandemic response spending.
+              </p>
+            </div>
+          </div>
+
+          {/* National Debt History Chart */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <AlertCircle className="w-6 h-6 text-orange-600" />
+              National Debt Growth (2014-2024)
+            </h3>
+            <p className="text-gray-600 mb-4">Total accumulated federal debt over time</p>
+            <div className="space-y-2">
+              {usAnalyticsData.debtHistory.map((item, index) => (
+                <div key={index} className="flex items-center gap-4">
+                  <span className="text-gray-700 font-medium w-16">{item.year}</span>
+                  <div className="flex-1">
+                    <div className="w-full bg-gray-200 rounded-full h-6">
+                      <div
+                        className="bg-orange-500 h-6 rounded-full"
+                        style={{width: `${(item.debt / 35) * 100}%`}}
+                      />
+                    </div>
+                  </div>
+                  <span className="font-bold text-orange-600 w-32 text-right">${item.debt}T</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 p-4 bg-orange-50 border-2 border-orange-400 rounded-lg">
+              <p className="text-orange-800 font-bold">📈 Current National Debt: $34.5 Trillion</p>
+              <p className="text-sm text-orange-700 mt-1">Interest payments: $658 billion per year (10% of budget)</p>
+            </div>
+          </div>
+
+          {/* Unemployment Trends Chart */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Users className="w-6 h-6 text-purple-600" />
+              Unemployment Rate Trends (2020-2024)
+            </h3>
+            <p className="text-gray-600 mb-4">National unemployment rate over the past 5 years</p>
+            <div className="space-y-3">
+              {usAnalyticsData.unemploymentTrends.map((item, index) => (
+                <div key={index} className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <div>
+                      <span className="text-gray-800 font-bold text-lg">{item.year}</span>
+                      <span className="text-gray-600 text-sm ml-3">{item.context}</span>
+                    </div>
+                    <span className={`text-2xl font-bold ${
+                      item.rate < 4 ? 'text-green-600' :
+                      item.rate < 6 ? 'text-yellow-600' :
+                      'text-red-600'
+                    }`}>{item.rate}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-4">
+                    <div
+                      className={`h-4 rounded-full ${
+                        item.rate < 4 ? 'bg-green-500' :
+                        item.rate < 6 ? 'bg-yellow-500' :
+                        'bg-red-500'
+                      }`}
+                      style={{width: `${(item.rate / 10) * 100}%`}}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Foreign Aid by Country */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Globe className="w-6 h-6 text-blue-600" />
+              Foreign Aid by Country (FY 2024 - Top 10)
+            </h3>
+            <p className="text-gray-600 mb-4">US foreign assistance to other nations</p>
+            <div className="space-y-3">
+              {usAnalyticsData.foreignAid.map((item, index) => (
+                <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
+                  <div className="flex justify-between items-start mb-1">
+                    <div className="flex-1">
+                      <span className="text-gray-800 font-bold">{index + 1}. {item.country}</span>
+                      <p className="text-sm text-gray-600">{item.purpose}</p>
+                    </div>
+                    <span className="font-bold text-blue-600 ml-4">${item.amount}B</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
+              <p className="text-blue-800 font-bold">Total Foreign Aid: ~$61 Billion (1% of budget)</p>
+            </div>
+          </div>
+
+          {/* US Government Loans to Foreign Governments */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <DollarSign className="w-6 h-6 text-green-600" />
+              Active Loans to Foreign Governments
+            </h3>
+            <p className="text-gray-600 mb-4">Loans extended to foreign nations (expected to be repaid)</p>
+            <div className="space-y-3">
+              {usAnalyticsData.foreignLoans.map((item, index) => (
+                <div key={index} className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <span className="text-gray-800 font-bold text-lg">{item.country}</span>
+                      <p className="text-sm text-gray-600 mt-1">{item.purpose}</p>
+                      <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded mt-1 inline-block">
+                        {item.status}
+                      </span>
+                    </div>
+                    <span className="font-bold text-green-600 text-xl ml-4">${item.amount}B</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Grant Spending by Department */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Building2 className="w-6 h-6 text-purple-600" />
+              Federal Grant Spending by Department
+            </h3>
+            <p className="text-gray-600 mb-4">How much each department gives out in grants</p>
+            <div className="space-y-3">
+              {usAnalyticsData.grantsByDepartment.map((item, index) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">{item.department}</span>
+                    <span className="font-bold text-gray-800">${item.grants}B ({item.percentage}%)</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-purple-500 h-3 rounded-full"
+                      style={{width: `${item.percentage}%`}}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Department Spending Trends */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <TrendingUp className="w-6 h-6 text-blue-600" />
+              Department Spending Trends (2020-2024)
+            </h3>
+            <p className="text-gray-600 mb-4">How spending has changed in major departments</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b-2 border-gray-300">
+                    <th className="text-left py-2 px-2 text-gray-700">Year</th>
+                    <th className="text-right py-2 px-2 text-red-700">Defense</th>
+                    <th className="text-right py-2 px-2 text-blue-700">Health & Human Services</th>
+                    <th className="text-right py-2 px-2 text-green-700">Education</th>
+                    <th className="text-right py-2 px-2 text-purple-700">Veterans Affairs</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usAnalyticsData.departmentTrends.map((item, index) => (
+                    <tr key={index} className="border-b border-gray-200">
+                      <td className="py-2 px-2 font-medium text-gray-800">{item.year}</td>
+                      <td className="text-right py-2 px-2 text-red-600">${item.defense}B</td>
+                      <td className="text-right py-2 px-2 text-blue-600">${item.hhs}B</td>
+                      <td className="text-right py-2 px-2 text-green-600">${item.education}B</td>
+                      <td className="text-right py-2 px-2 text-purple-600">${item.veterans}B</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Summary Statistics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-400 rounded-lg p-6 text-center">
+              <p className="text-sm text-gray-700 mb-2">Total Federal Revenue</p>
+              <p className="text-4xl font-bold text-green-700">$4.9T</p>
+              <p className="text-xs text-gray-600 mt-2">FY 2024</p>
+            </div>
+            <div className="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-400 rounded-lg p-6 text-center">
+              <p className="text-sm text-gray-700 mb-2">Total Federal Spending</p>
+              <p className="text-4xl font-bold text-red-700">$6.5T</p>
+              <p className="text-xs text-gray-600 mt-2">FY 2024</p>
+            </div>
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-400 rounded-lg p-6 text-center">
+              <p className="text-sm text-gray-700 mb-2">National Debt</p>
+              <p className="text-4xl font-bold text-orange-700">$34.5T</p>
+              <p className="text-xs text-gray-600 mt-2">As of 2024</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderCountrySelection = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
       <div className="max-w-4xl mx-auto">
@@ -1749,23 +2196,28 @@ function App() {
             </div>
           </div>
 
-          {/* Analytics Dashboard - Only for Canada for now */}
-          {!isUSA && (
-            <div
-              onClick={() => setView('analytics')}
-              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-purple-500 active:scale-95"
-            >
-              <div className="text-purple-600 mb-3 sm:mb-4">
-                <BarChart3 className="w-10 h-10 sm:w-12 sm:h-12" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Analytics Dashboard</h2>
-              <p className="text-gray-600 mb-3 text-sm sm:text-base">View economic impact, immigration, crime trends & spending</p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>11 Charts</span>
-                <ChevronRight className="w-5 h-5" />
-              </div>
+          {/* Analytics Dashboard - Available for both countries */}
+          <div
+            onClick={() => setView(isUSA ? 'us-analytics' : 'analytics')}
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-purple-500 active:scale-95"
+          >
+            <div className="text-purple-600 mb-3 sm:mb-4">
+              <BarChart3 className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-          )}
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+              {isUSA ? 'Budget Analytics' : 'Analytics Dashboard'}
+            </h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">
+              {isUSA 
+                ? '$6.5T federal budget, deficit, debt, unemployment & foreign aid'
+                : 'View economic impact, immigration, crime trends & spending'
+              }
+            </p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>{isUSA ? '12 Charts' : '11 Charts'}</span>
+              <ChevronRight className="w-5 h-5" />
+            </div>
+          </div>
 
           {/* Bills - Only for Canada for now */}
           {!isUSA && (
@@ -3995,6 +4447,7 @@ function App() {
       {view === 'members' && renderMembers()}
       {view === 'member-detail' && selectedMember && renderMemberDetail()}
       {view === 'analytics' && renderAnalytics()}
+      {view === 'us-analytics' && renderUSAnalytics()}
       {view === 'bills' && renderBills()}
       {view === 'bill-detail' && selectedBill && renderBillDetail()}
       {view === 'laws' && renderLaws()}
