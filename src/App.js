@@ -40,6 +40,7 @@ function App() {
   
   // Ministries state
   const [selectedMinistry, setSelectedMinistry] = useState(null);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [grantsExpanded, setGrantsExpanded] = useState(false);
   const [ministries, setMinistries] = useState([
     {
@@ -453,6 +454,7 @@ function App() {
     fetchLaws();
     fetchContracts();
     initializeUSCongress();
+    initializeUSDepartments();
   }, []);
   
   // Load user's saved MP from localStorage
@@ -520,6 +522,332 @@ function App() {
     ];
     
     setCongressMembers(sampleCongress);
+  };
+  
+  const initializeUSDepartments = () => {
+    // 15 US Cabinet Departments with grant data
+    const departments = [
+      {
+        id: 1,
+        name: 'Department of State',
+        secretary: 'Antony Blinken',
+        budget: '$58.1 Billion',
+        budgetRaw: 58100000000,
+        grants: '$42.3 Billion',
+        employees: 77243,
+        description: 'Advancing U.S. foreign policy and diplomacy worldwide',
+        responsibilities: ['Foreign affairs', 'Diplomacy', 'International development', 'Consular services'],
+        grantsDetail: [
+          { recipient: 'USAID - Global Health Programs', amount: '$8.2 Billion', purpose: 'HIV/AIDS prevention and global health initiatives', date: 'Ongoing 2024' },
+          { recipient: 'United Nations Operations', amount: '$3.5 Billion', purpose: 'UN peacekeeping and humanitarian missions', date: 'January 2025' },
+          { recipient: 'NATO Allied Support', amount: '$2.8 Billion', purpose: 'Military cooperation and defense partnerships', date: 'December 2024' },
+          { recipient: 'Middle East Partnership Initiative', amount: '$1.9 Billion', purpose: 'Democracy and economic development in MENA region', date: 'November 2024' },
+          { recipient: 'Millennium Challenge Corporation', amount: '$1.2 Billion', purpose: 'Economic growth in developing countries', date: 'October 2024' }
+        ],
+        approveVotes: 3421,
+        disapproveVotes: 2876,
+        userVote: null
+      },
+      {
+        id: 2,
+        name: 'Department of the Treasury',
+        secretary: 'Janet Yellen',
+        budget: '$7.9 Trillion',
+        budgetRaw: 7900000000000,
+        grants: '$890 Billion',
+        employees: 87336,
+        description: 'Managing federal finances, economic policy, and debt obligations',
+        responsibilities: ['Economic policy', 'Tax collection (IRS)', 'Federal debt management', 'Currency production'],
+        grantsDetail: [
+          { recipient: 'Federal Debt Interest Payments', amount: '$658 Billion', purpose: 'Interest on $34 trillion national debt', date: 'Ongoing 2024' },
+          { recipient: 'Community Development Financial Institutions', amount: '$85 Billion', purpose: 'Loans to underserved communities', date: 'January 2025' },
+          { recipient: 'Emergency Rental Assistance Program', amount: '$48 Billion', purpose: 'COVID-19 rental assistance', date: 'December 2024' },
+          { recipient: 'Small Business Administration Loans', amount: '$42 Billion', purpose: 'Small business financing and disaster relief', date: 'November 2024' },
+          { recipient: 'State and Local Fiscal Recovery', amount: '$35 Billion', purpose: 'Infrastructure and public services funding', date: 'October 2024' }
+        ],
+        approveVotes: 2945,
+        disapproveVotes: 3821,
+        userVote: null
+      },
+      {
+        id: 3,
+        name: 'Department of Defense (DOD)',
+        secretary: 'Lloyd Austin',
+        budget: '$842 Billion',
+        budgetRaw: 842000000000,
+        grants: '$420 Billion',
+        employees: 2870000,
+        description: 'National defense and military operations worldwide',
+        responsibilities: ['Military operations', 'National security', 'Defense research', 'Veterans support'],
+        grantsDetail: [
+          { recipient: 'Lockheed Martin Corporation', amount: '$75 Billion', purpose: 'F-35 fighter jets, missiles, and defense systems', date: 'Ongoing 2024' },
+          { recipient: 'Boeing Defense & Space', amount: '$24 Billion', purpose: 'Aircraft, satellites, and missile defense', date: 'January 2025' },
+          { recipient: 'Raytheon Technologies', amount: '$17 Billion', purpose: 'Missiles, radar systems, and cybersecurity', date: 'December 2024' },
+          { recipient: 'Northrop Grumman', amount: '$13 Billion', purpose: 'B-21 Stealth Bomber and space systems', date: 'November 2024' },
+          { recipient: 'General Dynamics', amount: '$11 Billion', purpose: 'Submarines, tanks, and combat systems', date: 'October 2024' },
+          { recipient: 'BAE Systems USA', amount: '$8.5 Billion', purpose: 'Armored vehicles and naval systems', date: 'September 2024' },
+          { recipient: 'L3Harris Technologies', amount: '$6.2 Billion', purpose: 'Communications and electronic warfare', date: 'August 2024' }
+        ],
+        approveVotes: 4235,
+        disapproveVotes: 2102,
+        userVote: null
+      },
+      {
+        id: 4,
+        name: 'Department of Justice (DOJ)',
+        secretary: 'Merrick Garland',
+        budget: '$37.5 Billion',
+        budgetRaw: 37500000000,
+        grants: '$15.2 Billion',
+        employees: 115259,
+        description: 'Federal law enforcement and administration of justice',
+        responsibilities: ['FBI operations', 'Federal prosecutions', 'Civil rights enforcement', 'Prison system'],
+        grantsDetail: [
+          { recipient: 'FBI Operations & Investigations', amount: '$5.8 Billion', purpose: 'Federal law enforcement and counterterrorism', date: 'Ongoing 2024' },
+          { recipient: 'State and Local Law Enforcement Grants', amount: '$3.2 Billion', purpose: 'Police equipment and training programs', date: 'January 2025' },
+          { recipient: 'Violence Against Women Programs', amount: '$1.8 Billion', purpose: 'Domestic violence prevention and victim services', date: 'December 2024' },
+          { recipient: 'Drug Enforcement Administration', amount: '$1.5 Billion', purpose: 'Combat drug trafficking and opioid crisis', date: 'November 2024' },
+          { recipient: 'Legal Aid for Low-Income Defendants', amount: '$850 Million', purpose: 'Public defender services nationwide', date: 'October 2024' }
+        ],
+        approveVotes: 3156,
+        disapproveVotes: 2734,
+        userVote: null
+      },
+      {
+        id: 5,
+        name: 'Department of Health & Human Services (HHS)',
+        secretary: 'Xavier Becerra',
+        budget: '$1.7 Trillion',
+        budgetRaw: 1700000000000,
+        grants: '$1.2 Trillion',
+        employees: 83212,
+        description: 'Healthcare, medical research, and social services',
+        responsibilities: ['Medicare & Medicaid', 'CDC operations', 'NIH medical research', 'Food and drug safety'],
+        grantsDetail: [
+          { recipient: 'Medicare Payments to Healthcare Providers', amount: '$850 Billion', purpose: 'Healthcare for 65+ million seniors', date: 'Ongoing 2024' },
+          { recipient: 'Medicaid State Programs', amount: '$  Billion', purpose: 'Healthcare for low-income Americans', date: 'Ongoing 2024' },
+          { recipient: 'National Institutes of Health (NIH)', amount: '$48 Billion', purpose: 'Medical research and clinical trials', date: 'January 2025' },
+          { recipient: 'Centers for Disease Control (CDC)', amount: '$12 Billion', purpose: 'Disease prevention and public health', date: 'December 2024' },
+          { recipient: 'Johns Hopkins University Medical Research', amount: '$3.2 Billion', purpose: 'Cancer and infectious disease research', date: 'November 2024' },
+          { recipient: 'Mayo Clinic Research Programs', amount: '$1.8 Billion', purpose: 'Clinical research and medical innovation', date: 'October 2024' }
+        ],
+        approveVotes: 3892,
+        disapproveVotes: 2456,
+        userVote: null
+      },
+      {
+        id: 6,
+        name: 'Department of Education',
+        secretary: 'Miguel Cardona',
+        budget: '$79.6 Billion',
+        budgetRaw: 79600000000,
+        grants: '$68.2 Billion',
+        employees: 4400,
+        description: 'Federal education policy and student financial aid',
+        responsibilities: ['Student loans', 'K-12 grants', 'Higher education funding', 'Education research'],
+        grantsDetail: [
+          { recipient: 'Pell Grants for College Students', amount: '$28.2 Billion', purpose: 'Financial aid for 6.5 million low-income students', date: 'Ongoing 2024' },
+          { recipient: 'Title I Grants to Schools', amount: '$18.4 Billion', purpose: 'Support for low-income K-12 schools', date: 'January 2025' },
+          { recipient: 'Special Education (IDEA)', amount: '$14.2 Billion', purpose: 'Services for students with disabilities', date: 'December 2024' },
+          { recipient: 'Head Start Early Childhood Programs', amount: '$11.9 Billion', purpose: 'Preschool for low-income children', date: 'November 2024' },
+          { recipient: 'Community Colleges of America', amount: '$4.5 Billion', purpose: 'Workforce training and technical education', date: 'October 2024' }
+        ],
+        approveVotes: 3234,
+        disapproveVotes: 2987,
+        userVote: null
+      },
+      {
+        id: 7,
+        name: 'Department of Veterans Affairs (VA)',
+        secretary: 'Denis McDonough',
+        budget: '$301 Billion',
+        budgetRaw: 301000000000,
+        grants: '$125 Billion',
+        employees: 412892,
+        description: 'Healthcare and benefits for military veterans',
+        responsibilities: ['VA hospitals', 'Disability compensation', 'GI Bill education', 'Veterans pensions'],
+        grantsDetail: [
+          { recipient: 'VA Medical Centers Nationwide', amount: '$85 Billion', purpose: 'Healthcare for 9 million veterans', date: 'Ongoing 2024' },
+          { recipient: 'Disability Compensation Payments', amount: '$118 Billion', purpose: 'Monthly payments to 5.2 million disabled veterans', date: 'Ongoing 2024' },
+          { recipient: 'GI Bill Education Benefits', amount: '$14.5 Billion', purpose: 'College tuition for veterans and families', date: 'January 2025' },
+          { recipient: 'Homeless Veterans Support Programs', amount: '$2.8 Billion', purpose: 'Housing and job training for homeless vets', date: 'December 2024' },
+          { recipient: 'Veterans Crisis Line & Mental Health', amount: '$1.9 Billion', purpose: 'PTSD treatment and suicide prevention', date: 'November 2024' }
+        ],
+        approveVotes: 4892,
+        disapproveVotes: 1245,
+        userVote: null
+      },
+      {
+        id: 8,
+        name: 'Department of Homeland Security (DHS)',
+        secretary: 'Alejandro Mayorkas',
+        budget: '$60.3 Billion',
+        budgetRaw: 60300000000,
+        grants: '$22.4 Billion',
+        employees: 260000,
+        description: 'Border security, immigration, and disaster response',
+        responsibilities: ['Border protection', 'TSA airport security', 'FEMA disaster relief', 'Secret Service'],
+        grantsDetail: [
+          { recipient: 'FEMA Disaster Relief Fund', amount: '$12.3 Billion', purpose: 'Hurricane, wildfire, and flood recovery', date: 'Ongoing 2024' },
+          { recipient: 'Customs and Border Protection', amount: '$5.8 Billion', purpose: 'Border wall, agents, and technology', date: 'January 2025' },
+          { recipient: 'State Homeland Security Grants', amount: '$3.2 Billion', purpose: 'State and local emergency preparedness', date: 'December 2024' },
+          { recipient: 'Immigration and Customs Enforcement', amount: '$2.1 Billion', purpose: 'Immigration enforcement and detention', date: 'November 2024' },
+          { recipient: 'Cybersecurity and Infrastructure Security Agency', amount: '$1.8 Billion', purpose: 'Protect critical infrastructure from cyber attacks', date: 'October 2024' }
+        ],
+        approveVotes: 2934,
+        disapproveVotes: 3421,
+        userVote: null
+      },
+      {
+        id: 9,
+        name: 'Department of Transportation (DOT)',
+        secretary: 'Pete Buttigieg',
+        budget: '$108 Billion',
+        budgetRaw: 108000000000,
+        grants: '$78.5 Billion',
+        employees: 55100,
+        description: 'Infrastructure, highways, aviation, and public transit',
+        responsibilities: ['Highway funding', 'FAA aviation safety', 'Public transit', 'Rail infrastructure'],
+        grantsDetail: [
+          { recipient: 'State Highway Infrastructure Grants', amount: '$52.5 Billion', purpose: 'Road, bridge, and highway construction', date: 'Ongoing 2024' },
+          { recipient: 'Federal Transit Administration', amount: '$18.2 Billion', purpose: 'Subway, bus, and light rail systems', date: 'January 2025' },
+          { recipient: 'Amtrak National Rail Service', amount: '$4.9 Billion', purpose: 'Passenger rail operations and upgrades', date: 'December 2024' },
+          { recipient: 'Airport Improvement Program', amount: '$3.8 Billion', purpose: 'Runway and terminal modernization', date: 'November 2024' },
+          { recipient: 'Port Infrastructure Development', amount: '$2.4 Billion', purpose: 'Seaport upgrades and cargo capacity', date: 'October 2024' }
+        ],
+        approveVotes: 3567,
+        disapproveVotes: 2234,
+        userVote: null
+      },
+      {
+        id: 10,
+        name: 'Department of Energy (DOE)',
+        secretary: 'Jennifer Granholm',
+        budget: '$45.8 Billion',
+        budgetRaw: 45800000000,
+        grants: '$28.3 Billion',
+        employees: 16500,
+        description: 'Energy policy, nuclear security, and scientific research',
+        responsibilities: ['Nuclear weapons', 'Energy research', 'Grid modernization', 'National labs'],
+        grantsDetail: [
+          { recipient: 'National Nuclear Security Administration', amount: '$21.4 Billion', purpose: 'Nuclear weapons maintenance and security', date: 'Ongoing 2024' },
+          { recipient: 'Clean Energy Investment Tax Credits', amount: '$12.8 Billion', purpose: 'Solar, wind, and renewable energy projects', date: 'January 2025' },
+          { recipient: 'Lawrence Livermore National Laboratory', amount: '$2.9 Billion', purpose: 'Nuclear fusion and weapons research', date: 'December 2024' },
+          { recipient: 'Brookhaven National Laboratory', amount: '$1.8 Billion', purpose: 'Particle physics and energy science', date: 'November 2024' },
+          { recipient: 'Electric Vehicle Charging Infrastructure', amount: '$1.5 Billion', purpose: 'EV charging stations nationwide', date: 'October 2024' }
+        ],
+        approveVotes: 3234,
+        disapproveVotes: 2567,
+        userVote: null
+      },
+      {
+        id: 11,
+        name: 'Department of Agriculture (USDA)',
+        secretary: 'Tom Vilsack',
+        budget: '$151 Billion',
+        budgetRaw: 151000000000,
+        grants: '$124 Billion',
+        employees: 100000,
+        description: 'Farm policy, food safety, and nutrition programs',
+        responsibilities: ['Farm subsidies', 'Food stamps (SNAP)', 'Rural development', 'Food safety inspection'],
+        grantsDetail: [
+          { recipient: 'SNAP Food Assistance Program', amount: '$113 Billion', purpose: 'Food stamps for 42 million low-income Americans', date: 'Ongoing 2024' },
+          { recipient: 'Farm Subsidies and Crop Insurance', amount: '$28.5 Billion', purpose: 'Income support for farmers', date: 'January 2025' },
+          { recipient: 'School Lunch and Breakfast Programs', amount: '$20.3 Billion', purpose: 'Free meals for 30 million students', date: 'Ongoing 2024' },
+          { recipient: 'Rural Development Grants', amount: '$3.8 Billion', purpose: 'Infrastructure in rural communities', date: 'December 2024' },
+          { recipient: 'Conservation Reserve Program', amount: '$2.2 Billion', purpose: 'Pay farmers to protect environmentally sensitive land', date: 'November 2024' }
+        ],
+        approveVotes: 3421,
+        disapproveVotes: 2678,
+        userVote: null
+      },
+      {
+        id: 12,
+        name: 'Department of Housing & Urban Development (HUD)',
+        secretary: 'Marcia Fudge',
+        budget: '$73.4 Billion',
+        budgetRaw: 73400000000,
+        grants: '$58.9 Billion',
+        employees: 7500,
+        description: 'Affordable housing and community development',
+        responsibilities: ['Public housing', 'Rent assistance', 'Homelessness programs', 'Fair housing enforcement'],
+        grantsDetail: [
+          { recipient: 'Section 8 Housing Choice Vouchers', amount: '$31.5 Billion', purpose: 'Rent assistance for 2.3 million low-income families', date: 'Ongoing 2024' },
+          { recipient: 'Public Housing Operating Fund', amount: '$8.2 Billion', purpose: 'Maintain 1 million public housing units', date: 'January 2025' },
+          { recipient: 'Community Development Block Grants', amount: '$5.4 Billion', purpose: 'Local infrastructure and housing projects', date: 'December 2024' },
+          { recipient: 'Homeless Assistance Grants', amount: '$3.6 Billion', purpose: 'Emergency shelters and transitional housing', date: 'November 2024' },
+          { recipient: 'FHA Mortgage Insurance Program', amount: '$2.8 Billion', purpose: 'First-time homebuyer assistance', date: 'October 2024' }
+        ],
+        approveVotes: 3234,
+        disapproveVotes: 2892,
+        userVote: null
+      },
+      {
+        id: 13,
+        name: 'Department of the Interior',
+        secretary: 'Deb Haaland',
+        budget: '$18.5 Billion',
+        budgetRaw: 18500000000,
+        grants: '$8.9 Billion',
+        employees: 70000,
+        description: 'National parks, public lands, and natural resources',
+        responsibilities: ['National Parks Service', 'Bureau of Land Management', 'U.S. Geological Survey', 'Indian Affairs'],
+        grantsDetail: [
+          { recipient: 'National Park Service Operations', amount: '$3.8 Billion', purpose: 'Maintain 423 national park sites', date: 'Ongoing 2024' },
+          { recipient: 'Bureau of Indian Affairs', amount: '$3.2 Billion', purpose: 'Services for 574 federally recognized tribes', date: 'January 2025' },
+          { recipient: 'Land and Water Conservation Fund', amount: '$1.9 Billion', purpose: 'Acquire and protect public lands', date: 'December 2024' },
+          { recipient: 'U.S. Geological Survey Research', amount: '$1.4 Billion', purpose: 'Earthquake monitoring and natural resource mapping', date: 'November 2024' },
+          { recipient: 'Wildlife Restoration Programs', amount: '$850 Million', purpose: 'Endangered species protection', date: 'October 2024' }
+        ],
+        approveVotes: 3678,
+        disapproveVotes: 2145,
+        userVote: null
+      },
+      {
+        id: 14,
+        name: 'Department of Labor',
+        secretary: 'Julie Su',
+        budget: '$14.2 Billion',
+        budgetRaw: 14200000000,
+        grants: '$8.7 Billion',
+        employees: 17347,
+        description: 'Workers\' rights, unemployment insurance, and job training',
+        responsibilities: ['OSHA safety enforcement', 'Unemployment insurance', 'Wage and hour standards', 'Job training programs'],
+        grantsDetail: [
+          { recipient: 'State Unemployment Insurance Programs', amount: '$4.2 Billion', purpose: 'Administer unemployment benefits', date: 'Ongoing 2024' },
+          { recipient: 'Workforce Innovation and Opportunity Act', amount: '$2.8 Billion', purpose: 'Job training for displaced workers', date: 'January 2025' },
+          { recipient: 'OSHA Workplace Safety Enforcement', amount: '$685 Million', purpose: 'Prevent workplace injuries and deaths', date: 'December 2024' },
+          { recipient: 'Apprenticeship Programs', amount: '$425 Million', purpose: 'Skilled trades training', date: 'November 2024' },
+          { recipient: 'Mine Safety and Health Administration', amount: '$385 Million', purpose: 'Coal and metal mine safety inspections', date: 'October 2024' }
+        ],
+        approveVotes: 3156,
+        disapproveVotes: 2734,
+        userVote: null
+      },
+      {
+        id: 15,
+        name: 'Department of Commerce',
+        secretary: 'Gina Raimondo',
+        budget: '$12.3 Billion',
+        budgetRaw: 12300000000,
+        grants: '$7.8 Billion',
+        employees: 48593,
+        description: 'Economic growth, trade, and technology development',
+        responsibilities: ['Census Bureau', 'Patent office', 'NOAA weather service', 'International trade'],
+        grantsDetail: [
+          { recipient: 'NOAA Weather and Climate Services', amount: '$6.9 Billion', purpose: 'Weather forecasting and climate research', date: 'Ongoing 2024' },
+          { recipient: 'Census Bureau Operations', amount: '$1.6 Billion', purpose: 'Population data collection and analysis', date: 'January 2025' },
+          { recipient: 'Economic Development Administration', amount: '$850 Million', purpose: 'Grants for economically distressed communities', date: 'December 2024' },
+          { recipient: 'National Institute of Standards & Technology', amount: '$625 Million', purpose: 'Measurement science and technology standards', date: 'November 2024' },
+          { recipient: 'Minority Business Development Agency', amount: '$115 Million', purpose: 'Support minority-owned businesses', date: 'October 2024' }
+        ],
+        approveVotes: 3045,
+        disapproveVotes: 2567,
+        userVote: null
+      }
+    ];
+    
+    setUsDepartments(departments);
   };
   
   const fetchMPs = async () => {
@@ -1021,6 +1349,331 @@ function App() {
     };
   };
 
+  // US Departments rendering (similar to ministries)
+  const renderDepartments = () => {
+    const totalBudget = usDepartments.reduce((sum, dept) => sum + dept.budgetRaw, 0);
+    const totalEmployees = usDepartments.reduce((sum, dept) => sum + dept.employees, 0);
+    
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <button
+              onClick={() => setView('categories')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              ← Back to Government Levels
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-8">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">🏛️ US Federal Departments</h2>
+            <p className="text-gray-600 mb-4">15 Cabinet-level executive departments managing federal operations</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
+                <p className="text-sm text-gray-600">Total Departments</p>
+                <p className="text-2xl font-bold text-blue-600">{usDepartments.length}</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border-2 border-green-300">
+                <p className="text-sm text-gray-600">Combined Budget</p>
+                <p className="text-2xl font-bold text-green-600">${(totalBudget / 1000000000000).toFixed(2)}T</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border-2 border-purple-300">
+                <p className="text-sm text-gray-600">Total Employees</p>
+                <p className="text-2xl font-bold text-purple-600">{totalEmployees.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {usDepartments.map(dept => {
+              const totalVotes = dept.approveVotes + dept.disapproveVotes;
+              const approvalRate = totalVotes > 0 ? Math.round((dept.approveVotes / totalVotes) * 100) : 0;
+              
+              return (
+                <div
+                  key={dept.id}
+                  onClick={() => {
+                    setSelectedDepartment(dept);
+                    setView('department-detail');
+                  }}
+                  className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
+                >
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">{dept.name}</h3>
+                  <p className="text-sm text-gray-600 mb-1">Secretary: {dept.secretary}</p>
+                  <p className="text-gray-700 mb-4">{dept.description}</p>
+                  
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    <div className="bg-green-50 rounded p-2">
+                      <p className="text-xs text-gray-600">Budget</p>
+                      <p className="text-sm font-bold text-green-600">{dept.budget}</p>
+                    </div>
+                    <div className="bg-blue-50 rounded p-2">
+                      <p className="text-xs text-gray-600">Grants</p>
+                      <p className="text-sm font-bold text-blue-600">{dept.grants}</p>
+                    </div>
+                    <div className="bg-purple-50 rounded p-2">
+                      <p className="text-xs text-gray-600">Staff</p>
+                      <p className="text-sm font-bold text-purple-600">{dept.employees.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-2">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-600">Approval Rating</span>
+                      <span className="font-semibold">{approvalRate}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          approvalRate >= 60 ? 'bg-green-500' :
+                          approvalRate >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                        }`}
+                        style={{width: `${approvalRate}%`}}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <span>👍 {dept.approveVotes}</span>
+                    <span>👎 {dept.disapproveVotes}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDepartmentDetail = () => {
+    if (!selectedDepartment) return null;
+
+    const totalVotes = selectedDepartment.approveVotes + selectedDepartment.disapproveVotes;
+    const approvalRate = totalVotes > 0 
+      ? Math.round((selectedDepartment.approveVotes / totalVotes) * 100) 
+      : 0;
+
+    const voteDepartment = (deptId, vote) => {
+      const updatedDepts = usDepartments.map(dept => {
+        if (dept.id === deptId) {
+          let newApprove = dept.approveVotes;
+          let newDisapprove = dept.disapproveVotes;
+          let newUserVote = vote;
+
+          if (dept.userVote === 'approve') newApprove--;
+          if (dept.userVote === 'disapprove') newDisapprove--;
+          if (vote === 'approve') newApprove++;
+          if (vote === 'disapprove') newDisapprove++;
+          if (vote === 'remove') newUserVote = null;
+
+          return {...dept, approveVotes: newApprove, disapproveVotes: newDisapprove, userVote: newUserVote};
+        }
+        return dept;
+      });
+      
+      setUsDepartments(updatedDepts);
+      const updated = updatedDepts.find(d => d.id === deptId);
+      setSelectedDepartment(updated);
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <button
+              onClick={() => {
+                setSelectedDepartment(null);
+                setView('departments');
+              }}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              ← Back to Departments
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">{selectedDepartment.name}</h1>
+            <p className="text-lg text-gray-700 mb-6">Secretary: {selectedDepartment.secretary}</p>
+            <p className="text-gray-600 mb-6">{selectedDepartment.description}</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <DollarSign className="w-8 h-8 text-green-600" />
+                  <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
+                </div>
+                <p className="text-3xl font-bold text-green-600">{selectedDepartment.budget}</p>
+              </div>
+
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <TrendingUp className="w-8 h-8 text-blue-600" />
+                  <h3 className="text-lg font-bold text-gray-800">Grants Given</h3>
+                </div>
+                <p className="text-3xl font-bold text-blue-600">{selectedDepartment.grants}</p>
+              </div>
+
+              <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Users className="w-8 h-8 text-purple-600" />
+                  <h3 className="text-lg font-bold text-gray-800">Employees</h3>
+                </div>
+                <p className="text-3xl font-bold text-purple-600">{selectedDepartment.employees.toLocaleString()}</p>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Key Responsibilities</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {selectedDepartment.responsibilities.map((resp, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700">{resp}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {selectedDepartment.grantsDetail && selectedDepartment.grantsDetail.length > 0 && (
+              <div className="mb-6">
+                <button
+                  onClick={() => setGrantsExpanded(!grantsExpanded)}
+                  className="w-full bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-400 rounded-lg p-5 hover:shadow-lg transition-all flex items-center justify-between cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="w-8 h-8 text-green-600" />
+                    <div className="text-left">
+                      <h3 className="text-xl font-bold text-gray-800">💰 Grants & Funding Breakdown</h3>
+                      <p className="text-sm text-gray-600">
+                        {selectedDepartment.grantsDetail.length} major grants • {selectedDepartment.grants} total allocated
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-blue-600">
+                      {grantsExpanded ? 'Hide Details' : 'View All Recipients'}
+                    </span>
+                    {grantsExpanded ? (
+                      <ChevronDown className="w-6 h-6 text-blue-600" />
+                    ) : (
+                      <ChevronRight className="w-6 h-6 text-blue-600" />
+                    )}
+                  </div>
+                </button>
+                
+                {grantsExpanded && (
+                  <div className="mt-4 space-y-3 animate-fadeIn">
+                    <p className="text-gray-700 font-medium mb-3 px-2">
+                      🔍 Major federal grants showing specific organizations receiving taxpayer funding:
+                    </p>
+                    {selectedDepartment.grantsDetail.map((grant, index) => (
+                      <div key={index} className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                          <div className="flex-1">
+                            <h4 className="text-lg font-bold text-gray-800">{grant.recipient}</h4>
+                            <p className="text-sm text-gray-600 mt-1">{grant.purpose}</p>
+                          </div>
+                          <div className="text-right sm:text-right flex-shrink-0">
+                            <p className="text-2xl font-bold text-green-600">{grant.amount}</p>
+                            <p className="text-xs text-gray-500">{grant.date}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Do You Approve of This Department's Performance?</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <ThumbsUp className="w-10 h-10 text-green-600" />
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">Approve</h3>
+                      <p className="text-sm text-gray-600">They're doing a good job</p>
+                    </div>
+                  </div>
+                  <div className="text-3xl font-bold text-green-600">{selectedDepartment.approveVotes}</div>
+                </div>
+                <button
+                  onClick={() => voteDepartment(
+                    selectedDepartment.id, 
+                    selectedDepartment.userVote === 'approve' ? 'remove' : 'approve'
+                  )}
+                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${
+                    selectedDepartment.userVote === 'approve'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                  }`}
+                >
+                  {selectedDepartment.userVote === 'approve' ? '✓ You Approve' : 'Vote Approve'}
+                </button>
+              </div>
+
+              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <ThumbsDown className="w-10 h-10 text-red-600" />
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
+                      <p className="text-sm text-gray-600">Not satisfied with performance</p>
+                    </div>
+                  </div>
+                  <div className="text-3xl font-bold text-red-600">{selectedDepartment.disapproveVotes}</div>
+                </div>
+                <button
+                  onClick={() => voteDepartment(
+                    selectedDepartment.id, 
+                    selectedDepartment.userVote === 'disapprove' ? 'remove' : 'disapprove'
+                  )}
+                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${
+                    selectedDepartment.userVote === 'disapprove'
+                      ? 'bg-red-600 text-white'
+                      : 'bg-red-100 text-red-700 hover:bg-red-200'
+                  }`}
+                >
+                  {selectedDepartment.userVote === 'disapprove' ? '✓ You Disapprove' : 'Vote Disapprove'}
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-700 font-semibold">Overall Approval Rating</span>
+                <span className="text-xl font-bold">{approvalRate}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-4">
+                <div
+                  className={`h-4 rounded-full ${
+                    approvalRate >= 60 ? 'bg-green-500' :
+                    approvalRate >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}
+                  style={{width: `${approvalRate}%`}}
+                />
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                {totalVotes.toLocaleString()} total votes
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderCountrySelection = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
       <div className="max-w-4xl mx-auto">
@@ -1132,23 +1785,28 @@ function App() {
           </div>
           )}
 
-          {/* Government Ministries/Departments - Only Canada for now */}
-          {!isUSA && (
+          {/* Government Ministries (Canada) / Federal Departments (USA) */}
           <div
-            onClick={() => setView('ministries')}
+            onClick={() => setView(isUSA ? 'departments' : 'ministries')}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95"
           >
             <div className="text-orange-600 mb-3 sm:mb-4">
               <Building2 className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Ministries</h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">Review budgets, grants & approve ministerial performance</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+              {isUSA ? 'Federal Departments' : 'Government Ministries'}
+            </h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">
+              {isUSA 
+                ? 'Review cabinet budgets, grants & approve department performance'
+                : 'Review budgets, grants & approve ministerial performance'
+              }
+            </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>15 Ministries</span>
+              <span>15 {isUSA ? 'Departments' : 'Ministries'}</span>
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
-          )}
 
           {/* Latest Laws & Regulations - Only Canada for now */}
           {!isUSA && (
@@ -3345,6 +4003,8 @@ function App() {
       {view === 'contract-detail' && selectedContract && renderContractDetail()}
       {view === 'ministries' && renderMinistries()}
       {view === 'ministry-detail' && selectedMinistry && renderMinistryDetail()}
+      {view === 'departments' && renderDepartments()}
+      {view === 'department-detail' && selectedDepartment && renderDepartmentDetail()}
       
       {/* Riding selector modal */}
       {showLocationPrompt && renderRidingSelector()}
