@@ -25,6 +25,8 @@ function App() {
   const [usDepartments, setUsDepartments] = useState([]);
   const [usAnalyticsData, setUsAnalyticsData] = useState(null);
   const [usSupremeCourt, setUsSupremeCourt] = useState(null);
+  const [usContracts, setUsContracts] = useState([]);
+  const [selectedUsContract, setSelectedUsContract] = useState(null);
   
   // Canadian Supreme Court data
   const [canadaSupremeCourt, setCanadaSupremeCourt] = useState(null);
@@ -464,6 +466,7 @@ function App() {
     initializeUSAnalytics();
     initializeCanadaSupremeCourt();
     initializeUSSupremeCourt();
+    initializeUSContracts();
   }, []);
   
   // Load user's saved MP from localStorage
@@ -1276,6 +1279,71 @@ function App() {
     };
     
     setUsSupremeCourt(supremeCourtData);
+  };
+  
+  const initializeUSContracts = () => {
+    const contracts = [
+      // Defense Contracts
+      { id: 1, company: 'Lockheed Martin Corporation', amount: '$75.2 Billion', amountRaw: 75200000000, department: 'Department of Defense', purpose: 'F-35 Lightning II fighter jets - production, maintenance, and upgrades', date: 'Ongoing 2024', status: 'Active', type: 'Defense' },
+      { id: 2, company: 'Boeing Defense, Space & Security', amount: '$24.3 Billion', amountRaw: 24300000000, department: 'Department of Defense', purpose: 'F/A-18 Super Hornet, KC-46 tanker aircraft, and missile defense systems', date: 'Ongoing 2024', status: 'Active', type: 'Defense' },
+      { id: 3, company: 'Raytheon Technologies', amount: '$17.8 Billion', amountRaw: 17800000000, department: 'Department of Defense', purpose: 'Patriot missile systems, Tomahawk cruise missiles, and radar systems', date: 'Ongoing 2024', status: 'Active', type: 'Defense' },
+      { id: 4, company: 'Northrop Grumman Corporation', amount: '$13.4 Billion', amountRaw: 13400000000, department: 'Department of Defense', purpose: 'B-21 Raider stealth bomber development and space systems', date: 'January 2024', status: 'Active', type: 'Defense' },
+      { id: 5, company: 'General Dynamics Corporation', amount: '$11.2 Billion', amountRaw: 11200000000, department: 'Department of Defense', purpose: 'Virginia-class submarines, Abrams tanks, and Stryker combat vehicles', date: 'Ongoing 2024', status: 'Active', type: 'Defense' },
+      { id: 6, company: 'BAE Systems USA', amount: '$8.5 Billion', amountRaw: 8500000000, department: 'Department of Defense', purpose: 'Armored combat vehicles, naval gun systems, and electronic warfare', date: 'November 2023', status: 'Active', type: 'Defense' },
+      { id: 7, company: 'L3Harris Technologies', amount: '$6.2 Billion', amountRaw: 6200000000, department: 'Department of Defense', purpose: 'Tactical radio systems, electronic warfare, and ISR solutions', date: 'September 2024', status: 'Active', type: 'Defense' },
+      { id: 8, company: 'Huntington Ingalls Industries', amount: '$5.8 Billion', amountRaw: 5800000000, department: 'Department of Defense', purpose: 'Gerald R. Ford-class aircraft carriers and Arleigh Burke destroyers', date: 'December 2023', status: 'Active', type: 'Defense' },
+      { id: 9, company: 'Leidos Holdings Inc.', amount: '$4.3 Billion', amountRaw: 4300000000, department: 'Department of Defense', purpose: 'IT modernization, cybersecurity, and logistics support services', date: 'August 2024', status: 'Active', type: 'Defense' },
+      { id: 10, company: 'SAIC (Science Applications International)', amount: '$3.7 Billion', amountRaw: 3700000000, department: 'Department of Defense', purpose: 'Intelligence analysis, software development, and technical services', date: 'July 2024', status: 'Active', type: 'Defense' },
+      
+      // NASA Contracts
+      { id: 11, company: 'SpaceX', amount: '$3.5 Billion', amountRaw: 3500000000, department: 'NASA', purpose: 'Starship lunar lander, ISS cargo resupply, and crew transportation', date: 'April 2024', status: 'Active', type: 'Space' },
+      { id: 12, company: 'Blue Origin', amount: '$2.1 Billion', amountRaw: 2100000000, department: 'NASA', purpose: 'Blue Moon lunar lander for Artemis program', date: 'May 2023', status: 'Active', type: 'Space' },
+      { id: 13, company: 'Boeing Space', amount: '$1.5 Billion', amountRaw: 1500000000, department: 'NASA', purpose: 'Space Launch System (SLS) rocket development and production', date: 'Ongoing 2024', status: 'Active', type: 'Space' },
+      { id: 14, company: 'Northrop Grumman Space', amount: '$1.8 Billion', amountRaw: 1800000000, department: 'NASA', purpose: 'James Webb Space Telescope support and future observatory missions', date: 'March 2024', status: 'Active', type: 'Space' },
+      { id: 15, company: 'Axiom Space', amount: '$850 Million', amountRaw: 850000000, department: 'NASA', purpose: 'Commercial space station modules and astronaut spacesuits', date: 'June 2024', status: 'Active', type: 'Space' },
+      
+      // Infrastructure & Transportation
+      { id: 16, company: 'Bechtel Corporation', amount: '$4.2 Billion', amountRaw: 4200000000, department: 'Department of Transportation', purpose: 'California High-Speed Rail construction and infrastructure modernization', date: 'February 2024', status: 'Active', type: 'Infrastructure' },
+      { id: 17, company: 'Fluor Corporation', amount: '$2.8 Billion', amountRaw: 2800000000, department: 'Department of Energy', purpose: 'Nuclear site cleanup and environmental remediation', date: 'January 2024', status: 'Active', type: 'Infrastructure' },
+      { id: 18, company: 'AECOM', amount: '$2.3 Billion', amountRaw: 2300000000, department: 'Department of Transportation', purpose: 'Highway infrastructure design, construction management, and bridge repairs', date: 'October 2023', status: 'Active', type: 'Infrastructure' },
+      { id: 19, company: 'Jacobs Engineering Group', amount: '$1.9 Billion', amountRaw: 1900000000, department: 'Department of Transportation', purpose: 'Airport modernization and public transit system upgrades', date: 'December 2023', status: 'Active', type: 'Infrastructure' },
+      { id: 20, company: 'KBR Inc.', amount: '$1.7 Billion', amountRaw: 1700000000, department: 'Department of Defense', purpose: 'Overseas military base operations and logistics support', date: 'August 2024', status: 'Active', type: 'Infrastructure' },
+      
+      // Technology & IT
+      { id: 21, company: 'Amazon Web Services (AWS)', amount: '$10.0 Billion', amountRaw: 10000000000, department: 'Department of Defense', purpose: 'Joint Warfighting Cloud Capability (JWCC) - cloud computing infrastructure', date: 'December 2022', status: 'Active', type: 'Technology' },
+      { id: 22, company: 'Microsoft Corporation', amount: '$8.7 Billion', amountRaw: 8700000000, department: 'Department of Defense', purpose: 'JWCC cloud services and Army HoloLens augmented reality systems', date: 'December 2022', status: 'Active', type: 'Technology' },
+      { id: 23, company: 'Google Cloud', amount: '$6.2 Billion', amountRaw: 6200000000, department: 'Department of Defense', purpose: 'JWCC cloud infrastructure and AI/ML capabilities', date: 'December 2022', status: 'Active', type: 'Technology' },
+      { id: 24, company: 'Oracle Corporation', amount: '$4.1 Billion', amountRaw: 4100000000, department: 'Department of Defense', purpose: 'JWCC database services and enterprise software systems', date: 'December 2022', status: 'Active', type: 'Technology' },
+      { id: 25, company: 'Palantir Technologies', amount: '$1.3 Billion', amountRaw: 1300000000, department: 'Department of Defense', purpose: 'AI-powered data analytics and battlefield intelligence platforms', date: 'May 2024', status: 'Active', type: 'Technology' },
+      
+      // Cybersecurity
+      { id: 26, company: 'Booz Allen Hamilton', amount: '$2.9 Billion', amountRaw: 2900000000, department: 'Department of Homeland Security', purpose: 'Cybersecurity consulting, threat intelligence, and IT modernization', date: 'September 2024', status: 'Active', type: 'Cybersecurity' },
+      { id: 27, company: 'Accenture Federal Services', amount: '$2.1 Billion', amountRaw: 2100000000, department: 'Department of Homeland Security', purpose: 'Digital transformation and cybersecurity infrastructure', date: 'July 2024', status: 'Active', type: 'Cybersecurity' },
+      { id: 28, company: 'CrowdStrike Holdings', amount: '$850 Million', amountRaw: 850000000, department: 'Department of Defense', purpose: 'Endpoint security and threat detection across military networks', date: 'March 2024', status: 'Active', type: 'Cybersecurity' },
+      
+      // Healthcare & Pharmaceuticals
+      { id: 29, company: 'Pfizer Inc.', amount: '$5.3 Billion', amountRaw: 5300000000, department: 'Health & Human Services', purpose: 'COVID-19 vaccines, antiviral medications, and pandemic preparedness', date: 'Ongoing 2024', status: 'Active', type: 'Healthcare' },
+      { id: 30, company: 'Moderna Inc.', amount: '$3.8 Billion', amountRaw: 3800000000, department: 'Health & Human Services', purpose: 'mRNA vaccines for COVID-19 and future pandemic preparedness', date: 'Ongoing 2024', status: 'Active', type: 'Healthcare' },
+      { id: 31, company: 'Johnson & Johnson', amount: '$2.4 Billion', amountRaw: 2400000000, department: 'Health & Human Services', purpose: 'Vaccine development and medical research partnerships', date: 'June 2024', status: 'Active', type: 'Healthcare' },
+      { id: 32, company: 'UnitedHealth Group', amount: '$1.9 Billion', amountRaw: 1900000000, department: 'Veterans Affairs', purpose: 'Healthcare services and insurance administration for veterans', date: 'April 2024', status: 'Active', type: 'Healthcare' },
+      
+      // Energy
+      { id: 33, company: 'NextEra Energy', amount: '$3.2 Billion', amountRaw: 3200000000, department: 'Department of Energy', purpose: 'Renewable energy infrastructure - wind and solar power generation', date: 'February 2024', status: 'Active', type: 'Energy' },
+      { id: 34, company: 'Tesla Energy', amount: '$1.8 Billion', amountRaw: 1800000000, department: 'Department of Energy', purpose: 'Grid-scale battery storage systems and EV charging infrastructure', date: 'May 2024', status: 'Active', type: 'Energy' },
+      { id: 35, company: 'Westinghouse Electric', amount: '$2.5 Billion', amountRaw: 2500000000, department: 'Department of Energy', purpose: 'Nuclear reactor technology and small modular reactor development', date: 'November 2023', status: 'Active', type: 'Energy' },
+      
+      // Consulting & Professional Services
+      { id: 36, company: 'Deloitte Consulting', amount: '$3.4 Billion', amountRaw: 3400000000, department: 'Multiple Agencies', purpose: 'Management consulting, financial advisory, and digital transformation', date: 'Ongoing 2024', status: 'Active', type: 'Consulting' },
+      { id: 37, company: 'McKinsey & Company', amount: '$1.7 Billion', amountRaw: 1700000000, department: 'Multiple Agencies', purpose: 'Strategic consulting and organizational transformation services', date: 'August 2024', status: 'Active', type: 'Consulting' },
+      { id: 38, company: 'CACI International', amount: '$2.8 Billion', amountRaw: 2800000000, department: 'Department of Defense', purpose: 'Intelligence support, IT services, and mission-critical solutions', date: 'July 2024', status: 'Active', type: 'Consulting' },
+      
+      // Border & Immigration
+      { id: 39, company: 'CoreCivic Inc.', amount: '$1.2 Billion', amountRaw: 1200000000, department: 'Department of Homeland Security', purpose: 'Immigration detention facility operations and management', date: 'January 2024', status: 'Active', type: 'Border Security' },
+      { id: 40, company: 'GEO Group Inc.', amount: '$950 Million', amountRaw: 950000000, department: 'Department of Homeland Security', purpose: 'Detention center operations and transportation services', date: 'February 2024', status: 'Active', type: 'Border Security' },
+      { id: 41, company: 'Anduril Industries', amount: '$850 Million', amountRaw: 850000000, department: 'Department of Homeland Security', purpose: 'AI-powered border surveillance towers and autonomous systems', date: 'September 2024', status: 'Active', type: 'Border Security' }
+    ];
+    
+    setUsContracts(contracts);
   };
   
   const fetchMPs = async () => {
@@ -2827,6 +2895,199 @@ function App() {
     );
   };
 
+  // US Federal Contracts Render Function
+  const renderUSContracts = () => {
+    const [contractSearch, setContractSearch] = useState('');
+    const [departmentFilter, setDepartmentFilter] = useState('All');
+    const [typeFilter, setTypeFilter] = useState('All');
+
+    const totalValue = usContracts.reduce((sum, contract) => sum + contract.amountRaw, 0);
+    
+    // Get unique departments and types
+    const departments = ['All', ...new Set(usContracts.map(c => c.department))];
+    const types = ['All', ...new Set(usContracts.map(c => c.type))];
+    
+    // Filter contracts
+    let filteredContracts = usContracts.filter(contract => {
+      const matchesSearch = contract.company.toLowerCase().includes(contractSearch.toLowerCase()) ||
+                          contract.purpose.toLowerCase().includes(contractSearch.toLowerCase());
+      const matchesDepartment = departmentFilter === 'All' || contract.department === departmentFilter;
+      const matchesType = typeFilter === 'All' || contract.type === typeFilter;
+      return matchesSearch && matchesDepartment && matchesType;
+    });
+    
+    // Sort by amount (highest first)
+    filteredContracts.sort((a, b) => b.amountRaw - a.amountRaw);
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <button
+              onClick={() => setView('categories')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              ← Back to Government Levels
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-300 rounded-lg p-6 mb-8">
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">💰 US Federal Contracts</h2>
+            <p className="text-gray-600 mb-4">See which companies receive billions in taxpayer money</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-lg p-4 border-2 border-red-300">
+                <p className="text-sm text-gray-600">Total Contracts</p>
+                <p className="text-3xl font-bold text-red-600">{usContracts.length}</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border-2 border-green-300">
+                <p className="text-sm text-gray-600">Total Value</p>
+                <p className="text-3xl font-bold text-green-600">${(totalValue / 1000000000).toFixed(1)}B</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
+                <p className="text-sm text-gray-600">Showing Results</p>
+                <p className="text-3xl font-bold text-blue-600">{filteredContracts.length}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Search & Filter</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Search Company or Purpose</label>
+                <input
+                  type="text"
+                  value={contractSearch}
+                  onChange={(e) => setContractSearch(e.target.value)}
+                  placeholder="e.g., Lockheed, SpaceX, fighter jets..."
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Department</label>
+                <select
+                  value={departmentFilter}
+                  onChange={(e) => setDepartmentFilter(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                >
+                  {departments.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Type</label>
+                <select
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                >
+                  {types.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Contracts List */}
+          <div className="space-y-4">
+            {filteredContracts.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-md p-8 text-center">
+                <p className="text-gray-600 text-lg">No contracts found matching your criteria</p>
+              </div>
+            ) : (
+              filteredContracts.map((contract) => (
+                <div
+                  key={contract.id}
+                  className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-shadow border-l-4 border-red-500"
+                >
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold text-gray-800 mb-2">{contract.company}</h3>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                          {contract.department}
+                        </span>
+                        <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                          {contract.type}
+                        </span>
+                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                          {contract.status}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-4xl font-bold text-green-600">{contract.amount}</p>
+                      <p className="text-sm text-gray-500 mt-1">{contract.date}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-1">Contract Purpose:</h4>
+                    <p className="text-gray-700">{contract.purpose}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Summary by Department */}
+          <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-6">Contracts by Department</h3>
+            <div className="space-y-3">
+              {departments.filter(d => d !== 'All').map(dept => {
+                const deptContracts = usContracts.filter(c => c.department === dept);
+                const deptTotal = deptContracts.reduce((sum, c) => sum + c.amountRaw, 0);
+                const percentage = ((deptTotal / totalValue) * 100).toFixed(1);
+                
+                return (
+                  <div key={dept}>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-gray-700 font-medium">{dept}</span>
+                      <span className="font-bold text-gray-800">
+                        ${(deptTotal / 1000000000).toFixed(1)}B ({percentage}%) • {deptContracts.length} contracts
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div
+                        className="bg-red-500 h-3 rounded-full"
+                        style={{width: `${percentage}%`}}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Top Contractors */}
+          <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-6">Top 10 Federal Contractors</h3>
+            <div className="space-y-3">
+              {usContracts.slice(0, 10).map((contract, index) => (
+                <div key={contract.id} className="flex items-center gap-4">
+                  <div className="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-bold">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-800">{contract.company}</p>
+                    <p className="text-sm text-gray-600">{contract.type}</p>
+                  </div>
+                  <p className="text-xl font-bold text-green-600">{contract.amount}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderCountrySelection = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
       <div className="max-w-4xl mx-auto">
@@ -2984,23 +3245,28 @@ function App() {
           </div>
           )}
 
-          {/* Government Contracts - Only Canada for now */}
-          {!isUSA && (
+          {/* Government Contracts - Available for both countries */}
           <div
-            onClick={() => setView('contracts')}
+            onClick={() => setView(isUSA ? 'us-contracts' : 'contracts')}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 active:scale-95"
           >
             <div className="text-red-600 mb-3 sm:mb-4">
               <DollarSign className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Contracts</h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">Follow taxpayer money and major government spending</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+              {isUSA ? 'Federal Contracts' : 'Government Contracts'}
+            </h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">
+              {isUSA 
+                ? 'See which companies get billions in taxpayer money'
+                : 'Follow taxpayer money and major government spending'
+              }
+            </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{contracts.length} Contracts</span>
+              <span>{isUSA ? usContracts.length : contracts.length} Contracts</span>
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
-          )}
 
           {/* Supreme Court - Available for both countries */}
           <div
@@ -5188,6 +5454,7 @@ function App() {
       {view === 'supreme-court' && renderCanadaSupremeCourt()}
       {view === 'us-supreme-court' && renderUSSupremeCourt()}
       {view === 'case-detail' && selectedCase && renderCaseDetail()}
+      {view === 'us-contracts' && renderUSContracts()}
       
       {/* Riding selector modal */}
       {showLocationPrompt && renderRidingSelector()}
