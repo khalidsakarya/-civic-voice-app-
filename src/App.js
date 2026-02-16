@@ -209,7 +209,6 @@ function App() {
   const [selectedUsContract, setSelectedUsContract] = useState(null);
   
   // Laws & Legal Search data
-  const [laws, setLaws] = useState([]);
   const [usLaws, setUsLaws] = useState([]);
   const [lawSearch, setLawSearch] = useState('');
   const [lawDateFilter, setLawDateFilter] = useState('All Time');
