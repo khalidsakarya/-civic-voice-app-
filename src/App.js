@@ -475,6 +475,7 @@ function App() {
     initializeCanadaSupremeCourt();
     initializeUSSupremeCourt();
     initializeUSContracts();
+    initializeUSBills();
   }, []);
   
   // Load user's saved MP from localStorage
@@ -1751,6 +1752,470 @@ function App() {
     ];
     
     setUsContracts(contracts);
+  };
+  
+  const initializeUSBills = () => {
+    const bills = [
+      {
+        id: 'hr-815',
+        number: 'H.R. 815',
+        title: 'National Security Supplemental Appropriations Act',
+        sponsor: 'Mike Johnson',
+        sponsorParty: 'Republican',
+        sponsorState: 'Louisiana',
+        chamber: 'House',
+        status: 'Signed into Law',
+        dateIntroduced: '2024-02-06',
+        dateStatusChange: '2024-04-24',
+        description: 'Emergency supplemental appropriations providing $95 billion in aid for Ukraine ($61B), Israel ($26B), and Taiwan ($8B). Includes TikTok ban provisions requiring ByteDance to divest or face US ban.',
+        category: 'Foreign Policy',
+        supportVotes: 4523,
+        opposeVotes: 1892,
+        userVote: null,
+        partySupport: { Democrat: 89, Republican: 11 },
+        timeline: [
+          { date: '2024-02-06', event: 'Introduced in House' },
+          { date: '2024-02-13', event: 'Passed House (311-112)' },
+          { date: '2024-02-13', event: 'Passed Senate (70-29)' },
+          { date: '2024-04-24', event: 'Signed by President Biden' }
+        ]
+      },
+      {
+        id: 's-4',
+        number: 'S. 4',
+        title: 'Border Security and Immigration Reform Act',
+        sponsor: 'James Lankford',
+        sponsorParty: 'Republican',
+        sponsorState: 'Oklahoma',
+        chamber: 'Senate',
+        status: 'Failed in Senate',
+        dateIntroduced: '2024-01-28',
+        dateStatusChange: '2024-02-07',
+        description: 'Comprehensive border security legislation including increased Border Patrol agents, asylum processing changes, and emergency authority to close the border. Bipartisan negotiations collapsed after Trump opposition.',
+        category: 'Immigration',
+        supportVotes: 2134,
+        opposeVotes: 3892,
+        userVote: null,
+        partySupport: { Democrat: 35, Republican: 65 },
+        timeline: [
+          { date: '2024-01-28', event: 'Introduced in Senate' },
+          { date: '2024-02-07', event: 'Failed cloture vote (49-50)' }
+        ]
+      },
+      {
+        id: 'hr-2',
+        number: 'H.R. 2',
+        title: 'Secure the Border Act',
+        sponsor: 'Mario Diaz-Balart',
+        sponsorParty: 'Republican',
+        sponsorState: 'Florida',
+        chamber: 'House',
+        status: 'Passed House',
+        dateIntroduced: '2023-05-11',
+        dateStatusChange: '2023-05-11',
+        description: 'Republican border security package requiring completion of border wall, increasing Border Patrol funding, and restricting asylum claims. Passed House on party-line vote.',
+        category: 'Immigration',
+        supportVotes: 3234,
+        opposeVotes: 2567,
+        userVote: null,
+        partySupport: { Democrat: 15, Republican: 85 },
+        timeline: [
+          { date: '2023-05-11', event: 'Introduced in House' },
+          { date: '2023-05-11', event: 'Passed House (219-213)' },
+          { date: '2023-05-12', event: 'Stalled in Senate' }
+        ]
+      },
+      {
+        id: 'hr-1',
+        number: 'H.R. 1',
+        title: 'Lower Energy Costs Act',
+        sponsor: 'Steve Scalise',
+        sponsorParty: 'Republican',
+        sponsorState: 'Louisiana',
+        chamber: 'House',
+        status: 'Passed House',
+        dateIntroduced: '2023-03-17',
+        dateStatusChange: '2023-03-30',
+        description: 'Republican energy package streamlining fossil fuel development, expanding domestic oil and gas production, and rolling back Biden climate regulations.',
+        category: 'Energy',
+        supportVotes: 2789,
+        opposeVotes: 2456,
+        userVote: null,
+        partySupport: { Democrat: 8, Republican: 92 },
+        timeline: [
+          { date: '2023-03-17', event: 'Introduced in House' },
+          { date: '2023-03-30', event: 'Passed House (225-204)' },
+          { date: '2023-04-01', event: 'Stalled in Senate' }
+        ]
+      },
+      {
+        id: 's-722',
+        number: 'S. 722',
+        title: 'CHIPS and Science Act Implementation',
+        sponsor: 'Chuck Schumer',
+        sponsorParty: 'Democrat',
+        sponsorState: 'New York',
+        chamber: 'Senate',
+        status: 'Signed into Law',
+        dateIntroduced: '2022-07-19',
+        dateStatusChange: '2022-08-09',
+        description: '$280 billion package providing $52 billion for semiconductor manufacturing, $200 billion for scientific research, and tax credits for chip production to compete with China.',
+        category: 'Technology',
+        supportVotes: 4892,
+        opposeVotes: 1234,
+        userVote: null,
+        partySupport: { Democrat: 95, Republican: 28 },
+        timeline: [
+          { date: '2022-07-19', event: 'Introduced in Senate' },
+          { date: '2022-07-27', event: 'Passed Senate (64-33)' },
+          { date: '2022-07-28', event: 'Passed House (243-187)' },
+          { date: '2022-08-09', event: 'Signed by President Biden' }
+        ]
+      },
+      {
+        id: 'hr-5376',
+        number: 'H.R. 5376',
+        title: 'Inflation Reduction Act',
+        sponsor: 'John Yarmuth',
+        sponsorParty: 'Democrat',
+        sponsorState: 'Kentucky',
+        chamber: 'House',
+        status: 'Signed into Law',
+        dateIntroduced: '2021-09-27',
+        dateStatusChange: '2022-08-16',
+        description: '$750 billion climate, healthcare, and tax package including $369 billion for climate/energy programs, Medicare drug price negotiation, and minimum corporate tax.',
+        category: 'Economy',
+        supportVotes: 5123,
+        opposeVotes: 1678,
+        userVote: null,
+        partySupport: { Democrat: 98, Republican: 0 },
+        timeline: [
+          { date: '2021-09-27', event: 'Introduced in House' },
+          { date: '2022-08-07', event: 'Passed Senate (51-50, VP tiebreaker)' },
+          { date: '2022-08-12', event: 'Passed House (220-207)' },
+          { date: '2022-08-16', event: 'Signed by President Biden' }
+        ]
+      },
+      {
+        id: 'hr-3684',
+        number: 'H.R. 3684',
+        title: 'Infrastructure Investment and Jobs Act',
+        sponsor: 'Peter DeFazio',
+        sponsorParty: 'Democrat',
+        sponsorState: 'Oregon',
+        chamber: 'House',
+        status: 'Signed into Law',
+        dateIntroduced: '2021-06-04',
+        dateStatusChange: '2021-11-15',
+        description: '$1.2 trillion bipartisan infrastructure package for roads, bridges, broadband, water systems, and public transit. Largest infrastructure investment in generations.',
+        category: 'Infrastructure',
+        supportVotes: 5789,
+        opposeVotes: 892,
+        userVote: null,
+        partySupport: { Democrat: 92, Republican: 35 },
+        timeline: [
+          { date: '2021-06-04', event: 'Introduced in House' },
+          { date: '2021-08-10', event: 'Passed Senate (69-30)' },
+          { date: '2021-11-05', event: 'Passed House (228-206)' },
+          { date: '2021-11-15', event: 'Signed by President Biden' }
+        ]
+      },
+      {
+        id: 'hr-3746',
+        number: 'H.R. 3746',
+        title: 'Fiscal Responsibility Act',
+        sponsor: 'Jodey Arrington',
+        sponsorParty: 'Republican',
+        sponsorState: 'Texas',
+        chamber: 'House',
+        status: 'Signed into Law',
+        dateIntroduced: '2023-05-29',
+        dateStatusChange: '2023-06-03',
+        description: 'Debt ceiling increase with spending caps, ending student loan payment pause, and work requirements for federal aid. Bipartisan deal averting default.',
+        category: 'Budget',
+        supportVotes: 3892,
+        opposeVotes: 2134,
+        userVote: null,
+        partySupport: { Democrat: 52, Republican: 48 },
+        timeline: [
+          { date: '2023-05-29', event: 'Introduced in House' },
+          { date: '2023-05-31', event: 'Passed House (314-117)' },
+          { date: '2023-06-01', event: 'Passed Senate (63-36)' },
+          { date: '2023-06-03', event: 'Signed by President Biden' }
+        ]
+      },
+      {
+        id: 's-1939',
+        number: 'S. 1939',
+        title: 'John R. Lewis Voting Rights Act',
+        sponsor: 'Patrick Leahy',
+        sponsorParty: 'Democrat',
+        sponsorState: 'Vermont',
+        chamber: 'Senate',
+        status: 'In Committee',
+        dateIntroduced: '2023-06-08',
+        dateStatusChange: '2023-06-08',
+        description: 'Restores and modernizes Voting Rights Act provisions struck down by Supreme Court, requiring federal approval for voting changes in states with discrimination history.',
+        category: 'Civil Rights',
+        supportVotes: 4234,
+        opposeVotes: 1567,
+        userVote: null,
+        partySupport: { Democrat: 98, Republican: 3 },
+        timeline: [
+          { date: '2023-06-08', event: 'Introduced in Senate' },
+          { date: '2023-06-15', event: 'Referred to Judiciary Committee' }
+        ]
+      },
+      {
+        id: 'hr-21',
+        number: 'H.R. 21',
+        title: 'Strategic Production Response Act',
+        sponsor: 'Cathy McMorris Rodgers',
+        sponsorParty: 'Republican',
+        sponsorState: 'Washington',
+        chamber: 'House',
+        status: 'Passed House',
+        dateIntroduced: '2023-01-12',
+        dateStatusChange: '2023-01-26',
+        description: 'Prohibits President from releasing Strategic Petroleum Reserve unless plan developed to increase domestic energy production.',
+        category: 'Energy',
+        supportVotes: 2678,
+        opposeVotes: 2456,
+        userVote: null,
+        partySupport: { Democrat: 12, Republican: 88 },
+        timeline: [
+          { date: '2023-01-12', event: 'Introduced in House' },
+          { date: '2023-01-26', event: 'Passed House (221-205)' },
+          { date: '2023-01-27', event: 'Stalled in Senate' }
+        ]
+      },
+      {
+        id: 's-316',
+        number: 'S. 316',
+        title: 'Pregnant Workers Fairness Act',
+        sponsor: 'Bob Casey',
+        sponsorParty: 'Democrat',
+        sponsorState: 'Pennsylvania',
+        chamber: 'Senate',
+        status: 'Signed into Law',
+        dateIntroduced: '2023-02-02',
+        dateStatusChange: '2022-12-29',
+        description: 'Requires employers to provide reasonable accommodations for pregnant workers, protecting against discrimination and ensuring workplace safety.',
+        category: 'Labor',
+        supportVotes: 4892,
+        opposeVotes: 678,
+        userVote: null,
+        partySupport: { Democrat: 97, Republican: 72 },
+        timeline: [
+          { date: '2023-02-02', event: 'Introduced in Senate' },
+          { date: '2022-12-15', event: 'Passed Senate by unanimous consent' },
+          { date: '2022-12-08', event: 'Passed House (315-101)' },
+          { date: '2022-12-29', event: 'Signed by President Biden' }
+        ]
+      },
+      {
+        id: 'hr-277',
+        number: 'H.R. 277',
+        title: 'Defund Planned Parenthood Act',
+        sponsor: 'Bob Good',
+        sponsorParty: 'Republican',
+        sponsorState: 'Virginia',
+        chamber: 'House',
+        status: 'In Committee',
+        dateIntroduced: '2023-01-11',
+        dateStatusChange: '2023-01-11',
+        description: 'Prohibits federal funding to Planned Parenthood and affiliated organizations for one year.',
+        category: 'Healthcare',
+        supportVotes: 1892,
+        opposeVotes: 4234,
+        userVote: null,
+        partySupport: { Democrat: 2, Republican: 95 },
+        timeline: [
+          { date: '2023-01-11', event: 'Introduced in House' },
+          { date: '2023-01-23', event: 'Referred to Energy and Commerce Committee' }
+        ]
+      },
+      {
+        id: 's-686',
+        number: 'S. 686',
+        title: 'RESTRICT Act (TikTok Ban)',
+        sponsor: 'Mark Warner',
+        sponsorParty: 'Democrat',
+        sponsorState: 'Virginia',
+        chamber: 'Senate',
+        status: 'In Committee',
+        dateIntroduced: '2023-03-07',
+        dateStatusChange: '2023-03-07',
+        description: 'Empowers Commerce Department to ban or restrict foreign technology products deemed national security threats, primarily targeting TikTok and other Chinese apps.',
+        category: 'Technology',
+        supportVotes: 3567,
+        opposeVotes: 2234,
+        userVote: null,
+        partySupport: { Democrat: 72, Republican: 68 },
+        timeline: [
+          { date: '2023-03-07', event: 'Introduced in Senate' },
+          { date: '2023-03-14', event: 'Referred to Intelligence Committee' }
+        ]
+      },
+      {
+        id: 'hr-1467',
+        number: 'H.R. 1467',
+        title: 'Protect America\'s Children from Toxic Pesticides Act',
+        sponsor: 'Joe Neguse',
+        sponsorParty: 'Democrat',
+        sponsorState: 'Colorado',
+        chamber: 'House',
+        status: 'Passed House',
+        dateIntroduced: '2023-03-09',
+        dateStatusChange: '2023-04-26',
+        description: 'Bans use of organophosphate pesticides linked to developmental disorders in children, requires EPA to re-evaluate pesticide safety standards.',
+        category: 'Environment',
+        supportVotes: 3892,
+        opposeVotes: 1678,
+        userVote: null,
+        partySupport: { Democrat: 92, Republican: 8 },
+        timeline: [
+          { date: '2023-03-09', event: 'Introduced in House' },
+          { date: '2023-04-26', event: 'Passed House (218-211)' },
+          { date: '2023-04-27', event: 'Stalled in Senate' }
+        ]
+      },
+      {
+        id: 's-1076',
+        number: 'S. 1076',
+        title: 'Railway Safety Act',
+        sponsor: 'Sherrod Brown',
+        sponsorParty: 'Democrat',
+        sponsorState: 'Ohio',
+        chamber: 'Senate',
+        status: 'In Committee',
+        dateIntroduced: '2023-03-28',
+        dateStatusChange: '2023-03-28',
+        description: 'Increases railway safety requirements after East Palestine, Ohio derailment. Mandates improved braking systems, crew size requirements, and hazmat protocols.',
+        category: 'Transportation',
+        supportVotes: 4456,
+        opposeVotes: 892,
+        userVote: null,
+        partySupport: { Democrat: 95, Republican: 42 },
+        timeline: [
+          { date: '2023-03-28', event: 'Introduced in Senate' },
+          { date: '2023-04-05', event: 'Referred to Commerce Committee' }
+        ]
+      },
+      {
+        id: 'hr-485',
+        number: 'H.R. 485',
+        title: 'Federal Extreme Risk Protection Order Act',
+        sponsor: 'Lucy McBath',
+        sponsorParty: 'Democrat',
+        sponsorState: 'Georgia',
+        chamber: 'House',
+        status: 'In Committee',
+        dateIntroduced: '2023-01-24',
+        dateStatusChange: '2023-01-24',
+        description: 'Creates federal red flag law allowing courts to temporarily remove firearms from individuals deemed dangerous to themselves or others.',
+        category: 'Gun Control',
+        supportVotes: 3892,
+        opposeVotes: 2134,
+        userVote: null,
+        partySupport: { Democrat: 96, Republican: 5 },
+        timeline: [
+          { date: '2023-01-24', event: 'Introduced in House' },
+          { date: '2023-02-01', event: 'Referred to Judiciary Committee' }
+        ]
+      },
+      {
+        id: 's-139',
+        number: 'S. 139',
+        title: 'Social Security Expansion Act',
+        sponsor: 'Bernie Sanders',
+        sponsorParty: 'Independent',
+        sponsorState: 'Vermont',
+        chamber: 'Senate',
+        status: 'In Committee',
+        dateIntroduced: '2023-02-01',
+        dateStatusChange: '2023-02-01',
+        description: 'Expands Social Security benefits by $200/month, extends solvency by lifting payroll tax cap on income over $250,000.',
+        category: 'Social Security',
+        supportVotes: 4678,
+        opposeVotes: 1234,
+        userVote: null,
+        partySupport: { Democrat: 85, Republican: 2 },
+        timeline: [
+          { date: '2023-02-01', event: 'Introduced in Senate' },
+          { date: '2023-02-08', event: 'Referred to Finance Committee' }
+        ]
+      },
+      {
+        id: 'hr-734',
+        number: 'H.R. 734',
+        title: 'Term Limits for Members of Congress',
+        sponsor: 'Ralph Norman',
+        sponsorParty: 'Republican',
+        sponsorState: 'South Carolina',
+        chamber: 'House',
+        status: 'In Committee',
+        dateIntroduced: '2023-02-01',
+        dateStatusChange: '2023-02-01',
+        description: 'Constitutional amendment imposing 12-year term limits on House and Senate members.',
+        category: 'Government Reform',
+        supportVotes: 5234,
+        opposeVotes: 892,
+        userVote: null,
+        partySupport: { Democrat: 22, Republican: 88 },
+        timeline: [
+          { date: '2023-02-01', event: 'Introduced in House' },
+          { date: '2023-02-09', event: 'Referred to Judiciary Committee' }
+        ]
+      },
+      {
+        id: 's-563',
+        number: 'S. 563',
+        title: 'Right to Contraception Act',
+        sponsor: 'Ed Markey',
+        sponsorParty: 'Democrat',
+        sponsorState: 'Massachusetts',
+        chamber: 'Senate',
+        status: 'Failed in Senate',
+        dateIntroduced: '2023-02-28',
+        dateStatusChange: '2024-06-05',
+        description: 'Establishes federal statutory right to access contraception and contraceptive information, protection against state restrictions.',
+        category: 'Healthcare',
+        supportVotes: 4123,
+        opposeVotes: 1892,
+        userVote: null,
+        partySupport: { Democrat: 97, Republican: 8 },
+        timeline: [
+          { date: '2023-02-28', event: 'Introduced in Senate' },
+          { date: '2024-06-05', event: 'Failed cloture vote (51-39, needed 60)' }
+        ]
+      },
+      {
+        id: 'hr-9495',
+        number: 'H.R. 9495',
+        title: 'Stop Terror-Financing and Tax Penalties on American Hostages Act',
+        sponsor: 'Claudia Tenney',
+        sponsorParty: 'Republican',
+        sponsorState: 'New York',
+        chamber: 'House',
+        status: 'Passed House',
+        dateIntroduced: '2024-09-09',
+        dateStatusChange: '2024-11-21',
+        description: 'Allows Treasury Secretary to revoke tax-exempt status of organizations supporting terrorism, postpones tax deadlines for Americans held hostage abroad.',
+        category: 'National Security',
+        supportVotes: 2567,
+        opposeVotes: 3892,
+        userVote: null,
+        partySupport: { Democrat: 28, Republican: 92 },
+        timeline: [
+          { date: '2024-09-09', event: 'Introduced in House' },
+          { date: '2024-11-21', event: 'Passed House (219-184)' },
+          { date: '2024-11-22', event: 'Pending in Senate' }
+        ]
+      }
+    ];
+    
+    setUsBills(bills);
   };
   
   const fetchMPs = async () => {
@@ -3516,6 +3981,339 @@ function App() {
     );
   };
 
+  // Render US Federal Bills
+  const renderUSBills = () => {
+    const [billSearch, setBillSearch] = React.useState('');
+    const [statusFilter, setStatusFilter] = React.useState('All');
+    const [categoryFilter, setCategoryFilter] = React.useState('All');
+
+    const filteredBills = usBills.filter(bill => {
+      const matchesSearch = billSearch === '' || 
+        bill.number.toLowerCase().includes(billSearch.toLowerCase()) ||
+        bill.title.toLowerCase().includes(billSearch.toLowerCase()) ||
+        bill.sponsor.toLowerCase().includes(billSearch.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'All' || bill.status === statusFilter;
+      const matchesCategory = categoryFilter === 'All' || bill.category === categoryFilter;
+      
+      return matchesSearch && matchesStatus && matchesCategory;
+    });
+
+    const statuses = ['All', ...new Set(usBills.map(b => b.status))];
+    const categories = ['All', ...new Set(usBills.map(b => b.category))];
+
+    const getStatusColor = (status) => {
+      switch(status) {
+        case 'Signed into Law': return 'bg-green-100 text-green-800 border-green-300';
+        case 'Passed House': return 'bg-blue-100 text-blue-800 border-blue-300';
+        case 'Passed Senate': return 'bg-indigo-100 text-indigo-800 border-indigo-300';
+        case 'In Committee': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        case 'Failed in Senate': return 'bg-red-100 text-red-800 border-red-300';
+        default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <button
+              onClick={() => setView('categories')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
+            >
+              ← Back to Categories
+            </button>
+            <h1 className="text-3xl font-bold text-gray-800">Federal Bills & Legislation</h1>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Summary Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <p className="text-sm text-gray-600 mb-1">Total Bills</p>
+              <p className="text-3xl font-bold text-gray-800">{usBills.length}</p>
+            </div>
+            <div className="bg-green-50 border-2 border-green-300 rounded-lg shadow-md p-6">
+              <p className="text-sm text-gray-600 mb-1">Signed into Law</p>
+              <p className="text-3xl font-bold text-green-600">
+                {usBills.filter(b => b.status === 'Signed into Law').length}
+              </p>
+            </div>
+            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg shadow-md p-6">
+              <p className="text-sm text-gray-600 mb-1">Passed Chamber</p>
+              <p className="text-3xl font-bold text-blue-600">
+                {usBills.filter(b => b.status.includes('Passed')).length}
+              </p>
+            </div>
+            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg shadow-md p-6">
+              <p className="text-sm text-gray-600 mb-1">In Committee</p>
+              <p className="text-3xl font-bold text-yellow-600">
+                {usBills.filter(b => b.status === 'In Committee').length}
+              </p>
+            </div>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Search Bills</label>
+                <input
+                  type="text"
+                  placeholder="Search by number, title, or sponsor..."
+                  value={billSearch}
+                  onChange={(e) => setBillSearch(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Status</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {statuses.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Category</label>
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {categories.map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mt-4">
+              Showing {filteredBills.length} of {usBills.length} bills
+            </p>
+          </div>
+
+          {/* Bills List */}
+          <div className="space-y-4">
+            {filteredBills.map(bill => (
+              <div
+                key={bill.id}
+                onClick={() => {
+                  setSelectedBill(bill);
+                  setView('us-bill-detail');
+                }}
+                className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-blue-500"
+              >
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                        {bill.number}
+                      </span>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium border-2 ${getStatusColor(bill.status)}`}>
+                        {bill.status}
+                      </span>
+                      <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {bill.category}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">{bill.title}</h3>
+                    <p className="text-gray-600 mb-3">{bill.description}</p>
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        <span>Sponsor: {bill.sponsor} ({bill.sponsorParty}-{bill.sponsorState})</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        <span>Introduced: {bill.dateIntroduced}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="flex items-center gap-4">
+                      <div className="text-center">
+                        <div className="flex items-center gap-1 text-green-600">
+                          <ThumbsUp className="w-5 h-5" />
+                          <span className="font-bold text-lg">{bill.supportVotes.toLocaleString()}</span>
+                        </div>
+                        <p className="text-xs text-gray-500">Support</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="flex items-center gap-1 text-red-600">
+                          <ThumbsDown className="w-5 h-5" />
+                          <span className="font-bold text-lg">{bill.opposeVotes.toLocaleString()}</span>
+                        </div>
+                        <p className="text-xs text-gray-500">Oppose</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-6 h-6 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Render US Bill Detail
+  const renderUSBillDetail = () => {
+    if (!selectedBill) return null;
+
+    const getStatusColor = (status) => {
+      switch(status) {
+        case 'Signed into Law': return 'bg-green-100 text-green-800 border-green-300';
+        case 'Passed House': return 'bg-blue-100 text-blue-800 border-blue-300';
+        case 'Passed Senate': return 'bg-indigo-100 text-indigo-800 border-indigo-300';
+        case 'In Committee': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        case 'Failed in Senate': return 'bg-red-100 text-red-800 border-red-300';
+        default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      }
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <button
+              onClick={() => {
+                setSelectedBill(null);
+                setView('us-bills');
+              }}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              ← Back to Federal Bills
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-5xl mx-auto px-4 py-8">
+          {/* Bill Header */}
+          <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="bg-blue-600 text-white px-4 py-2 rounded-full text-lg font-bold">
+                {selectedBill.number}
+              </span>
+              <span className={`px-4 py-2 rounded-full text-sm font-medium border-2 ${getStatusColor(selectedBill.status)}`}>
+                {selectedBill.status}
+              </span>
+              <span className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium">
+                {selectedBill.category}
+              </span>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">{selectedBill.title}</h1>
+            <p className="text-lg text-gray-700 mb-6">{selectedBill.description}</p>
+
+            {/* Sponsor Info */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Sponsored By</p>
+                <p className="font-bold text-gray-800">{selectedBill.sponsor}</p>
+                <p className="text-sm text-gray-600">{selectedBill.sponsorParty} - {selectedBill.sponsorState}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Chamber</p>
+                <p className="font-bold text-gray-800">{selectedBill.chamber}</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Date Introduced</p>
+                <p className="font-bold text-gray-800">{selectedBill.dateIntroduced}</p>
+              </div>
+            </div>
+
+            {/* Voting Section */}
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">Citizen Opinion</h3>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex gap-6 sm:gap-8">
+                  <div className="flex items-center gap-3">
+                    <ThumbsUp className="w-6 h-6 text-green-600" />
+                    <div>
+                      <div className="text-2xl font-bold text-gray-800">{selectedBill.supportVotes.toLocaleString()}</div>
+                      <div className="text-sm text-gray-600">Support</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <ThumbsDown className="w-6 h-6 text-red-600" />
+                    <div>
+                      <div className="text-2xl font-bold text-gray-800">{selectedBill.opposeVotes.toLocaleString()}</div>
+                      <div className="text-sm text-gray-600">Oppose</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => {
+                      // Vote support logic would go here
+                      alert('Vote support feature - would update in real app');
+                    }}
+                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-green-50 text-green-700 hover:bg-green-100"
+                  >
+                    <ThumbsUp className="w-5 h-5" />
+                    <span>Support This Bill</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Vote oppose logic would go here
+                      alert('Vote oppose feature - would update in real app');
+                    }}
+                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors bg-red-50 text-red-700 hover:bg-red-100"
+                  >
+                    <ThumbsDown className="w-5 h-5" />
+                    <span>Oppose This Bill</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Party Support */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Party Support</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Democrat Support</p>
+                <p className="text-3xl font-bold text-blue-600">{selectedBill.partySupport.Democrat}%</p>
+              </div>
+              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Republican Support</p>
+                <p className="text-3xl font-bold text-red-600">{selectedBill.partySupport.Republican}%</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Legislative Timeline</h3>
+            <div className="space-y-4">
+              {selectedBill.timeline.map((item, index) => (
+                <div key={index} className="flex gap-4">
+                  <div className="flex flex-col items-center">
+                    <div className="w-4 h-4 bg-blue-600 rounded-full"></div>
+                    {index < selectedBill.timeline.length - 1 && (
+                      <div className="w-0.5 h-full bg-blue-300 mt-1"></div>
+                    )}
+                  </div>
+                  <div className="flex-1 pb-6">
+                    <p className="text-sm text-gray-500">{item.date}</p>
+                    <p className="font-semibold text-gray-800">{item.event}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderCountrySelection = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
       <div className="max-w-4xl mx-auto">
@@ -3587,6 +4385,29 @@ function App() {
             <p className="text-gray-600 mb-3 text-sm sm:text-base">Explore {memberCount} {memberTitle} across all parties</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
               <span>{memberCount} {isUSA ? 'Members' : 'MPs'}</span>
+              <ChevronRight className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Bills/Legislation */}
+          <div
+            onClick={() => setView(isUSA ? 'us-bills' : 'bills')}
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
+          >
+            <div className="text-green-600 mb-3 sm:mb-4">
+              <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+              {isUSA ? 'Federal Bills' : 'Bills & Legislation'}
+            </h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">
+              {isUSA 
+                ? 'Track bills through Congress, see who sponsors & votes'
+                : 'Track proposed legislation and parliamentary bills'
+              }
+            </p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>{isUSA ? usBills.length : bills.length} Active Bills</span>
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
@@ -6235,6 +7056,8 @@ function App() {
       {view === 'us-supreme-court' && renderUSSupremeCourt()}
       {view === 'case-detail' && selectedCase && renderCaseDetail()}
       {view === 'us-contracts' && renderUSContracts()}
+      {view === 'us-bills' && renderUSBills()}
+      {view === 'us-bill-detail' && selectedBill && renderUSBillDetail()}
       
       {/* Riding selector modal */}
       {showLocationPrompt && renderRidingSelector()}
