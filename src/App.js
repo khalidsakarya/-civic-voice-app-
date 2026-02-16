@@ -46,6 +46,11 @@ function App() {
   const [departmentFilter, setDepartmentFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
   
+  // US Bills filter states
+  const [billSearch, setBillSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  
   // US Congress chamber selection
   const [selectedChamber, setSelectedChamber] = useState(null);
   
@@ -3983,10 +3988,6 @@ function App() {
 
   // Render US Federal Bills
   const renderUSBills = () => {
-    const [billSearch, setBillSearch] = React.useState('');
-    const [statusFilter, setStatusFilter] = React.useState('All');
-    const [categoryFilter, setCategoryFilter] = React.useState('All');
-
     const filteredBills = usBills.filter(bill => {
       const matchesSearch = billSearch === '' || 
         bill.number.toLowerCase().includes(billSearch.toLowerCase()) ||
