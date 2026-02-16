@@ -208,6 +208,12 @@ function App() {
   const [usContracts, setUsContracts] = useState([]);
   const [selectedUsContract, setSelectedUsContract] = useState(null);
   
+  // Laws & Legal Search data
+  const [laws, setLaws] = useState([]);
+  const [usLaws, setUsLaws] = useState([]);
+  const [lawSearch, setLawSearch] = useState('');
+  const [lawDateFilter, setLawDateFilter] = useState('All Time');
+  
   // Canadian Supreme Court data
   const [canadaSupremeCourt, setCanadaSupremeCourt] = useState(null);
   const [selectedCase, setSelectedCase] = useState(null);
@@ -230,6 +236,7 @@ function App() {
   const [billSearch, setBillSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const [billTab, setBillTab] = useState('upcoming'); // upcoming, proposed, voted
   
   // US Congress chamber selection
   const [selectedChamber, setSelectedChamber] = useState(null);
@@ -661,6 +668,8 @@ function App() {
     initializeUSSupremeCourt();
     initializeUSContracts();
     initializeUSBills();
+    initializeUSLaws();
+    initializeCanadaLaws();
   }, []);
   
   // Load user's saved MP from localStorage
@@ -2401,6 +2410,290 @@ function App() {
     ];
     
     setUsBills(bills);
+  };
+  
+  const initializeUSLaws = () => {
+    const usLawsData = [
+      {
+        id: 'us-law-1',
+        title: 'Civil Rights Act of 1964',
+        category: 'Civil Rights',
+        dateEnacted: '1964-07-02',
+        keywords: ['discrimination', 'employment', 'civil rights', 'equal opportunity', 'workplace', 'hiring'],
+        summary: 'Landmark legislation that outlaws discrimination based on race, color, religion, sex, or national origin. Prohibits unequal application of voter registration requirements and racial segregation in schools, workplaces, and public accommodations.',
+        officialLink: 'https://www.eeoc.gov/statutes/title-vii-civil-rights-act-1964'
+      },
+      {
+        id: 'us-law-2',
+        title: 'Americans with Disabilities Act (ADA)',
+        category: 'Civil Rights',
+        dateEnacted: '1990-07-26',
+        keywords: ['disability', 'discrimination', 'accessibility', 'accommodation', 'employment', 'public access'],
+        summary: 'Prohibits discrimination against individuals with disabilities in all areas of public life, including jobs, schools, transportation, and all public and private places open to the general public. Requires reasonable accommodations in employment and accessibility in public spaces.',
+        officialLink: 'https://www.ada.gov/law-and-regs/ada/'
+      },
+      {
+        id: 'us-law-3',
+        title: 'Fair Labor Standards Act (FLSA)',
+        category: 'Employment',
+        dateEnacted: '1938-06-25',
+        keywords: ['minimum wage', 'overtime', 'child labor', 'employment', 'wages', 'hours', 'labor'],
+        summary: 'Establishes minimum wage, overtime pay eligibility, recordkeeping, and child labor standards affecting full-time and part-time workers. Sets the federal minimum wage and requires overtime pay at time-and-a-half for hours over 40 per week.',
+        officialLink: 'https://www.dol.gov/agencies/whd/flsa'
+      },
+      {
+        id: 'us-law-4',
+        title: 'Family and Medical Leave Act (FMLA)',
+        category: 'Employment',
+        dateEnacted: '1993-02-05',
+        keywords: ['family leave', 'medical leave', 'maternity', 'paternity', 'employment', 'job protection'],
+        summary: 'Provides eligible employees up to 12 weeks of unpaid, job-protected leave per year for specified family and medical reasons, including birth of a child, adoption, serious health condition of employee or immediate family member.',
+        officialLink: 'https://www.dol.gov/agencies/whd/fmla'
+      },
+      {
+        id: 'us-law-5',
+        title: 'Immigration and Nationality Act',
+        category: 'Immigration',
+        dateEnacted: '1952-06-27',
+        keywords: ['immigration', 'visa', 'citizenship', 'green card', 'deportation', 'asylum', 'refugee'],
+        summary: 'Governs immigration policy in the United States. Establishes the structure of immigration law including requirements for visas, lawful permanent residence (green cards), citizenship, asylum, and deportation procedures.',
+        officialLink: 'https://www.uscis.gov/laws-and-policy/legislation/immigration-and-nationality-act'
+      },
+      {
+        id: 'us-law-6',
+        title: 'Internal Revenue Code',
+        category: 'Tax Law',
+        dateEnacted: '1986-10-22',
+        keywords: ['tax', 'income tax', 'IRS', 'deductions', 'credits', 'filing', 'returns'],
+        summary: 'Comprehensive set of tax laws covering income taxes, estate and gift taxes, employment taxes, and excise taxes. Defines taxable income, deductions, credits, and filing requirements for individuals and businesses.',
+        officialLink: 'https://www.irs.gov/privacy-disclosure/tax-code-regulations-and-official-guidance'
+      },
+      {
+        id: 'us-law-7',
+        title: 'Social Security Act',
+        category: 'Social Welfare',
+        dateEnacted: '1935-08-14',
+        keywords: ['social security', 'retirement', 'disability', 'benefits', 'medicare', 'supplemental income'],
+        summary: 'Creates the Social Security program providing retirement benefits, disability income, and Medicare. Establishes a system of old-age benefits for workers, benefits for victims of industrial accidents, unemployment insurance, and aid for dependent mothers and children, the blind, and the physically disabled.',
+        officialLink: 'https://www.ssa.gov/OP_Home/ssact/ssact.htm'
+      },
+      {
+        id: 'us-law-8',
+        title: 'Affordable Care Act (ACA)',
+        category: 'Healthcare',
+        dateEnacted: '2010-03-23',
+        keywords: ['healthcare', 'health insurance', 'obamacare', 'medicaid', 'coverage', 'pre-existing conditions'],
+        summary: 'Comprehensive healthcare reform expanding Medicaid eligibility, establishing health insurance marketplaces, prohibiting denial of coverage for pre-existing conditions, allowing children to remain on parents insurance until age 26.',
+        officialLink: 'https://www.healthcare.gov/glossary/affordable-care-act/'
+      },
+      {
+        id: 'us-law-9',
+        title: 'Bankruptcy Code (Title 11 USC)',
+        category: 'Finance',
+        dateEnacted: '1978-11-06',
+        keywords: ['bankruptcy', 'debt', 'creditors', 'chapter 7', 'chapter 13', 'financial relief'],
+        summary: 'Governs the process of filing bankruptcy in the United States. Provides different chapters for liquidation (Chapter 7), reorganization (Chapter 11), and debt adjustment (Chapter 13). Protects debtors while ensuring fair treatment of creditors.',
+        officialLink: 'https://www.uscourts.gov/services-forms/bankruptcy'
+      },
+      {
+        id: 'us-law-10',
+        title: 'Fair Housing Act',
+        category: 'Housing',
+        dateEnacted: '1968-04-11',
+        keywords: ['housing', 'discrimination', 'rental', 'landlord', 'tenant', 'property', 'real estate'],
+        summary: 'Prohibits discrimination in the sale, rental, and financing of housing based on race, color, national origin, religion, sex, familial status, and disability. Applies to landlords, real estate companies, mortgage lenders, and homeowners insurance companies.',
+        officialLink: 'https://www.hud.gov/program_offices/fair_housing_equal_opp/fair_housing_act_overview'
+      },
+      {
+        id: 'us-law-11',
+        title: 'Truth in Lending Act (TILA)',
+        category: 'Consumer Protection',
+        dateEnacted: '1968-05-29',
+        keywords: ['credit', 'loans', 'interest rates', 'disclosure', 'consumer protection', 'lending'],
+        summary: 'Requires lenders to provide clear disclosure of loan terms and costs, including APR. Protects consumers in credit transactions by requiring clear disclosure of key terms and costs. Gives consumers the right to cancel certain credit transactions.',
+        officialLink: 'https://www.consumerfinance.gov/rules-policy/regulations/1026/'
+      },
+      {
+        id: 'us-law-12',
+        title: 'Equal Pay Act',
+        category: 'Employment',
+        dateEnacted: '1963-06-10',
+        keywords: ['equal pay', 'wage gap', 'gender discrimination', 'salary', 'compensation', 'employment'],
+        summary: 'Prohibits wage discrimination based on sex. Requires employers to pay men and women equal pay for equal work in the same establishment. Work is considered equal when it requires equal skill, effort, and responsibility under similar working conditions.',
+        officialLink: 'https://www.eeoc.gov/statutes/equal-pay-act-1963'
+      },
+      {
+        id: 'us-law-13',
+        title: 'Occupational Safety and Health Act (OSHA)',
+        category: 'Employment',
+        dateEnacted: '1970-12-29',
+        keywords: ['workplace safety', 'occupational health', 'workplace hazards', 'employee protection', 'OSHA'],
+        summary: 'Requires employers to provide safe and healthful working conditions. Sets and enforces standards, provides training, education, and assistance to workers and employers. Employees have the right to file complaints about unsafe working conditions.',
+        officialLink: 'https://www.osha.gov/laws-regs/oshact/completeoshact'
+      },
+      {
+        id: 'us-law-14',
+        title: 'Freedom of Information Act (FOIA)',
+        category: 'Government',
+        dateEnacted: '1967-07-04',
+        keywords: ['government records', 'transparency', 'public records', 'information request', 'disclosure'],
+        summary: 'Provides the public the right to request access to records from any federal agency. Federal agencies are required to disclose any information requested unless it falls under one of nine exemptions protecting interests such as privacy, national security, and law enforcement.',
+        officialLink: 'https://www.foia.gov/about.html'
+      },
+      {
+        id: 'us-law-15',
+        title: 'Age Discrimination in Employment Act (ADEA)',
+        category: 'Employment',
+        dateEnacted: '1967-12-15',
+        keywords: ['age discrimination', 'employment', 'older workers', 'retirement', '40 years old', 'workplace'],
+        summary: 'Protects certain applicants and employees 40 years of age and older from discrimination on the basis of age in hiring, promotion, discharge, compensation, or terms, conditions or privileges of employment.',
+        officialLink: 'https://www.eeoc.gov/statutes/age-discrimination-employment-act-1967'
+      }
+    ];
+    
+    setUsLaws(usLawsData);
+  };
+  
+  const initializeCanadaLaws = () => {
+    const canadaLawsData = [
+      {
+        id: 'ca-law-1',
+        title: 'Canadian Charter of Rights and Freedoms',
+        category: 'Constitutional',
+        dateEnacted: '1982-04-17',
+        keywords: ['charter', 'rights', 'freedoms', 'constitution', 'equality', 'liberty', 'fundamental'],
+        summary: 'Constitutionally entrenched bill of rights protecting fundamental freedoms (expression, religion, assembly), democratic rights (voting), mobility rights, legal rights (fair trial, legal counsel), equality rights, and language rights.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/const/page-12.html'
+      },
+      {
+        id: 'ca-law-2',
+        title: 'Canadian Human Rights Act',
+        category: 'Civil Rights',
+        dateEnacted: '1977-07-14',
+        keywords: ['discrimination', 'human rights', 'equality', 'employment', 'harassment', 'protected grounds'],
+        summary: 'Prohibits discrimination on the basis of race, national or ethnic origin, colour, religion, age, sex, sexual orientation, marital status, family status, disability and conviction for which a pardon has been granted or a record suspended.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/h-6/'
+      },
+      {
+        id: 'ca-law-3',
+        title: 'Employment Insurance Act',
+        category: 'Employment',
+        dateEnacted: '1996-06-20',
+        keywords: ['EI', 'unemployment', 'employment insurance', 'benefits', 'maternity', 'parental leave', 'sickness'],
+        summary: 'Provides temporary financial assistance to unemployed Canadians while they look for work or upgrade their skills. Also supports workers who are sick, pregnant, caring for a newborn or newly adopted child, or caring for a family member who is seriously ill.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/E-5.6/'
+      },
+      {
+        id: 'ca-law-4',
+        title: 'Canada Labour Code',
+        category: 'Employment',
+        dateEnacted: '1985-07-01',
+        keywords: ['labour', 'employment', 'workplace', 'hours of work', 'minimum wage', 'unions', 'collective bargaining'],
+        summary: 'Regulates labour relations in federally regulated industries. Covers labour standards (hours, wages, vacations, holidays), industrial relations (unions, collective bargaining), and occupational health and safety.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/l-2/'
+      },
+      {
+        id: 'ca-law-5',
+        title: 'Immigration and Refugee Protection Act',
+        category: 'Immigration',
+        dateEnacted: '2002-06-28',
+        keywords: ['immigration', 'refugee', 'visa', 'citizenship', 'permanent residence', 'asylum', 'deportation'],
+        summary: 'Governs Canadian immigration policy, including who may enter Canada, how long they may stay, and under what conditions they may be removed. Establishes refugee protection system and temporary/permanent residence programs.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/i-2.5/'
+      },
+      {
+        id: 'ca-law-6',
+        title: 'Income Tax Act',
+        category: 'Tax Law',
+        dateEnacted: '1985-01-01',
+        keywords: ['income tax', 'CRA', 'tax return', 'deductions', 'credits', 'RRSP', 'TFSA'],
+        summary: 'Comprehensive legislation governing income taxation in Canada. Defines taxable income, tax rates, deductions, credits, and filing requirements for individuals and corporations. Administered by the Canada Revenue Agency.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/i-3.3/'
+      },
+      {
+        id: 'ca-law-7',
+        title: 'Canada Health Act',
+        category: 'Healthcare',
+        dateEnacted: '1984-04-17',
+        keywords: ['healthcare', 'medicare', 'universal healthcare', 'medical services', 'health insurance'],
+        summary: 'Establishes criteria and conditions for insured health services and extended health care services that provinces and territories must meet to receive full federal health transfer payments. Ensures universal access to medically necessary hospital and physician services.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/c-6/'
+      },
+      {
+        id: 'ca-law-8',
+        title: 'Criminal Code of Canada',
+        category: 'Criminal Law',
+        dateEnacted: '1985-01-01',
+        keywords: ['criminal', 'crime', 'offence', 'assault', 'theft', 'fraud', 'sentence', 'police'],
+        summary: 'Codifies most criminal offences and procedures in Canada. Defines criminal acts, sets out criminal procedures, and establishes sentences for various offences. Covers offences against persons, property, public order, and administration of justice.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/c-46/'
+      },
+      {
+        id: 'ca-law-9',
+        title: 'Divorce Act',
+        category: 'Family Law',
+        dateEnacted: '1985-06-01',
+        keywords: ['divorce', 'separation', 'custody', 'child support', 'spousal support', 'family law', 'marriage'],
+        summary: 'Governs divorce proceedings and corollary relief (child custody, access, child support, and spousal support) in Canada. Establishes grounds for divorce, procedures for divorce orders, and provisions for child and spousal support.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/d-3.4/'
+      },
+      {
+        id: 'ca-law-10',
+        title: 'Employment Equity Act',
+        category: 'Employment',
+        dateEnacted: '1995-12-15',
+        keywords: ['employment equity', 'discrimination', 'workplace diversity', 'equal opportunity', 'affirmative action'],
+        summary: 'Requires federally regulated employers to engage in proactive employment practices to increase representation of four designated groups: women, Aboriginal peoples, persons with disabilities, and members of visible minorities.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/e-5.401/'
+      },
+      {
+        id: 'ca-law-11',
+        title: 'Personal Information Protection and Electronic Documents Act (PIPEDA)',
+        category: 'Privacy',
+        dateEnacted: '2000-04-13',
+        keywords: ['privacy', 'personal information', 'data protection', 'consent', 'PIPEDA', 'data breach'],
+        summary: 'Governs how private sector organizations collect, use, and disclose personal information in the course of commercial activities. Gives individuals the right to access and correct their personal information held by organizations.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/p-8.6/'
+      },
+      {
+        id: 'ca-law-12',
+        title: 'Canada Consumer Product Safety Act',
+        category: 'Consumer Protection',
+        dateEnacted: '2011-06-20',
+        keywords: ['consumer protection', 'product safety', 'recalls', 'dangerous products', 'consumer rights'],
+        summary: 'Protects the public by addressing dangers to human health or safety posed by consumer products. Prohibits manufacture, import, or sale of consumer products that pose danger. Requires reporting of incidents and defects.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/c-1.68/'
+      },
+      {
+        id: 'ca-law-13',
+        title: 'Old Age Security Act',
+        category: 'Social Welfare',
+        dateEnacted: '1985-01-01',
+        keywords: ['old age security', 'OAS', 'pension', 'retirement', 'seniors', 'guaranteed income supplement'],
+        summary: 'Provides basic income security for seniors. Old Age Security (OAS) pension available to most Canadians 65 or older. Guaranteed Income Supplement (GIS) provides additional income-tested benefits for low-income seniors.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/o-9/'
+      },
+      {
+        id: 'ca-law-14',
+        title: 'Bankruptcy and Insolvency Act',
+        category: 'Finance',
+        dateEnacted: '1985-01-01',
+        keywords: ['bankruptcy', 'insolvency', 'debt', 'creditors', 'consumer proposal', 'financial relief'],
+        summary: 'Governs bankruptcy and insolvency proceedings in Canada. Provides individuals and businesses with relief from overwhelming debt through bankruptcy or consumer proposals while ensuring fair treatment of creditors.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/b-3/'
+      },
+      {
+        id: 'ca-law-15',
+        title: 'Access to Information Act',
+        category: 'Government',
+        dateEnacted: '1983-07-01',
+        keywords: ['access to information', 'transparency', 'government records', 'public documents', 'disclosure'],
+        summary: 'Provides Canadian citizens, permanent residents, and any person or corporation present in Canada a right to access information in records under the control of federal government institutions, subject to limited exemptions.',
+        officialLink: 'https://laws-lois.justice.gc.ca/eng/acts/a-1/'
+      }
+    ];
+    
+    setLaws(canadaLawsData);
   };
   
   const fetchMPs = async () => {
@@ -4168,19 +4461,32 @@ function App() {
 
   // Render US Federal Bills
   const renderUSBills = () => {
-    const filteredBills = usBills.filter(bill => {
+    // Categorize bills
+    const upcomingBills = usBills.filter(b => 
+      b.status === 'Passed House' || b.status === 'Passed Senate'
+    );
+    const proposedBills = usBills.filter(b => b.status === 'In Committee');
+    const votedBills = usBills.filter(b => 
+      b.status === 'Signed into Law' || b.status === 'Failed in Senate'
+    );
+    
+    // Filter based on selected tab
+    let displayBills = [];
+    if (billTab === 'upcoming') displayBills = upcomingBills;
+    else if (billTab === 'proposed') displayBills = proposedBills;
+    else if (billTab === 'voted') displayBills = votedBills;
+    
+    const filteredBills = displayBills.filter(bill => {
       const matchesSearch = billSearch === '' || 
         bill.number.toLowerCase().includes(billSearch.toLowerCase()) ||
         bill.title.toLowerCase().includes(billSearch.toLowerCase()) ||
         bill.sponsor.toLowerCase().includes(billSearch.toLowerCase());
       
-      const matchesStatus = statusFilter === 'All' || bill.status === statusFilter;
       const matchesCategory = categoryFilter === 'All' || bill.category === categoryFilter;
       
-      return matchesSearch && matchesStatus && matchesCategory;
+      return matchesSearch && matchesCategory;
     });
 
-    const statuses = ['All', ...new Set(usBills.map(b => b.status))];
     const categories = ['All', ...new Set(usBills.map(b => b.category))];
 
     const getStatusColor = (status) => {
@@ -4195,77 +4501,93 @@ function App() {
     };
 
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm sticky top-0 z-10">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 animate-fade-in">
+        <div className="header-sticky sticky top-0 z-10 shadow-elegant">
           <div className="max-w-7xl mx-auto px-4 py-4">
             <button
-              onClick={() => setView('categories')}
-              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
+              onClick={() => setView('parties')}
+              className="button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium shadow-elegant mb-4"
             >
-              ← Back to Categories
+              ← Back to {selectedCountry?.type === 'usa' ? 'Congress' : 'Parliament'}
             </button>
-            <h1 className="text-3xl font-bold text-gray-800">Federal Bills & Legislation</h1>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800 text-shadow">📋 {selectedCountry?.type === 'usa' ? 'Congressional' : 'Parliamentary'} Bills Tracker</h1>
+                <p className="text-gray-600 mt-1">Track legislation through {selectedCountry?.type === 'usa' ? 'Congress' : 'Parliament'}</p>
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Summary Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <p className="text-sm text-gray-600 mb-1">Total Bills</p>
-              <p className="text-3xl font-bold text-gray-800">{usBills.length}</p>
-            </div>
-            <div className="bg-green-50 border-2 border-green-300 rounded-lg shadow-md p-6">
-              <p className="text-sm text-gray-600 mb-1">Signed into Law</p>
-              <p className="text-3xl font-bold text-green-600">
-                {usBills.filter(b => b.status === 'Signed into Law').length}
-              </p>
-            </div>
-            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg shadow-md p-6">
-              <p className="text-sm text-gray-600 mb-1">Passed Chamber</p>
-              <p className="text-3xl font-bold text-blue-600">
-                {usBills.filter(b => b.status.includes('Passed')).length}
-              </p>
-            </div>
-            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg shadow-md p-6">
-              <p className="text-sm text-gray-600 mb-1">In Committee</p>
-              <p className="text-3xl font-bold text-yellow-600">
-                {usBills.filter(b => b.status === 'In Committee').length}
-              </p>
-            </div>
+          {/* Tabs */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg p-2 mb-6 flex gap-2 border-2 border-white/50 animate-scale-in">
+            <button
+              onClick={() => setBillTab('upcoming')}
+              className={`flex-1 px-6 py-4 rounded-xl font-bold text-lg transition-all ${
+                billTab === 'upcoming'
+                  ? 'bg-gradient-blue text-white shadow-elegant'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              📅 Upcoming Bills
+              <span className="block text-sm font-normal mt-1">
+                {upcomingBills.length} bills to be voted
+              </span>
+            </button>
+            <button
+              onClick={() => setBillTab('proposed')}
+              className={`flex-1 px-6 py-4 rounded-xl font-bold text-lg transition-all ${
+                billTab === 'proposed'
+                  ? 'bg-gradient-blue text-white shadow-elegant'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              📝 Proposed Bills
+              <span className="block text-sm font-normal mt-1">
+                {proposedBills.length} in committee
+              </span>
+            </button>
+            <button
+              onClick={() => setBillTab('voted')}
+              className={`flex-1 px-6 py-4 rounded-xl font-bold text-lg transition-all ${
+                billTab === 'voted'
+                  ? 'bg-gradient-blue text-white shadow-elegant'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              ✅ Bills Voted
+              <span className="block text-sm font-normal mt-1">
+                {votedBills.length} in last 12 months
+              </span>
+            </button>
           </div>
 
           {/* Search and Filters */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="card-gradient rounded-2xl shadow-elegant-lg p-6 mb-6 border-2 border-white/50 animate-scale-in" style={{ animationDelay: '0.1s' }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Search Bills</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                  <Search className="w-5 h-5 text-blue-600" />
+                  Search Bills
+                </label>
                 <input
                   type="text"
                   placeholder="Search by number, title, or sponsor..."
                   value={billSearch}
                   onChange={(e) => setBillSearch(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Status</label>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {statuses.map(status => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Category</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                  <Filter className="w-5 h-5 text-blue-600" />
+                  Filter by Category
+                </label>
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {categories.map(category => (
                     <option key={category} value={category}>{category}</option>
@@ -4273,22 +4595,30 @@ function App() {
                 </select>
               </div>
             </div>
-            <p className="text-sm text-gray-600 mt-4">
-              Showing {filteredBills.length} of {usBills.length} bills
+            <p className="text-sm text-gray-600 mt-4 font-medium">
+              Showing {filteredBills.length} of {displayBills.length} bills in this category
             </p>
           </div>
 
           {/* Bills List */}
           <div className="space-y-4">
-            {filteredBills.map(bill => (
-              <div
-                key={bill.id}
-                onClick={() => {
-                  setSelectedBill(bill);
-                  setView('us-bill-detail');
-                }}
-                className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-blue-500"
-              >
+            {filteredBills.length === 0 ? (
+              <div className="text-center py-16 card-gradient rounded-2xl shadow-elegant border-2 border-gray-200">
+                <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-600 mb-2">No bills found</h3>
+                <p className="text-gray-500">Try different search terms or filters</p>
+              </div>
+            ) : (
+              filteredBills.map((bill, index) => (
+                <div
+                  key={bill.id}
+                  onClick={() => {
+                    setSelectedBill(bill);
+                    setView('us-bill-detail');
+                  }}
+                  className="card-gradient rounded-2xl shadow-elegant-lg p-6 border-2 border-white/50 hover-lift interactive-card animate-scale-in"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
@@ -4336,7 +4666,8 @@ function App() {
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+            )}
           </div>
         </div>
       </div>
@@ -4495,6 +4826,197 @@ function App() {
     );
   };
 
+  // Render Laws & Legal Search
+  const renderLawsSearch = () => {
+    const isUSA = selectedCountry?.type === 'usa';
+    const lawsData = isUSA ? usLaws : laws;
+    
+    const filteredLaws = lawsData.filter(law => {
+      const matchesSearch = lawSearch === '' || 
+        law.title.toLowerCase().includes(lawSearch.toLowerCase()) ||
+        law.summary.toLowerCase().includes(lawSearch.toLowerCase()) ||
+        law.keywords.some(keyword => keyword.toLowerCase().includes(lawSearch.toLowerCase())) ||
+        law.category.toLowerCase().includes(lawSearch.toLowerCase());
+      
+      let matchesDate = true;
+      if (lawDateFilter !== 'All Time') {
+        const lawYear = new Date(law.dateEnacted).getFullYear();
+        const currentYear = new Date().getFullYear();
+        
+        if (lawDateFilter === 'Last Year') {
+          matchesDate = lawYear >= currentYear - 1;
+        } else if (lawDateFilter === 'Last 5 Years') {
+          matchesDate = lawYear >= currentYear - 5;
+        } else if (lawDateFilter === 'Last 10 Years') {
+          matchesDate = lawYear >= currentYear - 10;
+        } else if (lawDateFilter === 'Before 2000') {
+          matchesDate = lawYear < 2000;
+        }
+      }
+      
+      return matchesSearch && matchesDate;
+    });
+
+    const categories = [...new Set(lawsData.map(l => l.category))].sort();
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 animate-fade-in">
+        <div className="header-sticky sticky top-0 z-10 shadow-elegant">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <button
+              onClick={() => setView('categories')}
+              className="button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium shadow-elegant"
+            >
+              ← Back to Categories
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="mb-8 animate-slide-in">
+            <h1 className="text-4xl font-bold text-gray-800 mb-3 text-shadow">⚖️ Laws & Legal Search</h1>
+            <p className="text-lg text-gray-600">Search and explore {isUSA ? 'U.S. Federal' : 'Canadian'} laws and regulations</p>
+            <div className="w-24 h-1 bg-gradient-green mt-3 rounded-full"></div>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="card-gradient rounded-2xl shadow-elegant-lg p-6 mb-8 border-2 border-white/50 animate-scale-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                  <Search className="w-5 h-5 text-green-600" />
+                  Search by Keywords
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., employment, tax, immigration, discrimination..."
+                  value={lawSearch}
+                  onChange={(e) => setLawSearch(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg"
+                />
+                <p className="text-sm text-gray-500 mt-2">Search by title, category, keywords, or content</p>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-green-600" />
+                  Filter by Date Enacted
+                </label>
+                <select
+                  value={lawDateFilter}
+                  onChange={(e) => setLawDateFilter(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg"
+                >
+                  <option value="All Time">All Time</option>
+                  <option value="Last Year">Last Year</option>
+                  <option value="Last 5 Years">Last 5 Years</option>
+                  <option value="Last 10 Years">Last 10 Years</option>
+                  <option value="Before 2000">Before 2000</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-sm text-gray-600 font-medium">
+                Showing {filteredLaws.length} of {lawsData.length} laws
+                {lawSearch && <span> matching "{lawSearch}"</span>}
+              </p>
+            </div>
+          </div>
+
+          {/* Popular Categories */}
+          {lawSearch === '' && (
+            <div className="mb-8 animate-scale-in" style={{ animationDelay: '0.1s' }}>
+              <h3 className="text-xl font-bold text-gray-800 mb-4">📑 Popular Categories</h3>
+              <div className="flex flex-wrap gap-3">
+                {categories.map(category => (
+                  <button
+                    key={category}
+                    onClick={() => setLawSearch(category)}
+                    className="px-4 py-2 bg-white border-2 border-green-200 text-green-700 rounded-xl font-medium hover:bg-green-50 hover:border-green-400 transition-all shadow-elegant hover-lift"
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Results */}
+          <div className="space-y-4">
+            {filteredLaws.length === 0 ? (
+              <div className="text-center py-16 card-gradient rounded-2xl shadow-elegant border-2 border-gray-200">
+                <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-600 mb-2">No laws found</h3>
+                <p className="text-gray-500">Try different keywords or adjust your filters</p>
+              </div>
+            ) : (
+              filteredLaws.map((law, index) => (
+                <div
+                  key={law.id}
+                  className="card-gradient rounded-2xl shadow-elegant-lg p-6 border-2 border-white/50 hover-lift interactive-card animate-scale-in"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold border-2 border-green-300">
+                          {law.category}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          Enacted: {new Date(law.dateEnacted).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        </span>
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-800 mb-3">{law.title}</h3>
+                      <p className="text-gray-700 mb-4 leading-relaxed">{law.summary}</p>
+                      
+                      {/* Keywords */}
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {law.keywords.slice(0, 6).map(keyword => (
+                          <span key={keyword} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      {/* Link to Official Source */}
+                      <a
+                        href={law.officialLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 button-success text-white px-6 py-3 rounded-xl font-semibold shadow-elegant"
+                      >
+                        <FileText className="w-5 h-5" />
+                        Read Full Text on Official Website
+                        <ChevronRight className="w-5 h-5" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Help Text */}
+          {filteredLaws.length > 0 && (
+            <div className="mt-8 card-gradient rounded-2xl shadow-elegant p-6 border-2 border-blue-200 animate-fade-in">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-bold text-gray-800 mb-2">Legal Disclaimer</h4>
+                  <p className="text-sm text-gray-600">
+                    This tool provides summaries of laws for informational purposes only and does not constitute legal advice. 
+                    For authoritative legal information, please refer to the official government websites linked above or consult with a qualified legal professional.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderCountrySelection = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8 animate-fade-in">
       <div className="max-w-4xl mx-auto">
@@ -4585,26 +5107,23 @@ function App() {
             </div>
           </div>
 
-          {/* Bills/Legislation */}
+          {/* Laws & Legal Search */}
           <div
-            onClick={() => setView(isUSA ? 'us-bills' : 'bills')}
+            onClick={() => setView(isUSA ? 'us-laws-search' : 'laws-search')}
             className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
             style={{ animationDelay: '0.2s' }}
           >
             <div className="text-green-600 mb-3 sm:mb-4">
-              <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
+              <Scale className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
-              {isUSA ? 'Federal Bills' : 'Bills & Legislation'}
+              Laws & Legal Search
             </h2>
             <p className="text-gray-600 mb-3 text-sm sm:text-base">
-              {isUSA 
-                ? 'Track bills through Congress, see who sponsors & votes'
-                : 'Track proposed legislation and parliamentary bills'
-              }
+              Search existing laws and regulations by keyword or date
             </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span className="font-medium">{isUSA ? usBills.length : bills.length} Active Bills</span>
+              <span className="font-medium">{isUSA ? usLaws.length : laws.length} Laws Available</span>
               <ChevronRight className="w-5 h-5 text-green-600" />
             </div>
           </div>
@@ -5005,6 +5524,39 @@ function App() {
               </div>
             </div>
           )}
+
+          {/* Parliamentary Bills Tracker */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 mb-6 shadow-md hover:shadow-xl transition-all animate-scale-in">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">📋 {isUSA ? 'Congressional' : 'Parliamentary'} Bills Tracker</h2>
+                <p className="text-gray-700 mb-4">
+                  Track legislation through {isUSA ? 'Congress' : 'Parliament'} - Upcoming, Proposed & Recently Voted
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-blue-200 shadow-sm">
+                    <p className="text-sm text-gray-600">Upcoming Bills</p>
+                    <p className="text-xl font-bold text-blue-600">{(isUSA ? usBills : bills).filter(b => b.status === 'In Committee' || b.status === 'Passed House' || b.status === 'Passed Senate').length}</p>
+                  </div>
+                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-yellow-200 shadow-sm">
+                    <p className="text-sm text-gray-600">Proposed Bills</p>
+                    <p className="text-xl font-bold text-yellow-600">{(isUSA ? usBills : bills).filter(b => b.status === 'In Committee').length}</p>
+                  </div>
+                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-green-200 shadow-sm">
+                    <p className="text-sm text-gray-600">Bills Voted (12mo)</p>
+                    <p className="text-xl font-bold text-green-600">{(isUSA ? usBills : bills).filter(b => b.status === 'Signed into Law' || b.status === 'Failed in Senate').length}</p>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setView(isUSA ? 'us-bills' : 'bills')}
+                className="button-success text-white px-8 py-4 rounded-xl font-bold text-lg shadow-elegant hover:scale-105 transition-transform flex items-center gap-2"
+              >
+                View Bills
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
 
           {/* Political Parties Section */}
           <div className="bg-white rounded-lg shadow-md p-6">
@@ -7258,6 +7810,8 @@ function App() {
       {view === 'us-contracts' && renderUSContracts()}
       {view === 'us-bills' && renderUSBills()}
       {view === 'us-bill-detail' && selectedBill && renderUSBillDetail()}
+      {view === 'laws-search' && renderLawsSearch()}
+      {view === 'us-laws-search' && renderLawsSearch()}
       
       {/* Riding selector modal */}
       {showLocationPrompt && renderRidingSelector()}
