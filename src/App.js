@@ -46,6 +46,9 @@ function App() {
   const [departmentFilter, setDepartmentFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
   
+  // US Congress chamber selection
+  const [selectedChamber, setSelectedChamber] = useState(null);
+  
   // Location-based MP finder states
   const [userMP, setUserMP] = useState(null);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
@@ -1936,7 +1939,16 @@ function App() {
   // Get parties with counts
   const getParties = () => {
     // Use appropriate member list based on selected country
-    const members = selectedCountry?.type === 'usa' ? congressMembers : mps;
+    let members = selectedCountry?.type === 'usa' ? congressMembers : mps;
+    
+    // Filter by chamber if USA and chamber is selected
+    if (selectedCountry?.type === 'usa' && selectedChamber) {
+      if (selectedChamber === 'Senate') {
+        members = members.filter(m => m.district === 'Senator');
+      } else if (selectedChamber === 'House') {
+        members = members.filter(m => m.district !== 'Senator');
+      }
+    }
     
     const partyCounts = {};
     members.forEach(member => {
@@ -1954,7 +1966,17 @@ function App() {
   const getPartyMembers = () => {
     if (!selectedParty) return [];
     
-    const members = selectedCountry?.type === 'usa' ? congressMembers : mps;
+    let members = selectedCountry?.type === 'usa' ? congressMembers : mps;
+    
+    // Filter by chamber if USA and chamber is selected
+    if (selectedCountry?.type === 'usa' && selectedChamber) {
+      if (selectedChamber === 'Senate') {
+        members = members.filter(m => m.district === 'Senator');
+      } else if (selectedChamber === 'House') {
+        members = members.filter(m => m.district !== 'Senator');
+      }
+    }
+    
     let filtered = members.filter(member => member.party === selectedParty.name);
 
     if (searchQuery) {
@@ -3471,7 +3493,7 @@ function App() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Legislature (Congress/Parliament) */}
           <div
-            onClick={() => setView('parties')}
+            onClick={() => setView(isUSA ? 'chambers' : 'parties')}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-blue-500 active:scale-95"
           >
             <div className="text-blue-600 mb-3 sm:mb-4">
@@ -3616,12 +3638,156 @@ function App() {
     );
   };
 
+  // Render US Congress Chamber Selection (House vs Senate)
+  const renderChambers = () => {
+    const senators = congressMembers.filter(m => m.district === 'Senator');
+    const representatives = congressMembers.filter(m => m.district !== 'Senator');
+    
+    const senateDems = senators.filter(m => m.party === 'Democrat').length;
+    const senateReps = senators.filter(m => m.party === 'Republican').length;
+    const senateInd = senators.filter(m => m.party === 'Independent').length;
+    
+    const houseDems = representatives.filter(m => m.party === 'Democrat').length;
+    const houseReps = representatives.filter(m => m.party === 'Republican').length;
+    const houseInd = representatives.filter(m => m.party === 'Independent').length;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <button
+              onClick={() => setView('categories')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              ← Back to Government Levels
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300 rounded-lg p-6 mb-8">
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">🏛️ U.S. Congress</h2>
+            <p className="text-gray-600">Select a chamber to explore members by party</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Senate */}
+            <div
+              onClick={() => {
+                setSelectedChamber('Senate');
+                setView('parties');
+              }}
+              className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-blue-500 active:scale-95"
+            >
+              <div className="text-blue-600 mb-4">
+                <Building2 className="w-16 h-16" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">United States Senate</h3>
+              <p className="text-gray-600 mb-6">The upper chamber of Congress, with 100 Senators representing all 50 states</p>
+              
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-700 font-medium">Total Senators</span>
+                  <span className="text-2xl font-bold text-gray-800">{senators.length}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-2 bg-blue-50 rounded">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                    <span className="font-medium text-gray-700">Democrats</span>
+                  </div>
+                  <span className="font-bold text-blue-600">{senateDems}</span>
+                </div>
+                <div className="flex items-center justify-between p-2 bg-red-50 rounded">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-600 rounded-full"></div>
+                    <span className="font-medium text-gray-700">Republicans</span>
+                  </div>
+                  <span className="font-bold text-red-600">{senateReps}</span>
+                </div>
+                {senateInd > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-purple-50 rounded">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-purple-600 rounded-full"></div>
+                      <span className="font-medium text-gray-700">Independents</span>
+                    </div>
+                    <span className="font-bold text-purple-600">{senateInd}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* House of Representatives */}
+            <div
+              onClick={() => {
+                setSelectedChamber('House');
+                setView('parties');
+              }}
+              className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
+            >
+              <div className="text-green-600 mb-4">
+                <Users className="w-16 h-16" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">House of Representatives</h3>
+              <p className="text-gray-600 mb-6">The lower chamber of Congress, with 435 Representatives from congressional districts</p>
+              
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-700 font-medium">Total Representatives</span>
+                  <span className="text-2xl font-bold text-gray-800">{representatives.length}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-2 bg-blue-50 rounded">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                    <span className="font-medium text-gray-700">Democrats</span>
+                  </div>
+                  <span className="font-bold text-blue-600">{houseDems}</span>
+                </div>
+                <div className="flex items-center justify-between p-2 bg-red-50 rounded">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-600 rounded-full"></div>
+                    <span className="font-medium text-gray-700">Republicans</span>
+                  </div>
+                  <span className="font-bold text-red-600">{houseReps}</span>
+                </div>
+                {houseInd > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-purple-50 rounded">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-purple-600 rounded-full"></div>
+                      <span className="font-medium text-gray-700">Independents</span>
+                    </div>
+                    <span className="font-bold text-purple-600">{houseInd}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderParties = () => {
     const parties = getParties();
     const isUSA = selectedCountry?.type === 'usa';
-    const legislatureName = isUSA ? 'U.S. Congress' : 'Federal Parliament';
+    const chamberName = selectedChamber || 'Congress';
+    const legislatureName = isUSA ? (selectedChamber ? `U.S. ${selectedChamber}` : 'U.S. Congress') : 'Federal Parliament';
     const memberTitle = isUSA ? 'Representative' : 'MP';
     const ridingLabel = isUSA ? 'District' : 'Riding';
+    
+    const totalMembers = parties.reduce((sum, party) => sum + party.count, 0);
+    
+    // Prepare data for pie chart
+    const pieData = parties.map(party => ({
+      name: party.name,
+      value: party.count,
+      percentage: ((party.count / totalMembers) * 100).toFixed(1)
+    }));
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -3629,10 +3795,10 @@ function App() {
         <div className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <button
-              onClick={() => setView('categories')}
+              onClick={() => setView(isUSA && selectedChamber ? 'chambers' : 'categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Government Levels
+              ← Back to {isUSA && selectedChamber ? 'Chambers' : 'Government Levels'}
             </button>
             
             <h1 className="text-2xl font-bold text-gray-800">{legislatureName}</h1>
@@ -3684,6 +3850,57 @@ function App() {
               </div>
             )}
           </div>
+          )}
+
+          {/* Party Breakdown Chart - For USA chambers */}
+          {isUSA && selectedChamber && (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">Party Composition</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Pie Chart */}
+                <div className="flex items-center justify-center">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <RechartsPie>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({name, percentage}) => `${name}: ${percentage}%`}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={partyColors[entry.name] || '#6B7280'} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </RechartsPie>
+                  </ResponsiveContainer>
+                </div>
+                
+                {/* Stats */}
+                <div className="space-y-3">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-sm text-gray-600 mb-1">Total Members</p>
+                    <p className="text-3xl font-bold text-gray-800">{totalMembers}</p>
+                  </div>
+                  {parties.map(party => (
+                    <div key={party.name} className="flex items-center justify-between p-3 rounded-lg" style={{backgroundColor: `${party.color}20`}}>
+                      <div className="flex items-center gap-2">
+                        <div style={{backgroundColor: party.color}} className="w-4 h-4 rounded-full"></div>
+                        <span className="font-medium text-gray-700">{party.name}</span>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-gray-800">{party.count}</p>
+                        <p className="text-sm text-gray-600">{((party.count / totalMembers) * 100).toFixed(1)}%</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Political Parties Section */}
@@ -5914,6 +6131,7 @@ function App() {
     <div className="App">
       {view === 'countries' && renderCountrySelection()}
       {view === 'categories' && renderCategories()}
+      {view === 'chambers' && renderChambers()}
       {view === 'parties' && renderParties()}
       {view === 'members' && renderMembers()}
       {view === 'member-detail' && selectedMember && renderMemberDetail()}
