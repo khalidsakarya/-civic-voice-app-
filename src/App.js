@@ -3,6 +3,186 @@ import { Menu, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, M
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import './App.css';
 
+// Custom CSS for animations and enhanced styling
+const customStyles = `
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes slideInFromLeft {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+  
+  .animate-slide-in {
+    animation: slideInFromLeft 0.5s ease-out forwards;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 2s ease-in-out infinite;
+  }
+  
+  .hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  
+  .card-gradient {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  }
+  
+  .button-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    transition: all 0.3s ease;
+  }
+  
+  .button-primary:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+  }
+  
+  .button-primary:active {
+    transform: translateY(0);
+  }
+  
+  .button-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    transition: all 0.3s ease;
+  }
+  
+  .button-success:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+  }
+  
+  .button-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    transition: all 0.3s ease;
+  }
+  
+  .button-danger:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
+  }
+  
+  .shadow-elegant {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .shadow-elegant-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .badge-modern {
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+  
+  .header-sticky {
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .loading-spinner {
+    border: 3px solid rgba(59, 130, 246, 0.2);
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 0.8s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .stat-card {
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+  }
+  
+  .stat-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .interactive-card {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+  
+  .interactive-card:hover {
+    transform: translateY(-2px) scale(1.01);
+  }
+  
+  .interactive-card:active {
+    transform: translateY(0) scale(0.99);
+  }
+  
+  .gradient-blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  }
+  
+  .gradient-green {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+  
+  .gradient-red {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  }
+  
+  .gradient-purple {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  }
+  
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .smooth-scroll {
+    scroll-behavior: smooth;
+  }
+  
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transition: all 0.2s ease;
+  }
+  
+  .progress-bar {
+    transition: width 0.5s ease-in-out;
+  }
+`;
+
 function App() {
   const [view, setView] = useState('countries');
   const [selectedCountry, setSelectedCountry] = useState(null);
@@ -4316,14 +4496,17 @@ function App() {
   };
 
   const renderCountrySelection = () => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8 animate-fade-in">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-800 mb-2">Civic Voice</h1>
-        <p className="text-gray-600 mb-8">Full Government Transparency Platform - North America</p>
+        <div className="text-center mb-12 animate-slide-in">
+          <h1 className="text-5xl font-bold text-gray-800 mb-3 text-shadow">Civic Voice</h1>
+          <p className="text-xl text-gray-600">Full Government Transparency Platform - North America</p>
+          <div className="w-24 h-1 bg-gradient-blue mx-auto mt-4 rounded-full"></div>
+        </div>
         
         {error && (
-          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center gap-2">
-            <AlertCircle className="w-5 h-5" />
+          <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 text-red-700 rounded-xl flex items-center gap-3 shadow-elegant animate-scale-in">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
             <div>
               <p className="font-semibold">API Connection Error</p>
               <p className="text-sm">{error}</p>
@@ -4331,22 +4514,30 @@ function App() {
           </div>
         )}
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {countries.map(country => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {countries.map((country, index) => (
             <div
               key={country.id}
               onClick={() => {
                 setSelectedCountry(country);
                 setView('categories');
               }}
-              className="bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-blue-500 transform hover:-translate-y-1"
+              className="card-gradient rounded-2xl shadow-elegant-lg p-10 cursor-pointer hover-lift interactive-card border-2 border-white/50"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="text-6xl mb-4">{country.flag}</div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">{country.name}</h2>
-              <p className="text-gray-600">{country.members} elected members</p>
-              <p className="text-sm text-blue-600 mt-2 font-medium">Explore →</p>
+              <div className="text-7xl mb-6 text-center animate-pulse-slow">{country.flag}</div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-3 text-center text-shadow">{country.name}</h2>
+              <p className="text-gray-600 text-center text-lg mb-4">{country.members} elected members</p>
+              <div className="flex items-center justify-center gap-2 text-blue-600 font-semibold mt-4">
+                <span>Explore Government</span>
+                <ChevronRight className="w-5 h-5" />
+              </div>
             </div>
           ))}
+        </div>
+        
+        <div className="mt-12 text-center text-gray-500 text-sm animate-fade-in" style={{ animationDelay: '0.4s' }}>
+          <p>Track legislation, contracts, spending, and accountability</p>
         </div>
       </div>
     </div>
@@ -4361,23 +4552,27 @@ function App() {
     const legislativeBody = isUSA ? 'Bills' : 'Parliamentary Bills';
     
     return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-6xl mx-auto">
         <button
           onClick={() => setView('countries')}
-          className="mb-4 sm:mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2 font-medium text-sm sm:text-base"
+          className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
         >
           ← Back to Countries
         </button>
         
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2">{countryName} Government</h1>
-        <p className="text-gray-600 mb-6 sm:mb-8 text-base sm:text-lg">Explore different aspects of federal governance</p>
+        <div className="mb-8 animate-slide-in">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">{countryName} Government</h1>
+          <p className="text-gray-600 text-base sm:text-lg">Explore different aspects of federal governance</p>
+          <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
+        </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Legislature (Congress/Parliament) */}
           <div
             onClick={() => setView(isUSA ? 'chambers' : 'parties')}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-blue-500 active:scale-95"
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+            style={{ animationDelay: '0.1s' }}
           >
             <div className="text-blue-600 mb-3 sm:mb-4">
               <Users className="w-10 h-10 sm:w-12 sm:h-12" />
@@ -4393,7 +4588,8 @@ function App() {
           {/* Bills/Legislation */}
           <div
             onClick={() => setView(isUSA ? 'us-bills' : 'bills')}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+            style={{ animationDelay: '0.2s' }}
           >
             <div className="text-green-600 mb-3 sm:mb-4">
               <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
@@ -4408,15 +4604,16 @@ function App() {
               }
             </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{isUSA ? usBills.length : bills.length} Active Bills</span>
-              <ChevronRight className="w-5 h-5" />
+              <span className="font-medium">{isUSA ? usBills.length : bills.length} Active Bills</span>
+              <ChevronRight className="w-5 h-5 text-green-600" />
             </div>
           </div>
 
           {/* Analytics Dashboard - Available for both countries */}
           <div
             onClick={() => setView(isUSA ? 'us-analytics' : 'analytics')}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-purple-500 active:scale-95"
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+            style={{ animationDelay: '0.3s' }}
           >
             <div className="text-purple-600 mb-3 sm:mb-4">
               <BarChart3 className="w-10 h-10 sm:w-12 sm:h-12" />
@@ -4431,8 +4628,8 @@ function App() {
               }
             </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{isUSA ? '12 Charts' : '11 Charts'}</span>
-              <ChevronRight className="w-5 h-5" />
+              <span className="font-medium">{isUSA ? '12 Charts' : '11 Charts'}</span>
+              <ChevronRight className="w-5 h-5 text-purple-600" />
             </div>
           </div>
 
@@ -7034,20 +7231,22 @@ function App() {
   };
 
   return (
-    <div className="App">
-      {view === 'countries' && renderCountrySelection()}
-      {view === 'categories' && renderCategories()}
-      {view === 'chambers' && renderChambers()}
-      {view === 'parties' && renderParties()}
-      {view === 'members' && renderMembers()}
-      {view === 'member-detail' && selectedMember && renderMemberDetail()}
-      {view === 'analytics' && renderAnalytics()}
-      {view === 'us-analytics' && renderUSAnalytics()}
-      {view === 'bills' && renderBills()}
-      {view === 'bill-detail' && selectedBill && renderBillDetail()}
-      {view === 'laws' && renderLaws()}
-      {view === 'law-detail' && selectedLaw && renderLawDetail()}
-      {view === 'contracts' && renderContracts()}
+    <>
+      <style>{customStyles}</style>
+      <div className="App smooth-scroll">
+        {view === 'countries' && renderCountrySelection()}
+        {view === 'categories' && renderCategories()}
+        {view === 'chambers' && renderChambers()}
+        {view === 'parties' && renderParties()}
+        {view === 'members' && renderMembers()}
+        {view === 'member-detail' && selectedMember && renderMemberDetail()}
+        {view === 'analytics' && renderAnalytics()}
+        {view === 'us-analytics' && renderUSAnalytics()}
+        {view === 'bills' && renderBills()}
+        {view === 'bill-detail' && selectedBill && renderBillDetail()}
+        {view === 'laws' && renderLaws()}
+        {view === 'law-detail' && selectedLaw && renderLawDetail()}
+        {view === 'contracts' && renderContracts()}
       {view === 'contract-detail' && selectedContract && renderContractDetail()}
       {view === 'ministries' && renderMinistries()}
       {view === 'ministry-detail' && selectedMinistry && renderMinistryDetail()}
