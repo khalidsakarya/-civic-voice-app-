@@ -209,6 +209,7 @@ function App() {
   const [selectedUsContract, setSelectedUsContract] = useState(null);
   
   // Laws & Legal Search data
+  const [laws, setLaws] = useState([]);
   const [usLaws, setUsLaws] = useState([]);
   const [lawSearch, setLawSearch] = useState('');
   const [lawDateFilter, setLawDateFilter] = useState('All Time');
@@ -5109,27 +5110,6 @@ function App() {
             </div>
           </div>
 
-          {/* Laws & Legal Search */}
-          <div
-            onClick={() => setView(isUSA ? 'us-laws-search' : 'laws-search')}
-            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
-            style={{ animationDelay: '0.2s' }}
-          >
-            <div className="text-green-600 mb-3 sm:mb-4">
-              <Scale className="w-10 h-10 sm:w-12 sm:h-12" />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
-              Laws & Legal Search
-            </h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">
-              Search existing laws and regulations by keyword or date
-            </p>
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span className="font-medium">{isUSA ? usLaws.length : laws.length} Laws Available</span>
-              <ChevronRight className="w-5 h-5 text-green-600" />
-            </div>
-          </div>
-
           {/* Analytics Dashboard - Available for both countries */}
           <div
             onClick={() => setView(isUSA ? 'us-analytics' : 'analytics')}
@@ -6069,18 +6049,6 @@ function App() {
 
   // NEW: Legislative Hub - Combines Bills, Laws & Upcoming Legislation
   const renderLegislativeHub = () => {
-    // Filter laws based on search
-    const filteredLaws = laws.filter(law => {
-      const searchLower = lawSearch.toLowerCase();
-      return (
-        law.title.toLowerCase().includes(searchLower) ||
-        law.shortTitle.toLowerCase().includes(searchLower) ||
-        law.category.toLowerCase().includes(searchLower) ||
-        law.summary.toLowerCase().includes(searchLower) ||
-        law.billNumber.toLowerCase().includes(searchLower)
-      );
-    });
-
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
@@ -6140,22 +6108,92 @@ function App() {
             <div className="animate-fade-in">
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300 rounded-lg p-6 mb-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">📋 Bills & Legislation</h2>
-                <p className="text-gray-600">Track proposed legislation and parliamentary bills</p>
-                <div className="mt-4 text-sm text-gray-500">
-                  <strong>12 Active Bills</strong> currently being debated or under review
-                </div>
+                <p className="text-gray-600">Search and track proposed legislation and parliamentary bills</p>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-                <FileText className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-800 mb-3">Bills & Legislation Tracker</h3>
-                <p className="text-gray-600 mb-6">View all current bills, their status, and voting records</p>
+              {/* Search Bar for Bills */}
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Search className="w-5 h-5 text-blue-600" />
+                  <h3 className="text-lg font-bold text-gray-800">Search Bills & Legislation</h3>
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search by bill name, number, category, or keyword..."
+                    value={billSearch}
+                    onChange={(e) => setBillSearch(e.target.value)}
+                    className="w-full pl-12 pr-12 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                  />
+                  {billSearch && (
+                    <button
+                      onClick={() => setBillSearch('')}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
+                {billSearch && (
+                  <p className="mt-3 text-sm text-gray-600">
+                    Found <strong>{bills.filter(b => 
+                      b.title?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                      b.shortTitle?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                      b.billNumber?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                      b.category?.toLowerCase().includes(billSearch.toLowerCase())
+                    ).length}</strong> bills matching "{billSearch}"
+                  </p>
+                )}
+              </div>
+
+              {/* Bills List */}
+              <div className="space-y-6">
+                {bills.filter(b => 
+                  !billSearch || 
+                  b.title?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                  b.shortTitle?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                  b.billNumber?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                  b.category?.toLowerCase().includes(billSearch.toLowerCase())
+                ).slice(0, 5).map(bill => (
+                  <div
+                    key={bill.id}
+                    className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500 cursor-pointer"
+                    onClick={() => {
+                      setSelectedBill(bill);
+                      setView('bill-detail');
+                    }}
+                  >
+                    <div className="p-6">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
+                          {bill.billNumber}
+                        </span>
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(bill.status)}`}>
+                          {bill.status}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
+                      <p className="text-gray-600 text-sm mb-3">{bill.summary}</p>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <ThumbsUp className="w-4 h-4 text-green-600" />
+                          <span className="text-sm font-semibold">{bill.supportVotes}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <ThumbsDown className="w-4 h-4 text-red-600" />
+                          <span className="text-sm font-semibold">{bill.opposeVotes}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
                 <button
                   onClick={() => setView('bills')}
-                  className="button-primary text-white px-8 py-3 rounded-xl font-bold inline-flex items-center gap-2"
+                  className="w-full button-primary text-white px-6 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
                 >
-                  View All Bills
-                  <ChevronRight className="w-5 h-5" />
+                  View All Bills & Legislation
+                  <ChevronRight className="w-6 h-6" />
                 </button>
               </div>
             </div>
@@ -6244,53 +6282,16 @@ function App() {
                 <p className="text-gray-600">Recently implemented legislation affecting Canadians</p>
               </div>
 
-              {/* Search Bar */}
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Search className="w-5 h-5 text-purple-600" />
-                  <h3 className="text-lg font-bold text-gray-800">Search Laws & Regulations</h3>
-                </div>
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search by law name, bill number, category, or keyword..."
-                    value={lawSearch}
-                    onChange={(e) => setLawSearch(e.target.value)}
-                    className="w-full pl-12 pr-12 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-lg"
-                  />
-                  {lawSearch && (
-                    <button
-                      onClick={() => setLawSearch('')}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  )}
-                </div>
-                {lawSearch && (
-                  <p className="mt-3 text-sm text-gray-600">
-                    Found <strong>{filteredLaws.length}</strong> {filteredLaws.length === 1 ? 'law' : 'laws'} matching "{lawSearch}"
-                  </p>
-                )}
-              </div>
-
               {/* Laws List */}
-              {filteredLaws.length === 0 ? (
+              {laws.length === 0 ? (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
                   <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    {lawSearch ? 'No Laws Found' : 'No Laws Available'}
-                  </h3>
-                  <p className="text-gray-600">
-                    {lawSearch 
-                      ? `No laws match your search for "${lawSearch}". Try different keywords.`
-                      : 'Run create-laws-data.js to load laws!'}
-                  </p>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">No Laws Available</h3>
+                  <p className="text-gray-600">Run create-laws-data.js to load laws!</p>
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {filteredLaws.map(law => (
+                  {laws.map(law => (
                     <div
                       key={law.id}
                       className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-purple-500"
