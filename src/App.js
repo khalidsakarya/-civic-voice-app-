@@ -195,7 +195,7 @@ function App() {
   // Canadian data
   const [mps, setMps] = useState([]);
   const [bills, setBills] = useState([]);
-  const [laws, setLaws] = useState([]);
+  
   const [contracts, setContracts] = useState([]);
   const [governmentData, setGovernmentData] = useState(null);
   
