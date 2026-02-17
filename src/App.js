@@ -8069,9 +8069,8 @@ function App() {
   };
 
   return (
-    <>
-      <style>{customStyles}</style>
-      <div className="App smooth-scroll">
+  <div className="App smooth-scroll">
+    <style>{customStyles}</style>
         {view === 'countries' && renderCountrySelection()}
         {view === 'categories' && renderCategories()}
         {view === 'chambers' && renderChambers()}
