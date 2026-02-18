@@ -249,9 +249,6 @@ function App() {
   const [selectedMinistry, setSelectedMinistry] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [grantsExpanded, setGrantsExpanded] = useState(false);
-  
-  // Legislative Hub state
-  const [legislativeTab, setLegislativeTab] = useState('bills'); // bills, laws, upcoming
   const [ministries, setMinistries] = useState([
     {
       id: 1,
@@ -5109,6 +5106,27 @@ function App() {
             </div>
           </div>
 
+          {/* Laws & Legal Search */}
+          <div
+            onClick={() => setView(isUSA ? 'us-laws-search' : 'laws-search')}
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+            style={{ animationDelay: '0.2s' }}
+          >
+            <div className="text-green-600 mb-3 sm:mb-4">
+              <Scale className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+              Laws & Legal Search
+            </h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">
+              Search existing laws and regulations by keyword or date
+            </p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span className="font-medium">{isUSA ? usLaws.length : laws.length} Laws Available</span>
+              <ChevronRight className="w-5 h-5 text-green-600" />
+            </div>
+          </div>
+
           {/* Analytics Dashboard - Available for both countries */}
           <div
             onClick={() => setView(isUSA ? 'us-analytics' : 'analytics')}
@@ -5133,22 +5151,22 @@ function App() {
             </div>
           </div>
 
-          {/* Legislative Hub - Combines Bills, Laws & Legislation (Canada Only) */}
+          {/* Bills - Only for Canada for now */}
           {!isUSA && (
             <div
-              onClick={() => setView('legislative-hub')}
+              onClick={() => setView('bills')}
               className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
             >
-              <div className="text-green-600 mb-3 sm:mb-4">
-                <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Legislative Hub</h2>
-              <p className="text-gray-600 mb-3 text-sm sm:text-base">Bills, laws & legislation all in one place</p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span className="font-medium">{bills.length} Bills • {laws.length} Laws</span>
-                <ChevronRight className="w-5 h-5 text-green-600" />
-              </div>
+            <div className="text-green-600 mb-3 sm:mb-4">
+              <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Parliamentary Bills</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Track and vote on upcoming legislation</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>{bills.length} Bills</span>
+              <ChevronRight className="w-5 h-5" />
+            </div>
+          </div>
           )}
 
           {/* Government Ministries (Canada) / Federal Departments (USA) */}
@@ -5173,6 +5191,24 @@ function App() {
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
+
+          {/* Latest Laws & Regulations - Only Canada for now */}
+          {!isUSA && (
+          <div
+            onClick={() => setView('laws')}
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-indigo-500 active:scale-95"
+          >
+            <div className="text-indigo-600 mb-3 sm:mb-4">
+              <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Latest Laws & Regulations</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Recently implemented legislation affecting Canadians</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>{laws.length} Laws</span>
+              <ChevronRight className="w-5 h-5" />
+            </div>
+          </div>
+          )}
 
           {/* Government Contracts - Available for both countries */}
           <div
@@ -5487,6 +5523,7 @@ function App() {
               </div>
             </div>
           )}
+
 
           {/* Political Parties Section */}
           <div className="bg-white rounded-lg shadow-md p-6">
@@ -6013,330 +6050,8 @@ function App() {
     </div>
   );
 
-  // NEW: Legislative Hub - Combines Bills, Laws & Upcoming Legislation
-  const renderLegislativeHub = () => {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <button
-              onClick={() => setView('categories')}
-              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
-            >
-              ← Back to Government Levels
-            </button>
-            
-            <h1 className="text-2xl font-bold text-gray-800">Legislative Hub</h1>
-            
-            <div className="w-20"></div>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Tabs */}
-          <div className="bg-white rounded-xl shadow-md mb-6 p-2">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setLegislativeTab('bills')}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
-                  legislativeTab === 'bills'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                📋 Bills & Legislation
-              </button>
-              <button
-                onClick={() => setLegislativeTab('parliamentary')}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
-                  legislativeTab === 'parliamentary'
-                    ? 'bg-green-600 text-white shadow-md'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                🏛️ Parliamentary Bills
-              </button>
-              <button
-                onClick={() => setLegislativeTab('laws')}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
-                  legislativeTab === 'laws'
-                    ? 'bg-purple-600 text-white shadow-md'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                📜 Latest Laws & Regulations
-              </button>
-            </div>
-          </div>
-
-          {/* Bills & Legislation Tab */}
-          {legislativeTab === 'bills' && (
-            <div className="animate-fade-in">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300 rounded-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">📋 Bills & Legislation</h2>
-                <p className="text-gray-600">Search and track proposed legislation and parliamentary bills</p>
-              </div>
-
-              {/* Search Bar for Bills */}
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Search className="w-5 h-5 text-blue-600" />
-                  <h3 className="text-lg font-bold text-gray-800">Search Bills & Legislation</h3>
-                </div>
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search by bill name, number, category, or keyword..."
-                    value={billSearch}
-                    onChange={(e) => setBillSearch(e.target.value)}
-                    className="w-full pl-12 pr-12 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
-                  />
-                  {billSearch && (
-                    <button
-                      onClick={() => setBillSearch('')}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  )}
-                </div>
-                {billSearch && (
-                  <p className="mt-3 text-sm text-gray-600">
-                    Found <strong>{bills.filter(b => 
-                      b.title?.toLowerCase().includes(billSearch.toLowerCase()) ||
-                      b.shortTitle?.toLowerCase().includes(billSearch.toLowerCase()) ||
-                      b.billNumber?.toLowerCase().includes(billSearch.toLowerCase()) ||
-                      b.category?.toLowerCase().includes(billSearch.toLowerCase())
-                    ).length}</strong> bills matching "{billSearch}"
-                  </p>
-                )}
-              </div>
-
-              {/* Bills List */}
-              <div className="space-y-6">
-                {bills.filter(b => 
-                  !billSearch || 
-                  b.title?.toLowerCase().includes(billSearch.toLowerCase()) ||
-                  b.shortTitle?.toLowerCase().includes(billSearch.toLowerCase()) ||
-                  b.billNumber?.toLowerCase().includes(billSearch.toLowerCase()) ||
-                  b.category?.toLowerCase().includes(billSearch.toLowerCase())
-                ).slice(0, 5).map(bill => (
-                  <div
-                    key={bill.id}
-                    className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500 cursor-pointer"
-                    onClick={() => {
-                      setSelectedBill(bill);
-                      setView('bill-detail');
-                    }}
-                  >
-                    <div className="p-6">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
-                          {bill.billNumber}
-                        </span>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(bill.status)}`}>
-                          {bill.status}
-                        </span>
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
-                      <p className="text-gray-600 text-sm mb-3">{bill.summary}</p>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <ThumbsUp className="w-4 h-4 text-green-600" />
-                          <span className="text-sm font-semibold">{bill.supportVotes}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <ThumbsDown className="w-4 h-4 text-red-600" />
-                          <span className="text-sm font-semibold">{bill.opposeVotes}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <button
-                  onClick={() => setView('bills')}
-                  className="w-full button-primary text-white px-6 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
-                >
-                  View All Bills & Legislation
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Parliamentary Bills Tab */}
-          {legislativeTab === 'parliamentary' && (
-            <div className="animate-fade-in">
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">🏛️ Parliamentary Bills</h2>
-                <p className="text-gray-600">Track and vote on upcoming legislation</p>
-                <div className="flex flex-wrap gap-3 mt-4">
-                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-blue-200 shadow-sm">
-                    <p className="text-sm text-gray-600">Upcoming Bills</p>
-                    <p className="text-xl font-bold text-blue-600">{bills.filter(b => b.status === 'In Committee' || b.status === 'Passed House' || b.status === 'Passed Senate').length}</p>
-                  </div>
-                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-yellow-200 shadow-sm">
-                    <p className="text-sm text-gray-600">Proposed Bills</p>
-                    <p className="text-xl font-bold text-yellow-600">{bills.filter(b => b.status === 'In Committee').length}</p>
-                  </div>
-                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-green-200 shadow-sm">
-                    <p className="text-sm text-gray-600">Bills Voted (12mo)</p>
-                    <p className="text-xl font-bold text-green-600">{bills.filter(b => b.status === 'Signed into Law' || b.status === 'Failed in Senate').length}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                {bills.length === 0 ? (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-                    <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">No Bills Found</h3>
-                    <p className="text-gray-600">Run the bills scraper to load bill data!</p>
-                  </div>
-                ) : (
-                  bills.slice(0, 5).map(bill => (
-                    <div
-                      key={bill.id}
-                      className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-green-500 cursor-pointer"
-                      onClick={() => {
-                        setSelectedBill(bill);
-                        setView('bill-detail');
-                      }}
-                    >
-                      <div className="p-6">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
-                            {bill.billNumber}
-                          </span>
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(bill.status)}`}>
-                            {bill.status}
-                          </span>
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
-                        <p className="text-gray-600 text-sm mb-3">{bill.summary}</p>
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <ThumbsUp className="w-4 h-4 text-green-600" />
-                            <span className="text-sm font-semibold">{bill.supportVotes}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <ThumbsDown className="w-4 h-4 text-red-600" />
-                            <span className="text-sm font-semibold">{bill.opposeVotes}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-                <button
-                  onClick={() => setView('bills')}
-                  className="w-full button-success text-white px-6 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
-                >
-                  View All Parliamentary Bills
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Latest Laws & Regulations Tab */}
-          {legislativeTab === 'laws' && (
-            <div className="animate-fade-in">
-              <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-300 rounded-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">📜 Latest Laws & Regulations</h2>
-                <p className="text-gray-600">Recently implemented legislation affecting Canadians</p>
-              </div>
-
-              {/* Laws List */}
-              {laws.length === 0 ? (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
-                  <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">No Laws Available</h3>
-                  <p className="text-gray-600">Run create-laws-data.js to load laws!</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {laws.map(law => (
-                    <div
-                      key={law.id}
-                      className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-purple-500"
-                    >
-                      <div className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3">
-                              <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-bold">
-                                {law.billNumber}
-                              </span>
-                              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                                ✓ {law.status}
-                              </span>
-                              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                                {law.category}
-                              </span>
-                            </div>
-                            
-                            <h2 className="text-2xl font-bold text-gray-800 mb-2">{law.shortTitle}</h2>
-                            <h3 className="text-lg text-gray-600 mb-3">{law.title}</h3>
-                            
-                            <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                <span>Implemented: {law.dateImplemented}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Users className="w-4 h-4" />
-                                <span>{law.implementedBy}</span>
-                              </div>
-                            </div>
-
-                            <p className="text-gray-700 mb-4">{law.summary}</p>
-
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                              <p className="text-sm text-gray-700">
-                                <strong>Impact:</strong> {law.impact}
-                              </p>
-                            </div>
-
-                            <div className="flex gap-3">
-                              <button
-                                onClick={() => {
-                                  setSelectedLaw(law);
-                                  setView('law-detail');
-                                }}
-                                className="text-purple-600 hover:text-purple-800 font-medium text-sm flex items-center gap-1"
-                              >
-                                View Full Details & Provisions
-                                <ChevronRight className="w-4 h-4" />
-                              </button>
-                              <a
-                                href={`https://www.laws-lois.justice.gc.ca/eng/acts/${law.billNumber}/`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                Read on Justice.gc.ca
-                                <Globe className="w-4 h-4" />
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   const renderAnalytics = () => {
-    if (!governmentData) return <div className="p-8 text-center">Loading analytics data...</div>;
+    const analytics = getAnalyticsData();
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -6349,7 +6064,7 @@ function App() {
               ← Back to Government Levels
             </button>
             
-            <h1 className="text-2xl font-bold text-gray-800">Canada Budget Analytics</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
             
             <div className="w-20"></div>
           </div>
@@ -6357,296 +6072,12 @@ function App() {
 
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">📊 Government Policy & Economic Impact</h2>
-            <p className="text-gray-600">Comprehensive analysis of Canadian government performance</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">📊 Data Insights</h2>
+            <p className="text-gray-600">Visual analysis of {mps.length} Members of Parliament</p>
           </div>
 
-          {/* Economic Indicators */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-blue-600" />
-              Economic Indicators (2025)
-            </h3>
-            <p className="text-gray-600 mb-4">Key economic performance metrics</p>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">GDP Growth</span>
-                  <span className="font-bold text-green-600">{governmentData.economy.gdpGrowth[3]}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-green-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.economy.gdpGrowth[3] / 5) * 100}%`}}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Unemployment Rate</span>
-                  <span className="font-bold text-yellow-600">{governmentData.economy.unemployment[3]}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-yellow-500 h-3 rounded-full"
-                    style={{width: `${governmentData.economy.unemployment[3] * 10}%`}}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Inflation Rate</span>
-                  <span className="font-bold text-red-600">{governmentData.economy.inflation[3]}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-red-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.economy.inflation[3] / 10) * 100}%`}}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Consumer Confidence</span>
-                  <span className="font-bold text-blue-600">{governmentData.economy.consumerConfidence[3]}/100</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-blue-500 h-3 rounded-full"
-                    style={{width: `${governmentData.economy.consumerConfidence[3]}%`}}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Immigration Analysis */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Globe className="w-6 h-6 text-purple-600" />
-              Immigration & Population Growth
-            </h3>
-            <p className="text-gray-600 mb-4">2025 immigration targets and achievements</p>
-            
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Policy Stance</p>
-                  <p className="text-xl font-bold text-purple-700">{governmentData.immigration.analysis.stance}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Target vs Actual</p>
-                  <p className="text-xl font-bold text-purple-700">{governmentData.immigration.analysis.targetAchievement}%</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Accepted (2025)</p>
-                  <p className="text-xl font-bold text-purple-700">{governmentData.immigration.accepted[3].toLocaleString()}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Economic Class</span>
-                  <span className="font-bold text-gray-800">{governmentData.immigration.byCategory["2025"].economic.toLocaleString()}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-blue-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.immigration.byCategory["2025"].economic / governmentData.immigration.accepted[3]) * 100}%`}}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Family Sponsorship</span>
-                  <span className="font-bold text-gray-800">{governmentData.immigration.byCategory["2025"].family.toLocaleString()}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-green-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.immigration.byCategory["2025"].family / governmentData.immigration.accepted[3]) * 100}%`}}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Refugees</span>
-                  <span className="font-bold text-gray-800">{governmentData.immigration.byCategory["2025"].refugee.toLocaleString()}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-purple-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.immigration.byCategory["2025"].refugee / governmentData.immigration.accepted[3]) * 100}%`}}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Other Categories</span>
-                  <span className="font-bold text-gray-800">{governmentData.immigration.byCategory["2025"].other.toLocaleString()}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-orange-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.immigration.byCategory["2025"].other / governmentData.immigration.accepted[3]) * 100}%`}}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Crime Statistics */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <AlertCircle className="w-6 h-6 text-red-600" />
-              Crime Rate Trends
-            </h3>
-            
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-                <div>
-                  <p className="text-sm text-gray-600">Overall Crime Trend</p>
-                  <p className="text-2xl font-bold text-green-700">
-                    Declining {governmentData.crime.percentChange[3]}% Year-over-Year
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Violent Crime Rate</span>
-                  <span className="font-bold text-red-600">{governmentData.crime.violentCrime[3]} per 100K</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-red-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.crime.violentCrime[3] / 2000) * 100}%`}}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Property Crime Rate</span>
-                  <span className="font-bold text-yellow-600">{governmentData.crime.propertyCrime[3]} per 100K</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-yellow-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.crime.propertyCrime[3] / 6000) * 100}%`}}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Overall Crime Index</span>
-                  <span className="font-bold text-gray-700">{governmentData.crime.overallIndex[3]} per 100K</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-gray-600 h-3 rounded-full"
-                    style={{width: `${(governmentData.crime.overallIndex[3] / 8000) * 100}%`}}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Government Spending */}
-          {governmentData.spending && (
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <DollarSign className="w-6 h-6 text-green-600" />
-                Government Spending by Sector (2025)
-              </h3>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                <p className="text-sm text-gray-600">Total Budget</p>
-                <p className="text-3xl font-bold text-green-700">
-                  ${(governmentData.spending.totalBudget / 1e9).toFixed(1)} Billion
-                </p>
-              </div>
-              <div className="space-y-3">
-                {governmentData.spending.sectors.map((sector, index) => (
-                  <div key={index}>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-gray-700">{sector.name}</span>
-                      <span className="font-bold text-gray-800">${(sector.amount / 1e9).toFixed(1)}B ({sector.percentage}%)</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div
-                        className={`h-3 rounded-full ${
-                          sector.name.includes('Healthcare') ? 'bg-red-500' :
-                          sector.name.includes('Education') ? 'bg-blue-500' :
-                          sector.name.includes('Defense') ? 'bg-purple-500' :
-                          sector.name.includes('Infrastructure') ? 'bg-yellow-500' :
-                          'bg-green-500'
-                        }`}
-                        style={{width: `${sector.percentage}%`}}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Foreign Aid */}
-          {governmentData.foreignAid && (
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Globe className="w-6 h-6 text-blue-600" />
-                Foreign Aid & International Assistance (2025)
-              </h3>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <p className="text-sm text-gray-600 mb-1">Total Foreign Aid</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    ${(governmentData.foreignAid.totalAmount / 1e9).toFixed(2)}B
-                  </p>
-                </div>
-                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                  <p className="text-sm text-gray-600 mb-1">Grants</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    ${(governmentData.foreignAid.breakdown.totalGrants / 1e9).toFixed(2)}B
-                  </p>
-                  <p className="text-xs text-gray-500">{governmentData.foreignAid.breakdown.grantPercentage}%</p>
-                </div>
-                <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                  <p className="text-sm text-gray-600 mb-1">Loans</p>
-                  <p className="text-2xl font-bold text-orange-600">
-                    ${(governmentData.foreignAid.breakdown.totalLoans / 1e9).toFixed(2)}B
-                  </p>
-                  <p className="text-xs text-gray-500">{governmentData.foreignAid.breakdown.loanPercentage}%</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {governmentData.foreignAid.topRecipients.map((recipient, index) => (
-                  <div key={index}>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-gray-700">{recipient.country}</span>
-                      <span className="font-bold text-gray-800">${(recipient.amount / 1e6).toFixed(0)}M</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div
-                        className="bg-blue-500 h-3 rounded-full"
-                        style={{width: `${(recipient.amount / governmentData.foreignAid.totalAmount) * 100}%`}}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
+          {/* GOVERNMENT IMPACT SECTION */}
+          {governmentData && (
             <>
               <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-6 mb-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">🏛️ Government Policy Impact</h2>
@@ -8319,9 +7750,10 @@ function App() {
   };
 
   return (
-    <div className="App smooth-scroll">
+    <>
       <style>{customStyles}</style>
-      {view === 'countries' && renderCountrySelection()}
+      <div className="App smooth-scroll">
+        {view === 'countries' && renderCountrySelection()}
         {view === 'categories' && renderCategories()}
         {view === 'chambers' && renderChambers()}
         {view === 'parties' && renderParties()}
@@ -8330,7 +7762,6 @@ function App() {
         {view === 'analytics' && renderAnalytics()}
         {view === 'us-analytics' && renderUSAnalytics()}
         {view === 'bills' && renderBills()}
-        {view === 'legislative-hub' && renderLegislativeHub()}
         {view === 'bill-detail' && selectedBill && renderBillDetail()}
         {view === 'laws' && renderLaws()}
         {view === 'law-detail' && selectedLaw && renderLawDetail()}
