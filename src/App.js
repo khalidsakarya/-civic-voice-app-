@@ -6362,130 +6362,135 @@ function App() {
           </div>
 
           {/* Economic Indicators */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-blue-600" />
-              Economic Indicators (2025)
-            </h3>
-            <p className="text-gray-600 mb-4">Key economic performance metrics</p>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">GDP Growth</span>
-                  <span className="font-bold text-green-600">{governmentData.economy.gdpGrowth[3]}%</span>
+          {governmentData.economy && governmentData.economy.gdpGrowth && (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
+                Economic Indicators (2025)
+              </h3>
+              <p className="text-gray-600 mb-4">Key economic performance metrics</p>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">GDP Growth</span>
+                    <span className="font-bold text-green-600">{governmentData.economy.gdpGrowth[3]}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-green-500 h-3 rounded-full"
+                      style={{width: `${(governmentData.economy.gdpGrowth[3] / 5) * 100}%`}}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-green-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.economy.gdpGrowth[3] / 5) * 100}%`}}
-                  />
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">Unemployment Rate</span>
+                    <span className="font-bold text-yellow-600">{governmentData.economy.unemployment[3]}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-yellow-500 h-3 rounded-full"
+                      style={{width: `${governmentData.economy.unemployment[3] * 10}%`}}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Unemployment Rate</span>
-                  <span className="font-bold text-yellow-600">{governmentData.economy.unemployment[3]}%</span>
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">Inflation Rate</span>
+                    <span className="font-bold text-red-600">{governmentData.economy.inflation[3]}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-red-500 h-3 rounded-full"
+                      style={{width: `${(governmentData.economy.inflation[3] / 10) * 100}%`}}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-yellow-500 h-3 rounded-full"
-                    style={{width: `${governmentData.economy.unemployment[3] * 10}%`}}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Inflation Rate</span>
-                  <span className="font-bold text-red-600">{governmentData.economy.inflation[3]}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-red-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.economy.inflation[3] / 10) * 100}%`}}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Consumer Confidence</span>
-                  <span className="font-bold text-blue-600">{governmentData.economy.consumerConfidence[3]}/100</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-blue-500 h-3 rounded-full"
-                    style={{width: `${governmentData.economy.consumerConfidence[3]}%`}}
-                  />
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">Consumer Confidence</span>
+                    <span className="font-bold text-blue-600">{governmentData.economy.consumerConfidence[3]}/100</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-blue-500 h-3 rounded-full"
+                      style={{width: `${governmentData.economy.consumerConfidence[3]}%`}}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Immigration Analysis */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Globe className="w-6 h-6 text-purple-600" />
-              Immigration & Population Growth
-            </h3>
-            <p className="text-gray-600 mb-4">2025 immigration targets and achievements</p>
-            
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Policy Stance</p>
-                  <p className="text-xl font-bold text-purple-700">{governmentData.immigration.analysis.stance}</p>
+          {governmentData.immigration && governmentData.immigration.byCategory && governmentData.immigration.byCategory["2025"] && (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <Globe className="w-6 h-6 text-purple-600" />
+                Immigration & Population Growth
+              </h3>
+              <p className="text-gray-600 mb-4">2025 immigration targets and achievements</p>
+              
+              {governmentData.immigration.analysis && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-600">Policy Stance</p>
+                      <p className="text-xl font-bold text-purple-700">{governmentData.immigration.analysis.stance}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Target vs Actual</p>
+                      <p className="text-xl font-bold text-purple-700">{governmentData.immigration.analysis.targetAchievement}%</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Accepted (2025)</p>
+                      <p className="text-xl font-bold text-purple-700">{governmentData.immigration.accepted[3].toLocaleString()}</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">Target vs Actual</p>
-                  <p className="text-xl font-bold text-purple-700">{governmentData.immigration.analysis.targetAchievement}%</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Accepted (2025)</p>
-                  <p className="text-xl font-bold text-purple-700">{governmentData.immigration.accepted[3].toLocaleString()}</p>
-                </div>
-              </div>
-            </div>
+              )}
 
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Economic Class</span>
-                  <span className="font-bold text-gray-800">{governmentData.immigration.byCategory["2025"].economic.toLocaleString()}</span>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">Economic Class</span>
+                    <span className="font-bold text-gray-800">{governmentData.immigration.byCategory["2025"].economic.toLocaleString()}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-blue-500 h-3 rounded-full"
+                      style={{width: `${(governmentData.immigration.byCategory["2025"].economic / governmentData.immigration.accepted[3]) * 100}%`}}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-blue-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.immigration.byCategory["2025"].economic / governmentData.immigration.accepted[3]) * 100}%`}}
-                  />
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">Family Sponsorship</span>
+                    <span className="font-bold text-gray-800">{governmentData.immigration.byCategory["2025"].family.toLocaleString()}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-green-500 h-3 rounded-full"
+                      style={{width: `${(governmentData.immigration.byCategory["2025"].family / governmentData.immigration.accepted[3]) * 100}%`}}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Family Sponsorship</span>
-                  <span className="font-bold text-gray-800">{governmentData.immigration.byCategory["2025"].family.toLocaleString()}</span>
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">Refugees</span>
+                    <span className="font-bold text-gray-800">{governmentData.immigration.byCategory["2025"].refugee.toLocaleString()}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-purple-500 h-3 rounded-full"
+                      style={{width: `${(governmentData.immigration.byCategory["2025"].refugee / governmentData.immigration.accepted[3]) * 100}%`}}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-green-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.immigration.byCategory["2025"].family / governmentData.immigration.accepted[3]) * 100}%`}}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Refugees</span>
-                  <span className="font-bold text-gray-800">{governmentData.immigration.byCategory["2025"].refugee.toLocaleString()}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-purple-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.immigration.byCategory["2025"].refugee / governmentData.immigration.accepted[3]) * 100}%`}}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Other Categories</span>
-                  <span className="font-bold text-gray-800">{governmentData.immigration.byCategory["2025"].other.toLocaleString()}</span>
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">Other Categories</span>
+                    <span className="font-bold text-gray-800">{governmentData.immigration.byCategory["2025"].other.toLocaleString()}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-3">
                   <div
@@ -6498,66 +6503,68 @@ function App() {
           </div>
 
           {/* Crime Statistics */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <AlertCircle className="w-6 h-6 text-red-600" />
-              Crime Rate Trends
-            </h3>
-            
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-                <div>
-                  <p className="text-sm text-gray-600">Overall Crime Trend</p>
-                  <p className="text-2xl font-bold text-green-700">
-                    Declining {governmentData.crime.percentChange[3]}% Year-over-Year
-                  </p>
+          {governmentData.crime && governmentData.crime.violentCrime && (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <AlertCircle className="w-6 h-6 text-red-600" />
+                Crime Rate Trends
+              </h3>
+              
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-8 h-8 text-green-600" />
+                  <div>
+                    <p className="text-sm text-gray-600">Overall Crime Trend</p>
+                    <p className="text-2xl font-bold text-green-700">
+                      Declining {governmentData.crime.percentChange[3]}% Year-over-Year
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Violent Crime Rate</span>
-                  <span className="font-bold text-red-600">{governmentData.crime.violentCrime[3]} per 100K</span>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">Violent Crime Rate</span>
+                    <span className="font-bold text-red-600">{governmentData.crime.violentCrime[3]} per 100K</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-red-500 h-3 rounded-full"
+                      style={{width: `${(governmentData.crime.violentCrime[3] / 2000) * 100}%`}}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-red-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.crime.violentCrime[3] / 2000) * 100}%`}}
-                  />
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">Property Crime Rate</span>
+                    <span className="font-bold text-yellow-600">{governmentData.crime.propertyCrime[3]} per 100K</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-yellow-500 h-3 rounded-full"
+                      style={{width: `${(governmentData.crime.propertyCrime[3] / 6000) * 100}%`}}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Property Crime Rate</span>
-                  <span className="font-bold text-yellow-600">{governmentData.crime.propertyCrime[3]} per 100K</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-yellow-500 h-3 rounded-full"
-                    style={{width: `${(governmentData.crime.propertyCrime[3] / 6000) * 100}%`}}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-700">Overall Crime Index</span>
-                  <span className="font-bold text-gray-700">{governmentData.crime.overallIndex[3]} per 100K</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div
-                    className="bg-gray-600 h-3 rounded-full"
-                    style={{width: `${(governmentData.crime.overallIndex[3] / 8000) * 100}%`}}
-                  />
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700">Overall Crime Index</span>
+                    <span className="font-bold text-gray-700">{governmentData.crime.overallIndex[3]} per 100K</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-gray-600 h-3 rounded-full"
+                      style={{width: `${(governmentData.crime.overallIndex[3] / 8000) * 100}%`}}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Government Spending */}
-          {governmentData.spending && (
+          {governmentData.spending && governmentData.spending.sectors && governmentData.spending.sectors.length > 0 && (
             <div className="bg-white rounded-lg shadow-md p-6 mb-8">
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <DollarSign className="w-6 h-6 text-green-600" />
@@ -6625,22 +6632,24 @@ function App() {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                {governmentData.foreignAid.topRecipients.map((recipient, index) => (
-                  <div key={index}>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-gray-700">{recipient.country}</span>
-                      <span className="font-bold text-gray-800">${(recipient.amount / 1e6).toFixed(0)}M</span>
+              {governmentData.foreignAid.byCountry && governmentData.foreignAid.byCountry.length > 0 && (
+                <div className="space-y-3">
+                  {governmentData.foreignAid.byCountry.slice(0, 5).map((recipient, index) => (
+                    <div key={index}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-gray-700">{recipient.country}</span>
+                        <span className="font-bold text-gray-800">${(recipient.amount / 1e6).toFixed(0)}M</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div
+                          className="bg-blue-500 h-3 rounded-full"
+                          style={{width: `${(recipient.amount / governmentData.foreignAid.totalAmount) * 100}%`}}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div
-                        className="bg-blue-500 h-3 rounded-full"
-                        style={{width: `${(recipient.amount / governmentData.foreignAid.totalAmount) * 100}%`}}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
