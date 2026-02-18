@@ -195,7 +195,7 @@ function App() {
   // Canadian data
   const [mps, setMps] = useState([]);
   const [bills, setBills] = useState([]);
-  
+  const [laws, setLaws] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [governmentData, setGovernmentData] = useState(null);
   
@@ -5489,39 +5489,6 @@ function App() {
             </div>
           )}
 
-          {/* Parliamentary Bills Tracker */}
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 mb-6 shadow-md hover:shadow-xl transition-all animate-scale-in">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">📋 {isUSA ? 'Congressional' : 'Parliamentary'} Bills Tracker</h2>
-                <p className="text-gray-700 mb-4">
-                  Track legislation through {isUSA ? 'Congress' : 'Parliament'} - Upcoming, Proposed & Recently Voted
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-blue-200 shadow-sm">
-                    <p className="text-sm text-gray-600">Upcoming Bills</p>
-                    <p className="text-xl font-bold text-blue-600">{(isUSA ? usBills : bills).filter(b => b.status === 'In Committee' || b.status === 'Passed House' || b.status === 'Passed Senate').length}</p>
-                  </div>
-                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-yellow-200 shadow-sm">
-                    <p className="text-sm text-gray-600">Proposed Bills</p>
-                    <p className="text-xl font-bold text-yellow-600">{(isUSA ? usBills : bills).filter(b => b.status === 'In Committee').length}</p>
-                  </div>
-                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-green-200 shadow-sm">
-                    <p className="text-sm text-gray-600">Bills Voted (12mo)</p>
-                    <p className="text-xl font-bold text-green-600">{(isUSA ? usBills : bills).filter(b => b.status === 'Signed into Law' || b.status === 'Failed in Senate').length}</p>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => setView(isUSA ? 'us-bills' : 'bills')}
-                className="button-success text-white px-8 py-4 rounded-xl font-bold text-lg shadow-elegant hover:scale-105 transition-transform flex items-center gap-2"
-              >
-                View Bills
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            </div>
-          </div>
-
           {/* Political Parties Section */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Select a Political Party</h2>
@@ -8069,8 +8036,9 @@ function App() {
   };
 
   return (
-  <div className="App smooth-scroll">
-    <style>{customStyles}</style>
+    <>
+      <style>{customStyles}</style>
+      <div className="App smooth-scroll">
         {view === 'countries' && renderCountrySelection()}
         {view === 'categories' && renderCategories()}
         {view === 'chambers' && renderChambers()}
