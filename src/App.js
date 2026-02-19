@@ -6054,7 +6054,7 @@ function App() {
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
-                🏛️ Parliamentary Bills
+                🏛️ Ongoing Parliamentary Bills
               </button>
               <button
                 onClick={() => setLegislativeTab('laws')}
@@ -6239,12 +6239,12 @@ function App() {
             </div>
           )}
 
-          {/* Parliamentary Bills Tab */}
+          {/* Ongoing Parliamentary Bills Tab */}
           {legislativeTab === 'parliamentary' && (
             <div className="animate-fade-in">
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">🏛️ Parliamentary Bills</h2>
-                <p className="text-gray-600">Track and vote on upcoming legislation</p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">🏛️ Ongoing Parliamentary Bills</h2>
+                <p className="text-gray-600">Bills currently moving through Parliament — being debated, reviewed, or voted on</p>
                 <div className="flex flex-wrap gap-3 mt-4">
                   <div className="bg-white px-4 py-2 rounded-lg border-2 border-blue-200 shadow-sm">
                     <p className="text-sm text-gray-600">Upcoming Bills</p>
@@ -6319,140 +6319,118 @@ function App() {
             <div className="animate-fade-in">
               <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-300 rounded-lg p-6 mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">📜 Latest Laws & Regulations</h2>
-                <p className="text-gray-600">Recently passed bills and implemented legislation affecting Canadians</p>
+                <p className="text-gray-600">Laws approved or voted on in the <strong>last 12 months</strong> — recently enacted legislation affecting Canadians</p>
               </div>
 
-              {/* Bills Section */}
-              {bills.length > 0 && (
-                <div className="mb-8">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    📋 Bills & Proposed Legislation
-                    <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-sm font-medium">{bills.length} bills</span>
-                  </h3>
-                  <div className="space-y-4 mb-4">
-                    {bills.map(bill => (
-                      <div
-                        key={bill.id}
-                        className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500 cursor-pointer"
-                        onClick={() => {
-                          setSelectedBill(bill);
-                          setView('bill-detail');
-                        }}
-                      >
-                        <div className="p-5">
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
-                              {bill.billNumber}
-                            </span>
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(bill.status)}`}>
-                              {bill.status}
-                            </span>
-                          </div>
-                          <h3 className="text-lg font-bold text-gray-800 mb-1">{bill.shortTitle}</h3>
-                          <p className="text-gray-600 text-sm mb-3">{bill.summary}</p>
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                              <ThumbsUp className="w-4 h-4 text-green-600" />
-                              <span className="text-sm font-semibold">{bill.supportVotes}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <ThumbsDown className="w-4 h-4 text-red-600" />
-                              <span className="text-sm font-semibold">{bill.opposeVotes}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="border-b-2 border-gray-200 mb-6 pt-2">
-                    <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                      ⚖️ Enacted Laws & Regulations
-                      <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-sm font-medium">{laws.length} laws</span>
-                    </h3>
-                  </div>
-                </div>
-              )}
+              {/* Laws List — filtered to last 12 months */}
+              {(() => {
+                const twelveMonthsAgo = new Date();
+                twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+                const recentLaws = laws.filter(law => {
+                  const lawDate = new Date(law.dateImplemented || law.dateEnacted || law.date);
+                  return lawDate >= twelveMonthsAgo;
+                });
 
-              {/* Laws List */}
-              {laws.length === 0 ? (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
-                  <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">No Laws Available</h3>
-                  <p className="text-gray-600">Run create-laws-data.js to load laws!</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {laws.map(law => (
-                    <div
-                      key={law.id}
-                      className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-purple-500"
-                    >
-                      <div className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3">
-                              <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-bold">
-                                {law.billNumber}
-                              </span>
-                              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                                ✓ {law.status}
-                              </span>
-                              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                                {law.category}
-                              </span>
-                            </div>
-                            
-                            <h2 className="text-2xl font-bold text-gray-800 mb-2">{law.shortTitle}</h2>
-                            <h3 className="text-lg text-gray-600 mb-3">{law.title}</h3>
-                            
-                            <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                <span>Implemented: {law.dateImplemented}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Users className="w-4 h-4" />
-                                <span>{law.implementedBy}</span>
-                              </div>
-                            </div>
-
-                            <p className="text-gray-700 mb-4">{law.summary}</p>
-
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                              <p className="text-sm text-gray-700">
-                                <strong>Impact:</strong> {law.impact}
-                              </p>
-                            </div>
-
-                            <div className="flex gap-3">
-                              <button
-                                onClick={() => {
-                                  setSelectedLaw(law);
-                                  setView('law-detail');
-                                }}
-                                className="text-purple-600 hover:text-purple-800 font-medium text-sm flex items-center gap-1"
-                              >
-                                View Full Details & Provisions
-                                <ChevronRight className="w-4 h-4" />
-                              </button>
-                              <a
-                                href={`https://www.laws-lois.justice.gc.ca/eng/acts/${law.billNumber}/`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                Read on Justice.gc.ca
-                                <Globe className="w-4 h-4" />
-                              </a>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                if (laws.length === 0) {
+                  return (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+                      <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">No Laws Available</h3>
+                      <p className="text-gray-600">Run create-laws-data.js to load laws!</p>
                     </div>
-                  ))}
-                </div>
-              )}
+                  );
+                }
+
+                if (recentLaws.length === 0) {
+                  return (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 text-center">
+                      <Calendar className="w-12 h-12 text-blue-400 mx-auto mb-3" />
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">No New Laws in the Last 12 Months</h3>
+                      <p className="text-gray-500">No laws have been enacted in the past 12 months based on available data.</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <>
+                    <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-5 flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-purple-500" />
+                      <p className="text-sm text-gray-600">Showing <strong className="text-purple-700">{recentLaws.length} law{recentLaws.length !== 1 ? 's' : ''}</strong> enacted since <strong>{twelveMonthsAgo.toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' })}</strong></p>
+                    </div>
+                    <div className="space-y-6">
+                      {recentLaws.map(law => (
+                        <div
+                          key={law.id}
+                          className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-purple-500"
+                        >
+                          <div className="p-6">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-3">
+                                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-bold">
+                                    {law.billNumber}
+                                  </span>
+                                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                                    ✓ {law.status}
+                                  </span>
+                                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                                    {law.category}
+                                  </span>
+                                </div>
+
+                                <h2 className="text-2xl font-bold text-gray-800 mb-2">{law.shortTitle}</h2>
+                                <h3 className="text-lg text-gray-600 mb-3">{law.title}</h3>
+
+                                <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-4 h-4" />
+                                    <span>Implemented: {law.dateImplemented}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Users className="w-4 h-4" />
+                                    <span>{law.implementedBy}</span>
+                                  </div>
+                                </div>
+
+                                <p className="text-gray-700 mb-4">{law.summary}</p>
+
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                  <p className="text-sm text-gray-700">
+                                    <strong>Impact:</strong> {law.impact}
+                                  </p>
+                                </div>
+
+                                <div className="flex gap-3">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedLaw(law);
+                                      setView('law-detail');
+                                    }}
+                                    className="text-purple-600 hover:text-purple-800 font-medium text-sm flex items-center gap-1"
+                                  >
+                                    View Full Details & Provisions
+                                    <ChevronRight className="w-4 h-4" />
+                                  </button>
+                                  <a
+                                    href={`https://www.laws-lois.justice.gc.ca/eng/acts/${law.billNumber}/`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    Read on Justice.gc.ca
+                                    <Globe className="w-4 h-4" />
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           )}
         </div>
