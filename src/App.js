@@ -6348,127 +6348,159 @@ function App() {
             >
               ← Back to Government Levels
             </button>
-            
             <h1 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
-            
             <div className="w-20"></div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">📊 Data Insights</h2>
-            <p className="text-gray-600">Visual analysis of {mps.length} Members of Parliament</p>
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">📊 Canadian Government Analytics</h2>
+            <p className="text-gray-600">Budget, policy impact & MP performance — {mps.length} Members of Parliament</p>
           </div>
 
-          {/* GOVERNMENT IMPACT SECTION */}
           {governmentData && (
             <>
-              <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">🏛️ Government Policy Impact</h2>
-                <p className="text-gray-600">How current government policies are affecting Canada</p>
-              </div>
-
-              {/* Economic Impact Chart */}
-              <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              {/* Key Economic Indicators */}
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
                   <TrendingUp className="w-6 h-6 text-blue-600" />
-                  📈 Economic Impact Under Current Government
+                  📈 Key Economic Indicators (2025)
                 </h3>
-                <p className="text-sm text-gray-600 mb-4">Key economic indicators showing government policy effectiveness</p>
-                
-                <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={governmentData.economy.years.map((year, i) => ({
-                    year,
-                    gdp: governmentData.economy.gdpGrowth[i],
-                    unemployment: governmentData.economy.unemployment[i],
-                    inflation: governmentData.economy.inflation[i]
-                  }))}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="year" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => `${value}%`} />
-                    <Legend />
-                    <Line type="monotone" dataKey="gdp" stroke="#10B981" strokeWidth={2} name="GDP Growth %" />
-                    <Line type="monotone" dataKey="unemployment" stroke="#F59E0B" strokeWidth={2} name="Unemployment %" />
-                    <Line type="monotone" dataKey="inflation" stroke="#EF4444" strokeWidth={2} name="Inflation %" />
-                  </LineChart>
-                </ResponsiveContainer>
+                <p className="text-gray-600 mb-4">Current snapshot of Canada's economic health</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                    <p className="text-sm text-gray-600 mb-1">GDP Growth (2025)</p>
-                    <p className="text-2xl font-bold text-green-600">{governmentData.economy.gdpGrowth[3]}%</p>
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200 text-center">
+                    <p className="text-xs text-gray-600 mb-1">GDP Growth</p>
+                    <p className="text-3xl font-bold text-green-600">{governmentData.economy.gdpGrowth[3]}%</p>
                   </div>
-                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                    <p className="text-sm text-gray-600 mb-1">Unemployment (2025)</p>
-                    <p className="text-2xl font-bold text-yellow-600">{governmentData.economy.unemployment[3]}%</p>
+                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 text-center">
+                    <p className="text-xs text-gray-600 mb-1">Unemployment</p>
+                    <p className="text-3xl font-bold text-yellow-600">{governmentData.economy.unemployment[3]}%</p>
                   </div>
-                  <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                    <p className="text-sm text-gray-600 mb-1">Inflation (2025)</p>
-                    <p className="text-2xl font-bold text-red-600">{governmentData.economy.inflation[3]}%</p>
+                  <div className="bg-red-50 p-4 rounded-lg border border-red-200 text-center">
+                    <p className="text-xs text-gray-600 mb-1">Inflation Rate</p>
+                    <p className="text-3xl font-bold text-red-600">{governmentData.economy.inflation[3]}%</p>
                   </div>
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <p className="text-sm text-gray-600 mb-1">Consumer Confidence</p>
-                    <p className="text-2xl font-bold text-blue-600">{governmentData.economy.consumerConfidence[3]}/100</p>
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
+                    <p className="text-xs text-gray-600 mb-1">Consumer Confidence</p>
+                    <p className="text-3xl font-bold text-blue-600">{governmentData.economy.consumerConfidence[3]}/100</p>
+                  </div>
+                </div>
+
+                <h4 className="font-bold text-gray-700 mb-3">Year-over-Year Trends</h4>
+                <div className="space-y-4">
+                  {governmentData.economy.years.map((year, i) => (
+                    <div key={year}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-gray-700 font-medium">{year}</span>
+                        <span className="text-sm text-gray-600">GDP {governmentData.economy.gdpGrowth[i]}% · Unemployment {governmentData.economy.unemployment[i]}% · Inflation {governmentData.economy.inflation[i]}%</span>
+                      </div>
+                      <div className="flex gap-1 h-4">
+                        <div className="bg-green-500 rounded-l" style={{width: `${(governmentData.economy.gdpGrowth[i] / 10) * 100}%`}} title={`GDP ${governmentData.economy.gdpGrowth[i]}%`} />
+                        <div className="bg-yellow-400" style={{width: `${(governmentData.economy.unemployment[i] / 10) * 100}%`}} title={`Unemployment ${governmentData.economy.unemployment[i]}%`} />
+                        <div className="bg-red-400 rounded-r" style={{width: `${(governmentData.economy.inflation[i] / 10) * 100}%`}} title={`Inflation ${governmentData.economy.inflation[i]}%`} />
+                      </div>
+                    </div>
+                  ))}
+                  <div className="flex gap-4 text-xs text-gray-600 mt-2">
+                    <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-green-500 rounded"></span> GDP Growth</span>
+                    <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-yellow-400 rounded"></span> Unemployment</span>
+                    <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-red-400 rounded"></span> Inflation</span>
                   </div>
                 </div>
               </div>
 
-              {/* Immigration Policy Chart */}
-              <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <Globe className="w-6 h-6 text-purple-600" />
-                  🌍 Immigration Policy & Acceptance
-                </h3>
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-600">Policy Stance</p>
-                      <p className="text-xl font-bold text-purple-700">{governmentData.immigration.analysis.stance}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">2025 Accepted</p>
-                      <p className="text-xl font-bold text-purple-700">{governmentData.immigration.accepted[3].toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Target Achievement</p>
-                      <p className="text-xl font-bold text-purple-700">{governmentData.immigration.analysis.targetAchievement}%</p>
-                    </div>
+              {/* Government Spending */}
+              {governmentData.spending && (
+                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+                    <DollarSign className="w-6 h-6 text-green-600" />
+                    💰 Government Spending by Sector (2025)
+                  </h3>
+                  <div className="p-4 bg-green-50 border-2 border-green-300 rounded-lg mb-4">
+                    <p className="text-green-800 font-bold text-lg">Total Budget: ${(governmentData.spending.totalBudget / 1e9).toFixed(1)} Billion</p>
+                    <p className="text-sm text-green-700">Federal government spending across all sectors</p>
                   </div>
-                </div>
-
-                <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={governmentData.immigration.years.map((year, i) => ({
-                    year,
-                    target: governmentData.immigration.targets[i],
-                    accepted: governmentData.immigration.accepted[i]
-                  }))}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="year" />
-                    <YAxis tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} />
-                    <Tooltip formatter={(value) => value.toLocaleString()} />
-                    <Legend />
-                    <Bar dataKey="target" fill="#9CA3AF" name="Immigration Target" />
-                    <Bar dataKey="accepted" fill="#8B5CF6" name="Actually Accepted" />
-                  </BarChart>
-                </ResponsiveContainer>
-
-                <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-bold text-gray-800 mb-3">2025 Immigration by Category</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {Object.entries(governmentData.immigration.byCategory["2025"]).map(([category, count]) => (
-                      <div key={category} className="bg-white p-3 rounded border">
-                        <p className="text-xs text-gray-600 capitalize">{category}</p>
-                        <p className="text-lg font-bold text-gray-800">{count.toLocaleString()}</p>
+                  <div className="space-y-3">
+                    {governmentData.spending.sectors.map((sector, index) => (
+                      <div key={index}>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-gray-700 text-sm">{sector.name}</span>
+                          <span className="font-bold text-gray-800 text-sm">${(sector.amount / 1e9).toFixed(1)}B ({sector.percentage}%)</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3">
+                          <div
+                            className="h-3 rounded-full"
+                            style={{
+                              width: `${sector.percentage}%`,
+                              backgroundColor: ['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#06B6D4','#F97316','#84CC16'][index % 8]
+                            }}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
+              )}
+
+              {/* Immigration */}
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <Globe className="w-6 h-6 text-purple-600" />
+                  🌍 Immigration Policy & Acceptance
+                </h3>
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div className="bg-purple-50 p-3 rounded-lg border border-purple-200 text-center">
+                    <p className="text-xs text-gray-600">Stance</p>
+                    <p className="text-sm font-bold text-purple-700">{governmentData.immigration.analysis.stance}</p>
+                  </div>
+                  <div className="bg-purple-50 p-3 rounded-lg border border-purple-200 text-center">
+                    <p className="text-xs text-gray-600">2025 Accepted</p>
+                    <p className="text-sm font-bold text-purple-700">{(governmentData.immigration.accepted[3] / 1000).toFixed(0)}K</p>
+                  </div>
+                  <div className="bg-purple-50 p-3 rounded-lg border border-purple-200 text-center">
+                    <p className="text-xs text-gray-600">Target Met</p>
+                    <p className="text-sm font-bold text-purple-700">{governmentData.immigration.analysis.targetAchievement}%</p>
+                  </div>
+                </div>
+                <h4 className="font-bold text-gray-700 mb-3">Target vs Actual by Year</h4>
+                <div className="space-y-3">
+                  {governmentData.immigration.years.map((year, i) => {
+                    const pct = Math.round((governmentData.immigration.accepted[i] / governmentData.immigration.targets[i]) * 100);
+                    return (
+                      <div key={year}>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-gray-700 font-medium">{year}</span>
+                          <span className="text-sm text-gray-600">{(governmentData.immigration.accepted[i]/1000).toFixed(0)}K of {(governmentData.immigration.targets[i]/1000).toFixed(0)}K target ({pct}%)</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-4 relative">
+                          <div
+                            className="bg-purple-500 h-4 rounded-full"
+                            style={{width: `${Math.min(pct, 100)}%`}}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {governmentData.immigration.byCategory && governmentData.immigration.byCategory["2025"] && (
+                  <div className="mt-4 bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-bold text-gray-800 mb-3">2025 Immigration by Category</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {Object.entries(governmentData.immigration.byCategory["2025"]).map(([category, count]) => (
+                        <div key={category} className="bg-white p-3 rounded border">
+                          <p className="text-xs text-gray-600 capitalize">{category}</p>
+                          <p className="text-lg font-bold text-gray-800">{count.toLocaleString()}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Crime Rate Trends Chart */}
-              <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              {/* Crime Trends */}
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                 <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                   <AlertCircle className="w-6 h-6 text-red-600" />
                   🚨 Crime Rate Trends
@@ -6478,304 +6510,255 @@ function App() {
                     <CheckCircle className="w-8 h-8 text-green-600" />
                     <div>
                       <p className="text-sm text-gray-600">Overall Crime Trend</p>
-                      <p className="text-2xl font-bold text-green-700">
+                      <p className="text-xl font-bold text-green-700">
                         Declining {governmentData.crime.percentChange[3]}% Year-over-Year
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <ResponsiveContainer width="100%" height={400}>
-                  <LineChart data={governmentData.crime.years.map((year, i) => ({
-                    year,
-                    violent: governmentData.crime.violentCrime[i],
-                    property: governmentData.crime.propertyCrime[i],
-                    overall: governmentData.crime.overallIndex[i]
-                  }))}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="year" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => `${value} per 100K`} />
-                    <Legend />
-                    <Line type="monotone" dataKey="violent" stroke="#EF4444" strokeWidth={2} name="Violent Crime" />
-                    <Line type="monotone" dataKey="property" stroke="#F59E0B" strokeWidth={2} name="Property Crime" />
-                    <Line type="monotone" dataKey="overall" stroke="#6B7280" strokeWidth={3} name="Overall Crime Index" />
-                  </LineChart>
-                </ResponsiveContainer>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                  <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                    <p className="text-sm text-gray-600 mb-1">Violent Crime (2025)</p>
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div className="bg-red-50 p-3 rounded-lg border border-red-200 text-center">
+                    <p className="text-xs text-gray-600">Violent Crime</p>
                     <p className="text-2xl font-bold text-red-600">{governmentData.crime.violentCrime[3]}</p>
-                    <p className="text-xs text-gray-500">per 100,000 people</p>
+                    <p className="text-xs text-gray-500">per 100K</p>
                   </div>
-                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                    <p className="text-sm text-gray-600 mb-1">Property Crime (2025)</p>
+                  <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200 text-center">
+                    <p className="text-xs text-gray-600">Property Crime</p>
                     <p className="text-2xl font-bold text-yellow-600">{governmentData.crime.propertyCrime[3]}</p>
-                    <p className="text-xs text-gray-500">per 100,000 people</p>
+                    <p className="text-xs text-gray-500">per 100K</p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                    <p className="text-sm text-gray-600 mb-1">YoY Change</p>
+                  <div className="bg-green-50 p-3 rounded-lg border border-green-200 text-center">
+                    <p className="text-xs text-gray-600">YoY Improvement</p>
                     <p className="text-2xl font-bold text-green-600">{governmentData.crime.percentChange[3]}%</p>
-                    <p className="text-xs text-gray-500">Improvement</p>
+                    <p className="text-xs text-gray-500">Better</p>
                   </div>
+                </div>
+
+                <h4 className="font-bold text-gray-700 mb-3">Crime Index by Year (lower is better)</h4>
+                <div className="space-y-3">
+                  {governmentData.crime.years.map((year, i) => (
+                    <div key={year}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-gray-700 font-medium">{year}</span>
+                        <span className="text-sm text-gray-600">Overall index: {governmentData.crime.overallIndex[i]}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-4">
+                        <div
+                          className="bg-red-400 h-4 rounded-full"
+                          style={{width: `${Math.min((governmentData.crime.overallIndex[i] / 100) * 100, 100)}%`}}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Government Spending by Sector Chart */}
-              {governmentData.spending && (
-                <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <DollarSign className="w-6 h-6 text-green-600" />
-                    💰 Government Spending by Sector (2025)
-                  </h3>
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                    <p className="text-sm text-gray-600">Total Budget</p>
-                    <p className="text-3xl font-bold text-green-700">
-                      ${(governmentData.spending.totalBudget / 1e9).toFixed(1)} Billion
-                    </p>
-                  </div>
-
-                  <ResponsiveContainer width="100%" height={500}>
-                    <BarChart data={governmentData.spending.sectors}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" angle={-45} textAnchor="end" height={120} />
-                      <YAxis tickFormatter={(value) => `$${(value / 1e9).toFixed(0)}B`} />
-                      <Tooltip 
-                        formatter={(value) => [`$${(value / 1e9).toFixed(2)} Billion`, 'Amount']}
-                      />
-                      <Bar dataKey="amount" fill="#10B981">
-                        {governmentData.spending.sectors.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
-                    {governmentData.spending.sectors.slice(0, 4).map((sector, idx) => (
-                      <div key={idx} className="bg-gray-50 p-3 rounded border">
-                        <p className="text-xs text-gray-600 font-medium mb-1">{sector.name}</p>
-                        <p className="text-lg font-bold text-gray-800">
-                          ${(sector.amount / 1e9).toFixed(1)}B
-                        </p>
-                        <p className="text-xs text-gray-500">{sector.percentage}% of budget</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Foreign Aid Chart */}
+              {/* Foreign Aid */}
               {governmentData.foreignAid && (
-                <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
                     <Globe className="w-6 h-6 text-blue-600" />
                     🌍 Foreign Aid & International Assistance (2025)
                   </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                      <p className="text-sm text-gray-600 mb-1">Total Foreign Aid</p>
-                      <p className="text-2xl font-bold text-blue-600">
-                        ${(governmentData.foreignAid.totalAmount / 1e9).toFixed(2)}B
-                      </p>
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-200 text-center">
+                      <p className="text-xs text-gray-600">Total Aid</p>
+                      <p className="text-lg font-bold text-blue-600">${(governmentData.foreignAid.totalAmount / 1e9).toFixed(2)}B</p>
                     </div>
-                    <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                      <p className="text-sm text-gray-600 mb-1">Grants (Non-Repayable)</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        ${(governmentData.foreignAid.breakdown.totalGrants / 1e9).toFixed(2)}B
-                      </p>
+                    <div className="bg-green-50 p-3 rounded-lg border border-green-200 text-center">
+                      <p className="text-xs text-gray-600">Grants</p>
+                      <p className="text-lg font-bold text-green-600">${(governmentData.foreignAid.breakdown.totalGrants / 1e9).toFixed(2)}B</p>
                       <p className="text-xs text-gray-500">{governmentData.foreignAid.breakdown.grantPercentage}%</p>
                     </div>
-                    <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                      <p className="text-sm text-gray-600 mb-1">Loans (Repayable)</p>
-                      <p className="text-2xl font-bold text-orange-600">
-                        ${(governmentData.foreignAid.breakdown.totalLoans / 1e9).toFixed(2)}B
-                      </p>
+                    <div className="bg-orange-50 p-3 rounded-lg border border-orange-200 text-center">
+                      <p className="text-xs text-gray-600">Loans</p>
+                      <p className="text-lg font-bold text-orange-600">${(governmentData.foreignAid.breakdown.totalLoans / 1e9).toFixed(2)}B</p>
                       <p className="text-xs text-gray-500">{governmentData.foreignAid.breakdown.loanPercentage}%</p>
                     </div>
                   </div>
-
-                  <ResponsiveContainer width="100%" height={400}>
-                    <BarChart data={governmentData.foreignAid.byCountry.slice(0, 10)}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="country" angle={-45} textAnchor="end" height={100} />
-                      <YAxis tickFormatter={(value) => `$${(value / 1e6).toFixed(0)}M`} />
-                      <Tooltip 
-                        formatter={(value) => [`$${(value / 1e6).toFixed(0)} Million`, 'Amount']}
-                        labelFormatter={(label) => label}
-                      />
-                      <Bar dataKey="amount" fill="#3B82F6">
-                        {governmentData.foreignAid.byCountry.slice(0, 10).map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={entry.type === 'Grant' ? '#10B981' : entry.type === 'Loan' ? '#F59E0B' : '#6B7280'} 
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-
-                  <div className="mt-6 space-y-2">
-                    <h4 className="font-bold text-gray-800 mb-3">Top Recipients:</h4>
+                  <h4 className="font-bold text-gray-700 mb-3">Top Recipients</h4>
+                  <div className="space-y-2">
                     {governmentData.foreignAid.byCountry.slice(0, 8).map((aid, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded border hover:bg-gray-100">
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-800">{aid.country}</p>
-                          <p className="text-xs text-gray-600">{aid.purpose}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-gray-800">
-                            ${(aid.amount / 1e6).toFixed(0)}M
-                          </p>
-                          <span className={`text-xs px-2 py-1 rounded ${
-                            aid.type === 'Grant' 
-                              ? 'bg-green-100 text-green-700' 
-                              : aid.type === 'Loan'
-                              ? 'bg-orange-100 text-orange-700'
-                              : 'bg-gray-100 text-gray-700'
-                          }`}>
-                            {aid.type}
-                          </span>
+                      <div key={idx} className="border-l-4 pl-4 py-2" style={{borderColor: aid.type === 'Grant' ? '#10B981' : '#F59E0B'}}>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <span className="text-gray-800 font-bold">{idx + 1}. {aid.country}</span>
+                            <p className="text-xs text-gray-600">{aid.purpose}</p>
+                          </div>
+                          <div className="text-right ml-4">
+                            <span className="font-bold text-gray-800">${(aid.amount / 1e6).toFixed(0)}M</span>
+                            <span className={`block text-xs px-2 py-0.5 rounded mt-1 ${aid.type === 'Grant' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>{aid.type}</span>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
-
-                  <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-gray-700">
-                      <strong>Note:</strong> Grants are non-repayable aid (humanitarian, development). 
-                      Loans are repayable with favorable terms (infrastructure, economic development).
-                    </p>
+                  <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p className="text-xs text-gray-700"><strong>Note:</strong> Grants are non-repayable. Loans are repayable with favorable terms.</p>
                   </div>
                 </div>
               )}
 
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-8 mt-12">
+              {/* MP Performance Section Header */}
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-6 mt-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">👥 MP Performance Analytics</h2>
                 <p className="text-gray-600">Individual Member of Parliament statistics and comparisons</p>
               </div>
             </>
           )}
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          {/* Top MPs by Office Expenses */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
               <DollarSign className="w-6 h-6 text-green-600" />
               Top 10 MPs by Office Expenses
             </h3>
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={analytics.topExpenses}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis tickFormatter={formatCurrencyShort} />
-                <Tooltip formatter={(value) => formatCurrency(value)} />
-                <Bar dataKey="value" fill="#10B981" />
-              </BarChart>
-            </ResponsiveContainer>
+            <p className="text-gray-600 mb-4">Highest spending MPs on office operations</p>
+            <div className="space-y-3">
+              {analytics.topExpenses.map((mp, index) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700 text-sm">{index + 1}. {mp.name}</span>
+                    <span className="font-bold text-gray-800 text-sm">{formatCurrency(mp.value)}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-green-500 h-3 rounded-full"
+                      style={{width: `${(mp.value / analytics.topExpenses[0].value) * 100}%`}}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          {/* Top MPs by Lobbying */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
               <Building2 className="w-6 h-6 text-red-600" />
               Top 10 MPs by Lobbying Value
             </h3>
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={analytics.topLobbying}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis tickFormatter={formatCurrencyShort} />
-                <Tooltip formatter={(value) => formatCurrency(value)} />
-                <Bar dataKey="value" fill="#EF4444" />
-              </BarChart>
-            </ResponsiveContainer>
+            <p className="text-gray-600 mb-4">MPs with highest value lobbying relationships</p>
+            <div className="space-y-3">
+              {analytics.topLobbying.map((mp, index) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700 text-sm">{index + 1}. {mp.name}</span>
+                    <span className="font-bold text-gray-800 text-sm">{formatCurrency(mp.value)}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-red-500 h-3 rounded-full"
+                      style={{width: `${(mp.value / analytics.topLobbying[0].value) * 100}%`}}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          {/* Top MPs by Wealth Increase */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
               <TrendingUp className="w-6 h-6 text-purple-600" />
               Top 10 MPs by Wealth Increase
             </h3>
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={analytics.topWealth}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis tickFormatter={(value) => `${value}%`} />
-                <Tooltip formatter={(value) => `${value}%`} />
-                <Bar dataKey="value" fill="#8B5CF6" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Total Expenses by Category</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <RechartsPie>
-                  <Pie
-                    data={analytics.expensePieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {analytics.expensePieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                </RechartsPie>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Lobbying by Sector</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <RechartsPie>
-                  <Pie
-                    data={analytics.lobbyingPieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {analytics.lobbyingPieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                </RechartsPie>
-              </ResponsiveContainer>
+            <p className="text-gray-600 mb-4">MPs whose net worth grew most during their time in office</p>
+            <div className="space-y-3">
+              {analytics.topWealth.map((mp, index) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700 text-sm">{index + 1}. {mp.name}</span>
+                    <span className="font-bold text-purple-600 text-sm">+{mp.value}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-purple-500 h-3 rounded-full"
+                      style={{width: `${(mp.value / analytics.topWealth[0].value) * 100}%`}}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">MPs by Political Party</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <RechartsPie>
-                <Pie
-                  data={analytics.partyPieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({name, value}) => `${name}: ${value}`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {analytics.partyPieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </RechartsPie>
-            </ResponsiveContainer>
+          {/* MPs by Party */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+              <Users className="w-6 h-6 text-blue-600" />
+              MPs by Political Party
+            </h3>
+            <p className="text-gray-600 mb-4">Current seat distribution in Parliament</p>
+            <div className="space-y-3">
+              {analytics.partyPieData.map((party, index) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700 font-medium">{party.name}</span>
+                    <span className="font-bold text-gray-800">{party.value} MPs ({Math.round((party.value / mps.length) * 100)}%)</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-4">
+                    <div
+                      className="h-4 rounded-full"
+                      style={{
+                        width: `${(party.value / mps.length) * 100}%`,
+                        backgroundColor: party.color
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Expense Breakdown */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+              <DollarSign className="w-6 h-6 text-blue-600" />
+              Total Expenses by Category
+            </h3>
+            <p className="text-gray-600 mb-4">How MPs collectively spend their office budgets</p>
+            <div className="space-y-3">
+              {analytics.expensePieData.map((cat, index) => {
+                const total = analytics.expensePieData.reduce((s, c) => s + c.value, 0);
+                return (
+                  <div key={index}>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-gray-700 text-sm capitalize">{cat.name}</span>
+                      <span className="font-bold text-gray-800 text-sm">{formatCurrency(cat.value)} ({Math.round((cat.value / total) * 100)}%)</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div
+                        className="h-3 rounded-full"
+                        style={{
+                          width: `${(cat.value / total) * 100}%`,
+                          backgroundColor: ['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6'][index % 5]
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Summary Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-400 rounded-lg p-6 text-center">
+              <p className="text-sm text-gray-700 mb-2">Total MPs Tracked</p>
+              <p className="text-4xl font-bold text-green-700">{mps.length}</p>
+              <p className="text-xs text-gray-600 mt-2">Federal Parliament</p>
+            </div>
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-400 rounded-lg p-6 text-center">
+              <p className="text-sm text-gray-700 mb-2">Political Parties</p>
+              <p className="text-4xl font-bold text-blue-700">{analytics.partyPieData.length}</p>
+              <p className="text-xs text-gray-600 mt-2">Represented in Parliament</p>
+            </div>
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-400 rounded-lg p-6 text-center">
+              <p className="text-sm text-gray-700 mb-2">Lobbying Categories</p>
+              <p className="text-4xl font-bold text-purple-700">{analytics.lobbyingPieData.length}</p>
+              <p className="text-xs text-gray-600 mt-2">Tracked Sectors</p>
+            </div>
           </div>
         </div>
       </div>
