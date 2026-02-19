@@ -5133,7 +5133,7 @@ function App() {
             </div>
           </div>
 
-          {/* Legislative Hub - Combines Bills, Laws & Legislation (Canada Only) */}
+          {/* Legislative Hub - Canada */}
           {!isUSA && (
             <div
               onClick={() => setView('legislative-hub')}
@@ -5146,6 +5146,24 @@ function App() {
               <p className="text-gray-600 mb-3 text-sm sm:text-base">Bills, laws & legislation all in one place</p>
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <span className="font-medium">{bills.length} Bills • {laws.length} Laws</span>
+                <ChevronRight className="w-5 h-5 text-green-600" />
+              </div>
+            </div>
+          )}
+
+          {/* Legislative Hub - USA */}
+          {isUSA && (
+            <div
+              onClick={() => setView('us-legislative-hub')}
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
+            >
+              <div className="text-green-600 mb-3 sm:mb-4">
+                <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Legislative Hub</h2>
+              <p className="text-gray-600 mb-3 text-sm sm:text-base">Bills, laws & legislation all in one place</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span className="font-medium">{usBills.length} Bills • {usLaws.length} Laws</span>
                 <ChevronRight className="w-5 h-5 text-green-600" />
               </div>
             </div>
@@ -6428,6 +6446,411 @@ function App() {
                         </div>
                       ))}
                     </div>
+                  </>
+                );
+              })()}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderUSLegislativeHub = () => {
+    const [usLegTab, setUsLegTab] = React.useState('bills');
+    const [usLegSearch, setUsLegSearch] = React.useState('');
+
+    const ongoingBills = usBills.filter(b =>
+      b.status === 'In Committee' || b.status === 'Passed House' || b.status === 'Passed Senate'
+    );
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <button
+              onClick={() => setView('categories')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              ← Back to Government Levels
+            </button>
+            <h1 className="text-2xl font-bold text-gray-800">Legislative Hub</h1>
+            <div className="w-20"></div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Tabs */}
+          <div className="bg-white rounded-xl shadow-md mb-6 p-2">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setUsLegTab('bills')}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all text-sm ${
+                  usLegTab === 'bills' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                📋 Bills & Legislation
+              </button>
+              <button
+                onClick={() => setUsLegTab('congressional')}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all text-sm ${
+                  usLegTab === 'congressional' ? 'bg-green-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                🏛️ Ongoing Congressional Bills
+              </button>
+              <button
+                onClick={() => setUsLegTab('laws')}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all text-sm ${
+                  usLegTab === 'laws' ? 'bg-purple-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                📜 Latest Laws & Regulations
+              </button>
+            </div>
+          </div>
+
+          {/* ── TAB 1: Bills & Legislation (Search Only) ── */}
+          {usLegTab === 'bills' && (
+            <div className="animate-fade-in">
+              {/* Info Banner */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 mb-6 text-white shadow-lg">
+                <div className="flex items-start gap-4">
+                  <div className="text-4xl">🔍</div>
+                  <div>
+                    <h2 className="text-2xl font-bold mb-1">Search U.S. Federal Legislation</h2>
+                    <p className="text-blue-100 text-sm leading-relaxed">
+                      Search for any federal law, act, or regulation below. Results will take you directly to the <strong>official U.S. Government website</strong> (Congress.gov or official agency sites) so you can read the real legal text.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Enhanced Search Box */}
+              <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border-2 border-blue-100">
+                <div className="relative mb-4">
+                  <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-6 h-6 text-blue-500" />
+                  <input
+                    type="text"
+                    placeholder="e.g. healthcare, tax, immigration, defense, education..."
+                    value={usLegSearch}
+                    onChange={(e) => setUsLegSearch(e.target.value)}
+                    className="w-full pl-14 pr-14 py-5 border-2 border-blue-300 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 text-lg font-medium shadow-inner"
+                  />
+                  {usLegSearch && (
+                    <button
+                      onClick={() => setUsLegSearch('')}
+                      className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Quick Topic Chips */}
+                {!usLegSearch && (
+                  <div>
+                    <p className="text-sm font-semibold text-gray-500 mb-3">🔥 Popular Topics</p>
+                    <div className="flex flex-wrap gap-2">
+                      {['Healthcare', 'Tax', 'Immigration', 'Defense', 'Social Security', 'Education', 'Environment', 'Gun Control', 'Trade', 'Infrastructure', 'Civil Rights', 'Housing'].map(topic => (
+                        <button
+                          key={topic}
+                          onClick={() => setUsLegSearch(topic)}
+                          className="px-4 py-2 bg-blue-50 border-2 border-blue-200 text-blue-700 rounded-xl text-sm font-semibold hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all"
+                        >
+                          {topic}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {usLegSearch && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Showing <strong>{usLaws.filter(l =>
+                      l.title?.toLowerCase().includes(usLegSearch.toLowerCase()) ||
+                      l.summary?.toLowerCase().includes(usLegSearch.toLowerCase()) ||
+                      l.category?.toLowerCase().includes(usLegSearch.toLowerCase()) ||
+                      l.keywords?.some(k => k.toLowerCase().includes(usLegSearch.toLowerCase()))
+                    ).length}</strong> results for "<strong>{usLegSearch}</strong>" — click any result to open on the official U.S. Government website
+                  </p>
+                )}
+              </div>
+
+              {/* Search Results */}
+              {usLegSearch && (
+                <div className="space-y-4">
+                  {usLaws.filter(l =>
+                    l.title?.toLowerCase().includes(usLegSearch.toLowerCase()) ||
+                    l.summary?.toLowerCase().includes(usLegSearch.toLowerCase()) ||
+                    l.category?.toLowerCase().includes(usLegSearch.toLowerCase()) ||
+                    l.keywords?.some(k => k.toLowerCase().includes(usLegSearch.toLowerCase()))
+                  ).length === 0 ? (
+                    <div className="text-center py-16 bg-white rounded-2xl shadow border-2 border-gray-100">
+                      <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-xl font-bold text-gray-500 mb-2">No results found</h3>
+                      <p className="text-gray-400 mb-4">Try different keywords like "tax", "healthcare" or "civil rights"</p>
+                      <a
+                        href="https://www.congress.gov/browse/legislation/114th-congress"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors"
+                      >
+                        <Globe className="w-5 h-5" />
+                        Browse All Laws on Congress.gov
+                        <ChevronRight className="w-5 h-5" />
+                      </a>
+                    </div>
+                  ) : (
+                    usLaws.filter(l =>
+                      l.title?.toLowerCase().includes(usLegSearch.toLowerCase()) ||
+                      l.summary?.toLowerCase().includes(usLegSearch.toLowerCase()) ||
+                      l.category?.toLowerCase().includes(usLegSearch.toLowerCase()) ||
+                      l.keywords?.some(k => k.toLowerCase().includes(usLegSearch.toLowerCase()))
+                    ).map((law, index) => (
+                      <a
+                        key={law.id || index}
+                        href={law.officialLink || 'https://www.congress.gov/'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block bg-white rounded-2xl shadow-md hover:shadow-xl border-2 border-transparent hover:border-blue-400 transition-all p-5 group"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold">
+                                {law.category}
+                              </span>
+                              {law.dateEnacted && (
+                                <span className="text-xs text-gray-500">Enacted: {law.dateEnacted}</span>
+                              )}
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-800 group-hover:text-blue-700 transition-colors mb-1">
+                              {law.title}
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{law.summary}</p>
+                            <div className="flex flex-wrap gap-2">
+                              {law.keywords?.slice(0, 4).map(k => (
+                                <span key={k} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{k}</span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0 flex flex-col items-center gap-1 text-blue-600 group-hover:text-blue-800">
+                            <Globe className="w-6 h-6" />
+                            <span className="text-xs font-bold text-center">Gov.gov</span>
+                          </div>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2 text-blue-600 text-sm font-semibold">
+                          <FileText className="w-4 h-4" />
+                          Read full legal text on the official U.S. Government website →
+                        </div>
+                      </a>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* Empty state */}
+              {!usLegSearch && (
+                <div className="text-center py-12 bg-white rounded-2xl shadow border-2 border-dashed border-blue-200">
+                  <Search className="w-16 h-16 text-blue-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-gray-600 mb-2">Start typing to search</h3>
+                  <p className="text-gray-400 mb-6">Search any topic and we'll find the relevant U.S. federal laws and link you directly to the official government source.</p>
+                  <a
+                    href="https://www.congress.gov/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors"
+                  >
+                    <Globe className="w-5 h-5" />
+                    Browse All Laws on Congress.gov
+                    <ChevronRight className="w-5 h-5" />
+                  </a>
+                </div>
+              )}
+
+              {/* Disclaimer */}
+              <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-yellow-800">
+                  <strong>Note:</strong> All links open directly on official U.S. Government websites (congress.gov, eeoc.gov, dol.gov, etc.). Civic Voice does not store or display the legal text — you are always reading from the official source.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB 2: Ongoing Congressional Bills ── */}
+          {usLegTab === 'congressional' && (
+            <div className="animate-fade-in">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-6 mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">🏛️ Ongoing Congressional Bills</h2>
+                <p className="text-gray-600">Bills currently moving through Congress — in committee, passed the House, or passed the Senate</p>
+                <div className="flex flex-wrap gap-3 mt-4">
+                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-yellow-200 shadow-sm">
+                    <p className="text-sm text-gray-600">In Committee</p>
+                    <p className="text-xl font-bold text-yellow-600">{usBills.filter(b => b.status === 'In Committee').length}</p>
+                  </div>
+                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-blue-200 shadow-sm">
+                    <p className="text-sm text-gray-600">Passed House</p>
+                    <p className="text-xl font-bold text-blue-600">{usBills.filter(b => b.status === 'Passed House').length}</p>
+                  </div>
+                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-indigo-200 shadow-sm">
+                    <p className="text-sm text-gray-600">Passed Senate</p>
+                    <p className="text-xl font-bold text-indigo-600">{usBills.filter(b => b.status === 'Passed Senate').length}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-5">
+                {ongoingBills.length === 0 ? (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+                    <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">No Ongoing Bills Found</h3>
+                    <p className="text-gray-600">No bills are currently moving through Congress.</p>
+                  </div>
+                ) : (
+                  ongoingBills.map(bill => (
+                    <div
+                      key={bill.id}
+                      className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-green-500 cursor-pointer"
+                      onClick={() => {
+                        setSelectedBill(bill);
+                        setView('us-bill-detail');
+                      }}
+                    >
+                      <div className="p-5">
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
+                            {bill.number}
+                          </span>
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
+                            bill.status === 'Passed House' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                            bill.status === 'Passed Senate' ? 'bg-indigo-100 text-indigo-800 border-indigo-300' :
+                            'bg-yellow-100 text-yellow-800 border-yellow-300'
+                          }`}>
+                            {bill.status}
+                          </span>
+                          {bill.category && (
+                            <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                              {bill.category}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-800 mb-1">{bill.title}</h3>
+                        <p className="text-gray-600 text-sm mb-3">{bill.summary}</p>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          {bill.sponsor && <span>Sponsor: <strong>{bill.sponsor}</strong></span>}
+                          <ChevronRight className="w-4 h-4 ml-auto text-green-600" />
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+                <a
+                  href="https://www.congress.gov/legislation"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 bg-green-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition-colors"
+                >
+                  <Globe className="w-5 h-5" />
+                  View All Active Bills on Congress.gov
+                  <ChevronRight className="w-6 h-6" />
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB 3: Latest Laws & Regulations (last 12 months) ── */}
+          {usLegTab === 'laws' && (
+            <div className="animate-fade-in">
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-300 rounded-lg p-6 mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">📜 Latest Laws & Regulations</h2>
+                <p className="text-gray-600">Bills <strong>signed into law</strong> in the last 12 months by the President</p>
+              </div>
+
+              {(() => {
+                const twelveMonthsAgo = new Date();
+                twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+                const recentLaws = usBills.filter(b => {
+                  if (b.status !== 'Signed into Law') return false;
+                  const d = new Date(b.dateSigned || b.dateVoted || b.date);
+                  return d >= twelveMonthsAgo;
+                });
+
+                if (recentLaws.length === 0) {
+                  return (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 text-center">
+                      <Calendar className="w-12 h-12 text-blue-400 mx-auto mb-3" />
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">No New Laws in the Last 12 Months</h3>
+                      <p className="text-gray-500 mb-4">No bills were signed into law in the past 12 months based on available data.</p>
+                      <a
+                        href="https://www.congress.gov/public-laws"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors"
+                      >
+                        <Globe className="w-5 h-5" />
+                        View Public Laws on Congress.gov
+                        <ChevronRight className="w-5 h-5" />
+                      </a>
+                    </div>
+                  );
+                }
+
+                return (
+                  <>
+                    <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-5 flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-purple-500" />
+                      <p className="text-sm text-gray-600">Showing <strong className="text-purple-700">{recentLaws.length} law{recentLaws.length !== 1 ? 's' : ''}</strong> signed since <strong>{twelveMonthsAgo.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</strong></p>
+                    </div>
+                    <div className="space-y-5">
+                      {recentLaws.map(bill => (
+                        <div
+                          key={bill.id}
+                          className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-purple-500 cursor-pointer"
+                          onClick={() => {
+                            setSelectedBill(bill);
+                            setView('us-bill-detail');
+                          }}
+                        >
+                          <div className="p-5">
+                            <div className="flex items-center gap-3 mb-3">
+                              <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-bold">
+                                {bill.number}
+                              </span>
+                              <span className="bg-green-100 text-green-800 border border-green-300 px-3 py-1 rounded-full text-sm font-medium">
+                                ✓ Signed into Law
+                              </span>
+                              {bill.category && (
+                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{bill.category}</span>
+                              )}
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-800 mb-1">{bill.title}</h3>
+                            <p className="text-gray-600 text-sm mb-3">{bill.summary}</p>
+                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                              {bill.sponsor && <span>Sponsor: <strong>{bill.sponsor}</strong></span>}
+                              {(bill.dateSigned || bill.dateVoted) && (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  {bill.dateSigned || bill.dateVoted}
+                                </span>
+                              )}
+                              <ChevronRight className="w-4 h-4 ml-auto text-purple-600" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <a
+                      href="https://www.congress.gov/public-laws"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-6 w-full flex items-center justify-center gap-2 bg-purple-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-purple-700 transition-colors"
+                    >
+                      <Globe className="w-5 h-5" />
+                      View All Public Laws on Congress.gov
+                      <ChevronRight className="w-6 h-6" />
+                    </a>
                   </>
                 );
               })()}
@@ -8133,6 +8556,7 @@ function App() {
         {view === 'us-analytics' && renderUSAnalytics()}
         {view === 'bills' && renderBills()}
         {view === 'legislative-hub' && renderLegislativeHub()}
+        {view === 'us-legislative-hub' && renderUSLegislativeHub()}
         {view === 'bill-detail' && selectedBill && renderBillDetail()}
         {view === 'laws' && renderLaws()}
         {view === 'law-detail' && selectedLaw && renderLawDetail()}
