@@ -252,6 +252,8 @@ function App() {
   
   // Legislative Hub state
   const [legislativeTab, setLegislativeTab] = useState('bills'); // bills, laws, upcoming
+  const [usLegTab, setUsLegTab] = useState('bills');
+  const [usLegSearch, setUsLegSearch] = useState('');
   const [ministries, setMinistries] = useState([
     {
       id: 1,
@@ -6457,9 +6459,6 @@ function App() {
   };
 
   const renderUSLegislativeHub = () => {
-    const [usLegTab, setUsLegTab] = React.useState('bills');
-    const [usLegSearch, setUsLegSearch] = React.useState('');
-
     const ongoingBills = usBills.filter(b =>
       b.status === 'In Committee' || b.status === 'Passed House' || b.status === 'Passed Senate'
     );
