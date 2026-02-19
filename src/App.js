@@ -6069,98 +6069,172 @@ function App() {
             </div>
           </div>
 
-          {/* Bills & Legislation Tab */}
+          {/* Bills & Legislation Tab — Enhanced Search Only */}
           {legislativeTab === 'bills' && (
             <div className="animate-fade-in">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300 rounded-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">📋 Bills & Legislation</h2>
-                <p className="text-gray-600">Search and track proposed legislation and parliamentary bills</p>
+
+              {/* Info Banner */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 mb-6 text-white shadow-lg">
+                <div className="flex items-start gap-4">
+                  <div className="text-4xl">🔍</div>
+                  <div>
+                    <h2 className="text-2xl font-bold mb-1">Search Canadian Legislation</h2>
+                    <p className="text-blue-100 text-sm leading-relaxed">
+                      Search for any law, act, or regulation below. Results will take you directly to the <strong>official Government of Canada website</strong> so you can read the real legal text.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* Search Bar for Bills */}
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Search className="w-5 h-5 text-blue-600" />
-                  <h3 className="text-lg font-bold text-gray-800">Search Bills & Legislation</h3>
-                </div>
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              {/* Enhanced Search Box */}
+              <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border-2 border-blue-100">
+                <div className="relative mb-4">
+                  <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-6 h-6 text-blue-500" />
                   <input
                     type="text"
-                    placeholder="Search by bill name, number, category, or keyword..."
+                    placeholder="e.g. tax, immigration, housing, cannabis, privacy..."
                     value={billSearch}
                     onChange={(e) => setBillSearch(e.target.value)}
-                    className="w-full pl-12 pr-12 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                    className="w-full pl-14 pr-14 py-5 border-2 border-blue-300 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 text-lg font-medium shadow-inner"
                   />
                   {billSearch && (
                     <button
                       onClick={() => setBillSearch('')}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
                     >
-                      <X className="w-5 h-5" />
+                      <X className="w-6 h-6" />
                     </button>
                   )}
                 </div>
+
+                {/* Quick Topic Chips */}
+                {!billSearch && (
+                  <div>
+                    <p className="text-sm font-semibold text-gray-500 mb-3">🔥 Popular Topics</p>
+                    <div className="flex flex-wrap gap-2">
+                      {['Tax', 'Immigration', 'Housing', 'Healthcare', 'Cannabis', 'Privacy', 'Environment', 'Criminal Code', 'Employment', 'Indigenous Rights', 'Budget', 'Trade'].map(topic => (
+                        <button
+                          key={topic}
+                          onClick={() => setBillSearch(topic)}
+                          className="px-4 py-2 bg-blue-50 border-2 border-blue-200 text-blue-700 rounded-xl text-sm font-semibold hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all"
+                        >
+                          {topic}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {billSearch && (
-                  <p className="mt-3 text-sm text-gray-600">
-                    Found <strong>{bills.filter(b => 
-                      b.title?.toLowerCase().includes(billSearch.toLowerCase()) ||
-                      b.shortTitle?.toLowerCase().includes(billSearch.toLowerCase()) ||
-                      b.billNumber?.toLowerCase().includes(billSearch.toLowerCase()) ||
-                      b.category?.toLowerCase().includes(billSearch.toLowerCase())
-                    ).length}</strong> bills matching "{billSearch}"
+                  <p className="text-sm text-gray-600 mt-2">
+                    Showing <strong>{laws.filter(l =>
+                      l.title?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                      l.summary?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                      l.category?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                      l.keywords?.some(k => k.toLowerCase().includes(billSearch.toLowerCase()))
+                    ).length}</strong> results for "<strong>{billSearch}</strong>" — click any result to open on Canada.ca
                   </p>
                 )}
               </div>
 
-              {/* Bills List */}
-              <div className="space-y-6">
-                {bills.filter(b => 
-                  !billSearch || 
-                  b.title?.toLowerCase().includes(billSearch.toLowerCase()) ||
-                  b.shortTitle?.toLowerCase().includes(billSearch.toLowerCase()) ||
-                  b.billNumber?.toLowerCase().includes(billSearch.toLowerCase()) ||
-                  b.category?.toLowerCase().includes(billSearch.toLowerCase())
-                ).slice(0, 5).map(bill => (
-                  <div
-                    key={bill.id}
-                    className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500 cursor-pointer"
-                    onClick={() => {
-                      setSelectedBill(bill);
-                      setView('bill-detail');
-                    }}
-                  >
-                    <div className="p-6">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
-                          {bill.billNumber}
-                        </span>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(bill.status)}`}>
-                          {bill.status}
-                        </span>
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
-                      <p className="text-gray-600 text-sm mb-3">{bill.summary}</p>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <ThumbsUp className="w-4 h-4 text-green-600" />
-                          <span className="text-sm font-semibold">{bill.supportVotes}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <ThumbsDown className="w-4 h-4 text-red-600" />
-                          <span className="text-sm font-semibold">{bill.opposeVotes}</span>
-                        </div>
-                      </div>
+              {/* Search Results */}
+              {billSearch && (
+                <div className="space-y-4">
+                  {laws.filter(l =>
+                    l.title?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                    l.summary?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                    l.category?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                    l.keywords?.some(k => k.toLowerCase().includes(billSearch.toLowerCase()))
+                  ).length === 0 ? (
+                    <div className="text-center py-16 bg-white rounded-2xl shadow border-2 border-gray-100">
+                      <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-xl font-bold text-gray-500 mb-2">No results found</h3>
+                      <p className="text-gray-400 mb-4">Try different keywords like "tax", "housing" or "employment"</p>
+                      <a
+                        href="https://laws-lois.justice.gc.ca/eng/acts/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors"
+                      >
+                        <Globe className="w-5 h-5" />
+                        Browse All Laws on Justice.gc.ca
+                        <ChevronRight className="w-5 h-5" />
+                      </a>
                     </div>
-                  </div>
-                ))}
-                <button
-                  onClick={() => setView('bills')}
-                  className="w-full button-primary text-white px-6 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
-                >
-                  View All Bills & Legislation
-                  <ChevronRight className="w-6 h-6" />
-                </button>
+                  ) : (
+                    laws.filter(l =>
+                      l.title?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                      l.summary?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                      l.category?.toLowerCase().includes(billSearch.toLowerCase()) ||
+                      l.keywords?.some(k => k.toLowerCase().includes(billSearch.toLowerCase()))
+                    ).map((law, index) => (
+                      <a
+                        key={law.id || index}
+                        href={law.officialLink || `https://laws-lois.justice.gc.ca/eng/acts/`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block bg-white rounded-2xl shadow-md hover:shadow-xl border-2 border-transparent hover:border-blue-400 transition-all p-5 group"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold">
+                                {law.category}
+                              </span>
+                              {law.dateEnacted && (
+                                <span className="text-xs text-gray-500">Enacted: {law.dateEnacted}</span>
+                              )}
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-800 group-hover:text-blue-700 transition-colors mb-1">
+                              {law.title || law.shortTitle}
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{law.summary}</p>
+                            <div className="flex flex-wrap gap-2">
+                              {law.keywords?.slice(0, 4).map(k => (
+                                <span key={k} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{k}</span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0 flex flex-col items-center gap-1 text-blue-600 group-hover:text-blue-800">
+                            <Globe className="w-6 h-6" />
+                            <span className="text-xs font-bold text-center">Canada.ca</span>
+                          </div>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2 text-blue-600 text-sm font-semibold">
+                          <FileText className="w-4 h-4" />
+                          Read full legal text on the Government of Canada website →
+                        </div>
+                      </a>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* Empty state when no search yet */}
+              {!billSearch && (
+                <div className="text-center py-12 bg-white rounded-2xl shadow border-2 border-dashed border-blue-200">
+                  <Search className="w-16 h-16 text-blue-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-gray-600 mb-2">Start typing to search</h3>
+                  <p className="text-gray-400 mb-6">Search any topic and we'll find the relevant Canadian laws and link you directly to the official government source.</p>
+                  <a
+                    href="https://laws-lois.justice.gc.ca/eng/acts/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors"
+                  >
+                    <Globe className="w-5 h-5" />
+                    Browse All Laws on Justice.gc.ca
+                    <ChevronRight className="w-5 h-5" />
+                  </a>
+                </div>
+              )}
+
+              {/* Disclaimer */}
+              <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-yellow-800">
+                  <strong>Note:</strong> All links open directly on the Government of Canada website (laws-lois.justice.gc.ca or canada.ca). Civic Voice does not store or display the legal text — you are always reading from the official source.
+                </p>
               </div>
             </div>
           )}
@@ -6243,10 +6317,61 @@ function App() {
           {/* Latest Laws & Regulations Tab */}
           {legislativeTab === 'laws' && (
             <div className="animate-fade-in">
-              <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-300 rounded-lg p-6 mb-8">
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-300 rounded-lg p-6 mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">📜 Latest Laws & Regulations</h2>
-                <p className="text-gray-600">Recently implemented legislation affecting Canadians</p>
+                <p className="text-gray-600">Recently passed bills and implemented legislation affecting Canadians</p>
               </div>
+
+              {/* Bills Section */}
+              {bills.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    📋 Bills & Proposed Legislation
+                    <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-sm font-medium">{bills.length} bills</span>
+                  </h3>
+                  <div className="space-y-4 mb-4">
+                    {bills.map(bill => (
+                      <div
+                        key={bill.id}
+                        className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500 cursor-pointer"
+                        onClick={() => {
+                          setSelectedBill(bill);
+                          setView('bill-detail');
+                        }}
+                      >
+                        <div className="p-5">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
+                              {bill.billNumber}
+                            </span>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(bill.status)}`}>
+                              {bill.status}
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-bold text-gray-800 mb-1">{bill.shortTitle}</h3>
+                          <p className="text-gray-600 text-sm mb-3">{bill.summary}</p>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <ThumbsUp className="w-4 h-4 text-green-600" />
+                              <span className="text-sm font-semibold">{bill.supportVotes}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <ThumbsDown className="w-4 h-4 text-red-600" />
+                              <span className="text-sm font-semibold">{bill.opposeVotes}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-b-2 border-gray-200 mb-6 pt-2">
+                    <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                      ⚖️ Enacted Laws & Regulations
+                      <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-sm font-medium">{laws.length} laws</span>
+                    </h3>
+                  </div>
+                </div>
+              )}
 
               {/* Laws List */}
               {laws.length === 0 ? (
