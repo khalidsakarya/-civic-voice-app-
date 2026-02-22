@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale } from 'lucide-react';
+import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale } from 'lucide-react';
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import './App.css';
 
@@ -218,7 +218,6 @@ function App() {
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberPanel, setShowMemberPanel] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null);
-  const [showMenu, setShowMenu] = useState(false);
   
   // Canadian data
   const [mps, setMps] = useState([]);
@@ -5871,40 +5870,10 @@ function App() {
             </button>
             
             <h1 className="text-2xl font-bold text-gray-800">{selectedParty?.name}</h1>
-            
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="text-gray-600 hover:text-gray-800"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
+
+            <div className="w-20"></div>
           </div>
         </div>
-
-        {showMenu && (
-          <div className="fixed top-16 right-4 bg-white shadow-xl rounded-lg p-4 z-20 w-64">
-            <button
-              onClick={() => {
-                setView('analytics');
-                setShowMenu(false);
-              }}
-              className="w-full text-left px-4 py-3 hover:bg-gray-100 rounded flex items-center gap-3 text-gray-700 font-medium mb-2"
-            >
-              <BarChart3 className="w-5 h-5 text-blue-600" />
-              Analytics Dashboard
-            </button>
-            <button
-              onClick={() => {
-                setView('bills');
-                setShowMenu(false);
-              }}
-              className="w-full text-left px-4 py-3 hover:bg-gray-100 rounded flex items-center gap-3 text-gray-700 font-medium"
-            >
-              <FileText className="w-5 h-5 text-purple-600" />
-              Parliamentary Bills
-            </button>
-          </div>
-        )}
 
         <div className="max-w-7xl mx-auto px-4 py-8">
           {loading && (
