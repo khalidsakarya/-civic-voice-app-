@@ -5461,8 +5461,78 @@ function App() {
 
   // ── Shared province/state data (used by both list + detail views) ──────────
   const getProvincialData = () => {
-    const CDN = 'https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/flags/4x3';
     const isUSA = selectedCountry?.type === 'usa';
+
+    // Wikipedia Commons — reliable source for every state & provincial flag
+    const W = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
+    const flagFiles = {
+      // US States
+      'Alabama': 'Flag_of_Alabama.svg',
+      'Alaska': 'Flag_of_Alaska.svg',
+      'Arizona': 'Flag_of_Arizona.svg',
+      'Arkansas': 'Flag_of_Arkansas.svg',
+      'California': 'Flag_of_California.svg',
+      'Colorado': 'Flag_of_Colorado.svg',
+      'Connecticut': 'Flag_of_Connecticut.svg',
+      'Delaware': 'Flag_of_Delaware.svg',
+      'Florida': 'Flag_of_Florida.svg',
+      'Georgia': 'Flag_of_Georgia_(U.S._state).svg',
+      'Hawaii': 'Flag_of_Hawaii.svg',
+      'Idaho': 'Flag_of_Idaho.svg',
+      'Illinois': 'Flag_of_Illinois.svg',
+      'Indiana': 'Flag_of_Indiana.svg',
+      'Iowa': 'Flag_of_Iowa.svg',
+      'Kansas': 'Flag_of_Kansas.svg',
+      'Kentucky': 'Flag_of_Kentucky.svg',
+      'Louisiana': 'Flag_of_Louisiana.svg',
+      'Maine': 'Flag_of_Maine.svg',
+      'Maryland': 'Flag_of_Maryland.svg',
+      'Massachusetts': 'Flag_of_Massachusetts.svg',
+      'Michigan': 'Flag_of_Michigan.svg',
+      'Minnesota': 'Flag_of_Minnesota.svg',
+      'Mississippi': 'Flag_of_Mississippi.svg',
+      'Missouri': 'Flag_of_Missouri.svg',
+      'Montana': 'Flag_of_Montana.svg',
+      'Nebraska': 'Flag_of_Nebraska.svg',
+      'Nevada': 'Flag_of_Nevada.svg',
+      'New Hampshire': 'Flag_of_New_Hampshire.svg',
+      'New Jersey': 'Flag_of_New_Jersey.svg',
+      'New Mexico': 'Flag_of_New_Mexico.svg',
+      'New York': 'Flag_of_New_York.svg',
+      'North Carolina': 'Flag_of_North_Carolina.svg',
+      'North Dakota': 'Flag_of_North_Dakota.svg',
+      'Ohio': 'Flag_of_Ohio.svg',
+      'Oklahoma': 'Flag_of_Oklahoma.svg',
+      'Oregon': 'Flag_of_Oregon.svg',
+      'Pennsylvania': 'Flag_of_Pennsylvania.svg',
+      'Rhode Island': 'Flag_of_Rhode_Island.svg',
+      'South Carolina': 'Flag_of_South_Carolina.svg',
+      'South Dakota': 'Flag_of_South_Dakota.svg',
+      'Tennessee': 'Flag_of_Tennessee.svg',
+      'Texas': 'Flag_of_Texas.svg',
+      'Utah': 'Flag_of_Utah.svg',
+      'Vermont': 'Flag_of_Vermont.svg',
+      'Virginia': 'Flag_of_Virginia.svg',
+      'Washington': 'Flag_of_Washington_(state).svg',
+      'West Virginia': 'Flag_of_West_Virginia.svg',
+      'Wisconsin': 'Flag_of_Wisconsin.svg',
+      'Wyoming': 'Flag_of_Wyoming.svg',
+      // Canadian provinces & territories
+      'Ontario': 'Flag_of_Ontario.svg',
+      'Quebec': 'Flag_of_Quebec.svg',
+      'British Columbia': 'Flag_of_British_Columbia.svg',
+      'Alberta': 'Flag_of_Alberta.svg',
+      'Saskatchewan': 'Flag_of_Saskatchewan.svg',
+      'Manitoba': 'Flag_of_Manitoba.svg',
+      'Nova Scotia': 'Flag_of_Nova_Scotia.svg',
+      'New Brunswick': 'Flag_of_New_Brunswick.svg',
+      'Newfoundland & Labrador': 'Flag_of_Newfoundland_and_Labrador.svg',
+      'Prince Edward Island': 'Flag_of_Prince_Edward_Island.svg',
+      'Northwest Territories': 'Flag_of_the_Northwest_Territories.svg',
+      'Yukon': 'Flag_of_Yukon.svg',
+      'Nunavut': 'Flag_of_Nunavut.svg',
+    };
+    const flagUrl = (name) => W + (flagFiles[name] || 'Flag_of_' + name.replace(/ /g, '_') + '.svg');
 
     const canadaProvinces = [
       {
@@ -5974,12 +6044,14 @@ function App() {
       },
     ];
 
-    return { canadaProvinces, usStates, CDN };
+    const cp = canadaProvinces.map(p => ({ ...p, flagUrl: flagUrl(p.name) }));
+    const us = usStates.map(s => ({ ...s, flagUrl: flagUrl(s.name) }));
+    return { canadaProvinces: cp, usStates: us };
   };
 
   const renderProvincial = () => {
     const isUSA = selectedCountry?.type === 'usa';
-    const { canadaProvinces, usStates, CDN } = getProvincialData();
+    const { canadaProvinces, usStates } = getProvincialData();
 
     const items = isUSA ? usStates : canadaProvinces;
     const title = isUSA ? 'State Governments' : 'Provincial & Territorial Governments';
@@ -6026,7 +6098,7 @@ function App() {
                 >
                   {/* Flag inside the button */}
                   <img
-                    src={`${CDN}/${item.flagCode}.svg`}
+                    src={item.flagUrl}
                     alt={`Flag of ${item.name}`}
                     className="w-14 h-9 object-cover rounded shadow-sm flex-shrink-0 border border-gray-100"
                     onError={(e) => { e.target.style.display = 'none'; }}
@@ -6072,8 +6144,6 @@ function App() {
     if (!selectedProvince) return null;
     const item = selectedProvince;
     const isUSA = selectedCountry?.type === 'usa';
-    const CDN = 'https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/flags/4x3';
-
     const leaderTitle = isUSA ? 'Governor' : 'Premier';
     const leaderName  = isUSA ? item.governor : item.premier;
     const leaderParty = isUSA ? item.govParty  : item.party;
@@ -6114,7 +6184,7 @@ function App() {
           <div className="bg-white rounded-2xl shadow-elegant overflow-hidden mb-6">
             <div className="h-36 sm:h-48 overflow-hidden relative bg-gray-100">
               <img
-                src={`${CDN}/${item.flagCode}.svg`}
+                src={item.flagUrl}
                 alt={`Flag of ${item.name}`}
                 className="w-full h-full object-cover"
                 onError={(e) => { e.target.style.display = 'none'; }}
