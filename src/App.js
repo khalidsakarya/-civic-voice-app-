@@ -219,6 +219,7 @@ function App() {
   const [showMemberPanel, setShowMemberPanel] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null);
   const [selectedProvince, setSelectedProvince] = useState(null);
+  const [showEconomicModal, setShowEconomicModal] = useState(false);
   
   // Canadian data
   const [mps, setMps] = useState([]);
@@ -6246,6 +6247,219 @@ function App() {
             </div>
           </div>
 
+          {/* Economic & Social Data button */}
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={() => setShowEconomicModal(true)}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            >
+              <BarChart3 className="w-5 h-5" />
+              Economic &amp; Social Data
+            </button>
+          </div>
+
+        </div>
+      </div>
+    );
+  };
+
+  const renderEconomicModal = () => {
+    if (!selectedProvince || !showEconomicModal) return null;
+    const item = selectedProvince;
+
+    // ── Deterministic data generator seeded from province/state name ──────────
+    let h = 5381;
+    for (let i = 0; i < item.name.length; i++) h = (Math.imul(h, 33) ^ item.name.charCodeAt(i)) | 0;
+    h = Math.abs(h);
+    const rng = (min, max, salt) => {
+      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
+      return Math.round(min + (v % (max - min + 1)));
+    };
+    const rngf = (min, max, salt, dec = 1) => {
+      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
+      const raw = min + (v % 1000) / 1000 * (max - min);
+      return parseFloat(raw.toFixed(dec));
+    };
+
+    // ── Chart 1: Budget Distribution (donut) ─────────────────────────────────
+    const budgetTotal = 100;
+    const edu  = rng(22, 32, 1);
+    const hlt  = rng(18, 28, 2);
+    const inf  = rng(10, 18, 3);
+    const ps   = rng(8, 14, 4);
+    const soc  = budgetTotal - edu - hlt - inf - ps;
+    const budgetData = [
+      { name: 'Education',       value: edu,  color: '#6366f1' },
+      { name: 'Healthcare',      value: hlt,  color: '#10b981' },
+      { name: 'Infrastructure',  value: inf,  color: '#f59e0b' },
+      { name: 'Public Safety',   value: ps,   color: '#ef4444' },
+      { name: 'Social Services', value: soc,  color: '#8b5cf6' },
+    ];
+
+    // ── Chart 2: Spending vs Budget (bar) ────────────────────────────────────
+    const spendData = budgetData.map((cat, i) => {
+      const allocated = rng(800, 4200, 10 + i);
+      const variance  = rng(-12, 15, 20 + i);
+      return {
+        category: cat.name.split(' ')[0],
+        Allocated: allocated,
+        Actual: Math.round(allocated * (1 + variance / 100)),
+      };
+    });
+
+    // ── Chart 3: Crime Rate Trends (line, 10 years) ──────────────────────────
+    const currentYear = 2024;
+    const baseViolent  = rngf(180, 520, 30);
+    const baseProp     = rngf(1400, 3200, 31);
+    const crimeData = Array.from({ length: 10 }, (_, i) => {
+      const yr = currentYear - 9 + i;
+      const trend = 1 - (i * rngf(0.005, 0.025, 40 + i, 4));
+      const noise = (salt) => rngf(-0.06, 0.06, 50 + i + salt, 4);
+      return {
+        year: String(yr),
+        'Violent Crime': parseFloat((baseViolent * trend * (1 + noise(0))).toFixed(1)),
+        'Property Crime': parseFloat((baseProp * trend * (1 + noise(1))).toFixed(1)),
+      };
+    });
+
+    // ── Chart 4: Unemployment Rate (line, 4 years) ───────────────────────────
+    const isUSA = selectedCountry?.type === 'usa';
+    const uBase = rngf(2.8, 7.5, 60);
+    const unempData = [2021, 2022, 2023, 2024].map((yr, i) => {
+      const mult = [1.4, 1.15, 1.05, 1.0][i];
+      const natAvg = [5.4, 3.7, 3.6, 4.1][i];
+      return {
+        year: String(yr),
+        [item.name]: parseFloat((uBase * mult + rngf(-0.3, 0.3, 70 + i, 2)).toFixed(1)),
+        [`${isUSA ? 'US' : 'CA'} Average`]: natAvg,
+      };
+    });
+    const unempKeys = [item.name, `${isUSA ? 'US' : 'CA'} Average`];
+
+    const CHART_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+    const ChartCard = ({ title, description, children }) => (
+      <div className="bg-white rounded-2xl shadow-elegant p-5">
+        <h3 className="font-bold text-gray-800 text-sm mb-0.5">{title}</h3>
+        <p className="text-xs text-gray-400 mb-4">{description}</p>
+        {children}
+      </div>
+    );
+
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
+        style={{ background: 'rgba(0,0,0,0.55)' }}
+        onClick={(e) => { if (e.target === e.currentTarget) setShowEconomicModal(false); }}
+      >
+        <div className="relative bg-gray-50 w-full max-w-5xl mx-3 my-6 rounded-2xl shadow-2xl animate-fade-in">
+          {/* Header */}
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-6 py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
+            <div>
+              <h2 className="font-bold text-gray-800 text-lg">{item.name} — Economic &amp; Social Data</h2>
+              <p className="text-xs text-gray-400">Illustrative data · figures are statistically modelled</p>
+            </div>
+            <button
+              onClick={() => setShowEconomicModal(false)}
+              className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Charts grid */}
+          <div className="p-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+            {/* Chart 1 — Budget Distribution */}
+            <ChartCard
+              title="Government Budget Distribution"
+              description="Budget split across major spending categories (%)"
+            >
+              <ResponsiveContainer width="100%" height={240}>
+                <RechartsPie>
+                  <Pie
+                    data={budgetData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={95}
+                    paddingAngle={3}
+                    dataKey="value"
+                    label={({ name, value }) => `${value}%`}
+                    labelLine={false}
+                  >
+                    {budgetData.map((entry, i) => (
+                      <Cell key={entry.name} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(v) => `${v}%`} />
+                  <Legend iconType="circle" iconSize={8} />
+                </RechartsPie>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            {/* Chart 2 — Spending vs Budget */}
+            <ChartCard
+              title="Spending vs Budget"
+              description="Allocated vs actual spending per category ($M) — positive gap = over budget"
+            >
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={spendData} barGap={2} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="category" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `$${(v/1000).toFixed(1)}B`} />
+                  <Tooltip formatter={(v) => `$${v}M`} />
+                  <Legend iconSize={8} />
+                  <Bar dataKey="Allocated" fill="#6366f1" radius={[4,4,0,0]} />
+                  <Bar dataKey="Actual"    fill="#10b981" radius={[4,4,0,0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            {/* Chart 3 — Crime Rate Trends */}
+            <ChartCard
+              title="Crime Rate Trends"
+              description="Incidents per 100,000 people — last 10 years"
+            >
+              <ResponsiveContainer width="100%" height={240}>
+                <LineChart data={crimeData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip />
+                  <Legend iconSize={8} />
+                  <Line type="monotone" dataKey="Violent Crime"  stroke="#ef4444" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="Property Crime" stroke="#f59e0b" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            {/* Chart 4 — Unemployment */}
+            <ChartCard
+              title="Unemployment Rate Over Time"
+              description="Annual unemployment rate (%) vs national average — last 4 years"
+            >
+              <ResponsiveContainer width="100%" height={240}>
+                <LineChart data={unempData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} domain={['auto', 'auto']} />
+                  <Tooltip formatter={(v) => `${v}%`} />
+                  <Legend iconSize={8} />
+                  <Line type="monotone" dataKey={unempKeys[0]} stroke="#6366f1" strokeWidth={2} dot={{ r: 4 }} />
+                  <Line type="monotone" dataKey={unempKeys[1]} stroke="#9ca3af" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+          </div>
+
+          <div className="px-5 pb-5">
+            <p className="text-center text-xs text-gray-400">
+              Data is statistically modelled for illustrative purposes. Charts use deterministic generation seeded from {item.name}.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -10431,6 +10645,9 @@ function App() {
 
       {/* Congress member profile panel */}
       {showMemberPanel && selectedMember && renderCongressMemberPanel()}
+
+      {/* Economic & Social Data modal */}
+      {showEconomicModal && selectedProvince && renderEconomicModal()}
     </div>
   );
 }
