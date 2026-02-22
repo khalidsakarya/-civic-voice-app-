@@ -5460,92 +5460,394 @@ function App() {
 
   const renderProvincial = () => {
     const isUSA = selectedCountry?.type === 'usa';
+    const CDN = 'https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/flags/4x3';
 
     const canadaProvinces = [
-      { name: 'Ontario', capital: 'Toronto', premier: 'Doug Ford', party: 'Progressive Conservative', partyShort: 'PC', flag: '🏙️', population: '14.9M', since: '2018' },
-      { name: 'Quebec', capital: 'Quebec City', premier: 'François Legault', party: 'Coalition Avenir Québec', partyShort: 'CAQ', flag: '⚜️', population: '8.8M', since: '2018' },
-      { name: 'British Columbia', capital: 'Victoria', premier: 'David Eby', party: 'New Democratic Party', partyShort: 'NDP', flag: '🌲', population: '5.3M', since: '2022' },
-      { name: 'Alberta', capital: 'Edmonton', premier: 'Danielle Smith', party: 'United Conservative Party', partyShort: 'UCP', flag: '🌾', population: '4.6M', since: '2022' },
-      { name: 'Saskatchewan', capital: 'Regina', premier: 'Scott Moe', party: 'Saskatchewan Party', partyShort: 'Sask. Party', flag: '🌻', population: '1.2M', since: '2018' },
-      { name: 'Manitoba', capital: 'Winnipeg', premier: 'Wab Kinew', party: 'New Democratic Party', partyShort: 'NDP', flag: '🦬', population: '1.4M', since: '2023' },
-      { name: 'Nova Scotia', capital: 'Halifax', premier: 'Tim Houston', party: 'Progressive Conservative', partyShort: 'PC', flag: '⚓', population: '1.0M', since: '2021' },
-      { name: 'New Brunswick', capital: 'Fredericton', premier: 'Susan Holt', party: 'Liberal', partyShort: 'Liberal', flag: '🐯', population: '820K', since: '2024' },
-      { name: 'Newfoundland & Labrador', capital: "St. John's", premier: 'Andrew Furey', party: 'Liberal', partyShort: 'Liberal', flag: '🐟', population: '530K', since: '2020' },
-      { name: 'Prince Edward Island', capital: 'Charlottetown', premier: 'Dennis King', party: 'Progressive Conservative', partyShort: 'PC', flag: '🦞', population: '170K', since: '2019' },
-      { name: 'Northwest Territories', capital: 'Yellowknife', premier: 'R.J. Simpson', party: 'Independent', partyShort: 'Independent', flag: '🏔️', population: '45K', since: '2023' },
-      { name: 'Yukon', capital: 'Whitehorse', premier: 'Ranj Pillai', party: 'Liberal', partyShort: 'Liberal', flag: '🐺', population: '43K', since: '2023' },
-      { name: 'Nunavut', capital: 'Iqaluit', premier: 'P.J. Akeeagok', party: 'Consensus Government', partyShort: 'Consensus', flag: '🧊', population: '40K', since: '2021' },
+      {
+        name: 'Ontario', capital: 'Toronto', flagCode: 'ca-on', population: '14.9M',
+        premier: 'Doug Ford', party: 'Progressive Conservative', partyShort: 'PC', since: '2018',
+        bio: 'Former businessman and Toronto city councillor Doug Ford won the 2018 election on a populist anti-establishment platform. He has focused on transit and highway infrastructure, cutting development red tape, and reducing business costs, while navigating controversies over greenbelt land-use decisions.',
+      },
+      {
+        name: 'Quebec', capital: 'Quebec City', flagCode: 'ca-qc', population: '8.8M',
+        premier: 'François Legault', party: 'Coalition Avenir Québec', partyShort: 'CAQ', since: '2018',
+        bio: 'Former airline executive and co-founder of Air Transat, François Legault founded the CAQ party advocating Quebec nationalism and economic modernisation. He has focused on protecting the French language, reducing immigration levels, and decreasing government bureaucracy.',
+      },
+      {
+        name: 'British Columbia', capital: 'Victoria', flagCode: 'ca-bc', population: '5.3M',
+        premier: 'David Eby', party: 'New Democratic Party', partyShort: 'NDP', since: '2022',
+        bio: 'Former civil liberties lawyer and housing minister David Eby succeeded John Horgan as Premier in 2022. He has pursued aggressive housing supply policies, decriminalisation of small amounts of drugs (later reversed), and significant mental health system investment.',
+      },
+      {
+        name: 'Alberta', capital: 'Edmonton', flagCode: 'ca-ab', population: '4.6M',
+        premier: 'Danielle Smith', party: 'United Conservative Party', partyShort: 'UCP', since: '2022',
+        bio: 'Former radio host and Wildrose Party leader Danielle Smith won the UCP leadership in 2022 and the 2023 provincial election. She has championed provincial autonomy, oil and gas development, and the Alberta Sovereignty Act to resist federal climate and firearms policies.',
+      },
+      {
+        name: 'Saskatchewan', capital: 'Regina', flagCode: 'ca-sk', population: '1.2M',
+        premier: 'Scott Moe', party: 'Saskatchewan Party', partyShort: 'Sask. Party', since: '2018',
+        bio: 'Former farmer and legislative assemblyman Scott Moe has championed Saskatchewan\'s resource industries, including oil, potash, and uranium. He has been a vocal opponent of the federal carbon tax and has worked to assert provincial jurisdiction over natural resources.',
+      },
+      {
+        name: 'Manitoba', capital: 'Winnipeg', flagCode: 'ca-mb', population: '1.4M',
+        premier: 'Wab Kinew', party: 'New Democratic Party', partyShort: 'NDP', since: '2023',
+        bio: 'Manitoba\'s first First Nations Premier, Wab Kinew is a former journalist, author, and musician. He has focused on reconciliation with Indigenous communities, healthcare system improvements, addressing high rates of violent crime, and expanding early childhood education.',
+      },
+      {
+        name: 'Nova Scotia', capital: 'Halifax', flagCode: 'ca-ns', population: '1.0M',
+        premier: 'Tim Houston', party: 'Progressive Conservative', partyShort: 'PC', since: '2021',
+        bio: 'Former financial advisor and MLA Tim Houston led the Progressive Conservatives to a surprise majority in 2021. He has prioritised addressing Nova Scotia\'s acute healthcare worker shortage, tackling the housing affordability crisis, and growing the provincial economy.',
+      },
+      {
+        name: 'New Brunswick', capital: 'Fredericton', flagCode: 'ca-nb', population: '820K',
+        premier: 'Susan Holt', party: 'Liberal', partyShort: 'Liberal', since: '2024',
+        bio: 'Susan Holt became the first female Premier of New Brunswick after leading the Liberals to victory in the 2024 election. She has focused on affordability for families, improving healthcare access, and creating economic opportunities to retain young New Brunswickers.',
+      },
+      {
+        name: 'Newfoundland & Labrador', capital: "St. John's", flagCode: 'ca-nl', population: '530K',
+        premier: 'Andrew Furey', party: 'Liberal', partyShort: 'Liberal', since: '2020',
+        bio: 'Hand surgeon and community leader Andrew Furey became Premier in 2020 after Dwight Ball resigned. He has navigated significant fiscal challenges while pursuing economic diversification beyond offshore oil and the fisheries, including a major green hydrogen project.',
+      },
+      {
+        name: 'Prince Edward Island', capital: 'Charlottetown', flagCode: 'ca-pe', population: '170K',
+        premier: 'Dennis King', party: 'Progressive Conservative', partyShort: 'PC', since: '2019',
+        bio: 'Former sports broadcaster and journalist Dennis King has led both minority and majority PC governments in PEI. He has focused on managing the province\'s rapid population growth, healthcare capacity, housing affordability, and sustainable economic development.',
+      },
+      {
+        name: 'Northwest Territories', capital: 'Yellowknife', flagCode: 'ca-nt', population: '45K',
+        premier: 'R.J. Simpson', party: 'Consensus Government', partyShort: 'Consensus', since: '2023',
+        bio: 'Operating under a consensus (non-partisan) model, R.J. Simpson was selected Premier by the Legislative Assembly in 2023. He has focused on resource development, infrastructure investment, and the unique governance and climate challenges facing Canada\'s vast Northwest Territories.',
+      },
+      {
+        name: 'Yukon', capital: 'Whitehorse', flagCode: 'ca-yt', population: '43K',
+        premier: 'Ranj Pillai', party: 'Liberal', partyShort: 'Liberal', since: '2023',
+        bio: 'Former Minister of Economic Development Ranj Pillai became Yukon\'s Premier in 2023. He has focused on strengthening Indigenous government partnerships, attracting critical mineral investment, addressing the territory\'s housing shortage, and adapting to the impacts of climate change.',
+      },
+      {
+        name: 'Nunavut', capital: 'Iqaluit', flagCode: 'ca-nu', population: '40K',
+        premier: 'P.J. Akeeagok', party: 'Consensus Government', partyShort: 'Consensus', since: '2021',
+        bio: 'Experienced Inuit leader and former President of the Qikiqtani Inuit Association, P.J. Akeeagok leads Nunavut under the consensus model. He has focused on improving housing and food security for the predominantly Inuit population and addressing deep infrastructure gaps.',
+      },
     ];
 
     const usStates = [
-      { name: 'Alabama', capital: 'Montgomery', governor: 'Kay Ivey', party: 'Republican', partyShort: 'R', flag: '🌲', since: '2017' },
-      { name: 'Alaska', capital: 'Juneau', governor: 'Mike Dunleavy', party: 'Republican', partyShort: 'R', flag: '🧊', since: '2018' },
-      { name: 'Arizona', capital: 'Phoenix', governor: 'Katie Hobbs', party: 'Democrat', partyShort: 'D', flag: '🌵', since: '2023' },
-      { name: 'Arkansas', capital: 'Little Rock', governor: 'Sarah Huckabee Sanders', party: 'Republican', partyShort: 'R', flag: '🌾', since: '2023' },
-      { name: 'California', capital: 'Sacramento', governor: 'Gavin Newsom', party: 'Democrat', partyShort: 'D', flag: '🐻', since: '2019' },
-      { name: 'Colorado', capital: 'Denver', governor: 'Jared Polis', party: 'Democrat', partyShort: 'D', flag: '⛰️', since: '2019' },
-      { name: 'Connecticut', capital: 'Hartford', governor: 'Ned Lamont', party: 'Democrat', partyShort: 'D', flag: '🦅', since: '2019' },
-      { name: 'Delaware', capital: 'Dover', governor: 'Matt Meyer', party: 'Democrat', partyShort: 'D', flag: '🦅', since: '2025' },
-      { name: 'Florida', capital: 'Tallahassee', governor: 'Ron DeSantis', party: 'Republican', partyShort: 'R', flag: '🌴', since: '2019' },
-      { name: 'Georgia', capital: 'Atlanta', governor: 'Brian Kemp', party: 'Republican', partyShort: 'R', flag: '🍑', since: '2019' },
-      { name: 'Hawaii', capital: 'Honolulu', governor: 'Josh Green', party: 'Democrat', partyShort: 'D', flag: '🌺', since: '2022' },
-      { name: 'Idaho', capital: 'Boise', governor: 'Brad Little', party: 'Republican', partyShort: 'R', flag: '🥔', since: '2019' },
-      { name: 'Illinois', capital: 'Springfield', governor: 'JB Pritzker', party: 'Democrat', partyShort: 'D', flag: '🌽', since: '2019' },
-      { name: 'Indiana', capital: 'Indianapolis', governor: 'Mike Braun', party: 'Republican', partyShort: 'R', flag: '🏎️', since: '2025' },
-      { name: 'Iowa', capital: 'Des Moines', governor: 'Kim Reynolds', party: 'Republican', partyShort: 'R', flag: '🌽', since: '2017' },
-      { name: 'Kansas', capital: 'Topeka', governor: 'Laura Kelly', party: 'Democrat', partyShort: 'D', flag: '🌻', since: '2019' },
-      { name: 'Kentucky', capital: 'Frankfort', governor: 'Andy Beshear', party: 'Democrat', partyShort: 'D', flag: '🐎', since: '2019' },
-      { name: 'Louisiana', capital: 'Baton Rouge', governor: 'Jeff Landry', party: 'Republican', partyShort: 'R', flag: '⚜️', since: '2024' },
-      { name: 'Maine', capital: 'Augusta', governor: 'Janet Mills', party: 'Democrat', partyShort: 'D', flag: '🦞', since: '2019' },
-      { name: 'Maryland', capital: 'Annapolis', governor: 'Wes Moore', party: 'Democrat', partyShort: 'D', flag: '🦀', since: '2023' },
-      { name: 'Massachusetts', capital: 'Boston', governor: 'Maura Healey', party: 'Democrat', partyShort: 'D', flag: '🦃', since: '2023' },
-      { name: 'Michigan', capital: 'Lansing', governor: 'Gretchen Whitmer', party: 'Democrat', partyShort: 'D', flag: '🚗', since: '2019' },
-      { name: 'Minnesota', capital: 'Saint Paul', governor: 'Tim Walz', party: 'Democrat', partyShort: 'D', flag: '🌊', since: '2019' },
-      { name: 'Mississippi', capital: 'Jackson', governor: 'Tate Reeves', party: 'Republican', partyShort: 'R', flag: '🎵', since: '2020' },
-      { name: 'Missouri', capital: 'Jefferson City', governor: 'Mike Kehoe', party: 'Republican', partyShort: 'R', flag: '🌿', since: '2025' },
-      { name: 'Montana', capital: 'Helena', governor: 'Greg Gianforte', party: 'Republican', partyShort: 'R', flag: '🏔️', since: '2021' },
-      { name: 'Nebraska', capital: 'Lincoln', governor: 'Jim Pillen', party: 'Republican', partyShort: 'R', flag: '🌽', since: '2023' },
-      { name: 'Nevada', capital: 'Carson City', governor: 'Joe Lombardo', party: 'Republican', partyShort: 'R', flag: '🎰', since: '2023' },
-      { name: 'New Hampshire', capital: 'Concord', governor: 'Kelly Ayotte', party: 'Republican', partyShort: 'R', flag: '🍁', since: '2025' },
-      { name: 'New Jersey', capital: 'Trenton', governor: 'Phil Murphy', party: 'Democrat', partyShort: 'D', flag: '🏙️', since: '2018' },
-      { name: 'New Mexico', capital: 'Santa Fe', governor: 'Michelle Lujan Grisham', party: 'Democrat', partyShort: 'D', flag: '🌶️', since: '2019' },
-      { name: 'New York', capital: 'Albany', governor: 'Kathy Hochul', party: 'Democrat', partyShort: 'D', flag: '🗽', since: '2021' },
-      { name: 'North Carolina', capital: 'Raleigh', governor: 'Josh Stein', party: 'Democrat', partyShort: 'D', flag: '🌲', since: '2025' },
-      { name: 'North Dakota', capital: 'Bismarck', governor: 'Kelly Armstrong', party: 'Republican', partyShort: 'R', flag: '🌾', since: '2025' },
-      { name: 'Ohio', capital: 'Columbus', governor: 'Mike DeWine', party: 'Republican', partyShort: 'R', flag: '🌰', since: '2019' },
-      { name: 'Oklahoma', capital: 'Oklahoma City', governor: 'Kevin Stitt', party: 'Republican', partyShort: 'R', flag: '🌾', since: '2019' },
-      { name: 'Oregon', capital: 'Salem', governor: 'Tina Kotek', party: 'Democrat', partyShort: 'D', flag: '🌲', since: '2023' },
-      { name: 'Pennsylvania', capital: 'Harrisburg', governor: 'Josh Shapiro', party: 'Democrat', partyShort: 'D', flag: '🔔', since: '2023' },
-      { name: 'Rhode Island', capital: 'Providence', governor: 'Dan McKee', party: 'Democrat', partyShort: 'D', flag: '⚓', since: '2021' },
-      { name: 'South Carolina', capital: 'Columbia', governor: 'Henry McMaster', party: 'Republican', partyShort: 'R', flag: '🌴', since: '2017' },
-      { name: 'South Dakota', capital: 'Pierre', governor: 'Kristi Noem', party: 'Republican', partyShort: 'R', flag: '🦅', since: '2019' },
-      { name: 'Tennessee', capital: 'Nashville', governor: 'Bill Lee', party: 'Republican', partyShort: 'R', flag: '🎵', since: '2019' },
-      { name: 'Texas', capital: 'Austin', governor: 'Greg Abbott', party: 'Republican', partyShort: 'R', flag: '⭐', since: '2015' },
-      { name: 'Utah', capital: 'Salt Lake City', governor: 'Spencer Cox', party: 'Republican', partyShort: 'R', flag: '⛏️', since: '2021' },
-      { name: 'Vermont', capital: 'Montpelier', governor: 'Phil Scott', party: 'Republican', partyShort: 'R', flag: '🍁', since: '2017' },
-      { name: 'Virginia', capital: 'Richmond', governor: 'Glenn Youngkin', party: 'Republican', partyShort: 'R', flag: '🏛️', since: '2022' },
-      { name: 'Washington', capital: 'Olympia', governor: 'Bob Ferguson', party: 'Democrat', partyShort: 'D', flag: '🌲', since: '2025' },
-      { name: 'West Virginia', capital: 'Charleston', governor: 'Patrick Morrisey', party: 'Republican', partyShort: 'R', flag: '⛰️', since: '2025' },
-      { name: 'Wisconsin', capital: 'Madison', governor: 'Tony Evers', party: 'Democrat', partyShort: 'D', flag: '🧀', since: '2019' },
-      { name: 'Wyoming', capital: 'Cheyenne', governor: 'Mark Gordon', party: 'Republican', partyShort: 'R', flag: '🦬', since: '2019' },
+      {
+        name: 'Alabama', capital: 'Montgomery', flagCode: 'us-al',
+        governor: 'Kay Ivey', govParty: 'Republican', partyShort: 'R', since: '2017',
+        ltGovernor: 'Will Ainsworth', ltGovParty: 'R',
+        bio: 'Kay Ivey assumed the governorship in 2017 following Robert Bentley\'s resignation and won election in her own right in 2018. She has focused on economic development, workforce training, and education reform, overseeing major manufacturing investments including automotive facilities.',
+      },
+      {
+        name: 'Alaska', capital: 'Juneau', flagCode: 'us-ak',
+        governor: 'Mike Dunleavy', govParty: 'Republican', partyShort: 'R', since: '2018',
+        ltGovernor: 'Nancy Dahlstrom', ltGovParty: 'R',
+        bio: 'Former state senator Mike Dunleavy won the governorship on a platform of fiscal restraint and resource development. He has managed Alaska\'s volatile oil-dependent budget while supporting expanded energy production and opposing federal restrictions on land use.',
+      },
+      {
+        name: 'Arizona', capital: 'Phoenix', flagCode: 'us-az',
+        governor: 'Katie Hobbs', govParty: 'Democrat', partyShort: 'D', since: '2023',
+        ltGovernor: '—', ltGovParty: '',
+        bio: 'Former Secretary of State Katie Hobbs narrowly defeated Kari Lake in the 2022 gubernatorial race. She has focused on reproductive rights, water conservation, and economic development in one of the nation\'s fastest-growing states.',
+      },
+      {
+        name: 'Arkansas', capital: 'Little Rock', flagCode: 'us-ar',
+        governor: 'Sarah Huckabee Sanders', govParty: 'Republican', partyShort: 'R', since: '2023',
+        ltGovernor: 'Leslie Rutledge', ltGovParty: 'R',
+        bio: 'Former White House Press Secretary Sarah Huckabee Sanders became the first female governor of Arkansas in 2023. She has pursued aggressive education reform including school choice, significant income tax cuts, and positioned Arkansas as a model for conservative governance.',
+      },
+      {
+        name: 'California', capital: 'Sacramento', flagCode: 'us-ca',
+        governor: 'Gavin Newsom', govParty: 'Democrat', partyShort: 'D', since: '2019',
+        ltGovernor: 'Eleni Kounalakis', ltGovParty: 'D',
+        bio: 'Former Mayor of San Francisco Gavin Newsom has championed progressive policies including universal healthcare expansion and nation-leading climate action. He is a prominent national Democratic voice widely mentioned as a potential future presidential candidate.',
+      },
+      {
+        name: 'Colorado', capital: 'Denver', flagCode: 'us-co',
+        governor: 'Jared Polis', govParty: 'Democrat', partyShort: 'D', since: '2019',
+        ltGovernor: 'Dianne Primavera', ltGovParty: 'D',
+        bio: 'Tech entrepreneur and former congressman Jared Polis became the first openly gay man elected governor in U.S. history. He has pursued free universal preschool, a carbon-free electricity grid, and aimed to eliminate the state income tax while expanding economic opportunity.',
+      },
+      {
+        name: 'Connecticut', capital: 'Hartford', flagCode: 'us-ct',
+        governor: 'Ned Lamont', govParty: 'Democrat', partyShort: 'D', since: '2019',
+        ltGovernor: 'Susan Bysiewicz', ltGovParty: 'D',
+        bio: 'Businessman and entrepreneur Ned Lamont brought private-sector experience to Connecticut\'s government. He has focused on fiscal responsibility, economic competitiveness, transit improvements, and successfully guided the state through the COVID-19 pandemic.',
+      },
+      {
+        name: 'Delaware', capital: 'Dover', flagCode: 'us-de',
+        governor: 'Matt Meyer', govParty: 'Democrat', partyShort: 'D', since: '2025',
+        ltGovernor: 'Kyle Evans Gay', ltGovParty: 'D',
+        bio: 'Former New Castle County Executive Matt Meyer won the 2024 gubernatorial election. He has focused on economic development, public safety improvements, environmental protection, and strengthening Delaware\'s historically significant role in corporate law.',
+      },
+      {
+        name: 'Florida', capital: 'Tallahassee', flagCode: 'us-fl',
+        governor: 'Ron DeSantis', govParty: 'Republican', partyShort: 'R', since: '2019',
+        ltGovernor: 'Jeanette Nuñez', ltGovParty: 'R',
+        bio: 'Former naval officer and U.S. Representative Ron DeSantis has pursued an aggressive conservative agenda, opposing COVID-19 mandates and restricting DEI programs. He became a major national Republican figure after a failed 2024 presidential run.',
+      },
+      {
+        name: 'Georgia', capital: 'Atlanta', flagCode: 'us-ga',
+        governor: 'Brian Kemp', govParty: 'Republican', partyShort: 'R', since: '2019',
+        ltGovernor: 'Burt Jones', ltGovParty: 'R',
+        bio: 'Former Secretary of State Brian Kemp gained national attention for certifying Georgia\'s 2020 presidential election results despite intense pressure. He has focused on economic development, attracting major manufacturing investment, and disaster preparedness.',
+      },
+      {
+        name: 'Hawaii', capital: 'Honolulu', flagCode: 'us-hi',
+        governor: 'Josh Green', govParty: 'Democrat', partyShort: 'D', since: '2022',
+        ltGovernor: 'Sylvia Luke', ltGovParty: 'D',
+        bio: 'Emergency room physician Josh Green brought a healthcare-centred perspective to the governorship. He faced the devastating August 2023 Lahaina wildfire and has focused on disaster preparedness, housing affordability, and accelerating Hawaii\'s clean energy transition.',
+      },
+      {
+        name: 'Idaho', capital: 'Boise', flagCode: 'us-id',
+        governor: 'Brad Little', govParty: 'Republican', partyShort: 'R', since: '2019',
+        ltGovernor: 'Scott Bedke', ltGovParty: 'R',
+        bio: 'Former rancher and state senator Brad Little has promoted Idaho\'s agricultural economy while managing the state\'s rapid population growth. He has focused on education funding improvements, property tax relief, and maintaining a business-friendly regulatory environment.',
+      },
+      {
+        name: 'Illinois', capital: 'Springfield', flagCode: 'us-il',
+        governor: 'JB Pritzker', govParty: 'Democrat', partyShort: 'D', since: '2019',
+        ltGovernor: 'Juliana Stratton', ltGovParty: 'D',
+        bio: 'Billionaire entrepreneur and Hyatt hotel heir JB Pritzker has pursued a progressive agenda including cannabis legalisation, minimum wage increases, and expanded social services. He is a major Democratic Party fundraiser and frequently mentioned as a future national candidate.',
+      },
+      {
+        name: 'Indiana', capital: 'Indianapolis', flagCode: 'us-in',
+        governor: 'Mike Braun', govParty: 'Republican', partyShort: 'R', since: '2025',
+        ltGovernor: 'Micah Beckwith', ltGovParty: 'R',
+        bio: 'Former U.S. Senator and businessman Mike Braun won the 2024 gubernatorial election, succeeding term-limited Eric Holcomb. A conservative fiscal hawk, he has prioritised streamlining state government and positioning Indiana as a leading destination for business investment.',
+      },
+      {
+        name: 'Iowa', capital: 'Des Moines', flagCode: 'us-ia',
+        governor: 'Kim Reynolds', govParty: 'Republican', partyShort: 'R', since: '2017',
+        ltGovernor: 'Adam Gregg', ltGovParty: 'R',
+        bio: 'Kim Reynolds became the first woman elected Iowa governor in her own right after succeeding Terry Branstad. She has championed education savings accounts (school choice), major income tax reductions, and conservative social legislation.',
+      },
+      {
+        name: 'Kansas', capital: 'Topeka', flagCode: 'us-ks',
+        governor: 'Laura Kelly', govParty: 'Democrat', partyShort: 'D', since: '2019',
+        ltGovernor: 'David Toland', ltGovParty: 'D',
+        bio: 'Former state senator Laura Kelly has served two terms as a pragmatic Democratic governor in a deeply Republican state. She expanded Medicaid, invested in economic development, and emphasised bipartisan governance and fiscal responsibility.',
+      },
+      {
+        name: 'Kentucky', capital: 'Frankfort', flagCode: 'us-ky',
+        governor: 'Andy Beshear', govParty: 'Democrat', partyShort: 'D', since: '2019',
+        ltGovernor: 'Jacqueline Coleman', ltGovParty: 'D',
+        bio: 'Son of former Governor Steve Beshear, Andy Beshear has been a rare Democrat winning repeatedly in an increasingly Republican state. He has attracted major battery and electric vehicle manufacturing facilities while leading the state through floods and tornado recovery.',
+      },
+      {
+        name: 'Louisiana', capital: 'Baton Rouge', flagCode: 'us-la',
+        governor: 'Jeff Landry', govParty: 'Republican', partyShort: 'R', since: '2024',
+        ltGovernor: 'Billy Nungesser', ltGovParty: 'R',
+        bio: 'Former state Attorney General Jeff Landry won the 2023 gubernatorial election, succeeding Democrat John Bel Edwards. He has pursued an aggressive conservative agenda including criminal justice changes, education reform, and repealing the state\'s civil service system.',
+      },
+      {
+        name: 'Maine', capital: 'Augusta', flagCode: 'us-me',
+        governor: 'Janet Mills', govParty: 'Democrat', partyShort: 'D', since: '2019',
+        ltGovernor: 'None (no position)', ltGovParty: '',
+        bio: 'Former state Attorney General Janet Mills made history as Maine\'s first female governor. She has focused on healthcare access, combating opioid addiction, climate resiliency, and rural economic development. Maine does not have a Lieutenant Governor position.',
+      },
+      {
+        name: 'Maryland', capital: 'Annapolis', flagCode: 'us-md',
+        governor: 'Wes Moore', govParty: 'Democrat', partyShort: 'D', since: '2023',
+        ltGovernor: 'Aruna Miller', ltGovParty: 'D',
+        bio: 'Author, combat veteran, and nonprofit executive Wes Moore made history as Maryland\'s first Black governor. He has focused on economic equity, workforce development, public safety reform, and strengthening Maryland\'s economy amid federal workforce reductions.',
+      },
+      {
+        name: 'Massachusetts', capital: 'Boston', flagCode: 'us-ma',
+        governor: 'Maura Healey', govParty: 'Democrat', partyShort: 'D', since: '2023',
+        ltGovernor: 'Kim Driscoll', ltGovParty: 'D',
+        bio: 'Former state Attorney General Maura Healey made history as the first openly LGBTQ+ person elected governor of Massachusetts. She has focused on housing production, healthcare affordability, climate infrastructure, and expanding early education access.',
+      },
+      {
+        name: 'Michigan', capital: 'Lansing', flagCode: 'us-mi',
+        governor: 'Gretchen Whitmer', govParty: 'Democrat', partyShort: 'D', since: '2019',
+        ltGovernor: 'Garlin Gilchrist II', ltGovParty: 'D',
+        bio: 'Former state Senate minority leader Gretchen Whitmer gained national prominence during the COVID-19 pandemic and after a foiled kidnapping plot against her. She has focused on infrastructure, reproductive rights, and attracting clean energy and EV manufacturing jobs.',
+      },
+      {
+        name: 'Minnesota', capital: 'Saint Paul', flagCode: 'us-mn',
+        governor: 'Tim Walz', govParty: 'Democrat', partyShort: 'D', since: '2019',
+        ltGovernor: 'Peggy Flanagan', ltGovParty: 'D',
+        bio: 'Former high school teacher, football coach, and U.S. Representative Tim Walz rose to national prominence as Kamala Harris\'s 2024 vice presidential running mate. He has championed free school meals, cannabis legalisation, and expanding social programs in Minnesota.',
+      },
+      {
+        name: 'Mississippi', capital: 'Jackson', flagCode: 'us-ms',
+        governor: 'Tate Reeves', govParty: 'Republican', partyShort: 'R', since: '2020',
+        ltGovernor: 'Delbert Hosemann', ltGovParty: 'R',
+        bio: 'Former state Treasurer and Lieutenant Governor Tate Reeves has pursued conservative fiscal policies and social legislation. He has focused on workforce development, criminal justice reform, and attracting manufacturing jobs to one of the nation\'s most economically challenged states.',
+      },
+      {
+        name: 'Missouri', capital: 'Jefferson City', flagCode: 'us-mo',
+        governor: 'Mike Kehoe', govParty: 'Republican', partyShort: 'R', since: '2025',
+        ltGovernor: 'David Wasinger', ltGovParty: 'R',
+        bio: 'Former state Senate President Pro Tem Mike Kehoe won the 2024 gubernatorial election in a state that has shifted strongly Republican. A business-focused conservative, he has prioritised economic development, reducing government spending, and infrastructure investment.',
+      },
+      {
+        name: 'Montana', capital: 'Helena', flagCode: 'us-mt',
+        governor: 'Greg Gianforte', govParty: 'Republican', partyShort: 'R', since: '2021',
+        ltGovernor: 'Kristen Juras', ltGovParty: 'R',
+        bio: 'Tech entrepreneur Greg Gianforte became Montana\'s first Republican governor in 16 years. He has pursued conservative land management, economic development, and innovation policies while navigating significant population growth and tensions over public land access.',
+      },
+      {
+        name: 'Nebraska', capital: 'Lincoln', flagCode: 'us-ne',
+        governor: 'Jim Pillen', govParty: 'Republican', partyShort: 'R', since: '2023',
+        ltGovernor: 'Joe Kelly', ltGovParty: 'R',
+        bio: 'Swine producer and former University of Nebraska Board of Regents member Jim Pillen won the 2022 gubernatorial election. He has focused on property tax relief, supporting agriculture and rural communities, and maintaining conservative fiscal management.',
+      },
+      {
+        name: 'Nevada', capital: 'Carson City', flagCode: 'us-nv',
+        governor: 'Joe Lombardo', govParty: 'Republican', partyShort: 'R', since: '2023',
+        ltGovernor: 'Stavros Anthony', ltGovParty: 'R',
+        bio: 'Former Las Vegas Metropolitan Police Sheriff Joe Lombardo brought a law enforcement perspective to the governorship. He has focused on public safety, workforce development, and economic diversification in a state heavily dependent on gaming and hospitality.',
+      },
+      {
+        name: 'New Hampshire', capital: 'Concord', flagCode: 'us-nh',
+        governor: 'Kelly Ayotte', govParty: 'Republican', partyShort: 'R', since: '2025',
+        ltGovernor: 'None (no position)', ltGovParty: '',
+        bio: 'Former U.S. Senator and state Attorney General Kelly Ayotte won the 2024 gubernatorial election. A moderate Republican, she has focused on economic competitiveness, public safety, housing affordability, and workforce development. NH has no Lt. Governor position.',
+      },
+      {
+        name: 'New Jersey', capital: 'Trenton', flagCode: 'us-nj',
+        governor: 'Phil Murphy', govParty: 'Democrat', partyShort: 'D', since: '2018',
+        ltGovernor: 'Tahesha Way', ltGovParty: 'D',
+        bio: 'Former Goldman Sachs executive and U.S. Ambassador Phil Murphy pursued a progressive agenda including cannabis legalisation and minimum wage increases. He served through January 2026 and was succeeded following the November 2025 election.',
+      },
+      {
+        name: 'New Mexico', capital: 'Santa Fe', flagCode: 'us-nm',
+        governor: 'Michelle Lujan Grisham', govParty: 'Democrat', partyShort: 'D', since: '2019',
+        ltGovernor: 'Howie Morales', ltGovParty: 'D',
+        bio: 'Former U.S. Representative Michelle Lujan Grisham has focused on early childhood education, renewable energy, and economic diversification. She has been a prominent national voice on immigration, border security, and expanding access to reproductive healthcare.',
+      },
+      {
+        name: 'New York', capital: 'Albany', flagCode: 'us-ny',
+        governor: 'Kathy Hochul', govParty: 'Democrat', partyShort: 'D', since: '2021',
+        ltGovernor: 'Antonio Delgado', ltGovParty: 'D',
+        bio: 'Former congresswoman and Lt. Governor Kathy Hochul became New York\'s first female governor when Andrew Cuomo resigned in 2021. She has focused on housing production, public safety, healthcare, and managing New York\'s complex $230B+ annual budget.',
+      },
+      {
+        name: 'North Carolina', capital: 'Raleigh', flagCode: 'us-nc',
+        governor: 'Josh Stein', govParty: 'Democrat', partyShort: 'D', since: '2025',
+        ltGovernor: 'Rachel Hunt', ltGovParty: 'D',
+        bio: 'Former state Attorney General Josh Stein won the 2024 gubernatorial election amid Hurricane Helene\'s devastating impact on western North Carolina. He has made disaster recovery a top priority alongside education reform, healthcare access, and economic opportunity.',
+      },
+      {
+        name: 'North Dakota', capital: 'Bismarck', flagCode: 'us-nd',
+        governor: 'Kelly Armstrong', govParty: 'Republican', partyShort: 'R', since: '2025',
+        ltGovernor: 'Michelle Strinden', ltGovParty: 'R',
+        bio: 'Former U.S. Representative Kelly Armstrong won the 2024 gubernatorial election. He has focused on North Dakota\'s energy and agricultural economy, conservative fiscal management, and reducing regulatory burdens on the state\'s key industries.',
+      },
+      {
+        name: 'Ohio', capital: 'Columbus', flagCode: 'us-oh',
+        governor: 'Mike DeWine', govParty: 'Republican', partyShort: 'R', since: '2019',
+        ltGovernor: 'Jon Husted', ltGovParty: 'R',
+        bio: 'Veteran Republican politician Mike DeWine has served Ohio in various capacities for decades. He gained attention for his measured COVID-19 response and has focused on public health, law enforcement, and economic development including attracting major semiconductor manufacturing.',
+      },
+      {
+        name: 'Oklahoma', capital: 'Oklahoma City', flagCode: 'us-ok',
+        governor: 'Kevin Stitt', govParty: 'Republican', partyShort: 'R', since: '2019',
+        ltGovernor: 'Matt Pinnell', ltGovParty: 'R',
+        bio: 'Businessman and self-described political outsider Kevin Stitt has pursued conservative economic and social policies while developing Oklahoma\'s economy. He has had notable legal conflicts with the state\'s tribal nations over gaming compacts and criminal jurisdiction.',
+      },
+      {
+        name: 'Oregon', capital: 'Salem', flagCode: 'us-or',
+        governor: 'Tina Kotek', govParty: 'Democrat', partyShort: 'D', since: '2023',
+        ltGovernor: 'None (no position)', ltGovParty: '',
+        bio: 'Former Speaker of the Oregon House Tina Kotek has made housing production the centrepiece of her governorship. She has set ambitious housing production targets, reversed controversial drug decriminalisation, and invested in mental health resources to address homelessness. Oregon has no Lt. Governor.',
+      },
+      {
+        name: 'Pennsylvania', capital: 'Harrisburg', flagCode: 'us-pa',
+        governor: 'Josh Shapiro', govParty: 'Democrat', partyShort: 'D', since: '2023',
+        ltGovernor: 'Austin Davis', ltGovParty: 'D',
+        bio: 'Former state Attorney General Josh Shapiro is widely considered one of the Democratic Party\'s most prominent rising stars. He has focused on economic development, worker protections, education investment, and infrastructure improvements in the crucial battleground state.',
+      },
+      {
+        name: 'Rhode Island', capital: 'Providence', flagCode: 'us-ri',
+        governor: 'Dan McKee', govParty: 'Democrat', partyShort: 'D', since: '2021',
+        ltGovernor: 'Sabina Matos', ltGovParty: 'D',
+        bio: 'Former Mayor of Cumberland Dan McKee assumed the governorship when Gina Raimondo became U.S. Secretary of Commerce and won the 2022 election in his own right. He has focused on economic recovery, education reform, and infrastructure investment in New England\'s smallest state.',
+      },
+      {
+        name: 'South Carolina', capital: 'Columbia', flagCode: 'us-sc',
+        governor: 'Henry McMaster', govParty: 'Republican', partyShort: 'R', since: '2017',
+        ltGovernor: 'Pamela Evette', ltGovParty: 'R',
+        bio: 'Former state Attorney General Henry McMaster assumed the governorship when Nikki Haley became U.S. Ambassador to the UN. A staunch Trump ally, he has focused on economic development, school choice, and conservative policy priorities in one of the South\'s most pro-business states.',
+      },
+      {
+        name: 'South Dakota', capital: 'Pierre', flagCode: 'us-sd',
+        governor: 'Kristi Noem', govParty: 'Republican', partyShort: 'R', since: '2019',
+        ltGovernor: 'Larry Rhoden', ltGovParty: 'R',
+        bio: 'Former U.S. Representative Kristi Noem emerged as a national conservative figure by opposing COVID-19 lockdowns and championing individual freedom. She has focused on Second Amendment rights, South Dakota\'s agricultural economy, and conservative social legislation.',
+      },
+      {
+        name: 'Tennessee', capital: 'Nashville', flagCode: 'us-tn',
+        governor: 'Bill Lee', govParty: 'Republican', partyShort: 'R', since: '2019',
+        ltGovernor: 'Randy McNally', ltGovParty: 'R',
+        bio: 'Businessman Bill Lee won the 2018 governorship without prior political experience. He has focused on education reform including education savings accounts, economic development, and maintaining Tennessee\'s no-income-tax status. The Lt. Governor role is held by the Senate Speaker.',
+      },
+      {
+        name: 'Texas', capital: 'Austin', flagCode: 'us-tx',
+        governor: 'Greg Abbott', govParty: 'Republican', partyShort: 'R', since: '2015',
+        ltGovernor: 'Dan Patrick', ltGovParty: 'R',
+        bio: 'Former Texas Supreme Court Justice and state Attorney General Greg Abbott has championed conservative immigration, abortion, and gun rights policies. He has managed major crises including the 2021 winter storm and directed Operation Lone Star at the U.S.-Mexico border.',
+      },
+      {
+        name: 'Utah', capital: 'Salt Lake City', flagCode: 'us-ut',
+        governor: 'Spencer Cox', govParty: 'Republican', partyShort: 'R', since: '2021',
+        ltGovernor: 'Deidre Henderson', ltGovParty: 'R',
+        bio: 'Former Lt. Governor Spencer Cox has promoted civil dialogue and bridging political divides, earning a reputation as a pragmatic moderate Republican. He has focused on water conservation in a drought-stricken region, housing affordability, and economic development in the nation\'s fastest-growing state.',
+      },
+      {
+        name: 'Vermont', capital: 'Montpelier', flagCode: 'us-vt',
+        governor: 'Phil Scott', govParty: 'Republican', partyShort: 'R', since: '2017',
+        ltGovernor: 'David Zuckerman', ltGovParty: 'D',
+        bio: 'Former race car driver and businessman Phil Scott is a popular moderate Republican governor in one of the most Democratic states. He has focused on economic development, opioid treatment, and environmental protection while frequently breaking with national Republicans on key issues.',
+      },
+      {
+        name: 'Virginia', capital: 'Richmond', flagCode: 'us-va',
+        governor: 'Glenn Youngkin', govParty: 'Republican', partyShort: 'R', since: '2022',
+        ltGovernor: 'Winsome Earle-Sears', ltGovParty: 'R',
+        bio: 'Former private equity executive Glenn Youngkin rode a wave of parent-focused education concerns to a surprise 2021 victory. He is constitutionally limited to one four-year term and has focused on education, economic development, and public safety during his tenure.',
+      },
+      {
+        name: 'Washington', capital: 'Olympia', flagCode: 'us-wa',
+        governor: 'Bob Ferguson', govParty: 'Democrat', partyShort: 'D', since: '2025',
+        ltGovernor: 'Denny Heck', ltGovParty: 'D',
+        bio: 'Former state Attorney General Bob Ferguson won the 2024 gubernatorial election, succeeding Jay Inslee. Known nationally for legal battles against federal policies, he has continued that approach while focusing on housing, climate action, and public safety reforms.',
+      },
+      {
+        name: 'West Virginia', capital: 'Charleston', flagCode: 'us-wv',
+        governor: 'Patrick Morrisey', govParty: 'Republican', partyShort: 'R', since: '2025',
+        ltGovernor: '—', ltGovParty: '',
+        bio: 'Former U.S. Representative Patrick Morrisey won the 2024 gubernatorial election in a state that has shifted strongly Republican. He has focused on energy production, economic diversification away from declining coal, and reducing the federal regulatory footprint in the state.',
+      },
+      {
+        name: 'Wisconsin', capital: 'Madison', flagCode: 'us-wi',
+        governor: 'Tony Evers', govParty: 'Democrat', partyShort: 'D', since: '2019',
+        ltGovernor: 'Sara Rodriguez', ltGovParty: 'D',
+        bio: 'Former state school superintendent Tony Evers has been a pragmatic Democratic governor navigating a Republican-controlled legislature. He has used his veto power extensively to protect education and healthcare spending while focusing on workforce development and economic growth.',
+      },
+      {
+        name: 'Wyoming', capital: 'Cheyenne', flagCode: 'us-wy',
+        governor: 'Mark Gordon', govParty: 'Republican', partyShort: 'R', since: '2019',
+        ltGovernor: 'Jennings (Penny)' , ltGovParty: 'R',
+        bio: 'Former rancher and state Treasurer Mark Gordon has focused on managing Wyoming\'s budget amid declining coal revenues while diversifying the state\'s energy economy including nuclear and hydrogen projects. He has worked to balance conservation priorities with resource development.',
+      },
     ];
 
     const items = isUSA ? usStates : canadaProvinces;
     const title = isUSA ? 'State Governments' : 'Provincial & Territorial Governments';
-    const subtitle = isUSA ? 'Governors of all 50 states' : 'Premiers of all 10 provinces and 3 territories';
+    const subtitle = isUSA
+      ? 'Current Governor and Lieutenant Governor for all 50 states'
+      : 'Current Premiers for all 10 provinces and 3 territories';
     const leaderTitle = isUSA ? 'Governor' : 'Premier';
 
     const partyColors = {
-      // Canada
       'PC': 'bg-blue-100 text-blue-800',
       'NDP': 'bg-orange-100 text-orange-800',
       'Liberal': 'bg-red-100 text-red-800',
       'CAQ': 'bg-sky-100 text-sky-800',
       'UCP': 'bg-blue-100 text-blue-800',
       'Sask. Party': 'bg-green-100 text-green-800',
-      'Independent': 'bg-gray-100 text-gray-700',
       'Consensus': 'bg-purple-100 text-purple-800',
-      // USA
       'R': 'bg-red-100 text-red-800',
       'D': 'bg-blue-100 text-blue-800',
     };
@@ -5568,39 +5870,66 @@ function App() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {items.map((item, index) => {
-              const partyKey = isUSA ? item.partyShort : item.partyShort;
+              const partyKey = item.partyShort;
               const partyBadgeClass = partyColors[partyKey] || 'bg-gray-100 text-gray-700';
               const leaderName = isUSA ? item.governor : item.premier;
 
               return (
                 <div
                   key={item.name}
-                  className="card-gradient rounded-2xl shadow-elegant p-5 border-2 border-white/50 animate-scale-in hover-lift"
+                  className="bg-white rounded-2xl shadow-elegant border border-gray-100 overflow-hidden animate-scale-in hover-lift"
                   style={{ animationDelay: `${Math.min(index * 0.03, 0.5)}s` }}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">{item.flag}</span>
+                  {/* Flag banner */}
+                  <div className="h-24 overflow-hidden relative bg-gray-100">
+                    <img
+                      src={`${CDN}/${item.flagCode}.svg`}
+                      alt={`Flag of ${item.name}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+                    <div className="absolute bottom-2 left-3 right-3 flex items-end justify-between">
                       <div>
-                        <h3 className="font-bold text-gray-800 text-base leading-tight">{item.name}</h3>
-                        <p className="text-gray-500 text-xs">{item.capital}</p>
+                        <h3 className="font-bold text-white text-sm leading-tight drop-shadow">{item.name}</h3>
+                        <p className="text-white/80 text-xs drop-shadow">{item.capital}</p>
                       </div>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${partyBadgeClass}`}>
+                        {item.partyShort}
+                      </span>
                     </div>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${partyBadgeClass}`}>
-                      {item.partyShort}
-                    </span>
                   </div>
 
-                  <div className="border-t border-gray-100 pt-3">
-                    <p className="text-xs text-gray-500 mb-0.5">{leaderTitle}</p>
-                    <p className="font-semibold text-gray-800 text-sm">{leaderName}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <p className="text-xs text-gray-500">{item.party}</p>
-                      <p className="text-xs text-gray-400">Since {item.since}</p>
+                  {/* Content */}
+                  <div className="p-4">
+                    {/* Governor / Premier */}
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-0.5">{leaderTitle}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="font-bold text-gray-800 text-sm">{leaderName}</p>
+                        <p className="text-xs text-gray-400">Since {item.since}</p>
+                      </div>
+                      <p className="text-xs text-gray-500">{isUSA ? item.govParty : item.party}</p>
                     </div>
-                    {!isUSA && item.population && (
-                      <p className="text-xs text-gray-400 mt-1">Population: {item.population}</p>
+
+                    {/* Lt. Governor (USA only) */}
+                    {isUSA && (
+                      <div className="mb-3 pb-3 border-b border-gray-100">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-0.5">Lieutenant Governor</p>
+                        <p className="text-sm text-gray-700">{item.ltGovernor}</p>
+                      </div>
                     )}
+
+                    {/* Population (Canada only) */}
+                    {!isUSA && item.population && (
+                      <div className="mb-3 pb-3 border-b border-gray-100">
+                        <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-0.5">Population</p>
+                        <p className="text-sm text-gray-700">{item.population}</p>
+                      </div>
+                    )}
+
+                    {/* Bio */}
+                    <p className="text-xs text-gray-600 leading-relaxed">{item.bio}</p>
                   </div>
                 </div>
               );
@@ -5620,7 +5949,7 @@ function App() {
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-orange-400 inline-block"></span> NDP: {canadaProvinces.filter(p => p.partyShort === 'NDP').length}</span>
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-red-400 inline-block"></span> Liberal: {canadaProvinces.filter(p => p.partyShort === 'Liberal').length}</span>
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-sky-400 inline-block"></span> CAQ: {canadaProvinces.filter(p => p.partyShort === 'CAQ').length}</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-gray-400 inline-block"></span> Other: {canadaProvinces.filter(p => ['Sask. Party','Independent','Consensus'].includes(p.partyShort)).length}</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-gray-400 inline-block"></span> Other: {canadaProvinces.filter(p => ['Sask. Party','Consensus'].includes(p.partyShort)).length}</span>
               </>
             )}
           </div>
