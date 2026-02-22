@@ -5357,7 +5357,7 @@ function App() {
               key={country.id}
               onClick={() => {
                 setSelectedCountry(country);
-                setView('categories');
+                setView('government-levels');
               }}
               className="card-gradient rounded-2xl shadow-elegant-lg p-10 cursor-pointer hover-lift interactive-card border-2 border-white/50"
               style={{ animationDelay: `${index * 0.1}s` }}
@@ -5380,6 +5380,255 @@ function App() {
     </div>
   );
 
+  const renderGovernmentLevels = () => {
+    const isUSA = selectedCountry?.type === 'usa';
+    const countryName = isUSA ? 'United States' : 'Canada';
+    const flag = isUSA ? '🇺🇸' : '🇨🇦';
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-8 animate-fade-in">
+        <div className="max-w-4xl mx-auto">
+          <button
+            onClick={() => setView('countries')}
+            className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
+          >
+            ← Back to Countries
+          </button>
+
+          <div className="mb-8 animate-slide-in">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">{flag}</span>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">{countryName}</h1>
+            </div>
+            <p className="text-gray-600 text-base sm:text-lg">Choose a level of government to explore</p>
+            <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* Federal Government */}
+            <div
+              onClick={() => setView('categories')}
+              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              style={{ animationDelay: '0.1s' }}
+            >
+              <div className="text-blue-600 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10h1v11H4V10zm6 0h1v11h-1V10zm5 0h1v11h-1V10zm5 0h1v11h-1V10z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Federal Government</h2>
+              <p className="text-gray-600 mb-4 text-sm">
+                {isUSA
+                  ? 'Congress, federal departments, contracts, supreme court & more'
+                  : 'Parliament, federal ministries, contracts, supreme court & more'}
+              </p>
+              <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm">
+                <span>Explore Federal</span>
+                <ChevronRight className="w-4 h-4" />
+              </div>
+            </div>
+
+            {/* Provincial / State Governments */}
+            <div
+              onClick={() => setView('provincial')}
+              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              style={{ animationDelay: '0.2s' }}
+            >
+              <div className="text-green-600 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                {isUSA ? 'State Governments' : 'Provincial Governments'}
+              </h2>
+              <p className="text-gray-600 mb-4 text-sm">
+                {isUSA
+                  ? 'Governors of all 50 states and territories'
+                  : 'Premiers of all 10 provinces and 3 territories'}
+              </p>
+              <div className="flex items-center gap-2 text-green-600 font-semibold text-sm">
+                <span>{isUSA ? 'Explore States' : 'Explore Provinces'}</span>
+                <ChevronRight className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderProvincial = () => {
+    const isUSA = selectedCountry?.type === 'usa';
+
+    const canadaProvinces = [
+      { name: 'Ontario', capital: 'Toronto', premier: 'Doug Ford', party: 'Progressive Conservative', partyShort: 'PC', flag: '🏙️', population: '14.9M', since: '2018' },
+      { name: 'Quebec', capital: 'Quebec City', premier: 'François Legault', party: 'Coalition Avenir Québec', partyShort: 'CAQ', flag: '⚜️', population: '8.8M', since: '2018' },
+      { name: 'British Columbia', capital: 'Victoria', premier: 'David Eby', party: 'New Democratic Party', partyShort: 'NDP', flag: '🌲', population: '5.3M', since: '2022' },
+      { name: 'Alberta', capital: 'Edmonton', premier: 'Danielle Smith', party: 'United Conservative Party', partyShort: 'UCP', flag: '🌾', population: '4.6M', since: '2022' },
+      { name: 'Saskatchewan', capital: 'Regina', premier: 'Scott Moe', party: 'Saskatchewan Party', partyShort: 'Sask. Party', flag: '🌻', population: '1.2M', since: '2018' },
+      { name: 'Manitoba', capital: 'Winnipeg', premier: 'Wab Kinew', party: 'New Democratic Party', partyShort: 'NDP', flag: '🦬', population: '1.4M', since: '2023' },
+      { name: 'Nova Scotia', capital: 'Halifax', premier: 'Tim Houston', party: 'Progressive Conservative', partyShort: 'PC', flag: '⚓', population: '1.0M', since: '2021' },
+      { name: 'New Brunswick', capital: 'Fredericton', premier: 'Susan Holt', party: 'Liberal', partyShort: 'Liberal', flag: '🐯', population: '820K', since: '2024' },
+      { name: 'Newfoundland & Labrador', capital: "St. John's", premier: 'Andrew Furey', party: 'Liberal', partyShort: 'Liberal', flag: '🐟', population: '530K', since: '2020' },
+      { name: 'Prince Edward Island', capital: 'Charlottetown', premier: 'Dennis King', party: 'Progressive Conservative', partyShort: 'PC', flag: '🦞', population: '170K', since: '2019' },
+      { name: 'Northwest Territories', capital: 'Yellowknife', premier: 'R.J. Simpson', party: 'Independent', partyShort: 'Independent', flag: '🏔️', population: '45K', since: '2023' },
+      { name: 'Yukon', capital: 'Whitehorse', premier: 'Ranj Pillai', party: 'Liberal', partyShort: 'Liberal', flag: '🐺', population: '43K', since: '2023' },
+      { name: 'Nunavut', capital: 'Iqaluit', premier: 'P.J. Akeeagok', party: 'Consensus Government', partyShort: 'Consensus', flag: '🧊', population: '40K', since: '2021' },
+    ];
+
+    const usStates = [
+      { name: 'Alabama', capital: 'Montgomery', governor: 'Kay Ivey', party: 'Republican', partyShort: 'R', flag: '🌲', since: '2017' },
+      { name: 'Alaska', capital: 'Juneau', governor: 'Mike Dunleavy', party: 'Republican', partyShort: 'R', flag: '🧊', since: '2018' },
+      { name: 'Arizona', capital: 'Phoenix', governor: 'Katie Hobbs', party: 'Democrat', partyShort: 'D', flag: '🌵', since: '2023' },
+      { name: 'Arkansas', capital: 'Little Rock', governor: 'Sarah Huckabee Sanders', party: 'Republican', partyShort: 'R', flag: '🌾', since: '2023' },
+      { name: 'California', capital: 'Sacramento', governor: 'Gavin Newsom', party: 'Democrat', partyShort: 'D', flag: '🐻', since: '2019' },
+      { name: 'Colorado', capital: 'Denver', governor: 'Jared Polis', party: 'Democrat', partyShort: 'D', flag: '⛰️', since: '2019' },
+      { name: 'Connecticut', capital: 'Hartford', governor: 'Ned Lamont', party: 'Democrat', partyShort: 'D', flag: '🦅', since: '2019' },
+      { name: 'Delaware', capital: 'Dover', governor: 'Matt Meyer', party: 'Democrat', partyShort: 'D', flag: '🦅', since: '2025' },
+      { name: 'Florida', capital: 'Tallahassee', governor: 'Ron DeSantis', party: 'Republican', partyShort: 'R', flag: '🌴', since: '2019' },
+      { name: 'Georgia', capital: 'Atlanta', governor: 'Brian Kemp', party: 'Republican', partyShort: 'R', flag: '🍑', since: '2019' },
+      { name: 'Hawaii', capital: 'Honolulu', governor: 'Josh Green', party: 'Democrat', partyShort: 'D', flag: '🌺', since: '2022' },
+      { name: 'Idaho', capital: 'Boise', governor: 'Brad Little', party: 'Republican', partyShort: 'R', flag: '🥔', since: '2019' },
+      { name: 'Illinois', capital: 'Springfield', governor: 'JB Pritzker', party: 'Democrat', partyShort: 'D', flag: '🌽', since: '2019' },
+      { name: 'Indiana', capital: 'Indianapolis', governor: 'Mike Braun', party: 'Republican', partyShort: 'R', flag: '🏎️', since: '2025' },
+      { name: 'Iowa', capital: 'Des Moines', governor: 'Kim Reynolds', party: 'Republican', partyShort: 'R', flag: '🌽', since: '2017' },
+      { name: 'Kansas', capital: 'Topeka', governor: 'Laura Kelly', party: 'Democrat', partyShort: 'D', flag: '🌻', since: '2019' },
+      { name: 'Kentucky', capital: 'Frankfort', governor: 'Andy Beshear', party: 'Democrat', partyShort: 'D', flag: '🐎', since: '2019' },
+      { name: 'Louisiana', capital: 'Baton Rouge', governor: 'Jeff Landry', party: 'Republican', partyShort: 'R', flag: '⚜️', since: '2024' },
+      { name: 'Maine', capital: 'Augusta', governor: 'Janet Mills', party: 'Democrat', partyShort: 'D', flag: '🦞', since: '2019' },
+      { name: 'Maryland', capital: 'Annapolis', governor: 'Wes Moore', party: 'Democrat', partyShort: 'D', flag: '🦀', since: '2023' },
+      { name: 'Massachusetts', capital: 'Boston', governor: 'Maura Healey', party: 'Democrat', partyShort: 'D', flag: '🦃', since: '2023' },
+      { name: 'Michigan', capital: 'Lansing', governor: 'Gretchen Whitmer', party: 'Democrat', partyShort: 'D', flag: '🚗', since: '2019' },
+      { name: 'Minnesota', capital: 'Saint Paul', governor: 'Tim Walz', party: 'Democrat', partyShort: 'D', flag: '🌊', since: '2019' },
+      { name: 'Mississippi', capital: 'Jackson', governor: 'Tate Reeves', party: 'Republican', partyShort: 'R', flag: '🎵', since: '2020' },
+      { name: 'Missouri', capital: 'Jefferson City', governor: 'Mike Kehoe', party: 'Republican', partyShort: 'R', flag: '🌿', since: '2025' },
+      { name: 'Montana', capital: 'Helena', governor: 'Greg Gianforte', party: 'Republican', partyShort: 'R', flag: '🏔️', since: '2021' },
+      { name: 'Nebraska', capital: 'Lincoln', governor: 'Jim Pillen', party: 'Republican', partyShort: 'R', flag: '🌽', since: '2023' },
+      { name: 'Nevada', capital: 'Carson City', governor: 'Joe Lombardo', party: 'Republican', partyShort: 'R', flag: '🎰', since: '2023' },
+      { name: 'New Hampshire', capital: 'Concord', governor: 'Kelly Ayotte', party: 'Republican', partyShort: 'R', flag: '🍁', since: '2025' },
+      { name: 'New Jersey', capital: 'Trenton', governor: 'Phil Murphy', party: 'Democrat', partyShort: 'D', flag: '🏙️', since: '2018' },
+      { name: 'New Mexico', capital: 'Santa Fe', governor: 'Michelle Lujan Grisham', party: 'Democrat', partyShort: 'D', flag: '🌶️', since: '2019' },
+      { name: 'New York', capital: 'Albany', governor: 'Kathy Hochul', party: 'Democrat', partyShort: 'D', flag: '🗽', since: '2021' },
+      { name: 'North Carolina', capital: 'Raleigh', governor: 'Josh Stein', party: 'Democrat', partyShort: 'D', flag: '🌲', since: '2025' },
+      { name: 'North Dakota', capital: 'Bismarck', governor: 'Kelly Armstrong', party: 'Republican', partyShort: 'R', flag: '🌾', since: '2025' },
+      { name: 'Ohio', capital: 'Columbus', governor: 'Mike DeWine', party: 'Republican', partyShort: 'R', flag: '🌰', since: '2019' },
+      { name: 'Oklahoma', capital: 'Oklahoma City', governor: 'Kevin Stitt', party: 'Republican', partyShort: 'R', flag: '🌾', since: '2019' },
+      { name: 'Oregon', capital: 'Salem', governor: 'Tina Kotek', party: 'Democrat', partyShort: 'D', flag: '🌲', since: '2023' },
+      { name: 'Pennsylvania', capital: 'Harrisburg', governor: 'Josh Shapiro', party: 'Democrat', partyShort: 'D', flag: '🔔', since: '2023' },
+      { name: 'Rhode Island', capital: 'Providence', governor: 'Dan McKee', party: 'Democrat', partyShort: 'D', flag: '⚓', since: '2021' },
+      { name: 'South Carolina', capital: 'Columbia', governor: 'Henry McMaster', party: 'Republican', partyShort: 'R', flag: '🌴', since: '2017' },
+      { name: 'South Dakota', capital: 'Pierre', governor: 'Kristi Noem', party: 'Republican', partyShort: 'R', flag: '🦅', since: '2019' },
+      { name: 'Tennessee', capital: 'Nashville', governor: 'Bill Lee', party: 'Republican', partyShort: 'R', flag: '🎵', since: '2019' },
+      { name: 'Texas', capital: 'Austin', governor: 'Greg Abbott', party: 'Republican', partyShort: 'R', flag: '⭐', since: '2015' },
+      { name: 'Utah', capital: 'Salt Lake City', governor: 'Spencer Cox', party: 'Republican', partyShort: 'R', flag: '⛏️', since: '2021' },
+      { name: 'Vermont', capital: 'Montpelier', governor: 'Phil Scott', party: 'Republican', partyShort: 'R', flag: '🍁', since: '2017' },
+      { name: 'Virginia', capital: 'Richmond', governor: 'Glenn Youngkin', party: 'Republican', partyShort: 'R', flag: '🏛️', since: '2022' },
+      { name: 'Washington', capital: 'Olympia', governor: 'Bob Ferguson', party: 'Democrat', partyShort: 'D', flag: '🌲', since: '2025' },
+      { name: 'West Virginia', capital: 'Charleston', governor: 'Patrick Morrisey', party: 'Republican', partyShort: 'R', flag: '⛰️', since: '2025' },
+      { name: 'Wisconsin', capital: 'Madison', governor: 'Tony Evers', party: 'Democrat', partyShort: 'D', flag: '🧀', since: '2019' },
+      { name: 'Wyoming', capital: 'Cheyenne', governor: 'Mark Gordon', party: 'Republican', partyShort: 'R', flag: '🦬', since: '2019' },
+    ];
+
+    const items = isUSA ? usStates : canadaProvinces;
+    const title = isUSA ? 'State Governments' : 'Provincial & Territorial Governments';
+    const subtitle = isUSA ? 'Governors of all 50 states' : 'Premiers of all 10 provinces and 3 territories';
+    const leaderTitle = isUSA ? 'Governor' : 'Premier';
+
+    const partyColors = {
+      // Canada
+      'PC': 'bg-blue-100 text-blue-800',
+      'NDP': 'bg-orange-100 text-orange-800',
+      'Liberal': 'bg-red-100 text-red-800',
+      'CAQ': 'bg-sky-100 text-sky-800',
+      'UCP': 'bg-blue-100 text-blue-800',
+      'Sask. Party': 'bg-green-100 text-green-800',
+      'Independent': 'bg-gray-100 text-gray-700',
+      'Consensus': 'bg-purple-100 text-purple-800',
+      // USA
+      'R': 'bg-red-100 text-red-800',
+      'D': 'bg-blue-100 text-blue-800',
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 p-4 sm:p-8 animate-fade-in">
+        <div className="max-w-6xl mx-auto">
+          <button
+            onClick={() => setView('government-levels')}
+            className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
+          >
+            ← Back
+          </button>
+
+          <div className="mb-8 animate-slide-in">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">{title}</h1>
+            <p className="text-gray-600 text-base sm:text-lg">{subtitle}</p>
+            <div className="w-24 h-1 mt-3 rounded-full" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}></div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {items.map((item, index) => {
+              const partyKey = isUSA ? item.partyShort : item.partyShort;
+              const partyBadgeClass = partyColors[partyKey] || 'bg-gray-100 text-gray-700';
+              const leaderName = isUSA ? item.governor : item.premier;
+
+              return (
+                <div
+                  key={item.name}
+                  className="card-gradient rounded-2xl shadow-elegant p-5 border-2 border-white/50 animate-scale-in hover-lift"
+                  style={{ animationDelay: `${Math.min(index * 0.03, 0.5)}s` }}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{item.flag}</span>
+                      <div>
+                        <h3 className="font-bold text-gray-800 text-base leading-tight">{item.name}</h3>
+                        <p className="text-gray-500 text-xs">{item.capital}</p>
+                      </div>
+                    </div>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${partyBadgeClass}`}>
+                      {item.partyShort}
+                    </span>
+                  </div>
+
+                  <div className="border-t border-gray-100 pt-3">
+                    <p className="text-xs text-gray-500 mb-0.5">{leaderTitle}</p>
+                    <p className="font-semibold text-gray-800 text-sm">{leaderName}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-xs text-gray-500">{item.party}</p>
+                      <p className="text-xs text-gray-400">Since {item.since}</p>
+                    </div>
+                    {!isUSA && item.population && (
+                      <p className="text-xs text-gray-400 mt-1">Population: {item.population}</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Summary bar */}
+          <div className="mt-8 p-4 bg-white/60 rounded-2xl border border-white/80 shadow-elegant flex flex-wrap gap-4 justify-center text-sm text-gray-600">
+            {isUSA ? (
+              <>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-red-400 inline-block"></span> Republican: {usStates.filter(s => s.partyShort === 'R').length}</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-400 inline-block"></span> Democrat: {usStates.filter(s => s.partyShort === 'D').length}</span>
+              </>
+            ) : (
+              <>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-400 inline-block"></span> PC/UCP: {canadaProvinces.filter(p => ['PC','UCP'].includes(p.partyShort)).length}</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-orange-400 inline-block"></span> NDP: {canadaProvinces.filter(p => p.partyShort === 'NDP').length}</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-red-400 inline-block"></span> Liberal: {canadaProvinces.filter(p => p.partyShort === 'Liberal').length}</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-sky-400 inline-block"></span> CAQ: {canadaProvinces.filter(p => p.partyShort === 'CAQ').length}</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-gray-400 inline-block"></span> Other: {canadaProvinces.filter(p => ['Sask. Party','Independent','Consensus'].includes(p.partyShort)).length}</span>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderCategories = () => {
     const isUSA = selectedCountry?.type === 'usa';
     const countryName = isUSA ? 'United States' : 'Canadian';
@@ -5392,14 +5641,14 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-6xl mx-auto">
         <button
-          onClick={() => setView('countries')}
+          onClick={() => setView('government-levels')}
           className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
         >
-          ← Back to Countries
+          ← Back
         </button>
-        
+
         <div className="mb-8 animate-slide-in">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">{countryName} Government</h1>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">{countryName} Federal Government</h1>
           <p className="text-gray-600 text-base sm:text-lg">Explore different aspects of federal governance</p>
           <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
         </div>
@@ -9524,6 +9773,8 @@ function App() {
     <div className="App smooth-scroll">
       <style>{customStyles}</style>
       {view === 'countries' && renderCountrySelection()}
+        {view === 'government-levels' && renderGovernmentLevels()}
+        {view === 'provincial' && renderProvincial()}
         {view === 'categories' && renderCategories()}
         {view === 'chambers' && renderChambers()}
         {view === 'parties' && renderParties()}
