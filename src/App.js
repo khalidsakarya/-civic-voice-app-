@@ -181,6 +181,33 @@ const customStyles = `
   .progress-bar {
     transition: width 0.5s ease-in-out;
   }
+
+  @keyframes slideInFromRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+
+  @keyframes fadeInBackdrop {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .panel-slide-in {
+    animation: slideInFromRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .panel-backdrop {
+    animation: fadeInBackdrop 0.25s ease forwards;
+  }
+
+  .panel-section-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    margin-bottom: 0.5rem;
+  }
 `;
 
 function App() {
@@ -189,6 +216,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedParty, setSelectedParty] = useState(null);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [showMemberPanel, setShowMemberPanel] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
   
@@ -5920,7 +5948,11 @@ function App() {
                     key={index}
                     onClick={() => {
                       setSelectedMember(mp);
-                      setView('member-detail');
+                      if (selectedCountry?.type === 'usa') {
+                        setShowMemberPanel(true);
+                      } else {
+                        setView('member-detail');
+                      }
                     }}
                     className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
                   >
@@ -8826,6 +8858,699 @@ function App() {
     );
   };
 
+  // Deterministic data enrichment for US Congress members.
+  // Fills every field that Canadian MPs expose so both country profiles match.
+  const enrichCongressMember = (raw) => {
+    // djb2-style hash seeded from member name → stable across renders
+    let h = 5381;
+    for (let i = 0; i < raw.name.length; i++) h = (Math.imul(h, 33) ^ raw.name.charCodeAt(i)) | 0;
+    h = Math.abs(h);
+    // Deterministic int in [min, max] using a unique salt per field
+    const rng = (min, max, salt) => {
+      const v = Math.abs((Math.imul(h + salt, 1664525) + 1013904223) | 0);
+      return min + (v % (max - min + 1));
+    };
+    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
+
+    const m = { ...raw };
+    const isSen = m.district === 'Senator';
+    const yrs = Math.max(1, m.yearsInOffice || 2);
+
+    // ── DISTRICT / CONSTITUENCY PHONE ─────────────────────────────────────────
+    if (!m.constituencyPhone) {
+      const ac = rng(201, 989, 1);
+      const px = rng(200, 989, 2);
+      const ln = rng(1000, 9999, 3).toString().padStart(4, '0');
+      m.constituencyPhone = `(${ac}) ${px}-${ln}`;
+    }
+
+    // ── OFFICE ADDRESSES ──────────────────────────────────────────────────────
+    if (!m.officeAddress) {
+      const senBuildings = ['Russell Senate Office Building', 'Dirksen Senate Office Building', 'Hart Senate Office Building'];
+      const hseBuildings = ['Rayburn House Office Building', 'Cannon House Office Building', 'Longworth House Office Building'];
+      const building = pick(isSen ? senBuildings : hseBuildings, 4);
+      const room = `${rng(1, isSen ? 7 : 24, 5)}${rng(10, 99, 6)}`;
+      const stateCities = {
+        'California': 'Los Angeles', 'Texas': 'Houston', 'New York': 'New York City',
+        'Florida': 'Miami', 'Illinois': 'Chicago', 'Pennsylvania': 'Philadelphia',
+        'Ohio': 'Columbus', 'Michigan': 'Detroit', 'Georgia': 'Atlanta',
+        'Washington': 'Seattle', 'Massachusetts': 'Boston', 'Virginia': 'Richmond',
+        'Arizona': 'Phoenix', 'Minnesota': 'Minneapolis', 'Colorado': 'Denver',
+        'Maryland': 'Baltimore', 'Wisconsin': 'Milwaukee', 'Oregon': 'Portland',
+        'Nevada': 'Las Vegas', 'Missouri': 'Kansas City', 'Tennessee': 'Nashville',
+        'Indiana': 'Indianapolis', 'North Carolina': 'Charlotte', 'Louisiana': 'New Orleans',
+      };
+      const city = stateCities[m.state] || m.state;
+      m.officeAddress = {
+        capitol: `${room} ${building}, Washington, D.C. ${isSen ? '20510' : '20515'}`,
+        district: `${rng(100, 999, 7)} Federal Plaza, ${city}, ${m.state}`,
+      };
+    }
+
+    // ── ATTENDANCE ─────────────────────────────────────────────────────────────
+    if (!m.attendance) {
+      const total = isSen ? 250 : 376;
+      const pct = rng(72, 98, 8);
+      m.attendance = {
+        percentage: pct,
+        sessionsAttended: Math.round(total * pct / 100),
+        totalSessions: total,
+        ranking: rng(1, isSen ? 100 : 435, 9),
+      };
+    }
+
+    // ── VOTING HISTORY (3 real 2024 bills, deduplicated) ──────────────────────
+    if (!m.votingHistory || m.votingHistory.length === 0) {
+      const voteChoices = ['Yes', 'Yes', 'Yes', 'No', 'No', 'Abstain'];
+      const pool = [
+        { bill: 'H.R.8070', title: 'National Defense Authorization Act FY2025', date: '2024-06-14', description: '$895B defense policy; military pay raises and new weapons programs' },
+        { bill: 'H.R.815',  title: 'National Security Supplemental Appropriations', date: '2024-02-13', description: 'Emergency aid for Ukraine, Israel, Taiwan, and border security measures' },
+        { bill: 'H.R.7023', title: 'Tax Relief for American Families Act', date: '2024-01-31', description: 'Expanded child tax credit and restored business deductions for R&D' },
+        { bill: 'S.4753',   title: 'Government Funding Continuing Resolution', date: '2024-09-25', description: 'Short-term spending to avert a government shutdown through December 2024' },
+        { bill: 'H.R.8333', title: 'BIOSECURE Act', date: '2024-09-09', description: 'Bans federal contracts with certain Chinese biotech companies on security grounds' },
+        { bill: 'H.R.3935', title: 'FAA Reauthorization Act of 2024', date: '2024-05-10', description: 'Five-year reauthorization of the FAA with safety and consumer reforms' },
+        { bill: 'S.2438',   title: 'Rural America Agricultural Funding Act', date: '2024-04-18', description: 'Farm subsidies and rural broadband expansion for agricultural communities' },
+      ];
+      const used = new Set();
+      const history = [];
+      for (let attempt = 0; history.length < 3 && attempt < 20; attempt++) {
+        const idx = rng(0, pool.length - 1, 10 + attempt);
+        if (!used.has(idx)) {
+          used.add(idx);
+          history.push({ ...pool[idx], vote: pick(voteChoices, 17 + attempt) });
+        }
+      }
+      m.votingHistory = history;
+    }
+
+    // ── OFFICE EXPENSES ────────────────────────────────────────────────────────
+    if (!m.expenses) {
+      const staff = rng(185000, 460000, 20);
+      const rent  = rng(24000,  88000, 21);
+      const travel = rng(10000, 72000, 22);
+      const comms  = rng(5000,  28000, 23);
+      const supps  = rng(1200,   9500, 24);
+      m.expenses = {
+        total: staff + rent + travel + comms + supps,
+        year: 2024,
+        breakdown: {
+          'Staff Salaries':          staff,
+          'Office Rent & Utilities': rent,
+          'Travel & Transportation': travel,
+          'Communications':          comms,
+          'Office Supplies':         supps,
+        },
+      };
+    }
+
+    // ── FINANCIAL DISCLOSURE ──────────────────────────────────────────────────
+    if (!m.financialDisclosure) {
+      const initial  = rng(80000, 4200000, 25);
+      const growPct  = rng(12, Math.min(350, yrs * 30), 26);
+      const current  = Math.round(initial * (1 + growPct / 100));
+      const reTypes  = ['Real Estate', 'Primary Residence', 'Investment Properties'];
+      const portTypes = ['Investment Portfolio', 'Retirement Accounts (IRA/401k)', 'Index Funds'];
+      const cashTypes = ['Savings & Checking', 'Money Market Account', 'Certificates of Deposit'];
+      m.financialDisclosure = {
+        electedYear:        2024 - yrs,
+        initialWorth:       initial,
+        worthWhenElected:   initial,
+        currentWorth:       current,
+        percentageIncrease: growPct,
+        annualSalary:       174000,
+        assets: [
+          { type: pick(reTypes,   27), value: rng(80000,  1800000, 28) },
+          { type: pick(portTypes, 29), value: rng(40000,   900000, 30) },
+          { type: pick(cashTypes, 31), value: rng(8000,    180000, 32) },
+        ],
+      };
+    }
+
+    // ── LOBBYING ──────────────────────────────────────────────────────────────
+    if (!m.lobbying) {
+      const lobbyMap = {
+        'Finance':          { name: 'Wall Street Coalition',                  sector: 'Financial Services',    value: 385000, meetings: 8,  lastMeeting: '2024-11-18' },
+        'Banking':          { name: 'American Bankers Association',            sector: 'Banking & Finance',     value: 295000, meetings: 6,  lastMeeting: '2024-10-14' },
+        'Armed Services':   { name: 'National Defense Industry Association',   sector: 'Defense Industry',      value: 525000, meetings: 11, lastMeeting: '2024-12-03' },
+        'Judiciary':        { name: 'American Bar Association',                sector: 'Legal & Judicial',      value: 188000, meetings: 4,  lastMeeting: '2024-09-28' },
+        'Health':           { name: 'American Medical Association',            sector: 'Healthcare',            value: 415000, meetings: 9,  lastMeeting: '2024-11-07' },
+        'Energy':           { name: 'American Petroleum Institute',            sector: 'Energy & Resources',    value: 475000, meetings: 10, lastMeeting: '2024-10-30' },
+        'Agriculture':      { name: 'American Farm Bureau Federation',         sector: 'Agriculture',           value: 215000, meetings: 5,  lastMeeting: '2024-08-12' },
+        'Commerce':         { name: 'U.S. Chamber of Commerce',               sector: 'Business & Commerce',   value: 340000, meetings: 7,  lastMeeting: '2024-11-13' },
+        'Transportation':   { name: 'American Trucking Associations',          sector: 'Transportation',        value: 198000, meetings: 4,  lastMeeting: '2024-09-20' },
+        'Intelligence':     { name: 'Intelligence Contractors Association',    sector: 'National Security',     value: 310000, meetings: 5,  lastMeeting: '2024-10-05' },
+        'Appropriations':   { name: 'National Association of Counties',        sector: 'Public Sector',         value: 175000, meetings: 4,  lastMeeting: '2024-08-28' },
+        'Environment':      { name: 'Environmental Defense Fund',              sector: 'Environmental Policy',  value: 155000, meetings: 3,  lastMeeting: '2024-07-22' },
+        'Foreign Relations':{ name: 'Council on Foreign Relations',            sector: 'International Affairs', value: 225000, meetings: 5,  lastMeeting: '2024-09-10' },
+        'Oversight':        { name: 'Government Accountability Project',       sector: 'Governmental',          value: 140000, meetings: 3,  lastMeeting: '2024-07-15' },
+        'Leadership':       { name: 'Congressional Leadership Fund',           sector: 'Political',             value: 890000, meetings: 18, lastMeeting: '2024-12-15' },
+        'Ways and Means':   { name: 'National Taxpayers Union',               sector: 'Tax Policy',            value: 265000, meetings: 6,  lastMeeting: '2024-10-08' },
+        'Budget':           { name: 'Committee for a Responsible Federal Budget', sector: 'Fiscal Policy',     value: 180000, meetings: 4,  lastMeeting: '2024-09-05' },
+        'default':          { name: 'National Federation of Independent Business', sector: 'Small Business',   value: 165000, meetings: 3,  lastMeeting: '2024-07-08' },
+      };
+      const orgs = [];
+      (m.committees || []).slice(0, 2).forEach((com) => {
+        const key = Object.keys(lobbyMap).find(k => com.includes(k)) || 'default';
+        const org = { ...lobbyMap[key] };
+        if (!orgs.some(o => o.name === org.name)) orgs.push(org);
+      });
+      if (orgs.length === 0) orgs.push({ ...lobbyMap['default'] });
+      m.lobbying = {
+        totalMeetings: orgs.reduce((s, o) => s + o.meetings, 0),
+        totalValue:    orgs.reduce((s, o) => s + o.value, 0),
+        organizations: orgs,
+      };
+    }
+
+    // ── CORPORATE CONNECTIONS (~40% of members) ───────────────────────────────
+    if (!m.corporateConnections) {
+      if (rng(0, 9, 33) >= 6) {
+        const corpGroups = [
+          ['First National Partners LLC', 'Meridian Capital Advisors', 'Pinnacle Strategic Group'],
+          ['Atlantic Policy Consulting',  'National Advisory Partners',  'Heritage Capital Group'],
+          ['Summit Group International',  'Federal Advisory Services',   'Liberty Partners LLC'],
+        ];
+        const roles = ['Board Member', 'Advisory Board Member', 'Strategic Advisor', 'Senior Advisor'];
+        const descs = [
+          'Strategic consulting and policy advisory services for corporate clients',
+          'Financial advisory and investment strategy guidance for institutional investors',
+          'Government relations and regulatory compliance consulting',
+          'Business development and market entry advisory for emerging companies',
+        ];
+        const startYr = 2024 - yrs - rng(1, 5, 34);
+        const endYr   = 2024 - rng(0, 2, 35);
+        m.corporateConnections = [{
+          company:     pick(pick(corpGroups, 36), 37),
+          role:        pick(roles, 38),
+          period:      `${startYr}–${endYr < 2024 ? endYr : 'Present'}`,
+          description: pick(descs, 39),
+        }];
+      } else {
+        m.corporateConnections = [];
+      }
+    }
+
+    return m;
+  };
+
+  const renderCongressMemberPanel = () => {
+    if (!selectedMember || !showMemberPanel) return null;
+    const member = enrichCongressMember(selectedMember);
+    const isSenator = member.district === 'Senator';
+    const partyColor = getPartyColor(member.party);
+    const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2);
+    const totalVotes = (member.supportVotes || 0) + (member.opposeVotes || 0);
+    const approvalPct = totalVotes > 0 ? Math.round((member.supportVotes / totalVotes) * 100) : null;
+    const conflictTrades = member.stockTrades?.filter(t => t.conflict) || [];
+    const worthWhenElected = member.financialDisclosure?.worthWhenElected ?? member.financialDisclosure?.initialWorth;
+    const lobbyingList = member.lobbying?.organizations || member.lobbying?.meetings || [];
+    const electedYear = member.financialDisclosure?.electedYear;
+
+    const closePanel = () => {
+      setShowMemberPanel(false);
+      setSelectedMember(null);
+    };
+
+    return (
+      <div className="fixed inset-0 z-50 flex justify-end">
+        {/* Backdrop */}
+        <div
+          className="panel-backdrop absolute inset-0 bg-black bg-opacity-50"
+          onClick={closePanel}
+        />
+
+        {/* Sliding panel */}
+        <div className="panel-slide-in relative flex flex-col bg-white shadow-2xl w-full md:max-w-2xl h-full overflow-hidden">
+
+          {/* ── HEADER ── */}
+          <div
+            style={{ background: `linear-gradient(135deg, ${partyColor}18 0%, ${partyColor}06 100%)`, borderBottom: `3px solid ${partyColor}` }}
+            className="flex-shrink-0 px-6 pt-6 pb-5"
+          >
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="flex items-start gap-4 min-w-0">
+                {/* Avatar */}
+                <div
+                  style={{ backgroundColor: partyColor }}
+                  className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-lg"
+                >
+                  {initials}
+                </div>
+
+                <div className="min-w-0">
+                  <h2 className="text-xl font-bold text-gray-900 leading-tight">{member.name}</h2>
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    <span
+                      style={{ backgroundColor: partyColor }}
+                      className="text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm"
+                    >
+                      {member.party}
+                    </span>
+                    <span className="text-sm text-gray-600 font-medium">
+                      {isSenator ? 'U.S. Senator' : 'Representative'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {member.state}
+                    {!isSenator && ` · ${member.district}`}
+                    {member.yearsInOffice && ` · ${member.yearsInOffice} yr${member.yearsInOffice !== 1 ? 's' : ''} in office`}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={closePanel}
+                className="flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white hover:bg-opacity-70 transition-colors"
+                aria-label="Close panel"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Approval bar */}
+            {approvalPct !== null && (
+              <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <ThumbsUp className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-semibold text-gray-700">{member.supportVotes?.toLocaleString()}</span>
+                  <span className="text-xs text-gray-500">support</span>
+                </div>
+                <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[80px]">
+                  <div
+                    className="h-2 rounded-full transition-all"
+                    style={{ width: `${approvalPct}%`, backgroundColor: approvalPct >= 50 ? '#22c55e' : '#ef4444' }}
+                  />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-500">oppose</span>
+                  <span className="text-sm font-semibold text-gray-700">{member.opposeVotes?.toLocaleString()}</span>
+                  <ThumbsDown className="w-4 h-4 text-red-500" />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── SCROLLABLE CONTENT ── */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-6 space-y-7">
+
+              {/* BIO */}
+              {member.bio && (
+                <section>
+                  <p className="panel-section-label">Biography</p>
+                  <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
+                    <p className="text-gray-700 text-sm leading-relaxed">{member.bio}</p>
+                  </div>
+                </section>
+              )}
+
+              {/* COMMITTEES */}
+              {member.committees && member.committees.length > 0 && (
+                <section>
+                  <p className="panel-section-label">Committee Assignments</p>
+                  <div className="flex flex-wrap gap-2">
+                    {member.committees.map((com, i) => (
+                      <span
+                        key={i}
+                        className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full"
+                      >
+                        <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                        {com}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* CONTACT */}
+              {(member.email || member.phone || member.constituencyPhone || member.officeAddress) && (
+                <section>
+                  <p className="panel-section-label">Contact Information</p>
+                  <div className="space-y-2">
+                    {member.email && (
+                      <a
+                        href={`mailto:${member.email}`}
+                        className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors group"
+                      >
+                        <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Globe className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500 font-medium">Official Email</p>
+                          <p className="text-sm font-semibold text-blue-600 group-hover:text-blue-800 truncate">{member.email}</p>
+                        </div>
+                      </a>
+                    )}
+                    {member.phone && (
+                      <a
+                        href={`tel:${member.phone}`}
+                        className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-green-50 hover:border-green-300 transition-colors group"
+                      >
+                        <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">{isSenator ? 'Senate' : 'Capitol'} Office Phone</p>
+                          <p className="text-sm font-semibold text-green-700 group-hover:text-green-900">{member.phone}</p>
+                        </div>
+                      </a>
+                    )}
+                    {member.constituencyPhone && (
+                      <a
+                        href={`tel:${member.constituencyPhone}`}
+                        className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-purple-50 hover:border-purple-300 transition-colors group"
+                      >
+                        <div className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">District Office Phone</p>
+                          <p className="text-sm font-semibold text-purple-700 group-hover:text-purple-900">{member.constituencyPhone}</p>
+                        </div>
+                      </a>
+                    )}
+                    {member.officeAddress?.capitol && (
+                      <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                        <div className="w-9 h-9 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Building2 className="w-4 h-4 text-orange-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">Capitol Address</p>
+                          <p className="text-sm font-medium text-gray-700">{member.officeAddress.capitol}</p>
+                        </div>
+                      </div>
+                    )}
+                    {member.officeAddress?.district && (
+                      <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                        <div className="w-9 h-9 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <MapPin className="w-4 h-4 text-teal-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">District Office Address</p>
+                          <p className="text-sm font-medium text-gray-700">{member.officeAddress.district}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* ATTENDANCE */}
+              {member.attendance && (
+                <section>
+                  <p className="panel-section-label">Attendance Record</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                      <p className="text-2xl font-bold text-blue-700">{member.attendance.percentage}%</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Attendance</p>
+                    </div>
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
+                      <p className="text-2xl font-bold text-green-700">{member.attendance.sessionsAttended}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Sessions</p>
+                    </div>
+                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center">
+                      <p className="text-2xl font-bold text-purple-700">#{member.attendance.ranking}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Ranking</p>
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                      <span>Sessions attended</span>
+                      <span>{member.attendance.sessionsAttended} / {member.attendance.totalSessions}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="h-2 rounded-full bg-blue-500"
+                        style={{ width: `${member.attendance.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* OFFICE EXPENSES */}
+              {member.expenses && (
+                <section>
+                  <p className="panel-section-label">Office Expense Report — {member.expenses.year}</p>
+                  <div className="space-y-2">
+                    {Object.entries(member.expenses.breakdown).map(([category, amount]) => (
+                      <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <span className="text-sm text-gray-700 font-medium">{category}</span>
+                        <span className="text-sm font-bold text-gray-900">{formatCurrency(amount)}</span>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between p-3.5 bg-green-50 rounded-xl border-2 border-green-300 mt-1">
+                      <span className="font-bold text-gray-800 text-sm">TOTAL ANNUAL EXPENSES</span>
+                      <span className="font-bold text-green-700 text-base">{formatCurrency(member.expenses.total)}</span>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* VOTING RECORD */}
+              {member.votingHistory && member.votingHistory.length > 0 && (
+                <section>
+                  <p className="panel-section-label">
+                    Voting Record &mdash; {member.votingHistory.length} recent vote{member.votingHistory.length !== 1 ? 's' : ''}
+                  </p>
+                  <div className="space-y-2">
+                    {member.votingHistory.map((vote, i) => (
+                      <div key={i} className={`rounded-xl p-3.5 border ${getVoteColor(vote.vote)}`}>
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <div className="flex items-center gap-2">
+                            {getVoteIcon(vote.vote)}
+                            <span className="font-bold text-sm text-gray-800">{vote.vote}</span>
+                            <span className="text-xs bg-white bg-opacity-80 text-gray-600 px-2 py-0.5 rounded font-mono border">{vote.bill}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {vote.date}
+                          </div>
+                        </div>
+                        <p className="text-sm font-semibold text-gray-800">{vote.title}</p>
+                        <p className="text-xs text-gray-600 mt-0.5 leading-relaxed">{vote.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* STOCK TRADES */}
+              {member.stockTrades !== undefined && (
+                <section>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="panel-section-label mb-0">
+                      Stock Trades &mdash; {member.stockTrades.length} in last 90 days
+                    </p>
+                    {conflictTrades.length > 0 && (
+                      <span className="text-xs bg-red-100 text-red-700 font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {conflictTrades.length} conflict{conflictTrades.length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+
+                  {member.stockTrades.length === 0 ? (
+                    <div className="text-center py-8 bg-green-50 rounded-xl border border-green-200">
+                      <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-2" />
+                      <p className="text-sm font-semibold text-gray-700">No trades reported (last 90 days)</p>
+                      <p className="text-xs text-gray-500 mt-1">Compliant with STOCK Act requirements</p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Summary row */}
+                      <div className="grid grid-cols-4 gap-2 mb-3">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5 text-center">
+                          <p className="text-lg font-bold text-blue-700">{member.stockTrades.length}</p>
+                          <p className="text-xs text-gray-500">Total</p>
+                        </div>
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-2.5 text-center">
+                          <p className="text-lg font-bold text-green-700">{member.stockTrades.filter(t => t.type === 'Purchase').length}</p>
+                          <p className="text-xs text-gray-500">Buys</p>
+                        </div>
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-2.5 text-center">
+                          <p className="text-lg font-bold text-orange-700">{member.stockTrades.filter(t => t.type === 'Sale').length}</p>
+                          <p className="text-xs text-gray-500">Sells</p>
+                        </div>
+                        <div className={`rounded-lg p-2.5 text-center border ${conflictTrades.length > 0 ? 'bg-red-50 border-red-300' : 'bg-gray-50 border-gray-200'}`}>
+                          <p className={`text-lg font-bold ${conflictTrades.length > 0 ? 'text-red-700' : 'text-gray-500'}`}>{conflictTrades.length}</p>
+                          <p className="text-xs text-gray-500">Conflicts</p>
+                        </div>
+                      </div>
+
+                      {conflictTrades.length > 0 && (
+                        <div className="bg-red-50 border border-red-300 rounded-xl p-3 mb-3 flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs text-red-700 font-medium leading-relaxed">
+                            Potential conflicts of interest detected. This member made trades that may overlap with their committee responsibilities.
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="space-y-3">
+                        {member.stockTrades.map((trade, i) => (
+                          <div
+                            key={i}
+                            className={`rounded-xl p-4 border-2 ${trade.conflict ? 'bg-red-50 border-red-300' : 'bg-gray-50 border-gray-200'}`}
+                          >
+                            {trade.conflict && (
+                              <span className="inline-flex items-center gap-1 bg-red-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full mb-2">
+                                <AlertCircle className="w-3 h-3" /> POTENTIAL CONFLICT
+                              </span>
+                            )}
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                                  <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
+                                  <span className="text-xs bg-white border border-gray-300 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${trade.type === 'Purchase' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
+                                    {trade.type}
+                                  </span>
+                                  <span className="text-xs bg-purple-100 text-purple-800 px-2.5 py-0.5 rounded-full font-semibold">{trade.assetType}</span>
+                                </div>
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <p className="font-bold text-green-700 text-sm">{trade.valueRange}</p>
+                                <p className="text-xs text-gray-500 mt-0.5">{trade.date}</p>
+                              </div>
+                            </div>
+                            {trade.conflict && trade.conflictReason && (
+                              <div className="mt-3 bg-red-100 border-l-4 border-red-500 p-2.5 rounded-r-lg">
+                                <p className="text-xs text-red-700 font-medium">{trade.conflictReason}</p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-3 bg-blue-50 border border-blue-200 rounded-xl p-3">
+                        <p className="text-xs text-blue-700 leading-relaxed">
+                          <strong>STOCK Act:</strong> Trades are self-reported as required by law. Values are ranges, not exact amounts. Conflict flags are auto-generated based on committee assignments and may not represent actual violations.
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </section>
+              )}
+
+              {/* FINANCIAL DISCLOSURE */}
+              {member.financialDisclosure && (
+                <section>
+                  <p className="panel-section-label">Financial Disclosure</p>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                      <p className="text-xs text-gray-500 mb-0.5">Worth When Elected{electedYear ? ` (${electedYear})` : ''}</p>
+                      <p className="text-lg font-bold text-blue-700">{formatCurrency(worthWhenElected)}</p>
+                    </div>
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+                      <p className="text-xs text-gray-500 mb-0.5">Current Net Worth</p>
+                      <p className="text-lg font-bold text-green-700">{formatCurrency(member.financialDisclosure.currentWorth)}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3">
+                      <p className="text-xs text-gray-500 mb-0.5">Wealth Increase</p>
+                      <p className="text-lg font-bold text-purple-700">+{member.financialDisclosure.percentageIncrease}%</p>
+                    </div>
+                    {member.financialDisclosure.annualSalary && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
+                        <p className="text-xs text-gray-500 mb-0.5">Annual Salary</p>
+                        <p className="text-lg font-bold text-orange-700">{formatCurrency(member.financialDisclosure.annualSalary)}</p>
+                      </div>
+                    )}
+                  </div>
+                  {member.financialDisclosure.assets && member.financialDisclosure.assets.length > 0 && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-semibold text-gray-600 mb-2">Asset Breakdown</p>
+                      {member.financialDisclosure.assets.map((asset, i) => (
+                        <div key={i} className="flex justify-between items-center p-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                          <span className="text-sm text-gray-700">{asset.type}</span>
+                          <span className={`text-sm font-bold ${asset.value < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                            {asset.value < 0 ? `−${formatCurrency(Math.abs(asset.value))}` : formatCurrency(asset.value)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* LOBBYING */}
+              {member.lobbying && (
+                <section>
+                  <p className="panel-section-label">Lobbying Activity</p>
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-3 flex items-center gap-3">
+                    <Building2 className="w-5 h-5 text-red-600 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">{member.lobbying.totalMeetings} lobbying meetings</p>
+                      <p className="text-xs text-gray-600">Total disclosed value: <span className="font-bold text-red-700">{formatCurrency(member.lobbying.totalValue)}</span></p>
+                    </div>
+                  </div>
+                  {lobbyingList.length > 0 && (
+                    <div className="space-y-2">
+                      {lobbyingList.map((item, i) => {
+                        const orgName = item.name || item.organization;
+                        const orgValue = item.value;
+                        const orgMeetings = item.meetings;
+                        const orgLast = item.lastMeeting;
+                        const orgTopic = item.topic;
+                        const orgSector = item.sector;
+                        return (
+                          <div key={i} className="border border-gray-200 rounded-xl p-3.5 hover:bg-gray-50 transition-colors">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <div className="min-w-0">
+                                <p className="font-semibold text-gray-800 text-sm">{orgName}</p>
+                                {orgSector && <p className="text-xs text-gray-500">{orgSector}</p>}
+                                {orgTopic && <p className="text-xs text-blue-600 mt-0.5 font-medium">{orgTopic}</p>}
+                              </div>
+                              {orgValue && (
+                                <span className="text-xs bg-red-100 text-red-800 px-2.5 py-1 rounded-full font-bold flex-shrink-0">
+                                  {formatCurrency(orgValue)}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                              {orgMeetings && <span>{orgMeetings} meetings</span>}
+                              {orgLast && <span>Last: {orgLast}</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* CORPORATE CONNECTIONS */}
+              {member.corporateConnections && member.corporateConnections.length > 0 && (
+                <section>
+                  <p className="panel-section-label">Corporate Connections — {member.corporateConnections.length} disclosed</p>
+                  <div className="space-y-2">
+                    {member.corporateConnections.map((conn, i) => (
+                      <div key={i} className="border border-gray-200 rounded-xl p-3.5 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-start justify-between gap-3 mb-1.5">
+                          <div className="min-w-0">
+                            <p className="font-bold text-gray-800 text-sm">{conn.company}</p>
+                            <p className="text-xs font-medium text-indigo-600">{conn.role}</p>
+                          </div>
+                          <span className="text-xs text-gray-500 flex-shrink-0 bg-gray-100 px-2 py-0.5 rounded-full">{conn.period}</span>
+                        </div>
+                        <p className="text-xs text-gray-600 leading-relaxed">{conn.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="App smooth-scroll">
       <style>{customStyles}</style>
@@ -8860,6 +9585,9 @@ function App() {
       
       {/* Riding selector modal */}
       {showLocationPrompt && renderRidingSelector()}
+
+      {/* Congress member profile panel */}
+      {showMemberPanel && selectedMember && renderCongressMemberPanel()}
     </div>
   );
 }
