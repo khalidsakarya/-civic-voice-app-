@@ -220,7 +220,9 @@ function App() {
   const [selectedBill, setSelectedBill] = useState(null);
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [showEconomicModal, setShowEconomicModal] = useState(false);
-  
+  const [showTaxExemptModal, setShowTaxExemptModal] = useState(false);
+  const [taxExemptSearch, setTaxExemptSearch] = useState('');
+
   // Canadian data
   const [mps, setMps] = useState([]);
   const [bills, setBills] = useState([]);
@@ -6247,8 +6249,8 @@ function App() {
             </div>
           </div>
 
-          {/* Economic & Social Data button */}
-          <div className="mt-6 flex justify-center">
+          {/* Action buttons */}
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
               onClick={() => setShowEconomicModal(true)}
               className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
@@ -6256,6 +6258,14 @@ function App() {
             >
               <BarChart3 className="w-5 h-5" />
               Economic &amp; Social Data
+            </button>
+            <button
+              onClick={() => { setTaxExemptSearch(''); setShowTaxExemptModal(true); }}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #d97706, #f59e0b)' }}
+            >
+              <DollarSign className="w-5 h-5" />
+              Tax Exempt Companies
             </button>
           </div>
 
@@ -6551,6 +6561,207 @@ function App() {
               Data is statistically modelled for illustrative purposes. Charts use deterministic generation seeded from {item.name}.
             </p>
           </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderTaxExemptModal = () => {
+    if (!selectedProvince || !showTaxExemptModal) return null;
+    const item = selectedProvince;
+
+    // ── Deterministic data generator (different offset from economic modal) ────
+    let h = 5381;
+    for (let i = 0; i < item.name.length; i++) h = (Math.imul(h, 33) ^ item.name.charCodeAt(i)) | 0;
+    h = Math.abs(h) ^ 0xBEEF;
+    const rng = (min, max, salt) => {
+      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
+      return Math.round(min + (v % (max - min + 1)));
+    };
+    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
+
+    const prefixes = [
+      'Pacific', 'Atlantic', 'Northern', 'Southern', 'Eastern', 'Western',
+      'National', 'American', 'Canadian', 'Continental', 'Heritage', 'Pioneer',
+      'Summit', 'Apex', 'Liberty', 'Crown', 'Cascade', 'Prairie', 'Coastal',
+      'Heartland', 'Metro', 'Regional', 'Allied', 'United', 'General', 'Global',
+      'Premier', 'Advanced', 'Integrated', 'Strategic', 'Keystone', 'Horizon',
+      'Pinnacle', 'Meridian', 'Catalyst', 'Vanguard', 'Cornerstone', 'Triton',
+    ];
+
+    const industryGroups = [
+      { industry: 'Technology',      color: 'bg-blue-100 text-blue-700',     keywords: ['Technologies', 'Systems', 'Software', 'Digital', 'Data Solutions', 'CloudTech', 'Cyber'] },
+      { industry: 'Healthcare',      color: 'bg-green-100 text-green-700',   keywords: ['Health', 'Medical Group', 'Pharma', 'Biomedical', 'Care Systems', 'Life Sciences'] },
+      { industry: 'Manufacturing',   color: 'bg-orange-100 text-orange-700', keywords: ['Manufacturing', 'Industries', 'Products', 'Fabrication', 'Components'] },
+      { industry: 'Energy',          color: 'bg-amber-100 text-amber-700',   keywords: ['Energy', 'Power', 'Petroleum', 'Gas & Electric', 'Solar Energy', 'Renewables'] },
+      { industry: 'Real Estate',     color: 'bg-purple-100 text-purple-700', keywords: ['Properties', 'Realty', 'Development', 'Estates', 'Real Estate'] },
+      { industry: 'Finance',         color: 'bg-indigo-100 text-indigo-700', keywords: ['Financial', 'Capital', 'Investments', 'Asset Management', 'Holdings'] },
+      { industry: 'Retail',          color: 'bg-pink-100 text-pink-700',     keywords: ['Retail', 'Commerce', 'Distribution', 'Wholesale'] },
+      { industry: 'Agriculture',     color: 'bg-lime-100 text-lime-700',     keywords: ['Farms', 'Agriculture', 'Agri-Products', 'Grain', 'Harvest'] },
+      { industry: 'Mining',          color: 'bg-stone-100 text-stone-600',   keywords: ['Mining', 'Minerals', 'Resources', 'Extraction'] },
+      { industry: 'Transportation',  color: 'bg-cyan-100 text-cyan-700',     keywords: ['Transport', 'Logistics', 'Freight', 'Transit'] },
+      { industry: 'Construction',    color: 'bg-yellow-100 text-yellow-700', keywords: ['Construction', 'Building Group', 'Contractors', 'Infrastructure'] },
+      { industry: 'Utilities',       color: 'bg-teal-100 text-teal-700',     keywords: ['Utilities', 'Water Systems', 'Electric', 'Gas Services'] },
+      { industry: 'Food & Beverage', color: 'bg-red-100 text-red-700',       keywords: ['Foods', 'Beverages', 'Brewing', 'Food Processing'] },
+      { industry: 'Pharmaceutical',  color: 'bg-emerald-100 text-emerald-700', keywords: ['Pharmaceuticals', 'Biotech', 'Laboratories', 'Therapeutics'] },
+      { industry: 'Aerospace',       color: 'bg-sky-100 text-sky-700',       keywords: ['Aerospace', 'Aviation', 'Defense Systems', 'Space Tech'] },
+    ];
+
+    const suffixes = ['Inc.', 'LLC', 'Corp.', 'Ltd.', 'Co.', 'Group', 'Holdings'];
+
+    const exemptionTypes = [
+      'Property Tax Exemption',
+      'R&D Tax Credit',
+      'Enterprise Zone Credit',
+      'Manufacturing Exemption',
+      'Non-Profit Tax Status',
+      'Agricultural Land Exemption',
+      'Renewable Energy Credit',
+      'Export Tax Incentive',
+      'Historic Preservation Credit',
+      'Low-Income Housing Credit',
+      'Job Creation Tax Credit',
+      'Capital Investment Exemption',
+      'Economic Development Zone',
+      'Sales Tax Exemption',
+      'Corporate Income Tax Abatement',
+    ];
+
+    const count = rng(15, 20, 200);
+    const companies = Array.from({ length: count }, (_, i) => {
+      const g        = pick(industryGroups, 201 + i * 9);
+      const keyword  = pick(g.keywords,    202 + i * 9);
+      const prefix   = pick(prefixes,      203 + i * 9);
+      const suffix   = pick(suffixes,      204 + i * 9);
+      const exemType = pick(exemptionTypes,205 + i * 9);
+      const year     = rng(2004, 2023,     206 + i * 9);
+      const isBig    = rng(0, 5,           207 + i * 9) === 0;
+      const rawValue = isBig
+        ? rng(5, 50,    208 + i * 9) * 1_000_000
+        : rng(200, 4800,208 + i * 9) * 1_000;
+      const fmtValue = rawValue >= 1_000_000
+        ? `$${(rawValue / 1_000_000).toFixed(1)}M`
+        : `$${(rawValue / 1_000).toFixed(0)}K`;
+      return {
+        name: `${prefix} ${keyword} ${suffix}`,
+        industry: g.industry,
+        industryColor: g.color,
+        exemType,
+        fmtValue,
+        rawValue,
+        year,
+      };
+    });
+
+    const q = taxExemptSearch.toLowerCase();
+    const filtered = q
+      ? companies.filter(c =>
+          c.name.toLowerCase().includes(q) ||
+          c.industry.toLowerCase().includes(q) ||
+          c.exemType.toLowerCase().includes(q)
+        )
+      : companies;
+
+    const totalRaw = companies.reduce((s, c) => s + c.rawValue, 0);
+    const fmtTotal = totalRaw >= 1_000_000_000
+      ? `$${(totalRaw / 1_000_000_000).toFixed(2)}B`
+      : `$${(totalRaw / 1_000_000).toFixed(1)}M`;
+
+    const closeModal = () => { setShowTaxExemptModal(false); setTaxExemptSearch(''); };
+
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
+        style={{ background: 'rgba(0,0,0,0.55)' }}
+        onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
+      >
+        <div className="relative bg-gray-50 w-full max-w-5xl mx-3 my-6 rounded-2xl shadow-2xl animate-fade-in">
+
+          {/* Sticky header */}
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-6 py-4 border-b border-gray-100 shadow-sm">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h2 className="font-bold text-gray-800 text-lg">{item.name} — Tax Exempt Companies</h2>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {companies.length} companies &nbsp;·&nbsp; Est. total annual exemption:{' '}
+                  <span className="font-semibold text-amber-600">{fmtTotal}</span>
+                  &nbsp;·&nbsp; Illustrative sample data
+                </p>
+              </div>
+              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors ml-4 flex-shrink-0">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {/* Search bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                value={taxExemptSearch}
+                onChange={(e) => setTaxExemptSearch(e.target.value)}
+                placeholder="Search by company name, industry, or exemption type…"
+                className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white"
+              />
+              {taxExemptSearch && (
+                <button onClick={() => setTaxExemptSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Table body */}
+          <div className="p-5">
+            {filtered.length === 0 ? (
+              <div className="text-center py-14 text-gray-400">
+                <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                <p className="text-sm">No companies match &quot;{taxExemptSearch}&quot;</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-elegant overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-100">
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-8">#</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Company Name</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Industry</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Exemption Type</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Annual Value</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Year Granted</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((co, i) => (
+                        <tr
+                          key={i}
+                          className={`border-b border-gray-50 hover:bg-amber-50/50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'}`}
+                        >
+                          <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
+                          <td className="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">{co.name}</td>
+                          <td className="px-4 py-3">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${co.industryColor}`}>{co.industry}</span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600 text-xs whitespace-nowrap">{co.exemType}</td>
+                          <td className="px-4 py-3 text-right font-bold text-amber-700 whitespace-nowrap">{co.fmtValue}</td>
+                          <td className="px-4 py-3 text-right text-gray-500 text-xs">{co.year}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {filtered.length < companies.length && (
+                  <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 text-center text-xs text-gray-400">
+                    Showing {filtered.length} of {companies.length} companies
+                  </div>
+                )}
+              </div>
+            )}
+            <p className="text-center text-xs text-gray-400 mt-4">
+              Sample data for illustrative purposes only. Figures are statistically modelled.
+            </p>
+          </div>
+
         </div>
       </div>
     );
@@ -10739,6 +10950,9 @@ function App() {
 
       {/* Economic & Social Data modal */}
       {showEconomicModal && selectedProvince && renderEconomicModal()}
+
+      {/* Tax Exempt Companies modal */}
+      {showTaxExemptModal && selectedProvince && renderTaxExemptModal()}
     </div>
   );
 }
