@@ -222,6 +222,8 @@ function App() {
   const [showEconomicModal, setShowEconomicModal] = useState(false);
   const [showTaxExemptModal, setShowTaxExemptModal] = useState(false);
   const [taxExemptSearch, setTaxExemptSearch] = useState('');
+  const [showGrantsModal, setShowGrantsModal] = useState(false);
+  const [grantsSearch, setGrantsSearch] = useState('');
 
   // Canadian data
   const [mps, setMps] = useState([]);
@@ -6267,6 +6269,14 @@ function App() {
               <DollarSign className="w-5 h-5" />
               Tax Exempt Companies
             </button>
+            <button
+              onClick={() => { setGrantsSearch(''); setShowGrantsModal(true); }}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #059669, #10b981)' }}
+            >
+              <Award className="w-5 h-5" />
+              Grants Given
+            </button>
           </div>
 
         </div>
@@ -6753,6 +6763,217 @@ function App() {
                 {filtered.length < companies.length && (
                   <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 text-center text-xs text-gray-400">
                     Showing {filtered.length} of {companies.length} companies
+                  </div>
+                )}
+              </div>
+            )}
+            <p className="text-center text-xs text-gray-400 mt-4">
+              Sample data for illustrative purposes only. Figures are statistically modelled.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    );
+  };
+
+  const renderGrantsModal = () => {
+    if (!selectedProvince || !showGrantsModal) return null;
+    const item = selectedProvince;
+    const isUSA = selectedCountry?.type === 'usa';
+
+    // ── Deterministic RNG (distinct seed offset from other modals) ─────────────
+    let h = 5381;
+    for (let i = 0; i < item.name.length; i++) h = (Math.imul(h, 33) ^ item.name.charCodeAt(i)) | 0;
+    h = Math.abs(h) ^ 0xCAFE1234;
+    const rng = (min, max, salt) => {
+      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
+      return Math.round(min + (v % (max - min + 1)));
+    };
+    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
+
+    // ── Name pools ────────────────────────────────────────────────────────────
+    const orgPrefixes  = ['Community', 'City', 'Regional', 'Metropolitan', 'State', 'National', 'Local', 'Rural', 'Urban', 'District', 'County', 'Public', 'Civic'];
+    const orgFields    = ['Health', 'Education', 'Research', 'Arts', 'Science', 'Technology', 'Environment', 'Youth', 'Family', 'Housing', 'Development', 'Innovation', 'Literacy', 'Wellness', 'Veterans'];
+    const orgTypes     = ['Foundation', 'Institute', 'Association', 'Center', 'Coalition', 'Trust', 'Fund', 'Alliance', 'Council', 'Society', 'Network', 'Initiative'];
+    const coKeywords   = ['Solutions', 'Technologies', 'Systems', 'Services', 'Consulting', 'Innovations', 'Enterprises', 'Dynamics', 'Analytics', 'Research'];
+    const coPrefixes   = ['Apex', 'Summit', 'Vanguard', 'Horizon', 'Pinnacle', 'Meridian', 'Allied', 'Catalyst', 'Pioneer', 'Keystone', 'Integrated', 'Advanced'];
+    const coSuffixes   = ['Inc.', 'LLC', 'Corp.', 'Ltd.', 'Co.'];
+    const firstNames   = ['James', 'Maria', 'Robert', 'Sarah', 'Michael', 'Jennifer', 'David', 'Emily', 'John', 'Amanda', 'Christopher', 'Rachel', 'Daniel', 'Stephanie', 'Matthew', 'Nicole', 'Anthony', 'Lauren', 'Mark', 'Megan', 'Paul', 'Kevin', 'Brian', 'Rebecca', 'George', 'Thomas', 'Danielle', 'Lisa', 'Carlos', 'Priya'];
+    const lastNames    = ['Johnson', 'Smith', 'Williams', 'Brown', 'Jones', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Martinez', 'Robinson', 'Clark', 'Rodriguez', 'Lewis', 'Walker', 'Hall', 'Allen', 'Young', 'Patel', 'Nguyen', 'Kim'];
+
+    // ── Grant purposes ────────────────────────────────────────────────────────
+    const purposes = [
+      'STEM Education Program', 'Community Health Initiative', 'Infrastructure Modernization',
+      'Small Business Development', 'Environmental Conservation', 'Workforce Training Program',
+      'Affordable Housing Project', 'Renewable Energy Research', 'Arts & Culture Promotion',
+      'Public Safety Equipment', 'Agricultural Innovation', 'Mental Health Services',
+      'Digital Literacy Program', 'Economic Recovery Initiative', 'Youth Development Program',
+      'Medical Research Grant', 'Clean Water Infrastructure', 'Transportation Improvement',
+      'Emergency Preparedness', 'Indigenous Community Support',
+    ];
+
+    // ── Funding departments ───────────────────────────────────────────────────
+    const usDepts = [
+      'Dept. of Health & Human Services', 'Dept. of Education', 'Dept. of Commerce',
+      'Dept. of Transportation', 'Dept. of Energy', 'Dept. of Agriculture',
+      'Dept. of Housing & Urban Dev.', 'Dept. of Labor', 'Environmental Protection Agency',
+      'National Science Foundation', 'National Institutes of Health',
+      'Small Business Administration', 'Dept. of Justice', 'Dept. of Homeland Security',
+      'Dept. of the Interior',
+    ];
+    const caDepts = [
+      'Ministry of Health', 'Ministry of Education', 'Ministry of Economic Development',
+      'Ministry of Transportation', 'Ministry of Environment', 'Ministry of Agriculture',
+      'Ministry of Labour', 'Ministry of Finance', 'Ministry of Culture & Tourism',
+      'Natural Sciences & Engineering Research Council', 'Social Sciences & Humanities Research Council',
+      'Innovation, Science & Economic Development', 'National Research Council',
+      'Indigenous Services Canada', 'Infrastructure Canada',
+    ];
+    const depts = isUSA ? usDepts : caDepts;
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    // ── Generate grants ───────────────────────────────────────────────────────
+    const count = rng(15, 20, 300);
+    const grants = Array.from({ length: count }, (_, i) => {
+      const recipientType = rng(0, 9, 301 + i * 11) < 5 ? 'org'
+                          : rng(0, 9, 302 + i * 11) < 7 ? 'company'
+                          : 'individual';
+
+      let recipientName, typeLabel, typeColor;
+      if (recipientType === 'org') {
+        recipientName = `${pick(orgPrefixes, 303 + i * 11)} ${pick(orgFields, 304 + i * 11)} ${pick(orgTypes, 305 + i * 11)}`;
+        typeLabel = 'Organization'; typeColor = 'bg-green-100 text-green-700';
+      } else if (recipientType === 'company') {
+        recipientName = `${pick(coPrefixes, 306 + i * 11)} ${pick(coKeywords, 307 + i * 11)} ${pick(coSuffixes, 308 + i * 11)}`;
+        typeLabel = 'Company'; typeColor = 'bg-blue-100 text-blue-700';
+      } else {
+        recipientName = `${pick(firstNames, 309 + i * 11)} ${pick(lastNames, 310 + i * 11)}`;
+        typeLabel = 'Individual'; typeColor = 'bg-purple-100 text-purple-700';
+      }
+
+      const tier = rng(0, 9, 311 + i * 11);
+      const rawAmount = tier < 2
+        ? rng(10, 99, 312 + i * 11) * 1_000            // $10K–$99K
+        : tier < 8
+          ? rng(100, 999, 312 + i * 11) * 1_000         // $100K–$999K
+          : rng(1, 50, 312 + i * 11) * 100_000;         // $100K–$5M (large)
+      const fmtAmount = rawAmount >= 1_000_000
+        ? `$${(rawAmount / 1_000_000).toFixed(2)}M`
+        : `$${(rawAmount / 1_000).toFixed(0)}K`;
+
+      const yr  = rng(2018, 2024, 313 + i * 11);
+      const mo  = pick(months,   314 + i * 11);
+      const purpose = pick(purposes, 315 + i * 11);
+      const dept    = pick(depts,    316 + i * 11);
+
+      return { recipientName, typeLabel, typeColor, purpose, fmtAmount, rawAmount, date: `${mo} ${yr}`, dept };
+    });
+
+    const q = grantsSearch.toLowerCase();
+    const filtered = q
+      ? grants.filter(g =>
+          g.recipientName.toLowerCase().includes(q) ||
+          g.purpose.toLowerCase().includes(q) ||
+          g.dept.toLowerCase().includes(q) ||
+          g.typeLabel.toLowerCase().includes(q)
+        )
+      : grants;
+
+    const totalRaw = grants.reduce((s, g) => s + g.rawAmount, 0);
+    const fmtTotal = totalRaw >= 1_000_000_000
+      ? `$${(totalRaw / 1_000_000_000).toFixed(2)}B`
+      : `$${(totalRaw / 1_000_000).toFixed(1)}M`;
+
+    const closeModal = () => { setShowGrantsModal(false); setGrantsSearch(''); };
+
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
+        style={{ background: 'rgba(0,0,0,0.55)' }}
+        onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
+      >
+        <div className="relative bg-gray-50 w-full max-w-5xl mx-3 my-6 rounded-2xl shadow-2xl animate-fade-in">
+
+          {/* Sticky header */}
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-6 py-4 border-b border-gray-100 shadow-sm">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h2 className="font-bold text-gray-800 text-lg">{item.name} — Grants Given</h2>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {grants.length} grants &nbsp;·&nbsp; Total awarded:{' '}
+                  <span className="font-semibold text-emerald-600">{fmtTotal}</span>
+                  &nbsp;·&nbsp; Illustrative sample data
+                </p>
+              </div>
+              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors ml-4 flex-shrink-0">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {/* Search bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                value={grantsSearch}
+                onChange={(e) => setGrantsSearch(e.target.value)}
+                placeholder="Search by recipient, purpose, department, or type…"
+                className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white"
+              />
+              {grantsSearch && (
+                <button onClick={() => setGrantsSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="p-5">
+            {filtered.length === 0 ? (
+              <div className="text-center py-14 text-gray-400">
+                <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                <p className="text-sm">No grants match &quot;{grantsSearch}&quot;</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-elegant overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-100">
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-8">#</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Recipient</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Type</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Grant Purpose</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Funding Department</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Amount</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((g, i) => (
+                        <tr
+                          key={i}
+                          className={`border-b border-gray-50 hover:bg-emerald-50/40 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'}`}
+                        >
+                          <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
+                          <td className="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">{g.recipientName}</td>
+                          <td className="px-4 py-3">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${g.typeColor}`}>{g.typeLabel}</span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600 text-xs">{g.purpose}</td>
+                          <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{g.dept}</td>
+                          <td className="px-4 py-3 text-right font-bold text-emerald-700 whitespace-nowrap">{g.fmtAmount}</td>
+                          <td className="px-4 py-3 text-right text-gray-500 text-xs whitespace-nowrap">{g.date}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {filtered.length < grants.length && (
+                  <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 text-center text-xs text-gray-400">
+                    Showing {filtered.length} of {grants.length} grants
                   </div>
                 )}
               </div>
@@ -10953,6 +11174,9 @@ function App() {
 
       {/* Tax Exempt Companies modal */}
       {showTaxExemptModal && selectedProvince && renderTaxExemptModal()}
+
+      {/* Grants Given modal */}
+      {showGrantsModal && selectedProvince && renderGrantsModal()}
     </div>
   );
 }
