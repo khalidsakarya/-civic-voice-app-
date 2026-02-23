@@ -6337,6 +6337,41 @@ function App() {
     });
     const unempKeys = [item.name, `${isUSA ? 'US' : 'CA'} Average`];
 
+    // ── Chart 5: GDP Growth Over Time (bar, 10 years) ─────────────────────────
+    const gdpData = Array.from({ length: 10 }, (_, i) => {
+      const yr = 2015 + i;
+      let growth;
+      if (i === 5) {
+        growth = rngf(-8.0, -2.0, 85, 1); // 2020 pandemic dip
+      } else if (i === 6) {
+        growth = rngf(3.5, 7.5, 86, 1);   // 2021 recovery bounce
+      } else {
+        growth = rngf(0.8, 4.5, 80 + i, 1);
+      }
+      return { year: String(yr), 'GDP Growth (%)': growth };
+    });
+
+    // ── Chart 6: Poverty Rate Trend (line, 10 years) ─────────────────────────
+    const povBase = rngf(9.0, 17.0, 90, 1);
+    const povDecline = rngf(0.1, 0.4, 91, 2);
+    const povData = Array.from({ length: 10 }, (_, i) => {
+      const yr = 2015 + i;
+      const pandemicSpike = i === 5 ? rngf(1.5, 3.5, 96, 1) : 0;
+      const noise = rngf(-0.4, 0.4, 100 + i, 1);
+      const rate = Math.max(4.5, povBase - i * povDecline + pandemicSpike + noise);
+      return { year: String(yr), 'Poverty Rate (%)': parseFloat(rate.toFixed(1)) };
+    });
+
+    // ── Chart 7: Homelessness Statistics (bar, 5 years) ───────────────────────
+    const homelessBase = rng(2800, 48000, 110);
+    const homelessData = [2020, 2021, 2022, 2023, 2024].map((yr, i) => {
+      const growthFactor = 1 + i * rngf(0.015, 0.055, 120 + i, 3);
+      const total = Math.round(homelessBase * growthFactor);
+      const unshelteredRatio = rngf(0.25, 0.52, 130 + i, 3);
+      const unsheltered = Math.round(total * unshelteredRatio);
+      return { year: String(yr), Sheltered: total - unsheltered, Unsheltered: unsheltered };
+    });
+
     const CHART_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
     const ChartCard = ({ title, description, children }) => (
@@ -6450,6 +6485,62 @@ function App() {
                   <Line type="monotone" dataKey={unempKeys[0]} stroke="#6366f1" strokeWidth={2} dot={{ r: 4 }} />
                   <Line type="monotone" dataKey={unempKeys[1]} stroke="#9ca3af" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} />
                 </LineChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            {/* Chart 5 — GDP Growth Over Time */}
+            <ChartCard
+              title="GDP Growth Over Time"
+              description="Annual GDP growth rate (%) — last 10 years (negative = contraction)"
+            >
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={gdpData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="year" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} domain={['auto', 'auto']} />
+                  <Tooltip formatter={(v) => `${v}%`} labelFormatter={(l) => `Year: ${l}`} />
+                  <Legend iconSize={8} />
+                  <Bar dataKey="GDP Growth (%)" radius={[4,4,0,0]}>
+                    {gdpData.map((entry, i) => (
+                      <Cell key={i} fill={entry['GDP Growth (%)'] >= 0 ? '#10b981' : '#ef4444'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            {/* Chart 6 — Poverty Rate Trend */}
+            <ChartCard
+              title="Poverty Rate Trend"
+              description="Population living below poverty line (%) — last 10 years"
+            >
+              <ResponsiveContainer width="100%" height={240}>
+                <LineChart data={povData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="year" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} domain={['auto', 'auto']} />
+                  <Tooltip formatter={(v) => `${v}%`} />
+                  <Legend iconSize={8} />
+                  <Line type="monotone" dataKey="Poverty Rate (%)" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            {/* Chart 7 — Homelessness Statistics */}
+            <ChartCard
+              title="Homelessness Statistics"
+              description="Homeless population over last 5 years — sheltered vs unsheltered"
+            >
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={homelessData} barSize={28} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
+                  <Tooltip formatter={(v) => v.toLocaleString()} />
+                  <Legend iconSize={8} />
+                  <Bar dataKey="Sheltered"   stackId="a" fill="#6366f1" radius={[0,0,0,0]} />
+                  <Bar dataKey="Unsheltered" stackId="a" fill="#ef4444" radius={[4,4,0,0]} />
+                </BarChart>
               </ResponsiveContainer>
             </ChartCard>
 
