@@ -6147,6 +6147,77 @@ function App() {
     );
   };
 
+  const getLegislatureData = (name, isUSA) => {
+    const ca = {
+      'Ontario':                  { name: 'Ontario Legislative Assembly',                    totalSeats: 124, parties: [{ name: 'PC', seats: 83, color: '#003f7f' }, { name: 'NDP', seats: 31, color: '#f37021' }, { name: 'Liberal', seats: 8, color: '#d71920' }, { name: 'Green', seats: 1, color: '#3d9b35' }, { name: 'Independent', seats: 1, color: '#6b7280' }] },
+      'Quebec':                   { name: 'Assemblée nationale du Québec',                   totalSeats: 125, parties: [{ name: 'CAQ', seats: 90, color: '#009fda' }, { name: 'PLQ', seats: 21, color: '#d71920' }, { name: 'QS', seats: 11, color: '#ef3340' }, { name: 'PQ', seats: 3, color: '#003f7f' }] },
+      'British Columbia':         { name: 'BC Legislative Assembly',                         totalSeats: 93,  parties: [{ name: 'NDP', seats: 46, color: '#f37021' }, { name: 'Conservative', seats: 44, color: '#00529b' }, { name: 'Green', seats: 3, color: '#3d9b35' }] },
+      'Alberta':                  { name: 'Alberta Legislative Assembly',                    totalSeats: 87,  parties: [{ name: 'UCP', seats: 49, color: '#003087' }, { name: 'NDP', seats: 38, color: '#f37021' }] },
+      'Saskatchewan':             { name: 'Saskatchewan Legislative Assembly',               totalSeats: 61,  parties: [{ name: 'Sask. Party', seats: 39, color: '#007c34' }, { name: 'NDP', seats: 22, color: '#f37021' }] },
+      'Manitoba':                 { name: 'Manitoba Legislative Assembly',                   totalSeats: 57,  parties: [{ name: 'NDP', seats: 34, color: '#f37021' }, { name: 'PC', seats: 21, color: '#003f7f' }, { name: 'Liberal', seats: 2, color: '#d71920' }] },
+      'New Brunswick':            { name: 'New Brunswick Legislative Assembly',              totalSeats: 49,  parties: [{ name: 'PC', seats: 30, color: '#003f7f' }, { name: 'Liberal', seats: 12, color: '#d71920' }, { name: 'Green', seats: 5, color: '#3d9b35' }, { name: "People's Alliance", seats: 2, color: '#8b0000' }] },
+      'Nova Scotia':              { name: 'Nova Scotia House of Assembly',                   totalSeats: 55,  parties: [{ name: 'PC', seats: 43, color: '#003f7f' }, { name: 'NDP', seats: 7, color: '#f37021' }, { name: 'Liberal', seats: 5, color: '#d71920' }] },
+      'Prince Edward Island':     { name: 'PEI Legislative Assembly',                        totalSeats: 27,  parties: [{ name: 'PC', seats: 18, color: '#003f7f' }, { name: 'Green', seats: 4, color: '#3d9b35' }, { name: 'Liberal', seats: 4, color: '#d71920' }, { name: 'NDP', seats: 1, color: '#f37021' }] },
+      'Newfoundland & Labrador':  { name: 'Newfoundland & Labrador House of Assembly',      totalSeats: 40,  parties: [{ name: 'Liberal', seats: 22, color: '#d71920' }, { name: 'PC', seats: 13, color: '#003f7f' }, { name: 'NDP', seats: 5, color: '#f37021' }] },
+      'Yukon':                    { name: 'Yukon Legislative Assembly',                      totalSeats: 19,  parties: [{ name: 'Liberal', seats: 8, color: '#d71920' }, { name: 'Yukon Party', seats: 7, color: '#003087' }, { name: 'NDP', seats: 4, color: '#f37021' }] },
+      'Northwest Territories':    { name: 'NWT Legislative Assembly (Consensus)',            totalSeats: 19,  parties: [{ name: 'Independent', seats: 19, color: '#6b7280' }] },
+      'Nunavut':                  { name: 'Nunavut Legislative Assembly (Consensus)',         totalSeats: 22,  parties: [{ name: 'Independent', seats: 22, color: '#6b7280' }] },
+    };
+    const us = {
+      'Alabama':        { name: 'Alabama Legislature',                    totalSeats: 140, parties: [{ name: 'Republican', seats: 104, color: '#e81b23' }, { name: 'Democrat', seats: 36,  color: '#232066' }] },
+      'Alaska':         { name: 'Alaska Legislature',                     totalSeats: 60,  parties: [{ name: 'Republican', seats: 34,  color: '#e81b23' }, { name: 'Democrat', seats: 26,  color: '#232066' }] },
+      'Arizona':        { name: 'Arizona Legislature',                    totalSeats: 90,  parties: [{ name: 'Republican', seats: 48,  color: '#e81b23' }, { name: 'Democrat', seats: 42,  color: '#232066' }] },
+      'Arkansas':       { name: 'Arkansas General Assembly',              totalSeats: 135, parties: [{ name: 'Republican', seats: 110, color: '#e81b23' }, { name: 'Democrat', seats: 25,  color: '#232066' }] },
+      'California':     { name: 'California State Legislature',           totalSeats: 120, parties: [{ name: 'Democrat', seats: 94,  color: '#232066' }, { name: 'Republican', seats: 25,  color: '#e81b23' }, { name: 'Independent', seats: 1, color: '#6b7280' }] },
+      'Colorado':       { name: 'Colorado General Assembly',              totalSeats: 100, parties: [{ name: 'Democrat', seats: 69,  color: '#232066' }, { name: 'Republican', seats: 31,  color: '#e81b23' }] },
+      'Connecticut':    { name: 'Connecticut General Assembly',           totalSeats: 187, parties: [{ name: 'Democrat', seats: 124, color: '#232066' }, { name: 'Republican', seats: 63,  color: '#e81b23' }] },
+      'Delaware':       { name: 'Delaware General Assembly',              totalSeats: 62,  parties: [{ name: 'Democrat', seats: 41,  color: '#232066' }, { name: 'Republican', seats: 21,  color: '#e81b23' }] },
+      'Florida':        { name: 'Florida Legislature',                    totalSeats: 160, parties: [{ name: 'Republican', seats: 113, color: '#e81b23' }, { name: 'Democrat', seats: 47,  color: '#232066' }] },
+      'Georgia':        { name: 'Georgia General Assembly',               totalSeats: 236, parties: [{ name: 'Republican', seats: 134, color: '#e81b23' }, { name: 'Democrat', seats: 102, color: '#232066' }] },
+      'Hawaii':         { name: 'Hawaii State Legislature',               totalSeats: 76,  parties: [{ name: 'Democrat', seats: 70,  color: '#232066' }, { name: 'Republican', seats: 6,   color: '#e81b23' }] },
+      'Idaho':          { name: 'Idaho Legislature',                      totalSeats: 105, parties: [{ name: 'Republican', seats: 87,  color: '#e81b23' }, { name: 'Democrat', seats: 18,  color: '#232066' }] },
+      'Illinois':       { name: 'Illinois General Assembly',              totalSeats: 177, parties: [{ name: 'Democrat', seats: 118, color: '#232066' }, { name: 'Republican', seats: 59,  color: '#e81b23' }] },
+      'Indiana':        { name: 'Indiana General Assembly',               totalSeats: 150, parties: [{ name: 'Republican', seats: 111, color: '#e81b23' }, { name: 'Democrat', seats: 39,  color: '#232066' }] },
+      'Iowa':           { name: 'Iowa General Assembly',                  totalSeats: 150, parties: [{ name: 'Republican', seats: 99,  color: '#e81b23' }, { name: 'Democrat', seats: 51,  color: '#232066' }] },
+      'Kansas':         { name: 'Kansas Legislature',                     totalSeats: 165, parties: [{ name: 'Republican', seats: 117, color: '#e81b23' }, { name: 'Democrat', seats: 48,  color: '#232066' }] },
+      'Kentucky':       { name: 'Kentucky General Assembly',              totalSeats: 138, parties: [{ name: 'Republican', seats: 111, color: '#e81b23' }, { name: 'Democrat', seats: 27,  color: '#232066' }] },
+      'Louisiana':      { name: 'Louisiana Legislature',                  totalSeats: 144, parties: [{ name: 'Republican', seats: 101, color: '#e81b23' }, { name: 'Democrat', seats: 43,  color: '#232066' }] },
+      'Maine':          { name: 'Maine Legislature',                      totalSeats: 186, parties: [{ name: 'Democrat', seats: 101, color: '#232066' }, { name: 'Republican', seats: 80,  color: '#e81b23' }, { name: 'Independent', seats: 5,  color: '#6b7280' }] },
+      'Maryland':       { name: 'Maryland General Assembly',              totalSeats: 188, parties: [{ name: 'Democrat', seats: 133, color: '#232066' }, { name: 'Republican', seats: 55,  color: '#e81b23' }] },
+      'Massachusetts':  { name: 'Massachusetts General Court',            totalSeats: 200, parties: [{ name: 'Democrat', seats: 171, color: '#232066' }, { name: 'Republican', seats: 29,  color: '#e81b23' }] },
+      'Michigan':       { name: 'Michigan Legislature',                   totalSeats: 148, parties: [{ name: 'Democrat', seats: 78,  color: '#232066' }, { name: 'Republican', seats: 70,  color: '#e81b23' }] },
+      'Minnesota':      { name: 'Minnesota Legislature',                  totalSeats: 201, parties: [{ name: 'Democrat', seats: 103, color: '#232066' }, { name: 'Republican', seats: 98,  color: '#e81b23' }] },
+      'Mississippi':    { name: 'Mississippi Legislature',                totalSeats: 174, parties: [{ name: 'Republican', seats: 114, color: '#e81b23' }, { name: 'Democrat', seats: 60,  color: '#232066' }] },
+      'Missouri':       { name: 'Missouri General Assembly',              totalSeats: 197, parties: [{ name: 'Republican', seats: 135, color: '#e81b23' }, { name: 'Democrat', seats: 62,  color: '#232066' }] },
+      'Montana':        { name: 'Montana Legislature',                    totalSeats: 150, parties: [{ name: 'Republican', seats: 102, color: '#e81b23' }, { name: 'Democrat', seats: 48,  color: '#232066' }] },
+      'Nebraska':       { name: 'Nebraska Legislature (Unicameral)',      totalSeats: 49,  parties: [{ name: 'Republican', seats: 33,  color: '#e81b23' }, { name: 'Democrat', seats: 16,  color: '#232066' }] },
+      'Nevada':         { name: 'Nevada Legislature',                     totalSeats: 63,  parties: [{ name: 'Democrat', seats: 39,  color: '#232066' }, { name: 'Republican', seats: 24,  color: '#e81b23' }] },
+      'New Hampshire':  { name: 'New Hampshire General Court',            totalSeats: 424, parties: [{ name: 'Republican', seats: 224, color: '#e81b23' }, { name: 'Democrat', seats: 199, color: '#232066' }, { name: 'Independent', seats: 1,  color: '#6b7280' }] },
+      'New Jersey':     { name: 'New Jersey Legislature',                 totalSeats: 120, parties: [{ name: 'Democrat', seats: 71,  color: '#232066' }, { name: 'Republican', seats: 49,  color: '#e81b23' }] },
+      'New Mexico':     { name: 'New Mexico Legislature',                 totalSeats: 112, parties: [{ name: 'Democrat', seats: 71,  color: '#232066' }, { name: 'Republican', seats: 41,  color: '#e81b23' }] },
+      'New York':       { name: 'New York State Legislature',             totalSeats: 213, parties: [{ name: 'Democrat', seats: 144, color: '#232066' }, { name: 'Republican', seats: 68,  color: '#e81b23' }, { name: 'Independent', seats: 1,  color: '#6b7280' }] },
+      'North Carolina': { name: 'North Carolina General Assembly',        totalSeats: 170, parties: [{ name: 'Republican', seats: 101, color: '#e81b23' }, { name: 'Democrat', seats: 69,  color: '#232066' }] },
+      'North Dakota':   { name: 'North Dakota Legislative Assembly',      totalSeats: 141, parties: [{ name: 'Republican', seats: 119, color: '#e81b23' }, { name: 'Democrat', seats: 22,  color: '#232066' }] },
+      'Ohio':           { name: 'Ohio General Assembly',                  totalSeats: 132, parties: [{ name: 'Republican', seats: 93,  color: '#e81b23' }, { name: 'Democrat', seats: 39,  color: '#232066' }] },
+      'Oklahoma':       { name: 'Oklahoma Legislature',                   totalSeats: 149, parties: [{ name: 'Republican', seats: 121, color: '#e81b23' }, { name: 'Democrat', seats: 28,  color: '#232066' }] },
+      'Oregon':         { name: 'Oregon Legislative Assembly',            totalSeats: 90,  parties: [{ name: 'Democrat', seats: 53,  color: '#232066' }, { name: 'Republican', seats: 37,  color: '#e81b23' }] },
+      'Pennsylvania':   { name: 'Pennsylvania General Assembly',          totalSeats: 253, parties: [{ name: 'Republican', seats: 129, color: '#e81b23' }, { name: 'Democrat', seats: 124, color: '#232066' }] },
+      'Rhode Island':   { name: 'Rhode Island General Assembly',          totalSeats: 113, parties: [{ name: 'Democrat', seats: 98,  color: '#232066' }, { name: 'Republican', seats: 15,  color: '#e81b23' }] },
+      'South Carolina': { name: 'South Carolina General Assembly',        totalSeats: 170, parties: [{ name: 'Republican', seats: 118, color: '#e81b23' }, { name: 'Democrat', seats: 52,  color: '#232066' }] },
+      'South Dakota':   { name: 'South Dakota Legislature',              totalSeats: 105, parties: [{ name: 'Republican', seats: 92,  color: '#e81b23' }, { name: 'Democrat', seats: 13,  color: '#232066' }] },
+      'Tennessee':      { name: 'Tennessee General Assembly',             totalSeats: 132, parties: [{ name: 'Republican', seats: 102, color: '#e81b23' }, { name: 'Democrat', seats: 30,  color: '#232066' }] },
+      'Texas':          { name: 'Texas Legislature',                      totalSeats: 181, parties: [{ name: 'Republican', seats: 107, color: '#e81b23' }, { name: 'Democrat', seats: 74,  color: '#232066' }] },
+      'Utah':           { name: 'Utah State Legislature',                 totalSeats: 104, parties: [{ name: 'Republican', seats: 81,  color: '#e81b23' }, { name: 'Democrat', seats: 23,  color: '#232066' }] },
+      'Vermont':        { name: 'Vermont General Assembly',               totalSeats: 180, parties: [{ name: 'Democrat', seats: 113, color: '#232066' }, { name: 'Progressive', seats: 52,  color: '#009688' }, { name: 'Republican', seats: 14,  color: '#e81b23' }, { name: 'Independent', seats: 1,  color: '#6b7280' }] },
+      'Virginia':       { name: 'Virginia General Assembly',              totalSeats: 140, parties: [{ name: 'Democrat', seats: 72,  color: '#232066' }, { name: 'Republican', seats: 68,  color: '#e81b23' }] },
+      'Washington':     { name: 'Washington State Legislature',           totalSeats: 147, parties: [{ name: 'Democrat', seats: 87,  color: '#232066' }, { name: 'Republican', seats: 60,  color: '#e81b23' }] },
+      'West Virginia':  { name: 'West Virginia Legislature',              totalSeats: 134, parties: [{ name: 'Republican', seats: 120, color: '#e81b23' }, { name: 'Democrat', seats: 14,  color: '#232066' }] },
+      'Wisconsin':      { name: 'Wisconsin Legislature',                  totalSeats: 132, parties: [{ name: 'Republican', seats: 86,  color: '#e81b23' }, { name: 'Democrat', seats: 46,  color: '#232066' }] },
+      'Wyoming':        { name: 'Wyoming Legislature',                    totalSeats: 92,  parties: [{ name: 'Republican', seats: 81,  color: '#e81b23' }, { name: 'Democrat', seats: 11,  color: '#232066' }] },
+    };
+    return (isUSA ? us : ca)[name] || { name: `${name} Legislature`, totalSeats: 1, parties: [{ name: 'Data Unavailable', seats: 1, color: '#9ca3af' }] };
+  };
+
   const renderProvinceDetail = () => {
     if (!selectedProvince) return null;
     const item = selectedProvince;
@@ -6260,6 +6331,52 @@ function App() {
               {!noDeputy && <p className="text-xs text-emerald-400 font-semibold mt-3 opacity-0 group-hover:opacity-100 transition-opacity text-right">View full profile →</p>}
             </div>
           </div>
+
+          {/* Legislature Seat Distribution */}
+          {(() => {
+            const leg = getLegislatureData(item.name, isUSA);
+            return (
+              <div className="mt-6 bg-white rounded-2xl shadow-elegant overflow-hidden">
+                <div className="px-5 pt-5 pb-2">
+                  <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Legislature Composition</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">{leg.name} &nbsp;·&nbsp; {leg.totalSeats} total seats</p>
+                </div>
+                <ResponsiveContainer width="100%" height={220}>
+                  <RechartsPie>
+                    <Pie
+                      data={leg.parties}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={58}
+                      outerRadius={90}
+                      paddingAngle={leg.parties.length > 1 ? 2 : 0}
+                      dataKey="seats"
+                      nameKey="name"
+                      startAngle={90}
+                      endAngle={-270}
+                    >
+                      {leg.parties.map((p, i) => (
+                        <Cell key={i} fill={p.color} stroke="white" strokeWidth={2} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value, name) => [`${value} seats (${Math.round(value / leg.totalSeats * 100)}%)`, name]}
+                      contentStyle={{ borderRadius: '10px', fontSize: '12px', border: '1px solid #e5e7eb' }}
+                    />
+                  </RechartsPie>
+                </ResponsiveContainer>
+                <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 px-5 pb-5">
+                  {leg.parties.map(p => (
+                    <div key={p.name} className="flex items-center gap-1.5">
+                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
+                      <span className="text-xs font-semibold text-gray-700">{p.name}</span>
+                      <span className="text-xs text-gray-400">{p.seats} · {Math.round(p.seats / leg.totalSeats * 100)}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Action buttons */}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
