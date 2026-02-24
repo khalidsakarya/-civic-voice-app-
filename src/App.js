@@ -6522,7 +6522,7 @@ function App() {
     const CHART_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
     const ChartCard = ({ title, description, children }) => (
-      <div className="bg-white rounded-2xl shadow-elegant p-5">
+      <div className="bg-white rounded-2xl shadow-elegant p-4 sm:p-5">
         <h3 className="font-bold text-gray-800 text-sm mb-0.5">{title}</h3>
         <p className="text-xs text-gray-400 mb-4">{description}</p>
         {children}
@@ -6535,11 +6535,11 @@ function App() {
         style={{ background: 'rgba(0,0,0,0.55)' }}
         onClick={(e) => { if (e.target === e.currentTarget) setShowEconomicModal(false); }}
       >
-        <div className="relative bg-gray-50 w-full max-w-5xl mx-3 my-6 rounded-2xl shadow-2xl animate-fade-in">
+        <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
           {/* Header */}
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-6 py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
             <div>
-              <h2 className="font-bold text-gray-800 text-lg">{item.name} — Economic &amp; Social Data</h2>
+              <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Economic &amp; Social Data</h2>
               <p className="text-xs text-gray-400">Illustrative data · figures are statistically modelled</p>
             </div>
             <button
@@ -6551,7 +6551,7 @@ function App() {
           </div>
 
           {/* Charts grid */}
-          <div className="p-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
 
             {/* Chart 1 — Budget Distribution */}
             <ChartCard
@@ -6568,8 +6568,6 @@ function App() {
                     outerRadius={95}
                     paddingAngle={3}
                     dataKey="value"
-                    label={({ name, value }) => `${value}%`}
-                    labelLine={false}
                   >
                     {budgetData.map((entry, i) => (
                       <Cell key={entry.name} fill={entry.color} />
@@ -6812,13 +6810,13 @@ function App() {
         style={{ background: 'rgba(0,0,0,0.55)' }}
         onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
       >
-        <div className="relative bg-gray-50 w-full max-w-5xl mx-3 my-6 rounded-2xl shadow-2xl animate-fade-in">
+        <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
 
           {/* Sticky header */}
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-6 py-4 border-b border-gray-100 shadow-sm">
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <h2 className="font-bold text-gray-800 text-lg">{item.name} — Tax Exempt Companies</h2>
+                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Tax Exempt Companies</h2>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {companies.length} companies &nbsp;·&nbsp; Est. total annual exemption:{' '}
                   <span className="font-semibold text-amber-600">{fmtTotal}</span>
@@ -6848,7 +6846,7 @@ function App() {
           </div>
 
           {/* Table body */}
-          <div className="p-5">
+          <div className="p-3 sm:p-5">
             {filtered.length === 0 ? (
               <div className="text-center py-14 text-gray-400">
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
@@ -6856,7 +6854,24 @@ function App() {
               </div>
             ) : (
               <div className="bg-white rounded-2xl shadow-elegant overflow-hidden">
-                <div className="overflow-x-auto">
+                {/* Mobile cards */}
+                <div className="sm:hidden divide-y divide-gray-100">
+                  {filtered.map((co, i) => (
+                    <div key={i} className="p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold text-gray-800 text-sm leading-snug">{co.name}</p>
+                        <span className="font-bold text-amber-700 text-sm whitespace-nowrap flex-shrink-0">{co.fmtValue}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${co.industryColor}`}>{co.industry}</span>
+                        <span className="text-xs text-gray-400">Granted {co.year}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1.5">{co.exemType}</p>
+                    </div>
+                  ))}
+                </div>
+                {/* Desktop table */}
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-100">
@@ -7021,13 +7036,13 @@ function App() {
         style={{ background: 'rgba(0,0,0,0.55)' }}
         onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
       >
-        <div className="relative bg-gray-50 w-full max-w-5xl mx-3 my-6 rounded-2xl shadow-2xl animate-fade-in">
+        <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
 
           {/* Sticky header */}
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-6 py-4 border-b border-gray-100 shadow-sm">
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <h2 className="font-bold text-gray-800 text-lg">{item.name} — Grants Given</h2>
+                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Grants Given</h2>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {grants.length} grants &nbsp;·&nbsp; Total awarded:{' '}
                   <span className="font-semibold text-emerald-600">{fmtTotal}</span>
@@ -7057,7 +7072,7 @@ function App() {
           </div>
 
           {/* Table */}
-          <div className="p-5">
+          <div className="p-3 sm:p-5">
             {filtered.length === 0 ? (
               <div className="text-center py-14 text-gray-400">
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
@@ -7065,7 +7080,25 @@ function App() {
               </div>
             ) : (
               <div className="bg-white rounded-2xl shadow-elegant overflow-hidden">
-                <div className="overflow-x-auto">
+                {/* Mobile cards */}
+                <div className="sm:hidden divide-y divide-gray-100">
+                  {filtered.map((g, i) => (
+                    <div key={i} className="p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold text-gray-800 text-sm leading-snug">{g.recipientName}</p>
+                        <span className="font-bold text-emerald-700 text-sm whitespace-nowrap flex-shrink-0">{g.fmtAmount}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${g.typeColor}`}>{g.typeLabel}</span>
+                        <span className="text-xs text-gray-400">{g.date}</span>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1.5">{g.purpose}</p>
+                      <p className="text-xs text-gray-400 mt-0.5 truncate">{g.dept}</p>
+                    </div>
+                  ))}
+                </div>
+                {/* Desktop table */}
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-100">
