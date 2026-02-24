@@ -224,6 +224,8 @@ function App() {
   const [taxExemptSearch, setTaxExemptSearch] = useState('');
   const [showGrantsModal, setShowGrantsModal] = useState(false);
   const [grantsSearch, setGrantsSearch] = useState('');
+  const [showLeaderPanel, setShowLeaderPanel] = useState(false);
+  const [selectedLeader, setSelectedLeader] = useState(null);
 
   // Canadian data
   const [mps, setMps] = useState([]);
@@ -6211,7 +6213,10 @@ function App() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
 
             {/* Governor / Premier */}
-            <div className="bg-white rounded-2xl shadow-elegant p-6">
+            <div
+              className="bg-white rounded-2xl shadow-elegant p-6 cursor-pointer hover:shadow-lg hover:ring-2 hover:ring-blue-200 transition-all relative group"
+              onClick={() => { setSelectedLeader({ name: leaderName, title: leaderTitle, party: leaderParty, since: item.since, bio: item.bio, isUSA, region: item.name, isDeputy: false }); setShowLeaderPanel(true); }}
+            >
               <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-4">{leaderTitle}</p>
               <div className="flex flex-col items-center mb-5">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-blue-300 flex items-center justify-center text-2xl font-bold text-blue-700 mb-3 shadow-sm select-none">
@@ -6224,10 +6229,14 @@ function App() {
                 <p className="text-xs text-gray-400 mt-1.5">In office since {item.since}</p>
               </div>
               <p className="text-sm text-gray-600 leading-relaxed">{item.bio}</p>
+              <p className="text-xs text-blue-400 font-semibold mt-3 opacity-0 group-hover:opacity-100 transition-opacity text-right">View full profile →</p>
             </div>
 
             {/* Lt. Governor / Commissioner */}
-            <div className="bg-white rounded-2xl shadow-elegant p-6">
+            <div
+              className={`bg-white rounded-2xl shadow-elegant p-6 relative group ${!noDeputy ? 'cursor-pointer hover:shadow-lg hover:ring-2 hover:ring-emerald-200 transition-all' : ''}`}
+              onClick={!noDeputy ? () => { setSelectedLeader({ name: deputyName, title: deputyTitle, party: deputyParty, since: deputySince, bio: deputyBio, isUSA, region: item.name, isDeputy: true }); setShowLeaderPanel(true); } : undefined}
+            >
               <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-4">{deputyTitle}</p>
               <div className="flex flex-col items-center mb-5">
                 <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mb-3 shadow-sm select-none ${noDeputy ? 'bg-gray-100 text-gray-400' : 'bg-gradient-to-br from-emerald-100 to-emerald-300 text-emerald-700'}`}>
@@ -6248,6 +6257,7 @@ function App() {
               <p className="text-sm text-gray-600 leading-relaxed">
                 {deputyBio || 'No information available for this position.'}
               </p>
+              {!noDeputy && <p className="text-xs text-emerald-400 font-semibold mt-3 opacity-0 group-hover:opacity-100 transition-opacity text-right">View full profile →</p>}
             </div>
           </div>
 
@@ -11128,6 +11138,414 @@ function App() {
     );
   };
 
+  // ── Enrich a governor/premier/lt-gov with deterministic generated data ───────
+  const enrichLeader = (leader) => {
+    let h = 5381;
+    for (let i = 0; i < leader.name.length; i++) h = (Math.imul(h, 33) ^ leader.name.charCodeAt(i)) | 0;
+    h = Math.abs(h);
+    const rng = (min, max, salt) => {
+      const v = Math.abs((Math.imul(h + salt, 1664525) + 1013904223) | 0);
+      return min + (v % (max - min + 1));
+    };
+    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
+    const L = { ...leader };
+
+    // Portfolios
+    const portfolioPool = [
+      'Economic Development', 'Healthcare & Public Health', 'Education & Training',
+      'Infrastructure', 'Environment & Energy', 'Public Safety & Emergency Management',
+      'Agriculture & Rural Affairs', 'Housing & Community Development', 'Finance & Budget',
+      'Justice & Legal Affairs', 'Labor & Employment', 'Natural Resources',
+      'Technology & Innovation', 'Veterans Affairs',
+      leader.isUSA ? 'National Guard Liaison' : 'Indigenous Relations',
+    ];
+    const numPortfolios = rng(4, 6, 1);
+    const seen = new Set();
+    L.portfolios = [];
+    for (let att = 0; L.portfolios.length < numPortfolios && att < 30; att++) {
+      const idx = rng(0, portfolioPool.length - 1, 2 + att);
+      if (!seen.has(idx)) { seen.add(idx); L.portfolios.push(portfolioPool[idx]); }
+    }
+
+    // Contact
+    const ac = rng(201, 989, 10);
+    const px = rng(200, 999, 11);
+    const ln = rng(1000, 9999, 12).toString().padStart(4, '0');
+    const slug = leader.region.toLowerCase().replace(/[^a-z]/g, '');
+    L.contact = {
+      phone:   `(${ac}) ${px}-${ln}`,
+      address: leader.isUSA
+        ? `State Capitol Building, Room ${rng(100, 650, 13)}, ${leader.region}`
+        : `Legislative Assembly, Room ${rng(100, 450, 13)}, ${leader.region}`,
+      website: leader.isUSA ? `governor.${slug}.gov` : `premier.${slug}.ca`,
+    };
+
+    // Legislative activity
+    L.legislativeActivity = {
+      year: 2024,
+      billsSigned:     rng(leader.isDeputy ? 5  : 18, leader.isDeputy ? 30 : 90, 20),
+      billsVetoed:     leader.isDeputy ? 0 : rng(0, 14, 21),
+      executiveOrders: rng(leader.isDeputy ? 0  :  3, leader.isDeputy ?  8 : 32, 22),
+    };
+
+    // Key decisions
+    const billPool = leader.isUSA ? [
+      { title: 'State Budget Appropriations Act',    desc: 'Annual budget allocating funds across all state departments and programs' },
+      { title: 'Infrastructure Investment Bill',      desc: 'Capital investment in roads, bridges, and public transit systems' },
+      { title: 'Education Funding Reform Act',        desc: 'Restructuring of public school funding formulas and teacher support' },
+      { title: 'Healthcare Access Expansion Act',     desc: 'Expanding Medicaid eligibility and rural clinic funding statewide' },
+      { title: 'Tax Reduction Initiative',            desc: 'Reduction of personal income tax rates for middle-income earners' },
+      { title: 'Environmental Protection Standards',  desc: 'New air and water quality emissions standards for industrial facilities' },
+      { title: 'Economic Development Zone Act',       desc: 'Designating enterprise zones with tax incentives for new businesses' },
+      { title: 'Workforce Development Program',       desc: 'Apprenticeship and vocational training expansion across the state' },
+      { title: 'Housing Affordability Act',           desc: 'Zoning reforms and subsidies for affordable housing construction' },
+      { title: 'Public Safety Omnibus Bill',          desc: 'Police funding, community programs, and criminal justice reform measures' },
+    ] : [
+      { title: 'Provincial Budget Act',               desc: 'Annual budget covering all provincial program expenditures and priorities' },
+      { title: 'Healthcare Services Improvement Act', desc: 'Funding for hospital infrastructure and primary care network expansion' },
+      { title: 'Education Reform Bill',               desc: 'Curriculum updates, teacher compensation and retention review' },
+      { title: 'Infrastructure Investment Plan',      desc: 'Provincial highways, transit, and rural broadband infrastructure expansion' },
+      { title: 'Environmental Assessment Act',        desc: 'New standards for industrial and resource sector environmental impact reviews' },
+      { title: 'Economic Diversification Strategy',   desc: 'Incentives to attract investment in technology and clean energy sectors' },
+      { title: 'Public Safety Legislation',           desc: 'First responder funding and integrated community safety programs' },
+      { title: 'Housing Strategy Act',                desc: 'Affordable housing targets and developer incentives for new construction' },
+      { title: 'Labour Standards Amendment',          desc: 'Minimum wage increase and worker protection measures review' },
+      { title: 'Carbon Reduction Framework',          desc: 'Provincial carbon pricing and clean energy transition plan and targets' },
+    ];
+    const usedBills = new Set();
+    L.keyDecisions = Array.from({ length: 3 }, (_, i) => {
+      let idx, att = 0;
+      do { idx = rng(0, billPool.length - 1, 30 + i * 5 + att); att++; } while (usedBills.has(idx) && att < 20);
+      usedBills.add(idx);
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const mo = pick(months, 31 + i * 5);
+      const yr = rng(2022, 2024, 32 + i * 5);
+      const action = (!leader.isDeputy && rng(0, 4, 33 + i * 5) === 0) ? 'Vetoed' : 'Signed';
+      return { ...billPool[idx], action, date: `${mo} ${yr}` };
+    });
+
+    // Financial disclosure
+    const sinceYear = parseInt(leader.since) || 2020;
+    const salary = leader.isUSA ? rng(95000, 214000, 40) : rng(185000, 360000, 40);
+    const initialWorth = rng(150000, 3800000, 41);
+    const growPct = rng(8, 185, 42);
+    L.financialDisclosure = {
+      electedYear: sinceYear,
+      salary,
+      initialWorth,
+      currentWorth: Math.round(initialWorth * (1 + growPct / 100)),
+      percentageIncrease: growPct,
+      assets: [
+        { type: pick(['Primary Residence', 'Investment Properties', 'Real Estate Portfolio'], 43), value: rng(200000, 1900000, 44) },
+        { type: pick(['Investment Portfolio', 'Retirement Accounts', 'Index Funds'],          45), value: rng(50000,   900000, 46) },
+        { type: pick(['Savings & Checking',  'Money Market Account',  'Business Interests'],  47), value: rng(10000,   280000, 48) },
+      ],
+    };
+
+    // Top donors (skipped for Crown/Federal Appointee roles)
+    const isCrown = leader.party === 'Federal Appointee' || leader.party === 'Crown Representative';
+    if (!isCrown) {
+      const donorPool = leader.isUSA ? [
+        { name: 'State Business Association',         sector: 'Business',     amount: rng(50000, 500000, 50) },
+        { name: 'Healthcare Industry PAC',            sector: 'Healthcare',   amount: rng(30000, 350000, 51) },
+        { name: 'Real Estate Development Fund',       sector: 'Real Estate',  amount: rng(25000, 280000, 52) },
+        { name: 'Energy Sector Coalition',            sector: 'Energy',       amount: rng(40000, 420000, 53) },
+        { name: 'Teachers Union PAC',                 sector: 'Education',    amount: rng(20000, 200000, 54) },
+        { name: 'Financial Services Industry Group',  sector: 'Finance',      amount: rng(35000, 380000, 55) },
+        { name: 'Agricultural Producers Alliance',    sector: 'Agriculture',  amount: rng(10000, 150000, 56) },
+      ] : [
+        { name: 'Provincial Business Council',        sector: 'Business',     amount: rng(50000, 400000, 50) },
+        { name: 'Healthcare Workers Union',           sector: 'Healthcare',   amount: rng(30000, 300000, 51) },
+        { name: 'Construction Industry Alliance',     sector: 'Construction', amount: rng(25000, 250000, 52) },
+        { name: 'Energy Companies Coalition',         sector: 'Energy',       amount: rng(40000, 380000, 53) },
+        { name: 'Teachers Federation',                sector: 'Education',    amount: rng(20000, 200000, 54) },
+        { name: 'Financial Services Association',     sector: 'Finance',      amount: rng(35000, 320000, 55) },
+        { name: 'Agricultural Producers Association', sector: 'Agriculture',  amount: rng(10000, 140000, 56) },
+      ];
+      const donorSeen = new Set();
+      const numDonors = rng(2, 3, 60);
+      L.topDonors = [];
+      for (let att = 0; L.topDonors.length < numDonors && att < 30; att++) {
+        const idx = rng(0, donorPool.length - 1, 61 + att);
+        if (!donorSeen.has(idx)) { donorSeen.add(idx); L.topDonors.push(donorPool[idx]); }
+      }
+    } else {
+      L.topDonors = [];
+    }
+
+    // Recent activity
+    const activities = leader.isUSA ? [
+      'Announced infrastructure funding package for state transportation network',
+      'Met with mayors to discuss regional housing crisis response plan',
+      'Signed executive order expanding rural broadband internet access',
+      'Issued emergency declaration following severe weather event',
+      'Launched workforce development initiative with community colleges',
+      'Hosted economic development summit with business and industry leaders',
+      'Released state climate action and clean energy transition plan',
+      'Appointed new cabinet secretary for health and human services',
+      'Signed small business tax relief and incentive package into law',
+      'Delivered annual State of the State address to the legislature',
+    ] : [
+      'Announced provincial healthcare expansion and hospital infrastructure funding',
+      'Met with First Nations leaders on land rights and resource sharing discussions',
+      'Tabled legislative priorities for the current parliamentary session',
+      'Signed memorandum of understanding with the federal government',
+      'Launched provincial skills training and apprenticeship initiative',
+      'Hosted interprovincial premiers and territorial leaders conference',
+      'Released provincial climate action and clean energy transition roadmap',
+      'Appointed new deputy minister for economic and regional development',
+      'Announced provincial affordable housing and rental assistance strategy',
+      'Addressed legislative assembly on provincial budget and fiscal priorities',
+    ];
+    const months2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const actSeen = new Set();
+    L.recentActivity = [];
+    for (let att = 0; L.recentActivity.length < 4 && att < 30; att++) {
+      const idx = rng(0, activities.length - 1, 70 + att);
+      if (!actSeen.has(idx)) {
+        actSeen.add(idx);
+        const mo = pick(months2, 71 + att);
+        const yr = rng(2023, 2024, 72 + att);
+        L.recentActivity.push({ description: activities[idx], date: `${mo} ${yr}` });
+      }
+    }
+    return L;
+  };
+
+  const renderLeaderPanel = () => {
+    if (!selectedLeader || !showLeaderPanel) return null;
+    const leader = enrichLeader(selectedLeader);
+    const partyColorMap = {
+      'Republican': '#dc2626',            'Democratic': '#2563eb',
+      'NDP': '#f97316',                   'Liberal': '#dc2626',
+      'PC': '#1e40af',                    'Progressive Conservative': '#1e40af',
+      'UCP': '#1e40af',                   'Saskatchewan Party': '#16a34a',
+      'Sask. Party': '#16a34a',           'CAQ': '#0284c7',
+      'Consensus': '#7c3aed',             'Federal Appointee': '#4f46e5',
+      'Crown Representative': '#7c3aed',  'Green': '#16a34a',
+      'Independent': '#6b7280',
+    };
+    const partyColor = partyColorMap[leader.party] || '#6366f1';
+    const initials = leader.name.split(' ').filter(n => /^[A-Z]/.test(n)).map(n => n[0]).join('').slice(0, 2) || '?';
+    const isCrown = leader.party === 'Federal Appointee' || leader.party === 'Crown Representative';
+    const closePanel = () => { setShowLeaderPanel(false); setSelectedLeader(null); };
+
+    return (
+      <div className="fixed inset-0 z-50 flex justify-end">
+        <div className="panel-backdrop absolute inset-0 bg-black bg-opacity-50" onClick={closePanel} />
+        <div className="panel-slide-in relative flex flex-col bg-white shadow-2xl w-full md:max-w-2xl h-full overflow-hidden">
+
+          {/* Header */}
+          <div
+            style={{ background: `linear-gradient(135deg, ${partyColor}18 0%, ${partyColor}06 100%)`, borderBottom: `3px solid ${partyColor}` }}
+            className="flex-shrink-0 px-6 pt-6 pb-5"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-4 min-w-0">
+                <div style={{ backgroundColor: partyColor }} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-lg">
+                  {initials}
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-xl font-bold text-gray-900 leading-tight">{leader.name}</h2>
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    <span style={{ backgroundColor: partyColor }} className="text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">{leader.party}</span>
+                    <span className="text-sm text-gray-600 font-medium">{leader.title}</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">{leader.region}{leader.since ? ` · In office since ${leader.since}` : ''}</p>
+                </div>
+              </div>
+              <button onClick={closePanel} className="flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white hover:bg-opacity-70 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Scrollable content */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-6 space-y-7">
+
+              {/* Bio */}
+              {leader.bio && (
+                <section>
+                  <p className="panel-section-label">Biography</p>
+                  <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
+                    <p className="text-gray-700 text-sm leading-relaxed">{leader.bio}</p>
+                  </div>
+                </section>
+              )}
+
+              {/* Cabinet Portfolios */}
+              <section>
+                <p className="panel-section-label">Cabinet Portfolios &amp; Oversight Areas</p>
+                <div className="flex flex-wrap gap-2">
+                  {leader.portfolios.map((p, i) => (
+                    <span key={i} className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                      <Briefcase className="w-3.5 h-3.5 flex-shrink-0" />
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              </section>
+
+              {/* Contact */}
+              <section>
+                <p className="panel-section-label">Contact Information</p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                    <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium">Office Phone</p>
+                      <p className="text-sm font-semibold text-green-700">{leader.contact.phone}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                    <div className="w-9 h-9 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Building2 className="w-4 h-4 text-orange-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium">Official Address</p>
+                      <p className="text-sm font-medium text-gray-700">{leader.contact.address}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                    <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Globe className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium">Official Website</p>
+                      <p className="text-sm font-semibold text-blue-600">{leader.contact.website}</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Legislative Activity */}
+              <section>
+                <p className="panel-section-label">Legislative Activity — {leader.legislativeActivity.year}</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
+                    <p className="text-2xl font-bold text-green-700">{leader.legislativeActivity.billsSigned}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Bills Signed</p>
+                  </div>
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
+                    <p className="text-2xl font-bold text-red-700">{leader.legislativeActivity.billsVetoed}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Bills Vetoed</p>
+                  </div>
+                  <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center">
+                    <p className="text-2xl font-bold text-purple-700">{leader.legislativeActivity.executiveOrders}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Exec. Orders</p>
+                  </div>
+                </div>
+              </section>
+
+              {/* Key Decisions */}
+              <section>
+                <p className="panel-section-label">Key Decisions — Recent</p>
+                <div className="space-y-2">
+                  {leader.keyDecisions.map((d, i) => (
+                    <div key={i} className={`rounded-xl p-3.5 border ${d.action === 'Signed' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <div className="flex items-center gap-2">
+                          {d.action === 'Signed'
+                            ? <CheckCircle className="w-4 h-4 text-green-600" />
+                            : <XCircle    className="w-4 h-4 text-red-600" />
+                          }
+                          <span className={`font-bold text-sm ${d.action === 'Signed' ? 'text-green-700' : 'text-red-700'}`}>{d.action}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {d.date}
+                        </div>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-800">{d.title}</p>
+                      <p className="text-xs text-gray-600 mt-0.5 leading-relaxed">{d.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* Financial Disclosure */}
+              <section>
+                <p className="panel-section-label">Financial Disclosure — Since {leader.financialDisclosure.electedYear}</p>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                      <p className="text-xs text-gray-500 mb-1">Worth on Taking Office</p>
+                      <p className="text-base font-bold text-blue-700">{formatCurrency(leader.financialDisclosure.initialWorth)}</p>
+                    </div>
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
+                      <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
+                      <p className="text-base font-bold text-green-700">{formatCurrency(leader.financialDisclosure.currentWorth)}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between">
+                      <span className="text-sm text-gray-700 font-medium">Annual Salary</span>
+                      <span className="font-bold text-amber-700">{formatCurrency(leader.financialDisclosure.salary)}</span>
+                    </div>
+                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 flex items-center justify-between">
+                      <span className="text-sm text-gray-700 font-medium">Net Worth Growth</span>
+                      <span className="font-bold text-purple-700">+{leader.financialDisclosure.percentageIncrease}%</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Declared Assets</p>
+                    {leader.financialDisclosure.assets.map((asset, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <span className="text-sm text-gray-700">{asset.type}</span>
+                        <span className="text-sm font-bold text-gray-900">{formatCurrency(asset.value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* Top Donors — hidden for Crown/Federal Appointee roles */}
+              {!isCrown && leader.topDonors.length > 0 && (
+                <section>
+                  <p className="panel-section-label">{leader.isUSA ? 'Top Campaign Donors' : 'Key Political Supporters'}</p>
+                  <div className="space-y-2">
+                    {leader.topDonors.map((d, i) => (
+                      <div key={i} className="flex items-center justify-between p-3.5 bg-gray-50 rounded-xl border border-gray-200">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800">{d.name}</p>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-medium">{d.sector}</span>
+                        </div>
+                        <span className="font-bold text-green-700 text-sm">{formatCurrency(d.amount)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Recent Activity */}
+              <section>
+                <p className="panel-section-label">Recent Activity</p>
+                <div className="space-y-2">
+                  {leader.recentActivity.map((a, i) => (
+                    <div key={i} className="flex items-start gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-200">
+                      <div className="w-2 h-2 rounded-full bg-indigo-400 mt-1.5 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-gray-700 leading-relaxed">{a.description}</p>
+                        <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                          <Calendar className="w-3 h-3" /> {a.date}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <p className="text-center text-xs text-gray-400 pb-2">Illustrative data · figures are statistically modelled</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="App smooth-scroll">
       <style>{customStyles}</style>
@@ -11177,6 +11595,9 @@ function App() {
 
       {/* Grants Given modal */}
       {showGrantsModal && selectedProvince && renderGrantsModal()}
+
+      {/* Leader profile panel */}
+      {showLeaderPanel && selectedLeader && renderLeaderPanel()}
     </div>
   );
 }
