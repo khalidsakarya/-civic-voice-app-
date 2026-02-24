@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale } from 'lucide-react';
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import './App.css';
 
@@ -220,6 +220,7 @@ function App() {
   const [selectedBill, setSelectedBill] = useState(null);
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [showEconomicModal, setShowEconomicModal] = useState(false);
+  const [economicChartIndex, setEconomicChartIndex] = useState(0);
   const [showTaxExemptModal, setShowTaxExemptModal] = useState(false);
   const [taxExemptSearch, setTaxExemptSearch] = useState('');
   const [showGrantsModal, setShowGrantsModal] = useState(false);
@@ -6521,13 +6522,229 @@ function App() {
 
     const CHART_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
-    const ChartCard = ({ title, description, children }) => (
-      <div className="bg-white rounded-2xl shadow-elegant p-4 sm:p-5">
-        <h3 className="font-bold text-gray-800 text-sm mb-0.5">{title}</h3>
-        <p className="text-xs text-gray-400 mb-4">{description}</p>
-        {children}
-      </div>
-    );
+    // Mobile: trim 10-year series to 6 points so axes aren't crowded
+    const crimeDataM  = crimeData.slice(-6);
+    const gdpDataM    = gdpData.slice(-6);
+    const povDataM    = povData.slice(-6);
+
+    // Shared style constants
+    const TICK_M  = { fontSize: 14, fill: '#6b7280' };
+    const TICK_D  = { fontSize: 11, fill: '#6b7280' };
+    const TT_STYLE = { fontSize: '14px', borderRadius: '10px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' };
+    const LEG_M  = { fontSize: '14px' };
+    const MH = 280; // mobile chart height
+
+    const charts = [
+      {
+        title: 'Government Budget Distribution',
+        desc:  'Budget split across major spending categories (%)',
+        mobile: (
+          <ResponsiveContainer width="100%" height={MH}>
+            <RechartsPie>
+              <Pie data={budgetData} cx="50%" cy="50%" innerRadius={65} outerRadius={108} paddingAngle={3} dataKey="value">
+                {budgetData.map((e) => <Cell key={e.name} fill={e.color} />)}
+              </Pie>
+              <Tooltip formatter={(v) => `${v}%`} contentStyle={TT_STYLE} />
+              <Legend iconType="circle" iconSize={12} wrapperStyle={LEG_M} />
+            </RechartsPie>
+          </ResponsiveContainer>
+        ),
+        desktop: (
+          <ResponsiveContainer width="100%" height={240}>
+            <RechartsPie>
+              <Pie data={budgetData} cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={3} dataKey="value">
+                {budgetData.map((e) => <Cell key={e.name} fill={e.color} />)}
+              </Pie>
+              <Tooltip formatter={(v) => `${v}%`} contentStyle={TT_STYLE} />
+              <Legend iconType="circle" iconSize={8} />
+            </RechartsPie>
+          </ResponsiveContainer>
+        ),
+      },
+      {
+        title: 'Spending vs Budget',
+        desc:  'Allocated vs actual spending per category ($M)',
+        mobile: (
+          <ResponsiveContainer width="100%" height={MH}>
+            <BarChart data={spendData} barGap={4} margin={{ top: 5, right: 8, left: 8, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="category" tick={TICK_M} />
+              <YAxis tick={TICK_M} tickFormatter={(v) => `$${(v/1000).toFixed(1)}B`} width={55} />
+              <Tooltip formatter={(v) => `$${v}M`} contentStyle={TT_STYLE} />
+              <Legend iconSize={12} wrapperStyle={LEG_M} />
+              <Bar dataKey="Allocated" fill="#6366f1" radius={[4,4,0,0]} />
+              <Bar dataKey="Actual"    fill="#10b981" radius={[4,4,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        ),
+        desktop: (
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={spendData} barGap={2} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="category" tick={TICK_D} />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `$${(v/1000).toFixed(1)}B`} />
+              <Tooltip formatter={(v) => `$${v}M`} contentStyle={TT_STYLE} />
+              <Legend iconSize={8} />
+              <Bar dataKey="Allocated" fill="#6366f1" radius={[4,4,0,0]} />
+              <Bar dataKey="Actual"    fill="#10b981" radius={[4,4,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        ),
+      },
+      {
+        title: 'Crime Rate Trends',
+        desc:  'Incidents per 100,000 people — last 6 years',
+        mobile: (
+          <ResponsiveContainer width="100%" height={MH}>
+            <LineChart data={crimeDataM} margin={{ top: 5, right: 8, left: 8, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="year" tick={TICK_M} />
+              <YAxis tick={TICK_M} width={50} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Legend iconSize={12} wrapperStyle={LEG_M} />
+              <Line type="monotone" dataKey="Violent Crime"  stroke="#ef4444" strokeWidth={2.5} dot={{ r: 4 }} />
+              <Line type="monotone" dataKey="Property Crime" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        ),
+        desktop: (
+          <ResponsiveContainer width="100%" height={240}>
+            <LineChart data={crimeData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="year" tick={TICK_D} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip contentStyle={TT_STYLE} />
+              <Legend iconSize={8} />
+              <Line type="monotone" dataKey="Violent Crime"  stroke="#ef4444" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="Property Crime" stroke="#f59e0b" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        ),
+      },
+      {
+        title: 'Unemployment Rate',
+        desc:  `Annual rate (%) vs ${isUSA ? 'US' : 'CA'} average — last 4 years`,
+        mobile: (
+          <ResponsiveContainer width="100%" height={MH}>
+            <LineChart data={unempData} margin={{ top: 5, right: 8, left: 8, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="year" tick={TICK_M} />
+              <YAxis tick={TICK_M} tickFormatter={(v) => `${v}%`} domain={['auto','auto']} width={48} />
+              <Tooltip formatter={(v) => `${v}%`} contentStyle={TT_STYLE} />
+              <Legend iconSize={12} wrapperStyle={LEG_M} />
+              <Line type="monotone" dataKey={unempKeys[0]} stroke="#6366f1" strokeWidth={2.5} dot={{ r: 5 }} />
+              <Line type="monotone" dataKey={unempKeys[1]} stroke="#9ca3af" strokeWidth={2.5} strokeDasharray="5 5" dot={{ r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        ),
+        desktop: (
+          <ResponsiveContainer width="100%" height={240}>
+            <LineChart data={unempData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="year" tick={TICK_D} />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} domain={['auto','auto']} />
+              <Tooltip formatter={(v) => `${v}%`} contentStyle={TT_STYLE} />
+              <Legend iconSize={8} />
+              <Line type="monotone" dataKey={unempKeys[0]} stroke="#6366f1" strokeWidth={2} dot={{ r: 4 }} />
+              <Line type="monotone" dataKey={unempKeys[1]} stroke="#9ca3af" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        ),
+      },
+      {
+        title: 'GDP Growth Over Time',
+        desc:  'Annual GDP growth rate (%) — last 6 years',
+        mobile: (
+          <ResponsiveContainer width="100%" height={MH}>
+            <BarChart data={gdpDataM} margin={{ top: 5, right: 8, left: 8, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="year" tick={TICK_M} />
+              <YAxis tick={TICK_M} tickFormatter={(v) => `${v}%`} domain={['auto','auto']} width={48} />
+              <Tooltip formatter={(v) => `${v}%`} labelFormatter={(l) => `Year: ${l}`} contentStyle={TT_STYLE} />
+              <Legend iconSize={12} wrapperStyle={LEG_M} />
+              <Bar dataKey="GDP Growth (%)" radius={[4,4,0,0]}>
+                {gdpDataM.map((e, i) => <Cell key={i} fill={e['GDP Growth (%)'] >= 0 ? '#10b981' : '#ef4444'} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        ),
+        desktop: (
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={gdpData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="year" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} domain={['auto','auto']} />
+              <Tooltip formatter={(v) => `${v}%`} labelFormatter={(l) => `Year: ${l}`} contentStyle={TT_STYLE} />
+              <Legend iconSize={8} />
+              <Bar dataKey="GDP Growth (%)" radius={[4,4,0,0]}>
+                {gdpData.map((e, i) => <Cell key={i} fill={e['GDP Growth (%)'] >= 0 ? '#10b981' : '#ef4444'} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        ),
+      },
+      {
+        title: 'Poverty Rate Trend',
+        desc:  'Population below poverty line (%) — last 6 years',
+        mobile: (
+          <ResponsiveContainer width="100%" height={MH}>
+            <LineChart data={povDataM} margin={{ top: 5, right: 8, left: 8, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="year" tick={TICK_M} />
+              <YAxis tick={TICK_M} tickFormatter={(v) => `${v}%`} domain={['auto','auto']} width={48} />
+              <Tooltip formatter={(v) => `${v}%`} contentStyle={TT_STYLE} />
+              <Legend iconSize={12} wrapperStyle={LEG_M} />
+              <Line type="monotone" dataKey="Poverty Rate (%)" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        ),
+        desktop: (
+          <ResponsiveContainer width="100%" height={240}>
+            <LineChart data={povData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="year" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} domain={['auto','auto']} />
+              <Tooltip formatter={(v) => `${v}%`} contentStyle={TT_STYLE} />
+              <Legend iconSize={8} />
+              <Line type="monotone" dataKey="Poverty Rate (%)" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        ),
+      },
+      {
+        title: 'Homelessness Statistics',
+        desc:  'Sheltered vs unsheltered population 2020–2024',
+        mobile: (
+          <ResponsiveContainer width="100%" height={MH}>
+            <BarChart data={homelessData} barSize={36} margin={{ top: 5, right: 8, left: 8, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="year" tick={TICK_M} />
+              <YAxis tick={TICK_M} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} width={48} />
+              <Tooltip formatter={(v) => v.toLocaleString()} contentStyle={TT_STYLE} />
+              <Legend iconSize={12} wrapperStyle={LEG_M} />
+              <Bar dataKey="Sheltered"   stackId="a" fill="#6366f1" radius={[0,0,0,0]} />
+              <Bar dataKey="Unsheltered" stackId="a" fill="#ef4444" radius={[4,4,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        ),
+        desktop: (
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={homelessData} barSize={28} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="year" tick={TICK_D} />
+              <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
+              <Tooltip formatter={(v) => v.toLocaleString()} contentStyle={TT_STYLE} />
+              <Legend iconSize={8} />
+              <Bar dataKey="Sheltered"   stackId="a" fill="#6366f1" radius={[0,0,0,0]} />
+              <Bar dataKey="Unsheltered" stackId="a" fill="#ef4444" radius={[4,4,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        ),
+      },
+    ];
+
+    const totalCharts = charts.length;
+    const activeChart = charts[economicChartIndex] || charts[0];
 
     return (
       <div
@@ -6536,162 +6753,73 @@ function App() {
         onClick={(e) => { if (e.target === e.currentTarget) setShowEconomicModal(false); }}
       >
         <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
+
           {/* Header */}
           <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
             <div>
               <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Economic &amp; Social Data</h2>
               <p className="text-xs text-gray-400">Illustrative data · figures are statistically modelled</p>
             </div>
-            <button
-              onClick={() => setShowEconomicModal(false)}
-              className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors"
-            >
+            <button onClick={() => setShowEconomicModal(false)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Charts grid */}
-          <div className="p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+          {/* ── Mobile: one chart at a time with prev/next (hidden on lg+) ── */}
+          <div className="lg:hidden p-4">
 
-            {/* Chart 1 — Budget Distribution */}
-            <ChartCard
-              title="Government Budget Distribution"
-              description="Budget split across major spending categories (%)"
-            >
-              <ResponsiveContainer width="100%" height={240}>
-                <RechartsPie>
-                  <Pie
-                    data={budgetData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={95}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {budgetData.map((entry, i) => (
-                      <Cell key={entry.name} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(v) => `${v}%`} />
-                  <Legend iconType="circle" iconSize={8} />
-                </RechartsPie>
-              </ResponsiveContainer>
-            </ChartCard>
+            {/* Navigation row */}
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                onClick={() => setEconomicChartIndex(i => Math.max(0, i - 1))}
+                disabled={economicChartIndex === 0}
+                className="flex-shrink-0 p-2.5 rounded-xl bg-white shadow-sm border border-gray-100 text-gray-700 disabled:opacity-25 disabled:cursor-not-allowed transition-all active:scale-95"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <div className="flex-1 text-center min-w-0">
+                <p className="text-xs text-gray-400 font-medium">{economicChartIndex + 1} of {totalCharts}</p>
+                <p className="font-bold text-gray-800 text-base leading-snug mt-0.5">{activeChart.title}</p>
+                <p className="text-xs text-gray-500 mt-0.5 leading-snug">{activeChart.desc}</p>
+              </div>
+              <button
+                onClick={() => setEconomicChartIndex(i => Math.min(totalCharts - 1, i + 1))}
+                disabled={economicChartIndex === totalCharts - 1}
+                className="flex-shrink-0 p-2.5 rounded-xl bg-white shadow-sm border border-gray-100 text-gray-700 disabled:opacity-25 disabled:cursor-not-allowed transition-all active:scale-95"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
 
-            {/* Chart 2 — Spending vs Budget */}
-            <ChartCard
-              title="Spending vs Budget"
-              description="Allocated vs actual spending per category ($M) — positive gap = over budget"
-            >
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={spendData} barGap={2} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="category" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `$${(v/1000).toFixed(1)}B`} />
-                  <Tooltip formatter={(v) => `$${v}M`} />
-                  <Legend iconSize={8} />
-                  <Bar dataKey="Allocated" fill="#6366f1" radius={[4,4,0,0]} />
-                  <Bar dataKey="Actual"    fill="#10b981" radius={[4,4,0,0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartCard>
+            {/* Dot indicators */}
+            <div className="flex justify-center items-center gap-2 mb-4">
+              {charts.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setEconomicChartIndex(i)}
+                  className={`rounded-full transition-all ${i === economicChartIndex ? 'w-5 h-2 bg-indigo-500' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`}
+                />
+              ))}
+            </div>
 
-            {/* Chart 3 — Crime Rate Trends */}
-            <ChartCard
-              title="Crime Rate Trends"
-              description="Incidents per 100,000 people — last 10 years"
-            >
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={crimeData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip />
-                  <Legend iconSize={8} />
-                  <Line type="monotone" dataKey="Violent Crime"  stroke="#ef4444" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="Property Crime" stroke="#f59e0b" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartCard>
-
-            {/* Chart 4 — Unemployment */}
-            <ChartCard
-              title="Unemployment Rate Over Time"
-              description="Annual unemployment rate (%) vs national average — last 4 years"
-            >
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={unempData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} domain={['auto', 'auto']} />
-                  <Tooltip formatter={(v) => `${v}%`} />
-                  <Legend iconSize={8} />
-                  <Line type="monotone" dataKey={unempKeys[0]} stroke="#6366f1" strokeWidth={2} dot={{ r: 4 }} />
-                  <Line type="monotone" dataKey={unempKeys[1]} stroke="#9ca3af" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartCard>
-
-            {/* Chart 5 — GDP Growth Over Time */}
-            <ChartCard
-              title="GDP Growth Over Time"
-              description="Annual GDP growth rate (%) — last 10 years (negative = contraction)"
-            >
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={gdpData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="year" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} domain={['auto', 'auto']} />
-                  <Tooltip formatter={(v) => `${v}%`} labelFormatter={(l) => `Year: ${l}`} />
-                  <Legend iconSize={8} />
-                  <Bar dataKey="GDP Growth (%)" radius={[4,4,0,0]}>
-                    {gdpData.map((entry, i) => (
-                      <Cell key={i} fill={entry['GDP Growth (%)'] >= 0 ? '#10b981' : '#ef4444'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartCard>
-
-            {/* Chart 6 — Poverty Rate Trend */}
-            <ChartCard
-              title="Poverty Rate Trend"
-              description="Population living below poverty line (%) — last 10 years"
-            >
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={povData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="year" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} domain={['auto', 'auto']} />
-                  <Tooltip formatter={(v) => `${v}%`} />
-                  <Legend iconSize={8} />
-                  <Line type="monotone" dataKey="Poverty Rate (%)" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartCard>
-
-            {/* Chart 7 — Homelessness Statistics */}
-            <ChartCard
-              title="Homelessness Statistics"
-              description="Homeless population over last 5 years — sheltered vs unsheltered"
-            >
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={homelessData} barSize={28} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
-                  <Tooltip formatter={(v) => v.toLocaleString()} />
-                  <Legend iconSize={8} />
-                  <Bar dataKey="Sheltered"   stackId="a" fill="#6366f1" radius={[0,0,0,0]} />
-                  <Bar dataKey="Unsheltered" stackId="a" fill="#ef4444" radius={[4,4,0,0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartCard>
-
+            {/* Active chart */}
+            <div className="bg-white rounded-2xl shadow-elegant p-4">
+              {activeChart.mobile}
+            </div>
           </div>
 
-          <div className="px-5 pb-5">
+          {/* ── Desktop: 2-column grid (shown only on lg+) ── */}
+          <div className="hidden lg:grid p-5 grid-cols-2 gap-5">
+            {charts.map((c, i) => (
+              <div key={i} className="bg-white rounded-2xl shadow-elegant p-5">
+                <h3 className="font-bold text-gray-800 text-sm mb-0.5">{c.title}</h3>
+                <p className="text-xs text-gray-400 mb-4">{c.desc}</p>
+                {c.desktop}
+              </div>
+            ))}
+          </div>
+
+          <div className="px-4 pb-4 lg:px-5 lg:pb-5">
             <p className="text-center text-xs text-gray-400">
               Data is statistically modelled for illustrative purposes. Charts use deterministic generation seeded from {item.name}.
             </p>
