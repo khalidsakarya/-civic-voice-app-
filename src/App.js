@@ -323,7 +323,9 @@ function App() {
   
   // US Congress chamber selection
   const [selectedChamber, setSelectedChamber] = useState(null);
-  
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
   // Location-based MP finder states
   const [userMP, setUserMP] = useState(null);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
@@ -776,7 +778,17 @@ function App() {
   useEffect(() => {
     setGrantsExpanded(false);
   }, [selectedMinistry]);
-  
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredInstallPrompt(e);
+      setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
   const initializeUSCongress = () => {
     // Expanded US Congress members with full transparency features
     const sampleCongress = [
@@ -11755,6 +11767,36 @@ function App() {
   return (
     <div className="App smooth-scroll">
       <style>{customStyles}</style>
+
+      {showInstallBanner && (
+        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-white border border-blue-200 rounded-2xl shadow-2xl p-4 flex items-center gap-3 z-[200] animate-fade-in">
+          <div className="text-2xl">📲</div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-800">Install Civic Voice</p>
+            <p className="text-xs text-gray-500">Works offline, loads faster</p>
+          </div>
+          <button
+            onClick={async () => {
+              if (!deferredInstallPrompt) return;
+              deferredInstallPrompt.prompt();
+              await deferredInstallPrompt.userChoice;
+              setDeferredInstallPrompt(null);
+              setShowInstallBanner(false);
+            }}
+            className="flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+          >
+            Install
+          </button>
+          <button
+            onClick={() => setShowInstallBanner(false)}
+            className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+            aria-label="Dismiss install prompt"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {view === 'countries' && renderCountrySelection()}
         {view === 'government-levels' && renderGovernmentLevels()}
         {view === 'provincial' && renderProvincial()}
