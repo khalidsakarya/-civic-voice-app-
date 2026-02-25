@@ -6520,35 +6520,24 @@ function App() {
       return { year: String(yr), Sheltered: total - unsheltered, Unsheltered: unsheltered };
     });
 
-    const CHART_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
-    // Mobile: trim 10-year series to 6 points so axes aren't crowded
-    const crimeDataM  = crimeData.slice(-6);
-    const gdpDataM    = gdpData.slice(-6);
-    const povDataM    = povData.slice(-6);
+    // ── Shared chart config ─────────────────────────────────────────────────
+    const TICK   = { fontSize: 13, fill: '#4b5563' };
+    const TT     = { fontSize: '13px', borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' };
+    const LEG    = { fontSize: '13px', paddingTop: '10px' };
+    const MARGIN = { top: 5, right: 24, left: 0, bottom: 5 };
 
-    // Pre-compute bar scaling maxes
-    const maxSpend    = Math.max(...spendData.flatMap(d => [d.Allocated, d.Actual]));
-    const maxCrimeAll = Math.max(...crimeDataM.flatMap(d => [d['Violent Crime'], d['Property Crime']]));
-    const maxUnemp    = Math.max(...unempData.flatMap(d => [d[unempKeys[0]], d[unempKeys[1]]])) * 1.1;
-    const maxGdpAbs   = Math.max(...gdpDataM.map(d => Math.abs(d['GDP Growth (%)'])));
-    const maxPovRate  = Math.max(...povDataM.map(d => d['Poverty Rate (%)'])) * 1.1;
-    const maxHomeless = Math.max(...homelessData.map(d => d.Sheltered + d.Unsheltered));
+    // Trim 10-year series to 6 most recent points to avoid crowding
+    const crimeDataM = crimeData.slice(-6);
+    const gdpDataM   = gdpData.slice(-6);
+    const povDataM   = povData.slice(-6);
 
-    // Shared Analytics-style class strings
-    const CARD  = 'bg-white rounded-lg shadow-md p-5 mb-4';
-    const STITLE = 'text-base font-bold text-gray-800 mb-1 flex items-center gap-2';
-    const SDESC  = 'text-sm text-gray-500 mb-4';
-    const BAR_H  = '16px';
-    const barTrack = { height: BAR_H, backgroundColor: '#f3f4f6', borderRadius: '9999px', overflow: 'hidden', width: '100%' };
-    const bar = (color, pct) => <div style={{ height: BAR_H, width: `${Math.max(pct, 3)}%`, backgroundColor: color, borderRadius: '9999px' }} />;
-    const row = (label, value, pct, color) => (
-      <div>
-        <div className="flex justify-between mb-1">
-          <span className="text-sm text-gray-700">{label}</span>
-          <span className="text-sm font-bold text-gray-800">{value}</span>
-        </div>
-        <div style={barTrack}>{bar(color, pct)}</div>
+    // Card wrapper matching Analytics section style
+    const Card = ({ title, desc, children }) => (
+      <div className="bg-white rounded-lg shadow-md p-5 mb-4">
+        <h3 className="text-base font-bold text-gray-800 mb-0.5">{title}</h3>
+        <p className="text-sm text-gray-500 mb-4">{desc}</p>
+        {children}
       </div>
     );
 
@@ -6563,200 +6552,133 @@ function App() {
           {/* Header */}
           <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
             <div>
-              <h2 className="font-bold text-gray-800 text-sm sm:text-base">{item.name} — Economic &amp; Social Data</h2>
-              <p className="text-xs text-gray-400">Illustrative data · figures are statistically modelled</p>
+              <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug">{item.name} — Economic &amp; Social Data</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Illustrative data · figures are statistically modelled</p>
             </div>
-            <button onClick={() => setShowEconomicModal(false)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0">
+            <button onClick={() => setShowEconomicModal(false)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 ml-3">
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Scrollable content */}
-          <div className="p-4 space-y-4">
+          {/* Charts — single column, full width, scrollable */}
+          <div className="p-4">
 
-            {/* 1. Budget Distribution */}
-            <div className={CARD}>
-              <h3 className={STITLE}>
-                <DollarSign className="w-5 h-5 text-indigo-500 flex-shrink-0" />
-                Government Budget Distribution
-              </h3>
-              <p className={SDESC}>How the budget is split across major spending categories</p>
-              <div className="space-y-3">
-                {budgetData.map((cat) => row(cat.name, `${cat.value}%`, cat.value, cat.color))}
+            {/* 1. Government Budget Distribution */}
+            <Card title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="name" type="category" width={120} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 5']} />
+                  <Tooltip formatter={(v) => [`${v}%`, 'Budget Share']} contentStyle={TT} />
+                  <Bar dataKey="value" name="Budget Share" radius={[0, 4, 4, 0]} maxBarSize={28}>
+                    {budgetData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              {/* Manual legend since Cell-coloring bypasses built-in Legend */}
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5 justify-center mt-3">
+                {budgetData.map((c) => (
+                  <span key={c.name} className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: c.color }} />
+                    {c.name}
+                  </span>
+                ))}
               </div>
-            </div>
+            </Card>
 
             {/* 2. Spending vs Budget */}
-            <div className={CARD}>
-              <h3 className={STITLE}>
-                <TrendingUp className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                Spending vs Budget
-              </h3>
-              <p className={SDESC}>Allocated vs actual per category ($M) — red bar means over budget</p>
-              <div className="space-y-5">
-                {(() => {
-                  const mx = Math.max(...spendData.flatMap(d => [d.Allocated, d.Actual]));
-                  return spendData.map((cat) => (
-                    <div key={cat.category}>
-                      <p className="text-sm font-semibold text-gray-700 mb-2">{cat.category}</p>
-                      <div className="space-y-2">
-                        <div>
-                          <div className="flex justify-between mb-1">
-                            <span className="text-sm text-indigo-600 font-medium">Allocated</span>
-                            <span className="text-sm font-bold text-indigo-700">${cat.Allocated.toLocaleString()}M</span>
-                          </div>
-                          <div style={barTrack}>{bar('#6366f1', (cat.Allocated / mx) * 100)}</div>
-                        </div>
-                        <div>
-                          <div className="flex justify-between mb-1">
-                            <span className="text-sm font-medium" style={{ color: cat.Actual > cat.Allocated ? '#ef4444' : '#10b981' }}>Actual</span>
-                            <span className="text-sm font-bold" style={{ color: cat.Actual > cat.Allocated ? '#dc2626' : '#059669' }}>${cat.Actual.toLocaleString()}M</span>
-                          </div>
-                          <div style={barTrack}>{bar(cat.Actual > cat.Allocated ? '#ef4444' : '#10b981', (cat.Actual / mx) * 100)}</div>
-                        </div>
-                      </div>
-                    </div>
-                  ));
-                })()}
-              </div>
-              <div className="flex gap-4 mt-3 text-xs text-gray-500 flex-wrap">
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-indigo-400 inline-block flex-shrink-0" /> Allocated</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-emerald-400 inline-block flex-shrink-0" /> Under budget</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-400 inline-block flex-shrink-0" /> Over budget</span>
-              </div>
-            </div>
+            <Card title="Spending vs Budget" desc="Allocated vs actual spending per category ($M)">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart layout="vertical" data={spendData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="category" type="category" width={90} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `$${(v / 1000).toFixed(1)}B`} />
+                  <Tooltip formatter={(v) => [`$${v.toLocaleString()}M`, '']} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Allocated" fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                  <Bar dataKey="Actual"    fill="#10b981" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
 
             {/* 3. Crime Rate Trends */}
-            <div className={CARD}>
-              <h3 className={STITLE}>
-                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                Crime Rate Trends
-              </h3>
-              <p className={SDESC}>Incidents per 100,000 people — last 6 years</p>
-              <div className="space-y-5">
-                {crimeDataM.map((yr) => (
-                  <div key={yr.year}>
-                    <p className="text-sm font-semibold text-gray-700 mb-2">{yr.year}</p>
-                    <div className="space-y-2">
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm text-red-500 font-medium">Violent Crime</span>
-                          <span className="text-sm font-bold text-red-600">{yr['Violent Crime'].toLocaleString()} per 100K</span>
-                        </div>
-                        <div style={barTrack}>{bar('#ef4444', (yr['Violent Crime'] / maxCrimeAll) * 100)}</div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm text-amber-500 font-medium">Property Crime</span>
-                          <span className="text-sm font-bold text-amber-600">{yr['Property Crime'].toLocaleString()} per 100K</span>
-                        </div>
-                        <div style={barTrack}>{bar('#f59e0b', (yr['Property Crime'] / maxCrimeAll) * 100)}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Card title="Crime Rate Trends" desc="Incidents per 100,000 people — last 6 years">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
+                  <Tooltip formatter={(v, name) => [`${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Violent Crime"  fill="#ef4444" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                  <Bar dataKey="Property Crime" fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
 
             {/* 4. Unemployment Rate */}
-            <div className={CARD}>
-              <h3 className={STITLE}>
-                <Users className="w-5 h-5 text-purple-500 flex-shrink-0" />
-                Unemployment Rate
-              </h3>
-              <p className={SDESC}>Annual rate (%) vs {isUSA ? 'US' : 'CA'} national average — last 4 years</p>
-              <div className="space-y-5">
-                {unempData.map((yr) => (
-                  <div key={yr.year}>
-                    <p className="text-sm font-semibold text-gray-700 mb-2">{yr.year}</p>
-                    <div className="space-y-2">
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm text-indigo-600 font-medium">{item.name}</span>
-                          <span className="text-sm font-bold text-indigo-700">{yr[unempKeys[0]]}%</span>
-                        </div>
-                        <div style={barTrack}>{bar('#6366f1', (yr[unempKeys[0]] / maxUnemp) * 100)}</div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm text-gray-400 font-medium">{isUSA ? 'US' : 'CA'} Average</span>
-                          <span className="text-sm font-bold text-gray-500">{yr[unempKeys[1]]}%</span>
-                        </div>
-                        <div style={barTrack}>{bar('#d1d5db', (yr[unempKeys[1]] / maxUnemp) * 100)}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Card title="Unemployment Rate" desc={`Annual rate (%) vs ${isUSA ? 'US' : 'CA'} national average — last 4 years`}>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart layout="vertical" data={unempData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 1']} />
+                  <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey={unempKeys[0]} fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                  <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
 
-            {/* 5. GDP Growth */}
-            <div className={CARD}>
-              <h3 className={STITLE}>
-                <BarChart3 className="w-5 h-5 text-green-500 flex-shrink-0" />
-                GDP Growth Over Time
-              </h3>
-              <p className={SDESC}>Annual GDP growth rate (%) — last 6 years · green = growth, red = contraction</p>
-              <div className="space-y-3">
-                {gdpDataM.map((yr) => {
-                  const v = yr['GDP Growth (%)'];
-                  const isPos = v >= 0;
-                  return (
-                    <div key={yr.year}>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm text-gray-700">{yr.year}</span>
-                        <span className={`text-sm font-bold ${isPos ? 'text-emerald-600' : 'text-red-600'}`}>{isPos ? '+' : ''}{v}%</span>
-                      </div>
-                      <div style={barTrack}>{bar(isPos ? '#10b981' : '#ef4444', (Math.abs(v) / maxGdpAbs) * 100)}</div>
-                    </div>
-                  );
-                })}
+            {/* 5. GDP Growth Over Time */}
+            <Card title="GDP Growth Over Time" desc="Annual GDP growth rate (%) — last 6 years · green = growth, red = contraction">
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart layout="vertical" data={gdpDataM} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} />
+                  <Tooltip formatter={(v) => [`${v}%`, 'GDP Growth']} contentStyle={TT} />
+                  <Bar dataKey="GDP Growth (%)" radius={[0, 4, 4, 0]} maxBarSize={28}>
+                    {gdpDataM.map((e, i) => <Cell key={i} fill={e['GDP Growth (%)'] >= 0 ? '#10b981' : '#ef4444'} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div className="flex gap-4 justify-center mt-2">
+                <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0 bg-emerald-500" /> Growth</span>
+                <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0 bg-red-500" /> Contraction</span>
               </div>
-            </div>
+            </Card>
 
-            {/* 6. Poverty Rate */}
-            <div className={CARD}>
-              <h3 className={STITLE}>
-                <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
-                Poverty Rate Trend
-              </h3>
-              <p className={SDESC}>Population living below the poverty line (%) — last 6 years</p>
-              <div className="space-y-3">
-                {povDataM.map((yr) => row(yr.year, `${yr['Poverty Rate (%)']}%`, (yr['Poverty Rate (%)'] / maxPovRate) * 100, '#f59e0b'))}
-              </div>
-            </div>
+            {/* 6. Poverty Rate Trend */}
+            <Card title="Poverty Rate Trend" desc="Population living below the poverty line (%) — last 6 years">
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart layout="vertical" data={povDataM} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 2']} />
+                  <Tooltip formatter={(v) => [`${v}%`, 'Poverty Rate']} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Poverty Rate (%)" fill="#f59e0b" radius={[0, 4, 4, 0]} maxBarSize={28} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
 
-            {/* 7. Homelessness */}
-            <div className={CARD}>
-              <h3 className={STITLE}>
-                <MapPin className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                Homelessness Statistics
-              </h3>
-              <p className={SDESC}>Sheltered vs unsheltered population 2020–2024</p>
-              <div className="space-y-4">
-                {homelessData.map((yr) => {
-                  const total = yr.Sheltered + yr.Unsheltered;
-                  const shPct = (yr.Sheltered / maxHomeless) * 100;
-                  const unPct = (yr.Unsheltered / maxHomeless) * 100;
-                  return (
-                    <div key={yr.year}>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-semibold text-gray-700">{yr.year}</span>
-                        <span className="text-sm font-bold text-gray-800">{total.toLocaleString()} total</span>
-                      </div>
-                      <div className="flex overflow-hidden rounded-full" style={{ height: BAR_H, backgroundColor: '#f3f4f6' }}>
-                        <div style={{ width: `${shPct}%`, height: BAR_H, backgroundColor: '#6366f1', flexShrink: 0 }} />
-                        <div style={{ width: `${unPct}%`, height: BAR_H, backgroundColor: '#ef4444', flexShrink: 0 }} />
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-500 mt-1 flex-wrap gap-x-3">
-                        <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full bg-indigo-400 flex-shrink-0" />Sheltered: {yr.Sheltered.toLocaleString()}</span>
-                        <span className="flex items-center gap-1">Unsheltered: {yr.Unsheltered.toLocaleString()}<span className="inline-block w-2.5 h-2.5 rounded-full bg-red-400 flex-shrink-0 ml-1" /></span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            {/* 7. Homelessness Statistics */}
+            <Card title="Homelessness Statistics" desc="Sheltered vs unsheltered population 2020–2024">
+              <ResponsiveContainer width="100%" height={230}>
+                <BarChart layout="vertical" data={homelessData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
+                  <Tooltip formatter={(v, name) => [v.toLocaleString(), name]} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Sheltered"   stackId="a" fill="#6366f1" maxBarSize={32} />
+                  <Bar dataKey="Unsheltered" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} maxBarSize={32} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
 
             <p className="text-center text-xs text-gray-400 pb-2">
               Data is statistically modelled for illustrative purposes. Figures use deterministic generation seeded from {item.name}.
@@ -6764,6 +6686,7 @@ function App() {
           </div>
         </div>
       </div>
+
     );
   };
 
