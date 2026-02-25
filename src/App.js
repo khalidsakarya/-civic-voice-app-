@@ -6527,224 +6527,30 @@ function App() {
     const gdpDataM    = gdpData.slice(-6);
     const povDataM    = povData.slice(-6);
 
-    // Shared style constants
-    const TICK_M  = { fontSize: 14, fill: '#6b7280' };
-    const TICK_D  = { fontSize: 11, fill: '#6b7280' };
-    const TT_STYLE = { fontSize: '14px', borderRadius: '10px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' };
-    const LEG_M  = { fontSize: '14px' };
-    const MH = 280; // mobile chart height
+    // Pre-compute bar scaling maxes
+    const maxSpend    = Math.max(...spendData.flatMap(d => [d.Allocated, d.Actual]));
+    const maxCrimeAll = Math.max(...crimeDataM.flatMap(d => [d['Violent Crime'], d['Property Crime']]));
+    const maxUnemp    = Math.max(...unempData.flatMap(d => [d[unempKeys[0]], d[unempKeys[1]]])) * 1.1;
+    const maxGdpAbs   = Math.max(...gdpDataM.map(d => Math.abs(d['GDP Growth (%)'])));
+    const maxPovRate  = Math.max(...povDataM.map(d => d['Poverty Rate (%)'])) * 1.1;
+    const maxHomeless = Math.max(...homelessData.map(d => d.Sheltered + d.Unsheltered));
 
-    const charts = [
-      {
-        title: 'Government Budget Distribution',
-        desc:  'Budget split across major spending categories (%)',
-        mobile: (
-          <ResponsiveContainer width="100%" height={MH}>
-            <RechartsPie>
-              <Pie data={budgetData} cx="50%" cy="50%" innerRadius={65} outerRadius={108} paddingAngle={3} dataKey="value">
-                {budgetData.map((e) => <Cell key={e.name} fill={e.color} />)}
-              </Pie>
-              <Tooltip formatter={(v) => `${v}%`} contentStyle={TT_STYLE} />
-              <Legend iconType="circle" iconSize={12} wrapperStyle={LEG_M} />
-            </RechartsPie>
-          </ResponsiveContainer>
-        ),
-        desktop: (
-          <ResponsiveContainer width="100%" height={240}>
-            <RechartsPie>
-              <Pie data={budgetData} cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={3} dataKey="value">
-                {budgetData.map((e) => <Cell key={e.name} fill={e.color} />)}
-              </Pie>
-              <Tooltip formatter={(v) => `${v}%`} contentStyle={TT_STYLE} />
-              <Legend iconType="circle" iconSize={8} />
-            </RechartsPie>
-          </ResponsiveContainer>
-        ),
-      },
-      {
-        title: 'Spending vs Budget',
-        desc:  'Allocated vs actual spending per category ($M)',
-        mobile: (
-          <ResponsiveContainer width="100%" height={MH}>
-            <BarChart data={spendData} barGap={4} margin={{ top: 5, right: 8, left: 8, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="category" tick={TICK_M} />
-              <YAxis tick={TICK_M} tickFormatter={(v) => `$${(v/1000).toFixed(1)}B`} width={55} />
-              <Tooltip formatter={(v) => `$${v}M`} contentStyle={TT_STYLE} />
-              <Legend iconSize={12} wrapperStyle={LEG_M} />
-              <Bar dataKey="Allocated" fill="#6366f1" radius={[4,4,0,0]} />
-              <Bar dataKey="Actual"    fill="#10b981" radius={[4,4,0,0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        ),
-        desktop: (
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={spendData} barGap={2} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="category" tick={TICK_D} />
-              <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `$${(v/1000).toFixed(1)}B`} />
-              <Tooltip formatter={(v) => `$${v}M`} contentStyle={TT_STYLE} />
-              <Legend iconSize={8} />
-              <Bar dataKey="Allocated" fill="#6366f1" radius={[4,4,0,0]} />
-              <Bar dataKey="Actual"    fill="#10b981" radius={[4,4,0,0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        ),
-      },
-      {
-        title: 'Crime Rate Trends',
-        desc:  'Incidents per 100,000 people — last 6 years',
-        mobile: (
-          <ResponsiveContainer width="100%" height={MH}>
-            <LineChart data={crimeDataM} margin={{ top: 5, right: 8, left: 8, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="year" tick={TICK_M} />
-              <YAxis tick={TICK_M} width={50} />
-              <Tooltip contentStyle={TT_STYLE} />
-              <Legend iconSize={12} wrapperStyle={LEG_M} />
-              <Line type="monotone" dataKey="Violent Crime"  stroke="#ef4444" strokeWidth={2.5} dot={{ r: 4 }} />
-              <Line type="monotone" dataKey="Property Crime" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        ),
-        desktop: (
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={crimeData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="year" tick={TICK_D} />
-              <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip contentStyle={TT_STYLE} />
-              <Legend iconSize={8} />
-              <Line type="monotone" dataKey="Violent Crime"  stroke="#ef4444" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="Property Crime" stroke="#f59e0b" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        ),
-      },
-      {
-        title: 'Unemployment Rate',
-        desc:  `Annual rate (%) vs ${isUSA ? 'US' : 'CA'} average — last 4 years`,
-        mobile: (
-          <ResponsiveContainer width="100%" height={MH}>
-            <LineChart data={unempData} margin={{ top: 5, right: 8, left: 8, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="year" tick={TICK_M} />
-              <YAxis tick={TICK_M} tickFormatter={(v) => `${v}%`} domain={['auto','auto']} width={48} />
-              <Tooltip formatter={(v) => `${v}%`} contentStyle={TT_STYLE} />
-              <Legend iconSize={12} wrapperStyle={LEG_M} />
-              <Line type="monotone" dataKey={unempKeys[0]} stroke="#6366f1" strokeWidth={2.5} dot={{ r: 5 }} />
-              <Line type="monotone" dataKey={unempKeys[1]} stroke="#9ca3af" strokeWidth={2.5} strokeDasharray="5 5" dot={{ r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        ),
-        desktop: (
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={unempData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="year" tick={TICK_D} />
-              <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} domain={['auto','auto']} />
-              <Tooltip formatter={(v) => `${v}%`} contentStyle={TT_STYLE} />
-              <Legend iconSize={8} />
-              <Line type="monotone" dataKey={unempKeys[0]} stroke="#6366f1" strokeWidth={2} dot={{ r: 4 }} />
-              <Line type="monotone" dataKey={unempKeys[1]} stroke="#9ca3af" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        ),
-      },
-      {
-        title: 'GDP Growth Over Time',
-        desc:  'Annual GDP growth rate (%) — last 6 years',
-        mobile: (
-          <ResponsiveContainer width="100%" height={MH}>
-            <BarChart data={gdpDataM} margin={{ top: 5, right: 8, left: 8, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="year" tick={TICK_M} />
-              <YAxis tick={TICK_M} tickFormatter={(v) => `${v}%`} domain={['auto','auto']} width={48} />
-              <Tooltip formatter={(v) => `${v}%`} labelFormatter={(l) => `Year: ${l}`} contentStyle={TT_STYLE} />
-              <Legend iconSize={12} wrapperStyle={LEG_M} />
-              <Bar dataKey="GDP Growth (%)" radius={[4,4,0,0]}>
-                {gdpDataM.map((e, i) => <Cell key={i} fill={e['GDP Growth (%)'] >= 0 ? '#10b981' : '#ef4444'} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        ),
-        desktop: (
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={gdpData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="year" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} domain={['auto','auto']} />
-              <Tooltip formatter={(v) => `${v}%`} labelFormatter={(l) => `Year: ${l}`} contentStyle={TT_STYLE} />
-              <Legend iconSize={8} />
-              <Bar dataKey="GDP Growth (%)" radius={[4,4,0,0]}>
-                {gdpData.map((e, i) => <Cell key={i} fill={e['GDP Growth (%)'] >= 0 ? '#10b981' : '#ef4444'} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        ),
-      },
-      {
-        title: 'Poverty Rate Trend',
-        desc:  'Population below poverty line (%) — last 6 years',
-        mobile: (
-          <ResponsiveContainer width="100%" height={MH}>
-            <LineChart data={povDataM} margin={{ top: 5, right: 8, left: 8, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="year" tick={TICK_M} />
-              <YAxis tick={TICK_M} tickFormatter={(v) => `${v}%`} domain={['auto','auto']} width={48} />
-              <Tooltip formatter={(v) => `${v}%`} contentStyle={TT_STYLE} />
-              <Legend iconSize={12} wrapperStyle={LEG_M} />
-              <Line type="monotone" dataKey="Poverty Rate (%)" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        ),
-        desktop: (
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={povData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="year" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} domain={['auto','auto']} />
-              <Tooltip formatter={(v) => `${v}%`} contentStyle={TT_STYLE} />
-              <Legend iconSize={8} />
-              <Line type="monotone" dataKey="Poverty Rate (%)" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        ),
-      },
-      {
-        title: 'Homelessness Statistics',
-        desc:  'Sheltered vs unsheltered population 2020–2024',
-        mobile: (
-          <ResponsiveContainer width="100%" height={MH}>
-            <BarChart data={homelessData} barSize={36} margin={{ top: 5, right: 8, left: 8, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="year" tick={TICK_M} />
-              <YAxis tick={TICK_M} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} width={48} />
-              <Tooltip formatter={(v) => v.toLocaleString()} contentStyle={TT_STYLE} />
-              <Legend iconSize={12} wrapperStyle={LEG_M} />
-              <Bar dataKey="Sheltered"   stackId="a" fill="#6366f1" radius={[0,0,0,0]} />
-              <Bar dataKey="Unsheltered" stackId="a" fill="#ef4444" radius={[4,4,0,0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        ),
-        desktop: (
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={homelessData} barSize={28} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="year" tick={TICK_D} />
-              <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
-              <Tooltip formatter={(v) => v.toLocaleString()} contentStyle={TT_STYLE} />
-              <Legend iconSize={8} />
-              <Bar dataKey="Sheltered"   stackId="a" fill="#6366f1" radius={[0,0,0,0]} />
-              <Bar dataKey="Unsheltered" stackId="a" fill="#ef4444" radius={[4,4,0,0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        ),
-      },
-    ];
-
-    const totalCharts = charts.length;
-    const activeChart = charts[economicChartIndex] || charts[0];
+    // Shared Analytics-style class strings
+    const CARD  = 'bg-white rounded-lg shadow-md p-5 mb-4';
+    const STITLE = 'text-base font-bold text-gray-800 mb-1 flex items-center gap-2';
+    const SDESC  = 'text-sm text-gray-500 mb-4';
+    const BAR_H  = '16px';
+    const barTrack = { height: BAR_H, backgroundColor: '#f3f4f6', borderRadius: '9999px', overflow: 'hidden', width: '100%' };
+    const bar = (color, pct) => <div style={{ height: BAR_H, width: `${Math.max(pct, 3)}%`, backgroundColor: color, borderRadius: '9999px' }} />;
+    const row = (label, value, pct, color) => (
+      <div>
+        <div className="flex justify-between mb-1">
+          <span className="text-sm text-gray-700">{label}</span>
+          <span className="text-sm font-bold text-gray-800">{value}</span>
+        </div>
+        <div style={barTrack}>{bar(color, pct)}</div>
+      </div>
+    );
 
     return (
       <div
@@ -6752,76 +6558,208 @@ function App() {
         style={{ background: 'rgba(0,0,0,0.55)' }}
         onClick={(e) => { if (e.target === e.currentTarget) setShowEconomicModal(false); }}
       >
-        <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
+        <div className="relative bg-gray-50 w-full max-w-xl mx-2 sm:mx-4 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
 
           {/* Header */}
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
             <div>
-              <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Economic &amp; Social Data</h2>
+              <h2 className="font-bold text-gray-800 text-sm sm:text-base">{item.name} — Economic &amp; Social Data</h2>
               <p className="text-xs text-gray-400">Illustrative data · figures are statistically modelled</p>
             </div>
-            <button onClick={() => setShowEconomicModal(false)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors">
+            <button onClick={() => setShowEconomicModal(false)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0">
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* ── Mobile: one chart at a time with prev/next (hidden on lg+) ── */}
-          <div className="lg:hidden p-4">
+          {/* Scrollable content */}
+          <div className="p-4 space-y-4">
 
-            {/* Navigation row */}
-            <div className="flex items-center gap-3 mb-4">
-              <button
-                onClick={() => setEconomicChartIndex(i => Math.max(0, i - 1))}
-                disabled={economicChartIndex === 0}
-                className="flex-shrink-0 p-2.5 rounded-xl bg-white shadow-sm border border-gray-100 text-gray-700 disabled:opacity-25 disabled:cursor-not-allowed transition-all active:scale-95"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <div className="flex-1 text-center min-w-0">
-                <p className="text-xs text-gray-400 font-medium">{economicChartIndex + 1} of {totalCharts}</p>
-                <p className="font-bold text-gray-800 text-base leading-snug mt-0.5">{activeChart.title}</p>
-                <p className="text-xs text-gray-500 mt-0.5 leading-snug">{activeChart.desc}</p>
+            {/* 1. Budget Distribution */}
+            <div className={CARD}>
+              <h3 className={STITLE}>
+                <DollarSign className="w-5 h-5 text-indigo-500 flex-shrink-0" />
+                Government Budget Distribution
+              </h3>
+              <p className={SDESC}>How the budget is split across major spending categories</p>
+              <div className="space-y-3">
+                {budgetData.map((cat) => row(cat.name, `${cat.value}%`, cat.value, cat.color))}
               </div>
-              <button
-                onClick={() => setEconomicChartIndex(i => Math.min(totalCharts - 1, i + 1))}
-                disabled={economicChartIndex === totalCharts - 1}
-                className="flex-shrink-0 p-2.5 rounded-xl bg-white shadow-sm border border-gray-100 text-gray-700 disabled:opacity-25 disabled:cursor-not-allowed transition-all active:scale-95"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
             </div>
 
-            {/* Dot indicators */}
-            <div className="flex justify-center items-center gap-2 mb-4">
-              {charts.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setEconomicChartIndex(i)}
-                  className={`rounded-full transition-all ${i === economicChartIndex ? 'w-5 h-2 bg-indigo-500' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'}`}
-                />
-              ))}
-            </div>
-
-            {/* Active chart */}
-            <div className="bg-white rounded-2xl shadow-elegant p-4">
-              {activeChart.mobile}
-            </div>
-          </div>
-
-          {/* ── Desktop: 2-column grid (shown only on lg+) ── */}
-          <div className="hidden lg:grid p-5 grid-cols-2 gap-5">
-            {charts.map((c, i) => (
-              <div key={i} className="bg-white rounded-2xl shadow-elegant p-5">
-                <h3 className="font-bold text-gray-800 text-sm mb-0.5">{c.title}</h3>
-                <p className="text-xs text-gray-400 mb-4">{c.desc}</p>
-                {c.desktop}
+            {/* 2. Spending vs Budget */}
+            <div className={CARD}>
+              <h3 className={STITLE}>
+                <TrendingUp className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                Spending vs Budget
+              </h3>
+              <p className={SDESC}>Allocated vs actual per category ($M) — red bar means over budget</p>
+              <div className="space-y-5">
+                {(() => {
+                  const mx = Math.max(...spendData.flatMap(d => [d.Allocated, d.Actual]));
+                  return spendData.map((cat) => (
+                    <div key={cat.category}>
+                      <p className="text-sm font-semibold text-gray-700 mb-2">{cat.category}</p>
+                      <div className="space-y-2">
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm text-indigo-600 font-medium">Allocated</span>
+                            <span className="text-sm font-bold text-indigo-700">${cat.Allocated.toLocaleString()}M</span>
+                          </div>
+                          <div style={barTrack}>{bar('#6366f1', (cat.Allocated / mx) * 100)}</div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm font-medium" style={{ color: cat.Actual > cat.Allocated ? '#ef4444' : '#10b981' }}>Actual</span>
+                            <span className="text-sm font-bold" style={{ color: cat.Actual > cat.Allocated ? '#dc2626' : '#059669' }}>${cat.Actual.toLocaleString()}M</span>
+                          </div>
+                          <div style={barTrack}>{bar(cat.Actual > cat.Allocated ? '#ef4444' : '#10b981', (cat.Actual / mx) * 100)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ));
+                })()}
               </div>
-            ))}
-          </div>
+              <div className="flex gap-4 mt-3 text-xs text-gray-500 flex-wrap">
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-indigo-400 inline-block flex-shrink-0" /> Allocated</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-emerald-400 inline-block flex-shrink-0" /> Under budget</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-400 inline-block flex-shrink-0" /> Over budget</span>
+              </div>
+            </div>
 
-          <div className="px-4 pb-4 lg:px-5 lg:pb-5">
-            <p className="text-center text-xs text-gray-400">
-              Data is statistically modelled for illustrative purposes. Charts use deterministic generation seeded from {item.name}.
+            {/* 3. Crime Rate Trends */}
+            <div className={CARD}>
+              <h3 className={STITLE}>
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                Crime Rate Trends
+              </h3>
+              <p className={SDESC}>Incidents per 100,000 people — last 6 years</p>
+              <div className="space-y-5">
+                {crimeDataM.map((yr) => (
+                  <div key={yr.year}>
+                    <p className="text-sm font-semibold text-gray-700 mb-2">{yr.year}</p>
+                    <div className="space-y-2">
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm text-red-500 font-medium">Violent Crime</span>
+                          <span className="text-sm font-bold text-red-600">{yr['Violent Crime'].toLocaleString()} per 100K</span>
+                        </div>
+                        <div style={barTrack}>{bar('#ef4444', (yr['Violent Crime'] / maxCrimeAll) * 100)}</div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm text-amber-500 font-medium">Property Crime</span>
+                          <span className="text-sm font-bold text-amber-600">{yr['Property Crime'].toLocaleString()} per 100K</span>
+                        </div>
+                        <div style={barTrack}>{bar('#f59e0b', (yr['Property Crime'] / maxCrimeAll) * 100)}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. Unemployment Rate */}
+            <div className={CARD}>
+              <h3 className={STITLE}>
+                <Users className="w-5 h-5 text-purple-500 flex-shrink-0" />
+                Unemployment Rate
+              </h3>
+              <p className={SDESC}>Annual rate (%) vs {isUSA ? 'US' : 'CA'} national average — last 4 years</p>
+              <div className="space-y-5">
+                {unempData.map((yr) => (
+                  <div key={yr.year}>
+                    <p className="text-sm font-semibold text-gray-700 mb-2">{yr.year}</p>
+                    <div className="space-y-2">
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm text-indigo-600 font-medium">{item.name}</span>
+                          <span className="text-sm font-bold text-indigo-700">{yr[unempKeys[0]]}%</span>
+                        </div>
+                        <div style={barTrack}>{bar('#6366f1', (yr[unempKeys[0]] / maxUnemp) * 100)}</div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm text-gray-400 font-medium">{isUSA ? 'US' : 'CA'} Average</span>
+                          <span className="text-sm font-bold text-gray-500">{yr[unempKeys[1]]}%</span>
+                        </div>
+                        <div style={barTrack}>{bar('#d1d5db', (yr[unempKeys[1]] / maxUnemp) * 100)}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 5. GDP Growth */}
+            <div className={CARD}>
+              <h3 className={STITLE}>
+                <BarChart3 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                GDP Growth Over Time
+              </h3>
+              <p className={SDESC}>Annual GDP growth rate (%) — last 6 years · green = growth, red = contraction</p>
+              <div className="space-y-3">
+                {gdpDataM.map((yr) => {
+                  const v = yr['GDP Growth (%)'];
+                  const isPos = v >= 0;
+                  return (
+                    <div key={yr.year}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm text-gray-700">{yr.year}</span>
+                        <span className={`text-sm font-bold ${isPos ? 'text-emerald-600' : 'text-red-600'}`}>{isPos ? '+' : ''}{v}%</span>
+                      </div>
+                      <div style={barTrack}>{bar(isPos ? '#10b981' : '#ef4444', (Math.abs(v) / maxGdpAbs) * 100)}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 6. Poverty Rate */}
+            <div className={CARD}>
+              <h3 className={STITLE}>
+                <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                Poverty Rate Trend
+              </h3>
+              <p className={SDESC}>Population living below the poverty line (%) — last 6 years</p>
+              <div className="space-y-3">
+                {povDataM.map((yr) => row(yr.year, `${yr['Poverty Rate (%)']}%`, (yr['Poverty Rate (%)'] / maxPovRate) * 100, '#f59e0b'))}
+              </div>
+            </div>
+
+            {/* 7. Homelessness */}
+            <div className={CARD}>
+              <h3 className={STITLE}>
+                <MapPin className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                Homelessness Statistics
+              </h3>
+              <p className={SDESC}>Sheltered vs unsheltered population 2020–2024</p>
+              <div className="space-y-4">
+                {homelessData.map((yr) => {
+                  const total = yr.Sheltered + yr.Unsheltered;
+                  const shPct = (yr.Sheltered / maxHomeless) * 100;
+                  const unPct = (yr.Unsheltered / maxHomeless) * 100;
+                  return (
+                    <div key={yr.year}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm font-semibold text-gray-700">{yr.year}</span>
+                        <span className="text-sm font-bold text-gray-800">{total.toLocaleString()} total</span>
+                      </div>
+                      <div className="flex overflow-hidden rounded-full" style={{ height: BAR_H, backgroundColor: '#f3f4f6' }}>
+                        <div style={{ width: `${shPct}%`, height: BAR_H, backgroundColor: '#6366f1', flexShrink: 0 }} />
+                        <div style={{ width: `${unPct}%`, height: BAR_H, backgroundColor: '#ef4444', flexShrink: 0 }} />
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 mt-1 flex-wrap gap-x-3">
+                        <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full bg-indigo-400 flex-shrink-0" />Sheltered: {yr.Sheltered.toLocaleString()}</span>
+                        <span className="flex items-center gap-1">Unsheltered: {yr.Unsheltered.toLocaleString()}<span className="inline-block w-2.5 h-2.5 rounded-full bg-red-400 flex-shrink-0 ml-1" /></span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <p className="text-center text-xs text-gray-400 pb-2">
+              Data is statistically modelled for illustrative purposes. Figures use deterministic generation seeded from {item.name}.
             </p>
           </div>
         </div>
