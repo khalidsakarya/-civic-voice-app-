@@ -5384,6 +5384,7 @@ function App() {
         
         <div className="mt-12 text-center text-gray-500 text-sm animate-fade-in" style={{ animationDelay: '0.4s' }}>
           <p>Track legislation, contracts, spending, and accountability</p>
+          <p className="mt-2 text-xs text-gray-400">v{process.env.REACT_APP_VERSION || '1.0.0'}</p>
         </div>
       </div>
     </div>
