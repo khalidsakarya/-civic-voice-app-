@@ -6548,7 +6548,7 @@ function App() {
         style={{ background: 'rgba(0,0,0,0.55)' }}
         onClick={(e) => { if (e.target === e.currentTarget) setShowEconomicModal(false); }}
       >
-        <div className="relative bg-gray-50 w-full max-w-xl mx-2 sm:mx-4 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
+        <div className="relative bg-gray-50 w-full max-w-xl md:max-w-4xl mx-2 sm:mx-4 md:mx-auto my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
 
           {/* Header */}
           <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
