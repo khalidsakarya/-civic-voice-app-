@@ -221,7 +221,7 @@ const ExpandableChart = ({ title, children, expandedHeight = 500 }) => {
   return (
     <div className="relative group">
       <button
-        className="absolute top-1 right-1 z-10 p-1 rounded-md bg-white/80 hover:bg-white shadow text-gray-400 hover:text-gray-700 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+        className="absolute top-1 right-1 z-10 p-1 rounded-md bg-white/80 hover:bg-white shadow text-gray-400 hover:text-gray-700 opacity-100"
         onClick={() => setExp(true)}
         title="Expand chart"
         aria-label="Expand chart to full screen"
