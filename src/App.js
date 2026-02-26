@@ -221,6 +221,7 @@ function App() {
   const [selectedBill, setSelectedBill] = useState(null);
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [showEconomicModal, setShowEconomicModal] = useState(false);
+  const [showPresidentModal, setShowPresidentModal] = useState(false);
   const [economicChartIndex, setEconomicChartIndex] = useState(0);
   const [showTaxExemptModal, setShowTaxExemptModal] = useState(false);
   const [taxExemptSearch, setTaxExemptSearch] = useState('');
@@ -7295,6 +7296,216 @@ function App() {
     );
   };
 
+  const renderPresidentExecutive = () => {
+    const trump = {
+      name: 'Donald J. Trump',
+      title: '47th President of the United States',
+      party: 'Republican',
+      termStart: 'January 20, 2025',
+      priorTerm: '2017 – 2021 (45th President)',
+      born: 'June 14, 1946',
+      birthplace: 'Queens, New York City',
+      education: 'B.S. Economics, Wharton School, University of Pennsylvania',
+      bio: 'Donald J. Trump is the 47th President of the United States, inaugurated on January 20, 2025. Previously serving as the 45th President from 2017 to 2021, Trump became the first U.S. president elected to non-consecutive terms since Grover Cleveland in 1892. Before entering politics he was a prominent real estate developer and television personality known for The Apprentice.',
+      policies: ['Border Security & Immigration', 'Tariffs & Economic Nationalism', 'Energy Independence', 'Deregulation', 'America First Foreign Policy'],
+      executiveActions: [
+        'Declared national emergency at the southern border',
+        'Withdrew from the Paris Climate Agreement',
+        'Issued executive orders on immigration enforcement and deportation',
+        'Imposed broad tariffs on imports from major trading partners',
+        'Established DOGE — Department of Government Efficiency advisory body',
+        'Signed executive order to end birthright citizenship for children of illegal immigrants (pending courts)',
+      ],
+      cabinet: [
+        { role: 'Vice President', name: 'JD Vance' },
+        { role: 'Secretary of State', name: 'Marco Rubio' },
+        { role: 'Secretary of Defense', name: 'Pete Hegseth' },
+        { role: 'Secretary of the Treasury', name: 'Scott Bessent' },
+        { role: 'Attorney General', name: 'Pam Bondi' },
+        { role: 'White House Chief of Staff', name: 'Susie Wiles' },
+        { role: 'Sec. of Homeland Security', name: 'Kristi Noem' },
+        { role: 'Sec. of Health & Human Services', name: 'RFK Jr.' },
+      ],
+      email: 'president@whitehouse.gov',
+      phone: '(202) 456-1414',
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
+        <div className="max-w-5xl mx-auto">
+          <button
+            onClick={() => setView('categories')}
+            className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
+          >
+            ← Back
+          </button>
+
+          <div className="mb-8 animate-slide-in">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">President &amp; Executive Branch</h1>
+            <p className="text-gray-600 text-base sm:text-lg">The White House, Cabinet &amp; Executive Branch leadership</p>
+            <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
+          </div>
+
+          {/* President Card — same style as Congress member cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+              className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-red-400"
+              onClick={() => setShowPresidentModal(true)}
+            >
+              {/* Avatar with initials */}
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4"
+                style={{ backgroundColor: '#ef4444' }}
+              >
+                DT
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-1">{trump.name}</h3>
+              <p className="text-sm text-gray-500 mb-3">{trump.title}</p>
+              {/* Party badge */}
+              <div className="mb-3">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold text-white" style={{ backgroundColor: '#ef4444' }}>
+                  Republican
+                </span>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Calendar className="w-4 h-4 flex-shrink-0" />
+                  <span>In office since {trump.termStart}</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <MapPin className="w-4 h-4 flex-shrink-0" />
+                  <span>The White House, Washington D.C.</span>
+                </div>
+                <p className="text-xs text-gray-500 leading-relaxed pt-1 line-clamp-3">{trump.bio}</p>
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <span className="text-blue-600 text-sm font-medium">View Full Profile →</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Full Profile Modal */}
+          {showPresidentModal && (
+            <div
+              className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
+              style={{ background: 'rgba(0,0,0,0.55)' }}
+              onClick={(e) => { if (e.target === e.currentTarget) setShowPresidentModal(false); }}
+            >
+              <div className="relative bg-white w-full max-w-2xl mx-4 my-6 rounded-2xl shadow-2xl animate-fade-in">
+
+                {/* Modal header */}
+                <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-t-2xl p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                        DT
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-white">{trump.name}</h2>
+                        <p className="text-red-200 text-sm mt-0.5">{trump.title}</p>
+                        <span className="mt-2 inline-block px-2 py-0.5 bg-white/20 rounded-full text-xs text-white font-medium">Republican</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowPresidentModal(false)}
+                      className="p-2 rounded-xl hover:bg-white/20 text-white flex-shrink-0"
+                      aria-label="Close"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Modal body */}
+                <div className="p-6 space-y-6">
+
+                  {/* Term & personal info */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs text-gray-500 mb-0.5">Current Term</p>
+                      <p className="text-sm font-semibold text-gray-800">{trump.termStart} – Present</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs text-gray-500 mb-0.5">Previous Term</p>
+                      <p className="text-sm font-semibold text-gray-800">{trump.priorTerm}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs text-gray-500 mb-0.5">Born</p>
+                      <p className="text-sm font-semibold text-gray-800">{trump.born}, {trump.birthplace}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs text-gray-500 mb-0.5">Education</p>
+                      <p className="text-sm font-semibold text-gray-800">{trump.education}</p>
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  <div>
+                    <p className="panel-section-label">Biography</p>
+                    <div className="bg-gradient-to-br from-gray-50 to-red-50 border border-gray-200 rounded-xl p-4">
+                      <p className="text-gray-700 text-sm leading-relaxed">{trump.bio}</p>
+                    </div>
+                  </div>
+
+                  {/* Key policy areas */}
+                  <div>
+                    <p className="panel-section-label">Key Policy Areas</p>
+                    <div className="flex flex-wrap gap-2">
+                      {trump.policies.map((p, i) => (
+                        <span key={i} className="px-3 py-1 bg-red-50 text-red-700 text-xs font-medium rounded-full border border-red-200">{p}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Executive actions */}
+                  <div>
+                    <p className="panel-section-label">Key Executive Actions (2025)</p>
+                    <div className="space-y-2">
+                      {trump.executiveActions.map((action, i) => (
+                        <div key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                          <span className="text-red-400 font-bold mt-0.5 flex-shrink-0">•</span>
+                          <span>{action}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Cabinet */}
+                  <div>
+                    <p className="panel-section-label">Key Cabinet Members</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {trump.cabinet.map((c, i) => (
+                        <div key={i} className="bg-gray-50 rounded-xl p-3">
+                          <p className="text-xs text-gray-500">{c.role}</p>
+                          <p className="text-sm font-semibold text-gray-800">{c.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Contact */}
+                  <div>
+                    <p className="panel-section-label">Contact the White House</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-700">
+                        <span className="font-medium">Phone: </span>{trump.phone}
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-700">
+                        <span className="font-medium">Email: </span>{trump.email}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      </div>
+    );
+  };
+
   const renderCategories = () => {
     const isUSA = selectedCountry?.type === 'usa';
     const countryName = isUSA ? 'United States' : 'Canadian';
@@ -7320,6 +7531,26 @@ function App() {
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+
+          {/* President & Executive — USA only, first card */}
+          {isUSA && (
+            <div
+              onClick={() => setView('president-executive')}
+              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              style={{ animationDelay: '0.05s' }}
+            >
+              <div className="text-red-600 mb-3 sm:mb-4">
+                <Crown className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">President &amp; Executive</h2>
+              <p className="text-gray-600 mb-3 text-sm sm:text-base">The White House, Cabinet &amp; Executive Branch</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>47th President · Donald Trump</span>
+                <ChevronRight className="w-5 h-5" />
+              </div>
+            </div>
+          )}
+
           {/* Legislature (Congress/Parliament) */}
           <div
             onClick={() => setView(isUSA ? 'chambers' : 'parties')}
@@ -11927,6 +12158,7 @@ function App() {
       {view === 'us-contracts' && renderUSContracts()}
       {view === 'us-bills' && renderUSBills()}
       {view === 'us-bill-detail' && selectedBill && renderUSBillDetail()}
+      {view === 'president-executive' && renderPresidentExecutive()}
       {view === 'laws-search' && renderLawsSearch()}
       {view === 'us-laws-search' && renderLawsSearch()}
       
