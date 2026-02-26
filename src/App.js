@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Maximize2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale } from 'lucide-react';
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import './App.css';
 
@@ -210,53 +210,6 @@ const customStyles = `
   }
 `;
 
-const ExpandableChart = ({ title, children, expandedHeight = 500 }) => {
-  const [exp, setExp] = useState(false);
-  useEffect(() => {
-    if (!exp) return;
-    const onKey = (e) => { if (e.key === 'Escape') setExp(false); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [exp]);
-  return (
-    <div className="relative group">
-      <button
-        className="absolute top-1 right-1 z-10 p-1 rounded-md bg-white/80 hover:bg-white shadow text-gray-400 hover:text-gray-700 opacity-100"
-        onClick={() => setExp(true)}
-        title="Expand chart"
-        aria-label="Expand chart to full screen"
-      >
-        <Maximize2 className="w-3.5 h-3.5" />
-      </button>
-      {children}
-      {exp && (
-        <div
-          className="fixed inset-0 z-[300] flex items-center justify-center p-3 sm:p-6"
-          style={{ background: 'rgba(0,0,0,0.80)' }}
-          onClick={() => setExp(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl p-4 sm:p-6"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              {title && <h3 className="font-bold text-gray-800 text-sm sm:text-base">{title}</h3>}
-              <button
-                className="ml-auto p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 flex-shrink-0"
-                onClick={() => setExp(false)}
-                aria-label="Close expanded chart"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            {React.cloneElement(children, { height: expandedHeight })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 
 function App() {
   const [view, setView] = useState('countries');
@@ -323,6 +276,7 @@ function App() {
   
   // US Congress chamber selection
   const [selectedChamber, setSelectedChamber] = useState(null);
+  const [expandedChartId, setExpandedChartId] = useState(null);
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
 
@@ -6403,8 +6357,7 @@ function App() {
                   <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Legislature Composition</h2>
                   <p className="text-xs text-gray-400 mt-0.5">{leg.name} &nbsp;·&nbsp; {leg.totalSeats} total seats</p>
                 </div>
-                <ExpandableChart title="Legislature Composition" expandedHeight={460}>
-<ResponsiveContainer width="100%" height={220}>
+                <ResponsiveContainer width="100%" height={220}>
                   <RechartsPie>
                     <Pie
                       data={leg.parties}
@@ -6428,7 +6381,6 @@ function App() {
                     />
                   </RechartsPie>
                 </ResponsiveContainer>
-                </ExpandableChart>
                 <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 px-5 pb-5">
                   {leg.parties.map(p => (
                     <div key={p.name} className="flex items-center gap-1.5">
@@ -6605,6 +6557,7 @@ function App() {
     );
 
     return (
+      <>
       <div
         className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
         style={{ background: 'rgba(0,0,0,0.55)' }}
@@ -6628,8 +6581,7 @@ function App() {
 
             {/* 1. Government Budget Distribution */}
             <Card title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
-              <ExpandableChart title="Government Budget Distribution" expandedHeight={400}>
-<ResponsiveContainer width="100%" height={220}>
+              <ResponsiveContainer width="100%" height={220}>
                 <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                   <YAxis dataKey="name" type="category" width={120} tick={TICK} />
@@ -6640,7 +6592,7 @@ function App() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-              </ExpandableChart>
+              <button onClick={() => setExpandedChartId('budget')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
               {/* Manual legend since Cell-coloring bypasses built-in Legend */}
               <div className="flex flex-wrap gap-x-4 gap-y-1.5 justify-center mt-3">
                 {budgetData.map((c) => (
@@ -6654,8 +6606,7 @@ function App() {
 
             {/* 2. Spending vs Budget */}
             <Card title="Spending vs Budget" desc="Allocated vs actual spending per category ($M)">
-              <ExpandableChart title="Spending vs Budget" expandedHeight={460}>
-<ResponsiveContainer width="100%" height={260}>
+              <ResponsiveContainer width="100%" height={260}>
                 <BarChart layout="vertical" data={spendData} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                   <YAxis dataKey="category" type="category" width={90} tick={TICK} />
@@ -6666,13 +6617,12 @@ function App() {
                   <Bar dataKey="Actual"    fill="#10b981" radius={[0, 3, 3, 0]} maxBarSize={18} />
                 </BarChart>
               </ResponsiveContainer>
-              </ExpandableChart>
+              <button onClick={() => setExpandedChartId('spending')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
             </Card>
 
             {/* 3. Crime Rate Trends */}
             <Card title="Crime Rate Trends" desc="Incidents per 100,000 people — last 6 years">
-              <ExpandableChart title="Crime Rate Trends" expandedHeight={500}>
-<ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={300}>
                 <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                   <YAxis dataKey="year" type="category" width={45} tick={TICK} />
@@ -6683,13 +6633,12 @@ function App() {
                   <Bar dataKey="Property Crime" fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={18} />
                 </BarChart>
               </ResponsiveContainer>
-              </ExpandableChart>
+              <button onClick={() => setExpandedChartId('crime')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
             </Card>
 
             {/* 4. Unemployment Rate */}
             <Card title="Unemployment Rate" desc={`Annual rate (%) vs ${isUSA ? 'US' : 'CA'} national average — last 4 years`}>
-              <ExpandableChart title="Unemployment Rate" expandedHeight={400}>
-<ResponsiveContainer width="100%" height={220}>
+              <ResponsiveContainer width="100%" height={220}>
                 <BarChart layout="vertical" data={unempData} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                   <YAxis dataKey="year" type="category" width={45} tick={TICK} />
@@ -6700,13 +6649,12 @@ function App() {
                   <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={18} />
                 </BarChart>
               </ResponsiveContainer>
-              </ExpandableChart>
+              <button onClick={() => setExpandedChartId('unemployment')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
             </Card>
 
             {/* 5. GDP Growth Over Time */}
             <Card title="GDP Growth Over Time" desc="Annual GDP growth rate (%) — last 6 years · green = growth, red = contraction">
-              <ExpandableChart title="GDP Growth Over Time" expandedHeight={440}>
-<ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={250}>
                 <BarChart layout="vertical" data={gdpDataM} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                   <YAxis dataKey="year" type="category" width={45} tick={TICK} />
@@ -6717,7 +6665,7 @@ function App() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-              </ExpandableChart>
+              <button onClick={() => setExpandedChartId('gdp')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
               <div className="flex gap-4 justify-center mt-2">
                 <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0 bg-emerald-500" /> Growth</span>
                 <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0 bg-red-500" /> Contraction</span>
@@ -6726,8 +6674,7 @@ function App() {
 
             {/* 6. Poverty Rate Trend */}
             <Card title="Poverty Rate Trend" desc="Population living below the poverty line (%) — last 6 years">
-              <ExpandableChart title="Poverty Rate Trend" expandedHeight={440}>
-<ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={250}>
                 <BarChart layout="vertical" data={povDataM} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                   <YAxis dataKey="year" type="category" width={45} tick={TICK} />
@@ -6737,13 +6684,12 @@ function App() {
                   <Bar dataKey="Poverty Rate (%)" fill="#f59e0b" radius={[0, 4, 4, 0]} maxBarSize={28} />
                 </BarChart>
               </ResponsiveContainer>
-              </ExpandableChart>
+              <button onClick={() => setExpandedChartId('poverty')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
             </Card>
 
             {/* 7. Homelessness Statistics */}
             <Card title="Homelessness Statistics" desc="Sheltered vs unsheltered population 2020–2024">
-              <ExpandableChart title="Homelessness Statistics" expandedHeight={400}>
-<ResponsiveContainer width="100%" height={230}>
+              <ResponsiveContainer width="100%" height={230}>
                 <BarChart layout="vertical" data={homelessData} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                   <YAxis dataKey="year" type="category" width={45} tick={TICK} />
@@ -6754,7 +6700,7 @@ function App() {
                   <Bar dataKey="Unsheltered" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} maxBarSize={32} />
                 </BarChart>
               </ResponsiveContainer>
-              </ExpandableChart>
+              <button onClick={() => setExpandedChartId('homeless')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
             </Card>
 
             <p className="text-center text-xs text-gray-400 pb-2">
@@ -6764,6 +6710,112 @@ function App() {
         </div>
       </div>
 
+      {/* Full-screen chart overlay */}
+      {expandedChartId && (
+        <div className="fixed inset-0 z-[400] flex flex-col bg-white">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 flex-shrink-0">
+            <span className="font-bold text-gray-800 text-base">
+              {{ budget: 'Government Budget Distribution', spending: 'Spending vs Budget', crime: 'Crime Rate Trends', unemployment: 'Unemployment Rate', gdp: 'GDP Growth Over Time', poverty: 'Poverty Rate Trend', homeless: 'Homelessness Statistics' }[expandedChartId]}
+            </span>
+            <button onClick={() => setExpandedChartId(null)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500" aria-label="Close">
+              <X className="w-7 h-7" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto p-4">
+            {expandedChartId === 'budget' && (
+              <ResponsiveContainer width="100%" height={500}>
+                <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="name" type="category" width={120} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 5']} />
+                  <Tooltip formatter={(v) => [`${v}%`, 'Budget Share']} contentStyle={TT} />
+                  <Bar dataKey="value" name="Budget Share" radius={[0, 4, 4, 0]} maxBarSize={40}>
+                    {budgetData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+            {expandedChartId === 'spending' && (
+              <ResponsiveContainer width="100%" height={500}>
+                <BarChart layout="vertical" data={spendData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="category" type="category" width={90} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `$${(v / 1000).toFixed(1)}B`} />
+                  <Tooltip formatter={(v) => [`$${v.toLocaleString()}M`, '']} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Allocated" fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                  <Bar dataKey="Actual"    fill="#10b981" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+            {expandedChartId === 'crime' && (
+              <ResponsiveContainer width="100%" height={500}>
+                <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
+                  <Tooltip formatter={(v, name) => [`${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Violent Crime"  fill="#ef4444" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                  <Bar dataKey="Property Crime" fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+            {expandedChartId === 'unemployment' && (
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart layout="vertical" data={unempData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 1']} />
+                  <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey={unempKeys[0]} fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                  <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+            {expandedChartId === 'gdp' && (
+              <ResponsiveContainer width="100%" height={500}>
+                <BarChart layout="vertical" data={gdpDataM} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} />
+                  <Tooltip formatter={(v) => [`${v}%`, 'GDP Growth']} contentStyle={TT} />
+                  <Bar dataKey="GDP Growth (%)" radius={[0, 4, 4, 0]} maxBarSize={40}>
+                    {gdpDataM.map((e, i) => <Cell key={i} fill={e['GDP Growth (%)'] >= 0 ? '#10b981' : '#ef4444'} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+            {expandedChartId === 'poverty' && (
+              <ResponsiveContainer width="100%" height={500}>
+                <BarChart layout="vertical" data={povDataM} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 2']} />
+                  <Tooltip formatter={(v) => [`${v}%`, 'Poverty Rate']} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Poverty Rate (%)" fill="#f59e0b" radius={[0, 4, 4, 0]} maxBarSize={40} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+            {expandedChartId === 'homeless' && (
+              <ResponsiveContainer width="100%" height={460}>
+                <BarChart layout="vertical" data={homelessData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
+                  <Tooltip formatter={(v, name) => [v.toLocaleString(), name]} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Sheltered"   stackId="a" fill="#6366f1" maxBarSize={40} />
+                  <Bar dataKey="Unsheltered" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} maxBarSize={40} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+      )}
+      </>
     );
   };
 
@@ -7609,8 +7661,7 @@ function App() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Pie Chart */}
                 <div className="flex items-center justify-center">
-                  <ExpandableChart title="Party Composition" expandedHeight={480}>
-<ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={300}>
                     <RechartsPie>
                       <Pie
                         data={pieData}
@@ -7629,7 +7680,6 @@ function App() {
                       <Tooltip />
                     </RechartsPie>
                   </ResponsiveContainer>
-                  </ExpandableChart>
                 </div>
                 
                 {/* Stats */}
