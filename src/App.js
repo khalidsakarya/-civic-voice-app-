@@ -1473,7 +1473,11 @@ function App() {
       { name: 'Jon Husted', state: 'Ohio', district: 'Senator', party: 'Republican', yearsInOffice: 1, email: 'senator@husted.senate.gov', phone: '(202) 224-3353', committees: ['Commerce', 'Banking'], supportVotes: 2345, opposeVotes: 2234, userVote: null, bio: 'Former Ohio Lt. Governor, appointed to fill JD Vances Senate seat after Vance became VP in 2025', stockTrades: [] }
     ];
     
-    setCongressMembers(sampleCongress);
+    const savedVotes = JSON.parse(localStorage.getItem('cvCongressVotes') || '{}');
+    setCongressMembers(sampleCongress.map(m => {
+      const saved = savedVotes[m.name];
+      return saved ? { ...m, ...saved } : m;
+    }));
   };
   
   const initializeUSDepartments = () => {
@@ -3283,6 +3287,31 @@ function App() {
     } catch (err) {
       console.error('Error voting on MP:', err);
     }
+  };
+
+  const voteCongressMember = (memberName, vote) => {
+    const member = congressMembers.find(m => m.name === memberName);
+    if (!member) return;
+
+    const currentVote = member.userVote ?? null;
+    const newVote = currentVote === vote ? null : vote; // tap same button to toggle off
+
+    let support = member.supportVotes ?? 0;
+    let oppose  = member.opposeVotes  ?? 0;
+
+    if (currentVote === 'support') support = Math.max(0, support - 1);
+    if (currentVote === 'oppose')  oppose  = Math.max(0, oppose  - 1);
+    if (newVote === 'support') support++;
+    if (newVote === 'oppose')  oppose++;
+
+    const patch = { supportVotes: support, opposeVotes: oppose, userVote: newVote };
+
+    setCongressMembers(prev => prev.map(m => m.name === memberName ? { ...m, ...patch } : m));
+    setSelectedMember(cur => cur?.name === memberName ? { ...cur, ...patch } : cur);
+
+    const saved = JSON.parse(localStorage.getItem('cvCongressVotes') || '{}');
+    saved[memberName] = patch;
+    localStorage.setItem('cvCongressVotes', JSON.stringify(saved));
   };
 
   // Chart colors
@@ -7853,15 +7882,21 @@ function App() {
                       )}
 
                       {mp.supportVotes !== undefined && (
-                        <div className="flex items-center gap-4 text-xs pt-2 border-t">
-                          <div className="flex items-center gap-1 text-green-600">
+                        <div className="flex items-center gap-2 pt-2 border-t" onClick={e => e.stopPropagation()}>
+                          <button
+                            onClick={() => voteCongressMember(mp.name, 'support')}
+                            className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${mp.userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
+                          >
                             <ThumbsUp className="w-3 h-3" />
-                            <span className="font-semibold">{mp.supportVotes.toLocaleString()}</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-red-600">
+                            <span>{mp.supportVotes.toLocaleString()}</span>
+                          </button>
+                          <button
+                            onClick={() => voteCongressMember(mp.name, 'oppose')}
+                            className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${mp.userVote === 'oppose' ? 'bg-red-100 text-red-700 ring-1 ring-red-400' : 'text-red-600 hover:bg-red-50'}`}
+                          >
                             <ThumbsDown className="w-3 h-3" />
-                            <span className="font-semibold">{mp.opposeVotes.toLocaleString()}</span>
-                          </div>
+                            <span>{mp.opposeVotes.toLocaleString()}</span>
+                          </button>
                         </div>
                       )}
                     </div>
@@ -11003,6 +11038,22 @@ function App() {
                 </div>
               </div>
             )}
+
+            {/* Vote buttons */}
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={() => voteCongressMember(member.name, 'support')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${member.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
+              >
+                <ThumbsUp className="w-4 h-4" /> Support
+              </button>
+              <button
+                onClick={() => voteCongressMember(member.name, 'oppose')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${member.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
+              >
+                <ThumbsDown className="w-4 h-4" /> Oppose
+              </button>
+            </div>
           </div>
 
           {/* ── SCROLLABLE CONTENT ── */}
