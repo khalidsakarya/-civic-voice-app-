@@ -228,6 +228,12 @@ function App() {
   });
   const [selectedEO, setSelectedEO] = useState(null);
   const [showEOSection, setShowEOSection] = useState(false);
+  const [selectedPresidentBill, setSelectedPresidentBill] = useState(null);
+  const [showPresidentBillsSection, setShowPresidentBillsSection] = useState(false);
+  const [presidentBillVotes, setPresidentBillVotes] = useState(() => {
+    const saved = localStorage.getItem('cvPresidentBillVotes');
+    return saved ? JSON.parse(saved) : {};
+  });
   const [eoVotes, setEoVotes] = useState(() => {
     const saved = localStorage.getItem('cvEOVotes');
     return saved ? JSON.parse(saved) : {};
@@ -3323,6 +3329,22 @@ function App() {
     const saved = JSON.parse(localStorage.getItem('cvCongressVotes') || '{}');
     saved[memberName] = patch;
     localStorage.setItem('cvCongressVotes', JSON.stringify(saved));
+  };
+
+  const votePresidentBill = (billId, vote) => {
+    setPresidentBillVotes(prev => {
+      const current = prev[billId] || { support: 0, oppose: 0, userVote: null };
+      const newVote = current.userVote === vote ? null : vote;
+      let support = current.support;
+      let oppose  = current.oppose;
+      if (current.userVote === 'support') support = Math.max(0, support - 1);
+      if (current.userVote === 'oppose')  oppose  = Math.max(0, oppose  - 1);
+      if (newVote === 'support') support++;
+      if (newVote === 'oppose')  oppose++;
+      const next = { ...prev, [billId]: { support, oppose, userVote: newVote } };
+      localStorage.setItem('cvPresidentBillVotes', JSON.stringify(next));
+      return next;
+    });
   };
 
   const voteEO = (orderNum, vote) => {
@@ -7462,6 +7484,89 @@ function App() {
       },
     ];
 
+    const awaitingBills = [
+      {
+        id: 'HR1', number: 'H.R. 1', title: 'One Big Beautiful Bill Act',
+        passedDate: 'May 22, 2025', chamber: 'House', status: 'Passed House — Pending Senate',
+        statusColor: 'blue',
+        description: 'Sweeping reconciliation bill extending Trump-era tax cuts, boosting border security funding, cutting federal spending, and raising the debt ceiling.',
+        summary: 'The flagship legislative priority of the Trump administration, this reconciliation bill extends the 2017 Tax Cuts and Jobs Act tax rates beyond their 2025 expiration, adds $150B in new border and defense spending, cuts $1.5T in federal spending over 10 years (including Medicaid and SNAP reductions), eliminates clean energy credits from the Inflation Reduction Act, and raises the debt ceiling by $4T. Passed the House 215–214, it faces significant opposition in the Senate from both Democrats and moderate Republicans concerned about the Medicaid cuts.',
+        pros: ['Prevents large tax increases when TCJA expires, maintaining current rates for most Americans', 'Delivers significant border security funding aligned with voter mandate', 'Meaningful reduction in federal deficit over 10-year window', 'Streamlines and simplifies several overlapping federal programs'],
+        cons: ['CBO estimates 10–14 million people would lose Medicaid coverage', 'Adds an estimated $3.8T to national debt over 10 years per nonpartisan analysts', 'Eliminates clean energy tax credits, harming renewable industry growth', 'Very narrow House margin signals deep Republican divisions on spending cuts'],
+        support: 11234, oppose: 14567,
+      },
+      {
+        id: 'HR22', number: 'H.R. 22', title: 'SAVE Act (Safeguard American Voter Eligibility)',
+        passedDate: 'April 10, 2025', chamber: 'House', status: 'Passed House — Pending Senate',
+        statusColor: 'blue',
+        description: 'Requires individuals to provide documentary proof of U.S. citizenship — such as a passport or birth certificate — when registering to vote in federal elections.',
+        summary: 'The SAVE Act amends the National Voter Registration Act to require documentary proof of citizenship (passport, birth certificate, or similar document) when registering to vote in federal elections. Supporters argue it prevents non-citizen voting; opponents argue non-citizen voting is already illegal, rare, and that the bill will disenfranchise millions of eligible citizens who lack ready access to such documents — particularly the elderly, low-income, and minority voters.',
+        pros: ['Adds a verification layer to ensure only eligible citizens vote in federal elections', 'Addresses public concern about election integrity', 'Aligns federal voter registration with some state-level requirements already in place'],
+        cons: ['Non-citizen voting in federal elections is already illegal and exceedingly rare', 'An estimated 21 million eligible citizens lack ready access to proof-of-citizenship documents', 'Disproportionately burdens elderly, low-income, rural, and minority voters', 'Creates an additional bureaucratic step that suppresses overall voter participation'],
+        support: 10456, oppose: 13234,
+      },
+      {
+        id: 'HR1526', number: 'H.R. 1526', title: 'No Rogue Rulings Act',
+        passedDate: 'April 24, 2025', chamber: 'House', status: 'Passed House — Pending Senate',
+        statusColor: 'blue',
+        description: 'Limits the authority of individual federal district court judges to issue nationwide injunctions blocking presidential executive orders or federal policies.',
+        summary: 'This bill restricts the power of single district court judges to block federal laws or executive orders nationwide. Under the bill, injunctions issued by district courts would apply only to the specific parties in the case and the jurisdiction of that court. The legislation is directly motivated by dozens of nationwide injunctions blocking Trump\'s executive orders. Supporters say it restores the proper scope of judicial power; opponents argue it strips courts of an essential check on executive overreach.',
+        pros: ['Prevents single unelected judges from unilaterally halting national policy', 'Encourages circuit splits that allow the Supreme Court to resolve disagreements properly', 'Restores the traditional, narrower scope of district court injunctive power'],
+        cons: ['Weakens the judiciary\'s ability to check unconstitutional executive actions quickly', 'Courts have issued nationwide injunctions for over 150 years as an accepted practice', 'Could leave millions of people unprotected from illegal policies while cases are litigated', 'Primarily motivated by blocking rulings against the Trump administration'],
+        support: 9876, oppose: 11234,
+      },
+      {
+        id: 'S321', number: 'S. 321', title: 'GENIUS Act (Stablecoin Regulation)',
+        passedDate: 'May 19, 2025', chamber: 'Senate', status: 'Passed Senate — Pending House',
+        statusColor: 'purple',
+        description: 'Establishes the first federal regulatory framework for payment stablecoins, requiring issuers to hold 1:1 reserves in U.S. dollars or Treasury securities.',
+        summary: 'The Guiding and Establishing National Innovation for U.S. Stablecoins (GENIUS) Act creates a licensing and oversight regime for stablecoin issuers. It requires 1:1 backing with liquid assets (cash or short-term Treasuries), mandates monthly reserve disclosures, prohibits algorithmic stablecoins, and gives the OCC and state regulators joint oversight. The bill passed the Senate 66–32 in bipartisan fashion, representing Congress\'s first major crypto legislation.',
+        pros: ['Provides legal clarity that U.S. crypto businesses urgently need to invest and grow', 'Protects consumers with mandatory reserve requirements preventing FTX-style collapses', 'Bipartisan 66-vote Senate passage signals broad consensus', 'Could cement dollar dominance in the digital asset era globally'],
+        cons: ['Critics say reserves requirement is insufficient without stronger audit mechanisms', 'Some Democrats argue the bill was weakened by lobbying from crypto industry donors', 'Could entrench large stablecoin issuers at the expense of smaller competitors', 'Preempts some state consumer protection laws'],
+        support: 13456, oppose: 7890,
+      },
+      {
+        id: 'HR485', number: 'H.R. 485', title: 'Protection of Women and Girls in Sports Act',
+        passedDate: 'January 14, 2025', chamber: 'House', status: 'Passed Both Chambers — Awaiting Signature',
+        statusColor: 'green',
+        description: 'Prohibits transgender athletes who were assigned male at birth from competing in women\'s sports categories at schools and colleges that receive federal funding.',
+        summary: 'This bill amends Title IX of the Education Amendments of 1972 to define "sex" as biological sex for the purposes of athletic programs. Schools receiving federal funding would be prohibited from allowing transgender women (born male) to compete in female sports categories. Compliance would be enforced through withdrawal of federal funding. The bill passed both chambers largely along party lines and awaits presidential signature.',
+        pros: ['Protects competitive fairness for biological female athletes in school sports', 'Provides clear federal guidance that schools can follow consistently', 'Addresses concerns about physical differences affecting competition outcomes'],
+        cons: ['Excludes transgender girls who have transitioned early and may have no physiological advantage', 'Major medical and sports organizations support case-by-case evaluation rather than blanket bans', 'Targets a very small population (0.6% of youth identify as transgender)', 'Could expose LGBTQ+ youth to increased bullying and mental health harm'],
+        support: 12345, oppose: 14678,
+      },
+      {
+        id: 'HR2018', number: 'H.R. 2018', title: 'No Taxpayer Funding for Abortion Act',
+        passedDate: 'March 27, 2025', chamber: 'House', status: 'Passed House — Pending Senate',
+        statusColor: 'blue',
+        description: 'Permanently codifies the Hyde Amendment into statutory law, banning the use of federal funds for abortion services across all federal programs including Medicaid.',
+        summary: 'The Hyde Amendment has been a temporary budget rider since 1976, renewed annually by Congress. This bill would make it permanent law, banning federal funding of abortion through Medicaid, the Federal Employees Health Benefits Program, and other federal insurance programs except in cases of rape, incest, or life endangerment. It also extends restrictions to the ACA marketplace. Passed largely along party lines in the House; faces a 60-vote filibuster threshold in the Senate.',
+        pros: ['Reflects the principle that taxpayers should not be required to fund a procedure many find morally objectionable', 'Makes permanent a budget policy that has been enacted continuously for nearly 50 years', 'Provides stable long-term policy certainty instead of annual rider uncertainty'],
+        cons: ['Disproportionately affects low-income women on Medicaid who cannot afford private alternatives', 'Overrides the decision of women and their doctors on a personal medical matter', 'Effectively creates a two-tiered system where only wealthy women can access abortion services', 'Will face filibuster and is unlikely to pass the Senate without rule changes'],
+        support: 9234, oppose: 12456,
+      },
+      {
+        id: 'S870', number: 'S. 870', title: 'DOGE Enabling and Accountability Act',
+        passedDate: 'March 5, 2025', chamber: 'Senate', status: 'Passed Senate — Pending House',
+        statusColor: 'purple',
+        description: 'Formally establishes the Department of Government Efficiency (DOGE) as a statutory advisory body with defined oversight authority and mandatory transparency reporting.',
+        summary: 'This bill formally creates the Department of Government Efficiency (DOGE) as a statutory body in the executive branch, setting legal boundaries on its authority. It requires DOGE to publicly report all spending cuts it recommends, obtain Congressional notification before implementing cost reductions above $50M, and submit quarterly reports to Congress. It also requires DOGE personnel to comply with federal ethics laws and conflict-of-interest disclosures. Supporters say it legitimizes DOGE; opponents say it validates an unconstitutional structure led by Elon Musk.',
+        pros: ['Provides legal authorization and accountability framework for a currently informal body', 'Requires transparency reporting that makes DOGE activities subject to public scrutiny', 'Congressional notification thresholds add oversight to prevent unilateral spending cuts', 'Addresses concerns about the constitutional legitimacy of DOGE\'s current structure'],
+        cons: ['Formally empowers a body controlled by a private billionaire with massive government contracts', 'Ethics and conflict-of-interest concerns regarding Musk\'s companies (SpaceX, Tesla, Starlink) remain', 'Critics argue DOGE has caused significant harm to federal agencies with little accountability so far', 'Many legal scholars argue its current activities are already unconstitutional regardless of legislation'],
+        support: 8901, oppose: 11234,
+      },
+      {
+        id: 'HR1100', number: 'H.R. 1100', title: 'Restoring Education Standards and Trust Act',
+        passedDate: 'April 3, 2025', chamber: 'House', status: 'Passed House — Pending Senate',
+        statusColor: 'blue',
+        description: 'Prohibits federally funded schools from using curricula that teaches Critical Race Theory or mandatory DEI training for students or staff.',
+        summary: 'This bill conditions federal K-12 and higher education funding on schools certifying they do not use curricula the bill defines as "discriminatory" — including materials framed around Critical Race Theory, mandatory DEI training, and certain historical frameworks. Schools found in violation would face funding clawbacks. Supporters say it ensures parents\' rights over curriculum; critics say its vague language would ban legitimate history instruction and chill academic freedom.',
+        pros: ['Responds to parent concerns about age-inappropriate or politically partisan material in schools', 'Reinforces parental rights over children\'s education content', 'Prevents use of taxpayer dollars to fund divisive ideological programs in schools'],
+        cons: ['Vague definition of prohibited content could prohibit teaching of accurate U.S. history including slavery and civil rights', 'Creates federal micromanagement of local school curriculum decisions', 'Chilling effect on teachers leads to self-censorship even for lawful subjects', 'Experts note CRT is a graduate-level legal framework not taught in K-12 schools'],
+        support: 9567, oppose: 12345,
+      },
+    ];
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
         <div className="max-w-5xl mx-auto">
@@ -7564,6 +7669,179 @@ function App() {
               </div>
             )}
           </div>
+
+          {/* Bills Awaiting Signature — toggle button */}
+          <div className="mt-4">
+            <button
+              onClick={() => setShowPresidentBillsSection(prev => !prev)}
+              className="w-full flex items-center justify-between gap-4 bg-white border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all rounded-2xl px-6 py-4 shadow-sm"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Scale className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-gray-800 text-base">Bills Awaiting Signature</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{awaitingBills.length} bills pending presidential action · tap to vote</p>
+                </div>
+              </div>
+              <ChevronDown className={`w-5 h-5 text-blue-500 flex-shrink-0 transition-transform duration-200 ${showPresidentBillsSection ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showPresidentBillsSection && (
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {awaitingBills.map((bill) => {
+                  const votes = presidentBillVotes[bill.id] || { support: bill.support, oppose: bill.oppose, userVote: null };
+                  const total = votes.support + votes.oppose;
+                  const pct = total > 0 ? Math.round((votes.support / total) * 100) : 0;
+                  const statusColors = {
+                    green:  { badge: 'bg-green-50 border-green-200 text-green-700' },
+                    blue:   { badge: 'bg-blue-50 border-blue-200 text-blue-700' },
+                    purple: { badge: 'bg-purple-50 border-purple-200 text-purple-700' },
+                    red:    { badge: 'bg-red-50 border-red-200 text-red-700' },
+                  };
+                  const sc = statusColors[bill.statusColor] || statusColors.blue;
+                  return (
+                    <div
+                      key={bill.id}
+                      onClick={() => setSelectedPresidentBill(bill)}
+                      className="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <span className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full flex-shrink-0">{bill.number}</span>
+                        <span className="text-xs text-gray-400 flex-shrink-0">{bill.passedDate}</span>
+                      </div>
+                      <h3 className="text-sm font-bold text-gray-800 mb-1.5 leading-snug">{bill.title}</h3>
+                      <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full border mb-2 ${sc.badge}`}>{bill.status}</span>
+                      <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{bill.description}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                          <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                        </div>
+                        <span className="text-xs text-gray-400">{pct}% support</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Bill Detail Modal */}
+          {selectedPresidentBill && (() => {
+            const votes = presidentBillVotes[selectedPresidentBill.id] || { support: selectedPresidentBill.support, oppose: selectedPresidentBill.oppose, userVote: null };
+            const total = votes.support + votes.oppose;
+            const pct = total > 0 ? Math.round((votes.support / total) * 100) : 0;
+            const statusColors = {
+              green:  'bg-green-50 border-green-200 text-green-700',
+              blue:   'bg-blue-50 border-blue-200 text-blue-700',
+              purple: 'bg-purple-50 border-purple-200 text-purple-700',
+              red:    'bg-red-50 border-red-200 text-red-700',
+            };
+            return (
+              <div
+                className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center"
+                style={{ background: 'rgba(0,0,0,0.6)' }}
+                onClick={(e) => { if (e.target === e.currentTarget) setSelectedPresidentBill(null); }}
+              >
+                <div className="relative bg-white w-full sm:max-w-xl mx-0 sm:mx-4 rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[90vh] flex flex-col animate-fade-in">
+
+                  {/* Modal header */}
+                  <div
+                    style={{ background: 'linear-gradient(135deg, #3b82f618 0%, #3b82f606 100%)', borderBottom: '3px solid #3b82f6' }}
+                    className="flex-shrink-0 px-5 pt-5 pb-4 rounded-t-2xl"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">{selectedPresidentBill.number}</span>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${statusColors[selectedPresidentBill.statusColor] || statusColors.blue}`}>{selectedPresidentBill.status}</span>
+                        </div>
+                        <h2 className="text-base font-bold text-gray-900 mt-1.5 leading-snug">{selectedPresidentBill.title}</h2>
+                        <p className="text-xs text-gray-500 mt-1">Passed {selectedPresidentBill.chamber} · {selectedPresidentBill.passedDate}</p>
+                      </div>
+                      <button
+                        onClick={() => setSelectedPresidentBill(null)}
+                        className="flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                        aria-label="Close"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Vote bar */}
+                    <div className="bg-white bg-opacity-70 rounded-lg p-2.5 flex items-center gap-3 mt-3 flex-wrap">
+                      <div className="flex items-center gap-1">
+                        <ThumbsUp className="w-3.5 h-3.5 text-green-600" />
+                        <span className="text-sm font-semibold text-gray-700">{votes.support.toLocaleString()}</span>
+                        <span className="text-xs text-gray-400">support</span>
+                      </div>
+                      <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[60px]">
+                        <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-gray-400">oppose</span>
+                        <span className="text-sm font-semibold text-gray-700">{votes.oppose.toLocaleString()}</span>
+                        <ThumbsDown className="w-3.5 h-3.5 text-red-500" />
+                      </div>
+                    </div>
+
+                    {/* Vote buttons */}
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => votePresidentBill(selectedPresidentBill.id, 'support')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${votes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-70 text-green-700 hover:bg-green-100'}`}
+                      >
+                        <ThumbsUp className="w-4 h-4" /> Support
+                      </button>
+                      <button
+                        onClick={() => votePresidentBill(selectedPresidentBill.id, 'oppose')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${votes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-70 text-red-700 hover:bg-red-100'}`}
+                      >
+                        <ThumbsDown className="w-4 h-4" /> Oppose
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Scrollable body */}
+                  <div className="flex-1 overflow-y-auto p-5 space-y-5">
+
+                    <section>
+                      <p className="panel-section-label">Full Summary</p>
+                      <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
+                        <p className="text-gray-700 text-sm leading-relaxed">{selectedPresidentBill.summary}</p>
+                      </div>
+                    </section>
+
+                    <section>
+                      <p className="panel-section-label">Arguments in Favour</p>
+                      <div className="space-y-2">
+                        {selectedPresidentBill.pros.map((pro, i) => (
+                          <div key={i} className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
+                            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-gray-700 leading-relaxed">{pro}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section>
+                      <p className="panel-section-label">Arguments Against</p>
+                      <div className="space-y-2">
+                        {selectedPresidentBill.cons.map((con, i) => (
+                          <div key={i} className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-xl">
+                            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-gray-700 leading-relaxed">{con}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* EO Detail Modal */}
           {selectedEO && (() => {
