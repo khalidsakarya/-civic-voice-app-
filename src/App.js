@@ -7391,10 +7391,18 @@ function App() {
       phone: '(202) 456-1414',
     };
 
+    // --- EXECUTIVE ORDERS DATA -----------------------------------------------
+    // Source: Federal Register API  https://www.federalregister.gov/api/v1/documents
+    // Live endpoint: GET /api/v1/documents?conditions[type]=PRESDOCU&conditions[presidential_document_type]=executive_order&per_page=10&order=newest
+    // Field mapping: executive_order_number->number, document_number->docNumber,
+    //   signing_date->signingDate, publication_date->publicationDate, abstract->description,
+    //   html_url->sourceUrl  (summary/pros/cons are app-added editorial content)
+    // To replace with live data: fetch the endpoint, map fields, merge with editorial content
     const executiveOrders = [
       {
-        number: 'EO 14160', title: 'Protecting the Meaning and Value of American Citizenship',
-        date: 'January 20, 2025',
+        number: 'EO 14160', docNumber: '2025-01998', title: 'Protecting the Meaning and Value of American Citizenship',
+        signingDate: '2025-01-20', publicationDate: '2025-01-22', date: 'January 20, 2025',
+        sourceUrl: 'https://www.federalregister.gov/documents/2025/01/22/2025-01998/protecting-the-meaning-and-value-of-american-citizenship',
         description: 'Ends automatic birthright citizenship for children born in the U.S. to parents who are undocumented or on temporary visas.',
         summary: 'Directs federal agencies to stop recognizing birthright citizenship under the 14th Amendment for children born to parents who are neither citizens nor legal permanent residents. Represents a significant reinterpretation of the 14th Amendment\'s citizenship clause. Multiple federal courts immediately blocked implementation pending constitutional review.',
         pros: ['Reduces incentive for illegal immigration and "birth tourism"', 'Aligns with most other developed nations requiring parental citizenship', 'Saves federal resources on services for non-citizen children'],
@@ -7402,8 +7410,9 @@ function App() {
         support: 8423, oppose: 12156,
       },
       {
-        number: 'EO 14151', title: 'Ending Radical and Wasteful Government DEI Programs',
-        date: 'January 20, 2025',
+        number: 'EO 14151', docNumber: '2025-01948', title: 'Ending Radical and Wasteful Government DEI Programs',
+        signingDate: '2025-01-20', publicationDate: '2025-01-22', date: 'January 20, 2025',
+        sourceUrl: 'https://www.federalregister.gov/documents/2025/01/22/2025-01948/ending-radical-and-wasteful-government-dei-programs-and-preferencing',
         description: 'Eliminates all Diversity, Equity, and Inclusion offices and programs across the federal government within 60 days.',
         summary: 'Mandates that all federal agencies shut down their DEI offices within 60 days. Revokes previous executive orders on affirmative action, directs federal contractors to certify they do not operate DEI programs, and extends similar restrictions to federally funded universities and organizations.',
         pros: ['Promotes merit-based hiring free from identity quotas', 'Reduces government bureaucracy and federal spending', 'Removes programs some consider divisive or discriminatory against non-minority groups'],
@@ -7411,8 +7420,9 @@ function App() {
         support: 9234, oppose: 11567,
       },
       {
-        number: 'EO 14148', title: 'Declaring a National Energy Emergency',
-        date: 'January 20, 2025',
+        number: 'EO 14148', docNumber: '2025-01928', title: 'Declaring a National Energy Emergency',
+        signingDate: '2025-01-20', publicationDate: '2025-01-22', date: 'January 20, 2025',
+        sourceUrl: 'https://www.federalregister.gov/documents/2025/01/22/2025-01928/declaring-a-national-energy-emergency',
         description: 'Declares a national energy emergency to expedite permits for fossil fuel projects, reversing Biden-era energy regulations.',
         summary: 'Declares the U.S. faces an energy supply emergency, directing all agencies to use emergency powers to expedite permits for oil, gas, coal, and nuclear projects. Suspends regulations hindering domestic energy production, reverses Biden-era LNG export restrictions, and reopens federal lands to new fossil fuel leasing.',
         pros: ['Reduces energy costs by increasing domestic supply', 'Increases U.S. energy independence and national security', 'Creates jobs in energy sector and lowers reliance on foreign imports'],
@@ -7420,8 +7430,9 @@ function App() {
         support: 11234, oppose: 9876,
       },
       {
-        number: 'EO 14150', title: 'Protecting the American People Against Invasion',
-        date: 'January 20, 2025',
+        number: 'EO 14150', docNumber: '2025-01912', title: 'Protecting the American People Against Invasion',
+        signingDate: '2025-01-20', publicationDate: '2025-01-22', date: 'January 20, 2025',
+        sourceUrl: 'https://www.federalregister.gov/documents/2025/01/22/2025-01912/protecting-the-american-people-against-invasion',
         description: 'Declares an invasion at the southern border, directing mass deportation and expanded military involvement in immigration enforcement.',
         summary: 'Declares undocumented immigration constitutes an "invasion" under the Constitution. Directs DHS to detain and deport all removable aliens, expands use of military and National Guard for immigration enforcement, ends "catch-and-release" policies, and reinstates the "Remain in Mexico" policy for asylum seekers.',
         pros: ['Enforces existing immigration law more strictly', 'Reduces strain on border communities and public services', 'Deters future illegal immigration and prioritizes removal of criminals'],
@@ -7429,8 +7440,9 @@ function App() {
         support: 10567, oppose: 12345,
       },
       {
-        number: 'EO 14147', title: 'Designating Cartels as Foreign Terrorist Organizations',
-        date: 'January 20, 2025',
+        number: 'EO 14147', docNumber: '2025-01907', title: 'Designating Cartels as Foreign Terrorist Organizations',
+        signingDate: '2025-01-20', publicationDate: '2025-01-21', date: 'January 20, 2025',
+        sourceUrl: 'https://www.federalregister.gov/documents/2025/01/21/2025-01907/designating-cartels-and-other-organizations-as-foreign-terrorist-organizations',
         description: 'Formally designates major Mexican drug cartels and MS-13 as Foreign Terrorist Organizations, enabling financial sanctions and stronger enforcement.',
         summary: 'Formally designates Tren de Aragua, MS-13, and major Mexican drug trafficking organizations (Sinaloa, CJNG) as Foreign Terrorist Organizations (FTOs). This enables broader law enforcement tools, financial sanctions, asset freezes, and potential military action against cartel operations. Addresses fentanyl trafficking as a national security threat.',
         pros: ['Enables stronger law enforcement tools and asset seizures against cartels', 'Sends strong deterrence signal; treats fentanyl crisis as national security issue', 'Allows targeting of cartel financial networks globally'],
@@ -7438,8 +7450,9 @@ function App() {
         support: 14234, oppose: 6789,
       },
       {
-        number: 'EO 14149', title: 'Restoring Freedom of Speech and Ending Federal Censorship',
-        date: 'January 20, 2025',
+        number: 'EO 14149', docNumber: '2025-01937', title: 'Restoring Freedom of Speech and Ending Federal Censorship',
+        signingDate: '2025-01-20', publicationDate: '2025-01-22', date: 'January 20, 2025',
+        sourceUrl: 'https://www.federalregister.gov/documents/2025/01/22/2025-01937/restoring-freedom-of-speech-and-ending-federal-censorship',
         description: 'Prohibits federal agencies from partnering with social media companies to moderate content, reversing Biden-era disinformation programs.',
         summary: 'Directs all federal agencies to immediately stop programs that "partner with or fund any third-party organization to censor, suppress, or otherwise limit" speech online. Instructs the AG to review all federal activities that may have suppressed free speech since 2020. Bars agencies from using federal funds for public media that promotes DEI messaging.',
         pros: ['Protects First Amendment principles and ends government influence over private platform moderation', 'Increases transparency around government-media interactions', 'Addresses legitimate concerns about government overreach in speech regulation'],
@@ -7447,8 +7460,9 @@ function App() {
         support: 12456, oppose: 8901,
       },
       {
-        number: 'EO 14168', title: 'Defending Women from Gender Ideology Extremism',
-        date: 'January 20, 2025',
+        number: 'EO 14168', docNumber: '2025-02095', title: 'Defending Women from Gender Ideology Extremism',
+        signingDate: '2025-01-20', publicationDate: '2025-01-22', date: 'January 20, 2025',
+        sourceUrl: 'https://www.federalregister.gov/documents/2025/01/22/2025-02095/defending-women-from-gender-ideology-extremism-and-restoring-biological-truth-to-the-federal-government',
         description: 'Defines sex as binary and biological across all federal policy, banning transgender recognition in government documents and federal facilities.',
         summary: 'Directs all federal agencies to recognize only two sexes — male and female — as defined by biology. Requires federal documents including passports to use biological sex only. Bans transgender women from federal women\'s facilities (shelters, prisons). Withdraws U.S. from WHO gender policies. Ends passport "X" gender markers. Multiple courts issued injunctions blocking portions.',
         pros: ['Aligns federal policy with biological definitions of sex', 'Protects sex-based spaces for biological women in federal facilities', 'Reflects views held by a majority of Americans on the definition of sex'],
@@ -7456,8 +7470,9 @@ function App() {
         support: 9876, oppose: 11234,
       },
       {
-        number: 'EO 14173', title: 'Ending Illegal Discrimination and Restoring Merit-Based Opportunity',
-        date: 'January 20, 2025',
+        number: 'EO 14173', docNumber: '2025-02094', title: 'Ending Illegal Discrimination and Restoring Merit-Based Opportunity',
+        signingDate: '2025-01-20', publicationDate: '2025-01-22', date: 'January 20, 2025',
+        sourceUrl: 'https://www.federalregister.gov/documents/2025/01/22/2025-02094/ending-illegal-discrimination-and-restoring-merit-based-opportunity',
         description: 'Extends DEI restrictions to private sector federal contractors, requiring them to certify they do not use affirmative action or DEI programs.',
         summary: 'Extends the prohibition on DEI programs to all entities that receive federal contracts or grants. Requires contractors to certify compliance under penalty of contract termination. Directs the AG and EEOC to investigate private sector DEI programs that may constitute illegal discrimination. Revokes previous executive orders on affirmative action and diversity outreach.',
         pros: ['Creates consistent merit-based standards across government-funded entities', 'Potentially reduces preferential treatment in contracting and hiring', 'Removes government-mandated racial preferences from the private sector'],
@@ -7465,8 +7480,9 @@ function App() {
         support: 8567, oppose: 10234,
       },
       {
-        number: 'EO 14154', title: 'Unleashing American Energy',
-        date: 'January 20, 2025',
+        number: 'EO 14154', docNumber: '2025-01984', title: 'Unleashing American Energy',
+        signingDate: '2025-01-20', publicationDate: '2025-01-22', date: 'January 20, 2025',
+        sourceUrl: 'https://www.federalregister.gov/documents/2025/01/22/2025-01984/unleashing-american-energy',
         description: 'Withdraws the U.S. from the Paris Climate Agreement and removes Biden-era clean energy mandates including the EV sales requirement.',
         summary: 'Directs U.S. withdrawal from the Paris Agreement on climate change. Eliminates Biden\'s EV mandate requiring a set percentage of new vehicle sales to be electric. Rescinds Inflation Reduction Act clean energy spending priorities. Restores oil and gas leasing on federal lands and offshore. Eliminates the "social cost of carbon" metric used in regulatory analysis.',
         pros: ['Reduces energy costs for consumers and businesses in the short term', 'Preserves consumer choice in vehicle markets without government mandates', 'Prioritizes energy affordability over costly mandated transition timelines'],
@@ -7474,8 +7490,9 @@ function App() {
         support: 11234, oppose: 9567,
       },
       {
-        number: 'EO 14152', title: 'Strengthening American Leadership in Artificial Intelligence',
-        date: 'January 23, 2025',
+        number: 'EO 14152', docNumber: '2025-02029', title: 'Strengthening American Leadership in Artificial Intelligence',
+        signingDate: '2025-01-23', publicationDate: '2025-01-27', date: 'January 23, 2025',
+        sourceUrl: 'https://www.federalregister.gov/documents/2025/01/27/2025-02029/removing-barriers-to-american-leadership-in-artificial-intelligence',
         description: 'Revokes Biden\'s AI safety executive order and removes restrictions on AI development, prioritizing U.S. dominance over safety guardrails.',
         summary: 'Revokes Biden\'s landmark October 2023 executive order on AI safety that required companies to report safety test results to the government. Directs agencies to develop new AI policy focused on U.S. dominance rather than safety guardrails. Creates a task force to develop an AI Action Plan within 180 days focused on economic competitiveness against China.',
         pros: ['Reduces regulatory burden on AI companies to maintain U.S. edge vs. China', 'Allows faster development and deployment of American AI technology', 'Reduces compliance costs and speeds deployment for U.S. AI developers'],
@@ -7484,11 +7501,21 @@ function App() {
       },
     ];
 
+    // --- BILLS AWAITING SIGNATURE DATA ------------------------------------------
+    // Source: Congress.gov API  https://api.congress.gov/v3
+    // Live endpoint: GET /v3/bill/119?sort=updateDate+desc&limit=20&api_key=YOUR_KEY
+    // Field mapping: type+number->number, type->billType, number->billNumber,
+    //   congress->congress, title->title, latestAction.actionDate->actionDate,
+    //   originChamber->chamber, latestAction.text->status (derived), url->sourceUrl
+    //   (description/summary/pros/cons/statusColor are app-added editorial content)
+    // To replace with live data: fetch /v3/bill/119, filter by latestAction status,
+    //   map fields, merge with editorial content keyed by billType+billNumber
     const awaitingBills = [
       {
-        id: 'HR1', number: 'H.R. 1', title: 'One Big Beautiful Bill Act',
-        passedDate: 'May 22, 2025', chamber: 'House', status: 'Passed House — Pending Senate',
-        statusColor: 'blue',
+        id: 'HR1', billType: 'hr', billNumber: '1', congress: '119', number: 'H.R. 1', title: 'One Big Beautiful Bill Act',
+        passedDate: 'May 22, 2025', actionDate: '2025-05-22', chamber: 'House',
+        status: 'Passed House — Pending Senate', statusCode: 'PASS_BACK', statusColor: 'blue',
+        sourceUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/1',
         description: 'Sweeping reconciliation bill extending Trump-era tax cuts, boosting border security funding, cutting federal spending, and raising the debt ceiling.',
         summary: 'The flagship legislative priority of the Trump administration, this reconciliation bill extends the 2017 Tax Cuts and Jobs Act tax rates beyond their 2025 expiration, adds $150B in new border and defense spending, cuts $1.5T in federal spending over 10 years (including Medicaid and SNAP reductions), eliminates clean energy credits from the Inflation Reduction Act, and raises the debt ceiling by $4T. Passed the House 215–214, it faces significant opposition in the Senate from both Democrats and moderate Republicans concerned about the Medicaid cuts.',
         pros: ['Prevents large tax increases when TCJA expires, maintaining current rates for most Americans', 'Delivers significant border security funding aligned with voter mandate', 'Meaningful reduction in federal deficit over 10-year window', 'Streamlines and simplifies several overlapping federal programs'],
@@ -7496,9 +7523,10 @@ function App() {
         support: 11234, oppose: 14567,
       },
       {
-        id: 'HR22', number: 'H.R. 22', title: 'SAVE Act (Safeguard American Voter Eligibility)',
-        passedDate: 'April 10, 2025', chamber: 'House', status: 'Passed House — Pending Senate',
-        statusColor: 'blue',
+        id: 'HR22', billType: 'hr', billNumber: '22', congress: '119', number: 'H.R. 22', title: 'SAVE Act (Safeguard American Voter Eligibility)',
+        passedDate: 'April 10, 2025', actionDate: '2025-04-10', chamber: 'House',
+        status: 'Passed House — Pending Senate', statusCode: 'PASS_BACK', statusColor: 'blue',
+        sourceUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/22',
         description: 'Requires individuals to provide documentary proof of U.S. citizenship — such as a passport or birth certificate — when registering to vote in federal elections.',
         summary: 'The SAVE Act amends the National Voter Registration Act to require documentary proof of citizenship (passport, birth certificate, or similar document) when registering to vote in federal elections. Supporters argue it prevents non-citizen voting; opponents argue non-citizen voting is already illegal, rare, and that the bill will disenfranchise millions of eligible citizens who lack ready access to such documents — particularly the elderly, low-income, and minority voters.',
         pros: ['Adds a verification layer to ensure only eligible citizens vote in federal elections', 'Addresses public concern about election integrity', 'Aligns federal voter registration with some state-level requirements already in place'],
@@ -7506,9 +7534,10 @@ function App() {
         support: 10456, oppose: 13234,
       },
       {
-        id: 'HR1526', number: 'H.R. 1526', title: 'No Rogue Rulings Act',
-        passedDate: 'April 24, 2025', chamber: 'House', status: 'Passed House — Pending Senate',
-        statusColor: 'blue',
+        id: 'HR1526', billType: 'hr', billNumber: '1526', congress: '119', number: 'H.R. 1526', title: 'No Rogue Rulings Act',
+        passedDate: 'April 24, 2025', actionDate: '2025-04-24', chamber: 'House',
+        status: 'Passed House — Pending Senate', statusCode: 'PASS_BACK', statusColor: 'blue',
+        sourceUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/1526',
         description: 'Limits the authority of individual federal district court judges to issue nationwide injunctions blocking presidential executive orders or federal policies.',
         summary: 'This bill restricts the power of single district court judges to block federal laws or executive orders nationwide. Under the bill, injunctions issued by district courts would apply only to the specific parties in the case and the jurisdiction of that court. The legislation is directly motivated by dozens of nationwide injunctions blocking Trump\'s executive orders. Supporters say it restores the proper scope of judicial power; opponents argue it strips courts of an essential check on executive overreach.',
         pros: ['Prevents single unelected judges from unilaterally halting national policy', 'Encourages circuit splits that allow the Supreme Court to resolve disagreements properly', 'Restores the traditional, narrower scope of district court injunctive power'],
@@ -7516,9 +7545,10 @@ function App() {
         support: 9876, oppose: 11234,
       },
       {
-        id: 'S321', number: 'S. 321', title: 'GENIUS Act (Stablecoin Regulation)',
-        passedDate: 'May 19, 2025', chamber: 'Senate', status: 'Passed Senate — Pending House',
-        statusColor: 'purple',
+        id: 'S321', billType: 's', billNumber: '321', congress: '119', number: 'S. 321', title: 'GENIUS Act (Stablecoin Regulation)',
+        passedDate: 'May 19, 2025', actionDate: '2025-05-19', chamber: 'Senate',
+        status: 'Passed Senate — Pending House', statusCode: 'PASS_OVER:HOUSE', statusColor: 'purple',
+        sourceUrl: 'https://www.congress.gov/bill/119th-congress/senate-bill/321',
         description: 'Establishes the first federal regulatory framework for payment stablecoins, requiring issuers to hold 1:1 reserves in U.S. dollars or Treasury securities.',
         summary: 'The Guiding and Establishing National Innovation for U.S. Stablecoins (GENIUS) Act creates a licensing and oversight regime for stablecoin issuers. It requires 1:1 backing with liquid assets (cash or short-term Treasuries), mandates monthly reserve disclosures, prohibits algorithmic stablecoins, and gives the OCC and state regulators joint oversight. The bill passed the Senate 66–32 in bipartisan fashion, representing Congress\'s first major crypto legislation.',
         pros: ['Provides legal clarity that U.S. crypto businesses urgently need to invest and grow', 'Protects consumers with mandatory reserve requirements preventing FTX-style collapses', 'Bipartisan 66-vote Senate passage signals broad consensus', 'Could cement dollar dominance in the digital asset era globally'],
@@ -7526,9 +7556,10 @@ function App() {
         support: 13456, oppose: 7890,
       },
       {
-        id: 'HR485', number: 'H.R. 485', title: 'Protection of Women and Girls in Sports Act',
-        passedDate: 'January 14, 2025', chamber: 'House', status: 'Passed Both Chambers — Awaiting Signature',
-        statusColor: 'green',
+        id: 'HR485', billType: 'hr', billNumber: '485', congress: '119', number: 'H.R. 485', title: 'Protection of Women and Girls in Sports Act',
+        passedDate: 'January 14, 2025', actionDate: '2025-01-14', chamber: 'House',
+        status: 'Passed Both Chambers — Awaiting Signature', statusCode: 'PRES_ACTION', statusColor: 'green',
+        sourceUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/485',
         description: 'Prohibits transgender athletes who were assigned male at birth from competing in women\'s sports categories at schools and colleges that receive federal funding.',
         summary: 'This bill amends Title IX of the Education Amendments of 1972 to define "sex" as biological sex for the purposes of athletic programs. Schools receiving federal funding would be prohibited from allowing transgender women (born male) to compete in female sports categories. Compliance would be enforced through withdrawal of federal funding. The bill passed both chambers largely along party lines and awaits presidential signature.',
         pros: ['Protects competitive fairness for biological female athletes in school sports', 'Provides clear federal guidance that schools can follow consistently', 'Addresses concerns about physical differences affecting competition outcomes'],
@@ -7536,9 +7567,10 @@ function App() {
         support: 12345, oppose: 14678,
       },
       {
-        id: 'HR2018', number: 'H.R. 2018', title: 'No Taxpayer Funding for Abortion Act',
-        passedDate: 'March 27, 2025', chamber: 'House', status: 'Passed House — Pending Senate',
-        statusColor: 'blue',
+        id: 'HR2018', billType: 'hr', billNumber: '2018', congress: '119', number: 'H.R. 2018', title: 'No Taxpayer Funding for Abortion Act',
+        passedDate: 'March 27, 2025', actionDate: '2025-03-27', chamber: 'House',
+        status: 'Passed House — Pending Senate', statusCode: 'PASS_BACK', statusColor: 'blue',
+        sourceUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/2018',
         description: 'Permanently codifies the Hyde Amendment into statutory law, banning the use of federal funds for abortion services across all federal programs including Medicaid.',
         summary: 'The Hyde Amendment has been a temporary budget rider since 1976, renewed annually by Congress. This bill would make it permanent law, banning federal funding of abortion through Medicaid, the Federal Employees Health Benefits Program, and other federal insurance programs except in cases of rape, incest, or life endangerment. It also extends restrictions to the ACA marketplace. Passed largely along party lines in the House; faces a 60-vote filibuster threshold in the Senate.',
         pros: ['Reflects the principle that taxpayers should not be required to fund a procedure many find morally objectionable', 'Makes permanent a budget policy that has been enacted continuously for nearly 50 years', 'Provides stable long-term policy certainty instead of annual rider uncertainty'],
@@ -7546,9 +7578,10 @@ function App() {
         support: 9234, oppose: 12456,
       },
       {
-        id: 'S870', number: 'S. 870', title: 'DOGE Enabling and Accountability Act',
-        passedDate: 'March 5, 2025', chamber: 'Senate', status: 'Passed Senate — Pending House',
-        statusColor: 'purple',
+        id: 'S870', billType: 's', billNumber: '870', congress: '119', number: 'S. 870', title: 'DOGE Enabling and Accountability Act',
+        passedDate: 'March 5, 2025', actionDate: '2025-03-05', chamber: 'Senate',
+        status: 'Passed Senate — Pending House', statusCode: 'PASS_OVER:HOUSE', statusColor: 'purple',
+        sourceUrl: 'https://www.congress.gov/bill/119th-congress/senate-bill/870',
         description: 'Formally establishes the Department of Government Efficiency (DOGE) as a statutory advisory body with defined oversight authority and mandatory transparency reporting.',
         summary: 'This bill formally creates the Department of Government Efficiency (DOGE) as a statutory body in the executive branch, setting legal boundaries on its authority. It requires DOGE to publicly report all spending cuts it recommends, obtain Congressional notification before implementing cost reductions above $50M, and submit quarterly reports to Congress. It also requires DOGE personnel to comply with federal ethics laws and conflict-of-interest disclosures. Supporters say it legitimizes DOGE; opponents say it validates an unconstitutional structure led by Elon Musk.',
         pros: ['Provides legal authorization and accountability framework for a currently informal body', 'Requires transparency reporting that makes DOGE activities subject to public scrutiny', 'Congressional notification thresholds add oversight to prevent unilateral spending cuts', 'Addresses concerns about the constitutional legitimacy of DOGE\'s current structure'],
@@ -7556,9 +7589,10 @@ function App() {
         support: 8901, oppose: 11234,
       },
       {
-        id: 'HR1100', number: 'H.R. 1100', title: 'Restoring Education Standards and Trust Act',
-        passedDate: 'April 3, 2025', chamber: 'House', status: 'Passed House — Pending Senate',
-        statusColor: 'blue',
+        id: 'HR1100', billType: 'hr', billNumber: '1100', congress: '119', number: 'H.R. 1100', title: 'Restoring Education Standards and Trust Act',
+        passedDate: 'April 3, 2025', actionDate: '2025-04-03', chamber: 'House',
+        status: 'Passed House — Pending Senate', statusCode: 'PASS_BACK', statusColor: 'blue',
+        sourceUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/1100',
         description: 'Prohibits federally funded schools from using curricula that teaches Critical Race Theory or mandatory DEI training for students or staff.',
         summary: 'This bill conditions federal K-12 and higher education funding on schools certifying they do not use curricula the bill defines as "discriminatory" — including materials framed around Critical Race Theory, mandatory DEI training, and certain historical frameworks. Schools found in violation would face funding clawbacks. Supporters say it ensures parents\' rights over curriculum; critics say its vague language would ban legitimate history instruction and chill academic freedom.',
         pros: ['Responds to parent concerns about age-inappropriate or politically partisan material in schools', 'Reinforces parental rights over children\'s education content', 'Prevents use of taxpayer dollars to fund divisive ideological programs in schools'],
@@ -7663,6 +7697,14 @@ function App() {
                         </div>
                         <span className="text-xs text-gray-400">{pct}% support</span>
                       </div>
+                      <a
+                        href={eo.sourceUrl} target="_blank" rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        className="mt-2.5 flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <Globe className="w-3 h-3 flex-shrink-0" />
+                        Source: federalregister.gov
+                      </a>
                     </div>
                   );
                 })}
@@ -7720,6 +7762,14 @@ function App() {
                         </div>
                         <span className="text-xs text-gray-400">{pct}% support</span>
                       </div>
+                      <a
+                        href={bill.sourceUrl} target="_blank" rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        className="mt-2.5 flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors"
+                      >
+                        <Globe className="w-3 h-3 flex-shrink-0" />
+                        Source: congress.gov
+                      </a>
                     </div>
                   );
                 })}
@@ -7759,6 +7809,13 @@ function App() {
                         </div>
                         <h2 className="text-base font-bold text-gray-900 mt-1.5 leading-snug">{selectedPresidentBill.title}</h2>
                         <p className="text-xs text-gray-500 mt-1">Passed {selectedPresidentBill.chamber} · {selectedPresidentBill.passedDate}</p>
+                        <a
+                          href={selectedPresidentBill.sourceUrl} target="_blank" rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors mt-1"
+                        >
+                          <Globe className="w-3 h-3" />
+                          Source: congress.gov
+                        </a>
                       </div>
                       <button
                         onClick={() => setSelectedPresidentBill(null)}
@@ -7866,6 +7923,13 @@ function App() {
                         <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">{selectedEO.number}</span>
                         <h2 className="text-base font-bold text-gray-900 mt-2 leading-snug">{selectedEO.title}</h2>
                         <p className="text-xs text-gray-500 mt-1">Signed {selectedEO.date}</p>
+                        <a
+                          href={selectedEO.sourceUrl} target="_blank" rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition-colors mt-1"
+                        >
+                          <Globe className="w-3 h-3" />
+                          Source: federalregister.gov
+                        </a>
                       </div>
                       <button
                         onClick={() => setSelectedEO(null)}
