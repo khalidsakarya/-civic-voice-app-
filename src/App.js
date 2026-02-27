@@ -226,6 +226,11 @@ function App() {
     const saved = localStorage.getItem('cvPresidentVote');
     return saved ? JSON.parse(saved) : { support: 18423, oppose: 24156, userVote: null };
   });
+  const [selectedEO, setSelectedEO] = useState(null);
+  const [eoVotes, setEoVotes] = useState(() => {
+    const saved = localStorage.getItem('cvEOVotes');
+    return saved ? JSON.parse(saved) : {};
+  });
   const [economicChartIndex, setEconomicChartIndex] = useState(0);
   const [showTaxExemptModal, setShowTaxExemptModal] = useState(false);
   const [taxExemptSearch, setTaxExemptSearch] = useState('');
@@ -3317,6 +3322,22 @@ function App() {
     const saved = JSON.parse(localStorage.getItem('cvCongressVotes') || '{}');
     saved[memberName] = patch;
     localStorage.setItem('cvCongressVotes', JSON.stringify(saved));
+  };
+
+  const voteEO = (orderNum, vote) => {
+    setEoVotes(prev => {
+      const current = prev[orderNum] || { support: 0, oppose: 0, userVote: null };
+      const newVote = current.userVote === vote ? null : vote;
+      let support = current.support;
+      let oppose  = current.oppose;
+      if (current.userVote === 'support') support = Math.max(0, support - 1);
+      if (current.userVote === 'oppose')  oppose  = Math.max(0, oppose  - 1);
+      if (newVote === 'support') support++;
+      if (newVote === 'oppose')  oppose++;
+      const next = { ...prev, [orderNum]: { support, oppose, userVote: newVote } };
+      localStorage.setItem('cvEOVotes', JSON.stringify(next));
+      return next;
+    });
   };
 
   const votePresident = (vote) => {
@@ -7347,6 +7368,99 @@ function App() {
       phone: '(202) 456-1414',
     };
 
+    const executiveOrders = [
+      {
+        number: 'EO 14160', title: 'Protecting the Meaning and Value of American Citizenship',
+        date: 'January 20, 2025',
+        description: 'Ends automatic birthright citizenship for children born in the U.S. to parents who are undocumented or on temporary visas.',
+        summary: 'Directs federal agencies to stop recognizing birthright citizenship under the 14th Amendment for children born to parents who are neither citizens nor legal permanent residents. Represents a significant reinterpretation of the 14th Amendment\'s citizenship clause. Multiple federal courts immediately blocked implementation pending constitutional review.',
+        pros: ['Reduces incentive for illegal immigration and "birth tourism"', 'Aligns with most other developed nations requiring parental citizenship', 'Saves federal resources on services for non-citizen children'],
+        cons: ['Widely viewed as unconstitutional under the 14th Amendment', 'Multiple federal courts blocked it within days of signing', 'Could create a two-tiered citizenship system affecting long-term families'],
+        support: 8423, oppose: 12156,
+      },
+      {
+        number: 'EO 14151', title: 'Ending Radical and Wasteful Government DEI Programs',
+        date: 'January 20, 2025',
+        description: 'Eliminates all Diversity, Equity, and Inclusion offices and programs across the federal government within 60 days.',
+        summary: 'Mandates that all federal agencies shut down their DEI offices within 60 days. Revokes previous executive orders on affirmative action, directs federal contractors to certify they do not operate DEI programs, and extends similar restrictions to federally funded universities and organizations.',
+        pros: ['Promotes merit-based hiring free from identity quotas', 'Reduces government bureaucracy and federal spending', 'Removes programs some consider divisive or discriminatory against non-minority groups'],
+        cons: ['Dismantles decades of workplace equity protections', 'May increase discrimination against historically marginalized groups', 'Could reduce diversity in federal workforce; hundreds of legal challenges filed'],
+        support: 9234, oppose: 11567,
+      },
+      {
+        number: 'EO 14148', title: 'Declaring a National Energy Emergency',
+        date: 'January 20, 2025',
+        description: 'Declares a national energy emergency to expedite permits for fossil fuel projects, reversing Biden-era energy regulations.',
+        summary: 'Declares the U.S. faces an energy supply emergency, directing all agencies to use emergency powers to expedite permits for oil, gas, coal, and nuclear projects. Suspends regulations hindering domestic energy production, reverses Biden-era LNG export restrictions, and reopens federal lands to new fossil fuel leasing.',
+        pros: ['Reduces energy costs by increasing domestic supply', 'Increases U.S. energy independence and national security', 'Creates jobs in energy sector and lowers reliance on foreign imports'],
+        cons: ['Accelerates climate change by expanding fossil fuel production', 'Bypasses environmental review processes designed to protect communities', 'Locks in fossil fuel infrastructure for decades against global renewable trend'],
+        support: 11234, oppose: 9876,
+      },
+      {
+        number: 'EO 14150', title: 'Protecting the American People Against Invasion',
+        date: 'January 20, 2025',
+        description: 'Declares an invasion at the southern border, directing mass deportation and expanded military involvement in immigration enforcement.',
+        summary: 'Declares undocumented immigration constitutes an "invasion" under the Constitution. Directs DHS to detain and deport all removable aliens, expands use of military and National Guard for immigration enforcement, ends "catch-and-release" policies, and reinstates the "Remain in Mexico" policy for asylum seekers.',
+        pros: ['Enforces existing immigration law more strictly', 'Reduces strain on border communities and public services', 'Deters future illegal immigration and prioritizes removal of criminals'],
+        cons: ['Mass deportation raises major humanitarian concerns and family separations', '"Invasion" doctrine applied to immigration is constitutionally disputed', 'Estimated cost exceeds $300B; disrupts industries dependent on undocumented labor'],
+        support: 10567, oppose: 12345,
+      },
+      {
+        number: 'EO 14147', title: 'Designating Cartels as Foreign Terrorist Organizations',
+        date: 'January 20, 2025',
+        description: 'Formally designates major Mexican drug cartels and MS-13 as Foreign Terrorist Organizations, enabling financial sanctions and stronger enforcement.',
+        summary: 'Formally designates Tren de Aragua, MS-13, and major Mexican drug trafficking organizations (Sinaloa, CJNG) as Foreign Terrorist Organizations (FTOs). This enables broader law enforcement tools, financial sanctions, asset freezes, and potential military action against cartel operations. Addresses fentanyl trafficking as a national security threat.',
+        pros: ['Enables stronger law enforcement tools and asset seizures against cartels', 'Sends strong deterrence signal; treats fentanyl crisis as national security issue', 'Allows targeting of cartel financial networks globally'],
+        cons: ['Could complicate U.S.–Mexico diplomacy significantly', 'FTO designation may obstruct asylum claims from cartel violence victims', 'Risk of military escalation; legal definition of "terrorism" may not fit cartel crime'],
+        support: 14234, oppose: 6789,
+      },
+      {
+        number: 'EO 14149', title: 'Restoring Freedom of Speech and Ending Federal Censorship',
+        date: 'January 20, 2025',
+        description: 'Prohibits federal agencies from partnering with social media companies to moderate content, reversing Biden-era disinformation programs.',
+        summary: 'Directs all federal agencies to immediately stop programs that "partner with or fund any third-party organization to censor, suppress, or otherwise limit" speech online. Instructs the AG to review all federal activities that may have suppressed free speech since 2020. Bars agencies from using federal funds for public media that promotes DEI messaging.',
+        pros: ['Protects First Amendment principles and ends government influence over private platform moderation', 'Increases transparency around government-media interactions', 'Addresses legitimate concerns about government overreach in speech regulation'],
+        cons: ['Hinders efforts to combat foreign disinformation and election interference', 'Could allow dangerous misinformation about public health to spread unchecked', 'Selectively applies free speech concerns based on political viewpoint'],
+        support: 12456, oppose: 8901,
+      },
+      {
+        number: 'EO 14168', title: 'Defending Women from Gender Ideology Extremism',
+        date: 'January 20, 2025',
+        description: 'Defines sex as binary and biological across all federal policy, banning transgender recognition in government documents and federal facilities.',
+        summary: 'Directs all federal agencies to recognize only two sexes — male and female — as defined by biology. Requires federal documents including passports to use biological sex only. Bans transgender women from federal women\'s facilities (shelters, prisons). Withdraws U.S. from WHO gender policies. Ends passport "X" gender markers. Multiple courts issued injunctions blocking portions.',
+        pros: ['Aligns federal policy with biological definitions of sex', 'Protects sex-based spaces for biological women in federal facilities', 'Reflects views held by a majority of Americans on the definition of sex'],
+        cons: ['Denies legal recognition to transgender and non-binary Americans', 'Creates safety risks for transgender people placed in mismatched facilities', 'Contradicts medical consensus from major health organizations; courts blocked parts'],
+        support: 9876, oppose: 11234,
+      },
+      {
+        number: 'EO 14173', title: 'Ending Illegal Discrimination and Restoring Merit-Based Opportunity',
+        date: 'January 20, 2025',
+        description: 'Extends DEI restrictions to private sector federal contractors, requiring them to certify they do not use affirmative action or DEI programs.',
+        summary: 'Extends the prohibition on DEI programs to all entities that receive federal contracts or grants. Requires contractors to certify compliance under penalty of contract termination. Directs the AG and EEOC to investigate private sector DEI programs that may constitute illegal discrimination. Revokes previous executive orders on affirmative action and diversity outreach.',
+        pros: ['Creates consistent merit-based standards across government-funded entities', 'Potentially reduces preferential treatment in contracting and hiring', 'Removes government-mandated racial preferences from the private sector'],
+        cons: ['Threatens billions in contracts to institutions with DEI programs', 'Chilling effect on voluntary diversity efforts in private sector', 'Could eliminate pipeline programs helping underrepresented minorities; multiple legal challenges'],
+        support: 8567, oppose: 10234,
+      },
+      {
+        number: 'EO 14154', title: 'Unleashing American Energy',
+        date: 'January 20, 2025',
+        description: 'Withdraws the U.S. from the Paris Climate Agreement and removes Biden-era clean energy mandates including the EV sales requirement.',
+        summary: 'Directs U.S. withdrawal from the Paris Agreement on climate change. Eliminates Biden\'s EV mandate requiring a set percentage of new vehicle sales to be electric. Rescinds Inflation Reduction Act clean energy spending priorities. Restores oil and gas leasing on federal lands and offshore. Eliminates the "social cost of carbon" metric used in regulatory analysis.',
+        pros: ['Reduces energy costs for consumers and businesses in the short term', 'Preserves consumer choice in vehicle markets without government mandates', 'Prioritizes energy affordability over costly mandated transition timelines'],
+        cons: ['Withdraws U.S. from global climate leadership at a critical moment', 'Harms clean energy job growth and U.S. competitiveness in the renewable sector', 'Contradicts climate science on urgency of reducing greenhouse gas emissions'],
+        support: 11234, oppose: 9567,
+      },
+      {
+        number: 'EO 14152', title: 'Strengthening American Leadership in Artificial Intelligence',
+        date: 'January 23, 2025',
+        description: 'Revokes Biden\'s AI safety executive order and removes restrictions on AI development, prioritizing U.S. dominance over safety guardrails.',
+        summary: 'Revokes Biden\'s landmark October 2023 executive order on AI safety that required companies to report safety test results to the government. Directs agencies to develop new AI policy focused on U.S. dominance rather than safety guardrails. Creates a task force to develop an AI Action Plan within 180 days focused on economic competitiveness against China.',
+        pros: ['Reduces regulatory burden on AI companies to maintain U.S. edge vs. China', 'Allows faster development and deployment of American AI technology', 'Reduces compliance costs and speeds deployment for U.S. AI developers'],
+        cons: ['Removes important AI safety oversight mechanisms', 'Increases risk of AI systems causing harm without transparency requirements', 'Industry safety researchers warn of catastrophic unintended consequences'],
+        support: 7890, oppose: 9234,
+      },
+    ];
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
         <div className="max-w-5xl mx-auto">
@@ -7400,6 +7514,152 @@ function App() {
               </div>
             </div>
           </div>
+
+          {/* Recent Executive Orders */}
+          <div className="mt-10">
+            <div className="mb-5">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Recent Executive Orders</h2>
+              <p className="text-gray-500 text-sm mt-1">Tap any order to read the full summary and cast your vote</p>
+              <div className="w-16 h-1 bg-red-400 mt-2 rounded-full"></div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {executiveOrders.map((eo) => {
+                const votes = eoVotes[eo.number] || { support: eo.support, oppose: eo.oppose, userVote: null };
+                const total = votes.support + votes.oppose;
+                const pct = total > 0 ? Math.round((votes.support / total) * 100) : 0;
+                return (
+                  <div
+                    key={eo.number}
+                    onClick={() => setSelectedEO(eo)}
+                    className="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-red-300 transition-all"
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full flex-shrink-0">{eo.number}</span>
+                      <span className="text-xs text-gray-400 flex-shrink-0">{eo.date}</span>
+                    </div>
+                    <h3 className="text-sm font-bold text-gray-800 mb-2 leading-snug">{eo.title}</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{eo.description}</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                      </div>
+                      <span className="text-xs text-gray-400">{pct}% support</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* EO Detail Modal */}
+          {selectedEO && (() => {
+            const votes = eoVotes[selectedEO.number] || { support: selectedEO.support, oppose: selectedEO.oppose, userVote: null };
+            const total = votes.support + votes.oppose;
+            const pct = total > 0 ? Math.round((votes.support / total) * 100) : 0;
+            return (
+              <div
+                className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center"
+                style={{ background: 'rgba(0,0,0,0.6)' }}
+                onClick={(e) => { if (e.target === e.currentTarget) setSelectedEO(null); }}
+              >
+                <div className="relative bg-white w-full sm:max-w-xl mx-0 sm:mx-4 rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[90vh] flex flex-col animate-fade-in">
+
+                  {/* Modal header */}
+                  <div
+                    style={{ background: 'linear-gradient(135deg, #ef444418 0%, #ef444406 100%)', borderBottom: '3px solid #ef4444' }}
+                    className="flex-shrink-0 px-5 pt-5 pb-4 rounded-t-2xl sm:rounded-t-2xl"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">{selectedEO.number}</span>
+                        <h2 className="text-base font-bold text-gray-900 mt-2 leading-snug">{selectedEO.title}</h2>
+                        <p className="text-xs text-gray-500 mt-1">Signed {selectedEO.date}</p>
+                      </div>
+                      <button
+                        onClick={() => setSelectedEO(null)}
+                        className="flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                        aria-label="Close"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Vote bar */}
+                    <div className="bg-white bg-opacity-70 rounded-lg p-2.5 flex items-center gap-3 mt-3 flex-wrap">
+                      <div className="flex items-center gap-1">
+                        <ThumbsUp className="w-3.5 h-3.5 text-green-600" />
+                        <span className="text-sm font-semibold text-gray-700">{votes.support.toLocaleString()}</span>
+                        <span className="text-xs text-gray-400">support</span>
+                      </div>
+                      <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[60px]">
+                        <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-gray-400">oppose</span>
+                        <span className="text-sm font-semibold text-gray-700">{votes.oppose.toLocaleString()}</span>
+                        <ThumbsDown className="w-3.5 h-3.5 text-red-500" />
+                      </div>
+                    </div>
+
+                    {/* Vote buttons */}
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => voteEO(selectedEO.number, 'support')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${votes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-70 text-green-700 hover:bg-green-100'}`}
+                      >
+                        <ThumbsUp className="w-4 h-4" /> Support
+                      </button>
+                      <button
+                        onClick={() => voteEO(selectedEO.number, 'oppose')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${votes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-70 text-red-700 hover:bg-red-100'}`}
+                      >
+                        <ThumbsDown className="w-4 h-4" /> Oppose
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Scrollable body */}
+                  <div className="flex-1 overflow-y-auto p-5 space-y-5">
+
+                    {/* Full Summary */}
+                    <section>
+                      <p className="panel-section-label">Full Summary</p>
+                      <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
+                        <p className="text-gray-700 text-sm leading-relaxed">{selectedEO.summary}</p>
+                      </div>
+                    </section>
+
+                    {/* Pros */}
+                    <section>
+                      <p className="panel-section-label">Arguments in Favour</p>
+                      <div className="space-y-2">
+                        {selectedEO.pros.map((pro, i) => (
+                          <div key={i} className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
+                            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-gray-700 leading-relaxed">{pro}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    {/* Cons */}
+                    <section>
+                      <p className="panel-section-label">Arguments Against</p>
+                      <div className="space-y-2">
+                        {selectedEO.cons.map((con, i) => (
+                          <div key={i} className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-xl">
+                            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-gray-700 leading-relaxed">{con}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Full Profile Panel — same design as Congress member panel */}
           {showPresidentModal && (() => {
