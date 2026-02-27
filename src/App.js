@@ -227,6 +227,7 @@ function App() {
     return saved ? JSON.parse(saved) : { support: 18423, oppose: 24156, userVote: null };
   });
   const [selectedEO, setSelectedEO] = useState(null);
+  const [showEOSection, setShowEOSection] = useState(false);
   const [eoVotes, setEoVotes] = useState(() => {
     const saved = localStorage.getItem('cvEOVotes');
     return saved ? JSON.parse(saved) : {};
@@ -7515,40 +7516,53 @@ function App() {
             </div>
           </div>
 
-          {/* Recent Executive Orders */}
-          <div className="mt-10">
-            <div className="mb-5">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Recent Executive Orders</h2>
-              <p className="text-gray-500 text-sm mt-1">Tap any order to read the full summary and cast your vote</p>
-              <div className="w-16 h-1 bg-red-400 mt-2 rounded-full"></div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {executiveOrders.map((eo) => {
-                const votes = eoVotes[eo.number] || { support: eo.support, oppose: eo.oppose, userVote: null };
-                const total = votes.support + votes.oppose;
-                const pct = total > 0 ? Math.round((votes.support / total) * 100) : 0;
-                return (
-                  <div
-                    key={eo.number}
-                    onClick={() => setSelectedEO(eo)}
-                    className="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-red-300 transition-all"
-                  >
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full flex-shrink-0">{eo.number}</span>
-                      <span className="text-xs text-gray-400 flex-shrink-0">{eo.date}</span>
-                    </div>
-                    <h3 className="text-sm font-bold text-gray-800 mb-2 leading-snug">{eo.title}</h3>
-                    <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{eo.description}</p>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-gray-100 rounded-full h-1.5">
-                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+          {/* Recent Executive Orders — toggle button */}
+          <div className="mt-8">
+            <button
+              onClick={() => setShowEOSection(prev => !prev)}
+              className="w-full flex items-center justify-between gap-4 bg-white border-2 border-red-200 hover:border-red-400 hover:bg-red-50 transition-all rounded-2xl px-6 py-4 shadow-sm"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-5 h-5 text-red-600" />
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-gray-800 text-base">Recent Executive Orders</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{executiveOrders.length} orders signed in 2025 · tap to vote</p>
+                </div>
+              </div>
+              <ChevronDown className={`w-5 h-5 text-red-500 flex-shrink-0 transition-transform duration-200 ${showEOSection ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showEOSection && (
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {executiveOrders.map((eo) => {
+                  const votes = eoVotes[eo.number] || { support: eo.support, oppose: eo.oppose, userVote: null };
+                  const total = votes.support + votes.oppose;
+                  const pct = total > 0 ? Math.round((votes.support / total) * 100) : 0;
+                  return (
+                    <div
+                      key={eo.number}
+                      onClick={() => setSelectedEO(eo)}
+                      className="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-red-300 transition-all"
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full flex-shrink-0">{eo.number}</span>
+                        <span className="text-xs text-gray-400 flex-shrink-0">{eo.date}</span>
                       </div>
-                      <span className="text-xs text-gray-400">{pct}% support</span>
+                      <h3 className="text-sm font-bold text-gray-800 mb-2 leading-snug">{eo.title}</h3>
+                      <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{eo.description}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                          <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                        </div>
+                        <span className="text-xs text-gray-400">{pct}% support</span>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* EO Detail Modal */}
