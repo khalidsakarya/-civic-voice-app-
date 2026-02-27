@@ -222,6 +222,10 @@ function App() {
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [showEconomicModal, setShowEconomicModal] = useState(false);
   const [showPresidentModal, setShowPresidentModal] = useState(false);
+  const [presidentVotes, setPresidentVotes] = useState(() => {
+    const saved = localStorage.getItem('cvPresidentVote');
+    return saved ? JSON.parse(saved) : { support: 18423, oppose: 24156, userVote: null };
+  });
   const [economicChartIndex, setEconomicChartIndex] = useState(0);
   const [showTaxExemptModal, setShowTaxExemptModal] = useState(false);
   const [taxExemptSearch, setTaxExemptSearch] = useState('');
@@ -3313,6 +3317,19 @@ function App() {
     const saved = JSON.parse(localStorage.getItem('cvCongressVotes') || '{}');
     saved[memberName] = patch;
     localStorage.setItem('cvCongressVotes', JSON.stringify(saved));
+  };
+
+  const votePresident = (vote) => {
+    setPresidentVotes(prev => {
+      const newVote = prev.userVote === vote ? null : vote;
+      let support = 18423;
+      let oppose  = 24156;
+      if (newVote === 'support') support++;
+      if (newVote === 'oppose')  oppose++;
+      const next = { support, oppose, userVote: newVote };
+      localStorage.setItem('cvPresidentVote', JSON.stringify(next));
+      return next;
+    });
   };
 
   // Chart colors
@@ -7384,122 +7401,253 @@ function App() {
             </div>
           </div>
 
-          {/* Full Profile Modal */}
-          {showPresidentModal && (
-            <div
-              className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
-              style={{ background: 'rgba(0,0,0,0.55)' }}
-              onClick={(e) => { if (e.target === e.currentTarget) setShowPresidentModal(false); }}
-            >
-              <div className="relative bg-white w-full max-w-2xl mx-4 my-6 rounded-2xl shadow-2xl animate-fade-in">
+          {/* Full Profile Panel — same design as Congress member panel */}
+          {showPresidentModal && (() => {
+            const total = presidentVotes.support + presidentVotes.oppose;
+            const approvalPct = total > 0 ? Math.round((presidentVotes.support / total) * 100) : null;
+            return (
+              <div className="fixed inset-0 z-50 flex justify-end">
+                {/* Backdrop */}
+                <div
+                  className="panel-backdrop absolute inset-0 bg-black bg-opacity-50"
+                  onClick={() => setShowPresidentModal(false)}
+                />
 
-                {/* Modal header */}
-                <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-t-2xl p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
-                        DT
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-bold text-white">{trump.name}</h2>
-                        <p className="text-red-200 text-sm mt-0.5">{trump.title}</p>
-                        <span className="mt-2 inline-block px-2 py-0.5 bg-white/20 rounded-full text-xs text-white font-medium">Republican</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowPresidentModal(false)}
-                      className="p-2 rounded-xl hover:bg-white/20 text-white flex-shrink-0"
-                      aria-label="Close"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
+                {/* Sliding panel */}
+                <div className="panel-slide-in relative flex flex-col bg-white shadow-2xl w-full md:max-w-2xl h-full overflow-hidden">
 
-                {/* Modal body */}
-                <div className="p-6 space-y-6">
-
-                  {/* Term & personal info */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 mb-0.5">Current Term</p>
-                      <p className="text-sm font-semibold text-gray-800">{trump.termStart} – Present</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 mb-0.5">Previous Term</p>
-                      <p className="text-sm font-semibold text-gray-800">{trump.priorTerm}</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 mb-0.5">Born</p>
-                      <p className="text-sm font-semibold text-gray-800">{trump.born}, {trump.birthplace}</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 mb-0.5">Education</p>
-                      <p className="text-sm font-semibold text-gray-800">{trump.education}</p>
-                    </div>
-                  </div>
-
-                  {/* Bio */}
-                  <div>
-                    <p className="panel-section-label">Biography</p>
-                    <div className="bg-gradient-to-br from-gray-50 to-red-50 border border-gray-200 rounded-xl p-4">
-                      <p className="text-gray-700 text-sm leading-relaxed">{trump.bio}</p>
-                    </div>
-                  </div>
-
-                  {/* Key policy areas */}
-                  <div>
-                    <p className="panel-section-label">Key Policy Areas</p>
-                    <div className="flex flex-wrap gap-2">
-                      {trump.policies.map((p, i) => (
-                        <span key={i} className="px-3 py-1 bg-red-50 text-red-700 text-xs font-medium rounded-full border border-red-200">{p}</span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Executive actions */}
-                  <div>
-                    <p className="panel-section-label">Key Executive Actions (2025)</p>
-                    <div className="space-y-2">
-                      {trump.executiveActions.map((action, i) => (
-                        <div key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                          <span className="text-red-400 font-bold mt-0.5 flex-shrink-0">•</span>
-                          <span>{action}</span>
+                  {/* ── HEADER ── */}
+                  <div
+                    style={{ background: 'linear-gradient(135deg, #ef444418 0%, #ef444406 100%)', borderBottom: '3px solid #ef4444' }}
+                    className="flex-shrink-0 px-6 pt-6 pb-5"
+                  >
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div className="flex items-start gap-4 min-w-0">
+                        <div
+                          style={{ backgroundColor: '#ef4444' }}
+                          className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-lg"
+                        >
+                          DT
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Cabinet */}
-                  <div>
-                    <p className="panel-section-label">Key Cabinet Members</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {trump.cabinet.map((c, i) => (
-                        <div key={i} className="bg-gray-50 rounded-xl p-3">
-                          <p className="text-xs text-gray-500">{c.role}</p>
-                          <p className="text-sm font-semibold text-gray-800">{c.name}</p>
+                        <div className="min-w-0">
+                          <h2 className="text-xl font-bold text-gray-900 leading-tight">{trump.name}</h2>
+                          <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                            <span
+                              style={{ backgroundColor: '#ef4444' }}
+                              className="text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm"
+                            >
+                              Republican
+                            </span>
+                            <span className="text-sm text-gray-600 font-medium">47th President</span>
+                          </div>
+                          <p className="text-sm text-gray-500 mt-1">Washington, D.C. · In office since Jan 20, 2025</p>
                         </div>
-                      ))}
+                      </div>
+                      <button
+                        onClick={() => setShowPresidentModal(false)}
+                        className="flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white hover:bg-opacity-70 transition-colors"
+                        aria-label="Close panel"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Approval bar */}
+                    {approvalPct !== null && (
+                      <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <ThumbsUp className="w-4 h-4 text-green-600" />
+                          <span className="text-sm font-semibold text-gray-700">{presidentVotes.support.toLocaleString()}</span>
+                          <span className="text-xs text-gray-500">support</span>
+                        </div>
+                        <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[80px]">
+                          <div
+                            className="h-2 rounded-full transition-all"
+                            style={{ width: `${approvalPct}%`, backgroundColor: approvalPct >= 50 ? '#22c55e' : '#ef4444' }}
+                          />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-gray-500">oppose</span>
+                          <span className="text-sm font-semibold text-gray-700">{presidentVotes.oppose.toLocaleString()}</span>
+                          <ThumbsDown className="w-4 h-4 text-red-500" />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Vote buttons */}
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => votePresident('support')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${presidentVotes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
+                      >
+                        <ThumbsUp className="w-4 h-4" /> Support
+                      </button>
+                      <button
+                        onClick={() => votePresident('oppose')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${presidentVotes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
+                      >
+                        <ThumbsDown className="w-4 h-4" /> Oppose
+                      </button>
                     </div>
                   </div>
 
-                  {/* Contact */}
-                  <div>
-                    <p className="panel-section-label">Contact the White House</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-700">
-                        <span className="font-medium">Phone: </span>{trump.phone}
-                      </div>
-                      <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-700">
-                        <span className="font-medium">Email: </span>{trump.email}
-                      </div>
+                  {/* ── SCROLLABLE CONTENT ── */}
+                  <div className="flex-1 overflow-y-auto">
+                    <div className="p-6 space-y-7">
+
+                      {/* BIO */}
+                      <section>
+                        <p className="panel-section-label">Biography</p>
+                        <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
+                          <p className="text-gray-700 text-sm leading-relaxed">{trump.bio}</p>
+                        </div>
+                      </section>
+
+                      {/* KEY POLICY AREAS — same style as Committee Assignments */}
+                      <section>
+                        <p className="panel-section-label">Key Policy Areas</p>
+                        <div className="flex flex-wrap gap-2">
+                          {trump.policies.map((policy, i) => (
+                            <span
+                              key={i}
+                              className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full"
+                            >
+                              <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                              {policy}
+                            </span>
+                          ))}
+                        </div>
+                      </section>
+
+                      {/* CONTACT — same card style */}
+                      <section>
+                        <p className="panel-section-label">Contact Information</p>
+                        <div className="space-y-2">
+                          <a
+                            href={`mailto:${trump.email}`}
+                            className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors group"
+                          >
+                            <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <Globe className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs text-gray-500 font-medium">Official Email</p>
+                              <p className="text-sm font-semibold text-blue-600 group-hover:text-blue-800 truncate">{trump.email}</p>
+                            </div>
+                          </a>
+                          <a
+                            href={`tel:${trump.phone}`}
+                            className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-green-50 hover:border-green-300 transition-colors group"
+                          >
+                            <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <MapPin className="w-4 h-4 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500 font-medium">White House Phone</p>
+                              <p className="text-sm font-semibold text-green-700 group-hover:text-green-900">{trump.phone}</p>
+                            </div>
+                          </a>
+                          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                            <div className="w-9 h-9 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <Building2 className="w-4 h-4 text-orange-600" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500 font-medium">Office Address</p>
+                              <p className="text-sm font-medium text-gray-700">1600 Pennsylvania Avenue NW, Washington, D.C. 20500</p>
+                            </div>
+                          </div>
+                        </div>
+                      </section>
+
+                      {/* TERM INFO — same 3-stat grid style as Attendance */}
+                      <section>
+                        <p className="panel-section-label">Term Information</p>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                            <p className="text-sm font-bold text-blue-700">2025–</p>
+                            <p className="text-xs text-gray-500 mt-0.5">Current Term</p>
+                          </div>
+                          <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
+                            <p className="text-sm font-bold text-green-700">2017–21</p>
+                            <p className="text-xs text-gray-500 mt-0.5">Prior Term</p>
+                          </div>
+                          <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center">
+                            <p className="text-2xl font-bold text-purple-700">47</p>
+                            <p className="text-xs text-gray-500 mt-0.5">President #</p>
+                          </div>
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-3">
+                          <div className="bg-gray-50 rounded-xl p-3">
+                            <p className="text-xs text-gray-500 mb-0.5">Born</p>
+                            <p className="text-sm font-semibold text-gray-800">{trump.born}, {trump.birthplace}</p>
+                          </div>
+                          <div className="bg-gray-50 rounded-xl p-3">
+                            <p className="text-xs text-gray-500 mb-0.5">Education</p>
+                            <p className="text-sm font-semibold text-gray-800">{trump.education}</p>
+                          </div>
+                        </div>
+                      </section>
+
+                      {/* EXECUTIVE ACTIONS — same list style as Office Expenses */}
+                      <section>
+                        <p className="panel-section-label">Key Executive Actions (2025)</p>
+                        <div className="space-y-2">
+                          {trump.executiveActions.map((action, i) => (
+                            <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                              <span className="text-sm text-gray-700 font-medium">{action}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+
+                      {/* FINANCIAL DISCLOSURE — same 2×2 stat grid */}
+                      <section>
+                        <p className="panel-section-label">Financial Disclosure</p>
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                            <p className="text-xs text-gray-500 mb-0.5">Worth When Elected (2016)</p>
+                            <p className="text-lg font-bold text-blue-700">$3.7B</p>
+                          </div>
+                          <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+                            <p className="text-xs text-gray-500 mb-0.5">Current Net Worth</p>
+                            <p className="text-lg font-bold text-green-700">$5.1B</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-purple-50 border border-purple-200 rounded-xl p-3">
+                            <p className="text-xs text-gray-500 mb-0.5">Wealth Increase</p>
+                            <p className="text-lg font-bold text-purple-700">+38%</p>
+                          </div>
+                          <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
+                            <p className="text-xs text-gray-500 mb-0.5">Presidential Salary</p>
+                            <p className="text-lg font-bold text-orange-700">$400,000</p>
+                          </div>
+                        </div>
+                      </section>
+
+                      {/* CABINET — same card style as Corporate Connections */}
+                      <section>
+                        <p className="panel-section-label">Key Cabinet Members — {trump.cabinet.length} positions</p>
+                        <div className="space-y-2">
+                          {trump.cabinet.map((c, i) => (
+                            <div key={i} className="border border-gray-200 rounded-xl p-3.5 hover:bg-gray-50 transition-colors">
+                              <div className="flex items-start justify-between gap-3 mb-1.5">
+                                <div className="min-w-0">
+                                  <p className="font-bold text-gray-800 text-sm">{c.name}</p>
+                                  <p className="text-xs font-medium text-indigo-600">{c.role}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+
                     </div>
                   </div>
-
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
         </div>
       </div>
