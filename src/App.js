@@ -3728,6 +3728,8 @@ function App() {
     setExpandedPresidentSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const [financialDashTab, setFinancialDashTab] = useState('overview');
+
   const getPartyColor = (party) => partyColors[party] || '#6B7280';
 
   const getVoteIcon = (vote) => {
@@ -8114,6 +8116,14 @@ function App() {
           countryName: 'United States',
           backLabel: 'U.S. Federal Government',
           source: 'U.S. Treasury / Office of Management and Budget',
+          flowData: [
+            { name: 'Direct Citizen Benefits', value: 61, amount: '$4.12T',  color: '#22c55e', description: 'Social Security, Medicare, Medicaid, veterans benefits, housing assistance' },
+            { name: 'Administration',           value: 8,  amount: '$540B',  color: '#8b5cf6', description: 'Federal workforce salaries, congressional operations, agency overhead' },
+            { name: 'Contractors & Consultants',value: 12, amount: '$810B',  color: '#f97316', description: 'Defence contractors, IT service providers, professional consulting firms' },
+            { name: 'NGOs & Intermediaries',    value: 6,  amount: '$405B',  color: '#06b6d4', description: 'Grants to nonprofits, community organizations, state pass-through programs' },
+            { name: 'Planning & Studies',       value: 2,  amount: '$135B',  color: '#84cc16', description: 'Research programs, regulatory studies, feasibility assessments' },
+            { name: 'Unknown & Undisclosed',    value: 11, amount: '$743B',  color: '#ef4444', description: 'Classified programs, untracked discretionary grants, undisclosed operations' },
+          ],
         }
       : {
           totalBudget: '$534.8 Billion',
@@ -8129,16 +8139,27 @@ function App() {
           countryName: 'Canada',
           backLabel: 'Canadian Federal Government',
           source: 'Department of Finance Canada / Treasury Board of Canada',
+          flowData: [
+            { name: 'Direct Citizen Benefits', value: 68, amount: '$363.7B', color: '#22c55e', description: 'Old Age Security, GIS, Employment Insurance, Canada Child Benefit, health transfers' },
+            { name: 'Administration',           value: 7,  amount: '$37.4B', color: '#8b5cf6', description: 'Federal public service salaries, departmental overhead, Crown corporation support' },
+            { name: 'Contractors & Consultants',value: 11, amount: '$58.8B', color: '#f97316', description: 'IT consulting (McKinsey, Accenture, KPMG), professional services, outsourced operations' },
+            { name: 'NGOs & Intermediaries',    value: 6,  amount: '$32.1B', color: '#06b6d4', description: 'Grant programs to nonprofits, community foundations, Indigenous organizations' },
+            { name: 'Planning & Studies',       value: 3,  amount: '$16.0B', color: '#84cc16', description: 'Policy research, environmental assessments, infrastructure planning studies' },
+            { name: 'Unknown & Undisclosed',    value: 5,  amount: '$26.7B', color: '#ef4444', description: 'Grants with incomplete reporting, confidential contract details, departmental reserves' },
+          ],
         };
 
     const eff = data.efficiencyScore;
-    const isGreen = eff >= 70;
+    const isGreen  = eff >= 70;
     const isYellow = eff >= 50 && eff < 70;
-    const scoreNum   = isGreen ? 'text-green-600'  : isYellow ? 'text-yellow-600'  : 'text-red-600';
-    const scoreBar   = isGreen ? 'bg-green-500'    : isYellow ? 'bg-yellow-500'    : 'bg-red-500';
-    const scoreBg    = isGreen ? 'bg-green-100'    : isYellow ? 'bg-yellow-100'    : 'bg-red-100';
+    const scoreNum    = isGreen ? 'text-green-600'   : isYellow ? 'text-yellow-600'   : 'text-red-600';
+    const scoreBar    = isGreen ? 'bg-green-500'     : isYellow ? 'bg-yellow-500'     : 'bg-red-500';
+    const scoreBg     = isGreen ? 'bg-green-100'     : isYellow ? 'bg-yellow-100'     : 'bg-red-100';
     const scoreBorder = isGreen ? 'border-green-500' : isYellow ? 'border-yellow-500' : 'border-red-500';
-    const scoreLabel = isGreen ? '✅ Good — Above 70%' : isYellow ? '⚠️ Fair — 50 to 70%' : '🚨 Poor — Below 50%';
+    const scoreLabel  = isGreen ? '✅ Good — Above 70%' : isYellow ? '⚠️ Fair — 50 to 70%' : '🚨 Poor — Below 50%';
+
+    const unknownEntry = data.flowData.find(d => d.name === 'Unknown & Undisclosed');
+    const unknownAboveThreshold = unknownEntry && unknownEntry.value > 10;
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -8157,107 +8178,224 @@ function App() {
         <div className="max-w-6xl mx-auto px-4 py-8">
 
           {/* Page title */}
-          <div className="mb-8">
+          <div className="mb-6">
             <div className="flex items-center gap-3 mb-2">
               <span className="text-3xl">{data.flag}</span>
               <h1 className="text-3xl font-bold text-gray-800">Where the Money Goes</h1>
             </div>
             <p className="text-gray-600 text-lg">{data.countryName} — Financial Transparency Dashboard</p>
             <p className="text-sm text-gray-400 mt-1">Source: {data.source}</p>
-            <div className="mt-3">
-              <span className="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1.5 rounded-full">📊 Overview</span>
-            </div>
           </div>
 
-          {/* Hero: Total Federal Budget */}
-          <div className="bg-white rounded-xl shadow-md p-8 mb-6 text-center border border-gray-100">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Total Federal Budget</p>
-            <p className="text-5xl sm:text-7xl font-black text-gray-900 mb-2 leading-none">{data.totalBudget}</p>
-            <p className="text-gray-500 text-base mt-3">{data.currency} · {data.fiscalYear} · {data.fiscalYearDetail}</p>
+          {/* Tab navigation */}
+          <div className="flex gap-1 bg-gray-200 rounded-xl p-1 mb-8 w-fit">
+            <button
+              onClick={() => setFinancialDashTab('overview')}
+              className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                financialDashTab === 'overview'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              📊 Overview
+            </button>
+            <button
+              onClick={() => setFinancialDashTab('money-flow')}
+              className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                financialDashTab === 'money-flow'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              💸 Money Flow
+            </button>
           </div>
 
-          {/* Fiscal Year + Department */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-            <div className="bg-white rounded-xl shadow-md p-6 flex items-start gap-4">
-              <div className="bg-blue-100 p-3 rounded-lg flex-shrink-0">
-                <Calendar className="w-6 h-6 text-blue-600" />
+          {/* ── OVERVIEW TAB ── */}
+          {financialDashTab === 'overview' && (
+            <div>
+              {/* Hero: Total Federal Budget */}
+              <div className="bg-white rounded-xl shadow-md p-8 mb-6 text-center border border-gray-100">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Total Federal Budget</p>
+                <p className="text-5xl sm:text-7xl font-black text-gray-900 mb-2 leading-none">{data.totalBudget}</p>
+                <p className="text-gray-500 text-base mt-3">{data.currency} · {data.fiscalYear} · {data.fiscalYearDetail}</p>
               </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Fiscal Year</p>
-                <p className="text-xl font-bold text-gray-800">{data.fiscalYear}</p>
-                <p className="text-sm text-gray-500 mt-1">{data.fiscalYearDetail}</p>
-              </div>
-            </div>
 
-            <div className="bg-white rounded-xl shadow-md p-6 flex items-start gap-4">
-              <div className="bg-purple-100 p-3 rounded-lg flex-shrink-0">
-                <Building2 className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Responsible Department</p>
-                <p className="text-xl font-bold text-gray-800">{data.department}</p>
-                <p className="text-sm text-gray-500 mt-1">{data.departmentNote}</p>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Efficiency Score */}
-          <div className={`bg-white rounded-xl shadow-md p-6 mb-6 border-l-4 ${scoreBorder}`}>
-            <div className="flex items-start justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${scoreBg}`}>
-                  <TrendingUp className={`w-5 h-5 ${scoreNum}`} />
+              {/* Fiscal Year + Department */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="bg-white rounded-xl shadow-md p-6 flex items-start gap-4">
+                  <div className="bg-blue-100 p-3 rounded-lg flex-shrink-0">
+                    <Calendar className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Fiscal Year</p>
+                    <p className="text-xl font-bold text-gray-800">{data.fiscalYear}</p>
+                    <p className="text-sm text-gray-500 mt-1">{data.fiscalYearDetail}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Efficiency Score</p>
-                  <p className="text-sm text-gray-500">Share of spending that reaches citizens directly</p>
+                <div className="bg-white rounded-xl shadow-md p-6 flex items-start gap-4">
+                  <div className="bg-purple-100 p-3 rounded-lg flex-shrink-0">
+                    <Building2 className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Responsible Department</p>
+                    <p className="text-xl font-bold text-gray-800">{data.department}</p>
+                    <p className="text-sm text-gray-500 mt-1">{data.departmentNote}</p>
+                  </div>
                 </div>
               </div>
-              <div className="text-right">
-                <p className={`text-5xl font-black ${scoreNum}`}>{eff}%</p>
-                <p className={`text-sm font-semibold mt-1 ${scoreNum}`}>{scoreLabel}</p>
+
+              {/* Efficiency Score */}
+              <div className={`bg-white rounded-xl shadow-md p-6 mb-6 border-l-4 ${scoreBorder}`}>
+                <div className="flex items-start justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${scoreBg}`}>
+                      <TrendingUp className={`w-5 h-5 ${scoreNum}`} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Efficiency Score</p>
+                      <p className="text-sm text-gray-500">Share of spending that reaches citizens directly</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-5xl font-black ${scoreNum}`}>{eff}%</p>
+                    <p className={`text-sm font-semibold mt-1 ${scoreNum}`}>{scoreLabel}</p>
+                  </div>
+                </div>
+                <div className="h-5 bg-gray-100 rounded-full overflow-hidden mb-3">
+                  <div className={`h-full rounded-full ${scoreBar}`} style={{ width: `${eff}%` }}></div>
+                </div>
+                <div className="flex flex-wrap gap-5 text-sm text-gray-600">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-red-400 flex-shrink-0 inline-block"></span>
+                    Below 50% — Poor
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-yellow-400 flex-shrink-0 inline-block"></span>
+                    50–70% — Fair
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-full bg-green-400 flex-shrink-0 inline-block"></span>
+                    Above 70% — Good
+                  </span>
+                </div>
+              </div>
+
+              {/* Plain language summary */}
+              <div className="bg-gray-900 text-white rounded-xl shadow-md p-6">
+                <div className="flex items-start gap-4">
+                  <div className="bg-white/10 p-3 rounded-lg flex-shrink-0">
+                    <FileText className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Plain Language Summary</p>
+                    <p className="text-lg font-medium leading-relaxed text-white">{data.summary}</p>
+                  </div>
+                </div>
               </div>
             </div>
+          )}
 
-            {/* Progress bar */}
-            <div className="h-5 bg-gray-100 rounded-full overflow-hidden mb-3">
-              <div
-                className={`h-full rounded-full ${scoreBar}`}
-                style={{ width: `${eff}%` }}
-              ></div>
-            </div>
+          {/* ── MONEY FLOW TAB ── */}
+          {financialDashTab === 'money-flow' && (
+            <div>
 
-            {/* Legend */}
-            <div className="flex flex-wrap gap-5 text-sm text-gray-600">
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-red-400 flex-shrink-0 inline-block"></span>
-                Below 50% — Poor
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-yellow-400 flex-shrink-0 inline-block"></span>
-                50–70% — Fair
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-green-400 flex-shrink-0 inline-block"></span>
-                Above 70% — Good
-              </span>
-            </div>
-          </div>
-
-          {/* Plain language summary */}
-          <div className="bg-gray-900 text-white rounded-xl shadow-md p-6">
-            <div className="flex items-start gap-4">
-              <div className="bg-white/10 p-3 rounded-lg flex-shrink-0">
-                <FileText className="w-5 h-5 text-white" />
+              {/* Pie chart */}
+              <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h2 className="text-xl font-bold text-gray-800 mb-1">Budget Allocation by Category</h2>
+                <p className="text-sm text-gray-500 mb-4">{data.currency} · {data.fiscalYear} · {data.totalBudget} total</p>
+                <ResponsiveContainer width="100%" height={380}>
+                  <RechartsPie>
+                    <Pie
+                      data={data.flowData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={130}
+                      innerRadius={60}
+                      dataKey="value"
+                      paddingAngle={2}
+                    >
+                      {data.flowData.map((entry, idx) => (
+                        <Cell key={idx} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value, name, props) => [
+                        `${value}% of budget  ·  ${props.payload.amount}`,
+                        name,
+                      ]}
+                      contentStyle={{ borderRadius: '8px', fontSize: '13px', border: '1px solid #e5e7eb' }}
+                    />
+                    <Legend
+                      formatter={(value) => (
+                        <span style={{ fontSize: '13px', color: '#374151' }}>{value}</span>
+                      )}
+                    />
+                  </RechartsPie>
+                </ResponsiveContainer>
               </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Plain Language Summary</p>
-                <p className="text-lg font-medium leading-relaxed text-white">{data.summary}</p>
+
+              {/* Transparency warning — US only (11% > 10% threshold) */}
+              {unknownAboveThreshold && (
+                <div className="bg-red-50 border-2 border-red-400 rounded-xl p-5 mb-6">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-red-800 text-base">⚠️ Transparency Concern</p>
+                      <p className="text-red-700 text-sm mt-1">
+                        Unknown &amp; Undisclosed spending ({unknownEntry.value}% · {unknownEntry.amount}) exceeds the recommended 10% threshold.
+                        Governments are expected to account for all public funds; spending above this level indicates inadequate reporting, excessive classification, or untracked grant disbursements.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Breakdown list */}
+              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100">
+                  <h2 className="text-xl font-bold text-gray-800">Spending Breakdown</h2>
+                  <p className="text-sm text-gray-500">All figures in {data.currency} · {data.fiscalYear}</p>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {data.flowData.map((item, idx) => (
+                    <div key={idx} className="px-6 py-5">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span
+                            className="w-4 h-4 rounded-full flex-shrink-0 inline-block mt-0.5"
+                            style={{ backgroundColor: item.color }}
+                          ></span>
+                          <div className="min-w-0">
+                            <span className="font-semibold text-gray-800">{item.name}</span>
+                            {item.name === 'Unknown & Undisclosed' && unknownAboveThreshold && (
+                              <span className="ml-2 inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full">
+                                <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                                Above threshold
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0 ml-4">
+                          <span className="text-lg font-bold text-gray-900">{item.amount}</span>
+                          <span className="text-sm text-gray-500 ml-2">({item.value}%)</span>
+                        </div>
+                      </div>
+                      {/* Mini bar */}
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-2 ml-7">
+                        <div
+                          className="h-full rounded-full"
+                          style={{ width: `${item.value}%`, backgroundColor: item.color }}
+                        ></div>
+                      </div>
+                      <p className="text-sm text-gray-500 ml-7">{item.description}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
+
             </div>
-          </div>
+          )}
 
         </div>
       </div>
