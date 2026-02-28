@@ -7617,43 +7617,22 @@ function App() {
             <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
           </div>
 
-          {/* President Card — same style as Congress member cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div
-              className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-red-400"
-              onClick={() => setShowPresidentModal(true)}
-            >
-              {/* Avatar with initials */}
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4"
-                style={{ backgroundColor: '#ef4444' }}
-              >
+          {/* President Card — styled to match EO and Bills toggle buttons */}
+          <button
+            onClick={() => setShowPresidentModal(true)}
+            className="w-full flex items-center justify-between gap-4 bg-white border-2 border-red-200 hover:border-red-400 hover:bg-red-50 transition-all rounded-2xl px-6 py-4 shadow-sm"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 text-red-600 font-bold text-sm">
                 DT
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-1">{trump.name}</h3>
-              <p className="text-sm text-gray-500 mb-3">{trump.title}</p>
-              {/* Party badge */}
-              <div className="mb-3">
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold text-white" style={{ backgroundColor: '#ef4444' }}>
-                  Republican
-                </span>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Calendar className="w-4 h-4 flex-shrink-0" />
-                  <span>In office since {trump.termStart}</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MapPin className="w-4 h-4 flex-shrink-0" />
-                  <span>The White House, Washington D.C.</span>
-                </div>
-                <p className="text-xs text-gray-500 leading-relaxed pt-1 line-clamp-3">{trump.bio}</p>
-              </div>
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <span className="text-blue-600 text-sm font-medium">View Full Profile →</span>
+              <div className="text-left">
+                <p className="font-bold text-gray-800 text-base">{trump.name}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{trump.title} · Republican · In office since {trump.termStart}</p>
               </div>
             </div>
-          </div>
+            <ChevronRight className="w-5 h-5 text-red-500 flex-shrink-0" />
+          </button>
 
           {/* Recent Executive Orders — toggle button */}
           <div className="mt-8">
