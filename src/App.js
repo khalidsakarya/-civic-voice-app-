@@ -443,7 +443,6 @@ function App() {
   const [selectedBill, setSelectedBill] = useState(null);
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [showEconomicModal, setShowEconomicModal] = useState(false);
-  const [showPresidentModal, setShowPresidentModal] = useState(false);
   const [presidentVotes, setPresidentVotes] = useState(() => {
     const saved = localStorage.getItem('cvPresidentVote');
     return saved ? JSON.parse(saved) : { support: 18423, oppose: 24156, userVote: null };
@@ -7592,7 +7591,7 @@ function App() {
     );
   };
 
-  const renderPresidentExecutive = () => {
+  const renderPresidentDetail = () => {
     const trump = {
       name: 'Donald J. Trump',
       title: '47th President of the United States',
@@ -7670,6 +7669,435 @@ function App() {
     };
 
     return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <button
+              onClick={() => setView('president-executive')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
+            >
+              ← Back to President &amp; Executive Branch
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 py-8">
+
+          {/* Profile card */}
+          <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+            <div className="flex items-start gap-6">
+              <div
+                style={{ backgroundColor: '#ef4444' }}
+                className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold flex-shrink-0"
+              >
+                DT
+              </div>
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-gray-800 mb-3">{trump.name}</h1>
+                <div className="mb-3">
+                  <span
+                    style={{ backgroundColor: '#ef4444' }}
+                    className="text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-sm"
+                  >
+                    47th President of the United States
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <span className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: '#ef4444' }}></span>
+                    <span className="font-medium">{trump.party}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <MapPin className="w-4 h-4" />
+                    <span>Washington, D.C.</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Calendar className="w-4 h-4" />
+                    <span>In office since Jan 20, 2025</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Clock className="w-4 h-4" />
+                    <span>45th &amp; 47th President</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Citizen Opinion */}
+            <div className="border-t pt-6 mt-6">
+              <h3 className="text-lg font-bold text-gray-800 mb-4">Citizen Opinion</h3>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex gap-6 sm:gap-8">
+                  <div className="flex items-center gap-3">
+                    <ThumbsUp className="w-6 h-6 text-green-600" />
+                    <div>
+                      <div className="text-2xl font-bold text-gray-800">{presidentVotes.support.toLocaleString()}</div>
+                      <div className="text-sm text-gray-600">Support</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <ThumbsDown className="w-6 h-6 text-red-600" />
+                    <div>
+                      <div className="text-2xl font-bold text-gray-800">{presidentVotes.oppose.toLocaleString()}</div>
+                      <div className="text-sm text-gray-600">Oppose</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => votePresident('support')}
+                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${presidentVotes.userVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
+                  >
+                    <ThumbsUp className="w-5 h-5" />
+                    <span className="text-sm sm:text-base">{presidentVotes.userVote === 'support' ? 'Supporting' : 'Support This President'}</span>
+                  </button>
+                  <button
+                    onClick={() => votePresident('oppose')}
+                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${presidentVotes.userVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
+                  >
+                    <ThumbsDown className="w-5 h-5" />
+                    <span className="text-sm sm:text-base">{presidentVotes.userVote === 'oppose' ? 'Opposing' : 'Oppose'}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">📧 Contact Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
+                <a href={`mailto:${trump.email}`} className="text-blue-600 hover:text-blue-800 font-medium break-all">{trump.email}</a>
+              </div>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-2 font-medium">White House Phone</p>
+                <a href={`tel:${trump.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{trump.phone}</a>
+              </div>
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
+                <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
+                <p className="text-gray-700 text-sm">1600 Pennsylvania Avenue NW, Washington, D.C. 20500</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Two-column on desktop, single column on mobile */}
+          <div className="md:grid md:grid-cols-2 md:gap-6">
+
+            {/* Left column: bio, policies, term, cabinet */}
+            <div className="space-y-6">
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">📖 Biography</h3>
+                <p className="text-gray-700 leading-relaxed">{trump.bio}</p>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">📋 Key Policy Areas</h3>
+                <div className="flex flex-wrap gap-2">
+                  {trump.policies.map((policy, i) => (
+                    <span key={i} className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                      <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                      {policy}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">🗓️ Term Information</h3>
+                <div className="grid grid-cols-3 gap-3 mb-3">
+                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                    <p className="text-sm text-gray-600 mb-1">Current Term</p>
+                    <p className="text-2xl font-bold text-blue-600">2025–</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg text-center">
+                    <p className="text-sm text-gray-600 mb-1">Prior Term</p>
+                    <p className="text-2xl font-bold text-green-600">2017–21</p>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg text-center">
+                    <p className="text-sm text-gray-600 mb-1">President #</p>
+                    <p className="text-3xl font-bold text-purple-600">47</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Born</p>
+                    <p className="font-semibold text-gray-800">{trump.born}, {trump.birthplace}</p>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Education</p>
+                    <p className="font-semibold text-gray-800">{trump.education}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">🏛️ Key Cabinet Members</h3>
+                <div className="space-y-2">
+                  {trump.cabinet.map((c, i) => (
+                    <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                      <h4 className="font-bold text-gray-800">{c.name}</h4>
+                      <p className="text-sm text-indigo-600 font-medium">{c.role}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right column: collapsible sections */}
+            <div className="space-y-6 mt-6 md:mt-0">
+
+              {/* Recent Activity */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => togglePresidentSection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-6 h-6 text-blue-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
+                      <p className="text-sm text-gray-600">{trump.recentActivity.length} recent actions</p>
+                    </div>
+                  </div>
+                  {expandedPresidentSections.activity ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedPresidentSections.activity && (
+                  <div className="px-6 pb-6 space-y-4">
+                    {trump.recentActivity.map((item, i) => (
+                      <div key={i} className={`border rounded-lg p-4 ${item.type === 'Executive Order' ? 'bg-red-50 border-red-200' : item.type === 'Trade Action' ? 'bg-orange-50 border-orange-200' : 'bg-blue-50 border-blue-200'}`}>
+                        <div className="flex items-start justify-between mb-2">
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${item.type === 'Executive Order' ? 'bg-red-200 text-red-800' : item.type === 'Trade Action' ? 'bg-orange-200 text-orange-800' : 'bg-blue-200 text-blue-800'}`}>{item.type}</span>
+                          <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>{item.date}</span>
+                          </div>
+                        </div>
+                        <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                        <p className="text-sm text-gray-600">{item.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Key Executive Actions */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => togglePresidentSection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <Scale className="w-6 h-6 text-blue-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">⚖️ Key Executive Actions</h2>
+                      <p className="text-sm text-gray-600">{trump.executiveActions.length} key actions in 2025</p>
+                    </div>
+                  </div>
+                  {expandedPresidentSections.keyDecisions ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedPresidentSections.keyDecisions && (
+                  <div className="px-6 pb-6 space-y-2">
+                    {trump.executiveActions.map((action, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <span className="text-sm text-gray-700 font-medium">{action}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Attendance Record */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => togglePresidentSection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <Award className="w-6 h-6 text-blue-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
+                      <p className="text-sm text-gray-600">{trump.attendance.percentage}% intelligence briefing rate</p>
+                    </div>
+                  </div>
+                  {expandedPresidentSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedPresidentSections.attendance && (
+                  <div className="px-6 pb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-blue-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">Briefing Rate</p>
+                        <p className="text-3xl font-bold text-blue-600">{trump.attendance.percentage}%</p>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">Briefings Attended</p>
+                        <p className="text-3xl font-bold text-green-600">{trump.attendance.briefingsAttended}/{trump.attendance.totalBriefings}</p>
+                      </div>
+                      <div className="bg-purple-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">National Ranking</p>
+                        <p className="text-3xl font-bold text-purple-600">#1</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Financial Disclosures */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => togglePresidentSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                      <p className="text-sm text-gray-600">Wealth increased {trump.financialDisclosure.percentageIncrease}% since election</p>
+                    </div>
+                  </div>
+                  {expandedPresidentSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedPresidentSections.financial && (
+                  <div className="px-6 pb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="bg-blue-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">Elected ({trump.financialDisclosure.electedYear})</p>
+                        <p className="text-2xl font-bold text-blue-600">{trump.financialDisclosure.worthWhenElected}</p>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">Current Net Worth</p>
+                        <p className="text-2xl font-bold text-green-600">{trump.financialDisclosure.currentWorth}</p>
+                      </div>
+                      <div className="bg-purple-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">Wealth Increase</p>
+                        <p className="text-2xl font-bold text-purple-600">+{trump.financialDisclosure.percentageIncrease}%</p>
+                      </div>
+                      <div className="bg-orange-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">Annual Salary</p>
+                        <p className="text-2xl font-bold text-orange-600">{trump.financialDisclosure.annualSalary}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="font-semibold text-gray-700 mb-2">Asset Breakdown:</p>
+                      {trump.financialDisclosure.assets.map((asset, idx) => (
+                        <div key={idx} className="flex justify-between p-3 bg-gray-50 rounded">
+                          <span className="text-gray-700">{asset.type}</span>
+                          <span className="font-semibold text-gray-900">{asset.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Financial Holdings & Conflicts */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => togglePresidentSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="w-6 h-6 text-green-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">📈 Financial Holdings &amp; Conflicts</h2>
+                      <p className="text-sm text-gray-600">
+                        {trump.stockTrades.length} disclosed interests
+                        <span className="ml-2 text-red-600 font-bold">• {trump.stockTrades.filter(t => t.conflict).length} potential conflicts</span>
+                      </p>
+                    </div>
+                  </div>
+                  {expandedPresidentSections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedPresidentSections.stockTrades && (
+                  <div className="px-6 pb-6">
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                        <p className="text-sm text-gray-600 mb-1">Total Interests</p>
+                        <p className="text-3xl font-bold text-blue-600">{trump.stockTrades.length}</p>
+                      </div>
+                      <div className="bg-red-50 p-4 rounded-lg border-2 border-red-300">
+                        <p className="text-sm text-gray-600 mb-1">Conflicts</p>
+                        <p className="text-3xl font-bold text-red-600">{trump.stockTrades.filter(t => t.conflict).length}</p>
+                      </div>
+                    </div>
+                    <div className="bg-red-50 border-2 border-red-400 rounded-lg p-4 mb-6">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <h3 className="text-lg font-bold text-red-800 mb-2">⚠️ Potential Conflicts of Interest</h3>
+                          <p className="text-red-700 text-sm">Multiple financial holdings may conflict with presidential duties. These interests were not placed in a blind trust as recommended by ethics watchdogs.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      {trump.stockTrades.map((trade, i) => (
+                        <div key={i} className={`border-2 rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-400' : 'bg-gray-50 border-gray-200'}`}>
+                          {trade.conflict && (
+                            <div className="mb-3">
+                              <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold">🚨 POTENTIAL CONFLICT</span>
+                            </div>
+                          )}
+                          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="text-lg font-bold text-gray-800">{trade.company}</h3>
+                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-mono">{trade.ticker}</span>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">{trade.type}</span>
+                                <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">{trade.assetType}</span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xl font-bold text-green-600">{trade.valueRange}</p>
+                              <p className="text-sm text-gray-500 mt-1">{trade.date}</p>
+                            </div>
+                          </div>
+                          {trade.conflict && trade.conflictReason && (
+                            <div className="bg-red-100 border-l-4 border-red-600 p-3 rounded">
+                              <p className="text-sm font-semibold text-red-800 mb-1">Why this is flagged:</p>
+                              <p className="text-sm text-red-700">{trade.conflictReason}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Lobbying Activity */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => togglePresidentSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <Building2 className="w-6 h-6 text-red-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
+                      <p className="text-sm text-gray-600">{trump.lobbying.totalMeetings} meetings, {trump.lobbying.totalValue} total value</p>
+                    </div>
+                  </div>
+                  {expandedPresidentSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedPresidentSections.lobbying && (
+                  <div className="px-6 pb-6 space-y-4">
+                    {trump.lobbying.organizations.map((org, idx) => (
+                      <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="font-bold text-gray-800">{org.name}</h3>
+                            <p className="text-sm text-gray-600">{org.sector}</p>
+                          </div>
+                          <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
+                            {org.value > 0 ? `$${(org.value / 1000000).toFixed(1)}M` : 'Public Record'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span>📅 {org.meetings} meetings</span>
+                          <span>🗓️ Last: {org.lastMeeting}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderPresidentExecutive = () => {
+    return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
         <div className="max-w-5xl mx-auto">
           <button
@@ -7685,9 +8113,9 @@ function App() {
             <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
           </div>
 
-          {/* President Card — styled to match EO and Bills toggle buttons */}
+          {/* President Card */}
           <button
-            onClick={() => setShowPresidentModal(true)}
+            onClick={() => setView('president-detail')}
             className="w-full flex items-center justify-between gap-4 bg-white border-2 border-red-200 hover:border-red-400 hover:bg-red-50 transition-all rounded-2xl px-6 py-4 shadow-sm"
           >
             <div className="flex items-center gap-3">
@@ -7695,8 +8123,8 @@ function App() {
                 DT
               </div>
               <div className="text-left">
-                <p className="font-bold text-gray-800 text-base">{trump.name}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{trump.title} · Republican · In office since {trump.termStart}</p>
+                <p className="font-bold text-gray-800 text-base">Donald J. Trump</p>
+                <p className="text-xs text-gray-500 mt-0.5">47th President of the United States · Republican · In office since January 20, 2025</p>
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -7744,680 +8172,6 @@ function App() {
 
 
 
-          {/* Full Profile Panel — side panel on mobile, two-column full modal on desktop */}
-          {showPresidentModal && (() => {
-            const total = presidentVotes.support + presidentVotes.oppose;
-            const approvalPct = total > 0 ? Math.round((presidentVotes.support / total) * 100) : null;
-            return (
-              <div className="fixed inset-0 z-50 flex justify-end md:justify-center md:items-center">
-                {/* Backdrop */}
-                <div
-                  className="panel-backdrop absolute inset-0 bg-black bg-opacity-50"
-                  onClick={() => setShowPresidentModal(false)}
-                />
-
-                {/* Panel — slides in from right on mobile, centered modal on desktop */}
-                <div className="panel-slide-in md:panel-slide-in-desktop relative flex flex-col bg-white shadow-2xl w-full h-full md:max-w-5xl md:h-[92vh] md:rounded-2xl">
-
-                  {/* ── MOBILE HEADER (unchanged) ── */}
-                  <div
-                    style={{ background: 'linear-gradient(135deg, #ef444418 0%, #ef444406 100%)', borderBottom: '3px solid #ef4444' }}
-                    className="md:hidden flex-shrink-0 px-6 pt-6 pb-5"
-                  >
-                    <div className="flex items-start justify-between gap-4 mb-4">
-                      <div className="flex items-start gap-4 min-w-0">
-                        <div
-                          style={{ backgroundColor: '#ef4444' }}
-                          className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-lg"
-                        >
-                          DT
-                        </div>
-                        <div className="min-w-0">
-                          <h2 className="text-xl font-bold text-gray-900 leading-tight">{trump.name}</h2>
-                          <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                            <span
-                              style={{ backgroundColor: '#ef4444' }}
-                              className="text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm"
-                            >
-                              Republican
-                            </span>
-                            <span className="text-sm text-gray-600 font-medium">47th President</span>
-                          </div>
-                          <p className="text-sm text-gray-500 mt-1">Washington, D.C. · In office since Jan 20, 2025</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setShowPresidentModal(false)}
-                        className="flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white hover:bg-opacity-70 transition-colors"
-                        aria-label="Close panel"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
-
-                    {approvalPct !== null && (
-                      <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 flex-wrap">
-                        <div className="flex items-center gap-1.5">
-                          <ThumbsUp className="w-4 h-4 text-green-600" />
-                          <span className="text-sm font-semibold text-gray-700">{presidentVotes.support.toLocaleString()}</span>
-                          <span className="text-xs text-gray-500">support</span>
-                        </div>
-                        <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[80px]">
-                          <div
-                            className="h-2 rounded-full transition-all"
-                            style={{ width: `${approvalPct}%`, backgroundColor: approvalPct >= 50 ? '#22c55e' : '#ef4444' }}
-                          />
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-gray-500">oppose</span>
-                          <span className="text-sm font-semibold text-gray-700">{presidentVotes.oppose.toLocaleString()}</span>
-                          <ThumbsDown className="w-4 h-4 text-red-500" />
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2 mt-2">
-                      <button
-                        onClick={() => votePresident('support')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${presidentVotes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
-                      >
-                        <ThumbsUp className="w-4 h-4" /> Support
-                      </button>
-                      <button
-                        onClick={() => votePresident('oppose')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${presidentVotes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
-                      >
-                        <ThumbsDown className="w-4 h-4" /> Oppose
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* ── DESKTOP HEADER (Canadian MP style) ── */}
-                  <div className="hidden md:block flex-shrink-0 bg-white px-8 pt-8 pb-6" style={{ borderBottom: '2px solid #ef4444' }}>
-                    <div className="flex items-start gap-6">
-                      <div
-                        className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold flex-shrink-0 shadow-lg"
-                        style={{ backgroundColor: '#ef4444' }}
-                      >
-                        DT
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h1 className="text-3xl font-bold text-gray-800 mb-2">{trump.name}</h1>
-                            <div className="mb-3">
-                              <span
-                                className="text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-sm"
-                                style={{ backgroundColor: '#ef4444' }}
-                              >
-                                47th President of the United States
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm text-gray-600 mt-3">
-                              <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: '#ef4444' }}></span>
-                                <span className="font-medium">Republican Party</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <MapPin className="w-4 h-4" />
-                                <span>Washington, D.C.</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                <span>In office since Jan 20, 2025</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Clock className="w-4 h-4" />
-                                <span>45th &amp; 47th President</span>
-                              </div>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => setShowPresidentModal(false)}
-                            className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0"
-                            aria-label="Close"
-                          >
-                            <X className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="border-t pt-5 mt-5">
-                      <h3 className="text-lg font-bold text-gray-800 mb-4">Citizen Opinion</h3>
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div className="flex gap-6 sm:gap-8">
-                          <div className="flex items-center gap-3">
-                            <ThumbsUp className="w-6 h-6 text-green-600" />
-                            <div>
-                              <div className="text-2xl font-bold text-gray-800">{presidentVotes.support.toLocaleString()}</div>
-                              <div className="text-sm text-gray-600">Support</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <ThumbsDown className="w-6 h-6 text-red-600" />
-                            <div>
-                              <div className="text-2xl font-bold text-gray-800">{presidentVotes.oppose.toLocaleString()}</div>
-                              <div className="text-sm text-gray-600">Oppose</div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => votePresident('support')}
-                            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${presidentVotes.userVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
-                          >
-                            <ThumbsUp className="w-5 h-5" />
-                            <span>{presidentVotes.userVote === 'support' ? 'Supporting' : 'Support This President'}</span>
-                          </button>
-                          <button
-                            onClick={() => votePresident('oppose')}
-                            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${presidentVotes.userVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
-                          >
-                            <ThumbsDown className="w-5 h-5" />
-                            <span>{presidentVotes.userVote === 'oppose' ? 'Opposing' : 'Oppose'}</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ── MOBILE BODY (single column, unchanged) ── */}
-                  <div className="md:hidden flex-1 overflow-y-auto">
-                    <div className="p-6 space-y-7">
-
-                      <section>
-                        <p className="panel-section-label">Biography</p>
-                        <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
-                          <p className="text-gray-700 text-sm leading-relaxed">{trump.bio}</p>
-                        </div>
-                      </section>
-
-                      <section>
-                        <p className="panel-section-label">Key Policy Areas</p>
-                        <div className="flex flex-wrap gap-2">
-                          {trump.policies.map((policy, i) => (
-                            <span
-                              key={i}
-                              className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full"
-                            >
-                              <Scale className="w-3.5 h-3.5 flex-shrink-0" />
-                              {policy}
-                            </span>
-                          ))}
-                        </div>
-                      </section>
-
-                      <section>
-                        <p className="panel-section-label">Contact Information</p>
-                        <div className="space-y-2">
-                          <a
-                            href={`mailto:${trump.email}`}
-                            className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors group"
-                          >
-                            <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                              <Globe className="w-4 h-4 text-blue-600" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-xs text-gray-500 font-medium">Official Email</p>
-                              <p className="text-sm font-semibold text-blue-600 group-hover:text-blue-800 truncate">{trump.email}</p>
-                            </div>
-                          </a>
-                          <a
-                            href={`tel:${trump.phone}`}
-                            className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-green-50 hover:border-green-300 transition-colors group"
-                          >
-                            <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                              <MapPin className="w-4 h-4 text-green-600" />
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500 font-medium">White House Phone</p>
-                              <p className="text-sm font-semibold text-green-700 group-hover:text-green-900">{trump.phone}</p>
-                            </div>
-                          </a>
-                          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
-                            <div className="w-9 h-9 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <Building2 className="w-4 h-4 text-orange-600" />
-                            </div>
-                            <div>
-                              <p className="text-xs text-gray-500 font-medium">Office Address</p>
-                              <p className="text-sm font-medium text-gray-700">1600 Pennsylvania Avenue NW, Washington, D.C. 20500</p>
-                            </div>
-                          </div>
-                        </div>
-                      </section>
-
-                      <section>
-                        <p className="panel-section-label">Term Information</p>
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
-                            <p className="text-sm font-bold text-blue-700">2025–</p>
-                            <p className="text-xs text-gray-500 mt-0.5">Current Term</p>
-                          </div>
-                          <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
-                            <p className="text-sm font-bold text-green-700">2017–21</p>
-                            <p className="text-xs text-gray-500 mt-0.5">Prior Term</p>
-                          </div>
-                          <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center">
-                            <p className="text-2xl font-bold text-purple-700">47</p>
-                            <p className="text-xs text-gray-500 mt-0.5">President #</p>
-                          </div>
-                        </div>
-                        <div className="mt-3 grid grid-cols-2 gap-3">
-                          <div className="bg-gray-50 rounded-xl p-3">
-                            <p className="text-xs text-gray-500 mb-0.5">Born</p>
-                            <p className="text-sm font-semibold text-gray-800">{trump.born}, {trump.birthplace}</p>
-                          </div>
-                          <div className="bg-gray-50 rounded-xl p-3">
-                            <p className="text-xs text-gray-500 mb-0.5">Education</p>
-                            <p className="text-sm font-semibold text-gray-800">{trump.education}</p>
-                          </div>
-                        </div>
-                      </section>
-
-                      <section>
-                        <p className="panel-section-label">Key Executive Actions (2025)</p>
-                        <div className="space-y-2">
-                          {trump.executiveActions.map((action, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                              <span className="text-sm text-gray-700 font-medium">{action}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </section>
-
-                      <section>
-                        <p className="panel-section-label">Financial Disclosure</p>
-                        <div className="grid grid-cols-2 gap-3 mb-3">
-                          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
-                            <p className="text-xs text-gray-500 mb-0.5">Worth When Elected (2016)</p>
-                            <p className="text-lg font-bold text-blue-700">$3.7B</p>
-                          </div>
-                          <div className="bg-green-50 border border-green-200 rounded-xl p-3">
-                            <p className="text-xs text-gray-500 mb-0.5">Current Net Worth</p>
-                            <p className="text-lg font-bold text-green-700">$5.1B</p>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-purple-50 border border-purple-200 rounded-xl p-3">
-                            <p className="text-xs text-gray-500 mb-0.5">Wealth Increase</p>
-                            <p className="text-lg font-bold text-purple-700">+38%</p>
-                          </div>
-                          <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
-                            <p className="text-xs text-gray-500 mb-0.5">Presidential Salary</p>
-                            <p className="text-lg font-bold text-orange-700">$400,000</p>
-                          </div>
-                        </div>
-                      </section>
-
-                      <section>
-                        <p className="panel-section-label">Key Cabinet Members — {trump.cabinet.length} positions</p>
-                        <div className="space-y-2">
-                          {trump.cabinet.map((c, i) => (
-                            <div key={i} className="border border-gray-200 rounded-xl p-3.5 hover:bg-gray-50 transition-colors">
-                              <div className="flex items-start justify-between gap-3 mb-1.5">
-                                <div className="min-w-0">
-                                  <p className="font-bold text-gray-800 text-sm">{c.name}</p>
-                                  <p className="text-xs font-medium text-indigo-600">{c.role}</p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </section>
-
-                    </div>
-                  </div>
-
-                  {/* ── DESKTOP BODY (two-column, Canadian MP style) ── */}
-                  <div className="hidden md:flex flex-1 min-h-0">
-
-                    {/* Left column: bio, contact, policies, term info, cabinet */}
-                    <div className="flex-1 overflow-y-auto p-6 border-r border-gray-100 space-y-6">
-
-                      <div className="bg-white rounded-lg shadow-md p-6">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">📖 Biography</h3>
-                        <p className="text-gray-700 leading-relaxed">{trump.bio}</p>
-                      </div>
-
-                      <div className="bg-white rounded-lg shadow-md p-6">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">📧 Contact Information</h3>
-                        <div className="grid grid-cols-1 gap-4">
-                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
-                            <a href={`mailto:${trump.email}`} className="text-blue-600 hover:text-blue-800 font-medium">{trump.email}</a>
-                          </div>
-                          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <p className="text-sm text-gray-600 mb-2 font-medium">White House Phone</p>
-                            <a href={`tel:${trump.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{trump.phone}</a>
-                          </div>
-                          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                            <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
-                            <p className="text-gray-700 text-sm">1600 Pennsylvania Avenue NW, Washington, D.C. 20500</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-white rounded-lg shadow-md p-6">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">📋 Key Policy Areas</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {trump.policies.map((policy, i) => (
-                            <span key={i} className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full">
-                              <Scale className="w-3.5 h-3.5 flex-shrink-0" />
-                              {policy}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="bg-white rounded-lg shadow-md p-6">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">🗓️ Term Information</h3>
-                        <div className="grid grid-cols-3 gap-3 mb-3">
-                          <div className="bg-blue-50 p-4 rounded-lg text-center">
-                            <p className="text-sm text-gray-600 mb-1">Current Term</p>
-                            <p className="text-2xl font-bold text-blue-600">2025–</p>
-                          </div>
-                          <div className="bg-green-50 p-4 rounded-lg text-center">
-                            <p className="text-sm text-gray-600 mb-1">Prior Term</p>
-                            <p className="text-2xl font-bold text-green-600">2017–21</p>
-                          </div>
-                          <div className="bg-purple-50 p-4 rounded-lg text-center">
-                            <p className="text-sm text-gray-600 mb-1">President #</p>
-                            <p className="text-3xl font-bold text-purple-600">47</p>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-gray-50 p-3 rounded-lg">
-                            <p className="text-sm text-gray-600 mb-1">Born</p>
-                            <p className="font-semibold text-gray-800">{trump.born}, {trump.birthplace}</p>
-                          </div>
-                          <div className="bg-gray-50 p-3 rounded-lg">
-                            <p className="text-sm text-gray-600 mb-1">Education</p>
-                            <p className="font-semibold text-gray-800">{trump.education}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-white rounded-lg shadow-md p-6">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">🏛️ Key Cabinet Members</h3>
-                        <div className="space-y-2">
-                          {trump.cabinet.map((c, i) => (
-                            <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                              <h4 className="font-bold text-gray-800">{c.name}</h4>
-                              <p className="text-sm text-indigo-600 font-medium">{c.role}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                    </div>
-
-                    {/* Right column: recent activity, key decisions, attendance, financial, stock trades, lobbying */}
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
-
-                      {/* Recent Activity */}
-                      <div className="bg-white rounded-lg shadow-md">
-                        <div
-                          onClick={() => togglePresidentSection('activity')}
-                          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50 rounded-t-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <FileText className="w-6 h-6 text-blue-600" />
-                            <div>
-                              <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
-                              <p className="text-sm text-gray-600">{trump.recentActivity.length} recent actions</p>
-                            </div>
-                          </div>
-                          {expandedPresidentSections.activity ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                        </div>
-                        {expandedPresidentSections.activity && (
-                          <div className="px-6 pb-6 space-y-4">
-                            {trump.recentActivity.map((item, i) => (
-                              <div key={i} className={`border rounded-lg p-4 ${item.type === 'Executive Order' ? 'bg-red-50 border-red-200' : item.type === 'Trade Action' ? 'bg-orange-50 border-orange-200' : 'bg-blue-50 border-blue-200'}`}>
-                                <div className="flex items-start justify-between mb-2">
-                                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${item.type === 'Executive Order' ? 'bg-red-200 text-red-800' : item.type === 'Trade Action' ? 'bg-orange-200 text-orange-800' : 'bg-blue-200 text-blue-800'}`}>{item.type}</span>
-                                  <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                                    <Calendar className="w-3.5 h-3.5" />
-                                    <span>{item.date}</span>
-                                  </div>
-                                </div>
-                                <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
-                                <p className="text-sm text-gray-600">{item.description}</p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Key Decisions */}
-                      <div className="bg-white rounded-lg shadow-md">
-                        <div
-                          onClick={() => togglePresidentSection('keyDecisions')}
-                          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50 rounded-t-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Scale className="w-6 h-6 text-blue-600" />
-                            <div>
-                              <h2 className="text-xl font-bold text-gray-800">⚖️ Key Executive Actions</h2>
-                              <p className="text-sm text-gray-600">{trump.executiveActions.length} key actions in 2025</p>
-                            </div>
-                          </div>
-                          {expandedPresidentSections.keyDecisions ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                        </div>
-                        {expandedPresidentSections.keyDecisions && (
-                          <div className="px-6 pb-6 space-y-2">
-                            {trump.executiveActions.map((action, i) => (
-                              <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                <span className="text-sm text-gray-700 font-medium">{action}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Attendance Record */}
-                      <div className="bg-white rounded-lg shadow-md">
-                        <div
-                          onClick={() => togglePresidentSection('attendance')}
-                          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50 rounded-t-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Award className="w-6 h-6 text-blue-600" />
-                            <div>
-                              <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
-                              <p className="text-sm text-gray-600">{trump.attendance.percentage}% intelligence briefing rate</p>
-                            </div>
-                          </div>
-                          {expandedPresidentSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                        </div>
-                        {expandedPresidentSections.attendance && (
-                          <div className="px-6 pb-6">
-                            <div className="grid grid-cols-3 gap-4">
-                              <div className="bg-blue-50 p-4 rounded-lg">
-                                <p className="text-sm text-gray-600 mb-1">Briefing Rate</p>
-                                <p className="text-3xl font-bold text-blue-600">{trump.attendance.percentage}%</p>
-                              </div>
-                              <div className="bg-green-50 p-4 rounded-lg">
-                                <p className="text-sm text-gray-600 mb-1">Briefings Attended</p>
-                                <p className="text-3xl font-bold text-green-600">{trump.attendance.briefingsAttended}/{trump.attendance.totalBriefings}</p>
-                              </div>
-                              <div className="bg-purple-50 p-4 rounded-lg">
-                                <p className="text-sm text-gray-600 mb-1">National Ranking</p>
-                                <p className="text-3xl font-bold text-purple-600">#1</p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Financial Disclosures */}
-                      <div className="bg-white rounded-lg shadow-md">
-                        <div
-                          onClick={() => togglePresidentSection('financial')}
-                          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50 rounded-t-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <TrendingUp className="w-6 h-6 text-purple-600" />
-                            <div>
-                              <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
-                              <p className="text-sm text-gray-600">Wealth increased {trump.financialDisclosure.percentageIncrease}% since election</p>
-                            </div>
-                          </div>
-                          {expandedPresidentSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                        </div>
-                        {expandedPresidentSections.financial && (
-                          <div className="px-6 pb-6">
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                              <div className="bg-blue-50 p-4 rounded-lg">
-                                <p className="text-sm text-gray-600 mb-1">Elected ({trump.financialDisclosure.electedYear})</p>
-                                <p className="text-2xl font-bold text-blue-600">{trump.financialDisclosure.worthWhenElected}</p>
-                              </div>
-                              <div className="bg-green-50 p-4 rounded-lg">
-                                <p className="text-sm text-gray-600 mb-1">Current Net Worth</p>
-                                <p className="text-2xl font-bold text-green-600">{trump.financialDisclosure.currentWorth}</p>
-                              </div>
-                              <div className="bg-purple-50 p-4 rounded-lg">
-                                <p className="text-sm text-gray-600 mb-1">Wealth Increase</p>
-                                <p className="text-2xl font-bold text-purple-600">+{trump.financialDisclosure.percentageIncrease}%</p>
-                              </div>
-                              <div className="bg-orange-50 p-4 rounded-lg">
-                                <p className="text-sm text-gray-600 mb-1">Annual Salary</p>
-                                <p className="text-2xl font-bold text-orange-600">{trump.financialDisclosure.annualSalary}</p>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <p className="font-semibold text-gray-700 mb-2">Asset Breakdown:</p>
-                              {trump.financialDisclosure.assets.map((asset, idx) => (
-                                <div key={idx} className="flex justify-between p-3 bg-gray-50 rounded">
-                                  <span className="text-gray-700">{asset.type}</span>
-                                  <span className="font-semibold text-gray-900">{asset.value}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Financial Holdings & Conflicts */}
-                      <div className="bg-white rounded-lg shadow-md">
-                        <div
-                          onClick={() => togglePresidentSection('stockTrades')}
-                          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50 rounded-t-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <TrendingUp className="w-6 h-6 text-green-600" />
-                            <div>
-                              <h2 className="text-xl font-bold text-gray-800">📈 Financial Holdings &amp; Conflicts</h2>
-                              <p className="text-sm text-gray-600">
-                                {trump.stockTrades.length} disclosed interests
-                                <span className="ml-2 text-red-600 font-bold">• {trump.stockTrades.filter(t => t.conflict).length} potential conflicts</span>
-                              </p>
-                            </div>
-                          </div>
-                          {expandedPresidentSections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                        </div>
-                        {expandedPresidentSections.stockTrades && (
-                          <div className="px-6 pb-6">
-                            <div className="grid grid-cols-2 gap-4 mb-6">
-                              <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
-                                <p className="text-sm text-gray-600 mb-1">Total Interests</p>
-                                <p className="text-3xl font-bold text-blue-600">{trump.stockTrades.length}</p>
-                              </div>
-                              <div className="bg-red-50 p-4 rounded-lg border-2 border-red-300">
-                                <p className="text-sm text-gray-600 mb-1">Conflicts</p>
-                                <p className="text-3xl font-bold text-red-600">{trump.stockTrades.filter(t => t.conflict).length}</p>
-                              </div>
-                            </div>
-                            <div className="bg-red-50 border-2 border-red-400 rounded-lg p-4 mb-6">
-                              <div className="flex items-start gap-3">
-                                <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-                                <div>
-                                  <h3 className="text-lg font-bold text-red-800 mb-2">⚠️ Potential Conflicts of Interest</h3>
-                                  <p className="text-red-700 text-sm">Multiple financial holdings may conflict with presidential duties. These interests were not placed in a blind trust as recommended by ethics watchdogs.</p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="space-y-3">
-                              {trump.stockTrades.map((trade, i) => (
-                                <div key={i} className={`border-2 rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-400' : 'bg-gray-50 border-gray-200'}`}>
-                                  {trade.conflict && (
-                                    <div className="mb-3">
-                                      <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold">🚨 POTENTIAL CONFLICT</span>
-                                    </div>
-                                  )}
-                                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-3">
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-3 mb-2">
-                                        <h3 className="text-lg font-bold text-gray-800">{trade.company}</h3>
-                                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-mono">{trade.ticker}</span>
-                                      </div>
-                                      <div className="flex flex-wrap gap-2">
-                                        <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">{trade.type}</span>
-                                        <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">{trade.assetType}</span>
-                                      </div>
-                                    </div>
-                                    <div className="text-right">
-                                      <p className="text-xl font-bold text-green-600">{trade.valueRange}</p>
-                                      <p className="text-sm text-gray-500 mt-1">{trade.date}</p>
-                                    </div>
-                                  </div>
-                                  {trade.conflict && trade.conflictReason && (
-                                    <div className="bg-red-100 border-l-4 border-red-600 p-3 rounded">
-                                      <p className="text-sm font-semibold text-red-800 mb-1">Why this is flagged:</p>
-                                      <p className="text-sm text-red-700">{trade.conflictReason}</p>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Lobbying Activity */}
-                      <div className="bg-white rounded-lg shadow-md">
-                        <div
-                          onClick={() => togglePresidentSection('lobbying')}
-                          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50 rounded-t-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Building2 className="w-6 h-6 text-red-600" />
-                            <div>
-                              <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
-                              <p className="text-sm text-gray-600">{trump.lobbying.totalMeetings} meetings, {trump.lobbying.totalValue} total value</p>
-                            </div>
-                          </div>
-                          {expandedPresidentSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                        </div>
-                        {expandedPresidentSections.lobbying && (
-                          <div className="px-6 pb-6 space-y-4">
-                            {trump.lobbying.organizations.map((org, idx) => (
-                              <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                                <div className="flex items-start justify-between mb-2">
-                                  <div>
-                                    <h3 className="font-bold text-gray-800">{org.name}</h3>
-                                    <p className="text-sm text-gray-600">{org.sector}</p>
-                                  </div>
-                                  <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
-                                    {org.value > 0 ? `$${(org.value / 1000000).toFixed(1)}M` : 'Public Record'}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-4 text-sm text-gray-600">
-                                  <span>📅 {org.meetings} meetings</span>
-                                  <span>🗓️ Last: {org.lastMeeting}</span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            );
-          })()}
 
         </div>
       </div>
@@ -13479,6 +13233,7 @@ function App() {
       {view === 'us-bills' && renderUSBills()}
       {view === 'us-bill-detail' && selectedBill && renderUSBillDetail()}
       {view === 'president-executive' && renderPresidentExecutive()}
+      {view === 'president-detail' && renderPresidentDetail()}
       {view === 'executive-orders' && renderExecutiveOrders()}
       {view === 'bills-awaiting-signature' && renderBillsAwaitingSignature()}
       {view === 'laws-search' && renderLawsSearch()}
