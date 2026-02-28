@@ -8096,6 +8096,174 @@ function App() {
     );
   };
 
+  const renderFinancialDashboard = () => {
+    const isUSA = view === 'money-usa';
+
+    const data = isUSA
+      ? {
+          totalBudget: '$6.75 Trillion',
+          currency: 'USD',
+          fiscalYear: 'FY 2024',
+          fiscalYearDetail: 'October 1, 2023 – September 30, 2024',
+          department: 'U.S. Department of the Treasury',
+          departmentNote: 'In coordination with the Office of Management and Budget (OMB)',
+          efficiencyScore: 61,
+          summary:
+            'For every $100 of federal spending, $61 reached direct citizen programs like Social Security, Medicare, and federal education grants.',
+          flag: '🇺🇸',
+          countryName: 'United States',
+          backLabel: 'U.S. Federal Government',
+          source: 'U.S. Treasury / Office of Management and Budget',
+        }
+      : {
+          totalBudget: '$534.8 Billion',
+          currency: 'CAD',
+          fiscalYear: 'FY 2024-25',
+          fiscalYearDetail: 'April 1, 2024 – March 31, 2025',
+          department: 'Department of Finance Canada',
+          departmentNote: 'In coordination with the Treasury Board of Canada Secretariat',
+          efficiencyScore: 68,
+          summary:
+            'For every $100 of federal spending, $68 reached direct citizen programs like Old Age Security, provincial health transfers, and employment insurance.',
+          flag: '🇨🇦',
+          countryName: 'Canada',
+          backLabel: 'Canadian Federal Government',
+          source: 'Department of Finance Canada / Treasury Board of Canada',
+        };
+
+    const eff = data.efficiencyScore;
+    const isGreen = eff >= 70;
+    const isYellow = eff >= 50 && eff < 70;
+    const scoreNum   = isGreen ? 'text-green-600'  : isYellow ? 'text-yellow-600'  : 'text-red-600';
+    const scoreBar   = isGreen ? 'bg-green-500'    : isYellow ? 'bg-yellow-500'    : 'bg-red-500';
+    const scoreBg    = isGreen ? 'bg-green-100'    : isYellow ? 'bg-yellow-100'    : 'bg-red-100';
+    const scoreBorder = isGreen ? 'border-green-500' : isYellow ? 'border-yellow-500' : 'border-red-500';
+    const scoreLabel = isGreen ? '✅ Good — Above 70%' : isYellow ? '⚠️ Fair — 50 to 70%' : '🚨 Poor — Below 50%';
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Back header */}
+        <div className="bg-white shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <button
+              onClick={() => setView('categories')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              ← Back to {data.backLabel}
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 py-8">
+
+          {/* Page title */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-3xl">{data.flag}</span>
+              <h1 className="text-3xl font-bold text-gray-800">Where the Money Goes</h1>
+            </div>
+            <p className="text-gray-600 text-lg">{data.countryName} — Financial Transparency Dashboard</p>
+            <p className="text-sm text-gray-400 mt-1">Source: {data.source}</p>
+            <div className="mt-3">
+              <span className="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1.5 rounded-full">📊 Overview</span>
+            </div>
+          </div>
+
+          {/* Hero: Total Federal Budget */}
+          <div className="bg-white rounded-xl shadow-md p-8 mb-6 text-center border border-gray-100">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Total Federal Budget</p>
+            <p className="text-5xl sm:text-7xl font-black text-gray-900 mb-2 leading-none">{data.totalBudget}</p>
+            <p className="text-gray-500 text-base mt-3">{data.currency} · {data.fiscalYear} · {data.fiscalYearDetail}</p>
+          </div>
+
+          {/* Fiscal Year + Department */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+            <div className="bg-white rounded-xl shadow-md p-6 flex items-start gap-4">
+              <div className="bg-blue-100 p-3 rounded-lg flex-shrink-0">
+                <Calendar className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Fiscal Year</p>
+                <p className="text-xl font-bold text-gray-800">{data.fiscalYear}</p>
+                <p className="text-sm text-gray-500 mt-1">{data.fiscalYearDetail}</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-md p-6 flex items-start gap-4">
+              <div className="bg-purple-100 p-3 rounded-lg flex-shrink-0">
+                <Building2 className="w-6 h-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Responsible Department</p>
+                <p className="text-xl font-bold text-gray-800">{data.department}</p>
+                <p className="text-sm text-gray-500 mt-1">{data.departmentNote}</p>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Efficiency Score */}
+          <div className={`bg-white rounded-xl shadow-md p-6 mb-6 border-l-4 ${scoreBorder}`}>
+            <div className="flex items-start justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${scoreBg}`}>
+                  <TrendingUp className={`w-5 h-5 ${scoreNum}`} />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Efficiency Score</p>
+                  <p className="text-sm text-gray-500">Share of spending that reaches citizens directly</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className={`text-5xl font-black ${scoreNum}`}>{eff}%</p>
+                <p className={`text-sm font-semibold mt-1 ${scoreNum}`}>{scoreLabel}</p>
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            <div className="h-5 bg-gray-100 rounded-full overflow-hidden mb-3">
+              <div
+                className={`h-full rounded-full ${scoreBar}`}
+                style={{ width: `${eff}%` }}
+              ></div>
+            </div>
+
+            {/* Legend */}
+            <div className="flex flex-wrap gap-5 text-sm text-gray-600">
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-red-400 flex-shrink-0 inline-block"></span>
+                Below 50% — Poor
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-yellow-400 flex-shrink-0 inline-block"></span>
+                50–70% — Fair
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-green-400 flex-shrink-0 inline-block"></span>
+                Above 70% — Good
+              </span>
+            </div>
+          </div>
+
+          {/* Plain language summary */}
+          <div className="bg-gray-900 text-white rounded-xl shadow-md p-6">
+            <div className="flex items-start gap-4">
+              <div className="bg-white/10 p-3 rounded-lg flex-shrink-0">
+                <FileText className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Plain Language Summary</p>
+                <p className="text-lg font-medium leading-relaxed text-white">{data.summary}</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  };
+
   const renderPresidentExecutive = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
@@ -8343,6 +8511,27 @@ function App() {
             <div className="flex items-center justify-between text-sm text-gray-500">
               <span>{isUSA ? usContracts.length : contracts.length} Contracts</span>
               <ChevronRight className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Where the Money Goes - Financial Transparency */}
+          <div
+            onClick={() => setView(isUSA ? 'money-usa' : 'money-canada')}
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-emerald-500 active:scale-95"
+          >
+            <div className="text-emerald-600 mb-3 sm:mb-4">
+              <PieChart className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Where the Money Goes</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">
+              {isUSA
+                ? 'Financial transparency: how $6.75T in federal spending reaches citizens'
+                : 'Financial transparency: how $534.8B in federal spending reaches citizens'
+              }
+            </p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span className="font-medium">{isUSA ? 'FY 2024' : 'FY 2024-25'} · Overview</span>
+              <ChevronRight className="w-5 h-5 text-emerald-600" />
             </div>
           </div>
 
@@ -13238,6 +13427,8 @@ function App() {
       {view === 'bills-awaiting-signature' && renderBillsAwaitingSignature()}
       {view === 'laws-search' && renderLawsSearch()}
       {view === 'us-laws-search' && renderLawsSearch()}
+      {view === 'money-usa' && renderFinancialDashboard()}
+      {view === 'money-canada' && renderFinancialDashboard()}
       
       {/* Riding selector modal */}
       {showLocationPrompt && renderRidingSelector()}
