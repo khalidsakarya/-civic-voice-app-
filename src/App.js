@@ -196,6 +196,17 @@ const customStyles = `
     animation: slideInFromRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
+  @keyframes fadeInModal {
+    from { opacity: 0; transform: translateY(-12px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0)     scale(1); }
+  }
+
+  @media (min-width: 768px) {
+    .panel-slide-in-desktop {
+      animation: fadeInModal 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+  }
+
   .panel-backdrop {
     animation: fadeInBackdrop 0.25s ease forwards;
   }
@@ -3703,6 +3714,19 @@ function App() {
       ...prev,
       [section]: !prev[section]
     }));
+  };
+
+  const [expandedPresidentSections, setExpandedPresidentSections] = useState({
+    activity: false,
+    attendance: false,
+    financial: false,
+    stockTrades: false,
+    lobbying: false,
+    keyDecisions: false,
+  });
+
+  const togglePresidentSection = (section) => {
+    setExpandedPresidentSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   const getPartyColor = (party) => partyColors[party] || '#6B7280';
@@ -7600,6 +7624,49 @@ function App() {
       ],
       email: 'president@whitehouse.gov',
       phone: '(202) 456-1414',
+      recentActivity: [
+        { type: 'Executive Order', title: 'Securing the Southern Border', description: 'Declared national emergency at the southern border; deployed military resources and ended catch-and-release policies.', date: 'Jan 20, 2025' },
+        { type: 'Trade Action', title: 'Reciprocal Tariff Policy', description: 'Imposed 10% baseline tariff on all imports; escalated to 145% on Chinese goods by April 2025.', date: 'Apr 2, 2025' },
+        { type: 'Executive Order', title: 'DOGE Advisory Body', description: 'Created the Department of Government Efficiency, led by Elon Musk, to identify and cut federal spending.', date: 'Jan 20, 2025' },
+        { type: 'Withdrawal', title: 'Paris Climate Agreement', description: 'Initiated formal withdrawal from the Paris Climate Accord on day one of the second term.', date: 'Jan 20, 2025' },
+        { type: 'Executive Order', title: 'Ending Federal DEI Programs', description: 'Ordered elimination of all Diversity, Equity, and Inclusion offices and programs across federal agencies.', date: 'Jan 20, 2025' },
+      ],
+      attendance: {
+        percentage: 89,
+        briefingsAttended: 183,
+        totalBriefings: 206,
+      },
+      financialDisclosure: {
+        electedYear: 2016,
+        worthWhenElected: '$3.7B',
+        currentWorth: '$5.1B',
+        percentageIncrease: '+38',
+        annualSalary: '$400,000',
+        assets: [
+          { type: 'Real Estate & Golf Courses', value: '$2.8B' },
+          { type: 'Trump Media & Technology Group (DJT)', value: '$1.9B' },
+          { type: 'Cryptocurrency Holdings', value: '$300M' },
+          { type: 'Licensing & Brand Royalties', value: '$65M' },
+          { type: 'Cash & Liquid Assets', value: '$35M' },
+        ],
+      },
+      stockTrades: [
+        { company: 'Trump Media & Technology Group', ticker: 'DJT', type: 'Hold', assetType: 'Stock', valueRange: '$1.1B – $2.7B', date: 'Ongoing', conflict: true, conflictReason: 'DJT stock value is directly tied to political fortunes; conflicts with decisions on social media regulation and antitrust enforcement.' },
+        { company: '$TRUMP Meme Coin', ticker: 'TRUMP', type: 'Hold', assetType: 'Cryptocurrency', valueRange: '$100M – $500M', date: 'Jan 17, 2025', conflict: true, conflictReason: 'Launched 3 days before inauguration; potential use of presidential status for personal financial enrichment.' },
+        { company: 'Trump Organization (Real Estate)', ticker: 'N/A', type: 'Hold', assetType: 'Real Estate', valueRange: '$1B – $3B', date: 'Ongoing', conflict: true, conflictReason: 'Foreign governments and federal agencies booking Trump properties raises emoluments clause concerns.' },
+        { company: 'Truth Social Royalties', ticker: 'N/A', type: 'Royalty Income', assetType: 'Intellectual Property', valueRange: '$5M – $25M', date: 'Ongoing', conflict: false },
+      ],
+      lobbying: {
+        totalMeetings: 47,
+        totalValue: '$8.2M',
+        organizations: [
+          { name: 'American Petroleum Institute', sector: 'Energy Industry', value: 2100000, meetings: 12, lastMeeting: 'Feb 2025' },
+          { name: 'U.S. Chamber of Commerce', sector: 'Business Advocacy', value: 1500000, meetings: 8, lastMeeting: 'Feb 2025' },
+          { name: 'PhRMA', sector: 'Pharmaceutical Industry', value: 850000, meetings: 4, lastMeeting: 'Feb 2025' },
+          { name: 'National Rifle Association', sector: 'Gun Rights Advocacy', value: 750000, meetings: 3, lastMeeting: 'Jan 2025' },
+          { name: 'Elon Musk / SpaceX / Tesla', sector: 'Technology & Aerospace', value: 0, meetings: 15, lastMeeting: 'Feb 2025' },
+        ],
+      },
     };
 
     return (
@@ -7677,25 +7744,25 @@ function App() {
 
 
 
-          {/* Full Profile Panel — same design as Congress member panel */}
+          {/* Full Profile Panel — side panel on mobile, two-column full modal on desktop */}
           {showPresidentModal && (() => {
             const total = presidentVotes.support + presidentVotes.oppose;
             const approvalPct = total > 0 ? Math.round((presidentVotes.support / total) * 100) : null;
             return (
-              <div className="fixed inset-0 z-50 flex justify-end">
+              <div className="fixed inset-0 z-50 flex justify-end md:justify-center md:items-center">
                 {/* Backdrop */}
                 <div
                   className="panel-backdrop absolute inset-0 bg-black bg-opacity-50"
                   onClick={() => setShowPresidentModal(false)}
                 />
 
-                {/* Sliding panel */}
-                <div className="panel-slide-in relative flex flex-col bg-white shadow-2xl w-full md:max-w-2xl h-full overflow-hidden">
+                {/* Panel — slides in from right on mobile, centered modal on desktop */}
+                <div className="panel-slide-in md:panel-slide-in-desktop relative flex flex-col bg-white shadow-2xl w-full h-full md:max-w-5xl md:h-[92vh] md:rounded-2xl">
 
-                  {/* ── HEADER ── */}
+                  {/* ── MOBILE HEADER (unchanged) ── */}
                   <div
                     style={{ background: 'linear-gradient(135deg, #ef444418 0%, #ef444406 100%)', borderBottom: '3px solid #ef4444' }}
-                    className="flex-shrink-0 px-6 pt-6 pb-5"
+                    className="md:hidden flex-shrink-0 px-6 pt-6 pb-5"
                   >
                     <div className="flex items-start justify-between gap-4 mb-4">
                       <div className="flex items-start gap-4 min-w-0">
@@ -7728,7 +7795,6 @@ function App() {
                       </button>
                     </div>
 
-                    {/* Approval bar */}
                     {approvalPct !== null && (
                       <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 flex-wrap">
                         <div className="flex items-center gap-1.5">
@@ -7750,7 +7816,6 @@ function App() {
                       </div>
                     )}
 
-                    {/* Vote buttons */}
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={() => votePresident('support')}
@@ -7767,11 +7832,99 @@ function App() {
                     </div>
                   </div>
 
-                  {/* ── SCROLLABLE CONTENT ── */}
-                  <div className="flex-1 overflow-y-auto">
+                  {/* ── DESKTOP HEADER (Canadian MP style) ── */}
+                  <div className="hidden md:block flex-shrink-0 bg-white px-8 pt-8 pb-6" style={{ borderBottom: '2px solid #ef4444' }}>
+                    <div className="flex items-start gap-6">
+                      <div
+                        className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold flex-shrink-0 shadow-lg"
+                        style={{ backgroundColor: '#ef4444' }}
+                      >
+                        DT
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h1 className="text-3xl font-bold text-gray-800 mb-2">{trump.name}</h1>
+                            <div className="mb-3">
+                              <span
+                                className="text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-sm"
+                                style={{ backgroundColor: '#ef4444' }}
+                              >
+                                47th President of the United States
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm text-gray-600 mt-3">
+                              <div className="flex items-center gap-2">
+                                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: '#ef4444' }}></span>
+                                <span className="font-medium">Republican Party</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4" />
+                                <span>Washington, D.C.</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4" />
+                                <span>In office since Jan 20, 2025</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4" />
+                                <span>45th &amp; 47th President</span>
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => setShowPresidentModal(false)}
+                            className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0"
+                            aria-label="Close"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="border-t pt-5 mt-5">
+                      <h3 className="text-lg font-bold text-gray-800 mb-4">Citizen Opinion</h3>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div className="flex gap-6 sm:gap-8">
+                          <div className="flex items-center gap-3">
+                            <ThumbsUp className="w-6 h-6 text-green-600" />
+                            <div>
+                              <div className="text-2xl font-bold text-gray-800">{presidentVotes.support.toLocaleString()}</div>
+                              <div className="text-sm text-gray-600">Support</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <ThumbsDown className="w-6 h-6 text-red-600" />
+                            <div>
+                              <div className="text-2xl font-bold text-gray-800">{presidentVotes.oppose.toLocaleString()}</div>
+                              <div className="text-sm text-gray-600">Oppose</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => votePresident('support')}
+                            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${presidentVotes.userVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
+                          >
+                            <ThumbsUp className="w-5 h-5" />
+                            <span>{presidentVotes.userVote === 'support' ? 'Supporting' : 'Support This President'}</span>
+                          </button>
+                          <button
+                            onClick={() => votePresident('oppose')}
+                            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${presidentVotes.userVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
+                          >
+                            <ThumbsDown className="w-5 h-5" />
+                            <span>{presidentVotes.userVote === 'oppose' ? 'Opposing' : 'Oppose'}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── MOBILE BODY (single column, unchanged) ── */}
+                  <div className="md:hidden flex-1 overflow-y-auto">
                     <div className="p-6 space-y-7">
 
-                      {/* BIO */}
                       <section>
                         <p className="panel-section-label">Biography</p>
                         <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
@@ -7779,7 +7932,6 @@ function App() {
                         </div>
                       </section>
 
-                      {/* KEY POLICY AREAS — same style as Committee Assignments */}
                       <section>
                         <p className="panel-section-label">Key Policy Areas</p>
                         <div className="flex flex-wrap gap-2">
@@ -7795,7 +7947,6 @@ function App() {
                         </div>
                       </section>
 
-                      {/* CONTACT — same card style */}
                       <section>
                         <p className="panel-section-label">Contact Information</p>
                         <div className="space-y-2">
@@ -7835,7 +7986,6 @@ function App() {
                         </div>
                       </section>
 
-                      {/* TERM INFO — same 3-stat grid style as Attendance */}
                       <section>
                         <p className="panel-section-label">Term Information</p>
                         <div className="grid grid-cols-3 gap-3">
@@ -7864,7 +8014,6 @@ function App() {
                         </div>
                       </section>
 
-                      {/* EXECUTIVE ACTIONS — same list style as Office Expenses */}
                       <section>
                         <p className="panel-section-label">Key Executive Actions (2025)</p>
                         <div className="space-y-2">
@@ -7876,7 +8025,6 @@ function App() {
                         </div>
                       </section>
 
-                      {/* FINANCIAL DISCLOSURE — same 2×2 stat grid */}
                       <section>
                         <p className="panel-section-label">Financial Disclosure</p>
                         <div className="grid grid-cols-2 gap-3 mb-3">
@@ -7901,7 +8049,6 @@ function App() {
                         </div>
                       </section>
 
-                      {/* CABINET — same card style as Corporate Connections */}
                       <section>
                         <p className="panel-section-label">Key Cabinet Members — {trump.cabinet.length} positions</p>
                         <div className="space-y-2">
@@ -7920,6 +8067,353 @@ function App() {
 
                     </div>
                   </div>
+
+                  {/* ── DESKTOP BODY (two-column, Canadian MP style) ── */}
+                  <div className="hidden md:flex flex-1 min-h-0">
+
+                    {/* Left column: bio, contact, policies, term info, cabinet */}
+                    <div className="flex-1 overflow-y-auto p-6 border-r border-gray-100 space-y-6">
+
+                      <div className="bg-white rounded-lg shadow-md p-6">
+                        <h3 className="text-xl font-bold text-gray-800 mb-4">📖 Biography</h3>
+                        <p className="text-gray-700 leading-relaxed">{trump.bio}</p>
+                      </div>
+
+                      <div className="bg-white rounded-lg shadow-md p-6">
+                        <h3 className="text-xl font-bold text-gray-800 mb-4">📧 Contact Information</h3>
+                        <div className="grid grid-cols-1 gap-4">
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
+                            <a href={`mailto:${trump.email}`} className="text-blue-600 hover:text-blue-800 font-medium">{trump.email}</a>
+                          </div>
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <p className="text-sm text-gray-600 mb-2 font-medium">White House Phone</p>
+                            <a href={`tel:${trump.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{trump.phone}</a>
+                          </div>
+                          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                            <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
+                            <p className="text-gray-700 text-sm">1600 Pennsylvania Avenue NW, Washington, D.C. 20500</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white rounded-lg shadow-md p-6">
+                        <h3 className="text-xl font-bold text-gray-800 mb-4">📋 Key Policy Areas</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {trump.policies.map((policy, i) => (
+                            <span key={i} className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                              <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                              {policy}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="bg-white rounded-lg shadow-md p-6">
+                        <h3 className="text-xl font-bold text-gray-800 mb-4">🗓️ Term Information</h3>
+                        <div className="grid grid-cols-3 gap-3 mb-3">
+                          <div className="bg-blue-50 p-4 rounded-lg text-center">
+                            <p className="text-sm text-gray-600 mb-1">Current Term</p>
+                            <p className="text-2xl font-bold text-blue-600">2025–</p>
+                          </div>
+                          <div className="bg-green-50 p-4 rounded-lg text-center">
+                            <p className="text-sm text-gray-600 mb-1">Prior Term</p>
+                            <p className="text-2xl font-bold text-green-600">2017–21</p>
+                          </div>
+                          <div className="bg-purple-50 p-4 rounded-lg text-center">
+                            <p className="text-sm text-gray-600 mb-1">President #</p>
+                            <p className="text-3xl font-bold text-purple-600">47</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <p className="text-sm text-gray-600 mb-1">Born</p>
+                            <p className="font-semibold text-gray-800">{trump.born}, {trump.birthplace}</p>
+                          </div>
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <p className="text-sm text-gray-600 mb-1">Education</p>
+                            <p className="font-semibold text-gray-800">{trump.education}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white rounded-lg shadow-md p-6">
+                        <h3 className="text-xl font-bold text-gray-800 mb-4">🏛️ Key Cabinet Members</h3>
+                        <div className="space-y-2">
+                          {trump.cabinet.map((c, i) => (
+                            <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                              <h4 className="font-bold text-gray-800">{c.name}</h4>
+                              <p className="text-sm text-indigo-600 font-medium">{c.role}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* Right column: recent activity, key decisions, attendance, financial, stock trades, lobbying */}
+                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
+                      {/* Recent Activity */}
+                      <div className="bg-white rounded-lg shadow-md">
+                        <div
+                          onClick={() => togglePresidentSection('activity')}
+                          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50 rounded-t-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <FileText className="w-6 h-6 text-blue-600" />
+                            <div>
+                              <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
+                              <p className="text-sm text-gray-600">{trump.recentActivity.length} recent actions</p>
+                            </div>
+                          </div>
+                          {expandedPresidentSections.activity ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                        </div>
+                        {expandedPresidentSections.activity && (
+                          <div className="px-6 pb-6 space-y-4">
+                            {trump.recentActivity.map((item, i) => (
+                              <div key={i} className={`border rounded-lg p-4 ${item.type === 'Executive Order' ? 'bg-red-50 border-red-200' : item.type === 'Trade Action' ? 'bg-orange-50 border-orange-200' : 'bg-blue-50 border-blue-200'}`}>
+                                <div className="flex items-start justify-between mb-2">
+                                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${item.type === 'Executive Order' ? 'bg-red-200 text-red-800' : item.type === 'Trade Action' ? 'bg-orange-200 text-orange-800' : 'bg-blue-200 text-blue-800'}`}>{item.type}</span>
+                                  <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                                    <Calendar className="w-3.5 h-3.5" />
+                                    <span>{item.date}</span>
+                                  </div>
+                                </div>
+                                <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                                <p className="text-sm text-gray-600">{item.description}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Key Decisions */}
+                      <div className="bg-white rounded-lg shadow-md">
+                        <div
+                          onClick={() => togglePresidentSection('keyDecisions')}
+                          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50 rounded-t-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Scale className="w-6 h-6 text-blue-600" />
+                            <div>
+                              <h2 className="text-xl font-bold text-gray-800">⚖️ Key Executive Actions</h2>
+                              <p className="text-sm text-gray-600">{trump.executiveActions.length} key actions in 2025</p>
+                            </div>
+                          </div>
+                          {expandedPresidentSections.keyDecisions ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                        </div>
+                        {expandedPresidentSections.keyDecisions && (
+                          <div className="px-6 pb-6 space-y-2">
+                            {trump.executiveActions.map((action, i) => (
+                              <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <span className="text-sm text-gray-700 font-medium">{action}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Attendance Record */}
+                      <div className="bg-white rounded-lg shadow-md">
+                        <div
+                          onClick={() => togglePresidentSection('attendance')}
+                          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50 rounded-t-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Award className="w-6 h-6 text-blue-600" />
+                            <div>
+                              <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
+                              <p className="text-sm text-gray-600">{trump.attendance.percentage}% intelligence briefing rate</p>
+                            </div>
+                          </div>
+                          {expandedPresidentSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                        </div>
+                        {expandedPresidentSections.attendance && (
+                          <div className="px-6 pb-6">
+                            <div className="grid grid-cols-3 gap-4">
+                              <div className="bg-blue-50 p-4 rounded-lg">
+                                <p className="text-sm text-gray-600 mb-1">Briefing Rate</p>
+                                <p className="text-3xl font-bold text-blue-600">{trump.attendance.percentage}%</p>
+                              </div>
+                              <div className="bg-green-50 p-4 rounded-lg">
+                                <p className="text-sm text-gray-600 mb-1">Briefings Attended</p>
+                                <p className="text-3xl font-bold text-green-600">{trump.attendance.briefingsAttended}/{trump.attendance.totalBriefings}</p>
+                              </div>
+                              <div className="bg-purple-50 p-4 rounded-lg">
+                                <p className="text-sm text-gray-600 mb-1">National Ranking</p>
+                                <p className="text-3xl font-bold text-purple-600">#1</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Financial Disclosures */}
+                      <div className="bg-white rounded-lg shadow-md">
+                        <div
+                          onClick={() => togglePresidentSection('financial')}
+                          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50 rounded-t-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <TrendingUp className="w-6 h-6 text-purple-600" />
+                            <div>
+                              <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                              <p className="text-sm text-gray-600">Wealth increased {trump.financialDisclosure.percentageIncrease}% since election</p>
+                            </div>
+                          </div>
+                          {expandedPresidentSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                        </div>
+                        {expandedPresidentSections.financial && (
+                          <div className="px-6 pb-6">
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                              <div className="bg-blue-50 p-4 rounded-lg">
+                                <p className="text-sm text-gray-600 mb-1">Elected ({trump.financialDisclosure.electedYear})</p>
+                                <p className="text-2xl font-bold text-blue-600">{trump.financialDisclosure.worthWhenElected}</p>
+                              </div>
+                              <div className="bg-green-50 p-4 rounded-lg">
+                                <p className="text-sm text-gray-600 mb-1">Current Net Worth</p>
+                                <p className="text-2xl font-bold text-green-600">{trump.financialDisclosure.currentWorth}</p>
+                              </div>
+                              <div className="bg-purple-50 p-4 rounded-lg">
+                                <p className="text-sm text-gray-600 mb-1">Wealth Increase</p>
+                                <p className="text-2xl font-bold text-purple-600">+{trump.financialDisclosure.percentageIncrease}%</p>
+                              </div>
+                              <div className="bg-orange-50 p-4 rounded-lg">
+                                <p className="text-sm text-gray-600 mb-1">Annual Salary</p>
+                                <p className="text-2xl font-bold text-orange-600">{trump.financialDisclosure.annualSalary}</p>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <p className="font-semibold text-gray-700 mb-2">Asset Breakdown:</p>
+                              {trump.financialDisclosure.assets.map((asset, idx) => (
+                                <div key={idx} className="flex justify-between p-3 bg-gray-50 rounded">
+                                  <span className="text-gray-700">{asset.type}</span>
+                                  <span className="font-semibold text-gray-900">{asset.value}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Financial Holdings & Conflicts */}
+                      <div className="bg-white rounded-lg shadow-md">
+                        <div
+                          onClick={() => togglePresidentSection('stockTrades')}
+                          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50 rounded-t-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <TrendingUp className="w-6 h-6 text-green-600" />
+                            <div>
+                              <h2 className="text-xl font-bold text-gray-800">📈 Financial Holdings &amp; Conflicts</h2>
+                              <p className="text-sm text-gray-600">
+                                {trump.stockTrades.length} disclosed interests
+                                <span className="ml-2 text-red-600 font-bold">• {trump.stockTrades.filter(t => t.conflict).length} potential conflicts</span>
+                              </p>
+                            </div>
+                          </div>
+                          {expandedPresidentSections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                        </div>
+                        {expandedPresidentSections.stockTrades && (
+                          <div className="px-6 pb-6">
+                            <div className="grid grid-cols-2 gap-4 mb-6">
+                              <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                                <p className="text-sm text-gray-600 mb-1">Total Interests</p>
+                                <p className="text-3xl font-bold text-blue-600">{trump.stockTrades.length}</p>
+                              </div>
+                              <div className="bg-red-50 p-4 rounded-lg border-2 border-red-300">
+                                <p className="text-sm text-gray-600 mb-1">Conflicts</p>
+                                <p className="text-3xl font-bold text-red-600">{trump.stockTrades.filter(t => t.conflict).length}</p>
+                              </div>
+                            </div>
+                            <div className="bg-red-50 border-2 border-red-400 rounded-lg p-4 mb-6">
+                              <div className="flex items-start gap-3">
+                                <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+                                <div>
+                                  <h3 className="text-lg font-bold text-red-800 mb-2">⚠️ Potential Conflicts of Interest</h3>
+                                  <p className="text-red-700 text-sm">Multiple financial holdings may conflict with presidential duties. These interests were not placed in a blind trust as recommended by ethics watchdogs.</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="space-y-3">
+                              {trump.stockTrades.map((trade, i) => (
+                                <div key={i} className={`border-2 rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-400' : 'bg-gray-50 border-gray-200'}`}>
+                                  {trade.conflict && (
+                                    <div className="mb-3">
+                                      <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold">🚨 POTENTIAL CONFLICT</span>
+                                    </div>
+                                  )}
+                                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-3">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-3 mb-2">
+                                        <h3 className="text-lg font-bold text-gray-800">{trade.company}</h3>
+                                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-mono">{trade.ticker}</span>
+                                      </div>
+                                      <div className="flex flex-wrap gap-2">
+                                        <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">{trade.type}</span>
+                                        <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">{trade.assetType}</span>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-xl font-bold text-green-600">{trade.valueRange}</p>
+                                      <p className="text-sm text-gray-500 mt-1">{trade.date}</p>
+                                    </div>
+                                  </div>
+                                  {trade.conflict && trade.conflictReason && (
+                                    <div className="bg-red-100 border-l-4 border-red-600 p-3 rounded">
+                                      <p className="text-sm font-semibold text-red-800 mb-1">Why this is flagged:</p>
+                                      <p className="text-sm text-red-700">{trade.conflictReason}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Lobbying Activity */}
+                      <div className="bg-white rounded-lg shadow-md">
+                        <div
+                          onClick={() => togglePresidentSection('lobbying')}
+                          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50 rounded-t-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Building2 className="w-6 h-6 text-red-600" />
+                            <div>
+                              <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
+                              <p className="text-sm text-gray-600">{trump.lobbying.totalMeetings} meetings, {trump.lobbying.totalValue} total value</p>
+                            </div>
+                          </div>
+                          {expandedPresidentSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                        </div>
+                        {expandedPresidentSections.lobbying && (
+                          <div className="px-6 pb-6 space-y-4">
+                            {trump.lobbying.organizations.map((org, idx) => (
+                              <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                                <div className="flex items-start justify-between mb-2">
+                                  <div>
+                                    <h3 className="font-bold text-gray-800">{org.name}</h3>
+                                    <p className="text-sm text-gray-600">{org.sector}</p>
+                                  </div>
+                                  <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                    {org.value > 0 ? `$${(org.value / 1000000).toFixed(1)}M` : 'Public Record'}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-4 text-sm text-gray-600">
+                                  <span>📅 {org.meetings} meetings</span>
+                                  <span>🗓️ Last: {org.lastMeeting}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                    </div>
+                  </div>
+
                 </div>
               </div>
             );
