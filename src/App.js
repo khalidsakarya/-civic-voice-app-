@@ -7777,123 +7777,139 @@ function App() {
             )}
           </div>
 
-          {/* Bill Detail Modal */}
+          {/* Bill Detail Modal — styled as Canadian bill detail */}
           {selectedPresidentBill && (() => {
             const votes = presidentBillVotes[selectedPresidentBill.id] || { support: selectedPresidentBill.support, oppose: selectedPresidentBill.oppose, userVote: null };
-            const total = votes.support + votes.oppose;
-            const pct = total > 0 ? Math.round((votes.support / total) * 100) : 0;
             const statusColors = {
-              green:  'bg-green-50 border-green-200 text-green-700',
-              blue:   'bg-blue-50 border-blue-200 text-blue-700',
-              purple: 'bg-purple-50 border-purple-200 text-purple-700',
-              red:    'bg-red-50 border-red-200 text-red-700',
+              green:  'bg-green-100 text-green-800',
+              blue:   'bg-blue-100 text-blue-800',
+              purple: 'bg-purple-100 text-purple-800',
+              red:    'bg-red-100 text-red-800',
             };
             return (
-              <div
-                className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center"
-                style={{ background: 'rgba(0,0,0,0.6)' }}
-                onClick={(e) => { if (e.target === e.currentTarget) setSelectedPresidentBill(null); }}
-              >
-                <div className="relative bg-white w-full sm:max-w-xl mx-0 sm:mx-4 rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[90vh] flex flex-col animate-fade-in">
+              <div className="fixed inset-0 z-[60] overflow-y-auto bg-gray-50">
+                {/* Sticky header bar */}
+                <div className="bg-white shadow-sm sticky top-0 z-10">
+                  <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+                    <button
+                      onClick={() => setSelectedPresidentBill(null)}
+                      className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+                    >
+                      ← Back
+                    </button>
+                    <a
+                      href={selectedPresidentBill.sourceUrl} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors"
+                    >
+                      <Globe className="w-3.5 h-3.5" />
+                      Source: congress.gov
+                    </a>
+                  </div>
+                </div>
 
-                  {/* Modal header */}
-                  <div
-                    style={{ background: 'linear-gradient(135deg, #3b82f618 0%, #3b82f606 100%)', borderBottom: '3px solid #3b82f6' }}
-                    className="flex-shrink-0 px-5 pt-5 pb-4 rounded-t-2xl"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">{selectedPresidentBill.number}</span>
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${statusColors[selectedPresidentBill.statusColor] || statusColors.blue}`}>{selectedPresidentBill.status}</span>
+                <div className="max-w-6xl mx-auto px-4 py-8">
+                  {/* Main card */}
+                  <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+                    <div className="flex items-center gap-3 mb-4 flex-wrap">
+                      <span className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-lg font-bold">
+                        {selectedPresidentBill.number}
+                      </span>
+                      <span className={`px-4 py-2 rounded-full font-medium ${statusColors[selectedPresidentBill.statusColor] || statusColors.blue}`}>
+                        {selectedPresidentBill.status}
+                      </span>
+                      <span className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full">
+                        119th Congress
+                      </span>
+                    </div>
+
+                    <h1 className="text-3xl font-bold text-gray-800 mb-4">{selectedPresidentBill.title}</h1>
+
+                    <div className="flex items-center gap-6 text-gray-600 mb-6 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-5 h-5" />
+                        <span>Originated in {selectedPresidentBill.chamber}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5" />
+                        <span>Passed: {selectedPresidentBill.passedDate}</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                      <h3 className="font-bold text-gray-800 mb-2">Summary</h3>
+                      <p className="text-gray-700">{selectedPresidentBill.summary}</p>
+                    </div>
+
+                    <div className="border-t pt-6">
+                      <div className="flex items-center justify-between flex-wrap gap-4">
+                        <div className="flex gap-8">
+                          <div className="flex items-center gap-3">
+                            <ThumbsUp className="w-6 h-6 text-green-600" />
+                            <div>
+                              <div className="text-2xl font-bold text-gray-800">{votes.support.toLocaleString()}</div>
+                              <div className="text-sm text-gray-600">Support</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <ThumbsDown className="w-6 h-6 text-red-600" />
+                            <div>
+                              <div className="text-2xl font-bold text-gray-800">{votes.oppose.toLocaleString()}</div>
+                              <div className="text-sm text-gray-600">Oppose</div>
+                            </div>
+                          </div>
                         </div>
-                        <h2 className="text-base font-bold text-gray-900 mt-1.5 leading-snug">{selectedPresidentBill.title}</h2>
-                        <p className="text-xs text-gray-500 mt-1">Passed {selectedPresidentBill.chamber} · {selectedPresidentBill.passedDate}</p>
-                        <a
-                          href={selectedPresidentBill.sourceUrl} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors mt-1"
-                        >
-                          <Globe className="w-3 h-3" />
-                          Source: congress.gov
-                        </a>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <button
+                            onClick={() => votePresidentBill(selectedPresidentBill.id, 'support')}
+                            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
+                          >
+                            <ThumbsUp className="w-5 h-5" />
+                            <span>{votes.userVote === 'support' ? 'Supporting' : 'Support This Bill'}</span>
+                          </button>
+                          <button
+                            onClick={() => votePresidentBill(selectedPresidentBill.id, 'oppose')}
+                            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
+                          >
+                            <ThumbsDown className="w-5 h-5" />
+                            <span>{votes.userVote === 'oppose' ? 'Opposing' : 'Oppose This Bill'}</span>
+                          </button>
+                        </div>
                       </div>
-                      <button
-                        onClick={() => setSelectedPresidentBill(null)}
-                        className="flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-                        aria-label="Close"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
-
-                    {/* Vote bar */}
-                    <div className="bg-white bg-opacity-70 rounded-lg p-2.5 flex items-center gap-3 mt-3 flex-wrap">
-                      <div className="flex items-center gap-1">
-                        <ThumbsUp className="w-3.5 h-3.5 text-green-600" />
-                        <span className="text-sm font-semibold text-gray-700">{votes.support.toLocaleString()}</span>
-                        <span className="text-xs text-gray-400">support</span>
-                      </div>
-                      <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[60px]">
-                        <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs text-gray-400">oppose</span>
-                        <span className="text-sm font-semibold text-gray-700">{votes.oppose.toLocaleString()}</span>
-                        <ThumbsDown className="w-3.5 h-3.5 text-red-500" />
-                      </div>
-                    </div>
-
-                    {/* Vote buttons */}
-                    <div className="flex gap-2 mt-2">
-                      <button
-                        onClick={() => votePresidentBill(selectedPresidentBill.id, 'support')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${votes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-70 text-green-700 hover:bg-green-100'}`}
-                      >
-                        <ThumbsUp className="w-4 h-4" /> Support
-                      </button>
-                      <button
-                        onClick={() => votePresidentBill(selectedPresidentBill.id, 'oppose')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${votes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-70 text-red-700 hover:bg-red-100'}`}
-                      >
-                        <ThumbsDown className="w-4 h-4" /> Oppose
-                      </button>
                     </div>
                   </div>
 
-                  {/* Scrollable body */}
-                  <div className="flex-1 overflow-y-auto p-5 space-y-5">
-
-                    <section>
-                      <p className="panel-section-label">Full Summary</p>
-                      <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
-                        <p className="text-gray-700 text-sm leading-relaxed">{selectedPresidentBill.summary}</p>
-                      </div>
-                    </section>
-
-                    <section>
-                      <p className="panel-section-label">Arguments in Favour</p>
-                      <div className="space-y-2">
-                        {selectedPresidentBill.pros.map((pro, i) => (
-                          <div key={i} className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
-                            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                            <p className="text-sm text-gray-700 leading-relaxed">{pro}</p>
+                  <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <ThumbsUp className="w-6 h-6 text-green-600" />
+                      <h2 className="text-2xl font-bold text-gray-800">Arguments in Favor</h2>
+                    </div>
+                    <div className="space-y-4">
+                      {selectedPresidentBill.pros.map((pro, i) => (
+                        <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5 text-sm font-bold">{i + 1}</div>
+                            <p className="text-gray-700 flex-1">{pro}</p>
                           </div>
-                        ))}
-                      </div>
-                    </section>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-                    <section>
-                      <p className="panel-section-label">Arguments Against</p>
-                      <div className="space-y-2">
-                        {selectedPresidentBill.cons.map((con, i) => (
-                          <div key={i} className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-xl">
-                            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                            <p className="text-sm text-gray-700 leading-relaxed">{con}</p>
+                  <div className="bg-white rounded-lg shadow-md p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <ThumbsDown className="w-6 h-6 text-red-600" />
+                      <h2 className="text-2xl font-bold text-gray-800">Arguments Against</h2>
+                    </div>
+                    <div className="space-y-4">
+                      {selectedPresidentBill.cons.map((con, i) => (
+                        <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5 text-sm font-bold">{i + 1}</div>
+                            <p className="text-gray-700 flex-1">{con}</p>
                           </div>
-                        ))}
-                      </div>
-                    </section>
-
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -7903,114 +7919,142 @@ function App() {
           {/* EO Detail Modal */}
           {selectedEO && (() => {
             const votes = eoVotes[selectedEO.number] || { support: selectedEO.support, oppose: selectedEO.oppose, userVote: null };
-            const total = votes.support + votes.oppose;
-            const pct = total > 0 ? Math.round((votes.support / total) * 100) : 0;
             return (
-              <div
-                className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center"
-                style={{ background: 'rgba(0,0,0,0.6)' }}
-                onClick={(e) => { if (e.target === e.currentTarget) setSelectedEO(null); }}
-              >
-                <div className="relative bg-white w-full sm:max-w-xl mx-0 sm:mx-4 rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[90vh] flex flex-col animate-fade-in">
-
-                  {/* Modal header */}
-                  <div
-                    style={{ background: 'linear-gradient(135deg, #ef444418 0%, #ef444406 100%)', borderBottom: '3px solid #ef4444' }}
-                    className="flex-shrink-0 px-5 pt-5 pb-4 rounded-t-2xl sm:rounded-t-2xl"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">{selectedEO.number}</span>
-                        <h2 className="text-base font-bold text-gray-900 mt-2 leading-snug">{selectedEO.title}</h2>
-                        <p className="text-xs text-gray-500 mt-1">Signed {selectedEO.date}</p>
-                        <a
-                          href={selectedEO.sourceUrl} target="_blank" rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition-colors mt-1"
-                        >
-                          <Globe className="w-3 h-3" />
-                          Source: federalregister.gov
-                        </a>
-                      </div>
+              <div className="fixed inset-0 z-[60] overflow-y-auto bg-gray-50">
+                <div className="bg-white shadow-sm">
+                  <div className="max-w-6xl mx-auto px-4 py-4">
+                    <div className="flex items-center justify-between">
                       <button
                         onClick={() => setSelectedEO(null)}
-                        className="flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-                        aria-label="Close"
+                        className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
                       >
-                        <X className="w-5 h-5" />
+                        ← Back
                       </button>
+                      <a
+                        href={selectedEO.sourceUrl} target="_blank" rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4 text-sm"
+                      >
+                        Source: federalregister.gov
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="max-w-6xl mx-auto px-4 py-8">
+                  <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-lg font-bold">
+                        {selectedEO.number}
+                      </span>
+                      <span className="bg-red-100 text-red-800 px-4 py-2 rounded-full font-medium">
+                        Executive Order
+                      </span>
+                      <span className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full">
+                        {selectedEO.date}
+                      </span>
                     </div>
 
-                    {/* Vote bar */}
-                    <div className="bg-white bg-opacity-70 rounded-lg p-2.5 flex items-center gap-3 mt-3 flex-wrap">
-                      <div className="flex items-center gap-1">
-                        <ThumbsUp className="w-3.5 h-3.5 text-green-600" />
-                        <span className="text-sm font-semibold text-gray-700">{votes.support.toLocaleString()}</span>
-                        <span className="text-xs text-gray-400">support</span>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-4">{selectedEO.title}</h1>
+
+                    <div className="flex items-center gap-6 text-gray-600 mb-6">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-5 h-5" />
+                        <span>President Donald J. Trump</span>
                       </div>
-                      <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[60px]">
-                        <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs text-gray-400">oppose</span>
-                        <span className="text-sm font-semibold text-gray-700">{votes.oppose.toLocaleString()}</span>
-                        <ThumbsDown className="w-3.5 h-3.5 text-red-500" />
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5" />
+                        <span>Signed: {selectedEO.date}</span>
                       </div>
                     </div>
 
-                    {/* Vote buttons */}
-                    <div className="flex gap-2 mt-2">
-                      <button
-                        onClick={() => voteEO(selectedEO.number, 'support')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${votes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-70 text-green-700 hover:bg-green-100'}`}
-                      >
-                        <ThumbsUp className="w-4 h-4" /> Support
-                      </button>
-                      <button
-                        onClick={() => voteEO(selectedEO.number, 'oppose')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${votes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-70 text-red-700 hover:bg-red-100'}`}
-                      >
-                        <ThumbsDown className="w-4 h-4" /> Oppose
-                      </button>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                      <h3 className="font-bold text-gray-800 mb-2">Summary</h3>
+                      <p className="text-gray-700">{selectedEO.summary}</p>
+                    </div>
+
+                    <div className="border-t pt-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex gap-8">
+                          <div className="flex items-center gap-3">
+                            <ThumbsUp className="w-6 h-6 text-green-600" />
+                            <div>
+                              <div className="text-2xl font-bold text-gray-800">{votes.support.toLocaleString()}</div>
+                              <div className="text-sm text-gray-600">Support</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <ThumbsDown className="w-6 h-6 text-red-600" />
+                            <div>
+                              <div className="text-2xl font-bold text-gray-800">{votes.oppose.toLocaleString()}</div>
+                              <div className="text-sm text-gray-600">Oppose</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <button
+                            onClick={() => voteEO(selectedEO.number, 'support')}
+                            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
+                              votes.userVote === 'support'
+                                ? 'bg-green-600 text-white'
+                                : 'bg-green-50 text-green-700 hover:bg-green-100'
+                            }`}
+                          >
+                            <ThumbsUp className="w-5 h-5" />
+                            <span className="text-sm sm:text-base">{votes.userVote === 'support' ? 'Supporting' : 'Support This Order'}</span>
+                          </button>
+                          <button
+                            onClick={() => voteEO(selectedEO.number, 'oppose')}
+                            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
+                              votes.userVote === 'oppose'
+                                ? 'bg-red-600 text-white'
+                                : 'bg-red-50 text-red-700 hover:bg-red-100'
+                            }`}
+                          >
+                            <ThumbsDown className="w-5 h-5" />
+                            <span className="text-sm sm:text-base">{votes.userVote === 'oppose' ? 'Opposing' : 'Oppose This Order'}</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Scrollable body */}
-                  <div className="flex-1 overflow-y-auto p-5 space-y-5">
-
-                    {/* Full Summary */}
-                    <section>
-                      <p className="panel-section-label">Full Summary</p>
-                      <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
-                        <p className="text-gray-700 text-sm leading-relaxed">{selectedEO.summary}</p>
-                      </div>
-                    </section>
-
-                    {/* Pros */}
-                    <section>
-                      <p className="panel-section-label">Arguments in Favour</p>
-                      <div className="space-y-2">
-                        {selectedEO.pros.map((pro, i) => (
-                          <div key={i} className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
-                            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                            <p className="text-sm text-gray-700 leading-relaxed">{pro}</p>
+                  <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <ThumbsUp className="w-6 h-6 text-green-600" />
+                      <h2 className="text-2xl font-bold text-gray-800">Arguments in Favor</h2>
+                    </div>
+                    <div className="space-y-4">
+                      {selectedEO.pros.map((pro, index) => (
+                        <div key={index} className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              {index + 1}
+                            </div>
+                            <p className="text-gray-700 flex-1">{pro}</p>
                           </div>
-                        ))}
-                      </div>
-                    </section>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-                    {/* Cons */}
-                    <section>
-                      <p className="panel-section-label">Arguments Against</p>
-                      <div className="space-y-2">
-                        {selectedEO.cons.map((con, i) => (
-                          <div key={i} className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-xl">
-                            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                            <p className="text-sm text-gray-700 leading-relaxed">{con}</p>
+                  <div className="bg-white rounded-lg shadow-md p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <ThumbsDown className="w-6 h-6 text-red-600" />
+                      <h2 className="text-2xl font-bold text-gray-800">Arguments Against</h2>
+                    </div>
+                    <div className="space-y-4">
+                      {selectedEO.cons.map((con, index) => (
+                        <div key={index} className="bg-red-50 border border-red-200 rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              {index + 1}
+                            </div>
+                            <p className="text-gray-700 flex-1">{con}</p>
                           </div>
-                        ))}
-                      </div>
-                    </section>
-
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
