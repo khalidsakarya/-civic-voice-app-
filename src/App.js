@@ -8132,6 +8132,22 @@ function App() {
             { id: 'snap', name: 'Nutrition Assistance (SNAP)', department: 'U.S. Department of Agriculture (USDA)', icon: '🍎', color: '#16a34a', allocated: '$161B', spent: '$152B', spentPct: 94, citizens: '42 million recipients', description: 'SNAP provides food purchasing benefits to low-income households. The largest federal nutrition program, reaching approximately 1 in 8 Americans.', breakdown: [{ label: 'SNAP Food Benefits', pct: 55, color: '#16a34a' }, { label: 'Crop Insurance', pct: 24, color: '#15803d' }, { label: 'Farm Support Programs', pct: 13, color: '#166534' }, { label: 'Rural Development', pct: 8, color: '#84cc16' }], timeline: [{ year: '1964', event: 'Food Stamp Act signed by President Johnson' }, { year: '2008', event: 'Program renamed Supplemental Nutrition Assistance Program' }, { year: '2021', event: 'Pandemic SNAP benefits temporarily doubled allocations' }, { year: '2024', event: '42M Americans receive average $190/month in benefits' }], milestones: ['42 million SNAP recipients — down from 44M COVID peak', 'Average monthly benefit: $190 per person in FY2024', 'SNAP online purchasing expanded to all 50 states and DC'] },
             { id: 'housing', name: 'Housing & HUD Programs', department: 'Dept. of Housing & Urban Development (HUD)', icon: '🏠', color: '#ea580c', allocated: '$73B', spent: '$68B', spentPct: 93, citizens: '5.1 million households', description: 'Section 8 housing choice vouchers, public housing capital funds, FHA mortgage insurance, and homelessness prevention grants.', breakdown: [{ label: 'Rental Assistance (Section 8)', pct: 61, color: '#ea580c' }, { label: 'Public Housing', pct: 18, color: '#c2410c' }, { label: 'Community Development', pct: 21, color: '#f97316' }], timeline: [{ year: '1965', event: 'HUD established as a Cabinet-level department' }, { year: '1974', event: 'Section 8 Housing Assistance Payments Program created' }, { year: '2012', event: 'Rental Assistance Demonstration (RAD) program launched' }, { year: '2024', event: '$7.5B targeted to address homelessness in major cities' }], milestones: ['5.1 million households on federal rental assistance programs', 'Point-in-time count: 653,100 experiencing homelessness on a single night in Jan 2024', '$7.5B in targeted assistance to cities with the highest homeless counts'] },
           ],
+          audit: {
+            totalFindings: 2847,
+            resolved: 1934,
+            open: 913,
+            avgResolutionDays: 847,
+            auditingBody: 'Government Accountability Office (GAO) & Inspector General Network',
+            lastUpdated: 'Q4 FY2024',
+            findings: [
+              { id: 'dod-audit', title: 'Dept. of Defense — Audit Failure (6th Consecutive Year)', department: 'Dept. of Defense / DoD IG', severity: 'critical', status: 'open', amountAtRisk: '$886B in assets unverified', year: 2024, description: 'DoD failed its 6th consecutive full financial audit. Auditors could not verify the existence or value of a significant portion of $886B in reported assets, including equipment and military hardware.' },
+              { id: 'covid-fraud', title: 'COVID-19 Relief Fraud — SBA & Treasury Programs', department: 'SBA / Treasury IG', severity: 'critical', status: 'partial', amountAtRisk: '$136B improper payments', year: 2023, description: 'GAO estimated $136B in potentially fraudulent or improper COVID-19 relief payments across PPP, EIDL, and unemployment programs. Prosecutions are ongoing; recoveries represent a fraction of total losses.' },
+              { id: 'medicare-fraud', title: 'Medicare & Medicaid Improper Payments', department: 'HHS / Centers for Medicare & Medicaid Services', severity: 'high', status: 'open', amountAtRisk: '$95B estimated annually', year: 2024, description: 'HHS OIG estimates $95B in improper payments annually — including billing for services not rendered, duplicate claims, and payments to excluded providers across both programs.' },
+              { id: 'irs-backlog', title: 'IRS Unprocessed Returns & Compliance Backlog', department: 'Treasury / TIGTA', severity: 'high', status: 'resolved', amountAtRisk: '$334B in delayed returns', year: 2023, description: 'TIGTA found 17.5 million unprocessed returns creating $334B in delayed refunds and compliance risks. IRS cleared the backlog in 2024 using Inflation Reduction Act funding.' },
+              { id: 'snap-improper', title: 'SNAP Improper Payment Rate (5.4%)', department: 'USDA / USDA OIG', severity: 'medium', status: 'open', amountAtRisk: '$8.7B overpayments', year: 2024, description: 'USDA OIG found a 5.4% improper payment rate in SNAP — totalling $8.7B — due to income verification failures and state-level administrative errors in benefit calculations.' },
+              { id: 'va-contracts', title: 'VA IT Contracting Waste & Duplicate Contracts', department: 'Dept. of Veterans Affairs / VA OIG', severity: 'medium', status: 'partial', amountAtRisk: '$2.1B waste identified', year: 2024, description: 'VA OIG identified $2.1B in duplicate IT contracts, unused software licenses, and vendor overbilling across the Veterans Benefits Administration technology portfolio.' },
+            ],
+          },
         }
       : {
           totalBudget: '$534.8 Billion',
@@ -8167,6 +8183,22 @@ function App() {
             { id: 'cdcp', name: 'Canada Dental Care Plan (CDCP)', department: 'Health Canada / Sun Life Financial (administrator)', icon: '🦷', color: '#06b6d4', allocated: '$4.4B', spent: '$2.1B', spentPct: 48, citizens: '2.7 million enrolled', description: 'National dental coverage for uninsured Canadians with family income under $90,000. Launched November 2023 for seniors; expanded to under-18 and disabled in 2024.', breakdown: [{ label: 'Benefit Claims Paid', pct: 78, color: '#06b6d4' }, { label: 'Administration & Sun Life', pct: 15, color: '#0891b2' }, { label: 'Outreach & Enrollment', pct: 7, color: '#67e8f9' }], timeline: [{ year: '2022', event: 'NDP-Liberal supply-and-confidence agreement includes dental' }, { year: 'Nov 2023', event: 'CDCP launched for seniors aged 70 and over' }, { year: 'May 2024', event: 'Expanded to seniors 65+, disabled, children under 18' }, { year: '2025', event: 'Full rollout to all eligible Canadians under $90K income' }], milestones: ['2.7 million Canadians enrolled as of December 2024', 'Covers 100% of preventive services; 60-80% of basic restorative procedures', 'Projected 9 million eligible Canadians when fully rolled out in 2025'] },
             { id: 'cib', name: 'Canada Infrastructure Bank', department: 'Canada Infrastructure Bank (Crown Corporation)', icon: '🏗️', color: '#0ea5e9', allocated: '$15.0B', spent: '$8.2B', spentPct: 55, citizens: 'Projects serving 38 million Canadians', description: 'Federal Crown corporation that invests in and finances transformative infrastructure through loans, equity, and guarantees, attracting private co-investment.', breakdown: [{ label: 'Clean Power & Energy', pct: 35, color: '#0ea5e9' }, { label: 'Green Infrastructure', pct: 28, color: '#38bdf8' }, { label: 'Public Transit', pct: 24, color: '#0284c7' }, { label: 'Trade & Transportation', pct: 13, color: '#075985' }], timeline: [{ year: '2017', event: 'Canada Infrastructure Bank Act receives Royal Assent' }, { year: '2020', event: 'CIB Growth Plan commits $10B across 5 priority areas' }, { year: '2023', event: '57 projects committed totalling $8.2B in CIB investments' }, { year: '2024', event: '$12.6B in private and institutional capital co-invested' }], milestones: ['57 infrastructure projects committed across all provinces and territories', '$12.6B in private and institutional capital co-invested alongside CIB funds', 'Every $1 of CIB investment leverages $2.54 in additional private capital'] },
           ],
+          audit: {
+            totalFindings: 312,
+            resolved: 198,
+            open: 114,
+            avgResolutionDays: 712,
+            auditingBody: 'Office of the Auditor General of Canada (OAG)',
+            lastUpdated: 'Spring 2024 Reports to Parliament',
+            findings: [
+              { id: 'arrivecan', title: 'ArriveCAN App — $60M for an $80,000 App', department: 'CBSA / Public Services and Procurement Canada', severity: 'critical', status: 'resolved', amountAtRisk: '$59.5M overspent', year: 2023, description: 'The OAG found ArriveCAN cost $59.5M — far exceeding its $80,000 estimate — due to undocumented contracts, missing receipts, and inadequate oversight of subcontractor GCstrategies.' },
+              { id: 'phoenix', title: 'Phoenix Pay System — Ongoing Remediation Failure', department: 'Public Services and Procurement Canada', severity: 'critical', status: 'open', amountAtRisk: '$3.5B+ in remediation costs', year: 2024, description: 'Despite $3.5B spent on fixes since 2016, Phoenix continues producing pay errors for thousands of federal employees. The replacement HR pay system is years behind its projected delivery date.' },
+              { id: 'cerb-overpay', title: 'COVID-19 CERB & Emergency Benefit Overpayments', department: 'Canada Revenue Agency (CRA) / ESDC', severity: 'high', status: 'partial', amountAtRisk: '$4.6B overpaid', year: 2023, description: 'The OAG found $4.6B in CERB and emergency benefit payments made to ineligible recipients — including incarcerated individuals and minors. CRA has recovered less than 15% of the total to date.' },
+              { id: 'indigenous-housing', title: 'Indigenous On-Reserve Housing — No National Strategy', department: 'Indigenous Services Canada (ISC)', severity: 'high', status: 'open', amountAtRisk: '$4.3B spent, gap unresolved', year: 2024, description: 'Despite $4.3B in federal investment, ISC has no reliable data on the reserve housing deficit and no national strategy to close it. The OAG found conditions have not measurably improved.' },
+              { id: 'dental-rollout', title: 'Canada Dental Care Plan — Rollout Delays & Gaps', department: 'Health Canada / Sun Life (administrator)', severity: 'medium', status: 'open', amountAtRisk: '$4.4B allocated', year: 2024, description: 'The OAG flagged delayed enrollment, unclear eligibility criteria, and inadequate outcome tracking. Only 48% of allocated funds were disbursed in the first year of the CDCP program.' },
+              { id: 'green-procurement', title: 'Federal Green Procurement — Missed Targets', department: 'Treasury Board of Canada Secretariat', severity: 'medium', status: 'resolved', amountAtRisk: '$22B annual procurement', year: 2023, description: '15 of 24 federal departments failed to meet green procurement targets. The OAG cited inadequate training and the absence of a consistent reporting framework across government.' },
+            ],
+          },
         };
 
     const eff = data.efficiencyScore;
@@ -8238,6 +8270,16 @@ function App() {
               }`}
             >
               🏛️ Programs
+            </button>
+            <button
+              onClick={() => setFinancialDashTab('audit')}
+              className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                financialDashTab === 'audit'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              🔍 Audit
             </button>
           </div>
 
@@ -8558,6 +8600,78 @@ function App() {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* ── Audit & Oversight Tab ── */}
+          {financialDashTab === 'audit' && (
+            <div>
+              {/* Summary bar */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                <div className="bg-white rounded-xl shadow-sm p-4 text-center border border-gray-100">
+                  <p className="text-3xl font-black text-gray-900">{data.audit.totalFindings.toLocaleString()}</p>
+                  <p className="text-xs text-gray-400 mt-1 font-medium uppercase tracking-wide">Total Findings</p>
+                </div>
+                <div className="bg-green-50 rounded-xl shadow-sm p-4 text-center border border-green-100">
+                  <p className="text-3xl font-black text-green-700">{data.audit.resolved.toLocaleString()}</p>
+                  <p className="text-xs text-green-600 mt-1 font-medium uppercase tracking-wide">Resolved</p>
+                  <p className="text-xs text-green-500 mt-0.5">{Math.round(data.audit.resolved / data.audit.totalFindings * 100)}%</p>
+                </div>
+                <div className="bg-red-50 rounded-xl shadow-sm p-4 text-center border border-red-100">
+                  <p className="text-3xl font-black text-red-600">{data.audit.open.toLocaleString()}</p>
+                  <p className="text-xs text-red-500 mt-1 font-medium uppercase tracking-wide">Open</p>
+                  <p className="text-xs text-red-400 mt-0.5">{Math.round(data.audit.open / data.audit.totalFindings * 100)}%</p>
+                </div>
+                <div className="bg-blue-50 rounded-xl shadow-sm p-4 text-center border border-blue-100">
+                  <p className="text-3xl font-black text-blue-700">{data.audit.avgResolutionDays}</p>
+                  <p className="text-xs text-blue-500 mt-1 font-medium uppercase tracking-wide">Avg. Resolution</p>
+                  <p className="text-xs text-blue-400 mt-0.5">days</p>
+                </div>
+              </div>
+
+              {/* Auditing body */}
+              <div className="bg-gray-50 rounded-xl px-5 py-3 mb-6 flex items-center justify-between gap-2 border border-gray-200">
+                <div>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Auditing Body</p>
+                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{data.audit.auditingBody}</p>
+                </div>
+                <p className="text-xs text-gray-400 flex-shrink-0">{data.audit.lastUpdated}</p>
+              </div>
+
+              {/* Findings list */}
+              <div className="space-y-4">
+                {data.audit.findings.map((f) => {
+                  const severityStyles = {
+                    critical: { badge: 'bg-red-100 text-red-700', border: 'border-red-300', dot: '#ef4444' },
+                    high:     { badge: 'bg-orange-100 text-orange-700', border: 'border-orange-300', dot: '#f97316' },
+                    medium:   { badge: 'bg-yellow-100 text-yellow-700', border: 'border-yellow-300', dot: '#eab308' },
+                  };
+                  const statusStyles = {
+                    open:     { badge: 'bg-red-100 text-red-700', label: 'Open' },
+                    partial:  { badge: 'bg-amber-100 text-amber-700', label: 'Partial' },
+                    resolved: { badge: 'bg-green-100 text-green-700', label: 'Resolved' },
+                  };
+                  const sev = severityStyles[f.severity] || severityStyles.medium;
+                  const sta = statusStyles[f.status] || statusStyles.open;
+                  return (
+                    <div key={f.id} className={`bg-white rounded-xl shadow-sm border-l-4 ${sev.border} p-5`}>
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <h3 className="font-bold text-gray-900 text-sm leading-tight">{f.title}</h3>
+                        <div className="flex gap-1.5 flex-shrink-0">
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full capitalize ${sev.badge}`}>{f.severity}</span>
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${sta.badge}`}>{sta.label}</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-2">{f.department} · {f.year}</p>
+                      <p className="text-sm text-gray-700 leading-relaxed mb-3">{f.description}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-gray-500">Amount at risk:</span>
+                        <span className="text-xs font-bold text-gray-800">{f.amountAtRisk}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
