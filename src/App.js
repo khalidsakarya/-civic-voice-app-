@@ -544,18 +544,18 @@ function App() {
       description: 'Responsible for helping Canadians maintain and improve their health',
       responsibilities: ['Public health', 'Healthcare policy', 'Drug regulation', 'Medical devices'],
       grantsDetail: [
-        { recipient: 'The Hospital for Sick Children (SickKids)', amount: '$85 Million', purpose: 'Pediatric cancer research and treatment facility expansion', date: 'January 2025' },
-        { recipient: 'McGill University Health Centre', amount: '$62 Million', purpose: 'COVID-19 vaccine development and clinical trials', date: 'December 2024' },
-        { recipient: 'Toronto General Hospital', amount: '$54 Million', purpose: 'Organ transplant program and surgical equipment', date: 'November 2024' },
-        { recipient: 'Canadian Mental Health Association', amount: '$48 Million', purpose: 'National crisis intervention hotline and community programs', date: 'October 2024' },
-        { recipient: 'Canadian Red Cross', amount: '$35 Million', purpose: 'Blood services modernization and plasma collection', date: 'September 2024' },
-        { recipient: 'Sunnybrook Health Sciences Centre', amount: '$28 Million', purpose: 'Trauma care and emergency department upgrades', date: 'August 2024' },
-        { recipient: 'Vancouver General Hospital', amount: '$22 Million', purpose: 'Mental health beds and psychiatric services expansion', date: 'July 2024' },
-        { recipient: 'Centre for Addiction and Mental Health (CAMH)', amount: '$19 Million', purpose: 'Addiction treatment research and patient care', date: 'June 2024' },
-        { recipient: 'Canadian Cancer Society', amount: '$16 Million', purpose: 'Cancer screening programs and patient support services', date: 'May 2024' },
-        { recipient: 'First Nations Health Authority (BC)', amount: '$14 Million', purpose: 'Remote community healthcare access and telemedicine', date: 'April 2024' },
-        { recipient: 'University of Alberta Hospital', amount: '$11 Million', purpose: 'Cardiac care unit modernization', date: 'March 2024' },
-        { recipient: 'The Ottawa Hospital', amount: '$8.5 Million', purpose: 'Stroke treatment and neurological research', date: 'February 2024' }
+        { recipient: 'The Hospital for Sick Children (SickKids)', amount: '$85 Million', purpose: 'Pediatric cancer research and treatment facility expansion', date: 'January 2025', type: 'grant' },
+        { recipient: 'McGill University Health Centre', amount: '$62 Million', purpose: 'COVID-19 vaccine development and clinical trials', date: 'December 2024', type: 'grant' },
+        { recipient: 'Toronto General Hospital', amount: '$54 Million', purpose: 'Organ transplant program and surgical equipment', date: 'November 2024', type: 'grant' },
+        { recipient: 'Canadian Mental Health Association', amount: '$48 Million', purpose: 'National crisis intervention hotline and community programs', date: 'October 2024', type: 'grant' },
+        { recipient: 'Canadian Red Cross', amount: '$35 Million', purpose: 'Blood services modernization and plasma collection', date: 'September 2024', type: 'contract' },
+        { recipient: 'Sunnybrook Health Sciences Centre', amount: '$28 Million', purpose: 'Trauma care and emergency department upgrades', date: 'August 2024', type: 'grant' },
+        { recipient: 'Vancouver General Hospital', amount: '$22 Million', purpose: 'Mental health beds and psychiatric services expansion', date: 'July 2024', type: 'grant' },
+        { recipient: 'Centre for Addiction and Mental Health (CAMH)', amount: '$19 Million', purpose: 'Addiction treatment research and patient care', date: 'June 2024', type: 'grant' },
+        { recipient: 'Canadian Cancer Society', amount: '$16 Million', purpose: 'Cancer screening programs and patient support services', date: 'May 2024', type: 'grant' },
+        { recipient: 'First Nations Health Authority (BC)', amount: '$14 Million', purpose: 'Remote community healthcare access and telemedicine', date: 'April 2024', type: 'grant' },
+        { recipient: 'University of Alberta Hospital', amount: '$11 Million', purpose: 'Cardiac care unit modernization', date: 'March 2024', type: 'grant' },
+        { recipient: 'The Ottawa Hospital', amount: '$8.5 Million', purpose: 'Stroke treatment and neurological research', date: 'February 2024', type: 'grant' }
       ],
       approveVotes: 245,
       disapproveVotes: 189,
@@ -572,17 +572,17 @@ function App() {
       description: 'Responsible for defending Canada and Canadian interests and values',
       responsibilities: ['Canadian Armed Forces', 'Military operations', 'Defence policy', 'National security'],
       grantsDetail: [
-        { recipient: 'CAE Inc.', amount: '$120 Million', purpose: 'Flight simulator technology and pilot training systems', date: 'December 2024' },
-        { recipient: 'General Dynamics Land Systems Canada', amount: '$95 Million', purpose: 'Light armored vehicle upgrades and maintenance', date: 'November 2024' },
-        { recipient: 'Lockheed Martin Canada', amount: '$78 Million', purpose: 'F-35 fighter jet maintenance and parts supply', date: 'October 2024' },
-        { recipient: 'Defence Research and Development Canada', amount: '$62 Million', purpose: 'Cybersecurity and artificial intelligence research', date: 'September 2024' },
-        { recipient: 'Veterans Affairs Canada - PTSD Programs', amount: '$45 Million', purpose: 'Mental health treatment for veterans and military families', date: 'August 2024' },
-        { recipient: 'Canadian Rangers Organization', amount: '$38 Million', purpose: 'Arctic sovereignty and northern community defense', date: 'July 2024' },
-        { recipient: 'Thales Canada', amount: '$32 Million', purpose: 'Secure communications and tactical radio systems', date: 'June 2024' },
-        { recipient: 'Royal Military College of Canada', amount: '$28 Million', purpose: 'Officer training and defense education programs', date: 'May 2024' },
-        { recipient: 'Irving Shipbuilding Inc.', amount: '$24 Million', purpose: 'Naval ship maintenance and repair services', date: 'April 2024' },
-        { recipient: 'True Patriot Love Foundation', amount: '$15 Million', purpose: 'Support programs for military families', date: 'March 2024' },
-        { recipient: 'Canadian Armed Forces Personnel Support Programs', amount: '$11 Million', purpose: 'Transition assistance for retiring military members', date: 'February 2024' }
+        { recipient: 'CAE Inc.', amount: '$120 Million', purpose: 'Flight simulator technology and pilot training systems', date: 'December 2024', type: 'contract' },
+        { recipient: 'General Dynamics Land Systems Canada', amount: '$95 Million', purpose: 'Light armored vehicle upgrades and maintenance', date: 'November 2024', type: 'contract' },
+        { recipient: 'Lockheed Martin Canada', amount: '$78 Million', purpose: 'F-35 fighter jet maintenance and parts supply', date: 'October 2024', type: 'contract' },
+        { recipient: 'Defence Research and Development Canada', amount: '$62 Million', purpose: 'Cybersecurity and artificial intelligence research', date: 'September 2024', type: 'grant' },
+        { recipient: 'Veterans Affairs Canada - PTSD Programs', amount: '$45 Million', purpose: 'Mental health treatment for veterans and military families', date: 'August 2024', type: 'grant' },
+        { recipient: 'Canadian Rangers Organization', amount: '$38 Million', purpose: 'Arctic sovereignty and northern community defense', date: 'July 2024', type: 'grant' },
+        { recipient: 'Thales Canada', amount: '$32 Million', purpose: 'Secure communications and tactical radio systems', date: 'June 2024', type: 'contract' },
+        { recipient: 'Royal Military College of Canada', amount: '$28 Million', purpose: 'Officer training and defense education programs', date: 'May 2024', type: 'grant' },
+        { recipient: 'Irving Shipbuilding Inc.', amount: '$24 Million', purpose: 'Naval ship maintenance and repair services', date: 'April 2024', type: 'contract' },
+        { recipient: 'True Patriot Love Foundation', amount: '$15 Million', purpose: 'Support programs for military families', date: 'March 2024', type: 'grant' },
+        { recipient: 'Canadian Armed Forces Personnel Support Programs', amount: '$11 Million', purpose: 'Transition assistance for retiring military members', date: 'February 2024', type: 'grant' }
       ],
       approveVotes: 312,
       disapproveVotes: 201,
@@ -599,16 +599,16 @@ function App() {
       description: 'Responsible for economic and fiscal policy',
       responsibilities: ['Economic policy', 'Federal budget', 'Tax policy', 'Financial sector regulation'],
       grantsDetail: [
-        { recipient: 'Canada Child Benefit - Direct Payments', amount: '$25.8 Billion', purpose: 'Monthly child support payments to 3.7 million families', date: 'Ongoing 2024' },
-        { recipient: 'GST/HST Tax Credit - Direct Payments', amount: '$8.5 Billion', purpose: 'Quarterly tax relief for low and moderate-income Canadians', date: 'Quarterly 2024' },
-        { recipient: 'Business Development Bank of Canada (BDC)', amount: '$2.1 Billion', purpose: 'Small business loans and financing programs', date: 'January 2025' },
-        { recipient: 'Farm Credit Canada', amount: '$1.8 Billion', purpose: 'Agricultural sector financing and risk management', date: 'December 2024' },
-        { recipient: 'Canada Infrastructure Bank', amount: '$1.5 Billion', purpose: 'Green infrastructure and public transit projects', date: 'November 2024' },
-        { recipient: 'Export Development Canada (EDC)', amount: '$980 Million', purpose: 'Export financing and trade insurance for Canadian businesses', date: 'October 2024' },
-        { recipient: 'Canada Mortgage and Housing Corporation (CMHC)', amount: '$720 Million', purpose: 'Affordable housing initiatives and first-time homebuyer programs', date: 'September 2024' },
-        { recipient: 'Sustainable Development Technology Canada', amount: '$450 Million', purpose: 'Clean technology companies and green innovation', date: 'August 2024' },
-        { recipient: 'Canadian Film and Television Tax Credit', amount: '$320 Million', purpose: 'Support for domestic film and media production', date: 'July 2024' },
-        { recipient: 'Investing in Canada Infrastructure Program', amount: '$280 Million', purpose: 'Municipal infrastructure upgrades nationwide', date: 'June 2024' }
+        { recipient: 'Canada Child Benefit - Direct Payments', amount: '$25.8 Billion', purpose: 'Monthly child support payments to 3.7 million families', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'GST/HST Tax Credit - Direct Payments', amount: '$8.5 Billion', purpose: 'Quarterly tax relief for low and moderate-income Canadians', date: 'Quarterly 2024', type: 'grant' },
+        { recipient: 'Business Development Bank of Canada (BDC)', amount: '$2.1 Billion', purpose: 'Small business loans and financing programs', date: 'January 2025', type: 'grant' },
+        { recipient: 'Farm Credit Canada', amount: '$1.8 Billion', purpose: 'Agricultural sector financing and risk management', date: 'December 2024', type: 'grant' },
+        { recipient: 'Canada Infrastructure Bank', amount: '$1.5 Billion', purpose: 'Green infrastructure and public transit projects', date: 'November 2024', type: 'grant' },
+        { recipient: 'Export Development Canada (EDC)', amount: '$980 Million', purpose: 'Export financing and trade insurance for Canadian businesses', date: 'October 2024', type: 'grant' },
+        { recipient: 'Canada Mortgage and Housing Corporation (CMHC)', amount: '$720 Million', purpose: 'Affordable housing initiatives and first-time homebuyer programs', date: 'September 2024', type: 'grant' },
+        { recipient: 'Sustainable Development Technology Canada', amount: '$450 Million', purpose: 'Clean technology companies and green innovation', date: 'August 2024', type: 'grant' },
+        { recipient: 'Canadian Film and Television Tax Credit', amount: '$320 Million', purpose: 'Support for domestic film and media production', date: 'July 2024', type: 'grant' },
+        { recipient: 'Investing in Canada Infrastructure Program', amount: '$280 Million', purpose: 'Municipal infrastructure upgrades nationwide', date: 'June 2024', type: 'grant' }
       ],
       approveVotes: 278,
       disapproveVotes: 356,
@@ -625,17 +625,17 @@ function App() {
       description: 'Facilitating entry of people and their integration into Canadian society',
       responsibilities: ['Immigration policy', 'Refugee protection', 'Citizenship services', 'Settlement programs'],
       grantsDetail: [
-        { recipient: 'YMCA Canada - Settlement Services', amount: '$145 Million', purpose: 'Language training and employment services for newcomers', date: 'January 2025' },
-        { recipient: 'Catholic Crosscultural Services', amount: '$98 Million', purpose: 'Refugee resettlement and integration programs', date: 'December 2024' },
-        { recipient: 'Jewish Immigrant Aid Services (JIAS)', amount: '$76 Million', purpose: 'Refugee sponsorship and family reunification', date: 'November 2024' },
-        { recipient: 'Immigrant Services Society of BC', amount: '$64 Million', purpose: 'Settlement support and citizenship preparation', date: 'October 2024' },
-        { recipient: 'MOSAIC (Multilingual Orientation Service)', amount: '$52 Million', purpose: 'Multicultural integration and language services', date: 'September 2024' },
-        { recipient: 'Toronto Region Immigrant Employment Council (TRIEC)', amount: '$45 Million', purpose: 'Skilled immigrant job placement and mentoring', date: 'August 2024' },
-        { recipient: 'Canadian Council for Refugees', amount: '$38 Million', purpose: 'Refugee protection and advocacy programs', date: 'July 2024' },
-        { recipient: 'WoodGreen Community Services', amount: '$31 Million', purpose: 'Newcomer housing and social services', date: 'June 2024' },
-        { recipient: 'Newcomer Centre of Peel', amount: '$24 Million', purpose: 'Settlement services for immigrants in Ontario', date: 'May 2024' },
-        { recipient: 'Calgary Catholic Immigration Society', amount: '$19 Million', purpose: 'Refugee settlement in Alberta', date: 'April 2024' },
-        { recipient: 'Université de Montréal - Francization Programs', amount: '$15 Million', purpose: 'French language training for immigrants to Quebec', date: 'March 2024' }
+        { recipient: 'YMCA Canada - Settlement Services', amount: '$145 Million', purpose: 'Language training and employment services for newcomers', date: 'January 2025', type: 'contract' },
+        { recipient: 'Catholic Crosscultural Services', amount: '$98 Million', purpose: 'Refugee resettlement and integration programs', date: 'December 2024', type: 'contract' },
+        { recipient: 'Jewish Immigrant Aid Services (JIAS)', amount: '$76 Million', purpose: 'Refugee sponsorship and family reunification', date: 'November 2024', type: 'grant' },
+        { recipient: 'Immigrant Services Society of BC', amount: '$64 Million', purpose: 'Settlement support and citizenship preparation', date: 'October 2024', type: 'contract' },
+        { recipient: 'MOSAIC (Multilingual Orientation Service)', amount: '$52 Million', purpose: 'Multicultural integration and language services', date: 'September 2024', type: 'contract' },
+        { recipient: 'Toronto Region Immigrant Employment Council (TRIEC)', amount: '$45 Million', purpose: 'Skilled immigrant job placement and mentoring', date: 'August 2024', type: 'contract' },
+        { recipient: 'Canadian Council for Refugees', amount: '$38 Million', purpose: 'Refugee protection and advocacy programs', date: 'July 2024', type: 'grant' },
+        { recipient: 'WoodGreen Community Services', amount: '$31 Million', purpose: 'Newcomer housing and social services', date: 'June 2024', type: 'contract' },
+        { recipient: 'Newcomer Centre of Peel', amount: '$24 Million', purpose: 'Settlement services for immigrants in Ontario', date: 'May 2024', type: 'contract' },
+        { recipient: 'Calgary Catholic Immigration Society', amount: '$19 Million', purpose: 'Refugee settlement in Alberta', date: 'April 2024', type: 'contract' },
+        { recipient: 'Université de Montréal - Francization Programs', amount: '$15 Million', purpose: 'French language training for immigrants to Quebec', date: 'March 2024', type: 'contract' }
       ],
       approveVotes: 401,
       disapproveVotes: 298,
@@ -652,17 +652,17 @@ function App() {
       description: 'Preserving and enhancing the quality of the natural environment',
       responsibilities: ['Climate policy', 'Environmental protection', 'Parks Canada', 'Wildlife conservation'],
       grantsDetail: [
-        { recipient: 'Nature Conservancy of Canada', amount: '$185 Million', purpose: 'Land acquisition for endangered species habitat protection', date: 'January 2025' },
-        { recipient: 'Ducks Unlimited Canada', amount: '$142 Million', purpose: 'Wetland conservation and waterfowl habitat restoration', date: 'December 2024' },
-        { recipient: 'World Wildlife Fund Canada (WWF)', amount: '$118 Million', purpose: 'Wildlife conservation and climate adaptation projects', date: 'November 2024' },
-        { recipient: 'University of British Columbia - Climate Research', amount: '$96 Million', purpose: 'Climate science research and modeling', date: 'October 2024' },
-        { recipient: 'Pembina Institute', amount: '$78 Million', purpose: 'Clean energy transition and policy analysis', date: 'September 2024' },
-        { recipient: 'David Suzuki Foundation', amount: '$64 Million', purpose: 'Environmental education and advocacy programs', date: 'August 2024' },
-        { recipient: 'Canadian Parks and Wilderness Society', amount: '$52 Million', purpose: 'National park expansion and protection', date: 'July 2024' },
-        { recipient: 'Evergreen Canada', amount: '$45 Million', purpose: 'Urban greening and community environmental projects', date: 'June 2024' },
-        { recipient: 'Ecology Action Centre (Nova Scotia)', amount: '$38 Million', purpose: 'Coastal ecosystem protection and marine conservation', date: 'May 2024' },
-        { recipient: 'Ontario Clean Air Alliance', amount: '$29 Million', purpose: 'Air quality monitoring and pollution reduction', date: 'April 2024' },
-        { recipient: 'Great Lakes Alliance', amount: '$24 Million', purpose: 'Great Lakes water quality improvement', date: 'March 2024' }
+        { recipient: 'Nature Conservancy of Canada', amount: '$185 Million', purpose: 'Land acquisition for endangered species habitat protection', date: 'January 2025', type: 'grant' },
+        { recipient: 'Ducks Unlimited Canada', amount: '$142 Million', purpose: 'Wetland conservation and waterfowl habitat restoration', date: 'December 2024', type: 'grant' },
+        { recipient: 'World Wildlife Fund Canada (WWF)', amount: '$118 Million', purpose: 'Wildlife conservation and climate adaptation projects', date: 'November 2024', type: 'grant' },
+        { recipient: 'University of British Columbia - Climate Research', amount: '$96 Million', purpose: 'Climate science research and modeling', date: 'October 2024', type: 'grant' },
+        { recipient: 'Pembina Institute', amount: '$78 Million', purpose: 'Clean energy transition and policy analysis', date: 'September 2024', type: 'grant' },
+        { recipient: 'David Suzuki Foundation', amount: '$64 Million', purpose: 'Environmental education and advocacy programs', date: 'August 2024', type: 'grant' },
+        { recipient: 'Canadian Parks and Wilderness Society', amount: '$52 Million', purpose: 'National park expansion and protection', date: 'July 2024', type: 'grant' },
+        { recipient: 'Evergreen Canada', amount: '$45 Million', purpose: 'Urban greening and community environmental projects', date: 'June 2024', type: 'grant' },
+        { recipient: 'Ecology Action Centre (Nova Scotia)', amount: '$38 Million', purpose: 'Coastal ecosystem protection and marine conservation', date: 'May 2024', type: 'grant' },
+        { recipient: 'Ontario Clean Air Alliance', amount: '$29 Million', purpose: 'Air quality monitoring and pollution reduction', date: 'April 2024', type: 'grant' },
+        { recipient: 'Great Lakes Alliance', amount: '$24 Million', purpose: 'Great Lakes water quality improvement', date: 'March 2024', type: 'grant' }
       ],
       approveVotes: 389,
       disapproveVotes: 267,
@@ -679,17 +679,17 @@ function App() {
       description: 'Protecting Canadians and maintaining a peaceful and safe society',
       responsibilities: ['RCMP oversight', 'Border security', 'Emergency management', 'Crime prevention'],
       grantsDetail: [
-        { recipient: 'Royal Canadian Mounted Police (RCMP) - Operations', amount: '$820 Million', purpose: 'National policing and federal law enforcement', date: 'Ongoing 2024' },
-        { recipient: 'Canada Border Services Agency (CBSA)', amount: '$495 Million', purpose: 'Border security technology and screening systems', date: 'January 2025' },
-        { recipient: 'Canadian Security Intelligence Service (CSIS)', amount: '$340 Million', purpose: 'Counter-terrorism and national security operations', date: 'December 2024' },
-        { recipient: 'Emergency Preparedness Canada', amount: '$285 Million', purpose: 'Disaster response equipment and training', date: 'November 2024' },
-        { recipient: 'Red Cross Canada - Emergency Response', amount: '$175 Million', purpose: 'Disaster relief and emergency assistance programs', date: 'October 2024' },
-        { recipient: 'Correctional Service Canada - Rehabilitation', amount: '$142 Million', purpose: 'Inmate rehabilitation and reintegration programs', date: 'September 2024' },
-        { recipient: 'Boys and Girls Clubs of Canada', amount: '$98 Million', purpose: 'Youth crime prevention and mentorship', date: 'August 2024' },
-        { recipient: 'Canadian Centre for Child Protection', amount: '$76 Million', purpose: 'Child exploitation prevention and victim support', date: 'July 2024' },
-        { recipient: 'Canadian Association of Chiefs of Police', amount: '$54 Million', purpose: 'Police training and community policing initiatives', date: 'June 2024' },
-        { recipient: 'Mothers Against Drunk Driving (MADD) Canada', amount: '$38 Million', purpose: 'Impaired driving prevention and victim services', date: 'May 2024' },
-        { recipient: 'Canadian Cybersecurity Centre', amount: '$29 Million', purpose: 'Critical infrastructure protection from cyber threats', date: 'April 2024' }
+        { recipient: 'Royal Canadian Mounted Police (RCMP) - Operations', amount: '$820 Million', purpose: 'National policing and federal law enforcement', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Canada Border Services Agency (CBSA)', amount: '$495 Million', purpose: 'Border security technology and screening systems', date: 'January 2025', type: 'contract' },
+        { recipient: 'Canadian Security Intelligence Service (CSIS)', amount: '$340 Million', purpose: 'Counter-terrorism and national security operations', date: 'December 2024', type: 'grant' },
+        { recipient: 'Emergency Preparedness Canada', amount: '$285 Million', purpose: 'Disaster response equipment and training', date: 'November 2024', type: 'contract' },
+        { recipient: 'Red Cross Canada - Emergency Response', amount: '$175 Million', purpose: 'Disaster relief and emergency assistance programs', date: 'October 2024', type: 'grant' },
+        { recipient: 'Correctional Service Canada - Rehabilitation', amount: '$142 Million', purpose: 'Inmate rehabilitation and reintegration programs', date: 'September 2024', type: 'grant' },
+        { recipient: 'Boys and Girls Clubs of Canada', amount: '$98 Million', purpose: 'Youth crime prevention and mentorship', date: 'August 2024', type: 'grant' },
+        { recipient: 'Canadian Centre for Child Protection', amount: '$76 Million', purpose: 'Child exploitation prevention and victim support', date: 'July 2024', type: 'grant' },
+        { recipient: 'Canadian Association of Chiefs of Police', amount: '$54 Million', purpose: 'Police training and community policing initiatives', date: 'June 2024', type: 'contract' },
+        { recipient: 'Mothers Against Drunk Driving (MADD) Canada', amount: '$38 Million', purpose: 'Impaired driving prevention and victim services', date: 'May 2024', type: 'grant' },
+        { recipient: 'Canadian Cybersecurity Centre', amount: '$29 Million', purpose: 'Critical infrastructure protection from cyber threats', date: 'April 2024', type: 'contract' }
       ],
       approveVotes: 334,
       disapproveVotes: 278,
@@ -706,16 +706,16 @@ function App() {
       description: 'Responsible for social programs and the labour market',
       responsibilities: ['Employment Insurance', 'Canada Pension Plan', 'Old Age Security', 'Labour standards'],
       grantsDetail: [
-        { recipient: 'Old Age Security - Direct Payments to Seniors', amount: '$62.5 Billion', purpose: 'Monthly pension payments to 6.8 million seniors aged 65+', date: 'Ongoing 2024' },
-        { recipient: 'Employment Insurance - Direct Payments', amount: '$18.3 Billion', purpose: 'Income support for 1.2 million unemployed Canadians', date: 'Ongoing 2024' },
-        { recipient: 'Canada Pension Plan Disability - Direct Payments', amount: '$5.1 Billion', purpose: 'Support for 340,000 Canadians with disabilities', date: 'Ongoing 2024' },
-        { recipient: 'Colleges and Institutes Canada', amount: '$420 Million', purpose: 'Skills training and workforce development programs', date: 'January 2025' },
-        { recipient: 'United Way Canada', amount: '$285 Million', purpose: 'Social assistance and poverty reduction initiatives', date: 'December 2024' },
-        { recipient: 'Goodwill Industries Canada', amount: '$195 Million', purpose: 'Job training and placement for disadvantaged workers', date: 'November 2024' },
-        { recipient: 'Canadian Labour Congress', amount: '$142 Million', purpose: 'Worker training and labour standards advocacy', date: 'October 2024' },
-        { recipient: 'Neil Squire Society', amount: '$98 Million', purpose: 'Employment programs for people with disabilities', date: 'September 2024' },
-        { recipient: 'Apprend Employment Services', amount: '$76 Million', purpose: 'Job placement for newcomers and youth', date: 'August 2024' },
-        { recipient: 'Food Banks Canada', amount: '$54 Million', purpose: 'Emergency food assistance and social support', date: 'July 2024' }
+        { recipient: 'Old Age Security - Direct Payments to Seniors', amount: '$62.5 Billion', purpose: 'Monthly pension payments to 6.8 million seniors aged 65+', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Employment Insurance - Direct Payments', amount: '$18.3 Billion', purpose: 'Income support for 1.2 million unemployed Canadians', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Canada Pension Plan Disability - Direct Payments', amount: '$5.1 Billion', purpose: 'Support for 340,000 Canadians with disabilities', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Colleges and Institutes Canada', amount: '$420 Million', purpose: 'Skills training and workforce development programs', date: 'January 2025', type: 'contract' },
+        { recipient: 'United Way Canada', amount: '$285 Million', purpose: 'Social assistance and poverty reduction initiatives', date: 'December 2024', type: 'grant' },
+        { recipient: 'Goodwill Industries Canada', amount: '$195 Million', purpose: 'Job training and placement for disadvantaged workers', date: 'November 2024', type: 'contract' },
+        { recipient: 'Canadian Labour Congress', amount: '$142 Million', purpose: 'Worker training and labour standards advocacy', date: 'October 2024', type: 'contract' },
+        { recipient: 'Neil Squire Society', amount: '$98 Million', purpose: 'Employment programs for people with disabilities', date: 'September 2024', type: 'contract' },
+        { recipient: 'Apprend Employment Services', amount: '$76 Million', purpose: 'Job placement for newcomers and youth', date: 'August 2024', type: 'contract' },
+        { recipient: 'Food Banks Canada', amount: '$54 Million', purpose: 'Emergency food assistance and social support', date: 'July 2024', type: 'grant' }
       ],
       approveVotes: 412,
       disapproveVotes: 245,
@@ -732,17 +732,17 @@ function App() {
       description: 'Responsible for transportation policies and programs',
       responsibilities: ['Aviation safety', 'Marine safety', 'Rail safety', 'Road safety'],
       grantsDetail: [
-        { recipient: 'Toronto Transit Commission (TTC)', amount: '$285 Million', purpose: 'Subway expansion and fleet modernization', date: 'January 2025' },
-        { recipient: 'Vancouver TransLink', amount: '$242 Million', purpose: 'SkyTrain extension and bus rapid transit', date: 'December 2024' },
-        { recipient: 'Montreal STM (Société de transport)', amount: '$198 Million', purpose: 'Metro line expansion and infrastructure upgrades', date: 'November 2024' },
-        { recipient: 'Greater Toronto Airports Authority (Pearson)', amount: '$165 Million', purpose: 'Terminal modernization and safety improvements', date: 'October 2024' },
-        { recipient: 'Port of Vancouver', amount: '$142 Million', purpose: 'Container terminal expansion and environmental compliance', date: 'September 2024' },
-        { recipient: 'VIA Rail Canada', amount: '$118 Million', purpose: 'High-frequency rail corridor development', date: 'August 2024' },
-        { recipient: 'Calgary Transit', amount: '$94 Million', purpose: 'LRT expansion and Green Line project', date: 'July 2024' },
-        { recipient: 'Nav Canada', amount: '$76 Million', purpose: 'Air traffic control technology upgrades', date: 'June 2024' },
-        { recipient: 'Halifax Port Authority', amount: '$62 Million', purpose: 'Port infrastructure and deep-water berth construction', date: 'May 2024' },
-        { recipient: 'Bike Calgary / Cycling Infrastructure Alliance', amount: '$45 Million', purpose: 'Bike lane network and active transportation', date: 'April 2024' },
-        { recipient: 'Northern Air Transport Association', amount: '$38 Million', purpose: 'Remote community airport safety upgrades', date: 'March 2024' }
+        { recipient: 'Toronto Transit Commission (TTC)', amount: '$285 Million', purpose: 'Subway expansion and fleet modernization', date: 'January 2025', type: 'grant' },
+        { recipient: 'Vancouver TransLink', amount: '$242 Million', purpose: 'SkyTrain extension and bus rapid transit', date: 'December 2024', type: 'grant' },
+        { recipient: 'Montreal STM (Société de transport)', amount: '$198 Million', purpose: 'Metro line expansion and infrastructure upgrades', date: 'November 2024', type: 'grant' },
+        { recipient: 'Greater Toronto Airports Authority (Pearson)', amount: '$165 Million', purpose: 'Terminal modernization and safety improvements', date: 'October 2024', type: 'grant' },
+        { recipient: 'Port of Vancouver', amount: '$142 Million', purpose: 'Container terminal expansion and environmental compliance', date: 'September 2024', type: 'grant' },
+        { recipient: 'VIA Rail Canada', amount: '$118 Million', purpose: 'High-frequency rail corridor development', date: 'August 2024', type: 'grant' },
+        { recipient: 'Calgary Transit', amount: '$94 Million', purpose: 'LRT expansion and Green Line project', date: 'July 2024', type: 'grant' },
+        { recipient: 'Nav Canada', amount: '$76 Million', purpose: 'Air traffic control technology upgrades', date: 'June 2024', type: 'contract' },
+        { recipient: 'Halifax Port Authority', amount: '$62 Million', purpose: 'Port infrastructure and deep-water berth construction', date: 'May 2024', type: 'grant' },
+        { recipient: 'Bike Calgary / Cycling Infrastructure Alliance', amount: '$45 Million', purpose: 'Bike lane network and active transportation', date: 'April 2024', type: 'grant' },
+        { recipient: 'Northern Air Transport Association', amount: '$38 Million', purpose: 'Remote community airport safety upgrades', date: 'March 2024', type: 'grant' }
       ],
       approveVotes: 301,
       disapproveVotes: 198,
@@ -759,18 +759,18 @@ function App() {
       description: 'Fostering a growing, competitive and knowledge-based Canadian economy',
       responsibilities: ['Innovation policy', 'Science funding', 'Telecommunications', 'Intellectual property'],
       grantsDetail: [
-        { recipient: 'Bombardier Inc.', amount: '$485 Million', purpose: 'Aircraft development and aerospace innovation', date: 'January 2025' },
-        { recipient: 'Shopify Inc.', amount: '$320 Million', purpose: 'AI and e-commerce technology development', date: 'December 2024' },
-        { recipient: 'BlackBerry Limited', amount: '$275 Million', purpose: 'Cybersecurity and IoT research', date: 'November 2024' },
-        { recipient: 'University of Toronto - AI Research', amount: '$240 Million', purpose: 'Artificial intelligence and machine learning', date: 'October 2024' },
-        { recipient: 'Magna International', amount: '$195 Million', purpose: 'Electric vehicle technology and autonomous systems', date: 'September 2024' },
-        { recipient: 'McGill University - Engineering Research', amount: '$168 Million', purpose: 'Advanced materials and nanotechnology', date: 'August 2024' },
-        { recipient: 'MDA Corporation', amount: '$142 Million', purpose: 'Satellite technology and space robotics', date: 'July 2024' },
-        { recipient: 'University of British Columbia - Clean Tech', amount: '$125 Million', purpose: 'Sustainable technology and clean energy research', date: 'June 2024' },
-        { recipient: 'OpenText Corporation', amount: '$98 Million', purpose: 'Enterprise software and cloud computing', date: 'May 2024' },
-        { recipient: 'Communitech (Kitchener-Waterloo)', amount: '$76 Million', purpose: 'Tech startup incubation and scale-up support', date: 'April 2024' },
-        { recipient: 'Telus Communications', amount: '$64 Million', purpose: 'Rural broadband expansion and 5G infrastructure', date: 'March 2024' },
-        { recipient: 'Waterloo Accelerator Centre', amount: '$52 Million', purpose: 'Technology entrepreneurship and innovation programs', date: 'February 2024' }
+        { recipient: 'Bombardier Inc.', amount: '$485 Million', purpose: 'Aircraft development and aerospace innovation', date: 'January 2025', type: 'contract' },
+        { recipient: 'Shopify Inc.', amount: '$320 Million', purpose: 'AI and e-commerce technology development', date: 'December 2024', type: 'contract' },
+        { recipient: 'BlackBerry Limited', amount: '$275 Million', purpose: 'Cybersecurity and IoT research', date: 'November 2024', type: 'contract' },
+        { recipient: 'University of Toronto - AI Research', amount: '$240 Million', purpose: 'Artificial intelligence and machine learning', date: 'October 2024', type: 'grant' },
+        { recipient: 'Magna International', amount: '$195 Million', purpose: 'Electric vehicle technology and autonomous systems', date: 'September 2024', type: 'contract' },
+        { recipient: 'McGill University - Engineering Research', amount: '$168 Million', purpose: 'Advanced materials and nanotechnology', date: 'August 2024', type: 'grant' },
+        { recipient: 'MDA Corporation', amount: '$142 Million', purpose: 'Satellite technology and space robotics', date: 'July 2024', type: 'contract' },
+        { recipient: 'University of British Columbia - Clean Tech', amount: '$125 Million', purpose: 'Sustainable technology and clean energy research', date: 'June 2024', type: 'grant' },
+        { recipient: 'OpenText Corporation', amount: '$98 Million', purpose: 'Enterprise software and cloud computing', date: 'May 2024', type: 'contract' },
+        { recipient: 'Communitech (Kitchener-Waterloo)', amount: '$76 Million', purpose: 'Tech startup incubation and scale-up support', date: 'April 2024', type: 'grant' },
+        { recipient: 'Telus Communications', amount: '$64 Million', purpose: 'Rural broadband expansion and 5G infrastructure', date: 'March 2024', type: 'contract' },
+        { recipient: 'Waterloo Accelerator Centre', amount: '$52 Million', purpose: 'Technology entrepreneurship and innovation programs', date: 'February 2024', type: 'grant' }
       ],
       approveVotes: 356,
       disapproveVotes: 223,
@@ -787,16 +787,16 @@ function App() {
       description: 'Ensuring natural resources development is sustainable',
       responsibilities: ['Energy policy', 'Mining regulation', 'Forestry', 'Geological surveys'],
       grantsDetail: [
-        { recipient: 'SaskPower Corporation', amount: '$285 Million', purpose: 'Small modular reactor development and clean energy', date: 'January 2025' },
-        { recipient: 'Teck Resources Limited', amount: '$245 Million', purpose: 'Critical minerals extraction and processing', date: 'December 2024' },
-        { recipient: 'Cameco Corporation', amount: '$198 Million', purpose: 'Uranium mining and nuclear fuel production', date: 'November 2024' },
-        { recipient: 'University of Alberta - Energy Research', amount: '$165 Million', purpose: 'Carbon capture and storage technology', date: 'October 2024' },
-        { recipient: 'Resolute Forest Products', amount: '$142 Million', purpose: 'Sustainable forestry and wildfire prevention', date: 'September 2024' },
-        { recipient: 'BC Hydro', amount: '$118 Million', purpose: 'Renewable energy grid modernization', date: 'August 2024' },
-        { recipient: 'Natural Resources Canada - Forestry Division', amount: '$94 Million', purpose: 'Forest fire management and reforestation', date: 'July 2024' },
-        { recipient: 'Ontario Power Generation', amount: '$76 Million', purpose: 'Nuclear power plant refurbishment', date: 'June 2024' },
-        { recipient: 'Efficiency Canada', amount: '$62 Million', purpose: 'Home energy retrofits and efficiency programs', date: 'May 2024' },
-        { recipient: 'Geological Survey of Canada', amount: '$45 Million', purpose: 'Mineral exploration and mapping initiatives', date: 'April 2024' }
+        { recipient: 'SaskPower Corporation', amount: '$285 Million', purpose: 'Small modular reactor development and clean energy', date: 'January 2025', type: 'contract' },
+        { recipient: 'Teck Resources Limited', amount: '$245 Million', purpose: 'Critical minerals extraction and processing', date: 'December 2024', type: 'contract' },
+        { recipient: 'Cameco Corporation', amount: '$198 Million', purpose: 'Uranium mining and nuclear fuel production', date: 'November 2024', type: 'contract' },
+        { recipient: 'University of Alberta - Energy Research', amount: '$165 Million', purpose: 'Carbon capture and storage technology', date: 'October 2024', type: 'grant' },
+        { recipient: 'Resolute Forest Products', amount: '$142 Million', purpose: 'Sustainable forestry and wildfire prevention', date: 'September 2024', type: 'contract' },
+        { recipient: 'BC Hydro', amount: '$118 Million', purpose: 'Renewable energy grid modernization', date: 'August 2024', type: 'contract' },
+        { recipient: 'Natural Resources Canada - Forestry Division', amount: '$94 Million', purpose: 'Forest fire management and reforestation', date: 'July 2024', type: 'grant' },
+        { recipient: 'Ontario Power Generation', amount: '$76 Million', purpose: 'Nuclear power plant refurbishment', date: 'June 2024', type: 'contract' },
+        { recipient: 'Efficiency Canada', amount: '$62 Million', purpose: 'Home energy retrofits and efficiency programs', date: 'May 2024', type: 'grant' },
+        { recipient: 'Geological Survey of Canada', amount: '$45 Million', purpose: 'Mineral exploration and mapping initiatives', date: 'April 2024', type: 'grant' }
       ],
       approveVotes: 289,
       disapproveVotes: 267,
@@ -813,16 +813,16 @@ function App() {
       description: 'Supporting the Minister in ensuring a fair and accessible justice system',
       responsibilities: ['Legal advice to government', 'Criminal law policy', 'Human rights', 'Family law'],
       grantsDetail: [
-        { recipient: 'Legal Aid Ontario', amount: '$125 Million', purpose: 'Free legal representation for low-income residents', date: 'January 2025' },
-        { recipient: 'Aboriginal Legal Services Toronto', amount: '$98 Million', purpose: 'Culturally appropriate legal services for Indigenous peoples', date: 'December 2024' },
-        { recipient: 'Canadian Association of Elizabeth Fry Societies', amount: '$76 Million', purpose: 'Support for women in conflict with the law', date: 'November 2024' },
-        { recipient: 'Victim Services Toronto', amount: '$62 Million', purpose: 'Counseling and assistance for crime victims', date: 'October 2024' },
-        { recipient: 'John Howard Society of Canada', amount: '$54 Million', purpose: 'Criminal justice reform and rehabilitation programs', date: 'September 2024' },
-        { recipient: 'Community Legal Education Ontario (CLEO)', amount: '$45 Million', purpose: 'Public legal education and information', date: 'August 2024' },
-        { recipient: 'Osgoode Hall Law School - Access to Justice', amount: '$38 Million', purpose: 'Legal clinics and pro bono services', date: 'July 2024' },
-        { recipient: 'Canadian Centre for Victims of Torture', amount: '$29 Million', purpose: 'Support for refugee torture survivors', date: 'June 2024' },
-        { recipient: 'Family Service Toronto', amount: '$24 Million', purpose: 'Family law mediation and support services', date: 'May 2024' },
-        { recipient: 'Court Technology Modernization Initiative', amount: '$18 Million', purpose: 'Digital court systems implementation', date: 'April 2024' }
+        { recipient: 'Legal Aid Ontario', amount: '$125 Million', purpose: 'Free legal representation for low-income residents', date: 'January 2025', type: 'contract' },
+        { recipient: 'Aboriginal Legal Services Toronto', amount: '$98 Million', purpose: 'Culturally appropriate legal services for Indigenous peoples', date: 'December 2024', type: 'contract' },
+        { recipient: 'Canadian Association of Elizabeth Fry Societies', amount: '$76 Million', purpose: 'Support for women in conflict with the law', date: 'November 2024', type: 'grant' },
+        { recipient: 'Victim Services Toronto', amount: '$62 Million', purpose: 'Counseling and assistance for crime victims', date: 'October 2024', type: 'contract' },
+        { recipient: 'John Howard Society of Canada', amount: '$54 Million', purpose: 'Criminal justice reform and rehabilitation programs', date: 'September 2024', type: 'grant' },
+        { recipient: 'Community Legal Education Ontario (CLEO)', amount: '$45 Million', purpose: 'Public legal education and information', date: 'August 2024', type: 'grant' },
+        { recipient: 'Osgoode Hall Law School - Access to Justice', amount: '$38 Million', purpose: 'Legal clinics and pro bono services', date: 'July 2024', type: 'contract' },
+        { recipient: 'Canadian Centre for Victims of Torture', amount: '$29 Million', purpose: 'Support for refugee torture survivors', date: 'June 2024', type: 'grant' },
+        { recipient: 'Family Service Toronto', amount: '$24 Million', purpose: 'Family law mediation and support services', date: 'May 2024', type: 'contract' },
+        { recipient: 'Court Technology Modernization Initiative', amount: '$18 Million', purpose: 'Digital court systems implementation', date: 'April 2024', type: 'contract' }
       ],
       approveVotes: 298,
       disapproveVotes: 301,
@@ -839,17 +839,17 @@ function App() {
       description: 'Working to improve access to services for First Nations, Inuit and Métis',
       responsibilities: ['Indigenous health', 'Education funding', 'Infrastructure', 'Child and family services'],
       grantsDetail: [
-        { recipient: 'Assembly of First Nations', amount: '$840 Million', purpose: 'Advocacy and policy development for First Nations', date: 'Ongoing 2024' },
-        { recipient: 'First Nations Child and Family Caring Society', amount: '$685 Million', purpose: 'Child welfare services on reserves', date: 'January 2025' },
-        { recipient: 'Inuit Tapiriit Kanatami', amount: '$520 Million', purpose: 'Inuit health and education programs', date: 'December 2024' },
-        { recipient: 'Métis National Council', amount: '$445 Million', purpose: 'Métis community development and services', date: 'November 2024' },
-        { recipient: 'First Nations University of Canada', amount: '$320 Million', purpose: 'Indigenous post-secondary education', date: 'October 2024' },
-        { recipient: 'National Association of Friendship Centres', amount: '$275 Million', purpose: 'Urban Indigenous support services', date: 'September 2024' },
-        { recipient: 'Thunderbird Partnership Foundation', amount: '$198 Million', purpose: 'Indigenous mental health and addiction treatment', date: 'August 2024' },
-        { recipient: 'Indigenous Tourism Association of Canada', amount: '$142 Million', purpose: 'Economic development through cultural tourism', date: 'July 2024' },
-        { recipient: 'First Nations Financial Management Board', amount: '$118 Million', purpose: 'Financial capacity building for communities', date: 'June 2024' },
-        { recipient: 'Native Women\'s Association of Canada', amount: '$94 Million', purpose: 'Support for Indigenous women and families', date: 'May 2024' },
-        { recipient: 'Indspire', amount: '$76 Million', purpose: 'Scholarships and bursaries for Indigenous students', date: 'April 2024' }
+        { recipient: 'Assembly of First Nations', amount: '$840 Million', purpose: 'Advocacy and policy development for First Nations', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'First Nations Child and Family Caring Society', amount: '$685 Million', purpose: 'Child welfare services on reserves', date: 'January 2025', type: 'contract' },
+        { recipient: 'Inuit Tapiriit Kanatami', amount: '$520 Million', purpose: 'Inuit health and education programs', date: 'December 2024', type: 'grant' },
+        { recipient: 'Métis National Council', amount: '$445 Million', purpose: 'Métis community development and services', date: 'November 2024', type: 'grant' },
+        { recipient: 'First Nations University of Canada', amount: '$320 Million', purpose: 'Indigenous post-secondary education', date: 'October 2024', type: 'grant' },
+        { recipient: 'National Association of Friendship Centres', amount: '$275 Million', purpose: 'Urban Indigenous support services', date: 'September 2024', type: 'grant' },
+        { recipient: 'Thunderbird Partnership Foundation', amount: '$198 Million', purpose: 'Indigenous mental health and addiction treatment', date: 'August 2024', type: 'grant' },
+        { recipient: 'Indigenous Tourism Association of Canada', amount: '$142 Million', purpose: 'Economic development through cultural tourism', date: 'July 2024', type: 'grant' },
+        { recipient: 'First Nations Financial Management Board', amount: '$118 Million', purpose: 'Financial capacity building for communities', date: 'June 2024', type: 'grant' },
+        { recipient: 'Native Women\'s Association of Canada', amount: '$94 Million', purpose: 'Support for Indigenous women and families', date: 'May 2024', type: 'grant' },
+        { recipient: 'Indspire', amount: '$76 Million', purpose: 'Scholarships and bursaries for Indigenous students', date: 'April 2024', type: 'grant' }
       ],
       approveVotes: 378,
       disapproveVotes: 298,
@@ -866,16 +866,16 @@ function App() {
       description: 'Responsible for policies governing agriculture production',
       responsibilities: ['Farm support programs', 'Food safety', 'Agricultural research', 'Trade'],
       grantsDetail: [
-        { recipient: 'Canadian Federation of Agriculture', amount: '$285 Million', purpose: 'Farm policy advocacy and income stabilization', date: 'Ongoing 2024' },
-        { recipient: 'University of Guelph - Agricultural Research', amount: '$240 Million', purpose: 'Crop development and livestock disease prevention', date: 'January 2025' },
-        { recipient: 'Grain Growers of Canada', amount: '$195 Million', purpose: 'Market access and trade support for grain farmers', date: 'December 2024' },
-        { recipient: 'Dairy Farmers of Canada', amount: '$168 Million', purpose: 'Dairy sector support and supply management', date: 'November 2024' },
-        { recipient: 'Canadian Cattlemen\'s Association', amount: '$142 Million', purpose: 'Beef industry development and export promotion', date: 'October 2024' },
-        { recipient: 'Farm Credit Canada', amount: '$118 Million', purpose: 'Agricultural financing and risk management', date: 'September 2024' },
-        { recipient: 'Canadian Horticultural Council', amount: '$94 Million', purpose: 'Fruit and vegetable sector innovation', date: 'August 2024' },
-        { recipient: 'Agriculture and Agri-Food Canada Research Centres', amount: '$76 Million', purpose: 'Climate-resilient crop research', date: 'July 2024' },
-        { recipient: 'Canadian Organic Growers', amount: '$62 Million', purpose: 'Organic farming certification and support', date: 'June 2024' },
-        { recipient: 'Farm Management Canada', amount: '$45 Million', purpose: 'Business planning and financial literacy for farmers', date: 'May 2024' }
+        { recipient: 'Canadian Federation of Agriculture', amount: '$285 Million', purpose: 'Farm policy advocacy and income stabilization', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'University of Guelph - Agricultural Research', amount: '$240 Million', purpose: 'Crop development and livestock disease prevention', date: 'January 2025', type: 'grant' },
+        { recipient: 'Grain Growers of Canada', amount: '$195 Million', purpose: 'Market access and trade support for grain farmers', date: 'December 2024', type: 'grant' },
+        { recipient: 'Dairy Farmers of Canada', amount: '$168 Million', purpose: 'Dairy sector support and supply management', date: 'November 2024', type: 'grant' },
+        { recipient: 'Canadian Cattlemen\'s Association', amount: '$142 Million', purpose: 'Beef industry development and export promotion', date: 'October 2024', type: 'grant' },
+        { recipient: 'Farm Credit Canada', amount: '$118 Million', purpose: 'Agricultural financing and risk management', date: 'September 2024', type: 'grant' },
+        { recipient: 'Canadian Horticultural Council', amount: '$94 Million', purpose: 'Fruit and vegetable sector innovation', date: 'August 2024', type: 'grant' },
+        { recipient: 'Agriculture and Agri-Food Canada Research Centres', amount: '$76 Million', purpose: 'Climate-resilient crop research', date: 'July 2024', type: 'grant' },
+        { recipient: 'Canadian Organic Growers', amount: '$62 Million', purpose: 'Organic farming certification and support', date: 'June 2024', type: 'grant' },
+        { recipient: 'Farm Management Canada', amount: '$45 Million', purpose: 'Business planning and financial literacy for farmers', date: 'May 2024', type: 'grant' }
       ],
       approveVotes: 312,
       disapproveVotes: 201,
@@ -892,17 +892,17 @@ function App() {
       description: 'Managing diplomatic relations and providing consular services',
       responsibilities: ['Foreign policy', 'International development', 'Trade promotion', 'Consular services'],
       grantsDetail: [
-        { recipient: 'United Nations Relief and Works Agency (UNRWA)', amount: '$420 Million', purpose: 'Humanitarian aid for Palestinian refugees', date: 'January 2025' },
-        { recipient: 'World Food Programme', amount: '$365 Million', purpose: 'Global hunger relief and emergency food assistance', date: 'December 2024' },
-        { recipient: 'UNICEF Canada', amount: '$298 Million', purpose: 'Child protection and education in developing countries', date: 'November 2024' },
-        { recipient: 'Médecins Sans Frontières (Doctors Without Borders)', amount: '$245 Million', purpose: 'Emergency medical care in conflict zones', date: 'October 2024' },
-        { recipient: 'Canadian Red Cross - International Programs', amount: '$198 Million', purpose: 'Disaster response and humanitarian assistance', date: 'September 2024' },
-        { recipient: 'Plan International Canada', amount: '$168 Million', purpose: 'Girls\' education and women\'s empowerment', date: 'August 2024' },
-        { recipient: 'CARE Canada', amount: '$142 Million', purpose: 'Poverty reduction and gender equality programs', date: 'July 2024' },
-        { recipient: 'Oxfam Canada', amount: '$118 Million', purpose: 'Climate justice and economic development', date: 'June 2024' },
-        { recipient: 'Canadian Foodgrains Bank', amount: '$94 Million', purpose: 'Agricultural development and food security', date: 'May 2024' },
-        { recipient: 'Save the Children Canada', amount: '$76 Million', purpose: 'Child survival and education programs', date: 'April 2024' },
-        { recipient: 'Export Development Canada (EDC)', amount: '$62 Million', purpose: 'Trade mission support for Canadian exporters', date: 'March 2024' }
+        { recipient: 'United Nations Relief and Works Agency (UNRWA)', amount: '$420 Million', purpose: 'Humanitarian aid for Palestinian refugees', date: 'January 2025', type: 'grant' },
+        { recipient: 'World Food Programme', amount: '$365 Million', purpose: 'Global hunger relief and emergency food assistance', date: 'December 2024', type: 'grant' },
+        { recipient: 'UNICEF Canada', amount: '$298 Million', purpose: 'Child protection and education in developing countries', date: 'November 2024', type: 'grant' },
+        { recipient: 'Médecins Sans Frontières (Doctors Without Borders)', amount: '$245 Million', purpose: 'Emergency medical care in conflict zones', date: 'October 2024', type: 'grant' },
+        { recipient: 'Canadian Red Cross - International Programs', amount: '$198 Million', purpose: 'Disaster response and humanitarian assistance', date: 'September 2024', type: 'grant' },
+        { recipient: 'Plan International Canada', amount: '$168 Million', purpose: 'Girls\' education and women\'s empowerment', date: 'August 2024', type: 'grant' },
+        { recipient: 'CARE Canada', amount: '$142 Million', purpose: 'Poverty reduction and gender equality programs', date: 'July 2024', type: 'grant' },
+        { recipient: 'Oxfam Canada', amount: '$118 Million', purpose: 'Climate justice and economic development', date: 'June 2024', type: 'grant' },
+        { recipient: 'Canadian Foodgrains Bank', amount: '$94 Million', purpose: 'Agricultural development and food security', date: 'May 2024', type: 'grant' },
+        { recipient: 'Save the Children Canada', amount: '$76 Million', purpose: 'Child survival and education programs', date: 'April 2024', type: 'grant' },
+        { recipient: 'Export Development Canada (EDC)', amount: '$62 Million', purpose: 'Trade mission support for Canadian exporters', date: 'March 2024', type: 'grant' }
       ],
       approveVotes: 289,
       disapproveVotes: 334,
@@ -919,17 +919,17 @@ function App() {
       description: 'Promoting Canadian culture and heritage',
       responsibilities: ['Arts funding', 'Broadcasting', 'Official languages', 'Sport'],
       grantsDetail: [
-        { recipient: 'Canada Council for the Arts', amount: '$195 Million', purpose: 'Grants to artists, musicians, and cultural organizations', date: 'Ongoing 2024' },
-        { recipient: 'National Film Board of Canada', amount: '$142 Million', purpose: 'Documentary and animation film production', date: 'January 2025' },
-        { recipient: 'Canadian Broadcasting Corporation (CBC)', amount: '$118 Million', purpose: 'Public broadcasting and Canadian content', date: 'December 2024' },
-        { recipient: 'Telefilm Canada', amount: '$98 Million', purpose: 'Film and television production funding', date: 'November 2024' },
-        { recipient: 'Canada Music Fund', amount: '$76 Million', purpose: 'Support for Canadian musicians and music industry', date: 'October 2024' },
-        { recipient: 'Royal Winnipeg Ballet', amount: '$54 Million', purpose: 'Performing arts and dance education', date: 'September 2024' },
-        { recipient: 'National Gallery of Canada', amount: '$45 Million', purpose: 'Art acquisition and exhibition programs', date: 'August 2024' },
-        { recipient: 'Sport Canada - Own the Podium', amount: '$38 Million', purpose: 'Olympic and Paralympic athlete funding', date: 'July 2024' },
-        { recipient: 'Canada Science and Technology Museum', amount: '$29 Million', purpose: 'STEM education and public programming', date: 'June 2024' },
-        { recipient: 'Fédération canadienne-française de l\'Ontario', amount: '$24 Million', purpose: 'Francophone minority community support', date: 'May 2024' },
-        { recipient: 'Canadian Museum of History', amount: '$18 Million', purpose: 'Heritage preservation and public exhibits', date: 'April 2024' }
+        { recipient: 'Canada Council for the Arts', amount: '$195 Million', purpose: 'Grants to artists, musicians, and cultural organizations', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'National Film Board of Canada', amount: '$142 Million', purpose: 'Documentary and animation film production', date: 'January 2025', type: 'contract' },
+        { recipient: 'Canadian Broadcasting Corporation (CBC)', amount: '$118 Million', purpose: 'Public broadcasting and Canadian content', date: 'December 2024', type: 'grant' },
+        { recipient: 'Telefilm Canada', amount: '$98 Million', purpose: 'Film and television production funding', date: 'November 2024', type: 'grant' },
+        { recipient: 'Canada Music Fund', amount: '$76 Million', purpose: 'Support for Canadian musicians and music industry', date: 'October 2024', type: 'grant' },
+        { recipient: 'Royal Winnipeg Ballet', amount: '$54 Million', purpose: 'Performing arts and dance education', date: 'September 2024', type: 'grant' },
+        { recipient: 'National Gallery of Canada', amount: '$45 Million', purpose: 'Art acquisition and exhibition programs', date: 'August 2024', type: 'grant' },
+        { recipient: 'Sport Canada - Own the Podium', amount: '$38 Million', purpose: 'Olympic and Paralympic athlete funding', date: 'July 2024', type: 'grant' },
+        { recipient: 'Canada Science and Technology Museum', amount: '$29 Million', purpose: 'STEM education and public programming', date: 'June 2024', type: 'grant' },
+        { recipient: 'Fédération canadienne-française de l\'Ontario', amount: '$24 Million', purpose: 'Francophone minority community support', date: 'May 2024', type: 'grant' },
+        { recipient: 'Canadian Museum of History', amount: '$18 Million', purpose: 'Heritage preservation and public exhibits', date: 'April 2024', type: 'grant' }
       ],
       approveVotes: 267,
       disapproveVotes: 245,
@@ -1732,11 +1732,11 @@ function App() {
         description: 'Advancing U.S. foreign policy and diplomacy worldwide',
         responsibilities: ['Foreign affairs', 'Diplomacy', 'International development', 'Consular services'],
         grantsDetail: [
-          { recipient: 'USAID - Global Health Programs', amount: '$8.2 Billion', purpose: 'HIV/AIDS prevention and global health initiatives', date: 'Ongoing 2024' },
-          { recipient: 'United Nations Operations', amount: '$3.5 Billion', purpose: 'UN peacekeeping and humanitarian missions', date: 'January 2025' },
-          { recipient: 'NATO Allied Support', amount: '$2.8 Billion', purpose: 'Military cooperation and defense partnerships', date: 'December 2024' },
-          { recipient: 'Middle East Partnership Initiative', amount: '$1.9 Billion', purpose: 'Democracy and economic development in MENA region', date: 'November 2024' },
-          { recipient: 'Millennium Challenge Corporation', amount: '$1.2 Billion', purpose: 'Economic growth in developing countries', date: 'October 2024' }
+          { recipient: 'USAID - Global Health Programs', amount: '$8.2 Billion', purpose: 'HIV/AIDS prevention and global health initiatives', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'United Nations Operations', amount: '$3.5 Billion', purpose: 'UN peacekeeping and humanitarian missions', date: 'January 2025', type: 'grant' },
+          { recipient: 'NATO Allied Support', amount: '$2.8 Billion', purpose: 'Military cooperation and defense partnerships', date: 'December 2024', type: 'grant' },
+          { recipient: 'Middle East Partnership Initiative', amount: '$1.9 Billion', purpose: 'Democracy and economic development in MENA region', date: 'November 2024', type: 'grant' },
+          { recipient: 'Millennium Challenge Corporation', amount: '$1.2 Billion', purpose: 'Economic growth in developing countries', date: 'October 2024', type: 'grant' }
         ],
         approveVotes: 3421,
         disapproveVotes: 2876,
@@ -1753,11 +1753,11 @@ function App() {
         description: 'Managing federal finances, economic policy, and debt obligations',
         responsibilities: ['Economic policy', 'Tax collection (IRS)', 'Federal debt management', 'Currency production'],
         grantsDetail: [
-          { recipient: 'Federal Debt Interest Payments', amount: '$658 Billion', purpose: 'Interest on $34 trillion national debt', date: 'Ongoing 2024' },
-          { recipient: 'Community Development Financial Institutions', amount: '$85 Billion', purpose: 'Loans to underserved communities', date: 'January 2025' },
-          { recipient: 'Emergency Rental Assistance Program', amount: '$48 Billion', purpose: 'COVID-19 rental assistance', date: 'December 2024' },
-          { recipient: 'Small Business Administration Loans', amount: '$42 Billion', purpose: 'Small business financing and disaster relief', date: 'November 2024' },
-          { recipient: 'State and Local Fiscal Recovery', amount: '$35 Billion', purpose: 'Infrastructure and public services funding', date: 'October 2024' }
+          { recipient: 'Federal Debt Interest Payments', amount: '$658 Billion', purpose: 'Interest on $34 trillion national debt', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'Community Development Financial Institutions', amount: '$85 Billion', purpose: 'Loans to underserved communities', date: 'January 2025', type: 'grant' },
+          { recipient: 'Emergency Rental Assistance Program', amount: '$48 Billion', purpose: 'COVID-19 rental assistance', date: 'December 2024', type: 'grant' },
+          { recipient: 'Small Business Administration Loans', amount: '$42 Billion', purpose: 'Small business financing and disaster relief', date: 'November 2024', type: 'grant' },
+          { recipient: 'State and Local Fiscal Recovery', amount: '$35 Billion', purpose: 'Infrastructure and public services funding', date: 'October 2024', type: 'grant' }
         ],
         approveVotes: 2945,
         disapproveVotes: 3821,
@@ -1774,13 +1774,13 @@ function App() {
         description: 'National defense and military operations worldwide',
         responsibilities: ['Military operations', 'National security', 'Defense research', 'Veterans support'],
         grantsDetail: [
-          { recipient: 'Lockheed Martin Corporation', amount: '$75 Billion', purpose: 'F-35 fighter jets, missiles, and defense systems', date: 'Ongoing 2024' },
-          { recipient: 'Boeing Defense & Space', amount: '$24 Billion', purpose: 'Aircraft, satellites, and missile defense', date: 'January 2025' },
-          { recipient: 'Raytheon Technologies', amount: '$17 Billion', purpose: 'Missiles, radar systems, and cybersecurity', date: 'December 2024' },
-          { recipient: 'Northrop Grumman', amount: '$13 Billion', purpose: 'B-21 Stealth Bomber and space systems', date: 'November 2024' },
-          { recipient: 'General Dynamics', amount: '$11 Billion', purpose: 'Submarines, tanks, and combat systems', date: 'October 2024' },
-          { recipient: 'BAE Systems USA', amount: '$8.5 Billion', purpose: 'Armored vehicles and naval systems', date: 'September 2024' },
-          { recipient: 'L3Harris Technologies', amount: '$6.2 Billion', purpose: 'Communications and electronic warfare', date: 'August 2024' }
+          { recipient: 'Lockheed Martin Corporation', amount: '$75 Billion', purpose: 'F-35 fighter jets, missiles, and defense systems', date: 'Ongoing 2024', type: 'contract' },
+          { recipient: 'Boeing Defense & Space', amount: '$24 Billion', purpose: 'Aircraft, satellites, and missile defense', date: 'January 2025', type: 'contract' },
+          { recipient: 'Raytheon Technologies', amount: '$17 Billion', purpose: 'Missiles, radar systems, and cybersecurity', date: 'December 2024', type: 'contract' },
+          { recipient: 'Northrop Grumman', amount: '$13 Billion', purpose: 'B-21 Stealth Bomber and space systems', date: 'November 2024', type: 'contract' },
+          { recipient: 'General Dynamics', amount: '$11 Billion', purpose: 'Submarines, tanks, and combat systems', date: 'October 2024', type: 'contract' },
+          { recipient: 'BAE Systems USA', amount: '$8.5 Billion', purpose: 'Armored vehicles and naval systems', date: 'September 2024', type: 'contract' },
+          { recipient: 'L3Harris Technologies', amount: '$6.2 Billion', purpose: 'Communications and electronic warfare', date: 'August 2024', type: 'contract' }
         ],
         approveVotes: 4235,
         disapproveVotes: 2102,
@@ -1797,11 +1797,11 @@ function App() {
         description: 'Federal law enforcement and administration of justice',
         responsibilities: ['FBI operations', 'Federal prosecutions', 'Civil rights enforcement', 'Prison system'],
         grantsDetail: [
-          { recipient: 'FBI Operations & Investigations', amount: '$5.8 Billion', purpose: 'Federal law enforcement and counterterrorism', date: 'Ongoing 2024' },
-          { recipient: 'State and Local Law Enforcement Grants', amount: '$3.2 Billion', purpose: 'Police equipment and training programs', date: 'January 2025' },
-          { recipient: 'Violence Against Women Programs', amount: '$1.8 Billion', purpose: 'Domestic violence prevention and victim services', date: 'December 2024' },
-          { recipient: 'Drug Enforcement Administration', amount: '$1.5 Billion', purpose: 'Combat drug trafficking and opioid crisis', date: 'November 2024' },
-          { recipient: 'Legal Aid for Low-Income Defendants', amount: '$850 Million', purpose: 'Public defender services nationwide', date: 'October 2024' }
+          { recipient: 'FBI Operations & Investigations', amount: '$5.8 Billion', purpose: 'Federal law enforcement and counterterrorism', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'State and Local Law Enforcement Grants', amount: '$3.2 Billion', purpose: 'Police equipment and training programs', date: 'January 2025', type: 'grant' },
+          { recipient: 'Violence Against Women Programs', amount: '$1.8 Billion', purpose: 'Domestic violence prevention and victim services', date: 'December 2024', type: 'grant' },
+          { recipient: 'Drug Enforcement Administration', amount: '$1.5 Billion', purpose: 'Combat drug trafficking and opioid crisis', date: 'November 2024', type: 'grant' },
+          { recipient: 'Legal Aid for Low-Income Defendants', amount: '$850 Million', purpose: 'Public defender services nationwide', date: 'October 2024', type: 'grant' }
         ],
         approveVotes: 3156,
         disapproveVotes: 2734,
@@ -1818,12 +1818,12 @@ function App() {
         description: 'Healthcare, medical research, and social services',
         responsibilities: ['Medicare & Medicaid', 'CDC operations', 'NIH medical research', 'Food and drug safety'],
         grantsDetail: [
-          { recipient: 'Medicare Payments to Healthcare Providers', amount: '$850 Billion', purpose: 'Healthcare for 65+ million seniors', date: 'Ongoing 2024' },
-          { recipient: 'Medicaid State Programs', amount: '$  Billion', purpose: 'Healthcare for low-income Americans', date: 'Ongoing 2024' },
-          { recipient: 'National Institutes of Health (NIH)', amount: '$48 Billion', purpose: 'Medical research and clinical trials', date: 'January 2025' },
-          { recipient: 'Centers for Disease Control (CDC)', amount: '$12 Billion', purpose: 'Disease prevention and public health', date: 'December 2024' },
-          { recipient: 'Johns Hopkins University Medical Research', amount: '$3.2 Billion', purpose: 'Cancer and infectious disease research', date: 'November 2024' },
-          { recipient: 'Mayo Clinic Research Programs', amount: '$1.8 Billion', purpose: 'Clinical research and medical innovation', date: 'October 2024' }
+          { recipient: 'Medicare Payments to Healthcare Providers', amount: '$850 Billion', purpose: 'Healthcare for 65+ million seniors', date: 'Ongoing 2024', type: 'contract' },
+          { recipient: 'Medicaid State Programs', amount: '$  Billion', purpose: 'Healthcare for low-income Americans', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'National Institutes of Health (NIH)', amount: '$48 Billion', purpose: 'Medical research and clinical trials', date: 'January 2025', type: 'grant' },
+          { recipient: 'Centers for Disease Control (CDC)', amount: '$12 Billion', purpose: 'Disease prevention and public health', date: 'December 2024', type: 'grant' },
+          { recipient: 'Johns Hopkins University Medical Research', amount: '$3.2 Billion', purpose: 'Cancer and infectious disease research', date: 'November 2024', type: 'grant' },
+          { recipient: 'Mayo Clinic Research Programs', amount: '$1.8 Billion', purpose: 'Clinical research and medical innovation', date: 'October 2024', type: 'grant' }
         ],
         approveVotes: 3892,
         disapproveVotes: 2456,
@@ -1840,11 +1840,11 @@ function App() {
         description: 'Federal education policy and student financial aid',
         responsibilities: ['Student loans', 'K-12 grants', 'Higher education funding', 'Education research'],
         grantsDetail: [
-          { recipient: 'Pell Grants for College Students', amount: '$28.2 Billion', purpose: 'Financial aid for 6.5 million low-income students', date: 'Ongoing 2024' },
-          { recipient: 'Title I Grants to Schools', amount: '$18.4 Billion', purpose: 'Support for low-income K-12 schools', date: 'January 2025' },
-          { recipient: 'Special Education (IDEA)', amount: '$14.2 Billion', purpose: 'Services for students with disabilities', date: 'December 2024' },
-          { recipient: 'Head Start Early Childhood Programs', amount: '$11.9 Billion', purpose: 'Preschool for low-income children', date: 'November 2024' },
-          { recipient: 'Community Colleges of America', amount: '$4.5 Billion', purpose: 'Workforce training and technical education', date: 'October 2024' }
+          { recipient: 'Pell Grants for College Students', amount: '$28.2 Billion', purpose: 'Financial aid for 6.5 million low-income students', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'Title I Grants to Schools', amount: '$18.4 Billion', purpose: 'Support for low-income K-12 schools', date: 'January 2025', type: 'grant' },
+          { recipient: 'Special Education (IDEA)', amount: '$14.2 Billion', purpose: 'Services for students with disabilities', date: 'December 2024', type: 'grant' },
+          { recipient: 'Head Start Early Childhood Programs', amount: '$11.9 Billion', purpose: 'Preschool for low-income children', date: 'November 2024', type: 'grant' },
+          { recipient: 'Community Colleges of America', amount: '$4.5 Billion', purpose: 'Workforce training and technical education', date: 'October 2024', type: 'grant' }
         ],
         approveVotes: 3234,
         disapproveVotes: 2987,
@@ -1861,11 +1861,11 @@ function App() {
         description: 'Healthcare and benefits for military veterans',
         responsibilities: ['VA hospitals', 'Disability compensation', 'GI Bill education', 'Veterans pensions'],
         grantsDetail: [
-          { recipient: 'VA Medical Centers Nationwide', amount: '$85 Billion', purpose: 'Healthcare for 9 million veterans', date: 'Ongoing 2024' },
-          { recipient: 'Disability Compensation Payments', amount: '$118 Billion', purpose: 'Monthly payments to 5.2 million disabled veterans', date: 'Ongoing 2024' },
-          { recipient: 'GI Bill Education Benefits', amount: '$14.5 Billion', purpose: 'College tuition for veterans and families', date: 'January 2025' },
-          { recipient: 'Homeless Veterans Support Programs', amount: '$2.8 Billion', purpose: 'Housing and job training for homeless vets', date: 'December 2024' },
-          { recipient: 'Veterans Crisis Line & Mental Health', amount: '$1.9 Billion', purpose: 'PTSD treatment and suicide prevention', date: 'November 2024' }
+          { recipient: 'VA Medical Centers Nationwide', amount: '$85 Billion', purpose: 'Healthcare for 9 million veterans', date: 'Ongoing 2024', type: 'contract' },
+          { recipient: 'Disability Compensation Payments', amount: '$118 Billion', purpose: 'Monthly payments to 5.2 million disabled veterans', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'GI Bill Education Benefits', amount: '$14.5 Billion', purpose: 'College tuition for veterans and families', date: 'January 2025', type: 'grant' },
+          { recipient: 'Homeless Veterans Support Programs', amount: '$2.8 Billion', purpose: 'Housing and job training for homeless vets', date: 'December 2024', type: 'grant' },
+          { recipient: 'Veterans Crisis Line & Mental Health', amount: '$1.9 Billion', purpose: 'PTSD treatment and suicide prevention', date: 'November 2024', type: 'grant' }
         ],
         approveVotes: 4892,
         disapproveVotes: 1245,
@@ -1882,11 +1882,11 @@ function App() {
         description: 'Border security, immigration, and disaster response',
         responsibilities: ['Border protection', 'TSA airport security', 'FEMA disaster relief', 'Secret Service'],
         grantsDetail: [
-          { recipient: 'FEMA Disaster Relief Fund', amount: '$12.3 Billion', purpose: 'Hurricane, wildfire, and flood recovery', date: 'Ongoing 2024' },
-          { recipient: 'Customs and Border Protection', amount: '$5.8 Billion', purpose: 'Border wall, agents, and technology', date: 'January 2025' },
-          { recipient: 'State Homeland Security Grants', amount: '$3.2 Billion', purpose: 'State and local emergency preparedness', date: 'December 2024' },
-          { recipient: 'Immigration and Customs Enforcement', amount: '$2.1 Billion', purpose: 'Immigration enforcement and detention', date: 'November 2024' },
-          { recipient: 'Cybersecurity and Infrastructure Security Agency', amount: '$1.8 Billion', purpose: 'Protect critical infrastructure from cyber attacks', date: 'October 2024' }
+          { recipient: 'FEMA Disaster Relief Fund', amount: '$12.3 Billion', purpose: 'Hurricane, wildfire, and flood recovery', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'Customs and Border Protection', amount: '$5.8 Billion', purpose: 'Border wall, agents, and technology', date: 'January 2025', type: 'contract' },
+          { recipient: 'State Homeland Security Grants', amount: '$3.2 Billion', purpose: 'State and local emergency preparedness', date: 'December 2024', type: 'grant' },
+          { recipient: 'Immigration and Customs Enforcement', amount: '$2.1 Billion', purpose: 'Immigration enforcement and detention', date: 'November 2024', type: 'grant' },
+          { recipient: 'Cybersecurity and Infrastructure Security Agency', amount: '$1.8 Billion', purpose: 'Protect critical infrastructure from cyber attacks', date: 'October 2024', type: 'grant' }
         ],
         approveVotes: 2934,
         disapproveVotes: 3421,
@@ -1903,11 +1903,11 @@ function App() {
         description: 'Infrastructure, highways, aviation, and public transit',
         responsibilities: ['Highway funding', 'FAA aviation safety', 'Public transit', 'Rail infrastructure'],
         grantsDetail: [
-          { recipient: 'State Highway Infrastructure Grants', amount: '$52.5 Billion', purpose: 'Road, bridge, and highway construction', date: 'Ongoing 2024' },
-          { recipient: 'Federal Transit Administration', amount: '$18.2 Billion', purpose: 'Subway, bus, and light rail systems', date: 'January 2025' },
-          { recipient: 'Amtrak National Rail Service', amount: '$4.9 Billion', purpose: 'Passenger rail operations and upgrades', date: 'December 2024' },
-          { recipient: 'Airport Improvement Program', amount: '$3.8 Billion', purpose: 'Runway and terminal modernization', date: 'November 2024' },
-          { recipient: 'Port Infrastructure Development', amount: '$2.4 Billion', purpose: 'Seaport upgrades and cargo capacity', date: 'October 2024' }
+          { recipient: 'State Highway Infrastructure Grants', amount: '$52.5 Billion', purpose: 'Road, bridge, and highway construction', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'Federal Transit Administration', amount: '$18.2 Billion', purpose: 'Subway, bus, and light rail systems', date: 'January 2025', type: 'grant' },
+          { recipient: 'Amtrak National Rail Service', amount: '$4.9 Billion', purpose: 'Passenger rail operations and upgrades', date: 'December 2024', type: 'grant' },
+          { recipient: 'Airport Improvement Program', amount: '$3.8 Billion', purpose: 'Runway and terminal modernization', date: 'November 2024', type: 'grant' },
+          { recipient: 'Port Infrastructure Development', amount: '$2.4 Billion', purpose: 'Seaport upgrades and cargo capacity', date: 'October 2024', type: 'grant' }
         ],
         approveVotes: 3567,
         disapproveVotes: 2234,
@@ -1924,11 +1924,11 @@ function App() {
         description: 'Energy policy, nuclear security, and scientific research',
         responsibilities: ['Nuclear weapons', 'Energy research', 'Grid modernization', 'National labs'],
         grantsDetail: [
-          { recipient: 'National Nuclear Security Administration', amount: '$21.4 Billion', purpose: 'Nuclear weapons maintenance and security', date: 'Ongoing 2024' },
-          { recipient: 'Clean Energy Investment Tax Credits', amount: '$12.8 Billion', purpose: 'Solar, wind, and renewable energy projects', date: 'January 2025' },
-          { recipient: 'Lawrence Livermore National Laboratory', amount: '$2.9 Billion', purpose: 'Nuclear fusion and weapons research', date: 'December 2024' },
-          { recipient: 'Brookhaven National Laboratory', amount: '$1.8 Billion', purpose: 'Particle physics and energy science', date: 'November 2024' },
-          { recipient: 'Electric Vehicle Charging Infrastructure', amount: '$1.5 Billion', purpose: 'EV charging stations nationwide', date: 'October 2024' }
+          { recipient: 'National Nuclear Security Administration', amount: '$21.4 Billion', purpose: 'Nuclear weapons maintenance and security', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'Clean Energy Investment Tax Credits', amount: '$12.8 Billion', purpose: 'Solar, wind, and renewable energy projects', date: 'January 2025', type: 'grant' },
+          { recipient: 'Lawrence Livermore National Laboratory', amount: '$2.9 Billion', purpose: 'Nuclear fusion and weapons research', date: 'December 2024', type: 'contract' },
+          { recipient: 'Brookhaven National Laboratory', amount: '$1.8 Billion', purpose: 'Particle physics and energy science', date: 'November 2024', type: 'contract' },
+          { recipient: 'Electric Vehicle Charging Infrastructure', amount: '$1.5 Billion', purpose: 'EV charging stations nationwide', date: 'October 2024', type: 'contract' }
         ],
         approveVotes: 3234,
         disapproveVotes: 2567,
@@ -1945,11 +1945,11 @@ function App() {
         description: 'Farm policy, food safety, and nutrition programs',
         responsibilities: ['Farm subsidies', 'Food stamps (SNAP)', 'Rural development', 'Food safety inspection'],
         grantsDetail: [
-          { recipient: 'SNAP Food Assistance Program', amount: '$113 Billion', purpose: 'Food stamps for 42 million low-income Americans', date: 'Ongoing 2024' },
-          { recipient: 'Farm Subsidies and Crop Insurance', amount: '$28.5 Billion', purpose: 'Income support for farmers', date: 'January 2025' },
-          { recipient: 'School Lunch and Breakfast Programs', amount: '$20.3 Billion', purpose: 'Free meals for 30 million students', date: 'Ongoing 2024' },
-          { recipient: 'Rural Development Grants', amount: '$3.8 Billion', purpose: 'Infrastructure in rural communities', date: 'December 2024' },
-          { recipient: 'Conservation Reserve Program', amount: '$2.2 Billion', purpose: 'Pay farmers to protect environmentally sensitive land', date: 'November 2024' }
+          { recipient: 'SNAP Food Assistance Program', amount: '$113 Billion', purpose: 'Food stamps for 42 million low-income Americans', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'Farm Subsidies and Crop Insurance', amount: '$28.5 Billion', purpose: 'Income support for farmers', date: 'January 2025', type: 'grant' },
+          { recipient: 'School Lunch and Breakfast Programs', amount: '$20.3 Billion', purpose: 'Free meals for 30 million students', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'Rural Development Grants', amount: '$3.8 Billion', purpose: 'Infrastructure in rural communities', date: 'December 2024', type: 'grant' },
+          { recipient: 'Conservation Reserve Program', amount: '$2.2 Billion', purpose: 'Pay farmers to protect environmentally sensitive land', date: 'November 2024', type: 'grant' }
         ],
         approveVotes: 3421,
         disapproveVotes: 2678,
@@ -1966,11 +1966,11 @@ function App() {
         description: 'Affordable housing and community development',
         responsibilities: ['Public housing', 'Rent assistance', 'Homelessness programs', 'Fair housing enforcement'],
         grantsDetail: [
-          { recipient: 'Section 8 Housing Choice Vouchers', amount: '$31.5 Billion', purpose: 'Rent assistance for 2.3 million low-income families', date: 'Ongoing 2024' },
-          { recipient: 'Public Housing Operating Fund', amount: '$8.2 Billion', purpose: 'Maintain 1 million public housing units', date: 'January 2025' },
-          { recipient: 'Community Development Block Grants', amount: '$5.4 Billion', purpose: 'Local infrastructure and housing projects', date: 'December 2024' },
-          { recipient: 'Homeless Assistance Grants', amount: '$3.6 Billion', purpose: 'Emergency shelters and transitional housing', date: 'November 2024' },
-          { recipient: 'FHA Mortgage Insurance Program', amount: '$2.8 Billion', purpose: 'First-time homebuyer assistance', date: 'October 2024' }
+          { recipient: 'Section 8 Housing Choice Vouchers', amount: '$31.5 Billion', purpose: 'Rent assistance for 2.3 million low-income families', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'Public Housing Operating Fund', amount: '$8.2 Billion', purpose: 'Maintain 1 million public housing units', date: 'January 2025', type: 'grant' },
+          { recipient: 'Community Development Block Grants', amount: '$5.4 Billion', purpose: 'Local infrastructure and housing projects', date: 'December 2024', type: 'grant' },
+          { recipient: 'Homeless Assistance Grants', amount: '$3.6 Billion', purpose: 'Emergency shelters and transitional housing', date: 'November 2024', type: 'grant' },
+          { recipient: 'FHA Mortgage Insurance Program', amount: '$2.8 Billion', purpose: 'First-time homebuyer assistance', date: 'October 2024', type: 'grant' }
         ],
         approveVotes: 3234,
         disapproveVotes: 2892,
@@ -1987,11 +1987,11 @@ function App() {
         description: 'National parks, public lands, and natural resources',
         responsibilities: ['National Parks Service', 'Bureau of Land Management', 'U.S. Geological Survey', 'Indian Affairs'],
         grantsDetail: [
-          { recipient: 'National Park Service Operations', amount: '$3.8 Billion', purpose: 'Maintain 423 national park sites', date: 'Ongoing 2024' },
-          { recipient: 'Bureau of Indian Affairs', amount: '$3.2 Billion', purpose: 'Services for 574 federally recognized tribes', date: 'January 2025' },
-          { recipient: 'Land and Water Conservation Fund', amount: '$1.9 Billion', purpose: 'Acquire and protect public lands', date: 'December 2024' },
-          { recipient: 'U.S. Geological Survey Research', amount: '$1.4 Billion', purpose: 'Earthquake monitoring and natural resource mapping', date: 'November 2024' },
-          { recipient: 'Wildlife Restoration Programs', amount: '$850 Million', purpose: 'Endangered species protection', date: 'October 2024' }
+          { recipient: 'National Park Service Operations', amount: '$3.8 Billion', purpose: 'Maintain 423 national park sites', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'Bureau of Indian Affairs', amount: '$3.2 Billion', purpose: 'Services for 574 federally recognized tribes', date: 'January 2025', type: 'grant' },
+          { recipient: 'Land and Water Conservation Fund', amount: '$1.9 Billion', purpose: 'Acquire and protect public lands', date: 'December 2024', type: 'grant' },
+          { recipient: 'U.S. Geological Survey Research', amount: '$1.4 Billion', purpose: 'Earthquake monitoring and natural resource mapping', date: 'November 2024', type: 'grant' },
+          { recipient: 'Wildlife Restoration Programs', amount: '$850 Million', purpose: 'Endangered species protection', date: 'October 2024', type: 'grant' }
         ],
         approveVotes: 3678,
         disapproveVotes: 2145,
@@ -2008,11 +2008,11 @@ function App() {
         description: 'Workers\' rights, unemployment insurance, and job training',
         responsibilities: ['OSHA safety enforcement', 'Unemployment insurance', 'Wage and hour standards', 'Job training programs'],
         grantsDetail: [
-          { recipient: 'State Unemployment Insurance Programs', amount: '$4.2 Billion', purpose: 'Administer unemployment benefits', date: 'Ongoing 2024' },
-          { recipient: 'Workforce Innovation and Opportunity Act', amount: '$2.8 Billion', purpose: 'Job training for displaced workers', date: 'January 2025' },
-          { recipient: 'OSHA Workplace Safety Enforcement', amount: '$685 Million', purpose: 'Prevent workplace injuries and deaths', date: 'December 2024' },
-          { recipient: 'Apprenticeship Programs', amount: '$425 Million', purpose: 'Skilled trades training', date: 'November 2024' },
-          { recipient: 'Mine Safety and Health Administration', amount: '$385 Million', purpose: 'Coal and metal mine safety inspections', date: 'October 2024' }
+          { recipient: 'State Unemployment Insurance Programs', amount: '$4.2 Billion', purpose: 'Administer unemployment benefits', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'Workforce Innovation and Opportunity Act', amount: '$2.8 Billion', purpose: 'Job training for displaced workers', date: 'January 2025', type: 'grant' },
+          { recipient: 'OSHA Workplace Safety Enforcement', amount: '$685 Million', purpose: 'Prevent workplace injuries and deaths', date: 'December 2024', type: 'grant' },
+          { recipient: 'Apprenticeship Programs', amount: '$425 Million', purpose: 'Skilled trades training', date: 'November 2024', type: 'grant' },
+          { recipient: 'Mine Safety and Health Administration', amount: '$385 Million', purpose: 'Coal and metal mine safety inspections', date: 'October 2024', type: 'grant' }
         ],
         approveVotes: 3156,
         disapproveVotes: 2734,
@@ -2029,11 +2029,11 @@ function App() {
         description: 'Economic growth, trade, and technology development',
         responsibilities: ['Census Bureau', 'Patent office', 'NOAA weather service', 'International trade'],
         grantsDetail: [
-          { recipient: 'NOAA Weather and Climate Services', amount: '$6.9 Billion', purpose: 'Weather forecasting and climate research', date: 'Ongoing 2024' },
-          { recipient: 'Census Bureau Operations', amount: '$1.6 Billion', purpose: 'Population data collection and analysis', date: 'January 2025' },
-          { recipient: 'Economic Development Administration', amount: '$850 Million', purpose: 'Grants for economically distressed communities', date: 'December 2024' },
-          { recipient: 'National Institute of Standards & Technology', amount: '$625 Million', purpose: 'Measurement science and technology standards', date: 'November 2024' },
-          { recipient: 'Minority Business Development Agency', amount: '$115 Million', purpose: 'Support minority-owned businesses', date: 'October 2024' }
+          { recipient: 'NOAA Weather and Climate Services', amount: '$6.9 Billion', purpose: 'Weather forecasting and climate research', date: 'Ongoing 2024', type: 'grant' },
+          { recipient: 'Census Bureau Operations', amount: '$1.6 Billion', purpose: 'Population data collection and analysis', date: 'January 2025', type: 'grant' },
+          { recipient: 'Economic Development Administration', amount: '$850 Million', purpose: 'Grants for economically distressed communities', date: 'December 2024', type: 'grant' },
+          { recipient: 'National Institute of Standards & Technology', amount: '$625 Million', purpose: 'Measurement science and technology standards', date: 'November 2024', type: 'grant' },
+          { recipient: 'Minority Business Development Agency', amount: '$115 Million', purpose: 'Support minority-owned businesses', date: 'October 2024', type: 'grant' }
         ],
         approveVotes: 3045,
         disapproveVotes: 2567,
@@ -4110,8 +4110,15 @@ function App() {
                       <div key={index} className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                           <div className="flex-1">
-                            <h4 className="text-lg font-bold text-gray-800">{grant.recipient}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{grant.purpose}</p>
+                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                              <h4 className="text-lg font-bold text-gray-800">{grant.recipient}</h4>
+                              {grant.type && (
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${grant.type === 'contract' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                  {grant.type === 'contract' ? 'Contract' : 'Grant'}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{grant.purpose}</p>
                           </div>
                           <div className="text-right sm:text-right flex-shrink-0">
                             <p className="text-2xl font-bold text-green-600">{grant.amount}</p>
@@ -12581,8 +12588,15 @@ function App() {
                       <div key={index} className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                           <div className="flex-1">
-                            <h4 className="text-lg font-bold text-gray-800">{grant.recipient}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{grant.purpose}</p>
+                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                              <h4 className="text-lg font-bold text-gray-800">{grant.recipient}</h4>
+                              {grant.type && (
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${grant.type === 'contract' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                  {grant.type === 'contract' ? 'Contract' : 'Grant'}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{grant.purpose}</p>
                           </div>
                           <div className="text-right sm:text-right flex-shrink-0">
                             <p className="text-2xl font-bold text-green-600">{grant.amount}</p>
