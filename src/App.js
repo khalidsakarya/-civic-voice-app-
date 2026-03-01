@@ -8263,58 +8263,30 @@ function App() {
             <p className="text-sm text-gray-400 mt-1">Source: {data.source}</p>
           </div>
 
-          {/* Tab navigation */}
-          <div className="flex gap-1 bg-gray-200 rounded-xl p-1 mb-8 w-fit">
-            <button
-              onClick={() => setFinancialDashTab('overview')}
-              className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                financialDashTab === 'overview'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              📊 Overview
-            </button>
-            <button
-              onClick={() => setFinancialDashTab('money-flow')}
-              className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                financialDashTab === 'money-flow'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              💸 Money Flow
-            </button>
-            <button
-              onClick={() => setFinancialDashTab('programs')}
-              className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                financialDashTab === 'programs'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              🏛️ Programs
-            </button>
-            <button
-              onClick={() => setFinancialDashTab('audit')}
-              className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                financialDashTab === 'audit'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              🔍 Audit
-            </button>
-            <button
-              onClick={() => setFinancialDashTab('results')}
-              className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                financialDashTab === 'results'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              ✅ Results
-            </button>
+          {/* Tab navigation — scrollable on mobile, icon + label stacked */}
+          <div className="w-full overflow-x-auto mb-8" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="flex gap-1 bg-gray-200 rounded-xl p-1 w-max">
+              {[
+                { key: 'overview',   icon: '📊', label: 'Overview'   },
+                { key: 'money-flow', icon: '💸', label: 'Money Flow' },
+                { key: 'programs',   icon: '🏛️', label: 'Programs'   },
+                { key: 'audit',      icon: '🔍', label: 'Audit'      },
+                { key: 'results',    icon: '✅', label: 'Results'    },
+              ].map(({ key, icon, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setFinancialDashTab(key)}
+                  className={`flex flex-col items-center flex-shrink-0 px-5 py-3 rounded-lg transition-all gap-1 ${
+                    financialDashTab === key
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <span className="text-xl leading-none">{icon}</span>
+                  <span className="text-xs font-semibold whitespace-nowrap">{label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* ── OVERVIEW TAB ── */}
