@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2 } from 'lucide-react';
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import './App.css';
 
@@ -5286,9 +5286,10 @@ function App() {
                     setSelectedBill(bill);
                     setView('us-bill-detail');
                   }}
-                  className="card-gradient rounded-2xl shadow-elegant-lg p-6 border-2 border-white/50 hover-lift interactive-card animate-scale-in"
+                  className="relative card-gradient rounded-2xl shadow-elegant-lg p-6 border-2 border-white/50 hover-lift interactive-card animate-scale-in"
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
+                <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 p-1.5 text-gray-400 hover:text-gray-700 hover:bg-white/60 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
@@ -8665,10 +8666,11 @@ function App() {
                   const sev = severityStyles[f.severity] || severityStyles.medium;
                   const isExpanded = expandedAuditFinding === f.id;
                   return (
-                    <div key={f.id} className={`bg-white rounded-xl shadow-sm border-l-4 ${sev.border} overflow-hidden`}>
+                    <div key={f.id} className={`relative bg-white rounded-xl shadow-sm border-l-4 ${sev.border} overflow-hidden`}>
+                      <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 z-10 p-1.5 text-gray-300 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
                       <button
                         onClick={() => setExpandedAuditFinding(isExpanded ? null : f.id)}
-                        className="w-full text-left p-5"
+                        className="w-full text-left p-5 pr-12"
                       >
                         <div className="flex items-start justify-between gap-3 mb-2">
                           <h3 className="font-bold text-gray-900 text-sm leading-tight">{f.title}</h3>
@@ -9435,8 +9437,9 @@ function App() {
                         setView('member-detail');
                       }
                     }}
-                    className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
+                    className="relative bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
                   >
+                    <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 p-1.5 text-gray-300 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
                     <div style={{backgroundColor: getPartyColor(mp.party)}} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4">
                       {mp.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                     </div>
@@ -9545,8 +9548,9 @@ function App() {
             {bills.map(bill => (
               <div
                 key={bill.id}
-                className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
+                className="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
               >
+                <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 p-1.5 text-gray-300 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -9861,8 +9865,9 @@ function App() {
               <div
                 key={eo.number}
                 onClick={() => setSelectedEO(eo)}
-                className="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-red-300 transition-all"
+                className="relative bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-red-300 transition-all"
               >
+                <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 p-1.5 text-gray-300 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full flex-shrink-0">{eo.number}</span>
                   <span className="text-xs text-gray-400 flex-shrink-0">{eo.date}</span>
@@ -10068,8 +10073,9 @@ function App() {
               <div
                 key={bill.id}
                 onClick={() => setSelectedPresidentBill(bill)}
-                className="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all"
+                className="relative bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all"
               >
+                <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 p-1.5 text-gray-300 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <span className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full flex-shrink-0">{bill.number}</span>
                   <span className="text-xs text-gray-400 flex-shrink-0">{bill.passedDate}</span>
@@ -10497,12 +10503,13 @@ function App() {
                   bills.slice(0, 5).map(bill => (
                     <div
                       key={bill.id}
-                      className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-green-500 cursor-pointer"
+                      className="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-green-500 cursor-pointer"
                       onClick={() => {
                         setSelectedBill(bill);
                         setView('bill-detail');
                       }}
                     >
+                      <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 p-1.5 text-gray-300 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
                       <div className="p-6">
                         <div className="flex items-center gap-3 mb-3">
                           <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
