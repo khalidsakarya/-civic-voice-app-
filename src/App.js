@@ -466,6 +466,7 @@ function App() {
   const [grantsSearch, setGrantsSearch] = useState('');
   const [showLeaderPanel, setShowLeaderPanel] = useState(false);
   const [selectedLeader, setSelectedLeader] = useState(null);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   // Canadian data
   const [mps, setMps] = useState([]);
@@ -13870,6 +13871,105 @@ function App() {
     );
   };
 
+  const renderDisclaimerModal = () => {
+    const sections = [
+      {
+        title: 'Affiliation',
+        text: 'This application is an independent, non-partisan project. It is not affiliated with, endorsed by, or funded by any government body, political party, candidate, lobby group, or advocacy organization in Canada or the United States.'
+      },
+      {
+        title: 'Sources & Data',
+        text: 'Information is sourced from publicly available government records, official open-data portals, and legislative databases. Where live API data is unavailable, figures are statistically modelled or illustratively estimated for educational purposes. Sources include Parliament of Canada, the Library of Congress, and similar public databases.'
+      },
+      {
+        title: 'AI-Generated Summaries',
+        text: 'Some content is generated or summarized using artificial intelligence tools. AI-generated summaries may contain errors, omissions, or mischaracterizations and should not be relied upon as authoritative statements of fact. Users are encouraged to verify information against primary sources before citing or acting on it.'
+      },
+      {
+        title: 'Informational Purpose Only',
+        text: 'All content is provided for general informational and educational purposes only. Nothing on this platform constitutes legal, financial, investment, tax, or political advice of any kind. Consult qualified professionals before making decisions based on any information presented here.'
+      },
+      {
+        title: 'User Votes & Ratings',
+        text: 'Approval ratings, disapproval counts, and other vote metrics shown in this application are informal, non-scientific polls collected within this app only. They do not represent public opinion surveys, electoral results, or any statistically valid measure of public sentiment, and carry no legal or official significance.'
+      },
+      {
+        title: 'No Political Advocacy',
+        text: 'This platform does not endorse, promote, or oppose any political party, candidate, government policy, or ideology. Descriptions of legislation, programs, and government activities are intended to be neutral and factual. Any perceived bias is unintentional and we welcome corrections.'
+      },
+      {
+        title: 'Data Interpretation',
+        text: 'Financial figures, budget amounts, grant values, and contract numbers may differ from official government publications due to rounding, reporting period differences, currency conversion, or illustrative modelling. Always refer to official government budget documents and public accounts for authoritative figures.'
+      },
+      {
+        title: 'Accuracy & Completeness',
+        text: 'While every effort is made to ensure information is accurate and current, we make no warranties or representations regarding completeness, reliability, or fitness for a particular purpose. Information may be out of date, incomplete, or subject to change without notice. We accept no liability for decisions made based on content displayed here.'
+      },
+      {
+        title: 'Privacy',
+        text: 'This application does not collect, store, or transmit personally identifiable information. User votes and in-app interactions are stored locally on your device and are not shared with third parties. No account registration is required to use this platform.'
+      },
+      {
+        title: 'Copyright & Attribution',
+        text: 'Government records, legislative text, and official data reproduced here are in the public domain or used under open government licence. Original platform content, design, and commentary are the property of the creators. Unauthorized commercial reproduction or redistribution is prohibited.'
+      },
+      {
+        title: 'Jurisdiction',
+        text: 'This platform covers the federal governments of Canada and the United States of America. Provincial, territorial, and state-level information is included where available but is not comprehensively covered. Information may not apply in full to sub-national jurisdictions.'
+      },
+      {
+        title: 'Contact & Corrections',
+        text: 'If you believe any information displayed is inaccurate, outdated, or misleading, we welcome corrections and feedback from the public, researchers, journalists, and government representatives. Factual errors will be reviewed and corrected promptly upon verification.'
+      },
+    ];
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
+        style={{ background: 'rgba(0,0,0,0.55)' }}
+        onClick={(e) => { if (e.target === e.currentTarget) setShowDisclaimer(false); }}
+      >
+        <div className="relative bg-white w-full max-w-lg mx-4 my-8 rounded-2xl shadow-2xl animate-fade-in">
+          {/* Sticky header */}
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-6 py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
+            <div>
+              <h2 className="font-bold text-gray-900 text-lg leading-tight">Disclaimer</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Please read before using this platform</p>
+            </div>
+            <button
+              onClick={() => setShowDisclaimer(false)}
+              className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0 ml-4"
+              aria-label="Close disclaimer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Scrollable sections */}
+          <div className="px-6 py-5 space-y-5">
+            {sections.map(({ title, text }, i) => (
+              <div key={title} className="pb-5 border-b border-gray-100 last:border-0 last:pb-0">
+                <h3 className="font-bold text-gray-800 text-sm mb-1.5">
+                  <span className="text-gray-400 font-normal mr-1">{i + 1}.</span>{title}
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{text}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Sticky close footer */}
+          <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 rounded-b-2xl">
+            <button
+              onClick={() => setShowDisclaimer(false)}
+              className="w-full bg-gray-900 hover:bg-gray-700 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="App smooth-scroll">
       <style>{customStyles}</style>
@@ -13958,6 +14058,19 @@ function App() {
 
       {/* Leader profile panel */}
       {showLeaderPanel && selectedLeader && renderLeaderPanel()}
+
+      {/* Disclaimer modal */}
+      {showDisclaimer && renderDisclaimerModal()}
+
+      {/* Global footer */}
+      <footer className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 py-2 text-center">
+        <button
+          onClick={() => setShowDisclaimer(true)}
+          className="text-xs text-gray-400 hover:text-gray-700 transition-colors underline underline-offset-2"
+        >
+          Disclaimer
+        </button>
+      </footer>
     </div>
   );
 }
