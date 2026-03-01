@@ -8150,6 +8150,16 @@ function App() {
               { id: 'federal-property',     title: 'Federal Real Property Utilisation and Disposal',         auditBody: 'Government Accountability Office (GAO)',                          date: 'May 2024',      severity: 'low',    status: 'open',     description: 'Audit identified approximately 7,700 underutilised federal properties with insufficient maintenance planning and no coordinated disposal strategy to reduce ongoing carrying costs.' },
             ],
           },
+          results: [
+            { id: 'affordable-housing',  program: 'Affordable Housing Production',      goal: '500,000 new affordable units by 2030',        result: '287,000 units built as of FY2024',         achievedPct: 57,  status: 'delayed'   },
+            { id: 'job-creation',        program: 'Infrastructure Job Creation',         goal: '2,000,000 jobs supported',                    result: '1,800,000 jobs created',                   achievedPct: 90,  status: 'on-track'  },
+            { id: 'broadband',           program: 'National Broadband Expansion',        goal: '100% household broadband coverage by 2030',   result: '67% of households covered',                achievedPct: 67,  status: 'delayed'   },
+            { id: 'ev-charging',         program: 'EV Charging Network Deployment',      goal: '500,000 public chargers by 2030',             result: '192,000 chargers installed',               achievedPct: 38,  status: 'delayed'   },
+            { id: 'renewables',          program: 'Renewable Energy Share',              goal: '30% electricity from renewables by 2030',     result: '24% achieved in 2024',                     achievedPct: 80,  status: 'on-track'  },
+            { id: 'bridge-repair',       program: 'Bridge & Road Repair Program',        goal: '10,000 bridges repaired',                     result: '8,200 bridges completed',                  achievedPct: 82,  status: 'on-track'  },
+            { id: 'student-relief',      program: 'Student Loan Debt Relief',            goal: '$430B in targeted forgiveness',               result: '$175B in relief approved',                 achievedPct: 41,  status: 'delayed'   },
+            { id: 'veterans-healthcare', program: 'Veterans Healthcare Access',          goal: '2,000,000 veterans served annually',          result: '2,100,000 veterans served in FY2024',      achievedPct: 105, status: 'completed' },
+          ],
         }
       : {
           totalBudget: '$534.8 Billion',
@@ -8203,6 +8213,16 @@ function App() {
               { id: 'ei-automation',        title: 'Employment Insurance Automated Decision Accuracy',      auditBody: 'Office of the Auditor General (OAG)',                             date: 'September 2024',severity: 'low',    status: 'open',     description: 'Audit identified that automated eligibility processing in the Employment Insurance system generated decision errors in a subset of claims, with insufficient manual review mechanisms to identify system-generated mistakes.' },
             ],
           },
+          results: [
+            { id: 'indigenous-housing',  program: 'Indigenous On-Reserve Housing',       goal: '100,000 new housing units by 2030',           result: '61,000 units completed',                   achievedPct: 61,  status: 'delayed'   },
+            { id: 'indigenous-students', program: 'Indigenous Student Support',          goal: '50,000 students supported annually',          result: '43,000 students supported',                achievedPct: 86,  status: 'on-track'  },
+            { id: 'dental-enrollment',   program: 'Dental Care Plan Enrollment',         goal: '9,000,000 eligible Canadians enrolled',       result: '2,700,000 Canadians enrolled',             achievedPct: 30,  status: 'delayed'   },
+            { id: 'childcare-spaces',    program: 'Regulated Child Care Spaces',         goal: '250,000 new licensed spaces by 2026',         result: '143,000 spaces created',                   achievedPct: 57,  status: 'delayed'   },
+            { id: 'water-advisories',    program: 'Drinking Water Advisories on Reserves',goal: 'Zero long-term advisories on reserves',      result: '138 of 166 long-term advisories lifted',   achievedPct: 83,  status: 'on-track'  },
+            { id: 'childcare-fee',       program: '$10/Day Child Care Rollout',           goal: 'All 10 provinces at $10/day fee',             result: '7 of 10 provinces reached target',         achievedPct: 70,  status: 'on-track'  },
+            { id: 'nato-spending',       program: 'NATO Defence Spending Target',         goal: '2.0% of GDP by 2032',                        result: '1.76% of GDP in FY2024-25',                achievedPct: 88,  status: 'on-track'  },
+            { id: 'ghg-reduction',       program: 'Greenhouse Gas Emissions Reduction',   goal: '40% below 2005 levels by 2030',              result: '9% reduction achieved as of 2024',         achievedPct: 23,  status: 'delayed'   },
+          ],
         };
 
     const eff = data.efficiencyScore;
@@ -8284,6 +8304,16 @@ function App() {
               }`}
             >
               🔍 Audit
+            </button>
+            <button
+              onClick={() => setFinancialDashTab('results')}
+              className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                financialDashTab === 'results'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              ✅ Results
             </button>
           </div>
 
@@ -8663,6 +8693,54 @@ function App() {
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {/* ── Results Tab ── */}
+          {financialDashTab === 'results' && (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-500 mb-2">
+                Measured outcomes against committed targets for key government programs.
+              </p>
+              {data.results.map((r) => {
+                const statusStyles = {
+                  'on-track':  { badge: 'bg-green-100 text-green-700',  label: 'On Track',  bar: '#22c55e' },
+                  'delayed':   { badge: 'bg-yellow-100 text-yellow-700', label: 'Delayed',   bar: '#eab308' },
+                  'completed': { badge: 'bg-blue-100 text-blue-700',    label: 'Completed', bar: '#3b82f6' },
+                };
+                const sta = statusStyles[r.status] || statusStyles['delayed'];
+                const barWidth = Math.min(r.achievedPct, 100);
+                return (
+                  <div key={r.id} className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <h3 className="font-bold text-gray-900 text-sm leading-tight">{r.program}</h3>
+                      <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full flex-shrink-0 ${sta.badge}`}>{sta.label}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-3 text-xs">
+                      <div>
+                        <p className="text-gray-400 mb-0.5">Target Goal</p>
+                        <p className="font-semibold text-gray-700">{r.goal}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 mb-0.5">Actual Result</p>
+                        <p className="font-semibold text-gray-700">{r.result}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs text-gray-400 mb-1">
+                        <span>Progress toward goal</span>
+                        <span className="font-bold" style={{ color: sta.bar }}>{r.achievedPct}%</span>
+                      </div>
+                      <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${barWidth}%`, backgroundColor: sta.bar }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
 
