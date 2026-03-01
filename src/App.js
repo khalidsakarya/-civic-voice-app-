@@ -508,7 +508,7 @@ function App() {
   
   // US Bills filter states
   const [billSearch, setBillSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [billTab, setBillTab] = useState('upcoming'); // upcoming, proposed, voted
   
@@ -3283,7 +3283,6 @@ function App() {
       const result = await response.json();
       
       if (result.success) {
-        console.log(`✅ Loaded ${result.count} MPs`);
         setMps(result.data);
       } else {
         setError('Failed to load MP data');
@@ -3302,7 +3301,6 @@ function App() {
       const result = await response.json();
       
       if (result.success) {
-        console.log(`✅ Loaded ${result.count} bills`);
         setBills(result.data);
       }
     } catch (err) {
@@ -3316,7 +3314,6 @@ function App() {
       const result = await response.json();
       
       if (result.success) {
-        console.log(`✅ Loaded government impact data`);
         setGovernmentData(result.data);
       }
     } catch (err) {
@@ -3330,7 +3327,6 @@ function App() {
       const result = await response.json();
       
       if (result.success) {
-        console.log(`✅ Loaded ${result.count} laws and regulations`);
         setLaws(result.data);
       }
     } catch (err) {
@@ -3344,7 +3340,6 @@ function App() {
       const result = await response.json();
       
       if (result.success) {
-        console.log(`✅ Loaded ${result.count} government contracts`);
         setContracts(result.data);
       }
     } catch (err) {
