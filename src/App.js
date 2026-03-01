@@ -3729,6 +3729,7 @@ function App() {
   };
 
   const [financialDashTab, setFinancialDashTab] = useState('overview');
+  const [selectedProgram, setSelectedProgram] = useState(null);
 
   const getPartyColor = (party) => partyColors[party] || '#6B7280';
 
@@ -8124,6 +8125,18 @@ function App() {
             { name: 'Planning & Studies',       value: 2,  amount: '$135B',  color: '#84cc16', description: 'Research programs, regulatory studies, feasibility assessments' },
             { name: 'Unknown & Undisclosed',    value: 11, amount: '$743B',  color: '#ef4444', description: 'Classified programs, untracked discretionary grants, undisclosed operations' },
           ],
+          programs: [
+            { id: 'social-security', name: 'Social Security', department: 'Social Security Administration (SSA)', icon: '👴', color: '#22c55e', allocated: '$1.46T', spent: '$1.35T', spentPct: 92, citizens: '71.5 million beneficiaries', description: 'Provides retirement, disability, and survivor benefits to eligible Americans. The largest federal program by expenditure, funded through payroll taxes.', breakdown: [{ label: 'Retirement Benefits', pct: 73, color: '#22c55e' }, { label: 'Disability Insurance (SSDI)', pct: 18, color: '#3b82f6' }, { label: 'Survivor Benefits', pct: 9, color: '#f97316' }], timeline: [{ year: '1935', event: 'Social Security Act signed by President Roosevelt' }, { year: '1956', event: 'Disability Insurance (SSDI) added to program' }, { year: '1983', event: 'Greenspan Commission reforms extended fund solvency' }, { year: '2024', event: '71.5 million Americans receive monthly benefits' }], milestones: ['Average monthly retirement benefit reached $1,866 in 2024', 'COLA of 3.2% applied January 2024', 'Trust fund projected solvent through 2033 under current law'] },
+            { id: 'medicare', name: 'Medicare', department: 'Centers for Medicare & Medicaid Services (CMS)', icon: '🏥', color: '#3b82f6', allocated: '$848B', spent: '$809B', spentPct: 95, citizens: '67 million enrollees', description: 'Federal health insurance for Americans 65+ and certain younger people with disabilities. Covers hospital care, medical services, and prescription drugs.', breakdown: [{ label: 'Part A — Hospital Insurance', pct: 43, color: '#3b82f6' }, { label: 'Part B — Medical Insurance', pct: 37, color: '#8b5cf6' }, { label: 'Part D — Prescription Drugs', pct: 20, color: '#06b6d4' }], timeline: [{ year: '1965', event: 'Medicare established under the Social Security Act' }, { year: '2003', event: 'Medicare Part D prescription drug coverage added' }, { year: '2022', event: 'Inflation Reduction Act caps insulin at $35/month' }, { year: '2024', event: 'First 10 drugs subject to Medicare price negotiation' }], milestones: ['67 million Americans enrolled in Medicare as of FY2024', 'First 10 drugs under price negotiation with reductions up to 79%', 'Telehealth coverage made permanent following COVID-era expansion'] },
+            { id: 'medicaid', name: 'Medicaid & CHIP', department: 'Centers for Medicare & Medicaid Services (CMS)', icon: '🩺', color: '#10b981', allocated: '$618B', spent: '$601B', spentPct: 97, citizens: '92 million enrollees', description: 'Joint federal-state health coverage for low-income adults, children, pregnant women, elderly, and people with disabilities. States administer with federal matching funds.', breakdown: [{ label: 'Managed Care Organizations', pct: 54, color: '#10b981' }, { label: 'Fee-for-Service', pct: 36, color: '#22c55e' }, { label: "Children's Health (CHIP)", pct: 10, color: '#84cc16' }], timeline: [{ year: '1965', event: 'Medicaid established alongside Medicare' }, { year: '1997', event: 'CHIP created to cover uninsured children' }, { year: '2014', event: 'ACA Medicaid expansion to adults at 138% FPL' }, { year: '2024', event: '92M enrolled after pandemic enrollment unwinding complete' }], milestones: ['92 million enrollees after pandemic continuous enrollment unwinding', 'Post-pandemic unwinding removed 24 million from rolls in 2023-24', '40 states plus DC expanded Medicaid under the ACA'] },
+            { id: 'defense', name: 'National Defense', department: 'Department of Defense (DoD)', icon: '⚔️', color: '#64748b', allocated: '$886B', spent: '$874B', spentPct: 99, citizens: '2.86 million active & reserve', description: 'Funds military operations, personnel, weapons procurement, R&D, and overseas contingency operations. The largest single discretionary budget item.', breakdown: [{ label: 'Operations & Maintenance', pct: 42, color: '#64748b' }, { label: 'Military Personnel', pct: 28, color: '#475569' }, { label: 'Procurement', pct: 20, color: '#94a3b8' }, { label: 'Research & Development', pct: 10, color: '#cbd5e1' }], timeline: [{ year: '1947', event: 'National Security Act created the Department of Defense' }, { year: '2001', event: 'Post-9/11 defense spending surge begins' }, { year: '2022', event: '$61B Ukraine Security Assistance packages authorized' }, { year: '2024', event: 'FY2024 NDAA signed — $886B total authorization' }], milestones: ['FY2024 defense budget is the highest in U.S. history in nominal terms', '$300M in military aid to Ukraine included in base FY2024 budget', 'AUKUS submarine deal: $3B U.S. investment in Australian production base'] },
+            { id: 'debt-interest', name: 'Interest on National Debt', department: 'U.S. Department of the Treasury', icon: '📈', color: '#ef4444', allocated: '$659B', spent: '$659B', spentPct: 100, citizens: '335 million (all taxpayers)', description: 'Mandatory payments on U.S. government debt obligations. For the first time in history, net interest payments exceeded defense spending in FY2024.', breakdown: [{ label: 'Public Marketable Securities', pct: 85, color: '#ef4444' }, { label: 'Social Insurance Trust Funds', pct: 15, color: '#f97316' }], timeline: [{ year: '2020', event: 'Interest payments at historic lows due to near-zero rates' }, { year: '2022', event: 'Fed begins aggressive rate hike cycle — costs surge' }, { year: '2023', event: 'Annual interest payments cross $700B threshold' }, { year: '2024', event: 'Net interest exceeds defense spending — a historic first' }], milestones: ['Net interest surpassed defense spending in FY2024 for the first time in history', 'National debt stands at $34.6 trillion as of mid-2024', 'CBO projects interest will reach $1.6T annually by 2034'] },
+            { id: 'veterans', name: 'Veterans Benefits & Services', department: 'Department of Veterans Affairs (VA)', icon: '🎖️', color: '#7c3aed', allocated: '$302B', spent: '$294B', spentPct: 97, citizens: '9.2 million veteran users', description: 'Disability compensation, healthcare, education (GI Bill), home loans, and burial benefits for 18 million veterans and their families.', breakdown: [{ label: 'VA Health Care', pct: 54, color: '#7c3aed' }, { label: 'Disability Compensation', pct: 32, color: '#8b5cf6' }, { label: 'Education & GI Bill', pct: 14, color: '#a78bfa' }], timeline: [{ year: '1930', event: 'Veterans Administration established' }, { year: '1944', event: 'GI Bill signed, transforming veterans education benefits' }, { year: '1989', event: 'VA elevated to Cabinet-level department' }, { year: '2022', event: 'PACT Act expands coverage for toxic exposure veterans' }], milestones: ['PACT Act added 3.5 million veterans newly eligible for VA benefits', 'VA processed a record 1.4 million disability claims in FY2024', 'Average VA healthcare wait time reduced to 22 days (from 60+ in 2014)'] },
+            { id: 'education', name: 'Federal Education Aid', department: 'Department of Education', icon: '🎓', color: '#f59e0b', allocated: '$238B', spent: '$217B', spentPct: 91, citizens: '56 million students', description: 'Pell Grants and student loans for college, Title I for disadvantaged K-12 students, and IDEA funding for students with disabilities.', breakdown: [{ label: 'Student Financial Aid', pct: 42, color: '#f59e0b' }, { label: 'K-12 Title I Programs', pct: 38, color: '#fbbf24' }, { label: 'Special Education (IDEA)', pct: 20, color: '#fde68a' }], timeline: [{ year: '1965', event: 'Elementary & Secondary Education Act (ESEA) signed' }, { year: '1972', event: 'Pell Grant program created for low-income college students' }, { year: '1979', event: 'Department of Education established as Cabinet agency' }, { year: '2024', event: 'Maximum Pell Grant raised to $7,395 per year' }], milestones: ['Maximum Pell Grant increased to $7,395 for the 2023-24 award year', '$20B in student loan relief for borrowers in income-driven repayment plans', 'SAVE plan enrolls 8 million borrowers in income-driven repayment'] },
+            { id: 'transportation', name: 'Transportation & Infrastructure', department: 'Department of Transportation (DOT)', icon: '🛣️', color: '#0891b2', allocated: '$145B', spent: '$128B', spentPct: 88, citizens: '285 million road users', description: 'Bipartisan Infrastructure Law investments in highways, bridges, public transit, passenger rail, broadband, and port upgrades.', breakdown: [{ label: 'Federal Highway Program', pct: 52, color: '#0891b2' }, { label: 'Public Transit (FTA)', pct: 24, color: '#0e7490' }, { label: 'Rail & Amtrak', pct: 14, color: '#155e75' }, { label: 'Aviation (FAA)', pct: 10, color: '#67e8f9' }], timeline: [{ year: '2021', event: 'Bipartisan Infrastructure Law signed — $1.2T over 5 years' }, { year: '2022', event: 'First Infrastructure Law projects break ground nationwide' }, { year: '2024', event: '$40B in bridge repair funding awarded to all 50 states' }, { year: '2026', event: 'Target: 50,000 miles of roads and 10,000 bridges repaired' }], milestones: ['40,000 miles of road and 10,000 bridges funded for repair nationwide', '$65B broadband expansion to reach 100% of Americans by 2030', '32,000 EV charging stations deployed under infrastructure program'] },
+            { id: 'snap', name: 'Nutrition Assistance (SNAP)', department: 'U.S. Department of Agriculture (USDA)', icon: '🍎', color: '#16a34a', allocated: '$161B', spent: '$152B', spentPct: 94, citizens: '42 million recipients', description: 'SNAP provides food purchasing benefits to low-income households. The largest federal nutrition program, reaching approximately 1 in 8 Americans.', breakdown: [{ label: 'SNAP Food Benefits', pct: 55, color: '#16a34a' }, { label: 'Crop Insurance', pct: 24, color: '#15803d' }, { label: 'Farm Support Programs', pct: 13, color: '#166534' }, { label: 'Rural Development', pct: 8, color: '#84cc16' }], timeline: [{ year: '1964', event: 'Food Stamp Act signed by President Johnson' }, { year: '2008', event: 'Program renamed Supplemental Nutrition Assistance Program' }, { year: '2021', event: 'Pandemic SNAP benefits temporarily doubled allocations' }, { year: '2024', event: '42M Americans receive average $190/month in benefits' }], milestones: ['42 million SNAP recipients — down from 44M COVID peak', 'Average monthly benefit: $190 per person in FY2024', 'SNAP online purchasing expanded to all 50 states and DC'] },
+            { id: 'housing', name: 'Housing & HUD Programs', department: 'Dept. of Housing & Urban Development (HUD)', icon: '🏠', color: '#ea580c', allocated: '$73B', spent: '$68B', spentPct: 93, citizens: '5.1 million households', description: 'Section 8 housing choice vouchers, public housing capital funds, FHA mortgage insurance, and homelessness prevention grants.', breakdown: [{ label: 'Rental Assistance (Section 8)', pct: 61, color: '#ea580c' }, { label: 'Public Housing', pct: 18, color: '#c2410c' }, { label: 'Community Development', pct: 21, color: '#f97316' }], timeline: [{ year: '1965', event: 'HUD established as a Cabinet-level department' }, { year: '1974', event: 'Section 8 Housing Assistance Payments Program created' }, { year: '2012', event: 'Rental Assistance Demonstration (RAD) program launched' }, { year: '2024', event: '$7.5B targeted to address homelessness in major cities' }], milestones: ['5.1 million households on federal rental assistance programs', 'Point-in-time count: 653,100 experiencing homelessness on a single night in Jan 2024', '$7.5B in targeted assistance to cities with the highest homeless counts'] },
+          ],
         }
       : {
           totalBudget: '$534.8 Billion',
@@ -8146,6 +8159,18 @@ function App() {
             { name: 'NGOs & Intermediaries',    value: 6,  amount: '$32.1B', color: '#06b6d4', description: 'Grant programs to nonprofits, community foundations, Indigenous organizations' },
             { name: 'Planning & Studies',       value: 3,  amount: '$16.0B', color: '#84cc16', description: 'Policy research, environmental assessments, infrastructure planning studies' },
             { name: 'Unknown & Undisclosed',    value: 5,  amount: '$26.7B', color: '#ef4444', description: 'Grants with incomplete reporting, confidential contract details, departmental reserves' },
+          ],
+          programs: [
+            { id: 'oas', name: 'Old Age Security (OAS)', department: 'Employment and Social Development Canada (ESDC)', icon: '👴', color: '#22c55e', allocated: '$75.1B', spent: '$69.4B', spentPct: 92, citizens: '7.4 million seniors', description: 'Universal monthly pension for Canadians 65+, supplemented by the Guaranteed Income Supplement (GIS) for low-income seniors. No prior contribution required.', breakdown: [{ label: 'OAS Basic Pension', pct: 67, color: '#22c55e' }, { label: 'Guaranteed Income Supplement (GIS)', pct: 27, color: '#16a34a' }, { label: 'Allowance Programs', pct: 6, color: '#84cc16' }], timeline: [{ year: '1952', event: 'Old Age Security Act introduced universal pension' }, { year: '2013', event: 'Legislation to raise eligibility to 67 passed (later reversed)' }, { year: '2021', event: 'Age kept at 65; 10% increase for seniors 75+ announced' }, { year: '2024', event: 'Max OAS: $713.34/month; Max GIS: $1,065.47/month' }], milestones: ['Maximum OAS pension: $713.34/month as of Q3 2024', 'GIS provides up to $1,065.47/month to the lowest-income seniors', '10% permanent OAS increase for all seniors aged 75+ effective July 2022'] },
+            { id: 'cpp', name: 'Canada Pension Plan (CPP)', department: 'Employment and Social Development Canada (ESDC)', icon: '💰', color: '#3b82f6', allocated: '$60.7B', spent: '$58.3B', spentPct: 96, citizens: '6.5 million recipients', description: 'Contributory retirement, disability, and survivor benefits for working Canadians. CPP2 enhancement (2019-2025) increases future benefits by up to 50%.', breakdown: [{ label: 'Retirement Benefits', pct: 68, color: '#3b82f6' }, { label: 'Disability Benefits (CPP-D)', pct: 17, color: '#8b5cf6' }, { label: 'Survivor & Children Benefits', pct: 15, color: '#06b6d4' }], timeline: [{ year: '1965', event: 'Canada Pension Plan Act established CPP' }, { year: '2003', event: 'CPP Investment Board takes full fund management control' }, { year: '2019', event: 'CPP Enhancement Phase 1 begins — higher contributions and benefits' }, { year: '2024', event: 'CPP fund reaches $632B AUM; max benefit $1,364.60/month' }], milestones: ['CPP Investment Fund reached $632B AUM as of March 2024', 'Maximum CPP retirement benefit: $1,364.60/month at age 65 in 2024', 'CPP2 fully phased in 2025 — future retirees get up to 50% more'] },
+            { id: 'cht', name: 'Canada Health Transfer (CHT)', department: 'Department of Finance Canada / Health Canada', icon: '🏥', color: '#10b981', allocated: '$49.4B', spent: '$49.4B', spentPct: 100, citizens: '38 million Canadians', description: 'Largest federal transfer to provinces and territories. Supports publicly funded health care through equal per-capita cash payments to all provinces.', breakdown: [{ label: 'Equal Per-Capita Base Transfer', pct: 100, color: '#10b981' }], timeline: [{ year: '1977', event: 'Established Fiscal Arrangements and Health Services Act' }, { year: '2004', event: 'Canada Health Transfer created from CHST' }, { year: '2017', event: 'Long-term CHT agreement signed — 3% minimum annual escalator' }, { year: '2024', event: 'CHT reaches $49.4B with 5% escalator under new health deal' }], milestones: ['CHT reached $49.4B in FY2024-25 — largest federal health transfer in history', '5% annual growth guarantee under 2023 health care deal to 2027-28', '$25B over 10 years in new targeted mental health and home care transfers'] },
+            { id: 'ei', name: 'Employment Insurance (EI)', department: 'Employment and Social Development Canada (ESDC)', icon: '💼', color: '#f59e0b', allocated: '$22.4B', spent: '$19.8B', spentPct: 88, citizens: '1.75 million beneficiaries', description: 'Temporary income support for workers who lose employment or take parental, maternity, sickness, or caregiver leave. Financed by employee and employer premiums.', breakdown: [{ label: 'Regular Benefits', pct: 52, color: '#f59e0b' }, { label: 'Special Benefits (parental/sick)', pct: 41, color: '#d97706' }, { label: 'Fishing Benefits', pct: 7, color: '#fde68a' }], timeline: [{ year: '1940', event: 'Unemployment Insurance Act established' }, { year: '1996', event: 'Renamed Employment Insurance; stricter eligibility rules' }, { year: '2021', event: 'EI modernization pilot extends pandemic-era changes' }, { year: '2024', event: 'Extended benefits for high-unemployment regions; reform delayed' }], milestones: ['Maximum weekly EI benefit: $668/week (55% of insurable earnings up to $63,200)', 'Extended EI access to 40-week maximum in high-unemployment regions', 'EI fund accumulated a $2.7B surplus — reducing premium rate pressures'] },
+            { id: 'ccb', name: 'Canada Child Benefit (CCB)', department: 'Canada Revenue Agency (CRA) / ESDC', icon: '👶', color: '#ec4899', allocated: '$27.0B', spent: '$25.9B', spentPct: 96, citizens: '3.5 million families (6.5M children)', description: 'Tax-free monthly payment for families with children under 18. Amount is based on family net income — lower-income families receive the maximum benefit.', breakdown: [{ label: 'Children Ages 6-17', pct: 58, color: '#ec4899' }, { label: 'Children Under Age 6', pct: 42, color: '#f472b6' }], timeline: [{ year: '1993', event: 'Canada Child Tax Benefit introduced' }, { year: '2006', event: 'Universal Child Care Benefit (UCCB) added' }, { year: '2016', event: 'Canada Child Benefit launched — replaced CCTB and UCCB' }, { year: '2024', event: 'Max CCB: $7,437/year under 6; $6,275/year ages 6-17' }], milestones: ['Maximum CCB: $7,437/year for children under 6 in 2024-25', 'CCB credited with reducing child poverty rate from 14.5% to 6.4% (2015-2022)', '3.5 million families receive CCB; fully indexed to inflation since 2018'] },
+            { id: 'indigenous', name: 'Indigenous Programs & Services', department: 'Crown-Indigenous Relations / Indigenous Services Canada', icon: '🏔️', color: '#d97706', allocated: '$20.4B', spent: '$18.7B', spentPct: 92, citizens: '1.7 million Indigenous peoples', description: 'Funding for First Nations, Metis, and Inuit communities: on-reserve housing, K-12 education, clean water infrastructure, and child and family services.', breakdown: [{ label: 'Housing & Infrastructure', pct: 36, color: '#d97706' }, { label: 'Education & Schools', pct: 27, color: '#f59e0b' }, { label: 'Child & Family Services', pct: 22, color: '#92400e' }, { label: 'Health & Other', pct: 15, color: '#fbbf24' }], timeline: [{ year: '1880', event: 'Department of Indian Affairs created' }, { year: '2008', event: 'PM Harper issues formal apology for residential schools' }, { year: '2019', event: 'ISC and CIRNAC created, replacing INAC' }, { year: '2024', event: '138 long-term drinking water advisories on reserves lifted' }], milestones: ['138 long-term drinking water advisories on First Nations reserves lifted since 2015', '$2.8B committed for First Nations housing over 3 years', '$40B landmark settlement for Indigenous child welfare system underfunding'] },
+            { id: 'defence', name: 'National Defence (CAF)', department: 'Department of National Defence (DND)', icon: '⚔️', color: '#64748b', allocated: '$26.5B', spent: '$24.9B', spentPct: 94, citizens: '68,000 regular force members', description: 'Funds Canadian Armed Forces operations, personnel, equipment procurement, and NATO/NORAD commitments. Canada committed to reach 2% of GDP by 2032.', breakdown: [{ label: 'Personnel Costs', pct: 44, color: '#64748b' }, { label: 'Capital & Procurement', pct: 30, color: '#475569' }, { label: 'Operations & Maintenance', pct: 26, color: '#94a3b8' }], timeline: [{ year: '1968', event: 'Canadian Forces Reorganization Act unifies the armed forces' }, { year: '2017', event: 'Strong Secure Engaged defence policy pledges budget increases' }, { year: '2023', event: 'F-35 contract signed — 88 aircraft at $19B CAD' }, { year: '2024', event: 'Defence reaches 1.76% of GDP — below 2% NATO target' }], milestones: ['F-35 purchase contract signed — 88 aircraft at $19B CDN; deliveries from 2026', 'Defence budget reached 1.76% of GDP in FY2024-25', 'NORAD modernization: $38.6B committed over 20 years'] },
+            { id: 'cst', name: 'Canada Social Transfer (CST)', department: 'Department of Finance Canada', icon: '🎓', color: '#7c3aed', allocated: '$15.9B', spent: '$15.9B', spentPct: 100, citizens: '38 million Canadians', description: 'Federal transfers to provinces for post-secondary education, social assistance programs, and early childhood education and child care.', breakdown: [{ label: 'Post-Secondary Education', pct: 40, color: '#7c3aed' }, { label: 'Social Assistance', pct: 38, color: '#6d28d9' }, { label: 'Child Care & ELCC', pct: 22, color: '#a78bfa' }], timeline: [{ year: '1996', event: 'CHST created, consolidating EPF and CAP transfers' }, { year: '2004', event: 'CST separated from CHT for clearer social spending tracking' }, { year: '2021', event: '$30B Canada-wide early learning and child care system announced' }, { year: '2024', event: 'Average regulated child care fee reaches $10/day in most provinces' }], milestones: ['Average regulated child care fee reduced to $10/day in 7 of 10 provinces', '$30B Canada-wide ELCC system — 250,000 new regulated spaces planned', 'CST maintains 3% annual escalator tied to nominal GDP growth'] },
+            { id: 'cdcp', name: 'Canada Dental Care Plan (CDCP)', department: 'Health Canada / Sun Life Financial (administrator)', icon: '🦷', color: '#06b6d4', allocated: '$4.4B', spent: '$2.1B', spentPct: 48, citizens: '2.7 million enrolled', description: 'National dental coverage for uninsured Canadians with family income under $90,000. Launched November 2023 for seniors; expanded to under-18 and disabled in 2024.', breakdown: [{ label: 'Benefit Claims Paid', pct: 78, color: '#06b6d4' }, { label: 'Administration & Sun Life', pct: 15, color: '#0891b2' }, { label: 'Outreach & Enrollment', pct: 7, color: '#67e8f9' }], timeline: [{ year: '2022', event: 'NDP-Liberal supply-and-confidence agreement includes dental' }, { year: 'Nov 2023', event: 'CDCP launched for seniors aged 70 and over' }, { year: 'May 2024', event: 'Expanded to seniors 65+, disabled, children under 18' }, { year: '2025', event: 'Full rollout to all eligible Canadians under $90K income' }], milestones: ['2.7 million Canadians enrolled as of December 2024', 'Covers 100% of preventive services; 60-80% of basic restorative procedures', 'Projected 9 million eligible Canadians when fully rolled out in 2025'] },
+            { id: 'cib', name: 'Canada Infrastructure Bank', department: 'Canada Infrastructure Bank (Crown Corporation)', icon: '🏗️', color: '#0ea5e9', allocated: '$15.0B', spent: '$8.2B', spentPct: 55, citizens: 'Projects serving 38 million Canadians', description: 'Federal Crown corporation that invests in and finances transformative infrastructure through loans, equity, and guarantees, attracting private co-investment.', breakdown: [{ label: 'Clean Power & Energy', pct: 35, color: '#0ea5e9' }, { label: 'Green Infrastructure', pct: 28, color: '#38bdf8' }, { label: 'Public Transit', pct: 24, color: '#0284c7' }, { label: 'Trade & Transportation', pct: 13, color: '#075985' }], timeline: [{ year: '2017', event: 'Canada Infrastructure Bank Act receives Royal Assent' }, { year: '2020', event: 'CIB Growth Plan commits $10B across 5 priority areas' }, { year: '2023', event: '57 projects committed totalling $8.2B in CIB investments' }, { year: '2024', event: '$12.6B in private and institutional capital co-invested' }], milestones: ['57 infrastructure projects committed across all provinces and territories', '$12.6B in private and institutional capital co-invested alongside CIB funds', 'Every $1 of CIB investment leverages $2.54 in additional private capital'] },
           ],
         };
 
@@ -8208,6 +8233,16 @@ function App() {
               }`}
             >
               💸 Money Flow
+            </button>
+            <button
+              onClick={() => setFinancialDashTab('programs')}
+              className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                financialDashTab === 'programs'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              🏛️ Programs
             </button>
           </div>
 
@@ -8394,6 +8429,140 @@ function App() {
                 </div>
               </div>
 
+            </div>
+          )}
+
+          {/* ── Programs Tab ── */}
+          {financialDashTab === 'programs' && (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-500 mb-2">
+                Top 10 federal spending programs — tap any card to see details.
+              </p>
+              {data.programs.map((prog) => {
+                const isOpen = selectedProgram === prog.id;
+                return (
+                  <div
+                    key={prog.id}
+                    className={`bg-white rounded-xl shadow-md overflow-hidden border-2 transition-all ${isOpen ? 'border-emerald-400' : 'border-transparent hover:border-gray-200'}`}
+                  >
+                    {/* Card Header */}
+                    <button
+                      onClick={() => setSelectedProgram(isOpen ? null : prog.id)}
+                      className="w-full text-left p-5"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div
+                          className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
+                          style={{ backgroundColor: prog.color + '22' }}
+                        >
+                          {prog.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <h3 className="font-bold text-gray-900 text-base leading-tight">{prog.name}</h3>
+                            {isOpen
+                              ? <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                              : <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5 truncate">{prog.department}</p>
+                          <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                            <div>
+                              <p className="text-gray-400">Allocated</p>
+                              <p className="font-bold text-gray-800">{prog.allocated}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-400">Spent</p>
+                              <p className="font-bold text-gray-800">{prog.spent}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-400">Benefiting</p>
+                              <p className="font-bold text-gray-700 text-xs leading-tight">{prog.citizens}</p>
+                            </div>
+                          </div>
+                          <div className="mt-2.5">
+                            <div className="flex justify-between text-xs text-gray-500 mb-1">
+                              <span>Budget utilization</span>
+                              <span className="font-semibold">{prog.spentPct}%</span>
+                            </div>
+                            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full"
+                                style={{ width: `${prog.spentPct}%`, backgroundColor: prog.color }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Expanded Mini Dashboard */}
+                    {isOpen && (
+                      <div className="border-t border-gray-100 px-5 pb-6">
+                        {/* Description */}
+                        <p className="text-sm text-gray-700 mt-4 mb-5 leading-relaxed">{prog.description}</p>
+
+                        {/* Budget Breakdown */}
+                        <div className="mb-5">
+                          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Budget Breakdown</h4>
+                          <div className="space-y-2.5">
+                            {prog.breakdown.map((b, i) => (
+                              <div key={i}>
+                                <div className="flex justify-between text-sm mb-1">
+                                  <span className="text-gray-700">{b.label}</span>
+                                  <span className="font-semibold text-gray-800">{b.pct}%</span>
+                                </div>
+                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full"
+                                    style={{ width: `${b.pct}%`, backgroundColor: b.color }}
+                                  ></div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Timeline */}
+                        <div className="mb-5">
+                          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Timeline</h4>
+                          <div className="space-y-0">
+                            {prog.timeline.map((t, i) => (
+                              <div key={i} className="flex gap-3">
+                                <div className="flex flex-col items-center">
+                                  <div
+                                    className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1 border-2 border-white shadow"
+                                    style={{ backgroundColor: prog.color }}
+                                  ></div>
+                                  {i < prog.timeline.length - 1 && (
+                                    <div className="w-0.5 flex-1 bg-gray-200 my-1"></div>
+                                  )}
+                                </div>
+                                <div className="pb-3">
+                                  <span className="text-xs font-bold" style={{ color: prog.color }}>{t.year}</span>
+                                  <p className="text-sm text-gray-700 mt-0.5">{t.event}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Key Milestones */}
+                        <div>
+                          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Key Milestones</h4>
+                          <div className="space-y-2">
+                            {prog.milestones.map((m, i) => (
+                              <div key={i} className="flex gap-2.5 items-start">
+                                <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: prog.color }} />
+                                <p className="text-sm text-gray-700">{m}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
