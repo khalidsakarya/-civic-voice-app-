@@ -4107,13 +4107,13 @@ function App() {
                       🔍 Major federal grants showing specific organizations receiving taxpayer funding:
                     </p>
                     {selectedDepartment.grantsDetail.map((grant, index) => (
-                      <div key={index} className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div key={index} className="bg-white rounded-lg p-4 hover:shadow-md transition-shadow" style={{ border: '1px solid #e5e7eb', borderLeft: `4px solid ${grant.type === 'contract' ? '#2563eb' : '#16a34a'}` }}>
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 flex-wrap mb-0.5">
                               <h4 className="text-lg font-bold text-gray-800">{grant.recipient}</h4>
                               {grant.type && (
-                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${grant.type === 'contract' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                <span className="text-sm font-bold px-3 py-1 rounded-full flex-shrink-0" style={{ backgroundColor: grant.type === 'contract' ? '#2563eb' : '#16a34a', color: 'white' }}>
                                   {grant.type === 'contract' ? 'Contract' : 'Grant'}
                                 </span>
                               )}
@@ -12585,13 +12585,13 @@ function App() {
                       🔍 Major grants over $1M showing specific organizations receiving taxpayer funding:
                     </p>
                     {selectedMinistry.grantsDetail.map((grant, index) => (
-                      <div key={index} className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div key={index} className="bg-white rounded-lg p-4 hover:shadow-md transition-shadow" style={{ border: '1px solid #e5e7eb', borderLeft: `4px solid ${grant.type === 'contract' ? '#2563eb' : '#16a34a'}` }}>
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 flex-wrap mb-0.5">
                               <h4 className="text-lg font-bold text-gray-800">{grant.recipient}</h4>
                               {grant.type && (
-                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${grant.type === 'contract' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                <span className="text-sm font-bold px-3 py-1 rounded-full flex-shrink-0" style={{ backgroundColor: grant.type === 'contract' ? '#2563eb' : '#16a34a', color: 'white' }}>
                                   {grant.type === 'contract' ? 'Contract' : 'Grant'}
                                 </span>
                               )}
