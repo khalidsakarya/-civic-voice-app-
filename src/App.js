@@ -8203,14 +8203,14 @@ function App() {
             auditingBody: 'Office of the Auditor General of Canada (OAG)',
             lastUpdated: 'Spring 2024 Reports to Parliament',
             findings: [
-              { id: 'it-contracting',       title: 'Federal IT Contracting Documentation Practices',         auditBody: 'Office of the Auditor General (OAG)',                             date: 'February 2023', severity: 'high',   status: 'resolved', description: 'Audit identified significant gaps in contract documentation for federal IT projects, including missing deliverables records, undisclosed subcontracting arrangements, and invoices lacking supporting documentation.' },
-              { id: 'phoenix-pay',          title: 'Phoenix Pay System Remediation Progress',                auditBody: 'Office of the Auditor General (OAG)',                             date: 'May 2024',      severity: 'high',   status: 'open',     description: 'Audit identified persistent systemic weaknesses in federal pay administration, with thousands of employees continuing to receive incorrect payments after eight years of remediation efforts and substantial ongoing investment.' },
-              { id: 'pandemic-benefits',    title: 'Pandemic Emergency Benefit Eligibility Controls',        auditBody: 'Office of the Auditor General (OAG)',                             date: 'May 2023',      severity: 'high',   status: 'partial',  description: 'Audit identified weaknesses in upfront eligibility verification for emergency pandemic income support programs, resulting in payments to individuals who did not satisfy program criteria.' },
-              { id: 'first-nations-housing',title: 'First Nations On-Reserve Housing Program Outcomes',     auditBody: 'Office of the Auditor General (OAG)',                             date: 'March 2024',    severity: 'high',   status: 'open',     description: 'Audit identified the absence of a national housing strategy and reliable outcome measurement for on-reserve housing investments, limiting accountability for federal program expenditures.' },
-              { id: 'dental-plan',          title: 'Canada Dental Care Plan Rollout and Administration',    auditBody: 'Office of the Auditor General (OAG)',                             date: 'November 2024', severity: 'medium', status: 'open',     description: 'Audit identified enrollment delays, gaps in eligibility communication, and the absence of outcome tracking mechanisms during the initial rollout phase of the national dental care program.' },
-              { id: 'green-procurement',    title: 'Federal Green Procurement Commitment Compliance',        auditBody: 'Office of the Auditor General (OAG)',                             date: 'October 2023',  severity: 'medium', status: 'resolved', description: 'Audit identified that the majority of federal departments reviewed had not fulfilled their green procurement commitments, citing inadequate training and the absence of a standardised reporting framework.' },
-              { id: 'defence-procurement',  title: 'National Defence Major Equipment Procurement',          auditBody: 'Office of the Auditor General (OAG)',                             date: 'April 2024',    severity: 'medium', status: 'open',     description: 'Audit identified schedule delays and cost growth in major Canadian Armed Forces equipment acquisition projects, with reporting to Parliament not accurately reflecting the full scope of cost changes.' },
-              { id: 'ei-automation',        title: 'Employment Insurance Automated Decision Accuracy',      auditBody: 'Office of the Auditor General (OAG)',                             date: 'September 2024',severity: 'low',    status: 'open',     description: 'Audit identified that automated eligibility processing in the Employment Insurance system generated decision errors in a subset of claims, with insufficient manual review mechanisms to identify system-generated mistakes.' },
+              { id: 'arrivecan',            title: 'ArriveCAN App — $60M for an $80,000 Application',           auditBody: 'Office of the Auditor General (OAG)',                             date: 'February 2023', severity: 'critical', amountAtRisk: '$59.5M overspent',             description: 'The OAG found the ArriveCAN app cost $59.5M — far exceeding its $80,000 estimated value — due to undocumented contracts, missing receipts, and payments to GCstrategies with no supporting records.' },
+              { id: 'phoenix-pay',          title: 'Phoenix Pay System — Ongoing Remediation Failure',           auditBody: 'Office of the Auditor General (OAG)',                             date: 'May 2024',      severity: 'critical', amountAtRisk: '$3.5B+ in remediation costs',  description: 'Despite $3.5B in remediation spending since 2016, the OAG found the federal pay system continues to produce incorrect payments for thousands of employees, with the replacement NextGen HR system years behind its scheduled delivery.' },
+              { id: 'cerb-overpay',         title: 'COVID-19 CERB and Emergency Benefit Overpayments',          auditBody: 'Office of the Auditor General (OAG)',                             date: 'May 2023',      severity: 'high',     amountAtRisk: '$4.6B overpaid',               description: 'The OAG found $4.6B in CERB and pandemic emergency benefit payments made to ineligible recipients, including incarcerated individuals and minors. Less than 15% has been recovered by CRA to date.' },
+              { id: 'indigenous-housing',   title: 'Indigenous On-Reserve Housing — No National Strategy',       auditBody: 'Office of the Auditor General (OAG)',                             date: 'March 2024',    severity: 'high',     amountAtRisk: '$4.3B spent, gap unresolved',  description: 'The OAG found that despite $4.3B in federal housing investment, Indigenous Services Canada has no reliable data on the reserve housing deficit and no national strategy to close it. Conditions have not measurably improved.' },
+              { id: 'mckinsey-contracts',   title: 'McKinsey & Company Federal Contracts — Sole-Source Awards',  auditBody: 'Public Services and Procurement Canada / OAG',                   date: 'October 2023',  severity: 'high',     amountAtRisk: '$209M in contracts awarded',   description: 'An audit found $209M in federal contracts awarded to McKinsey & Company, many without competitive bidding, with inadequate documentation of deliverables and value received by taxpayers.' },
+              { id: 'dental-plan',          title: 'Canada Dental Care Plan — Rollout Delays and Gaps',          auditBody: 'Office of the Auditor General (OAG)',                             date: 'November 2024', severity: 'medium',   amountAtRisk: '$4.4B allocated',              description: 'The OAG found enrollment delays, unclear eligibility rules, and no outcome tracking in the first year of the dental plan rollout. Only 48% of the $4.4B allocated budget was disbursed to enrollees.' },
+              { id: 'shipbuilding',         title: 'National Shipbuilding Strategy — Delays and Cost Overruns',  auditBody: 'Office of the Auditor General (OAG)',                             date: 'April 2024',    severity: 'medium',   amountAtRisk: '$84B shipbuilding program',    description: 'The OAG found major schedule delays and cost growth across the National Shipbuilding Strategy, with combat and non-combat vessel projects years behind delivery dates and no credible revised timeline provided to Parliament.' },
+              { id: 'green-procurement',    title: 'Federal Green Procurement — Widespread Missed Targets',      auditBody: 'Office of the Auditor General (OAG)',                             date: 'October 2023',  severity: 'low',      amountAtRisk: '$22B annual procurement',      description: 'The OAG found 15 of 24 federal departments failed to meet green procurement targets, with inadequate training and no standard reporting framework across government, despite $22B in annual federal purchasing power.' },
             ],
           },
           results: [
@@ -8676,9 +8676,10 @@ function App() {
               <div className="space-y-4">
                 {data.audit.findings.map((f) => {
                   const severityStyles = {
-                    high:   { badge: 'bg-orange-100 text-orange-700', border: 'border-orange-300' },
-                    medium: { badge: 'bg-yellow-100 text-yellow-700', border: 'border-yellow-300' },
-                    low:    { badge: 'bg-blue-100 text-blue-700',     border: 'border-blue-300'   },
+                    critical: { badge: 'bg-red-100 text-red-700',      border: 'border-red-400'    },
+                    high:     { badge: 'bg-orange-100 text-orange-700', border: 'border-orange-300' },
+                    medium:   { badge: 'bg-yellow-100 text-yellow-700', border: 'border-yellow-300' },
+                    low:      { badge: 'bg-blue-100 text-blue-700',     border: 'border-blue-300'   },
                   };
                   const sev = severityStyles[f.severity] || severityStyles.medium;
                   return (
@@ -8689,6 +8690,12 @@ function App() {
                       </div>
                       <p className="text-xs text-gray-500 mb-3">{f.auditBody} · {f.date}</p>
                       <p className="text-sm text-gray-700 leading-relaxed">{f.description}</p>
+                      {f.amountAtRisk && (
+                        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+                          <span className="text-xs font-semibold text-gray-400">Amount at risk:</span>
+                          <span className="text-xs font-bold text-gray-800">{f.amountAtRisk}</span>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
