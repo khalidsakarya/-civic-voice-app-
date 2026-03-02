@@ -467,6 +467,21 @@ function App() {
   const [showLeaderPanel, setShowLeaderPanel] = useState(false);
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [copiedShareId, setCopiedShareId] = useState(null);
+
+  const handleShare = async (e, { id, title, text, url }) => {
+    e.stopPropagation();
+    const shareUrl = url || window.location.href;
+    if (navigator.share) {
+      try { await navigator.share({ title, text, url: shareUrl }); } catch (_) {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        setCopiedShareId(id);
+        setTimeout(() => setCopiedShareId(null), 2000);
+      } catch (_) {}
+    }
+  };
 
   // Canadian data
   const [mps, setMps] = useState([]);
@@ -5289,7 +5304,7 @@ function App() {
                   className="relative card-gradient rounded-2xl shadow-elegant-lg p-6 border-2 border-white/50 hover-lift interactive-card animate-scale-in"
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 p-1.5 text-gray-400 hover:text-gray-700 hover:bg-white/60 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
+                <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.number}: ${bill.title}`, text: bill.description, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-gray-400 hover:text-gray-700 hover:bg-white/60'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
@@ -8667,7 +8682,7 @@ function App() {
                   const isExpanded = expandedAuditFinding === f.id;
                   return (
                     <div key={f.id} className={`relative bg-white rounded-xl shadow-sm border-l-4 ${sev.border} overflow-hidden`}>
-                      <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 z-10 p-1.5 text-gray-300 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
+                      <button onClick={(e) => handleShare(e, { id: f.id, title: f.title, text: f.description, url: window.location.href })} className={`absolute top-3 right-3 z-10 p-1.5 rounded-lg transition-colors ${copiedShareId === f.id ? 'text-green-500 bg-green-50' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`} aria-label="Share">{copiedShareId === f.id ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
                       <button
                         onClick={() => setExpandedAuditFinding(isExpanded ? null : f.id)}
                         className="w-full text-left p-5 pr-12"
@@ -9439,7 +9454,7 @@ function App() {
                     }}
                     className="relative bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
                   >
-                    <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 p-1.5 text-gray-300 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
+                    <button onClick={(e) => handleShare(e, { id: mp.name, title: mp.name, text: `${mp.party} ${selectedCountry?.type === 'usa' ? 'Congress Member' : 'Member of Parliament'}${mp.district ? ' — ' + mp.district : ''}`, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === mp.name ? 'text-green-500 bg-green-50' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`} aria-label="Share">{copiedShareId === mp.name ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
                     <div style={{backgroundColor: getPartyColor(mp.party)}} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4">
                       {mp.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                     </div>
@@ -9550,7 +9565,7 @@ function App() {
                 key={bill.id}
                 className="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
               >
-                <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 p-1.5 text-gray-300 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
+                <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.billNumber}: ${bill.shortTitle}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -9867,7 +9882,7 @@ function App() {
                 onClick={() => setSelectedEO(eo)}
                 className="relative bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-red-300 transition-all"
               >
-                <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 p-1.5 text-gray-300 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
+                <button onClick={(e) => handleShare(e, { id: eo.number, title: `Executive Order ${eo.number}: ${eo.title}`, text: eo.description, url: eo.sourceUrl || window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === eo.number ? 'text-green-500 bg-green-50' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`} aria-label="Share">{copiedShareId === eo.number ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full flex-shrink-0">{eo.number}</span>
                   <span className="text-xs text-gray-400 flex-shrink-0">{eo.date}</span>
@@ -10075,7 +10090,7 @@ function App() {
                 onClick={() => setSelectedPresidentBill(bill)}
                 className="relative bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all"
               >
-                <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 p-1.5 text-gray-300 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
+                <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.number}: ${bill.title}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <span className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full flex-shrink-0">{bill.number}</span>
                   <span className="text-xs text-gray-400 flex-shrink-0">{bill.passedDate}</span>
@@ -10509,7 +10524,7 @@ function App() {
                         setView('bill-detail');
                       }}
                     >
-                      <button onClick={(e) => e.stopPropagation()} className="absolute top-3 right-3 p-1.5 text-gray-300 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Share"><Share2 className="w-4 h-4" /></button>
+                      <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.billNumber}: ${bill.shortTitle}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
                       <div className="p-6">
                         <div className="flex items-center gap-3 mb-3">
                           <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
