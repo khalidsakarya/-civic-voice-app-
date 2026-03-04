@@ -13961,30 +13961,30 @@ function App() {
         style={{ background: 'rgba(0,0,0,0.55)' }}
         onClick={(e) => { if (e.target === e.currentTarget) setShowDisclaimer(false); }}
       >
-        <div className="relative bg-white w-full max-w-lg md:max-w-3xl mx-4 my-8 rounded-2xl shadow-2xl animate-fade-in">
+        <div className="relative bg-white w-full max-w-lg md:max-w-[90vw] mx-4 md:mx-auto my-8 md:my-[5vh] rounded-2xl shadow-2xl animate-fade-in md:flex md:flex-col md:max-h-[85vh]">
           {/* Sticky header */}
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-6 py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-6 md:px-10 py-4 md:py-5 flex items-center justify-between border-b border-gray-100 shadow-sm flex-shrink-0">
             <div>
-              <h2 className="font-bold text-gray-900 text-lg leading-tight">Disclaimer</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Please read before using this platform</p>
+              <h2 className="font-bold text-gray-900 text-lg md:text-2xl leading-tight">Disclaimer</h2>
+              <p className="text-xs md:text-sm text-gray-400 mt-0.5">Please read before using this platform</p>
             </div>
             <button
               onClick={() => setShowDisclaimer(false)}
               className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0 ml-4"
               aria-label="Close disclaimer"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 md:w-6 md:h-6" />
             </button>
           </div>
 
           {/* Scrollable sections */}
-          <div className="px-6 py-5 space-y-5">
+          <div className="px-6 md:px-10 py-5 md:py-8 space-y-5 md:space-y-8 md:overflow-y-auto">
             {sections.map(({ title, text }, i) => (
-              <div key={title} className="pb-5 border-b border-gray-100 last:border-0 last:pb-0">
-                <h3 className="font-bold text-gray-800 text-sm mb-1.5">
+              <div key={title} className="pb-5 md:pb-8 border-b border-gray-100 last:border-0 last:pb-0">
+                <h3 className="font-bold text-gray-800 text-sm md:text-xl mb-1.5 md:mb-3">
                   <span className="text-gray-400 font-normal mr-1">{i + 1}.</span>{title}
                 </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">{text}</p>
+                <p className="text-sm md:text-base text-gray-600 leading-relaxed">{text}</p>
               </div>
             ))}
           </div>
