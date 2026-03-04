@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info } from 'lucide-react';
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import './App.css';
 
@@ -14096,11 +14096,12 @@ function App() {
       {showDisclaimer && renderDisclaimerModal()}
 
       {/* Global footer */}
-      <footer className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-300 py-2 text-center">
+      <footer className="fixed bottom-0 left-0 right-0 z-30 bg-blue-50 border-t border-blue-200 py-3 text-center">
         <button
           onClick={() => setShowDisclaimer(true)}
-          className="text-xs text-gray-500 hover:text-gray-700 transition-colors underline underline-offset-2"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
         >
+          <Info className="w-4 h-4" />
           Disclaimer
         </button>
       </footer>
