@@ -13993,7 +13993,7 @@ function App() {
   };
 
   return (
-    <div className="App smooth-scroll">
+    <div className="App smooth-scroll pb-10">
       <style>{customStyles}</style>
 
       {showInstallBanner && (
@@ -14085,10 +14085,10 @@ function App() {
       {showDisclaimer && renderDisclaimerModal()}
 
       {/* Global footer */}
-      <footer className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 py-2 text-center">
+      <footer className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-300 py-2 text-center">
         <button
           onClick={() => setShowDisclaimer(true)}
-          className="text-xs text-gray-400 hover:text-gray-700 transition-colors underline underline-offset-2"
+          className="text-xs text-gray-500 hover:text-gray-700 transition-colors underline underline-offset-2"
         >
           Disclaimer
         </button>
