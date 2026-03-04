@@ -13961,7 +13961,7 @@ function App() {
         style={{ background: 'rgba(0,0,0,0.55)' }}
         onClick={(e) => { if (e.target === e.currentTarget) setShowDisclaimer(false); }}
       >
-        <div className="relative bg-white w-full max-w-lg mx-4 my-8 rounded-2xl shadow-2xl animate-fade-in">
+        <div className="relative bg-white w-full max-w-lg md:max-w-3xl mx-4 my-8 rounded-2xl shadow-2xl animate-fade-in">
           {/* Sticky header */}
           <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-6 py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
             <div>
@@ -13989,15 +13989,6 @@ function App() {
             ))}
           </div>
 
-          {/* Sticky close footer */}
-          <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 rounded-b-2xl">
-            <button
-              onClick={() => setShowDisclaimer(false)}
-              className="w-full bg-gray-900 hover:bg-gray-700 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
-            >
-              Close
-            </button>
-          </div>
         </div>
       </div>
     );
