@@ -3949,8 +3949,9 @@ function App() {
                     setSelectedDepartment(dept);
                     setView('department-detail');
                   }}
-                  className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
+                  className="relative bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
                 >
+                  <button onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — Budget: ${dept.budget} | Staff: ${dept.employees.toLocaleString()} | Approval: ${approvalRate}% - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                   <h3 className="text-xl font-bold text-gray-800 mb-2">{dept.name}</h3>
                   <p className="text-sm text-gray-600 mb-1">Secretary: {dept.secretary}</p>
                   <p className="text-gray-700 mb-4">{dept.description}</p>
@@ -4047,7 +4048,8 @@ function App() {
         </div>
 
         <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+          <div className="relative bg-white rounded-lg shadow-md p-8 mb-6">
+            <button onClick={(e) => handleShare(e, { id: selectedDepartment.id, title: selectedDepartment.name, text: `🏛️ ${selectedDepartment.name} — Budget: ${selectedDepartment.budget} | Staff: ${selectedDepartment.employees.toLocaleString()} | Secretary: ${selectedDepartment.secretary} - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === selectedDepartment.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === selectedDepartment.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">{selectedDepartment.name}</h1>
             <p className="text-lg text-gray-700 mb-6">Secretary: {selectedDepartment.secretary}</p>
             <p className="text-gray-600 mb-6">{selectedDepartment.description}</p>
@@ -4123,7 +4125,8 @@ function App() {
                       🔍 Major federal grants showing specific organizations receiving taxpayer funding:
                     </p>
                     {selectedDepartment.grantsDetail.map((grant, index) => (
-                      <div key={index} className="bg-white rounded-lg p-4 hover:shadow-md transition-shadow" style={{ border: '1px solid #e5e7eb', borderLeft: `4px solid ${grant.type === 'contract' ? '#2563eb' : '#16a34a'}` }}>
+                      <div key={index} className="relative bg-white rounded-lg p-4 pr-12 hover:shadow-md transition-shadow" style={{ border: '1px solid #e5e7eb', borderLeft: `4px solid ${grant.type === 'contract' ? '#2563eb' : '#16a34a'}` }}>
+                        <button onClick={(e) => handleShare(e, { id: 'grant-' + grant.recipient, title: grant.recipient, text: `💰 ${grant.recipient} — ${grant.amount} ${grant.type === 'contract' ? '(Contract)' : '(Grant)'}: ${grant.purpose} - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-2 right-2 p-2 rounded-lg transition-colors z-10 ${copiedShareId === 'grant-' + grant.recipient ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === 'grant-' + grant.recipient ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 flex-wrap mb-0.5">
@@ -5304,7 +5307,7 @@ function App() {
                   className="relative card-gradient rounded-2xl shadow-elegant-lg p-6 border-2 border-white/50 hover-lift interactive-card animate-scale-in"
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.number}: ${bill.title}`, text: bill.description, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-gray-400 hover:text-gray-700 hover:bg-white/60'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
+                <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.number}: ${bill.title}`, text: bill.description, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
@@ -6634,7 +6637,10 @@ function App() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
             </div>
             <div className="p-5">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{item.name}</h1>
+              <div className="flex items-start justify-between gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{item.name}</h1>
+                <button onClick={(e) => handleShare(e, { id: 'province-' + item.name, title: item.name, text: `📍 ${item.name} — ${leaderTitle}: ${leaderName} (${leaderParty}) since ${item.since} - civic-voice-app.vercel.app`, url: window.location.href })} className={`flex-shrink-0 p-2 rounded-lg transition-colors ${copiedShareId === 'province-' + item.name ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === 'province-' + item.name ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+              </div>
               <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2 text-sm text-gray-500">
                 <span>Capital: <strong className="text-gray-700">{item.capital}</strong></span>
                 {!isUSA && item.population && <span>Population: <strong className="text-gray-700">{item.population}</strong></span>}
@@ -8682,7 +8688,7 @@ function App() {
                   const isExpanded = expandedAuditFinding === f.id;
                   return (
                     <div key={f.id} className={`relative bg-white rounded-xl shadow-sm border-l-4 ${sev.border} overflow-hidden`}>
-                      <button onClick={(e) => handleShare(e, { id: f.id, title: f.title, text: `🔍 Audit: ${f.title} - ${f.severity} severity - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 z-10 p-1.5 rounded-lg transition-colors ${copiedShareId === f.id ? 'text-green-500 bg-green-50' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`} aria-label="Share">{copiedShareId === f.id ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
+                      <button onClick={(e) => handleShare(e, { id: f.id, title: f.title, text: `🔍 Audit: ${f.title} - ${f.severity} severity - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 z-10 p-1.5 rounded-lg transition-colors ${copiedShareId === f.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === f.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                       <button
                         onClick={() => setExpandedAuditFinding(isExpanded ? null : f.id)}
                         className="w-full text-left p-5 pr-12"
@@ -9454,7 +9460,7 @@ function App() {
                     }}
                     className="relative bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
                   >
-                    <button onClick={(e) => handleShare(e, { id: mp.name, title: mp.name, text: `📊 ${mp.name} (${mp.party}, ${mp.state || mp.province || ''}) - ${mp.yearsInOffice} years in office. Support: ${mp.supportVotes} Oppose: ${mp.opposeVotes} - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === mp.name ? 'text-green-500 bg-green-50' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`} aria-label="Share">{copiedShareId === mp.name ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
+                    <button onClick={(e) => handleShare(e, { id: mp.name, title: mp.name, text: `📊 ${mp.name} (${mp.party}, ${mp.state || mp.province || ''}) - ${mp.yearsInOffice} years in office. Support: ${mp.supportVotes} Oppose: ${mp.opposeVotes} - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === mp.name ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === mp.name ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                     <div style={{backgroundColor: getPartyColor(mp.party)}} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4">
                       {mp.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                     </div>
@@ -9565,7 +9571,7 @@ function App() {
                 key={bill.id}
                 className="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
               >
-                <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.billNumber}: ${bill.shortTitle}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
+                <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.billNumber}: ${bill.shortTitle}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -9882,7 +9888,7 @@ function App() {
                 onClick={() => setSelectedEO(eo)}
                 className="relative bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-red-300 transition-all"
               >
-                <button onClick={(e) => handleShare(e, { id: eo.number, title: `Executive Order ${eo.number}: ${eo.title}`, text: `📋 EO ${eo.number}: ${eo.title} signed ${eo.date} - civic-voice-app.vercel.app`, url: eo.sourceUrl || window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === eo.number ? 'text-green-500 bg-green-50' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`} aria-label="Share">{copiedShareId === eo.number ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
+                <button onClick={(e) => handleShare(e, { id: eo.number, title: `Executive Order ${eo.number}: ${eo.title}`, text: `📋 EO ${eo.number}: ${eo.title} signed ${eo.date} - civic-voice-app.vercel.app`, url: eo.sourceUrl || window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === eo.number ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === eo.number ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full flex-shrink-0">{eo.number}</span>
                   <span className="text-xs text-gray-400 flex-shrink-0">{eo.date}</span>
@@ -10090,7 +10096,7 @@ function App() {
                 onClick={() => setSelectedPresidentBill(bill)}
                 className="relative bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all"
               >
-                <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.number}: ${bill.title}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
+                <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.number}: ${bill.title}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <span className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full flex-shrink-0">{bill.number}</span>
                   <span className="text-xs text-gray-400 flex-shrink-0">{bill.passedDate}</span>
@@ -10524,7 +10530,7 @@ function App() {
                         setView('bill-detail');
                       }}
                     >
-                      <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.billNumber}: ${bill.shortTitle}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}</button>
+                      <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.billNumber}: ${bill.shortTitle}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                       <div className="p-6">
                         <div className="flex items-center gap-3 mb-3">
                           <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
@@ -12445,7 +12451,10 @@ function App() {
                       <p className="text-sm sm:text-base text-gray-600 mb-2">Minister: {ministry.minister}</p>
                       <p className="text-xs sm:text-sm text-gray-500">{ministry.description}</p>
                     </div>
-                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 flex-shrink-0" />
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button onClick={(e) => handleShare(e, { id: ministry.id, title: ministry.name, text: `🏛️ ${ministry.name} — Budget: ${ministry.budget} | Minister: ${ministry.minister} | Approval: ${approvalRate}% - civic-voice-app.vercel.app`, url: window.location.href })} className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === ministry.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === ministry.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-3 sm:mb-4">
@@ -12525,7 +12534,8 @@ function App() {
 
         <div className="max-w-6xl mx-auto px-4 py-8">
           {/* Ministry Header */}
-          <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+          <div className="relative bg-white rounded-lg shadow-md p-8 mb-6">
+            <button onClick={(e) => handleShare(e, { id: selectedMinistry.id, title: selectedMinistry.name, text: `🏛️ ${selectedMinistry.name} — Budget: ${selectedMinistry.budget} | Staff: ${selectedMinistry.employees.toLocaleString()} | Minister: ${selectedMinistry.minister} - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === selectedMinistry.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === selectedMinistry.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h1 className="text-4xl font-bold text-gray-800 mb-2">{selectedMinistry.name}</h1>
@@ -12608,7 +12618,8 @@ function App() {
                       🔍 Major grants over $1M showing specific organizations receiving taxpayer funding:
                     </p>
                     {selectedMinistry.grantsDetail.map((grant, index) => (
-                      <div key={index} className="bg-white rounded-lg p-4 hover:shadow-md transition-shadow" style={{ border: '1px solid #e5e7eb', borderLeft: `4px solid ${grant.type === 'contract' ? '#2563eb' : '#16a34a'}` }}>
+                      <div key={index} className="relative bg-white rounded-lg p-4 pr-12 hover:shadow-md transition-shadow" style={{ border: '1px solid #e5e7eb', borderLeft: `4px solid ${grant.type === 'contract' ? '#2563eb' : '#16a34a'}` }}>
+                        <button onClick={(e) => handleShare(e, { id: 'grant-' + grant.recipient, title: grant.recipient, text: `💰 ${grant.recipient} — ${grant.amount} ${grant.type === 'contract' ? '(Contract)' : '(Grant)'}: ${grant.purpose} - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-2 right-2 p-2 rounded-lg transition-colors z-10 ${copiedShareId === 'grant-' + grant.recipient ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === 'grant-' + grant.recipient ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 flex-wrap mb-0.5">
