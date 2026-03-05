@@ -448,9 +448,7 @@ function App() {
     return saved ? JSON.parse(saved) : { support: 18423, oppose: 24156, userVote: null };
   });
   const [selectedEO, setSelectedEO] = useState(null);
-  const [showEOSection, setShowEOSection] = useState(false);
   const [selectedPresidentBill, setSelectedPresidentBill] = useState(null);
-  const [showPresidentBillsSection, setShowPresidentBillsSection] = useState(false);
   const [presidentBillVotes, setPresidentBillVotes] = useState(() => {
     const saved = localStorage.getItem('cvPresidentBillVotes');
     return saved ? JSON.parse(saved) : {};
@@ -467,6 +465,7 @@ function App() {
   const [showLeaderPanel, setShowLeaderPanel] = useState(false);
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [copiedShareId, setCopiedShareId] = useState(null);
 
   const handleShare = async (e, { id, title, text, url }) => {
@@ -13904,6 +13903,111 @@ function App() {
     );
   };
 
+  const renderAboutModal = () => {
+    const sections = [
+      {
+        title: 'Our Mission',
+        text: 'Civic Voice exists to make government transparent, accessible, and understandable for every citizen. We believe that an informed public is the foundation of a healthy democracy.',
+      },
+      {
+        title: 'What We Do',
+        text: 'Civic Voice aggregates publicly available government data from Canada and the United States into one platform making it easy for anyone to explore how their government works, where their tax dollars go, and what their elected representatives are doing on their behalf.',
+      },
+      {
+        title: 'What You Can Find Here',
+        bullets: [
+          'Profiles of every federal elected official in Canada and the United States',
+          'Legislative tracking — bills, votes, and executive orders',
+          'Financial transparency — budgets, grants, contracts, and audit findings',
+          'Provincial and state government leadership and statistics',
+          'Real outcomes connecting government spending to real-world results',
+        ],
+      },
+      {
+        title: 'Our Principles',
+        principles: [
+          { name: 'Non-partisan', desc: 'We present facts without favouring any party, ideology, or political position.' },
+          { name: 'Transparent', desc: 'We are open about where our data comes from and how it is presented.' },
+          { name: 'Citizen-first', desc: 'Everything we build is designed for ordinary people, not experts or insiders.' },
+          { name: 'Independent', desc: 'We are not funded by or affiliated with any government body, party, or lobby group.' },
+        ],
+      },
+      {
+        title: 'Data Sources',
+        text: 'Our data comes from official government sources including Parliament of Canada, Library of Congress, federal open data portals, and official audit bodies such as the Office of the Auditor General of Canada and the US Government Accountability Office.',
+      },
+      {
+        title: 'Built For Citizens',
+        text: 'Civic Voice was built independently by a citizen who believed transparency should not require a law degree. This platform is for everyone.',
+      },
+    ];
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
+        style={{ background: 'rgba(0,0,0,0.55)' }}
+        onClick={(e) => { if (e.target === e.currentTarget) setShowAbout(false); }}
+      >
+        <div className="relative bg-white w-full max-w-lg md:max-w-[90vw] mx-4 md:mx-auto my-8 md:my-[5vh] rounded-2xl shadow-2xl animate-fade-in md:flex md:flex-col md:max-h-[85vh]">
+          {/* Sticky header */}
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-6 md:px-10 py-4 md:py-5 flex items-center justify-between border-b border-gray-100 shadow-sm flex-shrink-0">
+            <div>
+              <h2 className="font-bold text-gray-900 text-lg md:text-2xl leading-tight">About Civic Voice</h2>
+            </div>
+            <button
+              onClick={() => setShowAbout(false)}
+              className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0 ml-4"
+              aria-label="Close about"
+            >
+              <X className="w-5 h-5 md:w-6 md:h-6" />
+            </button>
+          </div>
+
+          {/* Scrollable sections */}
+          <div className="px-6 md:px-10 py-5 md:py-8 space-y-5 md:space-y-8 md:overflow-y-auto">
+            {sections.map(({ title, text, bullets, principles }, i) => (
+              <div key={title} className="pb-5 md:pb-8 border-b border-gray-100 last:border-0 last:pb-0">
+                <h3 className="font-bold text-gray-800 text-sm md:text-xl mb-1.5 md:mb-3">
+                  <span className="text-gray-400 font-normal mr-1">{i + 1}.</span>{title}
+                </h3>
+                {text && <p className="text-sm md:text-base text-gray-600 leading-relaxed">{text}</p>}
+                {bullets && (
+                  <ul className="space-y-2">
+                    {bullets.map((b) => (
+                      <li key={b} className="flex items-start gap-2 text-sm md:text-base text-gray-600 leading-relaxed">
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {principles && (
+                  <div className="space-y-3">
+                    {principles.map(({ name, desc }) => (
+                      <div key={name} className="flex items-start gap-3">
+                        <span className="mt-0.5 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-md px-2 py-0.5 flex-shrink-0">{name}</span>
+                        <p className="text-sm md:text-base text-gray-600 leading-relaxed">{desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Sticky footer close button */}
+          <div className="sticky bottom-0 bg-white rounded-b-2xl px-6 md:px-10 py-4 border-t border-gray-100 shadow-sm flex-shrink-0">
+            <button
+              onClick={() => setShowAbout(false)}
+              className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm md:text-base transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderDisclaimerModal = () => {
     const sections = [
       {
@@ -14086,15 +14190,28 @@ function App() {
       {/* Disclaimer modal */}
       {showDisclaimer && renderDisclaimerModal()}
 
+      {/* About modal */}
+      {showAbout && renderAboutModal()}
+
       {/* Global footer */}
       <footer className="fixed bottom-0 left-0 right-0 z-30 bg-blue-50 border-t border-blue-200 py-3 text-center">
-        <button
-          onClick={() => setShowDisclaimer(true)}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
-        >
-          <Info className="w-4 h-4" />
-          Disclaimer
-        </button>
+        <div className="inline-flex items-center gap-4">
+          <button
+            onClick={() => setShowAbout(true)}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
+          >
+            <Info className="w-4 h-4" />
+            About
+          </button>
+          <span className="text-blue-300 text-xs">|</span>
+          <button
+            onClick={() => setShowDisclaimer(true)}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
+          >
+            <Info className="w-4 h-4" />
+            Disclaimer
+          </button>
+        </div>
       </footer>
     </div>
   );
