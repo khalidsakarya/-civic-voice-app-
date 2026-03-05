@@ -7873,6 +7873,28 @@ function App() {
                 </div>
               </div>
 
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">🌟 Senior Advisors</h3>
+                <div className="space-y-2">
+                  {[
+                    { name: 'JD Vance', title: 'Vice President', bio: 'Former U.S. Senator from Ohio and the 50th Vice President of the United States, serving as the President\'s second-in-command and a leading voice of the MAGA movement.' },
+                    { name: 'Susie Wiles', title: 'Chief of Staff', bio: 'The first woman to serve as White House Chief of Staff, overseeing day-to-day operations of the administration and managing the President\'s agenda.' },
+                    { name: 'Marco Rubio', title: 'Secretary of State', bio: 'Former U.S. Senator from Florida leading U.S. foreign policy, diplomacy, and international relations across the globe.' },
+                    { name: 'Pete Hegseth', title: 'Secretary of Defense', bio: 'Former Fox News host and Army National Guard veteran overseeing the U.S. military and Department of Defense.' },
+                    { name: 'Russell Vought', title: 'OMB Director', bio: 'Director of the Office of Management and Budget, overseeing the federal budget process, government spending, and regulatory review.' },
+                    { name: 'Stephen Miller', title: 'Deputy Chief of Staff for Policy', bio: 'Chief architect of the administration\'s immigration and domestic policy agenda, with extensive influence over executive orders and regulatory priorities.' },
+                    { name: 'Elon Musk', title: 'DOGE — Department of Government Efficiency', bio: 'Leading the Department of Government Efficiency initiative, spearheading a sweeping effort to cut federal spending and reduce the size of the federal bureaucracy.' },
+                    { name: 'Steve Bannon', title: 'Senior Advisor', bio: 'Former White House Chief Strategist and longtime political ally of the President, advising on populist economic and political strategy.' },
+                  ].map((advisor) => (
+                    <div key={advisor.name} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                      <h4 className="font-bold text-gray-800">{advisor.name}</h4>
+                      <p className="text-sm text-indigo-600 font-medium mb-1">{advisor.title}</p>
+                      <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
 
             {/* Right column: collapsible sections */}
