@@ -14682,6 +14682,47 @@ function App() {
   };
 
   const renderNotificationsPanel = () => {
+    const CANADA = { id: 1, name: 'Canada', flag: '🇨🇦', members: 338, type: 'canada' };
+    const USA    = { id: 2, name: 'United States', flag: '🇺🇸', members: 535, type: 'usa' };
+
+    const navigateFromNotif = (n) => {
+      setShowNotifications(false);
+      const country = n.country === 'canada' ? CANADA : USA;
+      setSelectedCountry(country);
+
+      if (n.country === 'canada') {
+        switch (n.type) {
+          case 'bill-introduced':
+          case 'bill-passed':
+          case 'bill-rejected':
+          case 'law-signed':
+            setView('legislative-hub'); break;
+          case 'foreign-aid':
+            setFinancialDashTab('money-flow'); setView('money-canada'); break;
+          case 'executive-order':
+            setView('canada-pm-detail'); break;
+          case 'audit-finding':
+            setFinancialDashTab('audit'); setView('money-canada'); break;
+          default: break;
+        }
+      } else {
+        switch (n.type) {
+          case 'bill-introduced':
+          case 'bill-passed':
+          case 'bill-rejected':
+          case 'law-signed':
+            setView('us-legislative-hub'); break;
+          case 'foreign-aid':
+            setFinancialDashTab('money-flow'); setView('money-usa'); break;
+          case 'executive-order':
+            setView('executive-orders'); break;
+          case 'audit-finding':
+            setFinancialDashTab('audit'); setView('money-usa'); break;
+          default: break;
+        }
+      }
+    };
+
     const notifIcon = (type) => {
       const cls = 'w-4 h-4 flex-shrink-0';
       switch (type) {
@@ -14750,7 +14791,15 @@ function App() {
                       <div className="flex-1 min-w-0">
                         <p className={`text-xs leading-snug ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}`}>{n.title}</p>
                         <p className="text-xs text-gray-500 mt-0.5 leading-snug">{n.description}</p>
-                        <p className="text-[10px] text-gray-400 mt-1">{timeAgo(n.timestamp)}</p>
+                        <div className="flex items-center justify-between mt-1.5">
+                          <p className="text-[10px] text-gray-400">{timeAgo(n.timestamp)}</p>
+                          <button
+                            onClick={() => navigateFromNotif(n)}
+                            className="text-[10px] font-semibold text-blue-600 hover:text-blue-800 hover:underline leading-none"
+                          >
+                            View →
+                          </button>
+                        </div>
                       </div>
                       {isUnread && (
                         <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5" />
