@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell } from 'lucide-react';
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import './App.css';
 
@@ -209,6 +209,15 @@ const customStyles = `
 
   .panel-backdrop {
     animation: fadeInBackdrop 0.25s ease forwards;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-12px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0)     scale(1); }
+  }
+
+  .notif-panel-enter {
+    animation: slideDown 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
   .panel-section-label {
@@ -466,6 +475,10 @@ function App() {
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cvNotifications') || '[]'); } catch { return []; }
+  });
   const [homeRegion, setHomeRegion] = useState(() => localStorage.getItem('cvHomeRegion') || null);
   const [showLocationGate, setShowLocationGate] = useState(false);
   const [regionManualMode, setRegionManualMode] = useState(false);
@@ -3747,6 +3760,18 @@ function App() {
     const fn = pendingVoteRef.current;
     pendingVoteRef.current = null;
     fn?.();
+  };
+
+  // ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const openNotifications = () => {
+    setShowNotifications(true);
+    if (unreadCount > 0) {
+      const updated = notifications.map(n => ({ ...n, read: true }));
+      setNotifications(updated);
+      localStorage.setItem('cvNotifications', JSON.stringify(updated));
+    }
   };
 
   // Chart colors
@@ -14610,6 +14635,39 @@ function App() {
     );
   };
 
+  const renderNotificationsPanel = () => (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-[54] bg-black bg-opacity-20"
+        onClick={() => setShowNotifications(false)}
+      />
+      {/* Panel */}
+      <div className="fixed top-14 right-4 left-4 md:left-auto md:w-80 z-[55] bg-white rounded-2xl shadow-2xl border border-gray-100 notif-panel-enter overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <Bell className="w-4 h-4 text-gray-600" />
+            <h2 className="font-bold text-gray-800 text-sm">Notifications</h2>
+          </div>
+          <button
+            onClick={() => setShowNotifications(false)}
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Close notifications"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        {/* Body */}
+        <div className="px-4 py-8 flex flex-col items-center justify-center text-center">
+          <Bell className="w-10 h-10 text-gray-200 mb-3" />
+          <p className="text-sm font-semibold text-gray-500">No notifications yet</p>
+          <p className="text-xs text-gray-400 mt-1">We'll let you know when something important happens.</p>
+        </div>
+      </div>
+    </>
+  );
+
   const renderLocationGateModal = () => {
     const canadaProvinces = ['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland and Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon'];
     const usStates = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
@@ -14975,6 +15033,24 @@ function App() {
 
       {/* Leader profile panel */}
       {showLeaderPanel && selectedLeader && renderLeaderPanel()}
+
+      {/* Notification bell — always visible */}
+      <button
+        onClick={openNotifications}
+        aria-label="Notifications"
+        className="fixed top-3 right-4 z-[52] w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center"
+        style={{ position: 'fixed' }}
+      >
+        <Bell className="w-4 h-4 text-gray-600" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 leading-none">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {/* Notifications panel */}
+      {showNotifications && renderNotificationsPanel()}
 
       {/* Location gate modal */}
       {showLocationGate && renderLocationGateModal()}
