@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info } from 'lucide-react';
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import './App.css';
@@ -466,6 +466,12 @@ function App() {
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [homeRegion, setHomeRegion] = useState(() => localStorage.getItem('cvHomeRegion') || null);
+  const [showLocationGate, setShowLocationGate] = useState(false);
+  const [regionManualMode, setRegionManualMode] = useState(false);
+  const [manualRegionType, setManualRegionType] = useState('canada');
+  const [manualRegionValue, setManualRegionValue] = useState('');
+  const pendingVoteRef = useRef(null);
   const [pmVotes, setPmVotes] = useState(() => {
     const saved = localStorage.getItem('cvPMVote');
     return saved ? JSON.parse(saved) : { support: 12847, oppose: 9231, userVote: null };
@@ -3629,6 +3635,118 @@ function App() {
 
   const toggleCarneySection = (section) => {
     setExpandedCarneySections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  // ── HOME REGION (locked once set, used to gate votes) ────────────────────────
+  const coordsToRegion = (lat, lon) => {
+    // Canadian provinces & territories
+    if (lat >= 57 && lon >= -141 && lon <= -123) return 'Yukon';
+    if (lat >= 60 && lon >= -136 && lon <= -102) return 'Northwest Territories';
+    if (lat >= 60 && lon >= -95 && lon <= -61) return 'Nunavut';
+    if (lat >= 48.3 && lat < 60 && lon >= -139 && lon <= -114) return 'British Columbia';
+    if (lat >= 49 && lat < 60 && lon >= -120 && lon <= -110) return 'Alberta';
+    if (lat >= 49 && lat < 60 && lon >= -110 && lon <= -101.4) return 'Saskatchewan';
+    if (lat >= 49 && lat < 60 && lon >= -101.4 && lon <= -95) return 'Manitoba';
+    if (lat >= 41.7 && lat <= 56.9 && lon >= -95.2 && lon <= -74.3) return 'Ontario';
+    if (lat >= 44.9 && lat <= 62.6 && lon >= -79.8 && lon <= -57.1) return 'Quebec';
+    if (lat >= 44.6 && lat <= 48.1 && lon >= -69.1 && lon <= -63.8) return 'New Brunswick';
+    if (lat >= 43.4 && lat <= 47 && lon >= -66.4 && lon <= -59.7) return 'Nova Scotia';
+    if (lat >= 45.9 && lat <= 47.1 && lon >= -64.5 && lon <= -61.9) return 'Prince Edward Island';
+    if (lat >= 46.6 && lat <= 60.4 && lon >= -67.8 && lon <= -52.6) return 'Newfoundland and Labrador';
+    // US states
+    if (lat >= 57 && lon >= -170 && lon <= -130) return 'Alaska';
+    if (lat >= 18.9 && lat <= 22.2 && lon >= -160.2 && lon <= -154.8) return 'Hawaii';
+    if (lat >= 32.5 && lat <= 42 && lon >= -124.5 && lon <= -114.1) return 'California';
+    if (lat >= 45.5 && lat <= 49 && lon >= -124.8 && lon <= -117) return 'Washington';
+    if (lat >= 42 && lat <= 46.3 && lon >= -124.6 && lon <= -116.5) return 'Oregon';
+    if (lat >= 44.4 && lat <= 49 && lon >= -117.2 && lon <= -104.1) return 'Montana';
+    if (lat >= 42 && lat <= 44.5 && lon >= -117.2 && lon <= -111.1) return 'Idaho';
+    if (lat >= 41 && lat <= 45 && lon >= -111.1 && lon <= -104.1) return 'Wyoming';
+    if (lat >= 36.9 && lat <= 42 && lon >= -109.1 && lon <= -102) return 'Colorado';
+    if (lat >= 36.9 && lat <= 41 && lon >= -114.1 && lon <= -109.1) return 'Utah';
+    if (lat >= 35 && lat <= 42 && lon >= -120 && lon <= -114) return 'Nevada';
+    if (lat >= 31.3 && lat <= 37 && lon >= -114.8 && lon <= -109) return 'Arizona';
+    if (lat >= 30.2 && lat <= 37 && lon >= -109 && lon <= -103) return 'New Mexico';
+    if (lat >= 25.8 && lat <= 36.5 && lon >= -106.6 && lon <= -93.5) return 'Texas';
+    if (lat >= 43.5 && lat <= 49 && lon >= -104.1 && lon <= -96.5) return 'North Dakota';
+    if (lat >= 42.5 && lat <= 46.9 && lon >= -104.1 && lon <= -96.4) return 'South Dakota';
+    if (lat >= 40 && lat <= 43 && lon >= -104.1 && lon <= -95.3) return 'Nebraska';
+    if (lat >= 37 && lat <= 40 && lon >= -102.1 && lon <= -94.6) return 'Kansas';
+    if (lat >= 33.6 && lat <= 37 && lon >= -103.1 && lon <= -94.4) return 'Oklahoma';
+    if (lat >= 29.5 && lat <= 33 && lon >= -94.1 && lon <= -88.8) return 'Louisiana';
+    if (lat >= 33 && lat <= 36.6 && lon >= -94.6 && lon <= -89.7) return 'Arkansas';
+    if (lat >= 36.5 && lat <= 40.6 && lon >= -95.8 && lon <= -89.1) return 'Missouri';
+    if (lat >= 43.5 && lat <= 49 && lon >= -97.2 && lon <= -90.1) return 'Minnesota';
+    if (lat >= 40.6 && lat <= 43.5 && lon >= -91.7 && lon <= -90.1) return 'Iowa';
+    if (lat >= 36.9 && lat <= 43.5 && lon >= -91.5 && lon <= -87.5) return 'Illinois';
+    if (lat >= 37.8 && lat <= 42 && lon >= -87.5 && lon <= -84.8) return 'Indiana';
+    if (lat >= 41.7 && lat <= 48 && lon >= -90.4 && lon <= -82) return 'Michigan';
+    if (lat >= 42.5 && lat <= 47 && lon >= -92.9 && lon <= -86.6) return 'Wisconsin';
+    if (lat >= 38.4 && lat <= 42 && lon >= -84.8 && lon <= -80.5) return 'Ohio';
+    if (lat >= 37 && lat <= 39.7 && lon >= -89.6 && lon <= -81.9) return 'Kentucky';
+    if (lat >= 34.9 && lat <= 37 && lon >= -90.3 && lon <= -81.6) return 'Tennessee';
+    if (lat >= 30 && lat <= 35 && lon >= -88.5 && lon <= -84.9) return 'Alabama';
+    if (lat >= 30 && lat <= 35 && lon >= -91.7 && lon <= -88.1) return 'Mississippi';
+    if (lat >= 30 && lat <= 35 && lon >= -85.6 && lon <= -81) return 'Georgia';
+    if (lat >= 24.5 && lat <= 31 && lon >= -87.6 && lon <= -79.9) return 'Florida';
+    if (lat >= 32 && lat <= 35.2 && lon >= -83.4 && lon <= -78.5) return 'South Carolina';
+    if (lat >= 33.7 && lat <= 36.6 && lon >= -84.3 && lon <= -75.5) return 'North Carolina';
+    if (lat >= 36.5 && lat <= 39.5 && lon >= -83.7 && lon <= -75.2) return 'Virginia';
+    if (lat >= 36 && lat <= 40.6 && lon >= -82.6 && lon <= -77.7) return 'West Virginia';
+    if (lat >= 37.9 && lat <= 39.7 && lon >= -79.5 && lon <= -74.9) return 'Maryland';
+    if (lat >= 39.7 && lat <= 42.3 && lon >= -80.5 && lon <= -74.7) return 'Pennsylvania';
+    if (lat >= 40.5 && lat <= 45 && lon >= -79.8 && lon <= -71.9) return 'New York';
+    if (lat >= 38.9 && lat <= 41.4 && lon >= -75.6 && lon <= -73.9) return 'New Jersey';
+    if (lat >= 38.4 && lat <= 39.9 && lon >= -75.8 && lon <= -74.9) return 'Delaware';
+    if (lat >= 41.2 && lat <= 42.9 && lon >= -73.7 && lon <= -71.8) return 'Connecticut';
+    if (lat >= 41.1 && lat <= 42.1 && lon >= -71.9 && lon <= -71.1) return 'Rhode Island';
+    if (lat >= 41.2 && lat <= 42.9 && lon >= -73.5 && lon <= -69.9) return 'Massachusetts';
+    if (lat >= 42.7 && lat <= 45.3 && lon >= -72.6 && lon <= -70.7) return 'New Hampshire';
+    if (lat >= 43 && lat <= 45.1 && lon >= -73.4 && lon <= -71.5) return 'Vermont';
+    if (lat >= 43 && lat <= 47.5 && lon >= -71.1 && lon <= -66.9) return 'Maine';
+    return null;
+  };
+
+  const storeHomeRegion = (region) => {
+    if (localStorage.getItem('cvHomeRegion')) return; // locked — cannot change
+    localStorage.setItem('cvHomeRegion', region);
+    setHomeRegion(region);
+  };
+
+  const requireRegion = (fn) => {
+    if (homeRegion) { fn(); return; }
+    pendingVoteRef.current = fn;
+    setShowLocationGate(true);
+  };
+
+  const handleRegionDetect = () => {
+    if (!navigator.geolocation) { setRegionManualMode(true); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const region = coordsToRegion(pos.coords.latitude, pos.coords.longitude);
+        if (region) {
+          storeHomeRegion(region);
+          setShowLocationGate(false);
+          setRegionManualMode(false);
+          const fn = pendingVoteRef.current;
+          pendingVoteRef.current = null;
+          fn?.();
+        } else {
+          setRegionManualMode(true);
+        }
+      },
+      () => setRegionManualMode(true)
+    );
+  };
+
+  const handleRegionManualConfirm = () => {
+    if (!manualRegionValue) return;
+    storeHomeRegion(manualRegionValue);
+    setShowLocationGate(false);
+    setRegionManualMode(false);
+    const fn = pendingVoteRef.current;
+    pendingVoteRef.current = null;
+    fn?.();
   };
 
   // Chart colors
@@ -7826,13 +7944,13 @@ function App() {
               {/* Vote buttons */}
               <div className="flex gap-2 mt-2">
                 <button
-                  onClick={() => votePM('support')}
+                  onClick={() => requireRegion(() => votePM('support'))}
                   className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${pmVotes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
                 >
                   <ThumbsUp className="w-4 h-4" /> Support
                 </button>
                 <button
-                  onClick={() => votePM('oppose')}
+                  onClick={() => requireRegion(() => votePM('oppose'))}
                   className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${pmVotes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
                 >
                   <ThumbsDown className="w-4 h-4" /> Oppose
@@ -8324,13 +8442,13 @@ function App() {
               {/* Vote buttons */}
               <div className="flex gap-2 mt-2">
                 <button
-                  onClick={() => votePresident('support')}
+                  onClick={() => requireRegion(() => votePresident('support'))}
                   className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${presidentVotes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
                 >
                   <ThumbsUp className="w-4 h-4" /> Support
                 </button>
                 <button
-                  onClick={() => votePresident('oppose')}
+                  onClick={() => requireRegion(() => votePresident('oppose'))}
                   className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${presidentVotes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
                 >
                   <ThumbsDown className="w-4 h-4" /> Oppose
@@ -10093,14 +10211,14 @@ function App() {
                       {mp.supportVotes !== undefined && (
                         <div className="flex items-center gap-2 pt-2 border-t" onClick={e => e.stopPropagation()}>
                           <button
-                            onClick={() => voteCongressMember(mp.name, 'support')}
+                            onClick={() => requireRegion(() => voteCongressMember(mp.name, 'support'))}
                             className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${mp.userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
                           >
                             <ThumbsUp className="w-3 h-3" />
                             <span>{mp.supportVotes.toLocaleString()}</span>
                           </button>
                           <button
-                            onClick={() => voteCongressMember(mp.name, 'oppose')}
+                            onClick={() => requireRegion(() => voteCongressMember(mp.name, 'oppose'))}
                             className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${mp.userVote === 'oppose' ? 'bg-red-100 text-red-700 ring-1 ring-red-400' : 'text-red-600 hover:bg-red-50'}`}
                           >
                             <ThumbsDown className="w-3 h-3" />
@@ -10220,7 +10338,7 @@ function App() {
 
                       <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                         <button
-                          onClick={() => voteBill(bill.id, bill.userVote === 'support' ? 'remove' : 'support')}
+                          onClick={() => requireRegion(() => voteBill(bill.id, bill.userVote === 'support' ? 'remove' : 'support'))}
                           className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
                             bill.userVote === 'support'
                               ? 'bg-green-600 text-white'
@@ -10231,7 +10349,7 @@ function App() {
                           <span>{bill.userVote === 'support' ? 'Supporting' : 'Support'}</span>
                         </button>
                         <button
-                          onClick={() => voteBill(bill.id, bill.userVote === 'oppose' ? 'remove' : 'oppose')}
+                          onClick={() => requireRegion(() => voteBill(bill.id, bill.userVote === 'oppose' ? 'remove' : 'oppose'))}
                           className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
                             bill.userVote === 'oppose'
                               ? 'bg-red-600 text-white'
@@ -10382,7 +10500,7 @@ function App() {
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  onClick={() => voteBill(selectedBill.id, selectedBill.userVote === 'support' ? 'remove' : 'support')}
+                  onClick={() => requireRegion(() => voteBill(selectedBill.id, selectedBill.userVote === 'support' ? 'remove' : 'support'))}
                   className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
                     selectedBill.userVote === 'support'
                       ? 'bg-green-600 text-white'
@@ -10393,7 +10511,7 @@ function App() {
                   <span className="text-sm sm:text-base">{selectedBill.userVote === 'support' ? 'Supporting' : 'Support This Bill'}</span>
                 </button>
                 <button
-                  onClick={() => voteBill(selectedBill.id, selectedBill.userVote === 'oppose' ? 'remove' : 'oppose')}
+                  onClick={() => requireRegion(() => voteBill(selectedBill.id, selectedBill.userVote === 'oppose' ? 'remove' : 'oppose'))}
                   className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
                     selectedBill.userVote === 'oppose'
                       ? 'bg-red-600 text-white'
@@ -10580,7 +10698,7 @@ function App() {
 
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
-                        onClick={() => voteEO(selectedEO.number, 'support')}
+                        onClick={() => requireRegion(() => voteEO(selectedEO.number, 'support'))}
                         className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
                           votes.userVote === 'support'
                             ? 'bg-green-600 text-white'
@@ -10591,7 +10709,7 @@ function App() {
                         <span className="text-sm sm:text-base">{votes.userVote === 'support' ? 'Supporting' : 'Support This Order'}</span>
                       </button>
                       <button
-                        onClick={() => voteEO(selectedEO.number, 'oppose')}
+                        onClick={() => requireRegion(() => voteEO(selectedEO.number, 'oppose'))}
                         className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
                           votes.userVote === 'oppose'
                             ? 'bg-red-600 text-white'
@@ -10795,14 +10913,14 @@ function App() {
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
-                        onClick={() => votePresidentBill(selectedPresidentBill.id, 'support')}
+                        onClick={() => requireRegion(() => votePresidentBill(selectedPresidentBill.id, 'support'))}
                         className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
                       >
                         <ThumbsUp className="w-5 h-5" />
                         <span>{votes.userVote === 'support' ? 'Supporting' : 'Support This Bill'}</span>
                       </button>
                       <button
-                        onClick={() => votePresidentBill(selectedPresidentBill.id, 'oppose')}
+                        onClick={() => requireRegion(() => votePresidentBill(selectedPresidentBill.id, 'oppose'))}
                         className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
                       >
                         <ThumbsDown className="w-5 h-5" />
@@ -12495,10 +12613,10 @@ function App() {
 
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
-                    onClick={() => {
+                    onClick={() => requireRegion(() => {
                       const mpIndex = mps.findIndex(m => m.name === selectedMember.name);
                       voteMP(mpIndex, selectedMember.userVote === 'support' ? 'remove' : 'support');
-                    }}
+                    })}
                     className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
                       selectedMember.userVote === 'support'
                         ? 'bg-green-600 text-white'
@@ -12509,10 +12627,10 @@ function App() {
                     <span className="text-sm sm:text-base">{selectedMember.userVote === 'support' ? 'Supporting' : 'Support This MP'}</span>
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={() => requireRegion(() => {
                       const mpIndex = mps.findIndex(m => m.name === selectedMember.name);
                       voteMP(mpIndex, selectedMember.userVote === 'oppose' ? 'remove' : 'oppose');
-                    }}
+                    })}
                     className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
                       selectedMember.userVote === 'oppose'
                         ? 'bg-red-600 text-white'
@@ -13250,10 +13368,10 @@ function App() {
                   <div className="text-3xl font-bold text-green-600">{selectedMinistry.approveVotes}</div>
                 </div>
                 <button
-                  onClick={() => voteMinistry(
-                    selectedMinistry.id, 
+                  onClick={() => requireRegion(() => voteMinistry(
+                    selectedMinistry.id,
                     selectedMinistry.userVote === 'approve' ? 'remove' : 'approve'
-                  )}
+                  ))}
                   className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${
                     selectedMinistry.userVote === 'approve'
                       ? 'bg-green-600 text-white'
@@ -13276,10 +13394,10 @@ function App() {
                   <div className="text-3xl font-bold text-red-600">{selectedMinistry.disapproveVotes}</div>
                 </div>
                 <button
-                  onClick={() => voteMinistry(
+                  onClick={() => requireRegion(() => voteMinistry(
                     selectedMinistry.id,
                     selectedMinistry.userVote === 'disapprove' ? 'remove' : 'disapprove'
-                  )}
+                  ))}
                   className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${
                     selectedMinistry.userVote === 'disapprove'
                       ? 'bg-red-600 text-white'
@@ -13669,13 +13787,13 @@ function App() {
             {/* Vote buttons */}
             <div className="flex gap-2 mt-2">
               <button
-                onClick={() => voteCongressMember(member.name, 'support')}
+                onClick={() => requireRegion(() => voteCongressMember(member.name, 'support'))}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${member.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
               >
                 <ThumbsUp className="w-4 h-4" /> Support
               </button>
               <button
-                onClick={() => voteCongressMember(member.name, 'oppose')}
+                onClick={() => requireRegion(() => voteCongressMember(member.name, 'oppose'))}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${member.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
               >
                 <ThumbsDown className="w-4 h-4" /> Oppose
@@ -14492,6 +14610,87 @@ function App() {
     );
   };
 
+  const renderLocationGateModal = () => {
+    const canadaProvinces = ['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland and Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon'];
+    const usStates = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
+    const options = manualRegionType === 'canada' ? canadaProvinces : usStates;
+    return (
+      <div
+        className="fixed inset-0 z-[60] flex items-center justify-center panel-backdrop"
+        style={{ background: 'rgba(0,0,0,0.6)' }}
+      >
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden animate-fade-in">
+          {/* Header */}
+          <div className="bg-blue-600 px-6 py-5 text-white text-center">
+            <div className="text-3xl mb-2">📍</div>
+            <h2 className="text-lg font-bold leading-tight">Set Your Location to Vote</h2>
+            <p className="text-blue-100 text-sm mt-1">This ensures votes reflect real regional opinions</p>
+          </div>
+          <div className="px-6 py-5">
+            {!regionManualMode ? (
+              <>
+                <p className="text-sm text-gray-600 text-center mb-5">
+                  Your location is used once to record your home region. It is <strong>permanently locked</strong> after being set to prevent vote manipulation.
+                </p>
+                <button
+                  onClick={handleRegionDetect}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  <MapPin className="w-5 h-5" /> Allow Location
+                </button>
+                <button
+                  onClick={() => setRegionManualMode(true)}
+                  className="w-full mt-3 text-sm text-gray-500 hover:text-gray-700 underline transition-colors"
+                >
+                  Select region manually instead
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-gray-600 text-center mb-4">Select your home region. This cannot be changed later.</p>
+                <div className="flex rounded-lg overflow-hidden border border-gray-200 mb-3">
+                  <button
+                    onClick={() => { setManualRegionType('canada'); setManualRegionValue(''); }}
+                    className={`flex-1 py-2 text-sm font-semibold transition-colors ${manualRegionType === 'canada' ? 'bg-red-600 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
+                  >
+                    🇨🇦 Canada
+                  </button>
+                  <button
+                    onClick={() => { setManualRegionType('usa'); setManualRegionValue(''); }}
+                    className={`flex-1 py-2 text-sm font-semibold transition-colors ${manualRegionType === 'usa' ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`}
+                  >
+                    🇺🇸 USA
+                  </button>
+                </div>
+                <select
+                  value={manualRegionValue}
+                  onChange={(e) => setManualRegionValue(e.target.value)}
+                  className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm text-gray-800 mb-3 focus:outline-none focus:border-blue-500"
+                >
+                  <option value="">Select {manualRegionType === 'canada' ? 'province / territory' : 'state'}…</option>
+                  {options.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+                <button
+                  onClick={handleRegionManualConfirm}
+                  disabled={!manualRegionValue}
+                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors"
+                >
+                  Confirm My Region
+                </button>
+              </>
+            )}
+            <button
+              onClick={() => { setShowLocationGate(false); setRegionManualMode(false); }}
+              className="w-full mt-3 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Skip for now (voting requires a region)
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderAboutModal = () => {
     const sections = [
       {
@@ -14776,6 +14975,9 @@ function App() {
 
       {/* Leader profile panel */}
       {showLeaderPanel && selectedLeader && renderLeaderPanel()}
+
+      {/* Location gate modal */}
+      {showLocationGate && renderLocationGateModal()}
 
       {/* Disclaimer modal */}
       {showDisclaimer && renderDisclaimerModal()}
