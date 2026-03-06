@@ -442,6 +442,31 @@ const awaitingBills = [
 ];
 
 
+const NOTIFICATIONS_DATA = [
+  // Canada
+  { id: 'ca-1', country: 'canada', type: 'bill-introduced', title: 'Bill C-78: Affordable Housing Act Introduced', description: 'New legislation to fund 100,000 affordable homes across Canada by 2030.', timestamp: '2026-03-04T14:30:00Z' },
+  { id: 'ca-2', country: 'canada', type: 'bill-passed', title: 'Clean Energy Transition Act Passes House', description: 'Bill C-72 approves $8.5B for renewable energy grid upgrades nationwide.', timestamp: '2026-03-03T09:15:00Z' },
+  { id: 'ca-3', country: 'canada', type: 'law-signed', title: 'PM Carney Signs Pharmacare Expansion Act', description: 'Universal prescription drug coverage extended to 4.2 million more Canadians.', timestamp: '2026-03-02T16:00:00Z' },
+  { id: 'ca-4', country: 'canada', type: 'foreign-aid', title: 'Canada Pledges $450M to Ukraine Reconstruction', description: 'PMO announces humanitarian and infrastructure aid package for war-torn regions.', timestamp: '2026-03-01T11:00:00Z' },
+  { id: 'ca-5', country: 'canada', type: 'executive-order', title: 'Cabinet Reviews Foreign Interference in Contracts', description: 'PM directive launched following NSICOP findings on procurement vulnerabilities.', timestamp: '2026-02-28T10:00:00Z' },
+  { id: 'ca-6', country: 'canada', type: 'audit-finding', title: 'AG Flags $1.2B in Unaccounted Pandemic Spending', description: 'Auditor General report identifies oversight gaps in CERB and wage subsidy programs.', timestamp: '2026-02-27T08:45:00Z' },
+  { id: 'ca-7', country: 'canada', type: 'bill-introduced', title: 'Bill C-80: Digital Privacy Protection Act Tabled', description: 'Legislation modernizes PIPEDA with stronger breach notification requirements.', timestamp: '2026-02-26T13:20:00Z' },
+  { id: 'ca-8', country: 'canada', type: 'bill-rejected', title: 'Senate Rejects Foreign Buyer Tax Extension Act', description: 'Upper chamber votes 45-38 against extending the ban on foreign homebuyers.', timestamp: '2026-02-25T15:30:00Z' },
+  { id: 'ca-9', country: 'canada', type: 'foreign-aid', title: 'Canada Commits $200M to Gaza Humanitarian Aid', description: 'DFATD announces aid package for food, medicine, and shelter in conflict zone.', timestamp: '2026-02-24T12:00:00Z' },
+  { id: 'ca-10', country: 'canada', type: 'audit-finding', title: 'PBO Flags $340M in Unused Defence Contracts', description: 'Parliamentary watchdog reveals unspent procurement funds from 2023–24 fiscal year.', timestamp: '2026-02-22T09:00:00Z' },
+  // USA
+  { id: 'us-1', country: 'usa', type: 'bill-introduced', title: 'Fiscal Responsibility Enhancement Act Introduced', description: 'Legislation proposes $1.2T in federal spending cuts over the next 10 years.', timestamp: '2026-03-04T15:00:00Z' },
+  { id: 'us-2', country: 'usa', type: 'bill-passed', title: 'Border Security and Immigration Reform Act Passes Senate', description: 'Bill allocates $14B for southern border enforcement and processing centers.', timestamp: '2026-03-03T10:30:00Z' },
+  { id: 'us-3', country: 'usa', type: 'law-signed', title: 'President Signs AI Governance Framework Act', description: 'Establishes federal safety standards for AI in critical infrastructure sectors.', timestamp: '2026-03-02T14:00:00Z' },
+  { id: 'us-4', country: 'usa', type: 'foreign-aid', title: 'U.S. Suspends $2.4B in USAID Programs Globally', description: 'White House cites budget review; humanitarian groups warn of dire impact.', timestamp: '2026-03-01T09:00:00Z' },
+  { id: 'us-5', country: 'usa', type: 'executive-order', title: 'Executive Order on Energy Dominance Signed', description: 'Fast-tracks permits for oil, gas, and LNG export terminals on federal lands.', timestamp: '2026-02-28T11:30:00Z' },
+  { id: 'us-6', country: 'usa', type: 'audit-finding', title: 'GAO Finds $8.7B in Improper Medicare Payments', description: 'Report highlights billing fraud and administrative errors in 2025 fiscal year.', timestamp: '2026-02-27T09:15:00Z' },
+  { id: 'us-7', country: 'usa', type: 'bill-introduced', title: 'Social Security Protection Act Introduced', description: 'Bipartisan bill proposes extending solvency by raising the payroll tax cap.', timestamp: '2026-02-26T14:00:00Z' },
+  { id: 'us-8', country: 'usa', type: 'bill-rejected', title: 'House Rejects Assault Weapons Ban Act', description: 'Legislation fails 218-210 after opposition from Republican majority members.', timestamp: '2026-02-25T16:00:00Z' },
+  { id: 'us-9', country: 'usa', type: 'foreign-aid', title: 'Congress Approves $1.8B Emergency Aid for Taiwan', description: 'Defense supplemental includes surveillance systems and missile defense tech.', timestamp: '2026-02-23T10:00:00Z' },
+  { id: 'us-10', country: 'usa', type: 'executive-order', title: 'EO Directs Federal Agencies to Cut Workforce by 15%', description: 'OMB given 60 days to submit workforce reduction plans across all departments.', timestamp: '2026-02-21T13:00:00Z' },
+];
+
 function App() {
   const [view, setView] = useState('countries');
   const [selectedCountry, setSelectedCountry] = useState(null);
@@ -476,8 +501,8 @@ function App() {
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('cvNotifications') || '[]'); } catch { return []; }
+  const [readNotifIds, setReadNotifIds] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cvNotifRead') || '[]'); } catch { return []; }
   });
   const [homeRegion, setHomeRegion] = useState(() => localStorage.getItem('cvHomeRegion') || null);
   const [showLocationGate, setShowLocationGate] = useState(false);
@@ -3763,14 +3788,35 @@ function App() {
   };
 
   // ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const getRegionCountry = (region) => {
+    if (!region) return null;
+    const canadaRegions = ['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland and Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon'];
+    return canadaRegions.includes(region) ? 'canada' : 'usa';
+  };
+
+  const timeAgo = (isoString) => {
+    const diff = Date.now() - new Date(isoString).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
+  };
+
+  const visibleNotifs = (() => {
+    const country = getRegionCountry(homeRegion);
+    return country ? NOTIFICATIONS_DATA.filter(n => n.country === country) : NOTIFICATIONS_DATA;
+  })();
+
+  const unreadCount = visibleNotifs.filter(n => !readNotifIds.includes(n.id)).length;
 
   const openNotifications = () => {
     setShowNotifications(true);
     if (unreadCount > 0) {
-      const updated = notifications.map(n => ({ ...n, read: true }));
-      setNotifications(updated);
-      localStorage.setItem('cvNotifications', JSON.stringify(updated));
+      const allReadIds = [...new Set([...readNotifIds, ...visibleNotifs.map(n => n.id)])];
+      setReadNotifIds(allReadIds);
+      localStorage.setItem('cvNotifRead', JSON.stringify(allReadIds));
     }
   };
 
@@ -14635,38 +14681,90 @@ function App() {
     );
   };
 
-  const renderNotificationsPanel = () => (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-[54] bg-black bg-opacity-20"
-        onClick={() => setShowNotifications(false)}
-      />
-      {/* Panel */}
-      <div className="fixed top-14 right-4 left-4 md:left-auto md:w-80 z-[55] bg-white rounded-2xl shadow-2xl border border-gray-100 notif-panel-enter overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <Bell className="w-4 h-4 text-gray-600" />
-            <h2 className="font-bold text-gray-800 text-sm">Notifications</h2>
+  const renderNotificationsPanel = () => {
+    const notifIcon = (type) => {
+      const cls = 'w-4 h-4 flex-shrink-0';
+      switch (type) {
+        case 'bill-introduced': return <FileText className={`${cls} text-blue-500`} />;
+        case 'bill-passed':     return <CheckCircle className={`${cls} text-green-500`} />;
+        case 'bill-rejected':   return <XCircle className={`${cls} text-red-500`} />;
+        case 'law-signed':      return <Scale className={`${cls} text-purple-500`} />;
+        case 'foreign-aid':     return <Globe className={`${cls} text-teal-500`} />;
+        case 'executive-order': return <Crown className={`${cls} text-orange-500`} />;
+        case 'audit-finding':   return <AlertCircle className={`${cls} text-amber-500`} />;
+        default:                return <Bell className={`${cls} text-gray-400`} />;
+      }
+    };
+
+    return (
+      <>
+        {/* Backdrop */}
+        <div
+          className="fixed inset-0 z-[54] bg-black bg-opacity-20"
+          onClick={() => setShowNotifications(false)}
+        />
+        {/* Panel */}
+        <div className="fixed top-14 right-4 left-4 md:left-auto md:w-96 z-[55] bg-white rounded-2xl shadow-2xl border border-gray-100 notif-panel-enter overflow-hidden flex flex-col" style={{ maxHeight: '80vh' }}>
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <Bell className="w-4 h-4 text-gray-600" />
+              <h2 className="font-bold text-gray-800 text-sm">Notifications</h2>
+              {homeRegion && (
+                <span className="text-xs text-gray-400 font-normal">· {homeRegion}</span>
+              )}
+            </div>
+            <button
+              onClick={() => setShowNotifications(false)}
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Close notifications"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <button
-            onClick={() => setShowNotifications(false)}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label="Close notifications"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          {/* Body */}
+          <div className="overflow-y-auto flex-1">
+            {visibleNotifs.length === 0 ? (
+              <div className="px-4 py-8 flex flex-col items-center justify-center text-center">
+                <Bell className="w-10 h-10 text-gray-200 mb-3" />
+                <p className="text-sm font-semibold text-gray-500">No notifications yet</p>
+                <p className="text-xs text-gray-400 mt-1">We'll let you know when something important happens.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-50">
+                {visibleNotifs.map((n) => {
+                  const isUnread = !readNotifIds.includes(n.id);
+                  return (
+                    <div key={n.id} className={`px-4 py-3 flex gap-3 items-start ${isUnread ? 'bg-blue-50' : 'bg-white'}`}>
+                      <div className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        n.type === 'bill-introduced' ? 'bg-blue-100' :
+                        n.type === 'bill-passed'     ? 'bg-green-100' :
+                        n.type === 'bill-rejected'   ? 'bg-red-100' :
+                        n.type === 'law-signed'      ? 'bg-purple-100' :
+                        n.type === 'foreign-aid'     ? 'bg-teal-100' :
+                        n.type === 'executive-order' ? 'bg-orange-100' :
+                        'bg-amber-100'
+                      }`}>
+                        {notifIcon(n.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-xs leading-snug ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}`}>{n.title}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 leading-snug">{n.description}</p>
+                        <p className="text-[10px] text-gray-400 mt-1">{timeAgo(n.timestamp)}</p>
+                      </div>
+                      {isUnread && (
+                        <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
-        {/* Body */}
-        <div className="px-4 py-8 flex flex-col items-center justify-center text-center">
-          <Bell className="w-10 h-10 text-gray-200 mb-3" />
-          <p className="text-sm font-semibold text-gray-500">No notifications yet</p>
-          <p className="text-xs text-gray-400 mt-1">We'll let you know when something important happens.</p>
-        </div>
-      </div>
-    </>
-  );
+      </>
+    );
+  };
 
   const renderLocationGateModal = () => {
     const canadaProvinces = ['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland and Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon'];
