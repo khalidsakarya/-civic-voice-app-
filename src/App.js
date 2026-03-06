@@ -7712,81 +7712,93 @@ function App() {
         <div className="max-w-6xl mx-auto px-4 py-8">
 
           {/* Profile card */}
-          <div className="bg-white rounded-lg shadow-md p-8 mb-6">
-            <div className="flex items-start gap-6">
-              <div
-                style={{ backgroundColor: '#ef4444' }}
-                className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold flex-shrink-0"
-              >
-                DT
-              </div>
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-800 mb-3">{trump.name}</h1>
-                <div className="mb-3">
-                  <span
-                    style={{ backgroundColor: '#ef4444' }}
-                    className="text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-sm"
-                  >
-                    47th President of the United States
-                  </span>
+          <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
+            {/* Header — Congress-panel style on mobile, expands on desktop */}
+            <div
+              style={{ background: 'linear-gradient(135deg, #ef444418 0%, #ef444406 100%)', borderBottom: '3px solid #ef4444' }}
+              className="px-4 pt-4 pb-4 md:px-8 md:pt-8 md:pb-6"
+            >
+              <div className="flex items-start gap-4">
+                <div
+                  style={{ backgroundColor: '#ef4444' }}
+                  className="w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center text-white text-xl md:text-3xl font-bold flex-shrink-0 shadow-lg"
+                >
+                  DT
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <span className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: '#ef4444' }}></span>
-                    <span className="font-medium">{trump.party}</span>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl md:text-3xl font-bold text-gray-900 leading-tight">{trump.name}</h1>
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    <span
+                      style={{ backgroundColor: '#ef4444' }}
+                      className="text-white text-xs md:text-sm font-bold px-2.5 md:px-3 py-1 md:py-1.5 rounded-full shadow-sm"
+                    >
+                      47th President
+                    </span>
+                    <span className="text-sm text-gray-600 font-medium">United States</span>
                   </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="w-4 h-4" />
-                    <span>Washington, D.C.</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Calendar className="w-4 h-4" />
-                    <span>In office since Jan 20, 2025</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Clock className="w-4 h-4" />
-                    <span>45th &amp; 47th President</span>
+                  <p className="text-sm text-gray-500 mt-1 truncate">{trump.party} · Washington, D.C. · Jan 2025–present</p>
+                  {/* Desktop-only detail grid */}
+                  <div className="hidden md:grid md:grid-cols-2 gap-4 mt-4">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <span className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: '#ef4444' }}></span>
+                      <span className="font-medium">{trump.party}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <MapPin className="w-4 h-4" />
+                      <span>Washington, D.C.</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar className="w-4 h-4" />
+                      <span>In office since Jan 20, 2025</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Clock className="w-4 h-4" />
+                      <span>45th &amp; 47th President</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Citizen Opinion */}
-            <div className="border-t pt-6 mt-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Citizen Opinion</h3>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex gap-6 sm:gap-8">
-                  <div className="flex items-center gap-3">
-                    <ThumbsUp className="w-6 h-6 text-green-600" />
-                    <div>
-                      <div className="text-2xl font-bold text-gray-800">{presidentVotes.support.toLocaleString()}</div>
-                      <div className="text-sm text-gray-600">Support</div>
+              {/* Approval bar */}
+              {(() => {
+                const total = (presidentVotes.support || 0) + (presidentVotes.oppose || 0);
+                const pct = total > 0 ? Math.round((presidentVotes.support / total) * 100) : 50;
+                return (
+                  <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 mt-4">
+                    <div className="flex items-center gap-1.5">
+                      <ThumbsUp className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-semibold text-gray-700">{presidentVotes.support.toLocaleString()}</span>
+                      <span className="text-xs text-gray-500">support</span>
+                    </div>
+                    <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[60px]">
+                      <div
+                        className="h-2 rounded-full transition-all"
+                        style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }}
+                      />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-gray-500">oppose</span>
+                      <span className="text-sm font-semibold text-gray-700">{presidentVotes.oppose.toLocaleString()}</span>
+                      <ThumbsDown className="w-4 h-4 text-red-500" />
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <ThumbsDown className="w-6 h-6 text-red-600" />
-                    <div>
-                      <div className="text-2xl font-bold text-gray-800">{presidentVotes.oppose.toLocaleString()}</div>
-                      <div className="text-sm text-gray-600">Oppose</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={() => votePresident('support')}
-                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${presidentVotes.userVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
-                  >
-                    <ThumbsUp className="w-5 h-5" />
-                    <span className="text-sm sm:text-base">{presidentVotes.userVote === 'support' ? 'Supporting' : 'Support This President'}</span>
-                  </button>
-                  <button
-                    onClick={() => votePresident('oppose')}
-                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${presidentVotes.userVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
-                  >
-                    <ThumbsDown className="w-5 h-5" />
-                    <span className="text-sm sm:text-base">{presidentVotes.userVote === 'oppose' ? 'Opposing' : 'Oppose'}</span>
-                  </button>
-                </div>
+                );
+              })()}
+
+              {/* Vote buttons */}
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => votePresident('support')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${presidentVotes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
+                >
+                  <ThumbsUp className="w-4 h-4" /> Support
+                </button>
+                <button
+                  onClick={() => votePresident('oppose')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${presidentVotes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
+                >
+                  <ThumbsDown className="w-4 h-4" /> Oppose
+                </button>
               </div>
             </div>
           </div>
