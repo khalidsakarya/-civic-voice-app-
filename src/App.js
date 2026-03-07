@@ -3758,7 +3758,7 @@ function App() {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') return;
       const sw = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-      const token = await getToken(messaging, { serviceWorkerRegistration: sw });
+      const token = await getToken(messaging, { serviceWorkerRegistration: sw, vapidKey: 'BAuHr-DKvbopzCzk-wVBzlAiYXA0cxuCO_Wq-A3rQJWe2wXwxnVzSk6tuK6VLI0na7kWm9S3Zp6EDud9M_BWvW8' });
       if (token) localStorage.setItem('cvFCMToken', token);
     } catch {
       // Notifications are optional — fail silently
