@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { messaging } from './firebase';
+import { getToken } from 'firebase/messaging';
 import { ChevronLeft, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell } from 'lucide-react';
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import './App.css';
@@ -3751,6 +3753,18 @@ function App() {
     setHomeRegion(region);
   };
 
+  const requestFcmToken = async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') return;
+      const sw = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      const token = await getToken(messaging, { serviceWorkerRegistration: sw });
+      if (token) localStorage.setItem('cvFCMToken', token);
+    } catch {
+      // Notifications are optional — fail silently
+    }
+  };
+
   const requireRegion = (fn) => {
     if (homeRegion) { fn(); return; }
     pendingVoteRef.current = fn;
@@ -3764,6 +3778,7 @@ function App() {
         const region = coordsToRegion(pos.coords.latitude, pos.coords.longitude);
         if (region) {
           storeHomeRegion(region);
+          requestFcmToken();
           setShowLocationGate(false);
           setRegionManualMode(false);
           const fn = pendingVoteRef.current;
@@ -3780,6 +3795,7 @@ function App() {
   const handleRegionManualConfirm = () => {
     if (!manualRegionValue) return;
     storeHomeRegion(manualRegionValue);
+    requestFcmToken();
     setShowLocationGate(false);
     setRegionManualMode(false);
     const fn = pendingVoteRef.current;
