@@ -13955,7 +13955,7 @@ function App() {
         />
 
         {/* Sliding panel */}
-        <div className="panel-slide-in relative flex flex-col bg-white shadow-2xl w-full md:max-w-2xl h-full overflow-hidden">
+        <div className="panel-slide-in relative flex flex-col bg-white shadow-2xl w-full md:w-[65vw] md:max-w-5xl h-full overflow-hidden">
 
           {/* ── HEADER ── */}
           <div
