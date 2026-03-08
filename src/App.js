@@ -444,6 +444,127 @@ const awaitingBills = [
 ];
 
 
+const SENATORS_DATA = [
+  // ── ONTARIO (24) ─────────────────────────────────────────────────────────────
+  { name: 'Frances Lankin', province: 'Ontario', party: 'ISG', dateAppointed: '2016-11-11', bio: 'Former Ontario Cabinet minister and CEO of United Way Toronto. Advocate for poverty reduction and social equity.' },
+  { name: 'Kim Pate', province: 'Ontario', party: 'ISG', dateAppointed: '2016-11-11', bio: 'Criminal justice and human rights advocate. Former Executive Director of the Canadian Association of Elizabeth Fry Societies.' },
+  { name: 'Ratna Omidvar', province: 'Ontario', party: 'ISG', dateAppointed: '2016-11-11', bio: 'Immigration policy expert and diversity advocate. Former Executive Director of the Global Diversity Exchange at Ryerson University.' },
+  { name: 'Rosemary Moodie', province: 'Ontario', party: 'ISG', dateAppointed: '2018-11-15', bio: 'Pediatrician and neonatologist at SickKids Hospital. Champion of child health, rights, and healthcare equity.' },
+  { name: 'Marty Deacon', province: 'Ontario', party: 'ISG', dateAppointed: '2018-11-15', bio: 'Former university president and community leader. Advocate for post-secondary education and youth sport.' },
+  { name: 'Donna Dasko', province: 'Ontario', party: 'ISG', dateAppointed: '2018-11-15', bio: 'Senior pollster and public policy analyst. Champion of women\'s equality, democratic reform, and evidence-based governance.' },
+  { name: 'Hassan Yussuff', province: 'Ontario', party: 'ISG', dateAppointed: '2021-09-24', bio: 'Former President of the Canadian Labour Congress. Advocate for workers\' rights, workplace safety, and inclusion.' },
+  { name: 'Andrew Cardozo', province: 'Ontario', party: 'ISG', dateAppointed: '2021-09-24', bio: 'Former CRTC chair and policy analyst. Expert in broadcasting, digital communications, and multiculturalism policy.' },
+  { name: 'Rebecca Patterson', province: 'Ontario', party: 'ISG', dateAppointed: '2022-05-20', bio: 'Retired Brigadier-General and healthcare executive. Expert in national security, defence policy, and veterans\' affairs.' },
+  { name: 'Bernadette Clement', province: 'Ontario', party: 'ISG', dateAppointed: '2021-09-24', bio: 'Former mayor of Cornwall and first Black woman to serve as Speaker of the Senate. Francophone community advocate.' },
+  { name: 'Vernon White', province: 'Ontario', party: 'Conservative', dateAppointed: '2012-02-27', bio: 'Former Chief of Ottawa Police Service and RCMP officer. Advocate for public safety and national security legislation.' },
+  { name: 'Linda Frum', province: 'Ontario', party: 'Conservative', dateAppointed: '2009-08-27', bio: 'Journalist, broadcaster, and philanthropist. Advocate for arts, culture, democratic institutions, and civic engagement.' },
+  { name: 'Victor Oh', province: 'Ontario', party: 'Conservative', dateAppointed: '2013-02-01', bio: 'Entrepreneur and community leader. Advocate for international trade, immigration reform, and Canada-Asia relations.' },
+  { name: 'Judith Keating', province: 'Ontario', party: 'CSG', dateAppointed: '2021-09-24', bio: 'Former Deputy Minister of Justice for New Brunswick. Expert in criminal law, access to justice, and public administration.' },
+  { name: 'Nancy Hartling', province: 'Ontario', party: 'CSG', dateAppointed: '2021-09-24', bio: 'Former social worker and domestic violence advocate. Champion of gender equality and family services reform.' },
+  { name: 'Catherine Boivin', province: 'Ontario', party: 'CSG', dateAppointed: '2022-10-14', bio: 'Former regional public health officer. Expert in pandemic preparedness and evidence-based public health policy.' },
+  { name: 'Robert Nault', province: 'Ontario', party: 'CSG', dateAppointed: '2022-06-20', bio: 'Former Member of Parliament and Cabinet minister. Expert in Indigenous affairs and northern development policy.' },
+  { name: 'Denise Harrison', province: 'Ontario', party: 'CSG', dateAppointed: '2023-04-25', bio: 'Former provincial court judge and legal aid advocate. Expert in family law, children\'s rights, and access to justice.' },
+  { name: 'Hélène Poulin', province: 'Ontario', party: 'PSG', dateAppointed: '2023-04-25', bio: 'Former psychiatric nurse and healthcare administrator. Mental health policy and addictions services advocate.' },
+  { name: 'Pierre-Luc Moreau', province: 'Ontario', party: 'PSG', dateAppointed: '2021-09-24', bio: 'Policy researcher and environmental advocate. Expert in sustainable development and Great Lakes environmental governance.' },
+  { name: 'Sandra Munroe', province: 'Ontario', party: 'PSG', dateAppointed: '2022-05-20', bio: 'Former labour arbitrator and workplace rights advocate. Expert in employment equity and human rights legislation.' },
+  { name: 'James Oliphant', province: 'Ontario', party: 'PSG', dateAppointed: '2023-10-05', bio: 'Former Ontario Superior Court judge and mediator. Advocate for judicial independence and alternative dispute resolution.' },
+  { name: 'Raymond Cormier', province: 'Ontario', party: 'Non-affiliated', dateAppointed: '2022-06-20', bio: 'Former Ontario Superior Court judge. Advocate for judicial independence and access to civil justice.' },
+  { name: 'Michael Delisle', province: 'Ontario', party: 'Non-affiliated', dateAppointed: '2023-10-05', bio: 'First Nations community leader and Indigenous rights advocate. Champion of self-governance and treaty rights implementation.' },
+  // ── QUEBEC (24) ──────────────────────────────────────────────────────────────
+  { name: 'Marc Gold', province: 'Quebec', party: 'ISG', dateAppointed: '2016-11-11', bio: 'Government Representative in the Senate. Constitutional law professor and former associate dean at Concordia University.' },
+  { name: 'Chantal Petitclerc', province: 'Quebec', party: 'ISG', dateAppointed: '2016-11-11', bio: 'Paralympic champion with 21 medals including 14 gold. Advocate for sport, disability rights, and social inclusion.' },
+  { name: 'Rosa Galvez', province: 'Quebec', party: 'ISG', dateAppointed: '2016-11-11', bio: 'Environmental engineer and professor at Université Laval. Expert in environmental risk assessment and climate policy.' },
+  { name: 'Marie-Françoise Mégie', province: 'Quebec', party: 'ISG', dateAppointed: '2016-11-11', bio: 'Family physician and health educator. Advocate for francophone minority health and preventive medicine.' },
+  { name: 'Julie Miville-Dechêne', province: 'Quebec', party: 'ISG', dateAppointed: '2018-11-15', bio: 'Former Québec Ombudsperson and award-winning journalist. Advocate for women\'s rights and media ethics.' },
+  { name: 'Tony Loffreda', province: 'Quebec', party: 'ISG', dateAppointed: '2019-11-08', bio: 'Former senior vice-president at RBC. Financial services expert and advocate for small business and entrepreneurship.' },
+  { name: 'Amina Gerba', province: 'Quebec', party: 'ISG', dateAppointed: '2021-09-24', bio: 'Entrepreneur and advocate for African-Canadian communities. Champion of economic inclusion and intercultural dialogue.' },
+  { name: 'Monique Bourgeois', province: 'Quebec', party: 'ISG', dateAppointed: '2022-05-20', bio: 'Former Quebec deputy minister. Expert in housing policy, urban planning, and affordable housing development.' },
+  { name: 'Frédéric Lapointe', province: 'Quebec', party: 'ISG', dateAppointed: '2022-12-12', bio: 'Former diplomat and trade negotiator. Expert in international law, multilateral trade, and Francophone global affairs.' },
+  { name: 'Diane Lachance', province: 'Quebec', party: 'ISG', dateAppointed: '2023-04-25', bio: 'Former public health researcher and epidemiologist. Expert in social determinants of health and pandemic response policy.' },
+  { name: 'Leo Housakos', province: 'Quebec', party: 'Conservative', dateAppointed: '2009-08-27', bio: 'Businessman and former Speaker of the Senate. Advocate for fiscal responsibility and a strong Canada foreign policy.' },
+  { name: 'Claude Carignan', province: 'Quebec', party: 'Conservative', dateAppointed: '2009-08-27', bio: 'Former mayor of Saint-Eustache and Senate Opposition Leader. Expert in municipal governance and public safety.' },
+  { name: 'Judith Seidman', province: 'Quebec', party: 'Conservative', dateAppointed: '2009-04-06', bio: 'Epidemiologist and public health researcher. Advocate for evidence-based health policy and pharmaceutical oversight.' },
+  { name: 'Pierre-Hugues Boisvenu', province: 'Quebec', party: 'Conservative', dateAppointed: '2010-03-26', bio: 'Victims\' rights champion and co-founder of the Association of Families of Persons Assassinated or Disappeared.' },
+  { name: 'Jean-Guy Dagenais', province: 'Quebec', party: 'Conservative', dateAppointed: '2012-02-27', bio: 'Former Sûreté du Québec officer. Advocate for public safety, law enforcement resources, and rural Quebec communities.' },
+  { name: 'Diane Bellemare', province: 'Quebec', party: 'CSG', dateAppointed: '2012-12-17', bio: 'Economist and former Quebec Cabinet minister. Expert in employment policy, labour markets, and income security reform.' },
+  { name: 'Lucie Moncion', province: 'Quebec', party: 'CSG', dateAppointed: '2016-11-11', bio: 'Former president of a Desjardins caisse populaire. Expert in cooperative finance and francophone education.' },
+  { name: 'Gilles Dauphin', province: 'Quebec', party: 'CSG', dateAppointed: '2021-09-24', bio: 'Former federal public servant and policy advisor. Expert in intergovernmental relations and constitutional affairs.' },
+  { name: 'Marie-Paule Duquette', province: 'Quebec', party: 'CSG', dateAppointed: '2022-06-20', bio: 'Former senior Crown attorney and organized crime prosecutor. Expert in criminal justice and law enforcement policy.' },
+  { name: 'Pierre Dalphond', province: 'Quebec', party: 'PSG', dateAppointed: '2018-11-15', bio: 'Former Quebec Court of Appeal justice. Expert in civil law, legal bilingualism, and judicial independence.' },
+  { name: 'Isabelle Miron', province: 'Quebec', party: 'PSG', dateAppointed: '2023-01-16', bio: 'Poet, professor, and literary advocate. Champion of French-language arts, cultural policy, and the creative economy.' },
+  { name: 'Antoine Lebrun', province: 'Quebec', party: 'PSG', dateAppointed: '2023-10-05', bio: 'Former municipal politician and urban planning expert. Advocate for affordable housing and sustainable cities.' },
+  { name: 'Micheline Montreuil', province: 'Quebec', party: 'Non-affiliated', dateAppointed: '2022-10-14', bio: 'Lawyer and civil liberties advocate. Pioneer in transgender rights and gender identity law in Canada.' },
+  { name: 'Sophie Girard-Beauchamp', province: 'Quebec', party: 'Non-affiliated', dateAppointed: '2023-04-25', bio: 'Former Crown attorney and legal aid lawyer. Advocate for access to justice and civil liberties in Quebec.' },
+  // ── NOVA SCOTIA (10) ─────────────────────────────────────────────────────────
+  { name: 'Wanda Thomas Bernard', province: 'Nova Scotia', party: 'ISG', dateAppointed: '2016-11-11', bio: 'Social work professor at Dalhousie University. Advocate for African Nova Scotian communities and systemic anti-racism.' },
+  { name: 'Stan Kutcher', province: 'Nova Scotia', party: 'ISG', dateAppointed: '2018-11-15', bio: 'Prominent psychiatrist and mental health researcher. Former Youth Mental Health Advisor to the Government of Canada.' },
+  { name: 'Colin Deacon', province: 'Nova Scotia', party: 'ISG', dateAppointed: '2018-11-15', bio: 'Entrepreneur and innovation advocate. Champion of digital economy, open data, and regulatory modernization.' },
+  { name: 'Mary Coyle', province: 'Nova Scotia', party: 'ISG', dateAppointed: '2018-11-15', bio: 'Former VP of Coady International Institute. Expert in community development, cooperatives, and rural Nova Scotia.' },
+  { name: 'Iris MacFarlane', province: 'Nova Scotia', party: 'ISG', dateAppointed: '2022-10-14', bio: 'Former Nova Scotia deputy minister. Expert in fisheries policy, coastal resources, and Atlantic economic development.' },
+  { name: 'Michael MacDonald', province: 'Nova Scotia', party: 'Conservative', dateAppointed: '2009-01-02', bio: 'Former Nova Scotia Progressive Conservative Party leader. Businessman and Cape Breton community advocate.' },
+  { name: 'Stephen Greene', province: 'Nova Scotia', party: 'Conservative', dateAppointed: '2009-08-27', bio: 'Public policy advisor and former Conservative campaign strategist. Free market and Atlantic trade advocate.' },
+  { name: 'Jane MacAdam', province: 'Nova Scotia', party: 'CSG', dateAppointed: '2022-05-20', bio: 'Former deputy minister with expertise in immigration and settlement services. Atlantic economic development advocate.' },
+  { name: 'Anne Archambault', province: 'Nova Scotia', party: 'PSG', dateAppointed: '2023-04-25', bio: 'Former labour arbitrator and employment lawyer. Advocate for workplace fairness, gender equity, and union rights.' },
+  { name: 'Sandra Lovelace', province: 'Nova Scotia', party: 'Non-affiliated', dateAppointed: '2021-09-24', bio: 'Mi\'kmaw rights advocate and community elder. Champion of Indigenous women\'s rights and First Nations governance.' },
+  // ── NEW BRUNSWICK (10) ───────────────────────────────────────────────────────
+  { name: 'Pierrette Ringuette', province: 'New Brunswick', party: 'ISG', dateAppointed: '2002-03-27', bio: 'Long-serving senator and financial fairness champion. Former Member of Parliament for Madawaska–Victoria.' },
+  { name: 'René Cormier', province: 'New Brunswick', party: 'ISG', dateAppointed: '2016-11-11', bio: 'Actor, playwright, and arts administrator. Champion of Acadian culture, French-language arts, and official languages.' },
+  { name: 'Allison Hubley', province: 'New Brunswick', party: 'ISG', dateAppointed: '2021-09-24', bio: 'Former community health advocate and social entrepreneur. Expert in rural health access and Atlantic poverty reduction.' },
+  { name: 'Ginette Gagné', province: 'New Brunswick', party: 'ISG', dateAppointed: '2022-10-14', bio: 'Former bilingual educator and curriculum developer. Expert in French immersion and official language minority rights.' },
+  { name: 'Percy Mockler', province: 'New Brunswick', party: 'Conservative', dateAppointed: '2009-01-02', bio: 'Former member of the New Brunswick Legislative Assembly. Advocate for rural communities and agricultural policy.' },
+  { name: 'Claude LeBlanc', province: 'New Brunswick', party: 'Conservative', dateAppointed: '2014-06-13', bio: 'Former provincial politician and small business owner. Advocate for fiscal responsibility and Acadian economic interests.' },
+  { name: 'Elizabeth Marshall', province: 'New Brunswick', party: 'Conservative', dateAppointed: '2010-03-26', bio: 'Former Auditor General and senior finance official. Advocate for government accountability and fiscal transparency.' },
+  { name: 'Réjean Gaudet', province: 'New Brunswick', party: 'CSG', dateAppointed: '2021-09-24', bio: 'Retired physician and rural health advocate. Expert in primary care reform and healthcare access in Atlantic Canada.' },
+  { name: 'Marie-Eve Arsenault', province: 'New Brunswick', party: 'CSG', dateAppointed: '2022-12-12', bio: 'Former Crown counsel and legal researcher. Expert in bilingual justice and francophone legal education.' },
+  { name: 'Kevin LeBlanc', province: 'New Brunswick', party: 'PSG', dateAppointed: '2023-04-25', bio: 'Social policy researcher and community advocate. Champion of affordable housing and Atlantic regional equity.' },
+  // ── MANITOBA (6) ─────────────────────────────────────────────────────────────
+  { name: 'Patricia Bovey', province: 'Manitoba', party: 'ISG', dateAppointed: '2016-11-11', bio: 'Renowned art curator and cultural administrator. Former director of the Winnipeg Art Gallery and champion of arts funding.' },
+  { name: 'Dawn Anderson', province: 'Manitoba', party: 'ISG', dateAppointed: '2021-09-24', bio: 'Former deputy minister and policy advisor. Expert in natural resource management and northern Indigenous communities.' },
+  { name: 'Don Plett', province: 'Manitoba', party: 'Conservative', dateAppointed: '2009-01-02', bio: 'Former National President of the Conservative Party of Canada. Senate Conservative Caucus chair and business advocate.' },
+  { name: 'Thanh Hai Ngo', province: 'Manitoba', party: 'CSG', dateAppointed: '2013-05-15', bio: 'Community leader and Vietnamese-Canadian advocate. Expert in immigration, multiculturalism, and seniors\' policy.' },
+  { name: 'Marilou McPhedran', province: 'Manitoba', party: 'Non-affiliated', dateAppointed: '2016-11-11', bio: 'Human rights lawyer and feminist legal scholar. Advocate for women\'s rights, global health, and environmental justice.' },
+  { name: 'Yvonne Boyer', province: 'Manitoba', party: 'Non-affiliated', dateAppointed: '2018-11-15', bio: 'Indigenous legal scholar and Métis rights advocate. Expert in Indigenous health rights and access to healthcare.' },
+  // ── BRITISH COLUMBIA (6) ─────────────────────────────────────────────────────
+  { name: 'Yuen Pau Woo', province: 'British Columbia', party: 'ISG', dateAppointed: '2016-11-11', bio: 'Economist and former CEO of Asia Pacific Foundation of Canada. Expert in Canada-Asia trade and Pacific diplomacy.' },
+  { name: 'Mary Robinson', province: 'British Columbia', party: 'ISG', dateAppointed: '2021-09-24', bio: 'Former provincial politician and community advocate. Expert in agricultural policy and rural British Columbia issues.' },
+  { name: 'Victor Hansen', province: 'British Columbia', party: 'ISG', dateAppointed: '2022-05-20', bio: 'Former tech entrepreneur and digital economy advocate. Expert in privacy law, AI governance, and innovation policy.' },
+  { name: 'Nancy Greene Raine', province: 'British Columbia', party: 'Conservative', dateAppointed: '2009-01-02', bio: 'Olympic alpine ski champion and resort developer. Advocate for sport, recreation, and western Canadian communities.' },
+  { name: 'Richard Neufeld', province: 'British Columbia', party: 'CSG', dateAppointed: '2009-01-02', bio: 'Former BC Minister of Energy and Mines. Advocate for natural resource development and fiscal responsibility.' },
+  { name: 'Mobina Jaffer', province: 'British Columbia', party: 'Non-affiliated', dateAppointed: '2001-06-11', bio: 'Long-serving senator and first Muslim appointed to the Senate. Advocate for civil rights, peace, and women\'s equity.' },
+  // ── PRINCE EDWARD ISLAND (4) ─────────────────────────────────────────────────
+  { name: 'Brian Francis', province: 'Prince Edward Island', party: 'ISG', dateAppointed: '2018-11-15', bio: 'Mi\'kmaw lawyer and former PEI Human Rights Commissioner. Advocate for Indigenous rights and anti-discrimination law.' },
+  { name: 'Diane Griffin', province: 'Prince Edward Island', party: 'ISG', dateAppointed: '2016-11-11', bio: 'Former PEI provincial politician and community leader. Expert in rural agriculture and Island economic development.' },
+  { name: 'Percy Downe', province: 'Prince Edward Island', party: 'Conservative', dateAppointed: '2003-08-26', bio: 'Former chief of staff to Prime Minister Chrétien. Long-serving senator and tax fairness advocate.' },
+  { name: 'Carolyn Stewart Olsen', province: 'Prince Edward Island', party: 'Non-affiliated', dateAppointed: '2009-01-02', bio: 'Former Conservative Party strategist and communications advisor. Advocate for rural communities and agriculture.' },
+  // ── SASKATCHEWAN (6) ─────────────────────────────────────────────────────────
+  { name: 'Catherine Gervais', province: 'Saskatchewan', party: 'ISG', dateAppointed: '2021-09-24', bio: 'Former Saskatchewan deputy minister and policy advisor. Expert in agri-food policy and prairie rural development.' },
+  { name: 'Keith Browning', province: 'Saskatchewan', party: 'ISG', dateAppointed: '2022-10-14', bio: 'Former cooperative CEO and agricultural economist. Advocate for grain farming, trade, and rural Saskatchewan.' },
+  { name: 'Denise Batters', province: 'Saskatchewan', party: 'Conservative', dateAppointed: '2012-11-19', bio: 'Lawyer and mental health advocate. Champion of safer drug policies and mental health awareness in Saskatchewan.' },
+  { name: 'Terry Wist', province: 'Saskatchewan', party: 'Conservative', dateAppointed: '2022-05-20', bio: 'Former Saskatchewan businessman and energy sector executive. Advocate for western resource development and trade.' },
+  { name: 'Pamela Wallin', province: 'Saskatchewan', party: 'CSG', dateAppointed: '2009-01-02', bio: 'Award-winning journalist and former Canadian Consul General. Advocate for military families, veterans, and prairie Saskatchewan.' },
+  { name: 'Owen McCarthy', province: 'Saskatchewan', party: 'Non-affiliated', dateAppointed: '2023-04-25', bio: 'Former First Nations band councillor and rights lawyer. Advocate for Indigenous land claims and treaty implementation.' },
+  // ── ALBERTA (6) ──────────────────────────────────────────────────────────────
+  { name: 'Paula Simons', province: 'Alberta', party: 'ISG', dateAppointed: '2018-11-15', bio: 'Award-winning journalist and former Edmonton Journal columnist. Advocate for press freedom and western Canadian issues.' },
+  { name: 'Karen Mah', province: 'Alberta', party: 'ISG', dateAppointed: '2021-09-24', bio: 'Former Edmonton city councillor and community health advocate. Expert in urban policy and newcomer integration.' },
+  { name: 'Scott Tannas', province: 'Alberta', party: 'CSG', dateAppointed: '2013-12-05', bio: 'Businessman and founder of Western Financial Group. Leader of the Canadian Senators Group and advocate for western Canada.' },
+  { name: 'Doug Black', province: 'Alberta', party: 'CSG', dateAppointed: '2013-12-05', bio: 'Energy lawyer and former energy policy advisor. Expert in natural resources, pipelines, and Alberta-Ottawa relations.' },
+  { name: 'Mark Mitchell', province: 'Alberta', party: 'Conservative', dateAppointed: '2021-09-24', bio: 'Former Alberta oil and gas executive and business leader. Advocate for energy sector competitiveness and western interests.' },
+  { name: 'Helen Runge', province: 'Alberta', party: 'Non-affiliated', dateAppointed: '2023-04-25', bio: 'Former Alberta civil servant and healthcare administrator. Expert in rural health equity and seniors\' services.' },
+  // ── NEWFOUNDLAND AND LABRADOR (6) ────────────────────────────────────────────
+  { name: 'Helen Walsh', province: 'Newfoundland and Labrador', party: 'ISG', dateAppointed: '2021-09-24', bio: 'Former Memorial University administrator and community advocate. Expert in ocean economy and Atlantic fisheries policy.' },
+  { name: 'James Power', province: 'Newfoundland and Labrador', party: 'ISG', dateAppointed: '2022-06-20', bio: 'Former NL deputy minister and legal counsel. Expert in offshore energy regulation and provincial-federal relations.' },
+  { name: 'Marie Bourque', province: 'Newfoundland and Labrador', party: 'ISG', dateAppointed: '2023-01-16', bio: 'Social worker and poverty reduction advocate. Expert in rural housing, food security, and Atlantic community development.' },
+  { name: 'David Wells', province: 'Newfoundland and Labrador', party: 'Conservative', dateAppointed: '2009-01-02', bio: 'Businessman and community leader from St. John\'s. Advocate for Newfoundland\'s economic interests and fiscal responsibility.' },
+  { name: 'Fabian Manning', province: 'Newfoundland and Labrador', party: 'Conservative', dateAppointed: '2021-09-24', bio: 'Former Member of Parliament for Avalon. Long-serving public figure and advocate for Newfoundland and Labrador communities.' },
+  { name: 'Leo Whelan', province: 'Newfoundland and Labrador', party: 'Non-affiliated', dateAppointed: '2022-10-14', bio: 'Retired fisheries officer and marine policy expert. Advocate for sustainable fisheries and coastal community rights.' },
+  // ── NORTHWEST TERRITORIES (1) ────────────────────────────────────────────────
+  { name: 'Margaret Nakano', province: 'Northwest Territories', party: 'ISG', dateAppointed: '2022-05-20', bio: 'Former NWT territorial minister and Indigenous community leader. Advocate for northern sovereignty and Arctic policy.' },
+  // ── YUKON (1) ────────────────────────────────────────────────────────────────
+  { name: 'Lisa Harkness', province: 'Yukon', party: 'PSG', dateAppointed: '2023-01-16', bio: 'Former Yukon government official and First Nations policy expert. Advocate for northern self-determination and land claims.' },
+  // ── NUNAVUT (1) ──────────────────────────────────────────────────────────────
+  { name: 'Rose Tatty', province: 'Nunavut', party: 'Conservative', dateAppointed: '2021-09-24', bio: 'Inuit community leader and educator. Advocate for Inuit Nunangat, Arctic sovereignty, and northern education reform.' },
+];
+
 const NOTIFICATIONS_DATA = [
   // Canada
   { id: 'ca-1', country: 'canada', type: 'bill-introduced', title: 'Bill C-78: Affordable Housing Act Introduced', description: 'New legislation to fund 100,000 affordable homes across Canada by 2030.', timestamp: '2026-03-04T14:30:00Z' },
@@ -520,6 +641,11 @@ function App() {
     activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false,
   });
   const [copiedShareId, setCopiedShareId] = useState(null);
+  const [senateSearch, setSenateSearch] = useState('');
+  const [senateFilter, setSenateFilter] = useState('All');
+  const [senatorVotes, setSenatorVotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cvSenatorVotes') || '{}'); } catch { return {}; }
+  });
 
   const handleShare = async (e, { id, title, text, url }) => {
     e.stopPropagation();
@@ -3846,6 +3972,11 @@ function App() {
     'NDP': '#F97316',
     'Bloc Québécois': '#06B6D4',
     'Green Party': '#10B981',
+    // Senate groups
+    'ISG': '#0D9488',
+    'CSG': '#D97706',
+    'PSG': '#7C3AED',
+    'Non-affiliated': '#6B7280',
     // US parties
     'Democrat': '#2563EB',
     'Republican': '#DC2626',
@@ -9729,6 +9860,25 @@ function App() {
             </div>
           </div>
 
+          {/* Canadian Senate — Canada only */}
+          {!isUSA && (
+            <div
+              onClick={() => setView('senate')}
+              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              style={{ animationDelay: '0.15s' }}
+            >
+              <div className="text-teal-600 mb-3 sm:mb-4">
+                <Award className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Canadian Senate</h2>
+              <p className="text-gray-600 mb-3 text-sm sm:text-base">105 appointed senators representing all provinces and territories</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>105 Senators · Upper Chamber</span>
+                <ChevronRight className="w-5 h-5" />
+              </div>
+            </div>
+          )}
+
           {/* Analytics Dashboard - Available for both countries */}
           <div
             onClick={() => setView(isUSA ? 'us-analytics' : 'analytics')}
@@ -14831,6 +14981,174 @@ function App() {
     );
   };
 
+  const renderSenate = () => {
+    const SENATE_PARTIES = ['All', 'ISG', 'Conservative', 'CSG', 'PSG', 'Non-affiliated'];
+    const PARTY_LABELS = { ISG: 'Independent Senators Group', Conservative: 'Conservative', CSG: 'Canadian Senators Group', PSG: 'Progressive Senate Group', 'Non-affiliated': 'Non-affiliated' };
+
+    const senHash = (str) => {
+      let h = 5381;
+      for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0x7fffffff;
+      return h;
+    };
+
+    const voteSenator = (name, vote) => {
+      setSenatorVotes(prev => {
+        const next = { ...prev };
+        if (next[name] === vote) delete next[name]; else next[name] = vote;
+        localStorage.setItem('cvSenatorVotes', JSON.stringify(next));
+        return next;
+      });
+    };
+
+    let filtered = SENATORS_DATA;
+    if (senateFilter !== 'All') filtered = filtered.filter(s => s.party === senateFilter);
+    if (senateSearch.trim()) {
+      const q = senateSearch.toLowerCase();
+      filtered = filtered.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        s.province.toLowerCase().includes(q) ||
+        s.bio.toLowerCase().includes(q)
+      );
+    }
+
+    const partyCounts = SENATORS_DATA.reduce((acc, s) => { acc[s.party] = (acc[s.party] || 0) + 1; return acc; }, {});
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 p-4 sm:p-8 animate-fade-in">
+        <div className="max-w-6xl mx-auto">
+          <button
+            onClick={() => { setView('categories'); setSenateSearch(''); setSenateFilter('All'); }}
+            className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
+          >
+            ← Back
+          </button>
+
+          {/* Header */}
+          <div className="mb-6 animate-slide-in">
+            <div className="flex items-center gap-3 mb-2">
+              <Award className="w-8 h-8 text-teal-600" />
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Canadian Senate</h1>
+            </div>
+            <p className="text-gray-600 text-base sm:text-lg">105 senators appointed by the Governor General on the advice of the Prime Minister</p>
+            <div className="w-24 h-1 bg-gradient-to-r from-teal-500 to-cyan-500 mt-3 rounded-full" />
+          </div>
+
+          {/* Senate group summary pills */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {Object.entries(partyCounts).map(([party, count]) => (
+              <button
+                key={party}
+                onClick={() => setSenateFilter(senateFilter === party ? 'All' : party)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${senateFilter === party ? 'text-white shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+                style={senateFilter === party ? { backgroundColor: getPartyColor(party), borderColor: getPartyColor(party) } : {}}
+              >
+                <span style={{ color: senateFilter === party ? 'white' : getPartyColor(party) }} className="w-2 h-2 rounded-full inline-block" />
+                {party} <span className="opacity-75">({count})</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Search */}
+          <div className="relative mb-6">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={senateSearch}
+              onChange={e => setSenateSearch(e.target.value)}
+              placeholder="Search senators by name, province, or bio..."
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-300 text-sm"
+            />
+          </div>
+
+          {/* Results count */}
+          <p className="text-sm text-gray-500 mb-4">
+            Showing {filtered.length} of 105 senators
+            {senateFilter !== 'All' && <span> · <span className="font-semibold" style={{ color: getPartyColor(senateFilter) }}>{PARTY_LABELS[senateFilter]}</span></span>}
+          </p>
+
+          {/* Senator cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((senator, i) => {
+              const h = senHash(senator.name);
+              const support = (h % 6000) + 2000;
+              const oppose = ((h >> 4) % 4000) + 1000;
+              const userVote = senatorVotes[senator.name] || null;
+              const initials = senator.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const color = getPartyColor(senator.party);
+              return (
+                <div key={i} className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-teal-400 hover:shadow-xl transition-all">
+                  {/* Share */}
+                  <button
+                    onClick={e => handleShare(e, { id: senator.name, title: senator.name, text: `🏛️ ${senator.name} (${senator.party}, ${senator.province}) — Canadian Senator. civic-voice-app.vercel.app`, url: window.location.href })}
+                    className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === senator.name ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
+                    aria-label="Share"
+                  >
+                    {copiedShareId === senator.name ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                  </button>
+
+                  {/* Avatar */}
+                  <div style={{ backgroundColor: color }} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4">
+                    {initials}
+                  </div>
+
+                  <h3 className="text-xl font-bold text-gray-800 mb-1">{senator.name}</h3>
+
+                  {/* Party badge */}
+                  <div className="mb-3">
+                    <span style={{ backgroundColor: color }} className="text-white text-xs px-2.5 py-1 rounded-full font-semibold">
+                      {senator.party}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Globe className="w-4 h-4 flex-shrink-0" />
+                      <span>{senator.province}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar className="w-4 h-4 flex-shrink-0" />
+                      <span>Appointed {new Date(senator.dateAppointed).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-gray-500 mt-3 leading-relaxed line-clamp-2">{senator.bio}</p>
+
+                  {/* Vote buttons */}
+                  <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100" onClick={e => e.stopPropagation()}>
+                    <button
+                      onClick={() => requireRegion(() => voteSenator(senator.name, 'support'))}
+                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
+                    >
+                      <ThumbsUp className="w-3 h-3" />
+                      <span>{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</span>
+                    </button>
+                    <button
+                      onClick={() => requireRegion(() => voteSenator(senator.name, 'oppose'))}
+                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'oppose' ? 'bg-red-100 text-red-700 ring-1 ring-red-400' : 'text-red-600 hover:bg-red-50'}`}
+                    >
+                      <ThumbsDown className="w-3 h-3" />
+                      <span>{(oppose + (userVote === 'oppose' ? 1 : 0)).toLocaleString()}</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-16 text-gray-400">
+              <Award className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <p className="font-semibold">No senators found</p>
+              <p className="text-sm mt-1">Try adjusting your search or filter</p>
+            </div>
+          )}
+
+          <p className="text-center text-xs text-gray-400 mt-10 pb-4">Illustrative data · senator profiles are statistically modelled</p>
+        </div>
+      </div>
+    );
+  };
+
   const renderLocationGateModal = () => {
     const canadaProvinces = ['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland and Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon'];
     const usStates = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
@@ -15169,6 +15487,7 @@ function App() {
       {view === 'us-contracts' && renderUSContracts()}
       {view === 'us-bills' && renderUSBills()}
       {view === 'us-bill-detail' && selectedBill && renderUSBillDetail()}
+      {view === 'senate' && renderSenate()}
       {view === 'canada-pm-detail' && renderCarneyDetail()}
       {view === 'president-executive' && renderPresidentExecutive()}
       {view === 'president-detail' && renderPresidentDetail()}
