@@ -1,5 +1,4 @@
 import { initializeApp } from 'firebase/app';
-import { getMessaging } from 'firebase/messaging';
 
 const firebaseConfig = {
   projectId: 'civic-voice-5ea94',
@@ -8,6 +7,5 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const messaging = getMessaging(app);
 
 export default app;

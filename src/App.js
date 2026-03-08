@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { messaging } from './firebase';
-import { getToken } from 'firebase/messaging';
+import app from './firebase';
 import { ChevronLeft, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell } from 'lucide-react';
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import './App.css';
@@ -3884,6 +3883,8 @@ function App() {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') return;
       const sw = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      const { getMessaging, getToken } = await import('firebase/messaging');
+      const messaging = getMessaging(app);
       const token = await getToken(messaging, { serviceWorkerRegistration: sw, vapidKey: 'BAuHr-DKvbopzCzk-wVBzlAiYXA0cxuCO_Wq-A3rQJWe2wXwxnVzSk6tuK6VLI0na7kWm9S3Zp6EDud9M_BWvW8' });
       if (token) localStorage.setItem('cvFCMToken', token);
     } catch {
