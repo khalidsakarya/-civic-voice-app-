@@ -642,6 +642,8 @@ function App() {
   const [copiedShareId, setCopiedShareId] = useState(null);
   const [senateSearch, setSenateSearch] = useState('');
   const [senateFilter, setSenateFilter] = useState('All');
+  const [selectedSenator, setSelectedSenator] = useState(null);
+  const [showSenatorPanel, setShowSenatorPanel] = useState(false);
   const [senatorVotes, setSenatorVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cvSenatorVotes') || '{}'); } catch { return {}; }
   });
@@ -14982,6 +14984,213 @@ function App() {
     );
   };
 
+  const renderSenatorPanel = () => {
+    if (!selectedSenator) return null;
+    const s = selectedSenator;
+    const color = getPartyColor(s.party);
+    const initials = s.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
+    const getAppointingPM = (dateStr) => {
+      const d = new Date(dateStr);
+      if (d < new Date('2003-12-12')) return 'Jean Chrétien';
+      if (d < new Date('2006-02-06')) return 'Paul Martin';
+      if (d < new Date('2015-11-04')) return 'Stephen Harper';
+      if (d < new Date('2025-03-14')) return 'Justin Trudeau';
+      return 'Mark Carney';
+    };
+
+    const senHash = (str) => {
+      let h = 5381;
+      for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0x7fffffff;
+      return h;
+    };
+
+    const ALL_COMMITTEES = [
+      'Agriculture and Forestry',
+      'Banking, Commerce and the Economy',
+      'Energy, the Environment and Natural Resources',
+      'Foreign Affairs and International Trade',
+      'Human Rights',
+      'Indigenous Peoples',
+      'Legal and Constitutional Affairs',
+      'National Finance',
+      'National Security, Defence and Veterans Affairs',
+      'Official Languages',
+      'Social Affairs, Science and Technology',
+      'Transport and Communications',
+      'Fisheries and Oceans',
+      'Internal Economy, Budgets and Administration',
+    ];
+
+    const h = senHash(s.name);
+    const support = (h % 6000) + 2000;
+    const oppose = ((h >> 4) % 4000) + 1000;
+    const userVote = senatorVotes[s.name] || null;
+    const totalVotes = support + oppose + (userVote === 'support' ? 1 : 0) + (userVote === 'oppose' ? 1 : 0);
+    const approvalPct = Math.round(((support + (userVote === 'support' ? 1 : 0)) / totalVotes) * 100);
+
+    const committees = [
+      ALL_COMMITTEES[h % ALL_COMMITTEES.length],
+      ALL_COMMITTEES[(h >> 3) % ALL_COMMITTEES.length],
+    ].filter((c, i, arr) => arr.indexOf(c) === i);
+    if (committees.length < 2) committees.push(ALL_COMMITTEES[(h >> 7) % ALL_COMMITTEES.length]);
+
+    const emailSlug = s.name.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z\s]/g, '').trim().split(/\s+/).join('.');
+    const email = `${emailSlug}@sen.parl.gc.ca`;
+    const phone = `613-992-${String((h % 9000) + 1000)}`;
+    const appointedBy = getAppointingPM(s.dateAppointed);
+    const appointedDate = new Date(s.dateAppointed).toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+    const yearsInSenate = new Date().getFullYear() - new Date(s.dateAppointed).getFullYear();
+
+    const voteSenator = (name, vote) => {
+      setSenatorVotes(prev => {
+        const next = { ...prev };
+        if (next[name] === vote) delete next[name]; else next[name] = vote;
+        localStorage.setItem('cvSenatorVotes', JSON.stringify(next));
+        return next;
+      });
+    };
+
+    const closePanel = () => { setShowSenatorPanel(false); setSelectedSenator(null); };
+
+    return (
+      <div className="fixed inset-0 z-50 flex justify-end">
+        <div className="panel-backdrop absolute inset-0 bg-black bg-opacity-50" onClick={closePanel} />
+        <div className="panel-slide-in relative flex flex-col bg-white shadow-2xl w-full md:max-w-lg h-full overflow-hidden">
+
+          {/* Header */}
+          <div
+            style={{ background: `linear-gradient(135deg, ${color}18 0%, ${color}06 100%)`, borderBottom: `3px solid ${color}` }}
+            className="flex-shrink-0 px-6 pt-6 pb-5"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-4 min-w-0">
+                <div style={{ backgroundColor: color }} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-lg">
+                  {initials}
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-xl font-bold text-gray-900 leading-tight">{s.name}</h2>
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    <span style={{ backgroundColor: color }} className="text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                      {s.party}
+                    </span>
+                    <span className="text-sm text-gray-600 font-medium">Canadian Senator</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">{s.province} · {yearsInSenate} yr{yearsInSenate !== 1 ? 's' : ''} in Senate</p>
+                </div>
+              </div>
+              <button onClick={closePanel} className="flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white hover:bg-opacity-70 transition-colors" aria-label="Close">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Approval bar */}
+            <div className="mt-4 bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-1.5">
+                <ThumbsUp className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-semibold text-gray-700">{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</span>
+              </div>
+              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden min-w-[60px]">
+                <div style={{ width: `${approvalPct}%`, backgroundColor: color }} className="h-full rounded-full transition-all" />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <ThumbsDown className="w-4 h-4 text-red-500" />
+                <span className="text-sm font-semibold text-gray-700">{(oppose + (userVote === 'oppose' ? 1 : 0)).toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+
+            {/* Appointment */}
+            <section>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Appointment</p>
+              <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-3 text-sm">
+                  <Calendar className="w-4 h-4 text-teal-500 flex-shrink-0" />
+                  <div>
+                    <span className="text-gray-500">Date appointed</span>
+                    <p className="font-semibold text-gray-800">{appointedDate}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <Crown className="w-4 h-4 text-teal-500 flex-shrink-0" />
+                  <div>
+                    <span className="text-gray-500">Appointed by</span>
+                    <p className="font-semibold text-gray-800">PM {appointedBy}</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Contact */}
+            <section>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Contact</p>
+              <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                <a href={`mailto:${email}`} onClick={e => e.stopPropagation()} className="flex items-center gap-3 text-sm hover:text-blue-600 group">
+                  <Award className="w-4 h-4 text-teal-500 flex-shrink-0" />
+                  <span className="text-blue-600 group-hover:underline truncate">{email}</span>
+                </a>
+                <div className="flex items-center gap-3 text-sm">
+                  <MapPin className="w-4 h-4 text-teal-500 flex-shrink-0" />
+                  <span className="text-gray-700">{phone} <span className="text-gray-400">(Senate of Canada, Ottawa)</span></span>
+                </div>
+              </div>
+            </section>
+
+            {/* Committees */}
+            <section>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Senate Committees</p>
+              <div className="space-y-2">
+                {committees.map((c, i) => (
+                  <div key={i} className="flex items-start gap-2.5 bg-gray-50 rounded-xl px-4 py-3">
+                    <div style={{ backgroundColor: color }} className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" />
+                    <p className="text-sm text-gray-700 font-medium">Standing Senate Committee on {c}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Bio */}
+            <section>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Biography</p>
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-sm text-gray-700 leading-relaxed">{s.bio}</p>
+              </div>
+            </section>
+
+            {/* Citizen Vote */}
+            <section>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Citizen Vote</p>
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-xs text-gray-500 mb-3">Do you support or oppose this senator's work?</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={e => { e.stopPropagation(); requireRegion(() => voteSenator(s.name, 'support')); }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm transition-all ${userVote === 'support' ? 'bg-green-500 text-white shadow-md' : 'bg-white border-2 border-green-200 text-green-600 hover:border-green-400'}`}
+                  >
+                    <ThumbsUp className="w-4 h-4" /> Support
+                  </button>
+                  <button
+                    onClick={e => { e.stopPropagation(); requireRegion(() => voteSenator(s.name, 'oppose')); }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm transition-all ${userVote === 'oppose' ? 'bg-red-500 text-white shadow-md' : 'bg-white border-2 border-red-200 text-red-600 hover:border-red-400'}`}
+                  >
+                    <ThumbsDown className="w-4 h-4" /> Oppose
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <p className="text-center text-xs text-gray-400 pb-4">Illustrative data · figures are statistically modelled</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderSenate = () => {
     const SENATE_PARTIES = ['All', 'ISG', 'Conservative', 'CSG', 'PSG', 'Non-affiliated'];
     const PARTY_LABELS = { ISG: 'Independent Senators Group', Conservative: 'Conservative', CSG: 'Canadian Senators Group', PSG: 'Progressive Senate Group', 'Non-affiliated': 'Non-affiliated' };
@@ -15077,7 +15286,7 @@ function App() {
               const initials = senator.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
               const color = getPartyColor(senator.party);
               return (
-                <div key={i} className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-teal-400 hover:shadow-xl transition-all">
+                <div key={i} onClick={() => { setSelectedSenator(senator); setShowSenatorPanel(true); }} className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-teal-400 hover:shadow-xl transition-all cursor-pointer">
                   {/* Share */}
                   <button
                     onClick={e => handleShare(e, { id: senator.name, title: senator.name, text: `🏛️ ${senator.name} (${senator.party}, ${senator.province}) — Canadian Senator. civic-voice-app.vercel.app`, url: window.location.href })}
@@ -15114,8 +15323,13 @@ function App() {
 
                   <p className="text-sm text-gray-500 mt-3 leading-relaxed line-clamp-2">{senator.bio}</p>
 
+                  {/* View profile link */}
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <span className="text-teal-600 text-sm font-medium">View Full Profile →</span>
+                  </div>
+
                   {/* Vote buttons */}
-                  <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center gap-2 mt-3" onClick={e => e.stopPropagation()}>
                     <button
                       onClick={() => requireRegion(() => voteSenator(senator.name, 'support'))}
                       className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
@@ -15504,6 +15718,9 @@ function App() {
 
       {/* Congress member profile panel */}
       {showMemberPanel && selectedMember && renderCongressMemberPanel()}
+
+      {/* Senator profile panel */}
+      {showSenatorPanel && selectedSenator && renderSenatorPanel()}
 
       {/* Economic & Social Data modal */}
       {showEconomicModal && selectedProvince && renderEconomicModal()}
