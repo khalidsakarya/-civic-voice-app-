@@ -15162,6 +15162,116 @@ function App() {
               </div>
             </section>
 
+            {/* Corporate Affiliations */}
+            {(() => {
+              const CORP_COMPANIES = [
+                'RBC Capital Markets', 'TD Securities', 'Brookfield Asset Management', 'Manulife Financial',
+                'Sun Life Financial', 'Scotiabank', 'BCE Inc.', 'Rogers Communications', 'Shopify Inc.',
+                'Canadian National Railway', 'Enbridge Inc.', 'TC Energy', 'Barrick Gold', 'Agrium Inc.',
+                'Bombardier Inc.', 'Magna International', 'Teck Resources', 'Suncor Energy', 'CIBC',
+                'Power Corporation of Canada', 'Thomson Reuters', 'Loblaw Companies', 'Saputo Inc.',
+              ];
+              const CORP_ROLES = [
+                'Board Director', 'Advisory Board Member', 'Senior Advisor', 'Board Chair',
+                'Audit Committee Member', 'Governance Committee Member', 'Independent Director',
+              ];
+              const CORP_PERIODS = [
+                '2018–present', '2019–present', '2020–present', '2016–2021', '2015–2019',
+                '2017–2022', '2021–present', '2014–2018', '2020–2023',
+              ];
+              const CORP_DESCS = [
+                'Provides strategic oversight on regulatory affairs and public policy matters.',
+                'Advises on governance frameworks and stakeholder engagement strategies.',
+                'Offers counsel on federal policy, Indigenous relations, and environmental compliance.',
+                'Contributes expertise in fiscal policy and financial regulation.',
+                'Guides corporate strategy on government relations and legislative developments.',
+              ];
+
+              const numCorpConns = (h % 2) + 2;
+              const corpConnections = Array.from({ length: numCorpConns }, (_, i) => ({
+                company: CORP_COMPANIES[(h + i * 7) % CORP_COMPANIES.length],
+                role: CORP_ROLES[(h + i * 3) % CORP_ROLES.length],
+                period: CORP_PERIODS[(h + i * 5) % CORP_PERIODS.length],
+                description: CORP_DESCS[(h + i * 2) % CORP_DESCS.length],
+              }));
+
+              return (
+                <section>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Corporate Affiliations</p>
+                  <div className="space-y-3">
+                    {corpConnections.map((conn, i) => (
+                      <div key={i} className="border border-gray-200 rounded-xl p-4 bg-white">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <p className="font-semibold text-gray-800 text-sm">{conn.company}</p>
+                        </div>
+                        <p className="text-xs text-indigo-600 font-medium mb-1">{conn.role}</p>
+                        <p className="text-xs text-gray-400 mb-2">{conn.period}</p>
+                        <p className="text-xs text-gray-600">{conn.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              );
+            })()}
+
+            {/* Lobbying Activity */}
+            {(() => {
+              const LOBBY_ORGS = [
+                { name: 'Canadian Chamber of Commerce', sector: 'Business & Trade' },
+                { name: 'Canadian Medical Association', sector: 'Healthcare' },
+                { name: 'Mining Association of Canada', sector: 'Natural Resources' },
+                { name: 'Canadian Bankers Association', sector: 'Financial Services' },
+                { name: 'Pharmaceutical Research & Manufacturers', sector: 'Pharmaceutical' },
+                { name: 'Canadian Federation of Independent Business', sector: 'Small Business' },
+                { name: 'Clean Energy Canada', sector: 'Energy & Environment' },
+                { name: 'Canadian Real Estate Association', sector: 'Real Estate' },
+                { name: 'Aerospace Industries Association of Canada', sector: 'Aerospace & Defence' },
+                { name: 'Insurance Bureau of Canada', sector: 'Insurance' },
+                { name: 'Grain Growers of Canada', sector: 'Agriculture' },
+                { name: 'Canadian Wireless Telecommunications Association', sector: 'Telecommunications' },
+              ];
+              const LOBBY_DATES = [
+                '2025-09-14', '2025-10-03', '2025-11-18', '2025-08-27', '2025-12-05',
+                '2026-01-22', '2025-07-11', '2026-02-08', '2025-06-30', '2026-01-15',
+              ];
+
+              const numLobbyOrgs = (h % 2) + 2;
+              const lobbyOrgs = Array.from({ length: numLobbyOrgs }, (_, i) => {
+                const org = LOBBY_ORGS[(h + i * 11) % LOBBY_ORGS.length];
+                return {
+                  name: org.name,
+                  sector: org.sector,
+                  value: ((h + i * 13) % 80 + 20) * 1000,
+                  meetings: ((h + i * 7) % 8) + 2,
+                  lastMeeting: LOBBY_DATES[(h + i * 3) % LOBBY_DATES.length],
+                };
+              });
+              const totalMeetings = lobbyOrgs.reduce((sum, o) => sum + o.meetings, 0);
+              const totalValue = lobbyOrgs.reduce((sum, o) => sum + o.value, 0);
+
+              return (
+                <section>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Lobbying Activity</p>
+                  <p className="text-xs text-gray-500 mb-3">{totalMeetings} registered meetings · {formatCurrency(totalValue)} total declared value</p>
+                  <div className="space-y-3">
+                    {lobbyOrgs.map((org, i) => (
+                      <div key={i} className="border border-gray-200 rounded-xl p-4 bg-white">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <p className="font-semibold text-gray-800 text-sm">{org.name}</p>
+                          <span className="flex-shrink-0 bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">{formatCurrency(org.value)}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mb-2">{org.sector}</p>
+                        <div className="flex items-center gap-4 text-xs text-gray-400">
+                          <span>📅 {org.meetings} meetings</span>
+                          <span>🗓️ Last: {org.lastMeeting}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              );
+            })()}
+
             {/* Citizen Vote */}
             <section>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Citizen Vote</p>
