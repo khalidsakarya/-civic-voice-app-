@@ -4170,7 +4170,8 @@ function App() {
 
   const countries = [
     { id: 1, name: 'Canada', flag: '🇨🇦', members: mps.length || 338, type: 'canada' },
-    { id: 2, name: 'United States', flag: '🇺🇸', members: congressMembers.length || 535, type: 'usa' }
+    { id: 2, name: 'United States', flag: '🇺🇸', members: congressMembers.length || 535, type: 'usa' },
+    { id: 3, name: 'Australia', flag: '🇦🇺', members: 227, type: 'australia' }
   ];
 
   const categories = [
@@ -6079,7 +6080,7 @@ function App() {
           </div>
         )}
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {countries.map((country, index) => (
             <div
               key={country.id}
@@ -6111,8 +6112,41 @@ function App() {
 
   const renderGovernmentLevels = () => {
     const isUSA = selectedCountry?.type === 'usa';
-    const countryName = isUSA ? 'United States' : 'Canada';
-    const flag = isUSA ? '🇺🇸' : '🇨🇦';
+    const isAustralia = selectedCountry?.type === 'australia';
+    const countryName = isUSA ? 'United States' : isAustralia ? 'Australia' : 'Canada';
+    const flag = isUSA ? '🇺🇸' : isAustralia ? '🇦🇺' : '🇨🇦';
+
+    if (isAustralia) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-8 animate-fade-in">
+          <div className="max-w-4xl mx-auto">
+            <button
+              onClick={() => setView('countries')}
+              className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
+            >
+              ← Back to Countries
+            </button>
+
+            <div className="mb-8 animate-slide-in">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-4xl">🇦🇺</span>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Australia</h1>
+              </div>
+              <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
+            </div>
+
+            <div className="card-gradient rounded-2xl shadow-elegant-lg p-12 border-2 border-white/50 animate-scale-in text-center">
+              <div className="text-8xl mb-6">🇦🇺</div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-4">Australian Federal Government</h2>
+              <p className="text-xl text-gray-500 mb-6">Coming Soon</p>
+              <p className="text-gray-400 text-sm max-w-md mx-auto">
+                We're building out Australia's federal parliament, senators, representatives, legislation, and government data. Check back soon.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-8 animate-fade-in">
