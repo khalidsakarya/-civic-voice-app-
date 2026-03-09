@@ -15541,7 +15541,7 @@ function App() {
                 style={senateFilter === party ? { backgroundColor: getPartyColor(party), borderColor: getPartyColor(party) } : {}}
               >
                 <span style={{ color: senateFilter === party ? 'white' : getPartyColor(party) }} className="w-2 h-2 rounded-full inline-block" />
-                {party} <span className="opacity-75">({count})</span>
+                {PARTY_LABELS[party] || party} <span className="opacity-75">({count})</span>
               </button>
             ))}
           </div>
