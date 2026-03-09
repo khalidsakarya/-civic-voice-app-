@@ -4032,10 +4032,14 @@ function App() {
         if (selectedCountry?.type === 'usa') {
           return member.name.toLowerCase().includes(query) ||
                  member.state.toLowerCase().includes(query) ||
-                 member.district.toLowerCase().includes(query);
+                 member.district.toLowerCase().includes(query) ||
+                 member.party.toLowerCase().includes(query);
         } else {
           return member.name.toLowerCase().includes(query) ||
-                 member.riding.toLowerCase().includes(query);
+                 member.riding.toLowerCase().includes(query) ||
+                 (member.province || '').toLowerCase().includes(query) ||
+                 member.party.toLowerCase().includes(query) ||
+                 (member.portfolio || '').toLowerCase().includes(query);
         }
       });
     }
@@ -15443,7 +15447,7 @@ function App() {
       filtered = filtered.filter(s =>
         s.name.toLowerCase().includes(q) ||
         s.province.toLowerCase().includes(q) ||
-        s.bio.toLowerCase().includes(q)
+        s.party.toLowerCase().includes(q)
       );
     }
 
