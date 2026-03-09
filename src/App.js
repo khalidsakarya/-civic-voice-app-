@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import app from './firebase';
-import { ChevronLeft, ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell } from 'lucide-react';
+import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell } from 'lucide-react';
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import './App.css';
 
@@ -676,8 +676,7 @@ function App() {
   const [usAnalyticsData, setUsAnalyticsData] = useState(null);
   const [usSupremeCourt, setUsSupremeCourt] = useState(null);
   const [usContracts, setUsContracts] = useState([]);
-  const [selectedUsContract, setSelectedUsContract] = useState(null);
-  
+
   // Laws & Legal Search data
   const [usLaws, setUsLaws] = useState([]);
   const [lawSearch, setLawSearch] = useState('');
@@ -716,7 +715,6 @@ function App() {
   // Location-based MP finder states
   const [userMP, setUserMP] = useState(null);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
-  const [userLocation, setUserLocation] = useState(null);
   
   // Ministries state
   const [selectedMinistry, setSelectedMinistry] = useState(null);
@@ -3548,8 +3546,7 @@ function App() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          setUserLocation({ latitude, longitude });
-          
+
           // Find MP by location
           const foundMP = findMPByLocation(latitude, longitude);
           
@@ -4125,15 +4122,6 @@ function App() {
       currency: 'CAD',
       maximumFractionDigits: 0
     }).format(amount);
-  };
-
-  const formatCurrencyShort = (amount) => {
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(0)}K`;
-    }
-    return `$${amount}`;
   };
 
   const getStatusColor = (status) => {
@@ -10249,56 +10237,6 @@ function App() {
           </div>
           )}
 
-          {/* Party Breakdown Chart - For USA chambers */}
-          {isUSA && selectedChamber && (
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">Party Composition</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Pie Chart */}
-                <div className="flex items-center justify-center">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <RechartsPie>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({name, percentage}) => `${name}: ${percentage}%`}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={partyColors[entry.name] || '#6B7280'} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </RechartsPie>
-                  </ResponsiveContainer>
-                </div>
-                
-                {/* Stats */}
-                <div className="space-y-3">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-sm text-gray-600 mb-1">Total Members</p>
-                    <p className="text-3xl font-bold text-gray-800">{totalMembers}</p>
-                  </div>
-                  {parties.map(party => (
-                    <div key={party.name} className="flex items-center justify-between p-3 rounded-lg" style={{backgroundColor: `${party.color}20`}}>
-                      <div className="flex items-center gap-2">
-                        <div style={{backgroundColor: party.color}} className="w-4 h-4 rounded-full"></div>
-                        <span className="font-medium text-gray-700">{party.name}</span>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-gray-800">{party.count}</p>
-                        <p className="text-sm text-gray-600">{((party.count / totalMembers) * 100).toFixed(1)}%</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Political Parties Section */}
           <div className="bg-white rounded-lg shadow-md p-6">
