@@ -564,6 +564,156 @@ const SENATORS_DATA = [
   { name: 'Rose Tatty', province: 'Nunavut', party: 'Conservative', dateAppointed: '2021-09-24', bio: 'Inuit community leader and educator. Advocate for Inuit Nunangat, Arctic sovereignty, and northern education reform.' },
 ];
 
+const AU_SENATORS_DATA = [
+  // NSW (12 senators)
+  { name: 'Tony Sheldon', state: 'NSW', party: 'Australian Labor Party', yearsInOffice: 4, role: 'Senator' },
+  { name: 'Kristina Keneally', state: 'NSW', party: 'Australian Labor Party', yearsInOffice: 3, role: 'Senator' },
+  { name: 'Tim Ayres', state: 'NSW', party: 'Australian Labor Party', yearsInOffice: 3, role: 'Senator' },
+  { name: 'Andrew Bragg', state: 'NSW', party: 'Liberal Party', yearsInOffice: 5, role: 'Senator' },
+  { name: 'Hollie Hughes', state: 'NSW', party: 'Liberal Party', yearsInOffice: 7, role: 'Senator' },
+  { name: 'Maria Kovacic', state: 'NSW', party: 'Liberal Party', yearsInOffice: 2, role: 'Senator' },
+  { name: 'Mehreen Faruqi', state: 'NSW', party: 'Greens', yearsInOffice: 7, role: 'Senator' },
+  { name: 'David Shoebridge', state: 'NSW', party: 'Greens', yearsInOffice: 2, role: 'Senator' },
+  { name: 'Ross Cadell', state: 'NSW', party: 'National Party', yearsInOffice: 2, role: 'Senator' },
+  { name: 'Perin Davey', state: 'NSW', party: 'National Party', yearsInOffice: 5, role: 'Senator' },
+  { name: 'Helen Polley', state: 'NSW', party: 'Australian Labor Party', yearsInOffice: 16, role: 'Senator' },
+  { name: 'Jim Molan', state: 'NSW', party: 'Liberal Party', yearsInOffice: 5, role: 'Senator' },
+  // VIC (12 senators)
+  { name: 'Jana Stewart', state: 'VIC', party: 'Australian Labor Party', yearsInOffice: 3, role: 'Senator' },
+  { name: 'Raff Ciccone', state: 'VIC', party: 'Australian Labor Party', yearsInOffice: 5, role: 'Senator' },
+  { name: 'Jess Walsh', state: 'VIC', party: 'Australian Labor Party', yearsInOffice: 2, role: 'Senator' },
+  { name: 'Jane Hume', state: 'VIC', party: 'Liberal Party', yearsInOffice: 7, role: 'Senator' },
+  { name: 'James Paterson', state: 'VIC', party: 'Liberal Party', yearsInOffice: 9, role: 'Senator' },
+  { name: 'Moira Deeming', state: 'VIC', party: 'Liberal Party', yearsInOffice: 2, role: 'Senator' },
+  { name: 'Janet Rice', state: 'VIC', party: 'Greens', yearsInOffice: 9, role: 'Senator' },
+  { name: 'Lidia Thorpe', state: 'VIC', party: 'Independent', yearsInOffice: 3, role: 'Senator' },
+  { name: 'Bridget McKenzie', state: 'VIC', party: 'National Party', yearsInOffice: 12, role: 'Senator' },
+  { name: 'Matthew Bach', state: 'VIC', party: 'Liberal Party', yearsInOffice: 2, role: 'Senator' },
+  { name: 'Nina Springle', state: 'VIC', party: 'Australian Labor Party', yearsInOffice: 1, role: 'Senator' },
+  { name: 'Ralph Babet', state: 'VIC', party: 'Independent', yearsInOffice: 2, role: 'Senator' },
+  // QLD (12 senators)
+  { name: 'Murray Watt', state: 'QLD', party: 'Australian Labor Party', yearsInOffice: 7, role: 'Senator' },
+  { name: 'Nita Green', state: 'QLD', party: 'Australian Labor Party', yearsInOffice: 5, role: 'Senator' },
+  { name: 'Anthony Chisholm', state: 'QLD', party: 'Australian Labor Party', yearsInOffice: 7, role: 'Senator' },
+  { name: 'Paul Scarr', state: 'QLD', party: 'Liberal Party', yearsInOffice: 5, role: 'Senator' },
+  { name: 'Susan McDonald', state: 'QLD', party: 'National Party', yearsInOffice: 5, role: 'Senator' },
+  { name: 'Matt Canavan', state: 'QLD', party: 'National Party', yearsInOffice: 9, role: 'Senator' },
+  { name: 'Larissa Waters', state: 'QLD', party: 'Greens', yearsInOffice: 11, role: 'Senator' },
+  { name: 'Nick McKim', state: 'QLD', party: 'Greens', yearsInOffice: 7, role: 'Senator' },
+  { name: 'James McGrath', state: 'QLD', party: 'Liberal Party', yearsInOffice: 11, role: 'Senator' },
+  { name: 'Amanda Stoker', state: 'QLD', party: 'Liberal Party', yearsInOffice: 6, role: 'Senator' },
+  { name: 'Malcolm Roberts', state: 'QLD', party: 'Independent', yearsInOffice: 6, role: 'Senator' },
+  { name: 'Gerard Rennick', state: 'QLD', party: 'Independent', yearsInOffice: 5, role: 'Senator' },
+  // WA (12 senators)
+  { name: 'Glenn Sterle', state: 'WA', party: 'Australian Labor Party', yearsInOffice: 18, role: 'Senator' },
+  { name: 'Louise Pratt', state: 'WA', party: 'Australian Labor Party', yearsInOffice: 13, role: 'Senator' },
+  { name: 'Sue Lines', state: 'WA', party: 'Australian Labor Party', yearsInOffice: 11, role: 'Senator, President of the Senate' },
+  { name: 'Michaelia Cash', state: 'WA', party: 'Liberal Party', yearsInOffice: 13, role: 'Senator' },
+  { name: 'Dean Smith', state: 'WA', party: 'Liberal Party', yearsInOffice: 11, role: 'Senator' },
+  { name: 'Ben Small', state: 'WA', party: 'Liberal Party', yearsInOffice: 3, role: 'Senator' },
+  { name: 'Dorinda Cox', state: 'WA', party: 'Greens', yearsInOffice: 3, role: 'Senator' },
+  { name: 'Fatima Payman', state: 'WA', party: 'Independent', yearsInOffice: 2, role: 'Senator' },
+  { name: 'Slade Brockman', state: 'WA', party: 'Liberal Party', yearsInOffice: 6, role: 'Senator' },
+  { name: "Matt O'Sullivan", state: 'WA', party: 'Liberal Party', yearsInOffice: 5, role: 'Senator' },
+  { name: 'Darren Patrick', state: 'WA', party: 'Australian Labor Party', yearsInOffice: 2, role: 'Senator' },
+  { name: 'Nadia Clancy', state: 'WA', party: 'Australian Labor Party', yearsInOffice: 1, role: 'Senator' },
+  // SA (12 senators)
+  { name: 'Penny Wong', state: 'SA', party: 'Australian Labor Party', yearsInOffice: 21, role: 'Minister for Foreign Affairs, Senate Leader' },
+  { name: 'Don Farrell', state: 'SA', party: 'Australian Labor Party', yearsInOffice: 13, role: 'Minister for Trade and Tourism' },
+  { name: 'Marielle Smith', state: 'SA', party: 'Australian Labor Party', yearsInOffice: 3, role: 'Senator' },
+  { name: 'Simon Birmingham', state: 'SA', party: 'Liberal Party', yearsInOffice: 14, role: 'Opposition Senate Leader' },
+  { name: 'Alex Antic', state: 'SA', party: 'Liberal Party', yearsInOffice: 5, role: 'Senator' },
+  { name: 'Anne Ruston', state: 'SA', party: 'Liberal Party', yearsInOffice: 11, role: 'Senator' },
+  { name: 'Sarah Hanson-Young', state: 'SA', party: 'Greens', yearsInOffice: 17, role: 'Senator' },
+  { name: 'Kerrynne Liddle', state: 'SA', party: 'Liberal Party', yearsInOffice: 2, role: 'Senator' },
+  { name: 'Clare Scriven', state: 'SA', party: 'Australian Labor Party', yearsInOffice: 3, role: 'Senator' },
+  { name: 'Jillian Triggs', state: 'SA', party: 'Australian Labor Party', yearsInOffice: 1, role: 'Senator' },
+  { name: 'Fraser Ellis', state: 'SA', party: 'Liberal Party', yearsInOffice: 1, role: 'Senator' },
+  { name: 'Tammy Tyrrell', state: 'SA', party: 'Independent', yearsInOffice: 2, role: 'Senator' },
+  // TAS (12 senators)
+  { name: 'Catryna Bilyk', state: 'TAS', party: 'Australian Labor Party', yearsInOffice: 15, role: 'Senator' },
+  { name: 'Anne Urquhart', state: 'TAS', party: 'Australian Labor Party', yearsInOffice: 9, role: 'Senator' },
+  { name: 'Jonathon Duniam', state: 'TAS', party: 'Liberal Party', yearsInOffice: 9, role: 'Senator' },
+  { name: 'Eric Abetz', state: 'TAS', party: 'Liberal Party', yearsInOffice: 26, role: 'Senator' },
+  { name: 'Claire Chandler', state: 'TAS', party: 'Liberal Party', yearsInOffice: 5, role: 'Senator' },
+  { name: 'Nick McKim', state: 'TAS', party: 'Greens', yearsInOffice: 7, role: 'Senator' },
+  { name: 'Peter Whish-Wilson', state: 'TAS', party: 'Greens', yearsInOffice: 11, role: 'Senator' },
+  { name: 'Jacqui Lambie', state: 'TAS', party: 'Independent', yearsInOffice: 9, role: 'Senator' },
+  { name: 'Richard Colbeck', state: 'TAS', party: 'Liberal Party', yearsInOffice: 18, role: 'Senator' },
+  { name: 'Helen Polley', state: 'TAS', party: 'Australian Labor Party', yearsInOffice: 16, role: 'Senator' },
+  { name: 'David McLachlan', state: 'TAS', party: 'Liberal Party', yearsInOffice: 1, role: 'Senator' },
+  { name: 'Tammy Tyrrell', state: 'TAS', party: 'Independent', yearsInOffice: 2, role: 'Senator' },
+  // ACT (2 senators)
+  { name: 'Katy Gallagher', state: 'ACT', party: 'Australian Labor Party', yearsInOffice: 9, role: 'Minister for Finance' },
+  { name: 'David Pocock', state: 'ACT', party: 'Independent', yearsInOffice: 2, role: 'Senator' },
+  // NT (2 senators)
+  { name: 'Malarndirri McCarthy', state: 'NT', party: 'Australian Labor Party', yearsInOffice: 7, role: 'Senator' },
+  { name: 'Jacinta Nampijinpa Price', state: 'NT', party: 'National Party', yearsInOffice: 3, role: 'Senator' },
+];
+
+const AU_REPS_DATA = [
+  // NSW
+  { name: 'Anthony Albanese', state: 'NSW', electorate: 'Grayndler', party: 'Australian Labor Party', yearsInOffice: 28, role: 'Prime Minister' },
+  { name: 'Chris Bowen', state: 'NSW', electorate: 'McMahon', party: 'Australian Labor Party', yearsInOffice: 19, role: 'Minister for Climate Change and Energy' },
+  { name: 'Jason Clare', state: 'NSW', electorate: 'Blaxland', party: 'Australian Labor Party', yearsInOffice: 15, role: 'Minister for Education' },
+  { name: 'Tanya Plibersek', state: 'NSW', electorate: 'Sydney', party: 'Australian Labor Party', yearsInOffice: 25, role: 'Minister for Environment and Water' },
+  { name: 'Mark Dreyfus', state: 'NSW', electorate: 'Isaacs', party: 'Australian Labor Party', yearsInOffice: 17, role: 'Attorney-General' },
+  { name: 'Ed Husic', state: 'NSW', electorate: 'Chifley', party: 'Australian Labor Party', yearsInOffice: 13, role: 'Member of Parliament' },
+  { name: 'Matt Thistlethwaite', state: 'NSW', electorate: 'Kingsford Smith', party: 'Australian Labor Party', yearsInOffice: 13, role: 'Member of Parliament' },
+  { name: 'Angus Taylor', state: 'NSW', electorate: 'Hume', party: 'Liberal Party', yearsInOffice: 9, role: 'Shadow Treasurer' },
+  { name: 'Paul Fletcher', state: 'NSW', electorate: 'Bradfield', party: 'Liberal Party', yearsInOffice: 15, role: 'Member of Parliament' },
+  { name: 'Julian Leeser', state: 'NSW', electorate: 'Berowra', party: 'Liberal Party', yearsInOffice: 7, role: 'Member of Parliament' },
+  { name: 'David Coleman', state: 'NSW', electorate: 'Banks', party: 'Liberal Party', yearsInOffice: 9, role: 'Shadow Minister for Finance' },
+  { name: 'Mark Speakman', state: 'NSW', electorate: 'Cronulla', party: 'Liberal Party', yearsInOffice: 3, role: 'Member of Parliament' },
+  { name: 'Zali Steggall', state: 'NSW', electorate: 'Warringah', party: 'Independent', yearsInOffice: 5, role: 'Member of Parliament' },
+  { name: 'Sophie Scamps', state: 'NSW', electorate: 'Mackellar', party: 'Independent', yearsInOffice: 3, role: 'Member of Parliament' },
+  { name: 'Allegra Spender', state: 'NSW', electorate: 'Wentworth', party: 'Independent', yearsInOffice: 3, role: 'Member of Parliament' },
+  { name: 'Kylea Tink', state: 'NSW', electorate: 'North Sydney', party: 'Independent', yearsInOffice: 3, role: 'Member of Parliament' },
+  // VIC
+  { name: 'Richard Marles', state: 'VIC', electorate: 'Corio', party: 'Australian Labor Party', yearsInOffice: 15, role: 'Deputy Prime Minister & Minister for Defence' },
+  { name: "Clare O'Neil", state: 'VIC', electorate: 'Hotham', party: 'Australian Labor Party', yearsInOffice: 11, role: 'Minister for Home Affairs' },
+  { name: 'Catherine King', state: 'VIC', electorate: 'Ballarat', party: 'Australian Labor Party', yearsInOffice: 21, role: 'Minister for Infrastructure' },
+  { name: 'Bill Shorten', state: 'VIC', electorate: 'Maribyrnong', party: 'Australian Labor Party', yearsInOffice: 17, role: 'Minister for NDIS' },
+  { name: 'Andrew Giles', state: 'VIC', electorate: 'Scullin', party: 'Australian Labor Party', yearsInOffice: 9, role: 'Member of Parliament' },
+  { name: 'Josh Burns', state: 'VIC', electorate: 'Macnamara', party: 'Australian Labor Party', yearsInOffice: 5, role: 'Member of Parliament' },
+  { name: 'Peter Dutton', state: 'VIC', electorate: 'Dickson', party: 'Liberal Party', yearsInOffice: 23, role: 'Leader of the Opposition' },
+  { name: 'Dan Tehan', state: 'VIC', electorate: 'Wannon', party: 'Liberal Party', yearsInOffice: 13, role: 'Shadow Minister for Trade' },
+  { name: 'Adam Bandt', state: 'VIC', electorate: 'Melbourne', party: 'Greens', yearsInOffice: 15, role: 'Leader of the Australian Greens' },
+  { name: 'Monique Ryan', state: 'VIC', electorate: 'Kooyong', party: 'Independent', yearsInOffice: 3, role: 'Member of Parliament' },
+  { name: 'Zoe Daniel', state: 'VIC', electorate: 'Goldstein', party: 'Independent', yearsInOffice: 3, role: 'Member of Parliament' },
+  { name: 'Helen Haines', state: 'VIC', electorate: 'Indi', party: 'Independent', yearsInOffice: 5, role: 'Member of Parliament' },
+  { name: 'Aaron Violi', state: 'VIC', electorate: 'Casey', party: 'Liberal Party', yearsInOffice: 3, role: 'Member of Parliament' },
+  // QLD
+  { name: 'Jim Chalmers', state: 'QLD', electorate: 'Rankin', party: 'Australian Labor Party', yearsInOffice: 13, role: 'Treasurer' },
+  { name: 'Anika Wells', state: 'QLD', electorate: 'Lilley', party: 'Australian Labor Party', yearsInOffice: 5, role: 'Minister for Aged Care' },
+  { name: 'Pat Conroy', state: 'QLD', electorate: 'Hunter', party: 'Australian Labor Party', yearsInOffice: 11, role: 'Minister for Defence Industry' },
+  { name: 'Graham Perrett', state: 'QLD', electorate: 'Moreton', party: 'Australian Labor Party', yearsInOffice: 17, role: 'Member of Parliament' },
+  { name: 'David Littleproud', state: 'QLD', electorate: 'Maranoa', party: 'National Party', yearsInOffice: 7, role: 'Leader of the Nationals' },
+  { name: 'Barnaby Joyce', state: 'QLD', electorate: 'New England', party: 'National Party', yearsInOffice: 19, role: 'Member of Parliament' },
+  { name: 'Max Chandler-Mather', state: 'QLD', electorate: 'Griffith', party: 'Greens', yearsInOffice: 3, role: 'Member of Parliament' },
+  { name: 'Stephen Bates', state: 'QLD', electorate: 'Brisbane', party: 'Greens', yearsInOffice: 3, role: 'Member of Parliament' },
+  { name: 'Elizabeth Watson-Brown', state: 'QLD', electorate: 'Ryan', party: 'Greens', yearsInOffice: 3, role: 'Member of Parliament' },
+  { name: 'Karen Andrews', state: 'QLD', electorate: 'McPherson', party: 'Liberal Party', yearsInOffice: 13, role: 'Shadow Minister' },
+  // WA
+  { name: 'Anne Aly', state: 'WA', electorate: 'Cowan', party: 'Australian Labor Party', yearsInOffice: 7, role: 'Member of Parliament' },
+  { name: 'Matt Keogh', state: 'WA', electorate: 'Burt', party: 'Australian Labor Party', yearsInOffice: 7, role: 'Minister for Veterans Affairs' },
+  { name: 'Patrick Gorman', state: 'WA', electorate: 'Perth', party: 'Australian Labor Party', yearsInOffice: 5, role: 'Member of Parliament' },
+  { name: 'Kate Chaney', state: 'WA', electorate: 'Curtin', party: 'Independent', yearsInOffice: 3, role: 'Member of Parliament' },
+  { name: 'Melissa Price', state: 'WA', electorate: 'Durack', party: 'Liberal Party', yearsInOffice: 9, role: 'Member of Parliament' },
+  { name: 'Vince Connelly', state: 'WA', electorate: 'Stirling', party: 'Liberal Party', yearsInOffice: 5, role: 'Member of Parliament' },
+  // SA
+  { name: 'Mark Butler', state: 'SA', electorate: 'Hindmarsh', party: 'Australian Labor Party', yearsInOffice: 17, role: 'Minister for Health and Aged Care' },
+  { name: 'Tony Pasin', state: 'SA', electorate: 'Barker', party: 'Liberal Party', yearsInOffice: 11, role: 'Member of Parliament' },
+  { name: 'Rebekha Sharkie', state: 'SA', electorate: 'Mayo', party: 'Independent', yearsInOffice: 7, role: 'Member of Parliament' },
+  { name: 'James Stevens', state: 'SA', electorate: 'Sturt', party: 'Liberal Party', yearsInOffice: 5, role: 'Member of Parliament' },
+  { name: 'Nick Champion', state: 'SA', electorate: 'Spence', party: 'Australian Labor Party', yearsInOffice: 17, role: 'Member of Parliament' },
+  // TAS
+  { name: 'Andrew Wilkie', state: 'TAS', electorate: 'Clark', party: 'Independent', yearsInOffice: 13, role: 'Member of Parliament' },
+  { name: 'Bridget Archer', state: 'TAS', electorate: 'Bass', party: 'Liberal Party', yearsInOffice: 5, role: 'Member of Parliament' },
+  { name: 'Brian Mitchell', state: 'TAS', electorate: 'Lyons', party: 'Australian Labor Party', yearsInOffice: 7, role: 'Member of Parliament' },
+  { name: 'Michael McCormack', state: 'NSW', electorate: 'Riverina', party: 'National Party', yearsInOffice: 15, role: 'Member of Parliament' },
+];
+
 const NOTIFICATIONS_DATA = [
   // Canada
   { id: 'ca-1', country: 'canada', type: 'bill-introduced', title: 'Bill C-78: Affordable Housing Act Introduced', description: 'New legislation to fund 100,000 affordable homes across Canada by 2030.', timestamp: '2026-03-04T14:30:00Z' },
@@ -646,6 +796,10 @@ function App() {
   const [expandedAlbaneseSections, setExpandedAlbaneseSections] = useState({
     activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false,
   });
+  const [auChamber, setAuChamber] = useState('Senate');
+  const [auPartyFilter, setAuPartyFilter] = useState('All');
+  const [auSearch, setAuSearch] = useState('');
+  const [auMemberVotes, setAuMemberVotes] = useState({});
   const [copiedShareId, setCopiedShareId] = useState(null);
   const [senateSearch, setSenateSearch] = useState('');
   const [senateFilter, setSenateFilter] = useState('All');
@@ -4004,7 +4158,11 @@ function App() {
     // US parties
     'Democrat': '#2563EB',
     'Republican': '#DC2626',
-    'Independent': '#7C3AED'
+    'Independent': '#7C3AED',
+    // Australian parties
+    'Australian Labor Party': '#CC0000',
+    'Liberal Party': '#1B5BA5',
+    'National Party': '#006644',
   };
 
   // Get parties with counts
@@ -6182,18 +6340,19 @@ function App() {
               </div>
             </div>
 
-            {/* More sections coming soon */}
-            <div className="card-gradient rounded-2xl shadow-elegant-lg p-8 border-2 border-white/50 animate-scale-in opacity-60" style={{ animationDelay: '0.2s' }}>
-              <div className="flex items-center gap-3">
-                <div className="text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10h1v11H4V10zm6 0h1v11h-1V10zm5 0h1v11h-1V10zm5 0h1v11h-1V10z" />
-                  </svg>
+            {/* Parliament card */}
+            <div
+              onClick={() => { setAuChamber('Senate'); setAuPartyFilter('All'); setAuSearch(''); setView('au-parliament'); }}
+              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              style={{ animationDelay: '0.2s' }}
+            >
+              <div className="flex items-center gap-4">
+                <div className="text-4xl">🏛️</div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-gray-800">Australian Parliament</h2>
+                  <p className="text-gray-600 text-sm mt-1">Senate (76 senators) · House of Representatives (151 members)</p>
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-500">Parliament, Legislation & More</h3>
-                  <p className="text-gray-400 text-sm mt-1">Senate, House of Representatives, bills, and more — coming soon</p>
-                </div>
+                <ChevronRight className="w-6 h-6 text-gray-400 flex-shrink-0" />
               </div>
             </div>
           </div>
@@ -9774,6 +9933,200 @@ function App() {
             </div>
           )}
 
+        </div>
+      </div>
+    );
+  };
+
+  const renderAustralianParliament = () => {
+    const auHash = (str) => {
+      let h = 5381;
+      for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0x7fffffff;
+      return h;
+    };
+
+    const voteAuMember = (name, vote) => {
+      setAuMemberVotes(prev => {
+        const next = { ...prev };
+        if (next[name] === vote) delete next[name]; else next[name] = vote;
+        return next;
+      });
+    };
+
+    const AU_PARTIES = ['Australian Labor Party', 'Liberal Party', 'National Party', 'Greens', 'Independent'];
+
+    const sourceData = auChamber === 'Senate' ? AU_SENATORS_DATA : AU_REPS_DATA;
+
+    let filtered = sourceData;
+    if (auPartyFilter !== 'All') {
+      filtered = filtered.filter(m => m.party === auPartyFilter);
+    }
+    if (auSearch.trim()) {
+      const q = auSearch.toLowerCase();
+      filtered = filtered.filter(m =>
+        m.name.toLowerCase().includes(q) ||
+        m.state.toLowerCase().includes(q) ||
+        m.party.toLowerCase().includes(q)
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 p-4 sm:p-8 animate-fade-in">
+        <div className="max-w-6xl mx-auto">
+          <button
+            onClick={() => { setAuSearch(''); setAuPartyFilter('All'); setView('government-levels'); }}
+            className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
+          >
+            ← Back
+          </button>
+
+          {/* Header */}
+          <div className="mb-6 animate-slide-in">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">🏛️</span>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Australian Parliament</h1>
+            </div>
+            <p className="text-gray-600 text-base sm:text-lg">Senate (76 senators) · House of Representatives (151 members)</p>
+            <div className="w-24 h-1 bg-gradient-to-r from-yellow-500 to-amber-500 mt-3 rounded-full" />
+          </div>
+
+          {/* Chamber tab switcher */}
+          <div className="flex gap-3 mb-6">
+            <button
+              onClick={() => { setAuChamber('Senate'); setAuPartyFilter('All'); setAuSearch(''); }}
+              className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${auChamber === 'Senate' ? 'bg-amber-600 text-white border-amber-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-amber-400'}`}
+            >
+              Australian Senate (76)
+            </button>
+            <button
+              onClick={() => { setAuChamber('House'); setAuPartyFilter('All'); setAuSearch(''); }}
+              className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${auChamber === 'House' ? 'bg-amber-600 text-white border-amber-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-amber-400'}`}
+            >
+              House of Representatives (151)
+            </button>
+          </div>
+
+          {/* Party filter pills */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            <button
+              onClick={() => setAuPartyFilter('All')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${auPartyFilter === 'All' ? 'bg-gray-700 text-white border-gray-700 shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+            >
+              All
+            </button>
+            {AU_PARTIES.map(party => (
+              <button
+                key={party}
+                onClick={() => setAuPartyFilter(auPartyFilter === party ? 'All' : party)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${auPartyFilter === party ? 'text-white shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+                style={auPartyFilter === party ? { backgroundColor: getPartyColor(party), borderColor: getPartyColor(party) } : {}}
+              >
+                <span style={{ color: auPartyFilter === party ? 'white' : getPartyColor(party) }} className="w-2 h-2 rounded-full inline-block" />
+                {party}
+              </button>
+            ))}
+          </div>
+
+          {/* Search */}
+          <div className="relative mb-6">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={auSearch}
+              onChange={e => setAuSearch(e.target.value)}
+              placeholder={`Search ${auChamber === 'Senate' ? 'senators' : 'members'} by name, state, or party...`}
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-300 text-sm"
+            />
+          </div>
+
+          {/* Results count */}
+          <p className="text-sm text-gray-500 mb-4">
+            Showing {filtered.length} of {sourceData.length} {auChamber === 'Senate' ? 'senators' : 'members'}
+            {auPartyFilter !== 'All' && <span> · <span className="font-semibold" style={{ color: getPartyColor(auPartyFilter) }}>{auPartyFilter}</span></span>}
+          </p>
+
+          {/* Member cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((member, i) => {
+              const h = auHash(member.name);
+              const support = (h % 6000) + 2000;
+              const oppose = ((h >> 4) % 4000) + 1000;
+              const userVote = auMemberVotes[member.name] || null;
+              const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const color = getPartyColor(member.party);
+              return (
+                <div key={i} className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-amber-400 hover:shadow-xl transition-all">
+                  {/* Avatar */}
+                  <div style={{ backgroundColor: color }} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4">
+                    {initials}
+                  </div>
+
+                  <h3 className="text-xl font-bold text-gray-800 mb-1">{member.name}</h3>
+
+                  {/* Party badge */}
+                  <div className="mb-3">
+                    <span style={{ backgroundColor: color }} className="text-white text-xs px-2.5 py-1 rounded-full font-semibold">
+                      {member.party}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Globe className="w-4 h-4 flex-shrink-0" />
+                      <span>{member.state}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <MapPin className="w-4 h-4 flex-shrink-0" />
+                      <span>{auChamber === 'House' ? member.electorate : 'Senator'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar className="w-4 h-4 flex-shrink-0" />
+                      <span>{member.yearsInOffice} {member.yearsInOffice === 1 ? 'year' : 'years'} in office</span>
+                    </div>
+                    {member.role && member.role !== 'Senator' && member.role !== 'Member of Parliament' && (
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Star className="w-4 h-4 flex-shrink-0 text-amber-500" />
+                        <span className="font-medium text-amber-700">{member.role}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* View profile link */}
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <span className="text-amber-600 text-sm font-medium">View Profile →</span>
+                  </div>
+
+                  {/* Vote buttons */}
+                  <div className="flex items-center gap-2 mt-3" onClick={e => e.stopPropagation()}>
+                    <button
+                      onClick={() => voteAuMember(member.name, 'support')}
+                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
+                    >
+                      <ThumbsUp className="w-3 h-3" />
+                      <span>{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</span>
+                    </button>
+                    <button
+                      onClick={() => voteAuMember(member.name, 'oppose')}
+                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'oppose' ? 'bg-red-100 text-red-700 ring-1 ring-red-400' : 'text-red-600 hover:bg-red-50'}`}
+                    >
+                      <ThumbsDown className="w-3 h-3" />
+                      <span>{(oppose + (userVote === 'oppose' ? 1 : 0)).toLocaleString()}</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-16 text-gray-400">
+              <span className="text-5xl mb-4 block">🏛️</span>
+              <p className="font-semibold">No members found</p>
+              <p className="text-sm mt-1">Try adjusting your search or filter</p>
+            </div>
+          )}
+
+          <p className="text-center text-xs text-gray-400 mt-10 pb-4">Illustrative data · member profiles are statistically modelled</p>
         </div>
       </div>
     );
@@ -16511,6 +16864,7 @@ function App() {
       {view === 'senator-detail' && selectedSenator && renderSenatorPanel()}
       {view === 'canada-pm-detail' && renderCarneyDetail()}
       {view === 'albanese-detail' && renderAlbaneseDetail()}
+      {view === 'au-parliament' && renderAustralianParliament()}
       {view === 'president-executive' && renderPresidentExecutive()}
       {view === 'president-detail' && renderPresidentDetail()}
       {view === 'executive-orders' && renderExecutiveOrders()}
