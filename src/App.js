@@ -639,6 +639,13 @@ function App() {
   const [expandedCarneySections, setExpandedCarneySections] = useState({
     activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false,
   });
+  const [albaneseVotes, setAlbaneseVotes] = useState(() => {
+    const saved = localStorage.getItem('cvAlbaneseVote');
+    return saved ? JSON.parse(saved) : { support: 9841, oppose: 7203, userVote: null };
+  });
+  const [expandedAlbaneseSections, setExpandedAlbaneseSections] = useState({
+    activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false,
+  });
   const [copiedShareId, setCopiedShareId] = useState(null);
   const [senateSearch, setSenateSearch] = useState('');
   const [senateFilter, setSenateFilter] = useState('All');
@@ -3801,6 +3808,23 @@ function App() {
     setExpandedCarneySections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
+  const voteAlbanese = (vote) => {
+    setAlbaneseVotes(prev => {
+      const newVote = prev.userVote === vote ? null : vote;
+      let support = 9841;
+      let oppose  = 7203;
+      if (newVote === 'support') support++;
+      else if (newVote === 'oppose') oppose++;
+      const next = { support, oppose, userVote: newVote };
+      localStorage.setItem('cvAlbaneseVote', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const toggleAlbaneseSection = (section) => {
+    setExpandedAlbaneseSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
   // ── HOME REGION (locked once set, used to gate votes) ────────────────────────
   const coordsToRegion = (lat, lon) => {
     // Canadian provinces & territories
@@ -6132,16 +6156,45 @@ function App() {
                 <span className="text-4xl">🇦🇺</span>
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Australia</h1>
               </div>
+              <p className="text-gray-600 text-base sm:text-lg">Australian Federal Government</p>
               <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
             </div>
 
-            <div className="card-gradient rounded-2xl shadow-elegant-lg p-12 border-2 border-white/50 animate-scale-in text-center">
-              <div className="text-8xl mb-6">🇦🇺</div>
-              <h2 className="text-3xl font-bold text-gray-800 mb-4">Australian Federal Government</h2>
-              <p className="text-xl text-gray-500 mb-6">Coming Soon</p>
-              <p className="text-gray-400 text-sm max-w-md mx-auto">
-                We're building out Australia's federal parliament, senators, representatives, legislation, and government data. Check back soon.
-              </p>
+            {/* Prime Minister card */}
+            <div
+              onClick={() => setView('albanese-detail')}
+              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mb-6"
+              style={{ animationDelay: '0.1s' }}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0 shadow-lg" style={{ backgroundColor: '#CC0000' }}>
+                  AA
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Crown className="w-5 h-5 text-yellow-500" />
+                    <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">Prime Minister</span>
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-800">Anthony Albanese</h2>
+                  <p className="text-gray-600 text-sm mt-1">Australian Labor Party · In office since May 23, 2022</p>
+                </div>
+                <ChevronRight className="w-6 h-6 text-gray-400 flex-shrink-0" />
+              </div>
+            </div>
+
+            {/* More sections coming soon */}
+            <div className="card-gradient rounded-2xl shadow-elegant-lg p-8 border-2 border-white/50 animate-scale-in opacity-60" style={{ animationDelay: '0.2s' }}>
+              <div className="flex items-center gap-3">
+                <div className="text-gray-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10h1v11H4V10zm6 0h1v11h-1V10zm5 0h1v11h-1V10zm5 0h1v11h-1V10z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-500">Parliament, Legislation & More</h3>
+                  <p className="text-gray-400 text-sm mt-1">Senate, House of Representatives, bills, and more — coming soon</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -9721,6 +9774,494 @@ function App() {
             </div>
           )}
 
+        </div>
+      </div>
+    );
+  };
+
+  const renderAlbaneseDetail = () => {
+    const partyColor = '#CC0000'; // ALP red
+
+    const albanese = {
+      name: 'Anthony Albanese',
+      initials: 'AA',
+      born: 'March 2, 1963',
+      birthplace: 'Camperdown, New South Wales',
+      education: 'Bachelor of Economics, University of Sydney',
+      party: 'Australian Labor Party',
+      email: 'pm@pm.gov.au',
+      phone: '+61 2 6277 7700',
+      bio: 'Anthony Albanese is the 31st Prime Minister of Australia, elected on May 21, 2022, ending nine years of Coalition government. Known as "Albo" to supporters, he grew up in public housing in Camperdown, Sydney, raised by a single mother. He entered federal parliament in 1996 as the Member for Grayndler and served as Deputy Prime Minister and Minister for Infrastructure under Kevin Rudd and Julia Gillard. A lifelong Labor figure and proud South Sydney Rabbitohs supporter, Albanese has focused his government on climate action, cost of living relief, housing affordability, and rebuilding international relationships including with China and the Pacific.',
+      policies: ['Climate Action & Renewable Energy', 'Housing Affordability', 'Cost of Living Relief', 'AUKUS & National Security', 'Medicare & Healthcare', 'Indigenous Reconciliation', 'Industrial Relations Reform'],
+      recentActivity: [
+        { type: 'Energy Policy', date: 'Feb 2026', title: 'Renewable Energy Target Expanded', description: 'Government increased the 2030 renewable energy target to 90%, backed by $15B in clean energy investment through the Australian Renewable Energy Agency.' },
+        { type: 'Housing', date: 'Jan 2026', title: 'Housing Australia Future Fund Milestone', description: 'Announced the first 10,000 social and affordable homes funded through the $10B Housing Australia Future Fund, with construction underway in all states.' },
+        { type: 'Foreign Policy', date: 'Dec 2025', title: 'Pacific Engagement Strategy', description: 'Launched the expanded Pacific Engagement Visa program, increasing migration pathways from Pacific Island nations and strengthening regional security partnerships.' },
+        { type: 'Cost of Living', date: 'Nov 2025', title: 'Energy Bill Relief Extended', description: 'Extended the $300 energy bill relief rebate for all Australian households into 2026, totalling $3.5B in direct cost-of-living support.' },
+        { type: 'Defence', date: 'Oct 2025', title: 'AUKUS Submarine Progress', description: 'Confirmed the first Virginia-class submarine sale from the US to Australia under AUKUS Pillar I, with Australian crew training commencing at Pearl Harbor.' },
+      ],
+      executiveActions: [
+        'Legislated 43% emissions reduction target by 2030 — Australia\'s first statutory climate target',
+        'Established the National Housing Accord targeting 1.2 million new homes by 2029',
+        'Restored Australia–China ministerial dialogue after three years of diplomatic freeze',
+        'Signed the AUKUS nuclear-powered submarine agreement with US and UK',
+        'Introduced the Closing the Gap refresh with binding targets for Indigenous outcomes',
+        'Passed the Fair Work Legislation Amendment for multi-employer bargaining rights',
+        'Created the $10B Housing Australia Future Fund for social and affordable housing',
+        'Extended the Energy Price Relief Plan — $300 rebate to every household',
+      ],
+      attendance: { percentage: 91, sessionsAttended: 46, totalSessions: 50 },
+      financialDisclosure: {
+        electedYear: 2022,
+        worthWhenElected: 4100000,
+        currentNetWorth: 4600000,
+        percentageIncrease: 12.2,
+        annualSalary: 564000,
+        assets: [
+          { type: 'Primary Residence (Marrickville, NSW)', value: 2100000 },
+          { type: 'Investment Property (Canberra)', value: 1400000 },
+          { type: 'Superannuation', value: 890000 },
+          { type: 'Savings & Term Deposits', value: 210000 },
+        ],
+      },
+      stockTrades: [
+        { company: 'BHP Group', ticker: 'BHP', type: 'Disclosure', assetType: 'Equity', value: 'A$10K–A$50K', date: 'Jun 2022', conflict: false },
+        { company: 'Commonwealth Bank of Australia', ticker: 'CBA', type: 'Disclosure', assetType: 'Equity', value: 'A$10K–A$50K', date: 'Jun 2022', conflict: false },
+        { company: 'Telstra Group', ticker: 'TLS', type: 'Disclosure', assetType: 'Equity', value: 'A$5K–A$20K', date: 'Jun 2022', conflict: false },
+      ],
+      lobbying: [
+        { name: 'Business Council of Australia', sector: 'Business Advocacy', value: 0, meetings: 7, lastMeeting: 'Jan 2026' },
+        { name: 'Australian Council of Trade Unions', sector: 'Labour', value: 0, meetings: 9, lastMeeting: 'Feb 2026' },
+        { name: 'Clean Energy Finance Corporation', sector: 'Energy & Climate', value: 0, meetings: 5, lastMeeting: 'Jan 2026' },
+        { name: 'National Farmers\' Federation', sector: 'Agriculture', value: 0, meetings: 4, lastMeeting: 'Dec 2025' },
+        { name: 'Australian Medical Association', sector: 'Healthcare', value: 0, meetings: 6, lastMeeting: 'Feb 2026' },
+      ],
+      cabinet: [
+        { name: 'Richard Marles', role: 'Deputy Prime Minister & Minister for Defence' },
+        { name: 'Penny Wong', role: 'Minister for Foreign Affairs' },
+        { name: 'Jim Chalmers', role: 'Treasurer' },
+        { name: 'Mark Dreyfus', role: 'Attorney-General' },
+        { name: 'Chris Bowen', role: 'Minister for Climate Change and Energy' },
+        { name: 'Jason Clare', role: 'Minister for Education' },
+        { name: 'Katy Gallagher', role: 'Minister for Finance' },
+        { name: 'Catherine King', role: 'Minister for Infrastructure, Transport and Regional Development' },
+        { name: 'Mark Butler', role: 'Minister for Health and Aged Care' },
+        { name: 'Clare O\'Neil', role: 'Minister for Home Affairs' },
+        { name: 'Tanya Plibersek', role: 'Minister for the Environment and Water' },
+        { name: 'Don Farrell', role: 'Minister for Trade and Tourism' },
+      ],
+      seniorAdvisors: [
+        { name: 'Tim Gartrell', title: 'Chief of Staff', bio: 'Former ALP National Secretary and the architect of Labor\'s 2007 election victory under Kevin Rudd. Gartrell serves as Chief of Staff, overseeing the day-to-day operations of the Prime Minister\'s Office and coordinating the government\'s legislative and communications agenda.' },
+        { name: 'Ginna Webster', title: 'Deputy Chief of Staff', bio: 'Veteran federal policy adviser with experience across multiple Labor governments, Webster manages policy development and inter-agency coordination, ensuring alignment between the PMO and cabinet departments.' },
+        { name: 'Pat Conroy', title: 'Senior Policy Adviser (Defence & Security)', bio: 'Former Minister for Defence Industry who transitioned to a senior advisory role after the 2025 reshuffle, providing strategic guidance on AUKUS, regional security, and the Defence Strategic Review implementation.' },
+      ],
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <button
+              onClick={() => setView('australia-categories')}
+              className="text-red-700 hover:text-red-900 flex items-center gap-2 mb-4"
+            >
+              ← Back to Australian Federal Government
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 py-8">
+
+          {/* Profile card */}
+          <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
+            <div
+              style={{ background: `linear-gradient(135deg, ${partyColor}18 0%, ${partyColor}06 100%)`, borderBottom: `3px solid ${partyColor}` }}
+              className="px-4 pt-4 pb-4 md:px-8 md:pt-8 md:pb-6"
+            >
+              <div className="flex items-start gap-4">
+                <div
+                  style={{ backgroundColor: partyColor }}
+                  className="w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center text-white text-xl md:text-3xl font-bold flex-shrink-0 shadow-lg"
+                >
+                  {albanese.initials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl md:text-3xl font-bold text-gray-900 leading-tight">{albanese.name}</h1>
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    <span
+                      style={{ backgroundColor: partyColor }}
+                      className="text-white text-xs md:text-sm font-bold px-2.5 md:px-3 py-1 md:py-1.5 rounded-full shadow-sm"
+                    >
+                      31st Prime Minister
+                    </span>
+                    <span className="text-sm text-gray-600 font-medium">Australia</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1 truncate">{albanese.party} · Canberra, ACT · In office since May 23, 2022</p>
+                  <div className="hidden md:grid md:grid-cols-2 gap-4 mt-4">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <span className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: partyColor }}></span>
+                      <span className="font-medium">{albanese.party}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <MapPin className="w-4 h-4" />
+                      <span>Canberra, Australian Capital Territory</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar className="w-4 h-4" />
+                      <span>In office since May 23, 2022</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Clock className="w-4 h-4" />
+                      <span>Member for Grayndler since 1996</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Approval bar */}
+              {(() => {
+                const total = (albaneseVotes.support || 0) + (albaneseVotes.oppose || 0);
+                const pct = total > 0 ? Math.round((albaneseVotes.support / total) * 100) : 50;
+                return (
+                  <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 mt-4">
+                    <div className="flex items-center gap-1.5">
+                      <ThumbsUp className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-semibold text-gray-700">{albaneseVotes.support.toLocaleString()}</span>
+                      <span className="text-xs text-gray-500">support</span>
+                    </div>
+                    <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[60px]">
+                      <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-gray-500">oppose</span>
+                      <span className="text-sm font-semibold text-gray-700">{albaneseVotes.oppose.toLocaleString()}</span>
+                      <ThumbsDown className="w-4 h-4 text-red-500" />
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Vote buttons */}
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => voteAlbanese('support')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${albaneseVotes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
+                >
+                  <ThumbsUp className="w-4 h-4" /> Support
+                </button>
+                <button
+                  onClick={() => voteAlbanese('oppose')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${albaneseVotes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
+                >
+                  <ThumbsDown className="w-4 h-4" /> Oppose
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">📧 Contact Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
+                <a href={`mailto:${albanese.email}`} className="text-red-700 hover:text-red-900 font-medium break-all">{albanese.email}</a>
+              </div>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-2 font-medium">PMO Phone</p>
+                <a href={`tel:${albanese.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{albanese.phone}</a>
+              </div>
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
+                <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
+                <p className="text-gray-700 text-sm">Parliament House, Canberra ACT 2600, Australia</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Two-column layout */}
+          <div className="md:grid md:grid-cols-2 md:gap-6">
+
+            {/* Left column */}
+            <div className="space-y-6">
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">📖 Biography</h3>
+                <p className="text-gray-700 leading-relaxed">{albanese.bio}</p>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">📋 Key Policy Areas</h3>
+                <div className="flex flex-wrap gap-2">
+                  {albanese.policies.map((policy, i) => (
+                    <span key={i} className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                      <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                      {policy}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">🗓️ Term Information</h3>
+                <div className="grid grid-cols-3 gap-3 mb-3">
+                  <div className="bg-red-50 p-4 rounded-lg text-center">
+                    <p className="text-sm text-gray-600 mb-1">Current Term</p>
+                    <p className="text-2xl font-bold text-red-700">2022–</p>
+                  </div>
+                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                    <p className="text-sm text-gray-600 mb-1">Prior Role</p>
+                    <p className="text-lg font-bold text-blue-600">Dep. PM</p>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg text-center">
+                    <p className="text-sm text-gray-600 mb-1">PM #</p>
+                    <p className="text-3xl font-bold text-purple-600">31</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Born</p>
+                    <p className="font-semibold text-gray-800">{albanese.born}, {albanese.birthplace}</p>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Education</p>
+                    <p className="font-semibold text-gray-800">{albanese.education}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cabinet */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">🏛️ Key Cabinet Ministers</h3>
+                <div className="space-y-2">
+                  {albanese.cabinet.map((c, i) => (
+                    <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                      <h4 className="font-bold text-gray-800">{c.name}</h4>
+                      <p className="text-sm font-medium" style={{ color: partyColor }}>{c.role}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Senior Advisors */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">🌟 Senior PMO Advisors</h3>
+                <div className="space-y-2">
+                  {albanese.seniorAdvisors.map((advisor) => (
+                    <div key={advisor.name} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                      <h4 className="font-bold text-gray-800">{advisor.name}</h4>
+                      <p className="text-sm font-medium mb-1" style={{ color: partyColor }}>{advisor.title}</p>
+                      <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right column — collapsible sections */}
+            <div className="space-y-6 mt-6 md:mt-0">
+
+              {/* Recent Activity */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleAlbaneseSection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-6 h-6" style={{ color: partyColor }} />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
+                      <p className="text-sm text-gray-600">{albanese.recentActivity.length} recent actions</p>
+                    </div>
+                  </div>
+                  {expandedAlbaneseSections.activity ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedAlbaneseSections.activity && (
+                  <div className="px-6 pb-6 space-y-4">
+                    {albanese.recentActivity.map((item, i) => (
+                      <div key={i} className="border rounded-lg p-4 bg-red-50 border-red-200">
+                        <div className="flex items-start justify-between mb-2">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-200 text-red-800">{item.type}</span>
+                          <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>{item.date}</span>
+                          </div>
+                        </div>
+                        <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                        <p className="text-sm text-gray-600">{item.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Key Government Priorities */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleAlbaneseSection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <Scale className="w-6 h-6" style={{ color: partyColor }} />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h2>
+                      <p className="text-sm text-gray-600">{albanese.executiveActions.length} key commitments</p>
+                    </div>
+                  </div>
+                  {expandedAlbaneseSections.keyDecisions ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedAlbaneseSections.keyDecisions && (
+                  <div className="px-6 pb-6 space-y-2">
+                    {albanese.executiveActions.map((action, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <span className="text-sm text-gray-700 font-medium">{action}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Attendance Record */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleAlbaneseSection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <Award className="w-6 h-6" style={{ color: partyColor }} />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
+                      <p className="text-sm text-gray-600">{albanese.attendance.percentage}% Question Time attendance</p>
+                    </div>
+                  </div>
+                  {expandedAlbaneseSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedAlbaneseSections.attendance && (
+                  <div className="px-6 pb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-red-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
+                        <p className="text-3xl font-bold text-red-700">{albanese.attendance.percentage}%</p>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
+                        <p className="text-3xl font-bold text-green-600">{albanese.attendance.sessionsAttended}/{albanese.attendance.totalSessions}</p>
+                      </div>
+                      <div className="bg-purple-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">National Ranking</p>
+                        <p className="text-3xl font-bold text-purple-600">#1</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Financial Disclosures */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleAlbaneseSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                      <p className="text-sm text-gray-600">Net worth up {albanese.financialDisclosure.percentageIncrease}% since election</p>
+                    </div>
+                  </div>
+                  {expandedAlbaneseSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedAlbaneseSections.financial && (
+                  <div className="px-6 pb-6 space-y-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="bg-purple-50 p-3 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">Worth in {albanese.financialDisclosure.electedYear}</p>
+                        <p className="font-bold text-purple-700 text-sm">A${(albanese.financialDisclosure.worthWhenElected / 1000000).toFixed(1)}M</p>
+                      </div>
+                      <div className="bg-green-50 p-3 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
+                        <p className="font-bold text-green-700 text-sm">A${(albanese.financialDisclosure.currentNetWorth / 1000000).toFixed(1)}M</p>
+                      </div>
+                      <div className="bg-blue-50 p-3 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">Increase</p>
+                        <p className="font-bold text-blue-700 text-sm">+{albanese.financialDisclosure.percentageIncrease}%</p>
+                      </div>
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">Annual Salary</p>
+                        <p className="font-bold text-gray-700 text-sm">A${albanese.financialDisclosure.annualSalary.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">Asset Breakdown</h4>
+                      <div className="space-y-2">
+                        {albanese.financialDisclosure.assets.map((asset, i) => (
+                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                            <span className="text-sm text-gray-700">{asset.type}</span>
+                            <span className="text-sm font-bold text-gray-800">A${asset.value.toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Asset Disclosures */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleAlbaneseSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="w-6 h-6 text-blue-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">📈 Asset Disclosures</h2>
+                      <p className="text-sm text-gray-600">{albanese.stockTrades.length} disclosed holdings on election</p>
+                    </div>
+                  </div>
+                  {expandedAlbaneseSections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedAlbaneseSections.stockTrades && (
+                  <div className="px-6 pb-6 space-y-3">
+                    {albanese.stockTrades.map((trade, i) => (
+                      <div key={i} className="border rounded-lg p-4 bg-gray-50 border-gray-200">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <div>
+                            <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
+                            <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
+                          </div>
+                          <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 mt-1">
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
+                          <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
+                        </div>
+                      </div>
+                    ))}
+                    <p className="text-xs text-gray-400 mt-2">Disclosures filed with the Australian Parliament's Register of Members' Interests.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Lobbying Activity */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleAlbaneseSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <Users className="w-6 h-6 text-orange-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
+                      <p className="text-sm text-gray-600">{albanese.lobbying.reduce((s, l) => s + l.meetings, 0)} meetings with registered lobbyists</p>
+                    </div>
+                  </div>
+                  {expandedAlbaneseSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedAlbaneseSections.lobbying && (
+                  <div className="px-6 pb-6 space-y-3">
+                    {albanese.lobbying.map((org, i) => (
+                      <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h4 className="font-bold text-gray-800 text-sm">{org.name}</h4>
+                            <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
+                            <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -15969,6 +16510,7 @@ function App() {
       {view === 'senate' && renderSenate()}
       {view === 'senator-detail' && selectedSenator && renderSenatorPanel()}
       {view === 'canada-pm-detail' && renderCarneyDetail()}
+      {view === 'albanese-detail' && renderAlbaneseDetail()}
       {view === 'president-executive' && renderPresidentExecutive()}
       {view === 'president-detail' && renderPresidentDetail()}
       {view === 'executive-orders' && renderExecutiveOrders()}
