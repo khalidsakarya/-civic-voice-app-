@@ -9862,7 +9862,7 @@ function App() {
         <div className="bg-white shadow-sm">
           <div className="max-w-6xl mx-auto px-4 py-4">
             <button
-              onClick={() => setView('australia-categories')}
+              onClick={() => setView('government-levels')}
               className="text-red-700 hover:text-red-900 flex items-center gap-2 mb-4"
             >
               ← Back to Australian Federal Government
