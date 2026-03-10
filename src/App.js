@@ -800,6 +800,7 @@ function App() {
   const [auPartyFilter, setAuPartyFilter] = useState('All');
   const [auSearch, setAuSearch] = useState('');
   const [auMemberVotes, setAuMemberVotes] = useState({});
+  const [selectedAuState, setSelectedAuState] = useState(null);
   const [copiedShareId, setCopiedShareId] = useState(null);
   const [senateSearch, setSenateSearch] = useState('');
   const [senateFilter, setSenateFilter] = useState('All');
@@ -6355,6 +6356,22 @@ function App() {
                 <ChevronRight className="w-6 h-6 text-gray-400 flex-shrink-0" />
               </div>
             </div>
+
+            {/* States & Territories card */}
+            <div
+              onClick={() => setView('au-states')}
+              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              style={{ animationDelay: '0.3s' }}
+            >
+              <div className="flex items-center gap-4">
+                <div className="text-4xl">🗺️</div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-gray-800">States &amp; Territories</h2>
+                  <p className="text-gray-600 text-sm mt-1">6 states · 2 territories · Premiers and Chief Ministers</p>
+                </div>
+                <ChevronRight className="w-6 h-6 text-gray-400 flex-shrink-0" />
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -10127,6 +10144,311 @@ function App() {
           )}
 
           <p className="text-center text-xs text-gray-400 mt-10 pb-4">Illustrative data · member profiles are statistically modelled</p>
+        </div>
+      </div>
+    );
+  };
+
+  const getAustralianStateData = () => {
+    const W = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
+    const flagFiles = {
+      'New South Wales':                'Flag_of_New_South_Wales.svg',
+      'Victoria':                       'Flag_of_Victoria_(Australia).svg',
+      'Queensland':                     'Flag_of_Queensland.svg',
+      'Western Australia':              'Flag_of_Western_Australia.svg',
+      'South Australia':                'Flag_of_South_Australia.svg',
+      'Tasmania':                       'Flag_of_Tasmania.svg',
+      'Australian Capital Territory':   'Flag_of_the_Australian_Capital_Territory.svg',
+      'Northern Territory':             'Flag_of_the_Northern_Territory.svg',
+    };
+    const flagUrl = (name) => W + (flagFiles[name] || 'Flag_of_' + name.replace(/ /g, '_') + '.svg');
+
+    const states = [
+      {
+        name: 'New South Wales', abbr: 'NSW', capital: 'Sydney', population: '8.2M',
+        leader: 'Chris Minns', leaderTitle: 'Premier', party: 'Australian Labor Party', partyShort: 'ALP', since: '2023',
+        bio: 'Chris Minns led Labor to victory in March 2023, ending 12 years of Coalition government. A former Shadow Housing Minister and lifelong Western Sydney resident, Minns has focused on housing affordability, cost of living relief, hospital funding, and TAFE investment. He previously worked in finance before entering politics.',
+        deputyTitle: 'Deputy Premier',
+        deputy: 'Prue Car', deputyParty: 'ALP', deputySince: '2023',
+        deputyBio: 'Prue Car is a former teacher and union official who became Deputy Premier and Minister for Education in the Minns Government. She has focused on improving public school resourcing and teacher retention across New South Wales.',
+        legislature: { name: 'NSW Legislative Assembly', totalSeats: 93, parties: [{ name: 'Labor', seats: 45, color: '#CC0000' }, { name: 'Liberal', seats: 33, color: '#1B5BA5' }, { name: 'Nationals', seats: 9, color: '#006644' }, { name: 'Greens', seats: 3, color: '#10B981' }, { name: 'Independent', seats: 3, color: '#6B7280' }] },
+      },
+      {
+        name: 'Victoria', abbr: 'VIC', capital: 'Melbourne', population: '6.7M',
+        leader: 'Jacinta Allan', leaderTitle: 'Premier', party: 'Australian Labor Party', partyShort: 'ALP', since: '2023',
+        bio: 'Jacinta Allan became Victoria\'s first female Premier in October 2023 when Daniel Andrews retired after 14 years as Labor leader. A long-serving minister for transport and infrastructure, she has continued Labor\'s major infrastructure agenda including the Metro Tunnel and Suburban Rail Loop, while managing the state\'s significant debt levels.',
+        deputyTitle: 'Deputy Premier',
+        deputy: 'Ben Carroll', deputyParty: 'ALP', deputySince: '2023',
+        deputyBio: 'Ben Carroll is a former teacher and principal who served as Minister for Education before becoming Deputy Premier under Jacinta Allan. He has championed investment in public education and early childhood learning across Victoria.',
+        legislature: { name: 'Victorian Legislative Assembly', totalSeats: 88, parties: [{ name: 'Labor', seats: 51, color: '#CC0000' }, { name: 'Liberal', seats: 23, color: '#1B5BA5' }, { name: 'Nationals', seats: 9, color: '#006644' }, { name: 'Greens', seats: 4, color: '#10B981' }, { name: 'Independent', seats: 1, color: '#6B7280' }] },
+      },
+      {
+        name: 'Queensland', abbr: 'QLD', capital: 'Brisbane', population: '5.4M',
+        leader: 'David Crisafulli', leaderTitle: 'Premier', party: 'Liberal National Party', partyShort: 'LNP', since: '2024',
+        bio: 'David Crisafulli led the Liberal National Party to a landslide victory in the October 2024 Queensland state election, ending two terms of Labor government. A former mayor of Townsville, Crisafulli has focused on crime and community safety, cost of living, restoring the economy, and supporting Queensland\'s resources and agricultural sectors.',
+        deputyTitle: 'Deputy Premier',
+        deputy: 'Jarrod Bleijie', deputyParty: 'LNP', deputySince: '2024',
+        deputyBio: 'Jarrod Bleijie is a lawyer and veteran LNP politician who previously served as Attorney-General under Campbell Newman. As Deputy Premier he oversees justice, industrial relations, and the government\'s law and order agenda.',
+        legislature: { name: 'Queensland Legislative Assembly', totalSeats: 93, parties: [{ name: 'LNP', seats: 55, color: '#1B5BA5' }, { name: 'Labor', seats: 31, color: '#CC0000' }, { name: 'Greens', seats: 5, color: '#10B981' }, { name: 'Independent', seats: 2, color: '#6B7280' }] },
+      },
+      {
+        name: 'Western Australia', abbr: 'WA', capital: 'Perth', population: '2.8M',
+        leader: 'Roger Cook', leaderTitle: 'Premier', party: 'Australian Labor Party', partyShort: 'ALP', since: '2023',
+        bio: 'Roger Cook succeeded Mark McGowan as Premier in June 2023. A veteran health minister and deputy under McGowan, Cook guided WA\'s economic recovery during the resources boom. He has focused on healthcare infrastructure, housing, cost of living, and maintaining the state\'s strong fiscal position.',
+        deputyTitle: 'Deputy Premier',
+        deputy: 'Rita Saffioti', deputyParty: 'ALP', deputySince: '2023',
+        deputyBio: 'Rita Saffioti is a former Treasurer and Transport Minister who became Deputy Premier under Roger Cook. She has overseen major WA infrastructure projects and continued the government\'s diversification of the state\'s economy beyond iron ore.',
+        legislature: { name: 'WA Legislative Assembly', totalSeats: 59, parties: [{ name: 'Labor', seats: 40, color: '#CC0000' }, { name: 'Liberal', seats: 7, color: '#1B5BA5' }, { name: 'Nationals', seats: 5, color: '#006644' }, { name: 'Greens', seats: 4, color: '#10B981' }, { name: 'Independent', seats: 3, color: '#6B7280' }] },
+      },
+      {
+        name: 'South Australia', abbr: 'SA', capital: 'Adelaide', population: '1.8M',
+        leader: 'Peter Malinauskas', leaderTitle: 'Premier', party: 'Australian Labor Party', partyShort: 'ALP', since: '2022',
+        bio: 'Peter Malinauskas led Labor to a decisive victory in March 2022, ending eight years of Liberal government. A former SDA union secretary, he has positioned South Australia as a leader in renewable energy and the clean hydrogen economy, while also focusing on health system improvements and the AUKUS nuclear submarine partnership with Osborne Naval Shipyard.',
+        deputyTitle: 'Deputy Premier',
+        deputy: 'Susan Close', deputyParty: 'ALP', deputySince: '2022',
+        deputyBio: 'Susan Close is a veteran Labor politician serving as Deputy Premier and Minister for Climate, Environment and Water. She has championed South Australia\'s transition to 100% renewable electricity and overseen the state\'s ambitious climate and energy policies.',
+        legislature: { name: 'SA House of Assembly', totalSeats: 47, parties: [{ name: 'Labor', seats: 26, color: '#CC0000' }, { name: 'Liberal', seats: 18, color: '#1B5BA5' }, { name: 'Greens', seats: 1, color: '#10B981' }, { name: 'Independent', seats: 2, color: '#6B7280' }] },
+      },
+      {
+        name: 'Tasmania', abbr: 'TAS', capital: 'Hobart', population: '570K',
+        leader: 'Jeremy Rockliff', leaderTitle: 'Premier', party: 'Liberal Party', partyShort: 'Liberal', since: '2021',
+        bio: 'Jeremy Rockliff became Premier in May 2021 when Peter Gutwein retired. After the 2024 state election produced a hung parliament, Rockliff formed a minority government with confidence and supply from independents. He has focused on housing, healthcare, and infrastructure while navigating Tasmania\'s unique geographic and economic challenges.',
+        deputyTitle: 'Deputy Premier',
+        deputy: 'Michael Ferguson', deputyParty: 'Liberal', deputySince: '2021',
+        deputyBio: 'Michael Ferguson has served in senior cabinet roles across health, transport, and infrastructure for many years. As Deputy Premier he has overseen the state\'s major hospital redevelopment and transport infrastructure programs.',
+        legislature: { name: 'Tasmanian House of Assembly', totalSeats: 35, parties: [{ name: 'Liberal', seats: 14, color: '#1B5BA5' }, { name: 'Labor', seats: 10, color: '#CC0000' }, { name: 'Greens', seats: 7, color: '#10B981' }, { name: 'Independent', seats: 4, color: '#6B7280' }] },
+      },
+      {
+        name: 'Australian Capital Territory', abbr: 'ACT', capital: 'Canberra', population: '460K',
+        leader: 'Andrew Barr', leaderTitle: 'Chief Minister', party: 'Australian Labor Party', partyShort: 'ALP', since: '2014',
+        bio: 'Andrew Barr is Australia\'s longest-serving current state/territory leader, having been Chief Minister since December 2014. After the 2024 ACT election he formed a minority government with Greens support. He has transformed Canberra into a progressive city with light rail, 100% renewable electricity, and ambitious housing and climate targets.',
+        deputyTitle: 'Deputy Chief Minister',
+        deputy: 'Yvette Berry', deputyParty: 'ALP', deputySince: '2020',
+        deputyBio: 'Yvette Berry has served in the ACT Government in various portfolios including Housing, Women, and Early Childhood Education. As Deputy Chief Minister she has championed public and affordable housing delivery and gender equality initiatives across the territory.',
+        legislature: { name: 'ACT Legislative Assembly', totalSeats: 25, parties: [{ name: 'Labor', seats: 11, color: '#CC0000' }, { name: 'Liberal', seats: 7, color: '#1B5BA5' }, { name: 'Greens', seats: 6, color: '#10B981' }, { name: 'Independent', seats: 1, color: '#6B7280' }] },
+      },
+      {
+        name: 'Northern Territory', abbr: 'NT', capital: 'Darwin', population: '250K',
+        leader: 'Lia Finocchiaro', leaderTitle: 'Chief Minister', party: 'Country Liberal Party', partyShort: 'CLP', since: '2024',
+        bio: 'Lia Finocchiaro led the Country Liberal Party to a landslide win in the August 2024 NT election, ending Labor\'s six-year government. A lawyer and long-serving opposition leader, she has focused on community safety, economic development, reducing government debt, and addressing the Territory\'s remote Indigenous community challenges.',
+        deputyTitle: 'Deputy Chief Minister',
+        deputy: 'Gerard Maley', deputyParty: 'CLP', deputySince: '2024',
+        deputyBio: 'Gerard Maley is a veterinarian and pastoralist who won the seat of Goyder in the 2024 election. As Deputy Chief Minister he focuses on primary industries, pastoral land management, and economic development in the Territory\'s remote regions.',
+        legislature: { name: 'NT Legislative Assembly', totalSeats: 25, parties: [{ name: 'CLP', seats: 17, color: '#1B5BA5' }, { name: 'Labor', seats: 8, color: '#CC0000' }] },
+      },
+    ];
+
+    return states.map(s => ({ ...s, flagUrl: flagUrl(s.name) }));
+  };
+
+  const renderAustralianStates = () => {
+    const states = getAustralianStateData();
+
+    const partyBadgeColors = {
+      'ALP':     'bg-red-100 text-red-800',
+      'LNP':     'bg-blue-100 text-blue-800',
+      'Liberal': 'bg-blue-100 text-blue-800',
+      'CLP':     'bg-blue-100 text-blue-800',
+    };
+
+    const partyCounts = states.reduce((acc, s) => { acc[s.partyShort] = (acc[s.partyShort] || 0) + 1; return acc; }, {});
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 p-4 sm:p-8 animate-fade-in">
+        <div className="max-w-4xl mx-auto">
+          <button
+            onClick={() => setView('government-levels')}
+            className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
+          >
+            ← Back
+          </button>
+
+          <div className="mb-6 animate-slide-in">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">🇦🇺 States &amp; Territories</h1>
+            <p className="text-gray-500 text-sm sm:text-base">Select a state or territory to view the leader and legislature</p>
+            <div className="w-24 h-1 mt-3 rounded-full" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }} />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+            {states.map((item, index) => {
+              const badgeClass = partyBadgeColors[item.partyShort] || 'bg-gray-100 text-gray-700';
+              return (
+                <button
+                  key={item.name}
+                  onClick={() => { setSelectedAuState(item); setView('au-state-detail'); }}
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 px-3 py-2.5 flex items-center gap-3 hover:shadow-md hover:border-green-300 hover:bg-green-50/40 transition-all text-left w-full animate-scale-in group"
+                  style={{ animationDelay: `${Math.min(index * 0.04, 0.35)}s` }}
+                >
+                  <img
+                    src={item.flagUrl}
+                    alt={`Flag of ${item.name}`}
+                    className="w-14 h-9 object-cover rounded shadow-sm flex-shrink-0 border border-gray-100"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-800 text-sm leading-tight truncate">{item.name}</p>
+                    <p className="text-gray-500 text-xs truncate">{item.leaderTitle}: {item.leader}</p>
+                  </div>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${badgeClass}`}>
+                    {item.partyShort}
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-green-500 flex-shrink-0 transition-colors" />
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Party summary */}
+          <div className="mt-6 p-4 bg-white/60 rounded-2xl border border-white/80 shadow-elegant flex flex-wrap gap-4 justify-center text-sm text-gray-500">
+            {Object.entries(partyCounts).map(([party, count]) => (
+              <span key={party} className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: ['ALP'].includes(party) ? '#CC0000' : ['LNP','Liberal','CLP'].includes(party) ? '#1B5BA5' : '#6B7280' }} />
+                {party === 'ALP' ? 'Labor' : party}: {count}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAustralianStateDetail = () => {
+    if (!selectedAuState) return null;
+    const item = selectedAuState;
+
+    const getInitials = (name) => {
+      if (!name) return '?';
+      return name.split(' ').filter(n => /^[A-Z]/.test(n)).map(n => n[0]).join('').slice(0, 2) || '?';
+    };
+
+    const partyBadge = (p) => ({
+      'ALP': 'bg-red-100 text-red-800',
+      'LNP': 'bg-blue-100 text-blue-800',
+      'Liberal': 'bg-blue-100 text-blue-800',
+      'CLP': 'bg-blue-100 text-blue-800',
+      'Greens': 'bg-green-100 text-green-800',
+    }[p] || 'bg-gray-100 text-gray-700');
+
+    const leg = item.legislature;
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 p-4 sm:p-8 animate-fade-in">
+        <div className="max-w-3xl mx-auto">
+          <button
+            onClick={() => setView('au-states')}
+            className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
+          >
+            ← Back
+          </button>
+
+          {/* Flag header */}
+          <div className="bg-white rounded-2xl shadow-elegant overflow-hidden mb-6">
+            <div className="h-36 sm:h-48 overflow-hidden relative bg-gray-100">
+              <img
+                src={item.flagUrl}
+                alt={`Flag of ${item.name}`}
+                className="w-full h-full object-cover"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            </div>
+            <div className="p-5">
+              <div className="flex items-start justify-between gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{item.name}</h1>
+                <button
+                  onClick={(e) => handleShare(e, { id: 'au-state-' + item.name, title: item.name, text: `🇦🇺 ${item.name} — ${item.leaderTitle}: ${item.leader} (${item.party}) since ${item.since} - civic-voice-app.vercel.app`, url: window.location.href })}
+                  className={`flex-shrink-0 p-2 rounded-lg transition-colors ${copiedShareId === 'au-state-' + item.name ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
+                  aria-label="Share"
+                >
+                  {copiedShareId === 'au-state-' + item.name ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2 text-sm text-gray-500">
+                <span>Capital: <strong className="text-gray-700">{item.capital}</strong></span>
+                <span>Population: <strong className="text-gray-700">{item.population}</strong></span>
+                <span>Party: <strong className="text-gray-700">{item.party}</strong></span>
+              </div>
+            </div>
+          </div>
+
+          {/* Leadership cards */}
+          <h2 className="text-base font-bold text-gray-600 uppercase tracking-wide mb-3 px-1">Leadership</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+
+            {/* Premier / Chief Minister */}
+            <div className="bg-white rounded-2xl shadow-elegant p-6">
+              <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-4">{item.leaderTitle}</p>
+              <div className="flex flex-col items-center mb-5">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-blue-300 flex items-center justify-center text-2xl font-bold text-blue-700 mb-3 shadow-sm select-none">
+                  {getInitials(item.leader)}
+                </div>
+                <h3 className="font-bold text-gray-800 text-lg text-center leading-snug">{item.leader}</h3>
+                <span className={`mt-2 text-xs font-bold px-3 py-1 rounded-full ${partyBadge(item.partyShort)}`}>
+                  {item.party}
+                </span>
+                <p className="text-xs text-gray-400 mt-1.5">In office since {item.since}</p>
+              </div>
+              <p className="text-sm text-gray-600 leading-relaxed">{item.bio}</p>
+            </div>
+
+            {/* Deputy */}
+            <div className="bg-white rounded-2xl shadow-elegant p-6">
+              <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-4">{item.deputyTitle}</p>
+              <div className="flex flex-col items-center mb-5">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-300 flex items-center justify-center text-2xl font-bold text-emerald-700 mb-3 shadow-sm select-none">
+                  {getInitials(item.deputy)}
+                </div>
+                <h3 className="font-bold text-gray-800 text-lg text-center leading-snug">{item.deputy}</h3>
+                <span className={`mt-2 text-xs font-bold px-3 py-1 rounded-full ${partyBadge(item.deputyParty)}`}>
+                  {item.deputyParty}
+                </span>
+                <p className="text-xs text-gray-400 mt-1.5">In office since {item.deputySince}</p>
+              </div>
+              <p className="text-sm text-gray-600 leading-relaxed">{item.deputyBio}</p>
+            </div>
+          </div>
+
+          {/* Legislature Composition */}
+          <div className="bg-white rounded-2xl shadow-elegant overflow-hidden">
+            <div className="px-5 pt-5 pb-2">
+              <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Legislature Composition</h2>
+              <p className="text-xs text-gray-400 mt-0.5">{leg.name} &nbsp;·&nbsp; {leg.totalSeats} total seats</p>
+            </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <RechartsPie>
+                <Pie
+                  data={leg.parties}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={58}
+                  outerRadius={90}
+                  paddingAngle={leg.parties.length > 1 ? 2 : 0}
+                  dataKey="seats"
+                  nameKey="name"
+                  startAngle={90}
+                  endAngle={-270}
+                >
+                  {leg.parties.map((p, i) => (
+                    <Cell key={i} fill={p.color} stroke="white" strokeWidth={2} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(value, name) => [`${value} seats (${Math.round(value / leg.totalSeats * 100)}%)`, name]}
+                  contentStyle={{ borderRadius: '10px', fontSize: '12px', border: '1px solid #e5e7eb' }}
+                />
+              </RechartsPie>
+            </ResponsiveContainer>
+            <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 px-5 pb-5">
+              {leg.parties.map(p => (
+                <div key={p.name} className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
+                  <span className="text-xs font-semibold text-gray-700">{p.name}</span>
+                  <span className="text-xs text-gray-400">{p.seats} · {Math.round(p.seats / leg.totalSeats * 100)}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
     );
@@ -16865,6 +17187,8 @@ function App() {
       {view === 'canada-pm-detail' && renderCarneyDetail()}
       {view === 'albanese-detail' && renderAlbaneseDetail()}
       {view === 'au-parliament' && renderAustralianParliament()}
+      {view === 'au-states' && renderAustralianStates()}
+      {view === 'au-state-detail' && selectedAuState && renderAustralianStateDetail()}
       {view === 'president-executive' && renderPresidentExecutive()}
       {view === 'president-detail' && renderPresidentDetail()}
       {view === 'executive-orders' && renderExecutiveOrders()}
