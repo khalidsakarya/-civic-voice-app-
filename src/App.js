@@ -887,6 +887,9 @@ function App() {
   const [legislativeTab, setLegislativeTab] = useState('bills'); // bills, laws, upcoming
   const [usLegTab, setUsLegTab] = useState('bills');
   const [usLegSearch, setUsLegSearch] = useState('');
+  const [auLegTab, setAuLegTab] = useState('active');
+  const [auBills, setAuBills] = useState([]);
+  const [auBillVotes, setAuBillVotes] = useState({});
   const [ministries, setMinistries] = useState([
     {
       id: 1,
@@ -1306,6 +1309,7 @@ function App() {
     initializeUSContracts();
     initializeUSBills();
     initializeUSLaws();
+    initializeAuBills();
     initializeCanadaLaws();
   }, []);
   
@@ -3488,7 +3492,160 @@ function App() {
     
     setUsLaws(usLawsData);
   };
-  
+
+  const initializeAuBills = () => {
+    const data = [
+      {
+        id: 'au-1', number: 'HB 2025-12', chamber: 'House of Representatives',
+        title: 'Housing Australia Future Fund Amendment (Expanding Eligibility) Bill 2025',
+        shortTitle: 'Housing Australia Future Fund Amendment Bill 2025',
+        sponsor: 'Julie Collins MP (ALP, Boothby)', category: 'Housing',
+        dateIntroduced: '12 February 2025', status: 'Before the Senate',
+        statusColor: 'indigo',
+        summary: 'Expands eligibility for Housing Australia Future Fund grants to include co-operative housing providers and key worker rental schemes. Increases the annual disbursement cap from $500M to $750M and removes the minimum project size threshold that had excluded small community housing organisations.',
+        pros: ['Expands the pool of providers who can build social and affordable housing', 'Removes barriers for smaller community housing organisations', 'Increases annual spending to $750M, building more homes faster'],
+        cons: ['Opposition argues the fund should focus on homeownership rather than rental housing', 'Increased disbursements may put pressure on the fund\'s long-term sustainability', 'Co-operative housing model is untested at scale in Australia'],
+        support: 14820, oppose: 6340, userVote: null,
+      },
+      {
+        id: 'au-2', number: 'HB 2025-18', chamber: 'House of Representatives',
+        title: 'Climate Change Amendment (Strengthening the Safeguard Mechanism) Bill 2025',
+        shortTitle: 'Climate Change Amendment (Safeguard) Bill 2025',
+        sponsor: 'Chris Bowen MP (ALP, McMahon)', category: 'Environment',
+        dateIntroduced: '3 March 2025', status: 'In Committee',
+        statusColor: 'yellow',
+        summary: 'Tightens the Safeguard Mechanism by lowering the emissions baseline for the 215 highest-emitting industrial facilities by 4.9% per year through to 2030. Introduces a new "Climate Duty of Care" requiring boards of ASX-listed companies to formally assess and disclose climate-related financial risk in their annual reports.',
+        pros: ['Accelerates industrial emissions reductions to meet the 43% by 2030 target', 'Board-level climate duty aligns Australia with international investor expectations', 'Provides regulatory certainty for businesses planning long-term capital investment'],
+        cons: ['Industry groups warn faster baselines will trigger facility closures and job losses', 'Mandatory climate disclosure could expose companies to shareholder litigation', 'Senate crossbench support uncertain — minor party amendments likely'],
+        support: 18760, oppose: 9230, userVote: null,
+      },
+      {
+        id: 'au-3', number: 'HB 2025-7', chamber: 'House of Representatives',
+        title: 'Health Insurance Amendment (Strengthening Medicare Bulk Billing) Bill 2025',
+        shortTitle: 'Medicare Bulk Billing Incentive Bill 2025',
+        sponsor: 'Mark Butler MP (ALP, Port Adelaide)', category: 'Healthcare',
+        dateIntroduced: '28 January 2025', status: 'Passed Senate — Royal Assent Pending',
+        statusColor: 'green',
+        summary: 'Triples the bulk billing incentive payment for GPs who bulk bill concession cardholders, children under 16, and aged care residents. Introduces a new Urgent Care Clinic bulk billing guarantee, requiring participating clinics to bulk bill 100% of patients. Estimated to increase the national bulk billing rate from 78% to approximately 87% by 2026.',
+        pros: ['Reduces out-of-pocket costs for the most vulnerable Australians visiting GPs', 'Encourages GPs to return to bulk billing by making it financially viable again', 'Urgent Care Clinics provide free alternatives to expensive emergency departments'],
+        cons: ['Tripled incentive payments add approximately $8.5B to the federal budget over 4 years', 'Specialist and allied health services are not included in the incentive uplift', 'Rural and remote GP access issues are not addressed by the incentive alone'],
+        support: 23450, oppose: 4120, userVote: null,
+      },
+      {
+        id: 'au-4', number: 'SB 2025-9', chamber: 'Senate',
+        title: 'National Disability Insurance Scheme Amendment (Getting the NDIS Back on Track No. 2) Bill 2025',
+        shortTitle: 'NDIS Reform (No. 2) Bill 2025',
+        sponsor: 'Senator Bill Shorten (ALP, Victoria)', category: 'Disability',
+        dateIntroduced: '17 February 2025', status: 'In Committee',
+        statusColor: 'yellow',
+        summary: 'Implements phase two of the NDIS Review recommendations: introduces independent assessments for all new participants, caps plan budgets for defined support categories, creates a new "NDIS Navigator" role to help participants access mainstream services, and establishes a Participant Advisory Panel with majority disability representation.',
+        pros: ['Independent assessments ensure fair, consistent eligibility decisions nationally', 'Budget caps on certain supports help control the scheme\'s unsustainable cost growth', 'Navigators reduce reliance on expensive plan managers and support coordinators'],
+        cons: ['Disability advocacy groups strongly oppose independent assessments as a barrier to access', 'Budget caps could leave participants without adequate support in high-cost areas', 'Critics argue the bill prioritises savings over participant needs'],
+        support: 9830, oppose: 14670, userVote: null,
+      },
+      {
+        id: 'au-5', number: 'HB 2025-24', chamber: 'House of Representatives',
+        title: 'Help to Buy Bill 2025',
+        shortTitle: 'Help to Buy (Shared Equity) Bill 2025',
+        sponsor: 'Julie Collins MP (ALP, Boothby)', category: 'Housing',
+        dateIntroduced: '10 March 2025', status: 'Before the House',
+        statusColor: 'blue',
+        summary: 'Establishes a Commonwealth shared equity scheme enabling eligible first home buyers to purchase a home with as little as a 2% deposit, with the federal government co-owning up to 40% of the property (new builds) or 30% (existing homes). Income caps apply: $90,000 for singles and $120,000 for couples. Up to 40,000 places available annually.',
+        pros: ['Reduces the deposit barrier from 20% to as little as 2% for first home buyers', 'Government co-ownership reduces mortgage size and ongoing repayments', '40,000 places per year targets a significant share of the first home buyer market'],
+        cons: ['Income caps exclude many workers in high-cost cities like Sydney and Melbourne', 'Government co-ownership means sharing in capital gains — limiting wealth building', 'Previous Senate crossbench opposition held this bill up for over two years'],
+        support: 19340, oppose: 8750, userVote: null,
+      },
+      {
+        id: 'au-6', number: 'SB 2025-14', chamber: 'Senate',
+        title: 'Nature Positive (Environment Protection Australia) Bill 2025',
+        shortTitle: 'Environment Protection Australia Bill 2025',
+        sponsor: 'Senator Penny Wong (ALP, SA)', category: 'Environment',
+        dateIntroduced: '24 February 2025', status: 'Before the Senate',
+        statusColor: 'indigo',
+        summary: 'Establishes Environment Protection Australia (EPA) as an independent statutory body to replace the current minister-led approvals process under the EPBC Act. The EPA will have independent power to approve or reject major projects affecting threatened species and ecosystems, removing political discretion from environmental approvals.',
+        pros: ['Removes the minister from project approvals — reduces political interference', 'Independent EPA gives businesses clearer, more predictable timelines for approvals', 'Strengthens protections for threatened species and ecosystems'],
+        cons: ['Mining and resources industry warn the EPA will create lengthy delays for new projects', 'State governments oppose federal encroachment on their development approval powers', 'Greens argue the bill still allows too many exemptions for large mining and gas projects'],
+        support: 16540, oppose: 9870, userVote: null,
+      },
+      {
+        id: 'au-7', number: 'HB 2025-31', chamber: 'House of Representatives',
+        title: 'Electoral Legislation Amendment (Electoral Reforms) Bill 2025',
+        shortTitle: 'Electoral Reforms Bill 2025',
+        sponsor: 'Don Farrell MP (ALP, Adelaide)', category: 'Democracy',
+        dateIntroduced: '7 April 2025', status: 'Before the House',
+        statusColor: 'blue',
+        summary: 'Introduces real-time disclosure of political donations above $5,000 (down from $16,300), bans foreign donations, caps annual donations from any single source at $100,000, and requires truth-in-advertising standards for political ads during election campaigns. Applies to federal elections and party operations.',
+        pros: ['Reduces the influence of large donors on federal election outcomes', 'Real-time disclosure lets voters see funding sources before polling day', 'Truth-in-advertising rules bring political ads in line with commercial advertising standards'],
+        cons: ['Opposition argues the low donation cap disadvantages challenger parties against incumbents', 'Truth-in-advertising rules raise free speech concerns about political expression', 'Some crossbenchers want even lower caps and broader third-party campaigner restrictions'],
+        support: 21870, oppose: 5640, userVote: null,
+      },
+      {
+        id: 'au-8', number: 'HB 2025-38', chamber: 'House of Representatives',
+        title: 'Superannuation (Objective) Amendment Bill 2025',
+        shortTitle: 'Superannuation Objective Bill 2025',
+        sponsor: 'Jim Chalmers MP (ALP, Rankin)', category: 'Finance',
+        dateIntroduced: '14 April 2025', status: 'Passed House',
+        statusColor: 'teal',
+        summary: 'Legislates the objective of superannuation as "to preserve savings to deliver income for a dignified retirement, alongside government support, in an equitable and sustainable way." Creates a formal purpose test that all future superannuation policy changes must be assessed against. Does not include a legislated cap on super balances.',
+        pros: ['Provides policy certainty and a clear framework for evaluating super fund changes', 'Bipartisan in spirit — clarifies that super is for retirement, not a tax shelter', 'Prevents future governments from eroding super for non-retirement purposes'],
+        cons: ['Opposition argues the objective statement is too narrow and will be used to restrict access to super housing schemes', 'The test is non-binding — it does not require Parliament to comply with the objective', 'The Greens wanted a stronger, legally enforceable objective with caps on large balances'],
+        support: 13240, oppose: 7890, userVote: null,
+      },
+      {
+        id: 'au-9', number: 'SB 2025-22', chamber: 'Senate',
+        title: 'Migration Amendment (Strengthening Employer Compliance) Bill 2025',
+        shortTitle: 'Migration Employer Compliance Bill 2025',
+        sponsor: 'Senator Tony Burke (ALP, Watson)', category: 'Immigration',
+        dateIntroduced: '2 May 2025', status: 'In Committee',
+        statusColor: 'yellow',
+        summary: 'Increases penalties for employers who exploit temporary visa holders, extends the statute of limitations for Fair Work investigations involving migrant workers to six years, and creates a new "Migration Exploitation Visa" allowing victims of workplace exploitation to remain in Australia while cooperating with investigations. Also introduces mandatory pay transparency for sponsored visa roles.',
+        pros: ['Protects vulnerable migrant workers from wage theft and exploitation', 'Longer investigation window gives Fair Work inspectors time to build complex cases', 'Exploitation visa encourages victims to report wrongdoing without fear of deportation'],
+        cons: ['Employer groups warn increased penalties may discourage hiring of visa workers', 'Exploitation visa may create incentives for false reporting against employers', 'Pay transparency requirements add administrative burden for small businesses'],
+        support: 17650, oppose: 6230, userVote: null,
+      },
+      {
+        id: 'au-10', number: 'HB 2024-91', chamber: 'House of Representatives',
+        title: 'Aged Care Act 2024',
+        shortTitle: 'Aged Care Act 2024',
+        sponsor: 'Anika Wells MP (ALP, Lilley)', category: 'Aged Care',
+        dateIntroduced: '1 October 2024', status: 'Royal Assent',
+        statusColor: 'green',
+        dateRoyalAssent: '10 December 2024',
+        summary: 'Replaces the 1997 Aged Care Act with a rights-based framework. Establishes legally enforceable rights for aged care recipients, introduces a new Star Ratings system for residential providers, mandates 24-hour registered nurse coverage in residential facilities, and creates the new Support at Home program replacing the current Home Care Packages scheme.',
+        pros: ['Legally enforceable rights provide real protections for elderly Australians', 'Star Ratings give families objective quality information when choosing a facility', 'Mandatory RN coverage addresses the critical safety gaps found by the Royal Commission'],
+        cons: ['Implementation costs are significant — some providers warn of closure in regional areas', 'Support at Home transition has been complex, causing uncertainty for current recipients', 'Enforcement mechanisms are still being established at the regulatory level'],
+        support: 24310, oppose: 3870, userVote: null,
+      },
+      {
+        id: 'au-11', number: 'HB 2024-87', chamber: 'House of Representatives',
+        title: 'Future Made in Australia Act 2024',
+        shortTitle: 'Future Made in Australia Act 2024',
+        sponsor: 'Ed Husic MP (ALP, Chifley)', category: 'Industry',
+        dateIntroduced: '5 September 2024', status: 'Royal Assent',
+        statusColor: 'green',
+        dateRoyalAssent: '22 November 2024',
+        summary: 'Creates a legislated framework for the $22.7B Future Made in Australia program, which provides production tax incentives for green hydrogen and critical minerals processing. Establishes the National Interest Framework to guide Commonwealth investment in strategic industries, and creates a Net Zero Economy Authority to support workers in fossil fuel industries transitioning to clean energy.',
+        pros: ['Positions Australia as a renewable energy and critical minerals superpower', 'Production tax incentives are proven globally — modelled on U.S. Inflation Reduction Act', 'Net Zero Economy Authority provides a just transition for coal community workers'],
+        cons: ['Critics argue government should not pick winners — market competition is more efficient', '$22.7B cost over 10 years adds substantially to budget expenditure', 'Green hydrogen economics remain unproven at commercial scale in Australia'],
+        support: 15780, oppose: 9340, userVote: null,
+      },
+      {
+        id: 'au-12', number: 'SB 2024-73', chamber: 'Senate',
+        title: 'Criminal Code Amendment (Combatting Misinformation and Disinformation) Act 2024',
+        shortTitle: 'Misinformation and Disinformation Act 2024',
+        sponsor: 'Senator Michelle Rowland (ALP, Greenway)', category: 'Media & Technology',
+        dateIntroduced: '12 June 2024', status: 'Royal Assent',
+        statusColor: 'green',
+        dateRoyalAssent: '18 October 2024',
+        summary: 'Gives the Australian Communications and Media Authority (ACMA) powers to require digital platforms to have systems in place to address serious misinformation and disinformation. Does not make misinformation itself illegal — instead requires platforms (X, Meta, TikTok, Google) to have enforceable codes of practice. Platforms face fines of up to $6.7M or 5% of global turnover for systemic failures.',
+        pros: ['Requires platforms to actively manage harmful misinformation — consistent with EU approach', 'ACMA oversight provides independent regulatory accountability', 'Fines are proportionate to platform size — applies equally to large global companies'],
+        cons: ['Critics argue "misinformation" is too vague — government could suppress legitimate political speech', 'Professional news and satire are exempt — creating inconsistent standards', 'Digital platforms have threatened to remove services from Australia rather than comply'],
+        support: 11240, oppose: 14870, userVote: null,
+      },
+    ];
+    setAuBills(data);
+  };
+
   const initializeCanadaLaws = () => {
     const canadaLawsData = [
       {
@@ -6373,11 +6530,27 @@ function App() {
               </div>
             </div>
 
+            {/* Legislative Hub card */}
+            <div
+              onClick={() => { setAuLegTab('active'); setView('au-legislative-hub'); }}
+              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              style={{ animationDelay: '0.4s' }}
+            >
+              <div className="flex items-center gap-4">
+                <div className="text-4xl">📋</div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-gray-800">Legislative Hub</h2>
+                  <p className="text-gray-600 text-sm mt-1">Active bills · recent votes · Acts of Parliament</p>
+                </div>
+                <ChevronRight className="w-6 h-6 text-gray-400 flex-shrink-0" />
+              </div>
+            </div>
+
             {/* Where the Money Goes card */}
             <div
               onClick={() => { setFinancialDashTab('overview'); setView('money-australia'); }}
               className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
-              style={{ animationDelay: '0.4s' }}
+              style={{ animationDelay: '0.5s' }}
             >
               <div className="flex items-center gap-4">
                 <div className="text-4xl">💰</div>
@@ -13311,6 +13484,375 @@ function App() {
     );
   };
 
+  const renderAuLegislativeHub = () => {
+    const activeBills = auBills.filter(b =>
+      b.status === 'Before the House' || b.status === 'In Committee' ||
+      b.status === 'Passed House' || b.status === 'Before the Senate' ||
+      b.status === 'Passed Senate — Royal Assent Pending'
+    );
+    const recentVotes = auBills.filter(b =>
+      b.status === 'Passed House' || b.status === 'Before the Senate' ||
+      b.status === 'Passed Senate — Royal Assent Pending'
+    );
+    const acts = auBills.filter(b => b.status === 'Royal Assent');
+
+    const statusBadge = (status) => {
+      const map = {
+        'Before the House':    'bg-blue-100 text-blue-800 border-blue-300',
+        'In Committee':        'bg-yellow-100 text-yellow-800 border-yellow-300',
+        'Passed House':        'bg-teal-100 text-teal-800 border-teal-300',
+        'Before the Senate':   'bg-indigo-100 text-indigo-800 border-indigo-300',
+        'Passed Senate — Royal Assent Pending': 'bg-green-100 text-green-800 border-green-300',
+        'Royal Assent':        'bg-purple-100 text-purple-800 border-purple-300',
+      };
+      return map[status] || 'bg-gray-100 text-gray-800 border-gray-300';
+    };
+
+    const voteAuBill = (billId, vote) => {
+      setAuBillVotes(prev => {
+        const current = prev[billId];
+        if (current === vote) return { ...prev, [billId]: null };
+        return { ...prev, [billId]: vote };
+      });
+      setAuBills(prev => prev.map(b => {
+        if (b.id !== billId) return b;
+        const current = auBillVotes[billId];
+        let { support, oppose } = b;
+        if (current === 'support') support -= 1;
+        if (current === 'oppose') oppose -= 1;
+        if (vote !== current) {
+          if (vote === 'support') support += 1;
+          if (vote === 'oppose') oppose += 1;
+        }
+        return { ...b, support, oppose };
+      }));
+    };
+
+    const BillCard = ({ bill }) => {
+      const uv = auBillVotes[bill.id] || null;
+      const total = bill.support + bill.oppose;
+      const supportPct = total > 0 ? Math.round((bill.support / total) * 100) : 50;
+      return (
+        <div className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-green-400 transition-all p-5">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">{bill.number}</span>
+            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusBadge(bill.status)}`}>{bill.status}</span>
+            <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
+            <span className="ml-auto text-xs text-gray-400 flex items-center gap-1"><Globe className="w-3 h-3" />{bill.chamber}</span>
+          </div>
+          <h3 className="text-base font-bold text-gray-800 mb-1 leading-snug">{bill.shortTitle}</h3>
+          <p className="text-xs text-gray-500 mb-2">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
+          <p className="text-sm text-gray-600 mb-4 leading-relaxed">{bill.summary}</p>
+
+          {/* Support bar */}
+          <div className="mb-3">
+            <div className="flex justify-between text-xs text-gray-500 mb-1">
+              <span className="text-green-600 font-semibold">Support {supportPct}%</span>
+              <span className="text-red-500 font-semibold">Oppose {100 - supportPct}%</span>
+            </div>
+            <div className="h-2 bg-red-100 rounded-full overflow-hidden">
+              <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${supportPct}%` }} />
+            </div>
+            <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <span>{bill.support.toLocaleString()} support</span>
+              <span>{bill.oppose.toLocaleString()} oppose</span>
+            </div>
+          </div>
+
+          {/* Vote buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => requireRegion() && voteAuBill(bill.id, 'support')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${
+                uv === 'support'
+                  ? 'bg-green-600 text-white border-green-600'
+                  : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'
+              }`}
+            >
+              <ThumbsUp className="w-4 h-4" />
+              Support
+            </button>
+            <button
+              onClick={() => requireRegion() && voteAuBill(bill.id, 'oppose')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${
+                uv === 'oppose'
+                  ? 'bg-red-600 text-white border-red-600'
+                  : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'
+              }`}
+            >
+              <ThumbsDown className="w-4 h-4" />
+              Oppose
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <button
+              onClick={() => setView('government-levels')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+            >
+              ← Back to Australian Federal Government
+            </button>
+            <h1 className="text-2xl font-bold text-gray-800">Legislative Hub</h1>
+            <div className="w-20"></div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Country header */}
+          <div className="flex items-center gap-3 mb-6">
+            <span className="text-4xl">🇦🇺</span>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">Australian Parliament</h2>
+              <p className="text-gray-500 text-sm">Senate · House of Representatives · Bills, Votes & Acts</p>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="bg-white rounded-xl shadow-md mb-6 p-2">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setAuLegTab('active')}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all text-sm ${
+                  auLegTab === 'active' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                📋 Active Bills
+              </button>
+              <button
+                onClick={() => setAuLegTab('votes')}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all text-sm ${
+                  auLegTab === 'votes' ? 'bg-green-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                🗳️ Recent Votes
+              </button>
+              <button
+                onClick={() => setAuLegTab('acts')}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all text-sm ${
+                  auLegTab === 'acts' ? 'bg-purple-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                📜 Acts & Laws
+              </button>
+            </div>
+          </div>
+
+          {/* ── TAB 1: Active Bills ── */}
+          {auLegTab === 'active' && (
+            <div className="animate-fade-in">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-1">📋 Active Bills Before Parliament</h2>
+                <p className="text-gray-600 text-sm mb-4">Bills currently being debated, reviewed by committee, or awaiting a vote in the House of Representatives or Senate</p>
+                <div className="flex flex-wrap gap-3">
+                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-blue-200 shadow-sm">
+                    <p className="text-xs text-gray-500">Before the House</p>
+                    <p className="text-xl font-bold text-blue-600">{auBills.filter(b => b.status === 'Before the House').length}</p>
+                  </div>
+                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-yellow-200 shadow-sm">
+                    <p className="text-xs text-gray-500">In Committee</p>
+                    <p className="text-xl font-bold text-yellow-600">{auBills.filter(b => b.status === 'In Committee').length}</p>
+                  </div>
+                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-teal-200 shadow-sm">
+                    <p className="text-xs text-gray-500">Passed House</p>
+                    <p className="text-xl font-bold text-teal-600">{auBills.filter(b => b.status === 'Passed House').length}</p>
+                  </div>
+                  <div className="bg-white px-4 py-2 rounded-lg border-2 border-indigo-200 shadow-sm">
+                    <p className="text-xs text-gray-500">Before the Senate</p>
+                    <p className="text-xl font-bold text-indigo-600">{auBills.filter(b => b.status === 'Before the Senate').length}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {activeBills.map(bill => <BillCard key={bill.id} bill={bill} />)}
+              </div>
+
+              {activeBills.length === 0 && (
+                <div className="text-center py-16 bg-white rounded-2xl shadow border-2 border-dashed border-blue-200">
+                  <p className="text-xl font-bold text-gray-500">No active bills at this time</p>
+                </div>
+              )}
+
+              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-blue-800">
+                  <strong>About the Australian Parliament:</strong> Bills must pass both the House of Representatives and the Senate before receiving Royal Assent from the Governor-General to become law. Bills may be amended in committee or either chamber.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB 2: Recent Votes ── */}
+          {auLegTab === 'votes' && (
+            <div className="animate-fade-in">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-1">🗳️ Recent Parliamentary Votes</h2>
+                <p className="text-gray-600 text-sm">Bills that have recently passed the House of Representatives or Senate — still progressing through Parliament</p>
+              </div>
+
+              {recentVotes.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-2xl shadow border-2 border-dashed border-green-200">
+                  <p className="text-xl font-bold text-gray-500">No recent votes to display</p>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  {recentVotes.map(bill => (
+                    <div key={bill.id} className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-green-400 transition-all p-5">
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">{bill.number}</span>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusBadge(bill.status)}`}>{bill.status}</span>
+                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-800 mb-1">{bill.shortTitle}</h3>
+                      <p className="text-xs text-gray-500 mb-3">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
+                      <p className="text-sm text-gray-600 mb-4">{bill.summary}</p>
+
+                      {/* Pros / Cons */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <p className="text-xs font-bold text-green-700 mb-2">✅ Arguments For</p>
+                          <ul className="space-y-1">
+                            {bill.pros?.slice(0, 2).map((p, i) => (
+                              <li key={i} className="text-xs text-green-800">• {p}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                          <p className="text-xs font-bold text-red-700 mb-2">❌ Arguments Against</p>
+                          <ul className="space-y-1">
+                            {bill.cons?.slice(0, 2).map((c, i) => (
+                              <li key={i} className="text-xs text-red-800">• {c}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      {/* Vote bar + buttons */}
+                      {(() => {
+                        const uv = auBillVotes[bill.id] || null;
+                        const total = bill.support + bill.oppose;
+                        const pct = total > 0 ? Math.round((bill.support / total) * 100) : 50;
+                        return (
+                          <>
+                            <div className="mb-3">
+                              <div className="h-2 bg-red-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-green-500 rounded-full" style={{ width: `${pct}%` }} />
+                              </div>
+                              <div className="flex justify-between text-xs text-gray-400 mt-1">
+                                <span className="text-green-600 font-semibold">{bill.support.toLocaleString()} support ({pct}%)</span>
+                                <span className="text-red-500 font-semibold">{bill.oppose.toLocaleString()} oppose</span>
+                              </div>
+                            </div>
+                            <div className="flex gap-3">
+                              <button
+                                onClick={() => requireRegion() && voteAuBill(bill.id, 'support')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
+                              >
+                                <ThumbsUp className="w-4 h-4" /> Support
+                              </button>
+                              <button
+                                onClick={() => requireRegion() && voteAuBill(bill.id, 'oppose')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
+                              >
+                                <ThumbsDown className="w-4 h-4" /> Oppose
+                              </button>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── TAB 3: Acts & Laws ── */}
+          {auLegTab === 'acts' && (
+            <div className="animate-fade-in">
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6 mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-1">📜 Acts of Parliament</h2>
+                <p className="text-gray-600 text-sm">Bills that have received <strong>Royal Assent</strong> from the Governor-General and are now law. Administered by the Federal Register of Legislation.</p>
+              </div>
+
+              {acts.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-2xl shadow border-2 border-dashed border-purple-200">
+                  <p className="text-xl font-bold text-gray-500">No recent acts to display</p>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  {acts.map(bill => (
+                    <div key={bill.id} className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-purple-400 transition-all p-5">
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">{bill.number}</span>
+                        <span className="bg-purple-100 text-purple-800 border border-purple-300 px-3 py-1 rounded-full text-xs font-medium">
+                          ✓ Royal Assent {bill.dateRoyalAssent && `· ${bill.dateRoyalAssent}`}
+                        </span>
+                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
+                        <span className="ml-auto text-xs text-gray-400 flex items-center gap-1"><Globe className="w-3 h-3" />{bill.chamber}</span>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-800 mb-1">{bill.shortTitle}</h3>
+                      <p className="text-xs text-gray-500 mb-3">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
+                      <p className="text-sm text-gray-600 mb-4">{bill.summary}</p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <p className="text-xs font-bold text-green-700 mb-2">✅ Key Benefits</p>
+                          <ul className="space-y-1">
+                            {bill.pros?.map((p, i) => (
+                              <li key={i} className="text-xs text-green-800">• {p}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                          <p className="text-xs font-bold text-orange-700 mb-2">⚠️ Concerns Raised</p>
+                          <ul className="space-y-1">
+                            {bill.cons?.map((c, i) => (
+                              <li key={i} className="text-xs text-orange-800">• {c}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 items-center">
+                        <a
+                          href="https://www.legislation.gov.au/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 transition-colors"
+                        >
+                          <Globe className="w-4 h-4" />
+                          View on legislation.gov.au
+                        </a>
+                        <div className="text-xs text-gray-400">
+                          {bill.support.toLocaleString()} public support · {bill.oppose.toLocaleString()} oppose
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-6 bg-purple-50 border border-purple-200 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-purple-800">
+                  <strong>Note:</strong> All Acts of Parliament are available on the <strong>Federal Register of Legislation</strong> at legislation.gov.au. This is the official, authoritative source for Commonwealth laws administered by the Office of Parliamentary Counsel.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderAnalytics = () => {
     const analytics = getAnalyticsData();
 
@@ -17278,6 +17820,7 @@ function App() {
       {view === 'money-usa' && renderFinancialDashboard()}
       {view === 'money-canada' && renderFinancialDashboard()}
       {view === 'money-australia' && renderFinancialDashboard()}
+      {view === 'au-legislative-hub' && renderAuLegislativeHub()}
       
       {/* Riding selector modal */}
       {showLocationPrompt && renderRidingSelector()}
