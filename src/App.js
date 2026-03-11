@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import app from './firebase';
 import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell } from 'lucide-react';
-import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './App.css';
 
 // Custom CSS for animations and enhanced styling
@@ -742,7 +742,6 @@ const NOTIFICATIONS_DATA = [
 function App() {
   const [view, setView] = useState('countries');
   const [selectedCountry, setSelectedCountry] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedParty, setSelectedParty] = useState(null);
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberPanel, setShowMemberPanel] = useState(false);
@@ -763,7 +762,6 @@ function App() {
     const saved = localStorage.getItem('cvEOVotes');
     return saved ? JSON.parse(saved) : {};
   });
-  const [economicChartIndex, setEconomicChartIndex] = useState(0);
   const [showTaxExemptModal, setShowTaxExemptModal] = useState(false);
   const [taxExemptSearch, setTaxExemptSearch] = useState('');
   const [showGrantsModal, setShowGrantsModal] = useState(false);
@@ -805,7 +803,6 @@ function App() {
   const [senateSearch, setSenateSearch] = useState('');
   const [senateFilter, setSenateFilter] = useState('All');
   const [selectedSenator, setSelectedSenator] = useState(null);
-  const [showSenatorPanel, setShowSenatorPanel] = useState(false);
   const [senatorVotes, setSenatorVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cvSenatorVotes') || '{}'); } catch { return {}; }
   });
@@ -853,7 +850,6 @@ function App() {
   
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('role');
   const [selectedLaw, setSelectedLaw] = useState(null);
   const [selectedContract, setSelectedContract] = useState(null);
   
