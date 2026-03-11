@@ -745,6 +745,8 @@ function App() {
   const [selectedParty, setSelectedParty] = useState(null);
   const [selectedMember, setSelectedMember] = useState(null);
   const [showMemberPanel, setShowMemberPanel] = useState(false);
+  const [selectedAuMember, setSelectedAuMember] = useState(null);
+  const [showAuMemberPanel, setShowAuMemberPanel] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null);
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [showEconomicModal, setShowEconomicModal] = useState(false);
@@ -10204,6 +10206,195 @@ function App() {
     );
   };
 
+  const enrichAuMember = (raw) => {
+    let h = 5381;
+    for (let i = 0; i < raw.name.length; i++) h = (Math.imul(h, 33) ^ raw.name.charCodeAt(i)) | 0;
+    h = Math.abs(h);
+    const rng = (min, max, salt) => {
+      const v = Math.abs((Math.imul(h + salt, 1664525) + 1013904223) | 0);
+      return min + (v % (max - min + 1));
+    };
+    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
+
+    const m = { ...raw };
+    const isSen = m.role === 'Senator' || (m.role && m.role.toLowerCase().includes('senator'));
+    const yrs = Math.max(1, m.yearsInOffice || 2);
+
+    // Parliament House phone
+    m.parliamentHousePhone = `+61 2 6277 ${rng(1000, 9999, 1)}`;
+
+    // Electorate/State office phone
+    const stateAreaCodes = { NSW: '02', VIC: '03', QLD: '07', WA: '08', SA: '08', TAS: '03', ACT: '02', NT: '08' };
+    const ac = stateAreaCodes[m.state] || '02';
+    m.electoratePhone = `+61 ${ac} ${rng(4000, 9999, 2)} ${rng(1000, 9999, 3)}`;
+
+    // Office addresses
+    const stateCapitals = { NSW: 'Sydney', VIC: 'Melbourne', QLD: 'Brisbane', WA: 'Perth', SA: 'Adelaide', TAS: 'Hobart', ACT: 'Canberra', NT: 'Darwin' };
+    const city = stateCapitals[m.state] || m.state;
+    const streets = ['Collins Street', 'George Street', 'Flinders Street', 'Queen Street', 'Adelaide Street', 'King William Street', 'Murray Street', 'Bridge Street'];
+    m.officeAddress = {
+      parliamentHouse: 'Parliament House, Canberra ACT 2600',
+      electorateOffice: `Suite ${rng(1, 20, 6)}, ${rng(10, 299, 5)} ${pick(streets, 4)}, ${city} ${m.state}`,
+    };
+
+    // Attendance
+    const total = isSen ? 200 : 300;
+    const pct = rng(78, 99, 7);
+    m.attendance = {
+      percentage: pct,
+      sessionsAttended: Math.round(total * pct / 100),
+      totalSessions: total,
+      ranking: rng(1, isSen ? 76 : 151, 8),
+    };
+
+    // Voting history
+    const voteChoices = ['Yea', 'Yea', 'Yea', 'Nay', 'Nay', 'Abstain'];
+    const auBillPool = [
+      { bill: 'HB2024-001', title: 'Housing Australia Future Fund Amendment Bill 2024', date: '2024-08-14', description: '$10B housing fund to build 30,000 social and affordable homes over five years' },
+      { bill: 'HB2024-002', title: 'Climate Change (Safeguard Mechanism) Bill 2024', date: '2024-03-27', description: 'Legislates industrial emissions baselines to reach net zero by 2050' },
+      { bill: 'HB2024-003', title: 'Medicare Bulk Billing Incentive Bill 2024', date: '2024-07-01', description: 'Triples the bulk billing incentive for GP visits by children and concession cardholders' },
+      { bill: 'HB2024-004', title: 'NDIS Reform (No. 2) Bill 2024', date: '2024-11-06', description: 'Introduces NDIS eligibility reforms and independent funding panels to control cost blowout' },
+      { bill: 'HB2024-005', title: 'Future Made in Australia Act 2024', date: '2024-05-14', description: 'Establishes a $22.7B framework for domestic clean-energy manufacturing investment' },
+      { bill: 'HB2024-006', title: 'Electoral Reforms (Funding and Disclosure) Bill 2024', date: '2024-06-19', description: 'Caps political donations and increases public election funding transparency' },
+      { bill: 'HB2024-007', title: 'Nature Positive (EPA) Bill 2024', date: '2024-09-10', description: 'Establishes Environment Protection Australia as an independent regulatory body' },
+      { bill: 'SB2024-001', title: 'Superannuation (Objective) Act 2024', date: '2024-02-28', description: 'Legislates the objective of superannuation as providing dignified retirement income' },
+    ];
+    const usedV = new Set();
+    const history = [];
+    for (let att = 0; history.length < 3 && att < 20; att++) {
+      const idx = rng(0, auBillPool.length - 1, 9 + att);
+      if (!usedV.has(idx)) { usedV.add(idx); history.push({ ...auBillPool[idx], vote: pick(voteChoices, 16 + att) }); }
+    }
+    m.votingHistory = history;
+
+    // Office expenses
+    const staff = rng(180000, 380000, 20);
+    const rent  = rng(30000,  90000, 21);
+    const travel = rng(15000, 65000, 22);
+    const comms  = rng(5000,  25000, 23);
+    const supps  = rng(1500,   8500, 24);
+    m.expenses = {
+      total: staff + rent + travel + comms + supps,
+      year: 2024,
+      breakdown: {
+        'Staff Salaries':          staff,
+        'Office Rent & Utilities': rent,
+        'Travel & Transportation': travel,
+        'Communications':          comms,
+        'Office Supplies':         supps,
+      },
+    };
+
+    // Financial disclosure (base MP salary AUD $211,250)
+    const initial  = rng(120000, 3500000, 25);
+    const growPct  = rng(8, Math.min(300, yrs * 25), 26);
+    m.financialDisclosure = {
+      electedYear:        2024 - yrs,
+      initialWorth:       initial,
+      worthWhenElected:   initial,
+      currentWorth:       Math.round(initial * (1 + growPct / 100)),
+      percentageIncrease: growPct,
+      annualSalary:       211250,
+      assets: [
+        { type: pick(['Residential Property', 'Investment Property', 'Rural Land'], 27), value: rng(200000, 2000000, 28) },
+        { type: pick(['Australian Equities', 'Managed Funds', 'Superannuation (SMSF)'], 29), value: rng(50000, 800000, 30) },
+        { type: pick(['Term Deposits', 'Savings Account', 'Cash Management Account'], 31), value: rng(15000, 200000, 32) },
+      ],
+    };
+
+    // Lobbying
+    const auLobbyOrgs = [
+      { name: 'Business Council of Australia',           sector: 'Business & Commerce',     value: 285000, meetings: 7, lastMeeting: '2024-11-12' },
+      { name: 'Minerals Council of Australia',           sector: 'Mining & Resources',       value: 395000, meetings: 9, lastMeeting: '2024-12-01' },
+      { name: 'Australian Medical Association',          sector: 'Healthcare',               value: 215000, meetings: 5, lastMeeting: '2024-10-18' },
+      { name: "National Farmers' Federation",            sector: 'Agriculture',              value: 155000, meetings: 4, lastMeeting: '2024-09-07' },
+      { name: 'Australian Banking Association',          sector: 'Financial Services',       value: 310000, meetings: 8, lastMeeting: '2024-11-20' },
+      { name: 'Property Council of Australia',           sector: 'Property & Construction',  value: 195000, meetings: 4, lastMeeting: '2024-08-15' },
+      { name: 'Australian Council of Social Service',    sector: 'Social Welfare',           value: 95000,  meetings: 3, lastMeeting: '2024-07-22' },
+      { name: 'Australian Chamber of Commerce & Industry', sector: 'Business',              value: 235000, meetings: 6, lastMeeting: '2024-10-05' },
+      { name: 'Australian Industry Group',               sector: 'Manufacturing & Industry', value: 175000, meetings: 4, lastMeeting: '2024-09-25' },
+      { name: 'Clean Energy Council',                    sector: 'Renewable Energy',         value: 130000, meetings: 3, lastMeeting: '2024-08-30' },
+      { name: 'Australian Council of Trade Unions',      sector: 'Labour',                   value: 110000, meetings: 3, lastMeeting: '2024-07-10' },
+    ];
+    const orgs = [];
+    const usedL = new Set();
+    const numOrgs = rng(1, 3, 33);
+    for (let att = 0; orgs.length < numOrgs && att < 20; att++) {
+      const idx = rng(0, auLobbyOrgs.length - 1, 34 + att);
+      if (!usedL.has(idx)) { usedL.add(idx); orgs.push({ ...auLobbyOrgs[idx] }); }
+    }
+    m.lobbying = {
+      totalMeetings: orgs.reduce((s, o) => s + o.meetings, 0),
+      totalValue:    orgs.reduce((s, o) => s + o.value, 0),
+      organizations: orgs,
+    };
+
+    // Corporate connections (~40% of members)
+    if (!m.corporateConnections) {
+      if (rng(0, 9, 40) >= 6) {
+        const auCompanies = [
+          { company: 'BHP Group',                      role: 'Former Board Adviser',    description: 'Provided strategic policy advice on resources sector regulation and community engagement' },
+          { company: 'Commonwealth Bank of Australia', role: 'Former Senior Executive', description: 'Held executive position in corporate governance and financial compliance' },
+          { company: 'Wesfarmers Limited',             role: 'Non-Executive Director',  description: 'Board member overseeing retail and industrial operations' },
+          { company: 'Rio Tinto',                      role: 'Former Consultant',       description: 'Advised on stakeholder engagement and regulatory affairs in WA and QLD' },
+          { company: 'ANZ Banking Group',              role: 'Former Senior Adviser',   description: 'Advised on public policy, government relations, and regulatory strategy' },
+          { company: 'Qantas Airways',                 role: 'Former Director',         description: 'Board member overseeing aviation policy, operations, and government affairs' },
+          { company: 'Macquarie Group',                role: 'Former Senior Adviser',   description: 'Strategic advisory role in infrastructure and public-private partnerships' },
+          { company: 'CSL Limited',                    role: 'Former Adviser',          description: 'Advised on healthcare policy and regulatory engagement for biopharmaceutical operations' },
+        ];
+        const comp = { ...pick(auCompanies, 41) };
+        const startYr = 2024 - yrs - rng(1, 4, 42);
+        const endYr   = 2024 - rng(0, 2, 43);
+        comp.period = `${startYr}–${endYr < 2024 ? endYr : 'Present'}`;
+        m.corporateConnections = [comp];
+      } else {
+        m.corporateConnections = [];
+      }
+    }
+
+    // Committees
+    const auCommittees = [
+      'Senate Finance and Public Administration Committee',
+      'Senate Economics References Committee',
+      'Senate Foreign Affairs, Defence and Trade Committee',
+      'House Economics Committee',
+      'House Workplace Relations Committee',
+      'Joint Standing Committee on Treaties',
+      'Joint Committee on Intelligence and Security',
+      'House Standing Committee on Environment',
+      'Senate Community Affairs Committee',
+      'House Health, Aged Care and Sport Committee',
+      'Senate Legal and Constitutional Affairs Committee',
+      'House Education Committee',
+      'Senate Rural and Regional Affairs Committee',
+      'House Infrastructure, Transport and Regional Development Committee',
+      'Joint Committee on Public Accounts and Audit',
+    ];
+    if (!m.committees || m.committees.length === 0) {
+      const numCom = rng(2, 4, 50);
+      const usedCom = new Set();
+      m.committees = [];
+      for (let att = 0; m.committees.length < numCom && att < 30; att++) {
+        const idx = rng(0, auCommittees.length - 1, 51 + att);
+        if (!usedCom.has(idx)) { usedCom.add(idx); m.committees.push(auCommittees[idx]); }
+      }
+    }
+
+    // Bio
+    if (!m.bio) {
+      const focuses = ['economic development', 'social welfare', 'environmental policy', 'regional infrastructure', 'national security'];
+      const titleStr = isSen ? `Senator for ${m.state}` : `Member of Parliament for ${m.electorate}`;
+      const roleStr = m.role && m.role !== 'Senator' && m.role !== 'Member of Parliament' ? ` Currently serving as ${m.role}.` : '';
+      m.bio = `${m.name} is a ${m.party} ${titleStr} with ${yrs} year${yrs !== 1 ? 's' : ''} of parliamentary experience.${roleStr} ${m.name.split(' ')[0]} is committed to representing constituents and advancing ${pick(focuses, 60)} priorities at the federal level.`;
+    }
+
+    if (!m.email) {
+      m.email = `${m.name.toLowerCase().replace(/[^a-z\s]/g, '').replace(/\s+/g, '.')}@aph.gov.au`;
+    }
+
+    return m;
+  };
+
   const renderAustralianParliament = () => {
     const auHash = (str) => {
       let h = 5381;
@@ -10321,7 +10512,7 @@ function App() {
               const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
               const color = getPartyColor(member.party);
               return (
-                <div key={i} className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-amber-400 hover:shadow-xl transition-all">
+                <div key={i} className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-amber-400 hover:shadow-xl transition-all cursor-pointer" onClick={() => { setSelectedAuMember(member); setShowAuMemberPanel(true); }}>
                   {/* Avatar */}
                   <div style={{ backgroundColor: color }} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4">
                     {initials}
@@ -10393,6 +10584,370 @@ function App() {
           )}
 
           <p className="text-center text-xs text-gray-400 mt-10 pb-4">Illustrative data · member profiles are statistically modelled</p>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAuMemberPanel = () => {
+    if (!selectedAuMember || !showAuMemberPanel) return null;
+    const member = enrichAuMember(selectedAuMember);
+    const isSen = member.role === 'Senator' || (member.role && member.role.toLowerCase().includes('senator'));
+    const partyColor = getPartyColor(member.party);
+    const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2);
+    const auHash = (str) => { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0x7fffffff; return h; };
+    const h = auHash(member.name);
+    const support = (h % 6000) + 2000;
+    const oppose = ((h >> 4) % 4000) + 1000;
+    const userVote = auMemberVotes[member.name] || null;
+    const approvalPct = Math.round((support / (support + oppose)) * 100);
+    const lobbyingList = member.lobbying?.organizations || [];
+    const electedYear = member.financialDisclosure?.electedYear;
+    const formatAUD = (n) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(n);
+    const getAuVoteColor = (v) => v === 'Yea' ? 'bg-green-50 border-green-200' : v === 'Nay' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200';
+    const getAuVoteIcon = (v) => v === 'Yea' ? <CheckCircle className="w-5 h-5 text-green-600" /> : v === 'Nay' ? <XCircle className="w-5 h-5 text-red-600" /> : <MinusCircle className="w-5 h-5 text-gray-600" />;
+    const voteAu = (vote) => {
+      setAuMemberVotes(prev => {
+        const next = { ...prev };
+        if (next[member.name] === vote) delete next[member.name]; else next[member.name] = vote;
+        return next;
+      });
+    };
+    const closePanel = () => { setShowAuMemberPanel(false); setSelectedAuMember(null); };
+
+    return (
+      <div className="fixed inset-0 z-50 flex justify-end">
+        <div className="panel-backdrop absolute inset-0 bg-black bg-opacity-50" onClick={closePanel} />
+        <div className="panel-slide-in relative flex flex-col bg-white shadow-2xl w-full md:w-[65vw] md:max-w-5xl h-full overflow-hidden">
+
+          {/* HEADER */}
+          <div
+            style={{ background: `linear-gradient(135deg, ${partyColor}18 0%, ${partyColor}06 100%)`, borderBottom: `3px solid ${partyColor}` }}
+            className="flex-shrink-0 px-6 pt-6 pb-5"
+          >
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="flex items-start gap-4 min-w-0">
+                <div style={{ backgroundColor: partyColor }} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-lg">
+                  {initials}
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-xl font-bold text-gray-900 leading-tight">{member.name}</h2>
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    <span style={{ backgroundColor: partyColor }} className="text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">{member.party}</span>
+                    <span className="text-sm text-gray-600 font-medium">{isSen ? `Senator for ${member.state}` : `Member for ${member.electorate}`}</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {member.state}{!isSen && member.electorate && ` · ${member.electorate}`}{member.yearsInOffice && ` · ${member.yearsInOffice} yr${member.yearsInOffice !== 1 ? 's' : ''} in office`}
+                  </p>
+                </div>
+              </div>
+              <button onClick={closePanel} className="flex-shrink-0 p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white hover:bg-opacity-70 transition-colors" aria-label="Close panel">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Approval bar */}
+            <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-1.5">
+                <ThumbsUp className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-semibold text-gray-700">{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</span>
+                <span className="text-xs text-gray-500">support</span>
+              </div>
+              <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[80px]">
+                <div className="h-2 rounded-full transition-all" style={{ width: `${approvalPct}%`, backgroundColor: approvalPct >= 50 ? '#22c55e' : '#ef4444' }} />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-gray-500">oppose</span>
+                <span className="text-sm font-semibold text-gray-700">{(oppose + (userVote === 'oppose' ? 1 : 0)).toLocaleString()}</span>
+                <ThumbsDown className="w-4 h-4 text-red-500" />
+              </div>
+            </div>
+
+            {/* Vote buttons */}
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={() => voteAu('support')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
+              >
+                <ThumbsUp className="w-4 h-4" /> Support
+              </button>
+              <button
+                onClick={() => voteAu('oppose')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
+              >
+                <ThumbsDown className="w-4 h-4" /> Oppose
+              </button>
+            </div>
+          </div>
+
+          {/* SCROLLABLE CONTENT */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-6 space-y-7">
+
+              {/* BIO */}
+              {member.bio && (
+                <section>
+                  <p className="panel-section-label">Biography</p>
+                  <div className="bg-gradient-to-br from-gray-50 to-amber-50 border border-gray-200 rounded-xl p-4">
+                    <p className="text-gray-700 text-sm leading-relaxed">{member.bio}</p>
+                  </div>
+                </section>
+              )}
+
+              {/* COMMITTEES */}
+              {member.committees && member.committees.length > 0 && (
+                <section>
+                  <p className="panel-section-label">Committee Assignments</p>
+                  <div className="flex flex-wrap gap-2">
+                    {member.committees.map((com, i) => (
+                      <span key={i} className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                        <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                        {com}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* CONTACT */}
+              {(member.email || member.parliamentHousePhone || member.electoratePhone || member.officeAddress) && (
+                <section>
+                  <p className="panel-section-label">Contact Information</p>
+                  <div className="space-y-2">
+                    {member.email && (
+                      <a href={`mailto:${member.email}`} className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors group">
+                        <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Globe className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500 font-medium">Official Email</p>
+                          <p className="text-sm font-semibold text-blue-600 group-hover:text-blue-800 truncate">{member.email}</p>
+                        </div>
+                      </a>
+                    )}
+                    {member.parliamentHousePhone && (
+                      <a href={`tel:${member.parliamentHousePhone}`} className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-green-50 hover:border-green-300 transition-colors group">
+                        <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">Parliament House Phone</p>
+                          <p className="text-sm font-semibold text-green-700 group-hover:text-green-900">{member.parliamentHousePhone}</p>
+                        </div>
+                      </a>
+                    )}
+                    {member.electoratePhone && (
+                      <a href={`tel:${member.electoratePhone}`} className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200 hover:bg-purple-50 hover:border-purple-300 transition-colors group">
+                        <div className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">{isSen ? 'State Office Phone' : 'Electorate Office Phone'}</p>
+                          <p className="text-sm font-semibold text-purple-700 group-hover:text-purple-900">{member.electoratePhone}</p>
+                        </div>
+                      </a>
+                    )}
+                    {member.officeAddress?.parliamentHouse && (
+                      <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                        <div className="w-9 h-9 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Building2 className="w-4 h-4 text-orange-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">Parliament House Address</p>
+                          <p className="text-sm font-medium text-gray-700">{member.officeAddress.parliamentHouse}</p>
+                        </div>
+                      </div>
+                    )}
+                    {member.officeAddress?.electorateOffice && (
+                      <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                        <div className="w-9 h-9 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <MapPin className="w-4 h-4 text-teal-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">{isSen ? 'State Office Address' : 'Electorate Office Address'}</p>
+                          <p className="text-sm font-medium text-gray-700">{member.officeAddress.electorateOffice}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* ATTENDANCE */}
+              {member.attendance && (
+                <section>
+                  <p className="panel-section-label">Attendance Record</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                      <p className="text-2xl font-bold text-blue-700">{member.attendance.percentage}%</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Attendance</p>
+                    </div>
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
+                      <p className="text-2xl font-bold text-green-700">{member.attendance.sessionsAttended}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Sessions</p>
+                    </div>
+                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center">
+                      <p className="text-2xl font-bold text-purple-700">#{member.attendance.ranking}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Ranking</p>
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                      <span>Sessions attended</span>
+                      <span>{member.attendance.sessionsAttended} / {member.attendance.totalSessions}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="h-2 rounded-full bg-blue-500" style={{ width: `${member.attendance.percentage}%` }} />
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* OFFICE EXPENSES */}
+              {member.expenses && (
+                <section>
+                  <p className="panel-section-label">Office Expense Report — {member.expenses.year}</p>
+                  <div className="space-y-2">
+                    {Object.entries(member.expenses.breakdown).map(([category, amount]) => (
+                      <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <span className="text-sm text-gray-700 font-medium">{category}</span>
+                        <span className="text-sm font-bold text-gray-900">{formatAUD(amount)}</span>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between p-3.5 bg-green-50 rounded-xl border-2 border-green-300 mt-1">
+                      <span className="font-bold text-gray-800 text-sm">TOTAL ANNUAL EXPENSES</span>
+                      <span className="font-bold text-green-700 text-base">{formatAUD(member.expenses.total)}</span>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* VOTING RECORD */}
+              {member.votingHistory && member.votingHistory.length > 0 && (
+                <section>
+                  <p className="panel-section-label">Voting Record &mdash; {member.votingHistory.length} recent vote{member.votingHistory.length !== 1 ? 's' : ''}</p>
+                  <div className="space-y-2">
+                    {member.votingHistory.map((vote, i) => (
+                      <div key={i} className={`rounded-xl p-3.5 border ${getAuVoteColor(vote.vote)}`}>
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <div className="flex items-center gap-2">
+                            {getAuVoteIcon(vote.vote)}
+                            <span className="font-bold text-sm text-gray-800">{vote.vote}</span>
+                            <span className="text-xs bg-white bg-opacity-80 text-gray-600 px-2 py-0.5 rounded font-mono border">{vote.bill}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {vote.date}
+                          </div>
+                        </div>
+                        <p className="text-sm font-semibold text-gray-800">{vote.title}</p>
+                        <p className="text-xs text-gray-600 mt-0.5 leading-relaxed">{vote.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* FINANCIAL DISCLOSURE */}
+              {member.financialDisclosure && (
+                <section>
+                  <p className="panel-section-label">Financial Disclosure</p>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                      <p className="text-xs text-gray-500 mb-0.5">Worth When Elected{electedYear ? ` (${electedYear})` : ''}</p>
+                      <p className="text-lg font-bold text-blue-700">{formatAUD(member.financialDisclosure.worthWhenElected)}</p>
+                    </div>
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+                      <p className="text-xs text-gray-500 mb-0.5">Current Net Worth</p>
+                      <p className="text-lg font-bold text-green-700">{formatAUD(member.financialDisclosure.currentWorth)}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3">
+                      <p className="text-xs text-gray-500 mb-0.5">Wealth Increase</p>
+                      <p className="text-lg font-bold text-purple-700">+{member.financialDisclosure.percentageIncrease}%</p>
+                    </div>
+                    {member.financialDisclosure.annualSalary && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
+                        <p className="text-xs text-gray-500 mb-0.5">Annual Salary (AUD)</p>
+                        <p className="text-lg font-bold text-orange-700">{formatAUD(member.financialDisclosure.annualSalary)}</p>
+                      </div>
+                    )}
+                  </div>
+                  {member.financialDisclosure.assets && member.financialDisclosure.assets.length > 0 && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-semibold text-gray-600 mb-2">Declared Assets</p>
+                      {member.financialDisclosure.assets.map((asset, i) => (
+                        <div key={i} className="flex justify-between items-center p-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                          <span className="text-sm text-gray-700">{asset.type}</span>
+                          <span className="text-sm font-bold text-gray-900">{formatAUD(asset.value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* LOBBYING */}
+              {member.lobbying && (
+                <section>
+                  <p className="panel-section-label">Lobbying Activity</p>
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-3 flex items-center gap-3">
+                    <Building2 className="w-5 h-5 text-red-600 flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">{member.lobbying.totalMeetings} lobbying meetings</p>
+                      <p className="text-xs text-gray-600">Total disclosed value: <span className="font-bold text-red-700">{formatAUD(member.lobbying.totalValue)}</span></p>
+                    </div>
+                  </div>
+                  {lobbyingList.length > 0 && (
+                    <div className="space-y-2">
+                      {lobbyingList.map((item, i) => (
+                        <div key={i} className="border border-gray-200 rounded-xl p-3.5 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <div className="min-w-0">
+                              <p className="font-semibold text-gray-800 text-sm">{item.name}</p>
+                              {item.sector && <p className="text-xs text-gray-500">{item.sector}</p>}
+                            </div>
+                            {item.value && (
+                              <span className="text-xs bg-red-100 text-red-800 px-2.5 py-1 rounded-full font-bold flex-shrink-0">
+                                {formatAUD(item.value)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                            {item.meetings && <span>{item.meetings} meetings</span>}
+                            {item.lastMeeting && <span>Last: {item.lastMeeting}</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* CORPORATE AFFILIATIONS */}
+              {member.corporateConnections && member.corporateConnections.length > 0 && (
+                <section>
+                  <p className="panel-section-label">Corporate Affiliations — {member.corporateConnections.length} disclosed</p>
+                  <div className="space-y-2">
+                    {member.corporateConnections.map((conn, i) => (
+                      <div key={i} className="border border-gray-200 rounded-xl p-3.5 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-start justify-between gap-3 mb-1.5">
+                          <div className="min-w-0">
+                            <p className="font-bold text-gray-800 text-sm">{conn.company}</p>
+                            <p className="text-xs font-medium text-indigo-600">{conn.role}</p>
+                          </div>
+                          <span className="text-xs text-gray-500 flex-shrink-0 bg-gray-100 px-2 py-0.5 rounded-full">{conn.period}</span>
+                        </div>
+                        <p className="text-xs text-gray-600 leading-relaxed">{conn.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -17823,6 +18378,9 @@ function App() {
 
       {/* Congress member profile panel */}
       {showMemberPanel && selectedMember && renderCongressMemberPanel()}
+
+      {/* Australian Parliament member profile panel */}
+      {showAuMemberPanel && selectedAuMember && renderAuMemberPanel()}
 
       {/* Senator profile panel removed — now renders as full page via view === 'senator-detail' */}
 
