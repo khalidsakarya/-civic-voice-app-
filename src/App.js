@@ -6457,8 +6457,8 @@ function App() {
 
     if (isAustralia) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-8 animate-fade-in">
-          <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-green-50 p-4 sm:p-8 animate-fade-in">
+          <div className="max-w-6xl mx-auto">
             <button
               onClick={() => setView('countries')}
               className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
@@ -6469,307 +6469,146 @@ function App() {
             <div className="mb-8 animate-slide-in">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-4xl">🇦🇺</span>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Australia</h1>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Australian Federal Government</h1>
               </div>
-              <p className="text-gray-600 text-base sm:text-lg">Australian Federal Government</p>
-              <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
+              <p className="text-gray-600 text-base sm:text-lg">Explore federal institutions, legislation, and governance</p>
+              <div className="w-24 h-1 bg-gradient-to-r from-amber-400 to-green-500 mt-3 rounded-full" />
             </div>
 
-            {/* Prime Minister card */}
-            <div
-              onClick={() => setView('albanese-detail')}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mb-6"
-              style={{ animationDelay: '0.1s' }}
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0 shadow-lg" style={{ backgroundColor: '#CC0000' }}>
-                  AA
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+
+              {/* Prime Minister & Executive */}
+              <div
+                onClick={() => setView('albanese-detail')}
+                className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                style={{ animationDelay: '0.05s' }}
+              >
+                <div className="text-amber-600 mb-3 sm:mb-4">
+                  <Crown className="w-10 h-10 sm:w-12 sm:h-12" />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Crown className="w-5 h-5 text-yellow-500" />
-                    <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">Prime Minister</span>
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-800">Anthony Albanese</h2>
-                  <p className="text-gray-600 text-sm mt-1">Australian Labor Party · In office since May 23, 2022</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Prime Minister &amp; Executive</h2>
+                <p className="text-gray-600 mb-3 text-sm sm:text-base">The PMO, Cabinet &amp; Executive Branch</p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>31st PM · Anthony Albanese</span>
+                  <ChevronRight className="w-5 h-5 text-amber-600" />
                 </div>
-                <ChevronRight className="w-6 h-6 text-gray-400 flex-shrink-0" />
               </div>
-            </div>
 
-            {/* Parliament card */}
-            <div
-              onClick={() => { setAuChamber('Senate'); setAuPartyFilter('All'); setAuSearch(''); setView('au-parliament'); }}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
-              style={{ animationDelay: '0.2s' }}
-            >
-              <div className="flex items-center gap-4">
-                <div className="text-4xl">🏛️</div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-gray-800">Australian Parliament</h2>
-                  <p className="text-gray-600 text-sm mt-1">Senate (76 senators) · House of Representatives (151 members)</p>
+              {/* Federal Parliament */}
+              <div
+                onClick={() => { setAuChamber('House'); setAuPartyFilter('All'); setAuSearch(''); setView('au-parliament'); }}
+                className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                style={{ animationDelay: '0.1s' }}
+              >
+                <div className="text-green-700 mb-3 sm:mb-4">
+                  <Users className="w-10 h-10 sm:w-12 sm:h-12" />
                 </div>
-                <ChevronRight className="w-6 h-6 text-gray-400 flex-shrink-0" />
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Federal Parliament</h2>
+                <p className="text-gray-600 mb-3 text-sm sm:text-base">House of Representatives — explore all members across every party</p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>151 Members · Lower House</span>
+                  <ChevronRight className="w-5 h-5 text-green-700" />
+                </div>
               </div>
-            </div>
 
-            {/* States & Territories card */}
-            <div
-              onClick={() => setView('au-states')}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
-              style={{ animationDelay: '0.3s' }}
-            >
-              <div className="flex items-center gap-4">
-                <div className="text-4xl">🗺️</div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-gray-800">States &amp; Territories</h2>
-                  <p className="text-gray-600 text-sm mt-1">6 states · 2 territories · Premiers and Chief Ministers</p>
+              {/* Australian Senate */}
+              <div
+                onClick={() => { setAuChamber('Senate'); setAuPartyFilter('All'); setAuSearch(''); setView('au-parliament'); }}
+                className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                style={{ animationDelay: '0.15s' }}
+              >
+                <div className="text-emerald-600 mb-3 sm:mb-4">
+                  <Award className="w-10 h-10 sm:w-12 sm:h-12" />
                 </div>
-                <ChevronRight className="w-6 h-6 text-gray-400 flex-shrink-0" />
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Australian Senate</h2>
+                <p className="text-gray-600 mb-3 text-sm sm:text-base">76 senators representing all states and territories — upper chamber</p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>76 Senators · Upper Chamber</span>
+                  <ChevronRight className="w-5 h-5 text-emerald-600" />
+                </div>
               </div>
-            </div>
 
-            {/* Legislative Hub card */}
-            <div
-              onClick={() => { setAuLegTab('active'); setView('au-legislative-hub'); }}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
-              style={{ animationDelay: '0.4s' }}
-            >
-              <div className="flex items-center gap-4">
-                <div className="text-4xl">📋</div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-gray-800">Legislative Hub</h2>
-                  <p className="text-gray-600 text-sm mt-1">Active bills · recent votes · Acts of Parliament</p>
+              {/* Where the Money Goes */}
+              <div
+                onClick={() => { setFinancialDashTab('overview'); setView('money-australia'); }}
+                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-400 active:scale-95"
+              >
+                <div className="text-amber-500 mb-3 sm:mb-4">
+                  <PieChart className="w-10 h-10 sm:w-12 sm:h-12" />
                 </div>
-                <ChevronRight className="w-6 h-6 text-gray-400 flex-shrink-0" />
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Where the Money Goes</h2>
+                <p className="text-gray-600 mb-3 text-sm sm:text-base">Financial transparency: how AU$682B in federal spending reaches citizens</p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span className="font-medium">FY 2024-25 · ANAO Audit</span>
+                  <ChevronRight className="w-5 h-5 text-amber-500" />
+                </div>
               </div>
-            </div>
 
-            {/* Where the Money Goes card */}
-            <div
-              onClick={() => { setFinancialDashTab('overview'); setView('money-australia'); }}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
-              style={{ animationDelay: '0.5s' }}
-            >
-              <div className="flex items-center gap-4">
-                <div className="text-4xl">💰</div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-gray-800">Where the Money Goes</h2>
-                  <p className="text-gray-600 text-sm mt-1">AU$682B federal budget · ANAO audit findings · program results</p>
+              {/* Legislative Hub */}
+              <div
+                onClick={() => { setAuLegTab('active'); setView('au-legislative-hub'); }}
+                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
+              >
+                <div className="text-green-600 mb-3 sm:mb-4">
+                  <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
                 </div>
-                <ChevronRight className="w-6 h-6 text-gray-400 flex-shrink-0" />
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Legislative Hub</h2>
+                <p className="text-gray-600 mb-3 text-sm sm:text-base">Active bills, recent votes &amp; Acts of Parliament</p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span className="font-medium">12 Bills · 4 Royal Assents</span>
+                  <ChevronRight className="w-5 h-5 text-green-600" />
+                </div>
               </div>
+
+              {/* Government Departments */}
+              <div
+                onClick={() => { setFinancialDashTab('programs'); setView('money-australia'); }}
+                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95"
+              >
+                <div className="text-amber-700 mb-3 sm:mb-4">
+                  <Building2 className="w-10 h-10 sm:w-12 sm:h-12" />
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Departments</h2>
+                <p className="text-gray-600 mb-3 text-sm sm:text-base">Review department budgets, programs &amp; ministerial performance</p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>18 Federal Departments</span>
+                  <ChevronRight className="w-5 h-5 text-amber-700" />
+                </div>
+              </div>
+
+              {/* States & Territories */}
+              <div
+                onClick={() => setView('au-states')}
+                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-600 active:scale-95"
+              >
+                <div className="text-green-600 mb-3 sm:mb-4">
+                  <MapPin className="w-10 h-10 sm:w-12 sm:h-12" />
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">States &amp; Territories</h2>
+                <p className="text-gray-600 mb-3 text-sm sm:text-base">6 states · 2 territories · Premiers and Chief Ministers</p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>8 Jurisdictions · State Governments</span>
+                  <ChevronRight className="w-5 h-5 text-green-600" />
+                </div>
+              </div>
+
+              {/* Ministerial Decisions */}
+              <div
+                onClick={() => setView('albanese-detail')}
+                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-400 active:scale-95"
+              >
+                <div className="text-amber-600 mb-3 sm:mb-4">
+                  <Scale className="w-10 h-10 sm:w-12 sm:h-12" />
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Ministerial Decisions</h2>
+                <p className="text-gray-600 mb-3 text-sm sm:text-base">Recent policies, cabinet decisions &amp; government priorities</p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>8 Recent Decisions · 2025–26</span>
+                  <ChevronRight className="w-5 h-5 text-amber-600" />
+                </div>
+              </div>
+
             </div>
-
-            {/* ── RECENT MINISTERIAL DECISIONS ───────────────────────────────── */}
-            {(() => {
-              const decisions = [
-                {
-                  id: 'dec-001',
-                  type: 'Energy Policy',
-                  date: 'Feb 2026',
-                  title: 'Renewable Energy Target Lifted to 90% by 2030',
-                  summary: 'Cabinet approved raising the national renewable energy target to 90% of electricity generation by 2030, backed by an additional $15 billion in clean energy investment through the Australian Renewable Energy Agency and Green Energy Finance Corporation.',
-                },
-                {
-                  id: 'dec-002',
-                  type: 'Housing',
-                  date: 'Jan 2026',
-                  title: 'Housing Australia Future Fund — First 10,000 Homes',
-                  summary: 'The government announced the commencement of construction on the first 10,000 social and affordable homes funded under the $10 billion Housing Australia Future Fund, with projects underway across all six states.',
-                },
-                {
-                  id: 'dec-003',
-                  type: 'Cost of Living',
-                  date: 'Dec 2025',
-                  title: '$300 Energy Bill Relief Extended to All Households in 2026',
-                  summary: 'Cabinet extended the Energy Bill Relief rebate of $300 per household into the 2025–26 financial year, delivering $3.5 billion in direct support to help Australians with rising power costs.',
-                },
-                {
-                  id: 'dec-004',
-                  type: 'Defence',
-                  date: 'Nov 2025',
-                  title: 'AUKUS Submarine Agreement: Crew Training Commences',
-                  summary: 'Australia confirmed the first Virginia-class nuclear-powered submarine sale under AUKUS Pillar I, with Australian naval crews commencing training at Pearl Harbor and a new submarine construction pathway established in South Australia.',
-                },
-                {
-                  id: 'dec-005',
-                  type: 'Foreign Policy',
-                  date: 'Oct 2025',
-                  title: 'Pacific Engagement Visa Program Expanded',
-                  summary: 'The government launched the expanded Pacific Engagement Visa, creating 3,000 additional annual migration pathways from Pacific Island nations and strengthening regional security partnerships under the Australia–Pacific Security Framework.',
-                },
-                {
-                  id: 'dec-006',
-                  type: 'Healthcare',
-                  date: 'Sep 2025',
-                  title: 'Medicare Bulk Billing Incentive Tripled for GPs',
-                  summary: 'A tripling of the Medicare bulk billing incentive for GP consultations with children under 16 and concession cardholders took effect, reducing out-of-pocket costs for the most vulnerable patients and reversing a decade-long decline in bulk billing rates.',
-                },
-                {
-                  id: 'dec-007',
-                  type: 'Industrial Relations',
-                  date: 'Aug 2025',
-                  title: 'Multi-Employer Bargaining Rights Enacted',
-                  summary: 'The Fair Work Legislation Amendment (Closing Loopholes) reforms came into full effect, extending multi-employer bargaining rights to low-paid sectors and introducing new protections for gig economy workers classified as employee-like workers.',
-                },
-                {
-                  id: 'dec-008',
-                  type: 'Environment',
-                  date: 'Jul 2025',
-                  title: 'Nature Positive EPA Established',
-                  summary: 'Environment Protection Australia was formally established as an independent regulatory body, replacing the existing EPBC framework with strengthened biodiversity protections, new nature repair markets, and penalties for illegal land clearing.',
-                },
-              ];
-
-              const typeColors = {
-                'Energy Policy':       { bg: 'bg-green-50', border: 'border-green-200', badge: 'bg-green-200 text-green-800' },
-                'Housing':             { bg: 'bg-blue-50',  border: 'border-blue-200',  badge: 'bg-blue-200 text-blue-800' },
-                'Cost of Living':      { bg: 'bg-amber-50', border: 'border-amber-200', badge: 'bg-amber-200 text-amber-800' },
-                'Defence':             { bg: 'bg-slate-50', border: 'border-slate-200', badge: 'bg-slate-200 text-slate-800' },
-                'Foreign Policy':      { bg: 'bg-indigo-50',border: 'border-indigo-200',badge: 'bg-indigo-200 text-indigo-800' },
-                'Healthcare':          { bg: 'bg-red-50',   border: 'border-red-200',   badge: 'bg-red-200 text-red-800' },
-                'Industrial Relations':{ bg: 'bg-orange-50',border: 'border-orange-200',badge: 'bg-orange-200 text-orange-800' },
-                'Environment':         { bg: 'bg-emerald-50',border:'border-emerald-200',badge:'bg-emerald-200 text-emerald-800' },
-              };
-
-              return (
-                <div className="mt-8 bg-white rounded-2xl shadow-elegant-lg overflow-hidden border border-gray-100 animate-scale-in" style={{ animationDelay: '0.6s' }}>
-                  <div className="px-6 pt-6 pb-4 border-b border-gray-100">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">📋</span>
-                      <div>
-                        <h2 className="text-xl font-bold text-gray-800">Recent Ministerial Decisions</h2>
-                        <p className="text-sm text-gray-500 mt-0.5">{decisions.length} recent decisions &amp; policies by the Albanese Government</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-6 space-y-4">
-                    {decisions.map((item) => {
-                      const c = typeColors[item.type] || { bg: 'bg-gray-50', border: 'border-gray-200', badge: 'bg-gray-200 text-gray-800' };
-                      const vote = auDecisionVotes[item.id] || null;
-                      const baseSupport = parseInt(item.id.split('-')[1], 10) * 1247 + 3200;
-                      const baseOppose  = parseInt(item.id.split('-')[1], 10) * 863  + 1400;
-                      const support = baseSupport + (vote === 'support' ? 1 : 0);
-                      const oppose  = baseOppose  + (vote === 'oppose'  ? 1 : 0);
-                      return (
-                        <div key={item.id} className={`border rounded-xl p-4 ${c.bg} ${c.border}`}>
-                          <div className="flex items-start justify-between gap-3 mb-2">
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0 ${c.badge}`}>{item.type}</span>
-                            <div className="flex items-center gap-1.5 text-xs text-gray-500 flex-shrink-0">
-                              <Calendar className="w-3.5 h-3.5" />
-                              <span>{item.date}</span>
-                            </div>
-                          </div>
-                          <h3 className="font-bold text-gray-800 text-sm mb-1.5">{item.title}</h3>
-                          <p className="text-xs text-gray-600 leading-relaxed mb-3">{item.summary}</p>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => setAuDecisionVotes(prev => {
-                                const next = { ...prev };
-                                if (next[item.id] === 'support') delete next[item.id]; else next[item.id] = 'support';
-                                return next;
-                              })}
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${vote === 'support' ? 'bg-green-500 text-white' : 'bg-white text-green-700 border border-green-200 hover:bg-green-50'}`}
-                            >
-                              <ThumbsUp className="w-3 h-3" />
-                              <span>{support.toLocaleString()}</span>
-                            </button>
-                            <button
-                              onClick={() => setAuDecisionVotes(prev => {
-                                const next = { ...prev };
-                                if (next[item.id] === 'oppose') delete next[item.id]; else next[item.id] = 'oppose';
-                                return next;
-                              })}
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${vote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white text-red-700 border border-red-200 hover:bg-red-50'}`}
-                            >
-                              <ThumbsDown className="w-3 h-3" />
-                              <span>{oppose.toLocaleString()}</span>
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* ── SENIOR ADVISORS ────────────────────────────────────────────── */}
-            {(() => {
-              const advisors = [
-                {
-                  name: 'Tim Gartrell',
-                  title: 'Chief of Staff, PMO',
-                  bio: 'Former ALP National Secretary and architect of Labor\'s 2007 election victory. Oversees day-to-day operations of the Prime Minister\'s Office and coordinates the government\'s legislative and communications agenda.',
-                },
-                {
-                  name: 'Ginna Webster',
-                  title: 'Deputy Chief of Staff',
-                  bio: 'Veteran federal policy adviser across multiple Labor governments. Manages policy development and inter-agency coordination, ensuring alignment between the PMO and all cabinet departments.',
-                },
-                {
-                  name: 'Richard Marles',
-                  title: 'Deputy Prime Minister & Minister for Defence',
-                  bio: 'Member for Corio (VIC) and Deputy Leader of the ALP. Oversees Australia\'s $54B defence budget, the Defence Strategic Review, and leads Australia\'s AUKUS commitments alongside the US and UK.',
-                },
-                {
-                  name: 'Penny Wong',
-                  title: 'Minister for Foreign Affairs, Senate Leader',
-                  bio: 'Senator for South Australia and leader of the government in the Senate. Has rebuilt Australia\'s multilateral relationships — including with China, the Pacific, and Southeast Asia — after a period of diplomatic strain.',
-                },
-                {
-                  name: 'Jim Chalmers',
-                  title: 'Treasurer',
-                  bio: 'Member for Rankin (QLD). Oversees the federal budget, economic policy, and the Reserve Bank of Australia. Author of the values-based capitalism agenda and architect of the Future Made in Australia investment strategy.',
-                },
-                {
-                  name: 'Katy Gallagher',
-                  title: 'Minister for Finance',
-                  bio: 'Senator for the ACT and former Chief Minister of the Australian Capital Territory. Manages federal expenditure, efficiency programs, and public service reform, including the Australian Public Service transformation agenda.',
-                },
-                {
-                  name: 'Mark Butler',
-                  title: 'Minister for Health and Aged Care',
-                  bio: 'Member for Hindmarsh (SA). Leading the government\'s signature $3.5B bulk billing expansion, aged care reform following the Royal Commission, and the rollout of Medicare Urgent Care Clinics across the country.',
-                },
-                {
-                  name: 'Pat Conroy',
-                  title: 'Senior Policy Adviser — Defence & Security',
-                  bio: 'Former Minister for Defence Industry who transitioned to a senior advisory role after the 2025 reshuffle, providing strategic guidance on AUKUS, regional security, and the Defence Strategic Review implementation.',
-                },
-              ];
-              return (
-                <div className="mt-6 bg-white rounded-2xl shadow-elegant-lg overflow-hidden border border-gray-100 animate-scale-in" style={{ animationDelay: '0.7s' }}>
-                  <div className="px-6 pt-6 pb-4 border-b border-gray-100">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">🌟</span>
-                      <div>
-                        <h2 className="text-xl font-bold text-gray-800">Senior Advisors &amp; Cabinet</h2>
-                        <p className="text-sm text-gray-500 mt-0.5">Key PMO staff and senior cabinet ministers</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-6 space-y-3">
-                    {advisors.map((advisor) => (
-                      <div key={advisor.name} className="border border-gray-200 rounded-xl p-4 hover:bg-amber-50 hover:border-amber-200 transition-colors">
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 text-sm font-bold text-red-700">
-                            {advisor.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                          </div>
-                          <div className="min-w-0">
-                            <h4 className="font-bold text-gray-800 text-sm">{advisor.name}</h4>
-                            <p className="text-xs font-semibold text-red-700 mb-1">{advisor.title}</p>
-                            <p className="text-xs text-gray-600 leading-relaxed">{advisor.bio}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-
           </div>
         </div>
       );
