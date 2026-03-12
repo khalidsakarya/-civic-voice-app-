@@ -13556,14 +13556,14 @@ function App() {
                             </span>
                             <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                           </div>
-                          <h3 className="text-lg font-bold text-gray-800 mb-1">{bill.shortTitle}</h3>
-                          {bill.sponsor && <p className="text-xs text-gray-500">Sponsor: <strong>{bill.sponsor}</strong></p>}
+                          <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
+                          {bill.sponsor && <p className="text-sm sm:text-[13px] text-gray-500">Sponsor: <strong>{bill.sponsor}</strong></p>}
                         </div>
 
                         {/* Expanded details */}
                         {isExpanded && (
                           <div className="px-6 border-t border-gray-100">
-                            <p className="text-gray-600 text-sm py-4">{bill.summary}</p>
+                            <p className="text-[17px] sm:text-[15px] text-gray-600 py-4">{bill.summary}</p>
                             <button
                               onClick={(e) => { e.stopPropagation(); setSelectedBill(bill); setView('bill-detail'); }}
                               className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 mb-4"
@@ -13574,7 +13574,7 @@ function App() {
                         )}
 
                         {/* Vote buttons — always visible */}
-                        <div className="px-6 pb-5 pt-3 flex gap-3">
+                        <div className="px-6 pb-6 pt-4 flex gap-3">
                           <button
                             onClick={(e) => { e.stopPropagation(); requireRegion() && (setCaBillVotes(prev => ({ ...prev, [bill.id]: prev[bill.id] === 'support' ? null : 'support' })), voteBill(bill.id, 'support')); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
@@ -13987,7 +13987,7 @@ function App() {
                       >
                         {/* Collapsed header — click to toggle */}
                         <div
-                          className="p-5 cursor-pointer select-none"
+                          className="p-6 cursor-pointer select-none"
                           onClick={() => setExpandedUsBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
                         >
                           <div className="flex items-center gap-3 mb-3">
@@ -14008,14 +14008,14 @@ function App() {
                             )}
                             <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                           </div>
-                          <h3 className="text-base font-bold text-gray-800 mb-1">{bill.title}</h3>
-                          {bill.sponsor && <p className="text-xs text-gray-500">Sponsor: <strong>{bill.sponsor}</strong></p>}
+                          <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.title}</h3>
+                          {bill.sponsor && <p className="text-sm sm:text-[13px] text-gray-500">Sponsor: <strong>{bill.sponsor}</strong></p>}
                         </div>
 
                         {/* Expanded details */}
                         {isExpanded && (
-                          <div className="px-5 border-t border-gray-100">
-                            <p className="text-gray-600 text-sm py-4">{bill.summary || bill.description}</p>
+                          <div className="px-6 border-t border-gray-100">
+                            <p className="text-[17px] sm:text-[15px] text-gray-600 py-4">{bill.summary || bill.description}</p>
                             <button
                               onClick={(e) => { e.stopPropagation(); setSelectedBill(bill); setView('us-bill-detail'); }}
                               className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 mb-4"
@@ -14026,7 +14026,7 @@ function App() {
                         )}
 
                         {/* Vote buttons — always visible */}
-                        <div className="px-5 pb-5 pt-3 flex gap-3">
+                        <div className="px-6 pb-6 pt-4 flex gap-3">
                           <button
                             onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'support'); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
@@ -14112,7 +14112,7 @@ function App() {
                           >
                             {/* Collapsed header — click to toggle */}
                             <div
-                              className="p-5 cursor-pointer select-none"
+                              className="p-6 cursor-pointer select-none"
                               onClick={() => setExpandedUsBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
                             >
                               <div className="flex items-center gap-3 mb-3">
@@ -14127,8 +14127,8 @@ function App() {
                                 )}
                                 <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                               </div>
-                              <h3 className="text-base font-bold text-gray-800 mb-1">{bill.title}</h3>
-                              <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.title}</h3>
+                              <div className="flex items-center gap-4 text-sm sm:text-[13px] text-gray-500">
                                 {bill.sponsor && <span>Sponsor: <strong>{bill.sponsor}</strong></span>}
                                 {(bill.dateSigned || bill.dateVoted) && (
                                   <span className="flex items-center gap-1">
@@ -14141,8 +14141,8 @@ function App() {
 
                             {/* Expanded details */}
                             {isExpanded && (
-                              <div className="px-5 border-t border-gray-100">
-                                <p className="text-gray-600 text-sm py-4">{bill.summary || bill.description}</p>
+                              <div className="px-6 border-t border-gray-100">
+                                <p className="text-[17px] sm:text-[15px] text-gray-600 py-4">{bill.summary || bill.description}</p>
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setSelectedBill(bill); setView('us-bill-detail'); }}
                                   className="text-purple-600 hover:text-purple-800 font-medium text-sm flex items-center gap-1 mb-4"
@@ -14153,7 +14153,7 @@ function App() {
                             )}
 
                             {/* Vote buttons — always visible */}
-                            <div className="px-5 pb-5 pt-3 flex gap-3">
+                            <div className="px-6 pb-6 pt-4 flex gap-3">
                               <button
                                 onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'support'); }}
                                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
@@ -14244,7 +14244,7 @@ function App() {
         <div className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-green-400 transition-all">
           {/* Collapsed header — click to toggle */}
           <div
-            className="p-5 cursor-pointer select-none"
+            className="p-6 cursor-pointer select-none"
             onClick={() => setExpandedAuBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
           >
             <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -14252,18 +14252,18 @@ function App() {
               <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusBadge(bill.status)}`}>{bill.status}</span>
               <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </div>
-            <h3 className="text-base font-bold text-gray-800 mb-1 leading-snug">{bill.shortTitle}</h3>
-            <p className="text-xs text-gray-500">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
+            <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2 leading-snug">{bill.shortTitle}</h3>
+            <p className="text-sm sm:text-[13px] text-gray-500">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
           </div>
 
           {/* Expanded details */}
           {isExpanded && (
-            <div className="px-5 border-t border-gray-100">
+            <div className="px-6 border-t border-gray-100">
               <div className="flex flex-wrap items-center gap-2 py-3">
                 <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
                 <span className="text-xs text-gray-400 flex items-center gap-1"><Globe className="w-3 h-3" />{bill.chamber}</span>
               </div>
-              <p className="text-sm text-gray-600 mb-4 leading-relaxed">{bill.summary}</p>
+              <p className="text-[17px] sm:text-[15px] text-gray-600 mb-4 leading-relaxed">{bill.summary}</p>
               <div className="mb-4">
                 <div className="flex justify-between text-xs text-gray-500 mb-1">
                   <span className="text-green-600 font-semibold">Support {supportPct}%</span>
@@ -14280,18 +14280,18 @@ function App() {
               {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <p className="text-xs font-bold text-green-700 mb-2">✅ Arguments For</p>
+                    <p className="text-sm font-bold text-green-700 mb-2">✅ Arguments For</p>
                     <ul className="space-y-1">
                       {bill.pros?.slice(0, 2).map((p, i) => (
-                        <li key={i} className="text-xs text-green-800">• {p}</li>
+                        <li key={i} className="text-[15px] sm:text-sm text-green-800">• {p}</li>
                       ))}
                     </ul>
                   </div>
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p className="text-xs font-bold text-red-700 mb-2">❌ Arguments Against</p>
+                    <p className="text-sm font-bold text-red-700 mb-2">❌ Arguments Against</p>
                     <ul className="space-y-1">
                       {bill.cons?.slice(0, 2).map((c, i) => (
-                        <li key={i} className="text-xs text-red-800">• {c}</li>
+                        <li key={i} className="text-[15px] sm:text-sm text-red-800">• {c}</li>
                       ))}
                     </ul>
                   </div>
@@ -14301,7 +14301,7 @@ function App() {
           )}
 
           {/* Vote buttons — always visible */}
-          <div className="px-5 pb-5 pt-3 flex gap-3">
+          <div className="px-6 pb-6 pt-4 flex gap-3">
             <button
               onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'support'); }}
               className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
@@ -14443,7 +14443,7 @@ function App() {
                       <div key={bill.id} className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-green-400 transition-all">
                         {/* Collapsed header */}
                         <div
-                          className="p-5 cursor-pointer select-none"
+                          className="p-6 cursor-pointer select-none"
                           onClick={() => setExpandedAuBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
                         >
                           <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -14451,17 +14451,17 @@ function App() {
                             <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusBadge(bill.status)}`}>{bill.status}</span>
                             <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                           </div>
-                          <h3 className="text-base font-bold text-gray-800 mb-1">{bill.shortTitle}</h3>
-                          <p className="text-xs text-gray-500">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
+                          <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
+                          <p className="text-sm sm:text-[13px] text-gray-500">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
                         </div>
 
                         {/* Expanded details */}
                         {isExpanded && (
-                          <div className="px-5 border-t border-gray-100">
+                          <div className="px-6 border-t border-gray-100">
                             <div className="flex flex-wrap items-center gap-2 py-3">
                               <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
                             </div>
-                            <p className="text-sm text-gray-600 mb-4">{bill.summary}</p>
+                            <p className="text-[17px] sm:text-[15px] text-gray-600 mb-4">{bill.summary}</p>
                             <div className="mb-4">
                               <div className="flex justify-between text-xs text-gray-500 mb-1">
                                 <span className="text-green-600 font-semibold">Support {pct}%</span>
@@ -14478,18 +14478,18 @@ function App() {
                             {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                                 <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                                  <p className="text-xs font-bold text-green-700 mb-2">✅ Arguments For</p>
+                                  <p className="text-sm font-bold text-green-700 mb-2">✅ Arguments For</p>
                                   <ul className="space-y-1">
                                     {bill.pros?.slice(0, 2).map((p, i) => (
-                                      <li key={i} className="text-xs text-green-800">• {p}</li>
+                                      <li key={i} className="text-[15px] sm:text-sm text-green-800">• {p}</li>
                                     ))}
                                   </ul>
                                 </div>
                                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                                  <p className="text-xs font-bold text-red-700 mb-2">❌ Arguments Against</p>
+                                  <p className="text-sm font-bold text-red-700 mb-2">❌ Arguments Against</p>
                                   <ul className="space-y-1">
                                     {bill.cons?.slice(0, 2).map((c, i) => (
-                                      <li key={i} className="text-xs text-red-800">• {c}</li>
+                                      <li key={i} className="text-[15px] sm:text-sm text-red-800">• {c}</li>
                                     ))}
                                   </ul>
                                 </div>
@@ -14499,7 +14499,7 @@ function App() {
                         )}
 
                         {/* Vote buttons — always visible */}
-                        <div className="px-5 pb-5 pt-3 flex gap-3">
+                        <div className="px-6 pb-6 pt-4 flex gap-3">
                           <button
                             onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'support'); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
@@ -14541,7 +14541,7 @@ function App() {
                       <div key={bill.id} className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-purple-400 transition-all">
                         {/* Collapsed header */}
                         <div
-                          className="p-5 cursor-pointer select-none"
+                          className="p-6 cursor-pointer select-none"
                           onClick={() => setExpandedAuBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
                         >
                           <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -14551,39 +14551,39 @@ function App() {
                             </span>
                             <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                           </div>
-                          <h3 className="text-base font-bold text-gray-800 mb-1">{bill.shortTitle}</h3>
-                          <p className="text-xs text-gray-500">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
+                          <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
+                          <p className="text-sm sm:text-[13px] text-gray-500">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
                         </div>
 
                         {/* Expanded details */}
                         {isExpanded && (
-                          <div className="px-5 border-t border-gray-100">
+                          <div className="px-6 border-t border-gray-100">
                             <div className="flex flex-wrap items-center gap-2 py-3">
                               <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
                               <span className="text-xs text-gray-400 flex items-center gap-1"><Globe className="w-3 h-3" />{bill.chamber}</span>
                             </div>
-                            <p className="text-sm text-gray-600 mb-4">{bill.summary}</p>
+                            <p className="text-[17px] sm:text-[15px] text-gray-600 mb-4">{bill.summary}</p>
                             {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                                 <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                                  <p className="text-xs font-bold text-green-700 mb-2">✅ Key Benefits</p>
+                                  <p className="text-sm font-bold text-green-700 mb-2">✅ Key Benefits</p>
                                   <ul className="space-y-1">
                                     {bill.pros?.map((p, i) => (
-                                      <li key={i} className="text-xs text-green-800">• {p}</li>
+                                      <li key={i} className="text-[15px] sm:text-sm text-green-800">• {p}</li>
                                     ))}
                                   </ul>
                                 </div>
                                 <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                                  <p className="text-xs font-bold text-orange-700 mb-2">⚠️ Concerns Raised</p>
+                                  <p className="text-sm font-bold text-orange-700 mb-2">⚠️ Concerns Raised</p>
                                   <ul className="space-y-1">
                                     {bill.cons?.map((c, i) => (
-                                      <li key={i} className="text-xs text-orange-800">• {c}</li>
+                                      <li key={i} className="text-[15px] sm:text-sm text-orange-800">• {c}</li>
                                     ))}
                                   </ul>
                                 </div>
                               </div>
                             )}
-                            <div className="flex gap-3 items-center pb-5">
+                            <div className="flex gap-3 items-center pb-4">
                               <a
                                 href="https://www.legislation.gov.au/"
                                 target="_blank"
@@ -14603,7 +14603,7 @@ function App() {
 
                         {/* Legislation link — always visible when collapsed */}
                         {!isExpanded && (
-                          <div className="px-5 pb-4">
+                          <div className="px-6 pb-5">
                             <a
                               href="https://www.legislation.gov.au/"
                               target="_blank"
