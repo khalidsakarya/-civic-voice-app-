@@ -801,6 +801,10 @@ function App() {
   const [auSearch, setAuSearch] = useState('');
   const [auMemberVotes, setAuMemberVotes] = useState({});
   const [auDecisionVotes, setAuDecisionVotes] = useState({});
+  const [expandedAuBills, setExpandedAuBills] = useState({});
+  const [expandedCaBills, setExpandedCaBills] = useState({});
+  const [expandedUsBills, setExpandedUsBills] = useState({});
+  const [caBillVotes, setCaBillVotes] = useState({});
   const [selectedAuState, setSelectedAuState] = useState(null);
   const [copiedShareId, setCopiedShareId] = useState(null);
   const [senateSearch, setSenateSearch] = useState('');
@@ -4002,6 +4006,21 @@ function App() {
     } catch (err) {
       console.error('Error voting:', err);
     }
+  };
+
+  const voteUsBill = (billId, vote) => {
+    setUsBills(prev => prev.map(b => {
+      if (b.id !== billId) return b;
+      const current = b.userVote;
+      let { supportVotes, opposeVotes } = b;
+      if (current === 'support') supportVotes -= 1;
+      if (current === 'oppose') opposeVotes -= 1;
+      if (vote !== current) {
+        if (vote === 'support') supportVotes += 1;
+        if (vote === 'oppose') opposeVotes += 1;
+      }
+      return { ...b, supportVotes, opposeVotes, userVote: vote === current ? null : vote };
+    }));
   };
 
   const voteMP = async (mpIndex, vote) => {
@@ -13513,40 +13532,65 @@ function App() {
                     <p className="text-gray-600">Run the bills scraper to load bill data!</p>
                   </div>
                 ) : (
-                  bills.slice(0, 5).map(bill => (
-                    <div
-                      key={bill.id}
-                      className="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-green-500 cursor-pointer"
-                      onClick={() => {
-                        setSelectedBill(bill);
-                        setView('bill-detail');
-                      }}
-                    >
-                      <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.billNumber}: ${bill.shortTitle}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
-                      <div className="p-6">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
-                            {bill.billNumber}
-                          </span>
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(bill.status)}`}>
-                            {bill.status}
-                          </span>
+                  bills.slice(0, 5).map(bill => {
+                    const isExpanded = expandedCaBills[bill.id] || false;
+                    const uv = caBillVotes[bill.id] || null;
+                    return (
+                      <div
+                        key={bill.id}
+                        className="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-green-500"
+                      >
+                        <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.billNumber}: ${bill.shortTitle}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+
+                        {/* Collapsed header — click to toggle */}
+                        <div
+                          className="p-6 pr-12 cursor-pointer select-none"
+                          onClick={() => setExpandedCaBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
+                        >
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
+                              {bill.billNumber}
+                            </span>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(bill.status)}`}>
+                              {bill.status}
+                            </span>
+                            <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                          </div>
+                          <h3 className="text-lg font-bold text-gray-800 mb-1">{bill.shortTitle}</h3>
+                          {bill.sponsor && <p className="text-xs text-gray-500">Sponsor: <strong>{bill.sponsor}</strong></p>}
                         </div>
-                        <h3 className="text-xl font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
-                        <p className="text-gray-600 text-sm mb-3">{bill.summary}</p>
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <ThumbsUp className="w-4 h-4 text-green-600" />
-                            <span className="text-sm font-semibold">{bill.supportVotes}</span>
+
+                        {/* Expanded details */}
+                        {isExpanded && (
+                          <div className="px-6 border-t border-gray-100">
+                            <p className="text-gray-600 text-sm py-4">{bill.summary}</p>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setSelectedBill(bill); setView('bill-detail'); }}
+                              className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 mb-4"
+                            >
+                              View Full Details <ChevronRight className="w-4 h-4" />
+                            </button>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <ThumbsDown className="w-4 h-4 text-red-600" />
-                            <span className="text-sm font-semibold">{bill.opposeVotes}</span>
-                          </div>
+                        )}
+
+                        {/* Vote buttons — always visible */}
+                        <div className="px-6 pb-5 pt-3 flex gap-3">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); requireRegion() && (setCaBillVotes(prev => ({ ...prev, [bill.id]: prev[bill.id] === 'support' ? null : 'support' })), voteBill(bill.id, 'support')); }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
+                          >
+                            <ThumbsUp className="w-4 h-4" /> Support {bill.supportVotes > 0 && <span className="text-xs opacity-75">({bill.supportVotes})</span>}
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); requireRegion() && (setCaBillVotes(prev => ({ ...prev, [bill.id]: prev[bill.id] === 'oppose' ? null : 'oppose' })), voteBill(bill.id, 'oppose')); }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
+                          >
+                            <ThumbsDown className="w-4 h-4" /> Oppose {bill.opposeVotes > 0 && <span className="text-xs opacity-75">({bill.opposeVotes})</span>}
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
                 <button
                   onClick={() => setView('bills')}
@@ -13933,42 +13977,72 @@ function App() {
                     <p className="text-gray-600">No bills are currently moving through Congress.</p>
                   </div>
                 ) : (
-                  ongoingBills.map(bill => (
-                    <div
-                      key={bill.id}
-                      className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-green-500 cursor-pointer"
-                      onClick={() => {
-                        setSelectedBill(bill);
-                        setView('us-bill-detail');
-                      }}
-                    >
-                      <div className="p-5">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
-                            {bill.number}
-                          </span>
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
-                            bill.status === 'Passed House' ? 'bg-blue-100 text-blue-800 border-blue-300' :
-                            bill.status === 'Passed Senate' ? 'bg-indigo-100 text-indigo-800 border-indigo-300' :
-                            'bg-yellow-100 text-yellow-800 border-yellow-300'
-                          }`}>
-                            {bill.status}
-                          </span>
-                          {bill.category && (
-                            <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
-                              {bill.category}
+                  ongoingBills.map(bill => {
+                    const isExpanded = expandedUsBills[bill.id] || false;
+                    const uv = bill.userVote || null;
+                    return (
+                      <div
+                        key={bill.id}
+                        className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-green-500"
+                      >
+                        {/* Collapsed header — click to toggle */}
+                        <div
+                          className="p-5 cursor-pointer select-none"
+                          onClick={() => setExpandedUsBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
+                        >
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-bold">
+                              {bill.number}
                             </span>
-                          )}
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
+                              bill.status === 'Passed House' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                              bill.status === 'Passed Senate' ? 'bg-indigo-100 text-indigo-800 border-indigo-300' :
+                              'bg-yellow-100 text-yellow-800 border-yellow-300'
+                            }`}>
+                              {bill.status}
+                            </span>
+                            {bill.category && (
+                              <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                {bill.category}
+                              </span>
+                            )}
+                            <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                          </div>
+                          <h3 className="text-base font-bold text-gray-800 mb-1">{bill.title}</h3>
+                          {bill.sponsor && <p className="text-xs text-gray-500">Sponsor: <strong>{bill.sponsor}</strong></p>}
                         </div>
-                        <h3 className="text-lg font-bold text-gray-800 mb-1">{bill.title}</h3>
-                        <p className="text-gray-600 text-sm mb-3">{bill.summary}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          {bill.sponsor && <span>Sponsor: <strong>{bill.sponsor}</strong></span>}
-                          <ChevronRight className="w-4 h-4 ml-auto text-green-600" />
+
+                        {/* Expanded details */}
+                        {isExpanded && (
+                          <div className="px-5 border-t border-gray-100">
+                            <p className="text-gray-600 text-sm py-4">{bill.summary || bill.description}</p>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setSelectedBill(bill); setView('us-bill-detail'); }}
+                              className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 mb-4"
+                            >
+                              View Full Details <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Vote buttons — always visible */}
+                        <div className="px-5 pb-5 pt-3 flex gap-3">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'support'); }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
+                          >
+                            <ThumbsUp className="w-4 h-4" /> Support {bill.supportVotes > 0 && <span className="text-xs opacity-75">({bill.supportVotes})</span>}
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'oppose'); }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
+                          >
+                            <ThumbsDown className="w-4 h-4" /> Oppose {bill.opposeVotes > 0 && <span className="text-xs opacity-75">({bill.opposeVotes})</span>}
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
                 <a
                   href="https://www.congress.gov/legislation"
@@ -14028,42 +14102,74 @@ function App() {
                       <p className="text-sm text-gray-600">Showing <strong className="text-purple-700">{recentLaws.length} law{recentLaws.length !== 1 ? 's' : ''}</strong> signed since <strong>{twelveMonthsAgo.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</strong></p>
                     </div>
                     <div className="space-y-5">
-                      {recentLaws.map(bill => (
-                        <div
-                          key={bill.id}
-                          className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-purple-500 cursor-pointer"
-                          onClick={() => {
-                            setSelectedBill(bill);
-                            setView('us-bill-detail');
-                          }}
-                        >
-                          <div className="p-5">
-                            <div className="flex items-center gap-3 mb-3">
-                              <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-bold">
-                                {bill.number}
-                              </span>
-                              <span className="bg-green-100 text-green-800 border border-green-300 px-3 py-1 rounded-full text-sm font-medium">
-                                ✓ Signed into Law
-                              </span>
-                              {bill.category && (
-                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{bill.category}</span>
-                              )}
-                            </div>
-                            <h3 className="text-lg font-bold text-gray-800 mb-1">{bill.title}</h3>
-                            <p className="text-gray-600 text-sm mb-3">{bill.summary}</p>
-                            <div className="flex items-center gap-4 text-sm text-gray-500">
-                              {bill.sponsor && <span>Sponsor: <strong>{bill.sponsor}</strong></span>}
-                              {(bill.dateSigned || bill.dateVoted) && (
-                                <span className="flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
-                                  {bill.dateSigned || bill.dateVoted}
+                      {recentLaws.map(bill => {
+                        const isExpanded = expandedUsBills[bill.id] || false;
+                        const uv = bill.userVote || null;
+                        return (
+                          <div
+                            key={bill.id}
+                            className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-purple-500"
+                          >
+                            {/* Collapsed header — click to toggle */}
+                            <div
+                              className="p-5 cursor-pointer select-none"
+                              onClick={() => setExpandedUsBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
+                            >
+                              <div className="flex items-center gap-3 mb-3">
+                                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-bold">
+                                  {bill.number}
                                 </span>
-                              )}
-                              <ChevronRight className="w-4 h-4 ml-auto text-purple-600" />
+                                <span className="bg-green-100 text-green-800 border border-green-300 px-3 py-1 rounded-full text-sm font-medium">
+                                  ✓ Signed into Law
+                                </span>
+                                {bill.category && (
+                                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{bill.category}</span>
+                                )}
+                                <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                              </div>
+                              <h3 className="text-base font-bold text-gray-800 mb-1">{bill.title}</h3>
+                              <div className="flex items-center gap-4 text-xs text-gray-500">
+                                {bill.sponsor && <span>Sponsor: <strong>{bill.sponsor}</strong></span>}
+                                {(bill.dateSigned || bill.dateVoted) && (
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    {bill.dateSigned || bill.dateVoted}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Expanded details */}
+                            {isExpanded && (
+                              <div className="px-5 border-t border-gray-100">
+                                <p className="text-gray-600 text-sm py-4">{bill.summary || bill.description}</p>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setSelectedBill(bill); setView('us-bill-detail'); }}
+                                  className="text-purple-600 hover:text-purple-800 font-medium text-sm flex items-center gap-1 mb-4"
+                                >
+                                  View Full Details <ChevronRight className="w-4 h-4" />
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Vote buttons — always visible */}
+                            <div className="px-5 pb-5 pt-3 flex gap-3">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'support'); }}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
+                              >
+                                <ThumbsUp className="w-4 h-4" /> Support {bill.supportVotes > 0 && <span className="text-xs opacity-75">({bill.supportVotes})</span>}
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'oppose'); }}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
+                              >
+                                <ThumbsDown className="w-4 h-4" /> Oppose {bill.opposeVotes > 0 && <span className="text-xs opacity-75">({bill.opposeVotes})</span>}
+                              </button>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     <a
                       href="https://www.congress.gov/public-laws"
@@ -14130,59 +14236,83 @@ function App() {
     };
 
     const BillCard = ({ bill }) => {
+      const isExpanded = expandedAuBills[bill.id] || false;
       const uv = auBillVotes[bill.id] || null;
       const total = bill.support + bill.oppose;
       const supportPct = total > 0 ? Math.round((bill.support / total) * 100) : 50;
       return (
-        <div className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-green-400 transition-all p-5">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">{bill.number}</span>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusBadge(bill.status)}`}>{bill.status}</span>
-            <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
-            <span className="ml-auto text-xs text-gray-400 flex items-center gap-1"><Globe className="w-3 h-3" />{bill.chamber}</span>
-          </div>
-          <h3 className="text-base font-bold text-gray-800 mb-1 leading-snug">{bill.shortTitle}</h3>
-          <p className="text-xs text-gray-500 mb-2">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
-          <p className="text-sm text-gray-600 mb-4 leading-relaxed">{bill.summary}</p>
-
-          {/* Support bar */}
-          <div className="mb-3">
-            <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span className="text-green-600 font-semibold">Support {supportPct}%</span>
-              <span className="text-red-500 font-semibold">Oppose {100 - supportPct}%</span>
+        <div className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-green-400 transition-all">
+          {/* Collapsed header — click to toggle */}
+          <div
+            className="p-5 cursor-pointer select-none"
+            onClick={() => setExpandedAuBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
+          >
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">{bill.number}</span>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusBadge(bill.status)}`}>{bill.status}</span>
+              <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </div>
-            <div className="h-2 bg-red-100 rounded-full overflow-hidden">
-              <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${supportPct}%` }} />
-            </div>
-            <div className="flex justify-between text-xs text-gray-400 mt-1">
-              <span>{bill.support.toLocaleString()} support</span>
-              <span>{bill.oppose.toLocaleString()} oppose</span>
-            </div>
+            <h3 className="text-base font-bold text-gray-800 mb-1 leading-snug">{bill.shortTitle}</h3>
+            <p className="text-xs text-gray-500">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
           </div>
 
-          {/* Vote buttons */}
-          <div className="flex gap-3">
+          {/* Expanded details */}
+          {isExpanded && (
+            <div className="px-5 border-t border-gray-100">
+              <div className="flex flex-wrap items-center gap-2 py-3">
+                <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
+                <span className="text-xs text-gray-400 flex items-center gap-1"><Globe className="w-3 h-3" />{bill.chamber}</span>
+              </div>
+              <p className="text-sm text-gray-600 mb-4 leading-relaxed">{bill.summary}</p>
+              <div className="mb-4">
+                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                  <span className="text-green-600 font-semibold">Support {supportPct}%</span>
+                  <span className="text-red-500 font-semibold">Oppose {100 - supportPct}%</span>
+                </div>
+                <div className="h-2 bg-red-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${supportPct}%` }} />
+                </div>
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                  <span>{bill.support.toLocaleString()} support</span>
+                  <span>{bill.oppose.toLocaleString()} oppose</span>
+                </div>
+              </div>
+              {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-xs font-bold text-green-700 mb-2">✅ Arguments For</p>
+                    <ul className="space-y-1">
+                      {bill.pros?.slice(0, 2).map((p, i) => (
+                        <li key={i} className="text-xs text-green-800">• {p}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p className="text-xs font-bold text-red-700 mb-2">❌ Arguments Against</p>
+                    <ul className="space-y-1">
+                      {bill.cons?.slice(0, 2).map((c, i) => (
+                        <li key={i} className="text-xs text-red-800">• {c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Vote buttons — always visible */}
+          <div className="px-5 pb-5 pt-3 flex gap-3">
             <button
-              onClick={() => requireRegion() && voteAuBill(bill.id, 'support')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${
-                uv === 'support'
-                  ? 'bg-green-600 text-white border-green-600'
-                  : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'
-              }`}
+              onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'support'); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
             >
-              <ThumbsUp className="w-4 h-4" />
-              Support
+              <ThumbsUp className="w-4 h-4" /> Support
             </button>
             <button
-              onClick={() => requireRegion() && voteAuBill(bill.id, 'oppose')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${
-                uv === 'oppose'
-                  ? 'bg-red-600 text-white border-red-600'
-                  : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'
-              }`}
+              onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'oppose'); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
             >
-              <ThumbsDown className="w-4 h-4" />
-              Oppose
+              <ThumbsDown className="w-4 h-4" /> Oppose
             </button>
           </div>
         </div>
@@ -14304,72 +14434,88 @@ function App() {
                 </div>
               ) : (
                 <div className="space-y-5">
-                  {recentVotes.map(bill => (
-                    <div key={bill.id} className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-green-400 transition-all p-5">
-                      <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">{bill.number}</span>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusBadge(bill.status)}`}>{bill.status}</span>
-                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-800 mb-1">{bill.shortTitle}</h3>
-                      <p className="text-xs text-gray-500 mb-3">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
-                      <p className="text-sm text-gray-600 mb-4">{bill.summary}</p>
-
-                      {/* Pros / Cons */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                          <p className="text-xs font-bold text-green-700 mb-2">✅ Arguments For</p>
-                          <ul className="space-y-1">
-                            {bill.pros?.slice(0, 2).map((p, i) => (
-                              <li key={i} className="text-xs text-green-800">• {p}</li>
-                            ))}
-                          </ul>
+                  {recentVotes.map(bill => {
+                    const isExpanded = expandedAuBills[bill.id] || false;
+                    const uv = auBillVotes[bill.id] || null;
+                    const total = bill.support + bill.oppose;
+                    const pct = total > 0 ? Math.round((bill.support / total) * 100) : 50;
+                    return (
+                      <div key={bill.id} className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-green-400 transition-all">
+                        {/* Collapsed header */}
+                        <div
+                          className="p-5 cursor-pointer select-none"
+                          onClick={() => setExpandedAuBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
+                        >
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">{bill.number}</span>
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusBadge(bill.status)}`}>{bill.status}</span>
+                            <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                          </div>
+                          <h3 className="text-base font-bold text-gray-800 mb-1">{bill.shortTitle}</h3>
+                          <p className="text-xs text-gray-500">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
                         </div>
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                          <p className="text-xs font-bold text-red-700 mb-2">❌ Arguments Against</p>
-                          <ul className="space-y-1">
-                            {bill.cons?.slice(0, 2).map((c, i) => (
-                              <li key={i} className="text-xs text-red-800">• {c}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
 
-                      {/* Vote bar + buttons */}
-                      {(() => {
-                        const uv = auBillVotes[bill.id] || null;
-                        const total = bill.support + bill.oppose;
-                        const pct = total > 0 ? Math.round((bill.support / total) * 100) : 50;
-                        return (
-                          <>
-                            <div className="mb-3">
+                        {/* Expanded details */}
+                        {isExpanded && (
+                          <div className="px-5 border-t border-gray-100">
+                            <div className="flex flex-wrap items-center gap-2 py-3">
+                              <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-4">{bill.summary}</p>
+                            <div className="mb-4">
+                              <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                <span className="text-green-600 font-semibold">Support {pct}%</span>
+                                <span className="text-red-500 font-semibold">Oppose {100 - pct}%</span>
+                              </div>
                               <div className="h-2 bg-red-100 rounded-full overflow-hidden">
                                 <div className="h-full bg-green-500 rounded-full" style={{ width: `${pct}%` }} />
                               </div>
                               <div className="flex justify-between text-xs text-gray-400 mt-1">
-                                <span className="text-green-600 font-semibold">{bill.support.toLocaleString()} support ({pct}%)</span>
-                                <span className="text-red-500 font-semibold">{bill.oppose.toLocaleString()} oppose</span>
+                                <span className="text-green-600">{bill.support.toLocaleString()} support</span>
+                                <span className="text-red-500">{bill.oppose.toLocaleString()} oppose</span>
                               </div>
                             </div>
-                            <div className="flex gap-3">
-                              <button
-                                onClick={() => requireRegion() && voteAuBill(bill.id, 'support')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
-                              >
-                                <ThumbsUp className="w-4 h-4" /> Support
-                              </button>
-                              <button
-                                onClick={() => requireRegion() && voteAuBill(bill.id, 'oppose')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
-                              >
-                                <ThumbsDown className="w-4 h-4" /> Oppose
-                              </button>
-                            </div>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  ))}
+                            {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                  <p className="text-xs font-bold text-green-700 mb-2">✅ Arguments For</p>
+                                  <ul className="space-y-1">
+                                    {bill.pros?.slice(0, 2).map((p, i) => (
+                                      <li key={i} className="text-xs text-green-800">• {p}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                  <p className="text-xs font-bold text-red-700 mb-2">❌ Arguments Against</p>
+                                  <ul className="space-y-1">
+                                    {bill.cons?.slice(0, 2).map((c, i) => (
+                                      <li key={i} className="text-xs text-red-800">• {c}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Vote buttons — always visible */}
+                        <div className="px-5 pb-5 pt-3 flex gap-3">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'support'); }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
+                          >
+                            <ThumbsUp className="w-4 h-4" /> Support
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'oppose'); }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
+                          >
+                            <ThumbsDown className="w-4 h-4" /> Oppose
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -14389,55 +14535,90 @@ function App() {
                 </div>
               ) : (
                 <div className="space-y-5">
-                  {acts.map(bill => (
-                    <div key={bill.id} className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-purple-400 transition-all p-5">
-                      <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">{bill.number}</span>
-                        <span className="bg-purple-100 text-purple-800 border border-purple-300 px-3 py-1 rounded-full text-xs font-medium">
-                          ✓ Royal Assent {bill.dateRoyalAssent && `· ${bill.dateRoyalAssent}`}
-                        </span>
-                        <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
-                        <span className="ml-auto text-xs text-gray-400 flex items-center gap-1"><Globe className="w-3 h-3" />{bill.chamber}</span>
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-1">{bill.shortTitle}</h3>
-                      <p className="text-xs text-gray-500 mb-3">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
-                      <p className="text-sm text-gray-600 mb-4">{bill.summary}</p>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                          <p className="text-xs font-bold text-green-700 mb-2">✅ Key Benefits</p>
-                          <ul className="space-y-1">
-                            {bill.pros?.map((p, i) => (
-                              <li key={i} className="text-xs text-green-800">• {p}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                          <p className="text-xs font-bold text-orange-700 mb-2">⚠️ Concerns Raised</p>
-                          <ul className="space-y-1">
-                            {bill.cons?.map((c, i) => (
-                              <li key={i} className="text-xs text-orange-800">• {c}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3 items-center">
-                        <a
-                          href="https://www.legislation.gov.au/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 transition-colors"
+                  {acts.map(bill => {
+                    const isExpanded = expandedAuBills[bill.id] || false;
+                    return (
+                      <div key={bill.id} className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-purple-400 transition-all">
+                        {/* Collapsed header */}
+                        <div
+                          className="p-5 cursor-pointer select-none"
+                          onClick={() => setExpandedAuBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
                         >
-                          <Globe className="w-4 h-4" />
-                          View on legislation.gov.au
-                        </a>
-                        <div className="text-xs text-gray-400">
-                          {bill.support.toLocaleString()} public support · {bill.oppose.toLocaleString()} oppose
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">{bill.number}</span>
+                            <span className="bg-purple-100 text-purple-800 border border-purple-300 px-3 py-1 rounded-full text-xs font-medium">
+                              ✓ Royal Assent {bill.dateRoyalAssent && `· ${bill.dateRoyalAssent}`}
+                            </span>
+                            <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                          </div>
+                          <h3 className="text-base font-bold text-gray-800 mb-1">{bill.shortTitle}</h3>
+                          <p className="text-xs text-gray-500">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
                         </div>
+
+                        {/* Expanded details */}
+                        {isExpanded && (
+                          <div className="px-5 border-t border-gray-100">
+                            <div className="flex flex-wrap items-center gap-2 py-3">
+                              <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
+                              <span className="text-xs text-gray-400 flex items-center gap-1"><Globe className="w-3 h-3" />{bill.chamber}</span>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-4">{bill.summary}</p>
+                            {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                  <p className="text-xs font-bold text-green-700 mb-2">✅ Key Benefits</p>
+                                  <ul className="space-y-1">
+                                    {bill.pros?.map((p, i) => (
+                                      <li key={i} className="text-xs text-green-800">• {p}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                                  <p className="text-xs font-bold text-orange-700 mb-2">⚠️ Concerns Raised</p>
+                                  <ul className="space-y-1">
+                                    {bill.cons?.map((c, i) => (
+                                      <li key={i} className="text-xs text-orange-800">• {c}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            )}
+                            <div className="flex gap-3 items-center pb-5">
+                              <a
+                                href="https://www.legislation.gov.au/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Globe className="w-4 h-4" />
+                                View on legislation.gov.au
+                              </a>
+                              <div className="text-xs text-gray-400">
+                                {bill.support.toLocaleString()} support · {bill.oppose.toLocaleString()} oppose
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Legislation link — always visible when collapsed */}
+                        {!isExpanded && (
+                          <div className="px-5 pb-4">
+                            <a
+                              href="https://www.legislation.gov.au/"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700 transition-colors"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Globe className="w-4 h-4" />
+                              View on legislation.gov.au
+                            </a>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
