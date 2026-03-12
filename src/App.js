@@ -885,6 +885,297 @@ function App() {
   const [selectedMinistry, setSelectedMinistry] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [grantsExpanded, setGrantsExpanded] = useState(false);
+  const [auDeptGrantsExpanded, setAuDeptGrantsExpanded] = useState(false);
+  const [selectedAuDepartment, setSelectedAuDepartment] = useState(null);
+  const [auDepartments, setAuDepartments] = useState([
+    {
+      id: 1, name: 'Treasury', minister: 'Jim Chalmers', budget: '$61.5 Billion', budgetRaw: 61500000000,
+      grants: '$14.2 Billion', employees: 950,
+      description: 'Responsible for economic policy, budget strategy, and financial system oversight for Australia',
+      responsibilities: ['Federal budget', 'Economic forecasting', 'Tax policy', 'Financial sector regulation', 'Commonwealth revenue'],
+      grantsDetail: [
+        { recipient: 'Reserve Bank of Australia', amount: '$4.8 Billion', purpose: 'Central bank recapitalisation and monetary policy operations', date: 'January 2025', type: 'grant' },
+        { recipient: 'Infrastructure Australia', amount: '$1.2 Billion', purpose: 'National infrastructure priority list funding and assessment', date: 'December 2024', type: 'grant' },
+        { recipient: 'Australian Office of Financial Management', amount: '$980 Million', purpose: 'Commonwealth debt management and bond issuance', date: 'November 2024', type: 'contract' },
+        { recipient: 'Clean Energy Finance Corporation', amount: '$850 Million', purpose: 'Green investment fund for renewable energy projects', date: 'October 2024', type: 'grant' },
+        { recipient: 'National Housing Finance and Investment Corporation', amount: '$720 Million', purpose: 'Affordable housing bond aggregator program', date: 'September 2024', type: 'grant' },
+        { recipient: 'Australian Taxation Office', amount: '$620 Million', purpose: 'Tax compliance systems modernisation and digital transformation', date: 'August 2024', type: 'contract' },
+        { recipient: 'Business Council of Australia Programs', amount: '$280 Million', purpose: 'Small business support and productivity initiatives', date: 'July 2024', type: 'grant' },
+        { recipient: 'KPMG Australia', amount: '$145 Million', purpose: 'Budget costing and economic modelling services', date: 'June 2024', type: 'contract' },
+        { recipient: 'Deloitte Access Economics', amount: '$98 Million', purpose: 'Macroeconomic forecasting and policy analysis', date: 'May 2024', type: 'contract' },
+        { recipient: 'Australian Bureau of Statistics', amount: '$82 Million', purpose: 'National accounts data and economic statistics collection', date: 'April 2024', type: 'grant' },
+      ],
+      approveVotes: 312, disapproveVotes: 298, userVote: null
+    },
+    {
+      id: 2, name: 'Defence', minister: 'Richard Marles', budget: '$52.0 Billion', budgetRaw: 52000000000,
+      grants: '$8.4 Billion', employees: 91000,
+      description: 'Responsible for the defence of Australia and its national interests through the Australian Defence Force',
+      responsibilities: ['Australian Defence Force', 'Military operations', 'Defence capability', 'AUKUS implementation', 'Cyber security'],
+      grantsDetail: [
+        { recipient: 'BAE Systems Australia', amount: '$1.4 Billion', purpose: 'Hunter-class frigate construction and naval shipbuilding', date: 'January 2025', type: 'contract' },
+        { recipient: 'ASC Pty Ltd', amount: '$980 Million', purpose: 'Submarine sustainment and Collins-class maintenance', date: 'December 2024', type: 'contract' },
+        { recipient: 'Boeing Defence Australia', amount: '$720 Million', purpose: 'EA-18G Growler maintenance and avionic upgrades', date: 'November 2024', type: 'contract' },
+        { recipient: 'Rheinmetall Defence Australia', amount: '$580 Million', purpose: 'LAND 400 Phase 3 infantry fighting vehicle program', date: 'October 2024', type: 'contract' },
+        { recipient: 'NIOA (National Interoperability Organisation)', amount: '$420 Million', purpose: 'Small arms and ammunition supply to ADF', date: 'September 2024', type: 'contract' },
+        { recipient: 'Lockheed Martin Australia', amount: '$380 Million', purpose: 'F-35A Lightning II sustainment and parts supply', date: 'August 2024', type: 'contract' },
+        { recipient: 'Thales Australia', amount: '$290 Million', purpose: 'Hawkei protected mobility vehicle fleet and communications', date: 'July 2024', type: 'contract' },
+        { recipient: 'Defence Science and Technology Group', amount: '$245 Million', purpose: 'Advanced warfare research and AI development', date: 'June 2024', type: 'grant' },
+        { recipient: 'Australian Strategic Policy Institute', amount: '$32 Million', purpose: 'Strategic defence policy research and analysis', date: 'May 2024', type: 'grant' },
+        { recipient: 'RSL (Returned Services League) Australia', amount: '$28 Million', purpose: 'Veterans welfare, advocacy and support programs', date: 'April 2024', type: 'grant' },
+        { recipient: 'Australian War Memorial', amount: '$18 Million', purpose: 'Memorial galleries renewal and commemoration programs', date: 'March 2024', type: 'grant' },
+      ],
+      approveVotes: 489, disapproveVotes: 201, userVote: null
+    },
+    {
+      id: 3, name: 'Health', minister: 'Mark Butler', budget: '$116.0 Billion', budgetRaw: 116000000000,
+      grants: '$98.5 Billion', employees: 5200,
+      description: 'Responsible for Medicare, the Pharmaceutical Benefits Scheme, hospitals, aged care, and national health policy',
+      responsibilities: ['Medicare', 'Pharmaceutical Benefits Scheme', 'Aged care', 'Mental health', 'Preventive health'],
+      grantsDetail: [
+        { recipient: 'State and Territory Hospitals (National Health Reform)', amount: '$55.8 Billion', purpose: 'Public hospital funding to states and territories under NHFA', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Pharmaceutical Benefits Scheme — Direct Payments', amount: '$18.4 Billion', purpose: 'Subsidised medicines for 300+ million PBS prescriptions annually', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Medicare Benefits Schedule — GP & Specialist Claims', amount: '$14.2 Billion', purpose: 'Rebates for GP visits, specialist consultations and diagnostics', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Australian Red Cross Lifeblood', amount: '$520 Million', purpose: 'Blood and plasma collection, processing and distribution', date: 'January 2025', type: 'contract' },
+        { recipient: 'Beyond Blue', amount: '$145 Million', purpose: 'National mental health awareness and support services', date: 'December 2024', type: 'grant' },
+        { recipient: 'Australian Institute of Health and Welfare', amount: '$98 Million', purpose: 'National health statistics collection and reporting', date: 'November 2024', type: 'grant' },
+        { recipient: 'Lifeline Australia', amount: '$82 Million', purpose: '24/7 crisis support telephone and online services', date: 'October 2024', type: 'grant' },
+        { recipient: 'Cancer Council Australia', amount: '$64 Million', purpose: 'National cancer screening programs and research funding', date: 'September 2024', type: 'grant' },
+        { recipient: 'Royal Flying Doctor Service', amount: '$58 Million', purpose: 'Primary healthcare to remote and rural Australians', date: 'August 2024', type: 'grant' },
+        { recipient: "Jean Hailes for Women's Health", amount: '$28 Million', purpose: "Women's health education and endometriosis awareness", date: 'July 2024', type: 'grant' },
+      ],
+      approveVotes: 521, disapproveVotes: 312, userVote: null
+    },
+    {
+      id: 4, name: 'Education', minister: 'Jason Clare', budget: '$36.8 Billion', budgetRaw: 36800000000,
+      grants: '$28.4 Billion', employees: 4200,
+      description: 'Responsible for schools funding, higher education, vocational training, and early childhood education across Australia',
+      responsibilities: ['Schools funding', 'Universities', 'TAFE and vocational education', 'Early childhood', 'Student loans (HECS-HELP)'],
+      grantsDetail: [
+        { recipient: 'Non-Government Schools (Catholic & Independent)', amount: '$12.8 Billion', purpose: 'Commonwealth contribution to non-government school funding under the SRS', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'State & Territory Government Schools', amount: '$9.4 Billion', purpose: 'Schooling Resource Standard (SRS) funding to public schools', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Universities Australia Members (39 universities)', amount: '$4.6 Billion', purpose: 'Commonwealth Grants Scheme for domestic undergraduate teaching', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'TAFE NSW', amount: '$380 Million', purpose: 'Fee-free TAFE places and vocational training expansion', date: 'January 2025', type: 'grant' },
+        { recipient: 'TAFE Queensland', amount: '$290 Million', purpose: 'Trade apprenticeships and skills shortage programs', date: 'December 2024', type: 'grant' },
+        { recipient: 'Australian Research Council', amount: '$920 Million', purpose: 'Discovery and Linkage grants for university research', date: 'November 2024', type: 'grant' },
+        { recipient: 'Teach For Australia', amount: '$52 Million', purpose: 'Recruiting high-achieving graduates to disadvantaged schools', date: 'October 2024', type: 'grant' },
+        { recipient: 'Smith Family Learning for Life', amount: '$42 Million', purpose: 'Educational support for children experiencing disadvantage', date: 'September 2024', type: 'grant' },
+        { recipient: 'Australian Curriculum Assessment and Reporting Authority (ACARA)', amount: '$38 Million', purpose: 'National curriculum development and NAPLAN assessment', date: 'August 2024', type: 'grant' },
+        { recipient: 'Indigenous Education Foundation', amount: '$28 Million', purpose: 'Scholarships and boarding support for Aboriginal students', date: 'July 2024', type: 'grant' },
+      ],
+      approveVotes: 398, disapproveVotes: 267, userVote: null
+    },
+    {
+      id: 5, name: 'Home Affairs', minister: 'Tony Burke', budget: '$5.9 Billion', budgetRaw: 5900000000,
+      grants: '$1.4 Billion', employees: 14500,
+      description: 'Responsible for border protection, immigration, citizenship, multicultural affairs, and national emergency management',
+      responsibilities: ['Border Force', 'Immigration and visas', 'Citizenship', 'Emergency Management Australia', 'Multicultural affairs'],
+      grantsDetail: [
+        { recipient: 'Australian Border Force Technology Upgrade', amount: '$340 Million', purpose: 'Biometric screening and passenger processing systems', date: 'January 2025', type: 'contract' },
+        { recipient: 'SERCO Australia', amount: '$285 Million', purpose: 'Immigration detention facility management services', date: 'December 2024', type: 'contract' },
+        { recipient: 'Settlement Services International (SSI)', amount: '$145 Million', purpose: 'Refugee and humanitarian entrant settlement programs', date: 'November 2024', type: 'contract' },
+        { recipient: 'Multicultural NSW and equivalents', amount: '$98 Million', purpose: 'Community harmony and multicultural engagement programs', date: 'October 2024', type: 'grant' },
+        { recipient: 'Red Cross Australia — Humanitarian Programs', amount: '$82 Million', purpose: 'Asylum seeker support and community detention services', date: 'September 2024', type: 'contract' },
+        { recipient: 'Salvation Army — Immigration Services', amount: '$58 Million', purpose: 'Emergency relief and welfare for recently arrived migrants', date: 'August 2024', type: 'grant' },
+        { recipient: 'Paladin Solutions', amount: '$48 Million', purpose: 'Regional processing centre security and management', date: 'July 2024', type: 'contract' },
+        { recipient: 'National Emergency Management Agency', amount: '$38 Million', purpose: 'Disaster preparedness, resilience and recovery programs', date: 'June 2024', type: 'grant' },
+        { recipient: 'Australian Institute of Criminology', amount: '$24 Million', purpose: 'Counter-terrorism research and serious organised crime analysis', date: 'May 2024', type: 'grant' },
+        { recipient: 'Life Without Barriers', amount: '$18 Million', purpose: 'Support for unaccompanied minors in immigration system', date: 'April 2024', type: 'grant' },
+      ],
+      approveVotes: 287, disapproveVotes: 334, userVote: null
+    },
+    {
+      id: 6, name: 'Infrastructure', minister: 'Catherine King', budget: '$13.4 Billion', budgetRaw: 13400000000,
+      grants: '$9.2 Billion', employees: 4600,
+      description: 'Responsible for transport infrastructure investment, regional development, and local government relations across Australia',
+      responsibilities: ['National land transport', 'Aviation policy', 'Ports and shipping', 'Regional development', 'Local government'],
+      grantsDetail: [
+        { recipient: 'Transport for NSW — WestConnex Extension', amount: '$1.8 Billion', purpose: 'M4-M5 Link tunnel and motorway network expansion', date: 'January 2025', type: 'grant' },
+        { recipient: 'Cross River Rail Delivery Authority (QLD)', amount: '$1.2 Billion', purpose: 'Brisbane underground rail loop and new station construction', date: 'December 2024', type: 'grant' },
+        { recipient: 'Melbourne Airport Rail Link', amount: '$980 Million', purpose: 'Airport rail connection and Sunshine station upgrade', date: 'November 2024', type: 'grant' },
+        { recipient: 'Infrastructure Australia — Road Safety Program', amount: '$720 Million', purpose: 'Black spot upgrades and highway safety improvements nationwide', date: 'October 2024', type: 'grant' },
+        { recipient: 'Inland Rail — ARTC', amount: '$650 Million', purpose: 'Inland freight rail corridor Melbourne to Brisbane construction', date: 'September 2024', type: 'grant' },
+        { recipient: 'Regional Roads Victoria', amount: '$420 Million', purpose: 'Rural road upgrades and bridge replacement program', date: 'August 2024', type: 'grant' },
+        { recipient: 'Snowy Hydro Limited', amount: '$380 Million', purpose: 'Snowy 2.0 pumped-hydro energy storage project', date: 'July 2024', type: 'contract' },
+        { recipient: 'Western Australia Main Roads', amount: '$290 Million', purpose: 'METRONET rail extensions and Perth city deal', date: 'June 2024', type: 'grant' },
+        { recipient: 'Northern Territory Major Projects', amount: '$185 Million', purpose: 'Remote community roads and essential infrastructure', date: 'May 2024', type: 'grant' },
+        { recipient: 'Australian Rail Track Corporation', amount: '$145 Million', purpose: 'Intercapital Corridor track upgrades and signalling', date: 'April 2024', type: 'contract' },
+      ],
+      approveVotes: 356, disapproveVotes: 198, userVote: null
+    },
+    {
+      id: 7, name: 'Environment', minister: 'Tanya Plibersek', budget: '$2.1 Billion', budgetRaw: 2100000000,
+      grants: '$780 Million', employees: 4100,
+      description: 'Responsible for environmental protection, climate action, national parks, biodiversity conservation, and water resources',
+      responsibilities: ['Climate change policy', 'Biodiversity and threatened species', 'Parks Australia', 'Water management', 'Environmental assessment'],
+      grantsDetail: [
+        { recipient: 'Clean Energy Regulator — Safeguard Mechanism Credits', amount: '$180 Million', purpose: 'Industrial emissions reduction incentives and carbon credit scheme', date: 'January 2025', type: 'grant' },
+        { recipient: 'Australian Wildlife Conservancy', amount: '$95 Million', purpose: 'Wildlife sanctuary expansion and feral predator removal', date: 'December 2024', type: 'grant' },
+        { recipient: 'Great Barrier Reef Marine Park Authority', amount: '$82 Million', purpose: 'Reef restoration, water quality and coral monitoring', date: 'November 2024', type: 'grant' },
+        { recipient: 'CSIRO — Climate Science Division', amount: '$68 Million', purpose: 'Climate modelling and extreme weather prediction research', date: 'October 2024', type: 'grant' },
+        { recipient: 'Bush Heritage Australia', amount: '$52 Million', purpose: 'Private land conservation and Indigenous ranger programs', date: 'September 2024', type: 'grant' },
+        { recipient: 'Murray-Darling Basin Authority', amount: '$48 Million', purpose: 'Water recovery and environmental flows management', date: 'August 2024', type: 'grant' },
+        { recipient: 'WWF-Australia', amount: '$38 Million', purpose: 'Species recovery plans for threatened fauna and flora', date: 'July 2024', type: 'grant' },
+        { recipient: 'Greening Australia', amount: '$32 Million', purpose: 'Large-scale revegetation and landscape restoration', date: 'June 2024', type: 'grant' },
+        { recipient: 'Australian Marine Conservation Society', amount: '$18 Million', purpose: 'Marine protected area monitoring and shark mitigation', date: 'May 2024', type: 'grant' },
+        { recipient: 'Parks Australia — Indigenous Co-management', amount: '$24 Million', purpose: 'Traditional owner partnerships for 6 national parks', date: 'April 2024', type: 'grant' },
+      ],
+      approveVotes: 412, disapproveVotes: 289, userVote: null
+    },
+    {
+      id: 8, name: 'Foreign Affairs', minister: 'Penny Wong', budget: '$6.4 Billion', budgetRaw: 6400000000,
+      grants: '$4.8 Billion', employees: 6200,
+      description: "Responsible for Australia's foreign policy, international development aid, diplomatic missions, and consular services",
+      responsibilities: ['Foreign policy', 'International aid (DFAT ODA)', 'Diplomatic missions', 'Trade and investment', 'Consular services'],
+      grantsDetail: [
+        { recipient: 'Pacific Australia Labour Mobility (PALM) Scheme', amount: '$580 Million', purpose: 'Supporting Pacific Islander workers in Australia and development aid', date: 'January 2025', type: 'grant' },
+        { recipient: 'Papua New Guinea Development Partnership', amount: '$480 Million', purpose: 'Infrastructure, health and governance programs in PNG', date: 'December 2024', type: 'grant' },
+        { recipient: 'UNICEF Australia', amount: '$320 Million', purpose: 'Global humanitarian assistance including Pacific region', date: 'November 2024', type: 'grant' },
+        { recipient: 'World Bank — Pacific Trust Fund', amount: '$280 Million', purpose: 'Pacific island economic resilience and climate adaptation', date: 'October 2024', type: 'grant' },
+        { recipient: 'UNDP — Indo-Pacific Programs', amount: '$245 Million', purpose: 'Sustainable development goals and governance support', date: 'September 2024', type: 'grant' },
+        { recipient: 'Solomon Islands Development Assistance', amount: '$185 Million', purpose: 'Security, police training and infrastructure investment', date: 'August 2024', type: 'grant' },
+        { recipient: 'Timor-Leste Partnership Program', amount: '$145 Million', purpose: 'Education, health and economic development support', date: 'July 2024', type: 'grant' },
+        { recipient: 'CARE Australia', amount: '$98 Million', purpose: 'Humanitarian emergency response and gender equality programs', date: 'June 2024', type: 'grant' },
+        { recipient: 'Save the Children Australia', amount: '$82 Million', purpose: 'Child protection and education in conflict-affected countries', date: 'May 2024', type: 'grant' },
+        { recipient: 'Austrade — Export Market Development', amount: '$68 Million', purpose: 'Export market development grants for Australian businesses', date: 'April 2024', type: 'grant' },
+        { recipient: 'Australian Council for International Development (ACFID)', amount: '$42 Million', purpose: 'NGO sector coordination and aid effectiveness programs', date: 'March 2024', type: 'grant' },
+      ],
+      approveVotes: 445, disapproveVotes: 178, userVote: null
+    },
+    {
+      id: 9, name: "Attorney-General's", minister: 'Mark Dreyfus', budget: '$1.6 Billion', budgetRaw: 1600000000,
+      grants: '$420 Million', employees: 5100,
+      description: 'Responsible for law reform, federal courts, legal assistance, human rights, and Commonwealth legal policy',
+      responsibilities: ['Federal courts administration', 'Legal assistance', 'Human rights', 'Privacy law', 'Anti-money laundering'],
+      grantsDetail: [
+        { recipient: 'Australian Legal Aid Commissions (all states)', amount: '$145 Million', purpose: 'Legal representation for low-income Australians in federal matters', date: 'January 2025', type: 'grant' },
+        { recipient: 'Deloitte Touche Tohmatsu', amount: '$62 Million', purpose: 'Courts administration system modernisation and digital filing', date: 'December 2024', type: 'contract' },
+        { recipient: 'Australian Human Rights Commission', amount: '$48 Million', purpose: 'Human rights education, investigation and conciliation services', date: 'November 2024', type: 'grant' },
+        { recipient: 'Community Legal Centres Australia', amount: '$38 Million', purpose: 'Free legal advice at over 180 community legal centres', date: 'October 2024', type: 'grant' },
+        { recipient: 'Law Council of Australia — Access to Justice', amount: '$28 Million', purpose: 'Rural and remote legal assistance and pro bono coordination', date: 'September 2024', type: 'grant' },
+        { recipient: 'Australian Institute of Criminology', amount: '$22 Million', purpose: 'Crime trends research and criminal justice system analysis', date: 'August 2024', type: 'grant' },
+        { recipient: 'AUSTRAC (Financial Intelligence)', amount: '$18 Million', purpose: 'Anti-money laundering technology and reporting system upgrades', date: 'July 2024', type: 'contract' },
+        { recipient: 'National Indigenous Australians Agency — Legal Programs', amount: '$16 Million', purpose: 'Aboriginal and Torres Strait Islander legal services', date: 'June 2024', type: 'grant' },
+        { recipient: 'Privacy Foundation Australia', amount: '$8 Million', purpose: 'Privacy Act reform consultation and community awareness', date: 'May 2024', type: 'grant' },
+      ],
+      approveVotes: 298, disapproveVotes: 201, userVote: null
+    },
+    {
+      id: 10, name: 'Social Services', minister: 'Amanda Rishworth', budget: '$258.0 Billion', budgetRaw: 258000000000,
+      grants: '$248.0 Billion', employees: 3900,
+      description: 'Responsible for welfare payments, disability services (NDIS), family benefits, and housing assistance across Australia',
+      responsibilities: ['NDIS oversight', 'Centrelink payments', 'Family Tax Benefit', 'Aged pension', 'Disability support'],
+      grantsDetail: [
+        { recipient: 'Services Australia — Centrelink Payments', amount: '$112.5 Billion', purpose: 'JobSeeker, Youth Allowance, Parenting Payment and other income support', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Age Pension — Direct Payments', amount: '$78.4 Billion', purpose: 'Pension payments to 2.6 million Australians aged 67+', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'NDIS — National Disability Insurance Agency', amount: '$42.0 Billion', purpose: 'Reasonable and necessary supports for 600,000+ NDIS participants', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Family Tax Benefit — Direct Payments', amount: '$8.2 Billion', purpose: 'FTB Part A and Part B for families with dependent children', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Mission Australia', amount: '$185 Million', purpose: 'Homelessness services, youth programs and disability supports', date: 'January 2025', type: 'contract' },
+        { recipient: 'Anglicare Australia', amount: '$145 Million', purpose: 'Aged care, housing and emergency relief services nationally', date: 'December 2024', type: 'contract' },
+        { recipient: 'St Vincent de Paul Society', amount: '$98 Million', purpose: 'Emergency relief, housing support and social welfare services', date: 'November 2024', type: 'grant' },
+        { recipient: 'Carers Australia', amount: '$52 Million', purpose: 'Carer gateway services and respite programs', date: 'October 2024', type: 'grant' },
+        { recipient: 'National Shelter — Housing Programs', amount: '$38 Million', purpose: 'Affordable housing advocacy and crisis accommodation', date: 'September 2024', type: 'grant' },
+        { recipient: 'Community Services Industry Alliance', amount: '$28 Million', purpose: 'Workforce development in disability and aged care sectors', date: 'August 2024', type: 'grant' },
+      ],
+      approveVotes: 467, disapproveVotes: 356, userVote: null
+    },
+    {
+      id: 11, name: 'Agriculture', minister: 'Murray Watt', budget: '$1.5 Billion', budgetRaw: 1500000000,
+      grants: '$580 Million', employees: 3700,
+      description: 'Responsible for agricultural productivity, biosecurity, food safety, fisheries management, and rural development',
+      responsibilities: ['Biosecurity', 'Agricultural exports', 'Fisheries management', 'Drought assistance', 'Food standards'],
+      grantsDetail: [
+        { recipient: 'Australian Agricultural and Veterinary Chemicals (APVMA)', amount: '$85 Million', purpose: 'Pesticide and veterinary product registration and regulation', date: 'January 2025', type: 'grant' },
+        { recipient: 'Drought Response Program — Farm Household Allowance', amount: '$72 Million', purpose: 'Income support for farming families in drought conditions', date: 'December 2024', type: 'grant' },
+        { recipient: 'Grains Research and Development Corporation (GRDC)', amount: '$62 Million', purpose: 'Wheat, barley and canola productivity research programs', date: 'November 2024', type: 'grant' },
+        { recipient: 'Meat & Livestock Australia (MLA)', amount: '$54 Million', purpose: 'Livestock export market development and food safety programs', date: 'October 2024', type: 'grant' },
+        { recipient: 'Wine Australia', amount: '$42 Million', purpose: 'Export market diversification following China tariff removal', date: 'September 2024', type: 'grant' },
+        { recipient: 'Cotton Research and Development Corporation', amount: '$38 Million', purpose: 'Water efficiency and sustainable cotton production research', date: 'August 2024', type: 'grant' },
+        { recipient: 'Horticulture Innovation Australia', amount: '$32 Million', purpose: 'Fresh produce R&D, biosecurity and supply chain programs', date: 'July 2024', type: 'grant' },
+        { recipient: 'Australian Fisheries Management Authority', amount: '$28 Million', purpose: 'Commonwealth fisheries sustainability and quota management', date: 'June 2024', type: 'grant' },
+        { recipient: 'National Farmers Federation', amount: '$18 Million', purpose: 'Agricultural advocacy, skills development and rural programs', date: 'May 2024', type: 'grant' },
+        { recipient: 'Rural Financial Counselling Service', amount: '$14 Million', purpose: 'Free financial counselling for farmers in financial difficulty', date: 'April 2024', type: 'grant' },
+      ],
+      approveVotes: 321, disapproveVotes: 198, userVote: null
+    },
+    {
+      id: 12, name: 'Industry & Science', minister: 'Ed Husic', budget: '$4.2 Billion', budgetRaw: 4200000000,
+      grants: '$2.1 Billion', employees: 5800,
+      description: 'Responsible for industrial policy, manufacturing, space programs, innovation, and resources sector development',
+      responsibilities: ['Made in Australia manufacturing', 'Critical minerals', 'Space Australia', 'Innovation and R&D', 'Nuclear Science'],
+      grantsDetail: [
+        { recipient: 'CSIRO (Commonwealth Scientific and Industrial Research Organisation)', amount: '$520 Million', purpose: 'National science capability, research infrastructure and commercial spin-offs', date: 'January 2025', type: 'grant' },
+        { recipient: 'Australian Space Agency — Launch Program', amount: '$245 Million', purpose: 'Australian rocket launch capability and space industry development', date: 'December 2024', type: 'grant' },
+        { recipient: 'Critical Minerals Facility — Resource Capital Fund', amount: '$220 Million', purpose: 'Lithium, cobalt and rare earths processing investment', date: 'November 2024', type: 'grant' },
+        { recipient: 'R&D Tax Incentive — Small Business Claims', amount: '$180 Million', purpose: 'R&D expenditure refundable tax offset for SMEs', date: 'October 2024', type: 'grant' },
+        { recipient: 'Modern Manufacturing Initiative', amount: '$145 Million', purpose: 'Scale-up grants for food, resources and defence manufacturing', date: 'September 2024', type: 'grant' },
+        { recipient: 'Australian Nuclear Science and Technology Organisation (ANSTO)', amount: '$98 Million', purpose: 'Nuclear medicine production and reactor operations', date: 'August 2024', type: 'grant' },
+        { recipient: 'Startup Australia — Venture Capital Programs', amount: '$82 Million', purpose: 'Early-stage innovation fund co-investment with private capital', date: 'July 2024', type: 'grant' },
+        { recipient: 'National Reconstruction Fund Corporation', amount: '$68 Million', purpose: 'Financing for domestic manufacturing capability projects', date: 'June 2024', type: 'grant' },
+        { recipient: 'Business Events Australia', amount: '$42 Million', purpose: 'International business tourism and conference attraction', date: 'May 2024', type: 'contract' },
+        { recipient: 'Advanced Manufacturing Growth Centre', amount: '$28 Million', purpose: 'Industry 4.0 skills, automation and productivity programs', date: 'April 2024', type: 'grant' },
+      ],
+      approveVotes: 298, disapproveVotes: 245, userVote: null
+    },
+    {
+      id: 13, name: 'Finance', minister: 'Katy Gallagher', budget: '$15.3 Billion', budgetRaw: 15300000000,
+      grants: '$6.8 Billion', employees: 880,
+      description: 'Responsible for Commonwealth resource management, public sector efficiency, procurement, and government property',
+      responsibilities: ['Commonwealth resource management', 'Public sector efficiency', 'Government procurement', 'Medibank and NBN co', 'Comsuper'],
+      grantsDetail: [
+        { recipient: 'Services Australia — ICT Systems (whole-of-government)', amount: '$1.4 Billion', purpose: 'Whole-of-government digital identity and payment systems', date: 'January 2025', type: 'contract' },
+        { recipient: 'Australian Signals Directorate (cyber uplift)', amount: '$580 Million', purpose: 'Government network security and Essential Eight implementation', date: 'December 2024', type: 'contract' },
+        { recipient: 'Digital Transformation Agency', amount: '$320 Million', purpose: 'myGov2 and whole-of-government digital services transformation', date: 'November 2024', type: 'contract' },
+        { recipient: 'Comsuper — Commonwealth Superannuation', amount: '$2.8 Billion', purpose: 'Superannuation scheme payments for public sector retirees', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Deloitte Consulting', amount: '$185 Million', purpose: 'Machinery of government changes and public sector reviews', date: 'October 2024', type: 'contract' },
+        { recipient: 'IBM Australia', amount: '$145 Million', purpose: 'Mainframe hosting and legacy system migration for APS', date: 'September 2024', type: 'contract' },
+        { recipient: 'Australian Property and Construction', amount: '$420 Million', purpose: 'Commonwealth property portfolio management and Crown lease refurbishments', date: 'August 2024', type: 'contract' },
+        { recipient: 'KPMG — Government Advisory', amount: '$98 Million', purpose: 'Efficiency reviews and public sector transformation programs', date: 'July 2024', type: 'contract' },
+        { recipient: 'Australian Government Actuary', amount: '$28 Million', purpose: 'Actuarial review of government insurance and superannuation', date: 'June 2024', type: 'contract' },
+        { recipient: 'National Archives of Australia', amount: '$18 Million', purpose: 'Digital archiving and government records management', date: 'May 2024', type: 'grant' },
+      ],
+      approveVotes: 267, disapproveVotes: 312, userVote: null
+    },
+    {
+      id: 14, name: 'Communications', minister: 'Michelle Rowland', budget: '$1.4 Billion', budgetRaw: 1400000000,
+      grants: '$650 Million', employees: 3400,
+      description: "Responsible for telecommunications, broadband infrastructure, the ABC, SBS, and Australia's digital economy",
+      responsibilities: ['Telecommunications policy', 'NBN Co oversight', 'ABC and SBS funding', 'Online safety', 'Digital inclusion'],
+      grantsDetail: [
+        { recipient: 'Australian Broadcasting Corporation (ABC)', amount: '$1.2 Billion', purpose: 'Public broadcaster funding for news, arts and regional services', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Special Broadcasting Service (SBS)', amount: '$248 Million', purpose: 'Multilingual and multicultural national broadcaster operations', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'NBN Co — Fixed Wireless and Satellite Upgrade', amount: '$240 Million', purpose: 'Sky Muster satellite expansion for remote Australia', date: 'January 2025', type: 'grant' },
+        { recipient: 'Regional Connectivity Program', amount: '$145 Million', purpose: 'Mobile towers and broadband in underserved regional areas', date: 'December 2024', type: 'grant' },
+        { recipient: 'Australian Media and Communications Authority (ACMA)', amount: '$85 Million', purpose: 'Spectrum management, broadcast licensing and online safety enforcement', date: 'November 2024', type: 'grant' },
+        { recipient: 'eSafety Commissioner', amount: '$62 Million', purpose: 'Online safety investigations, content removal and community education', date: 'October 2024', type: 'grant' },
+        { recipient: 'Digital Inclusion — First Nations Communities', amount: '$48 Million', purpose: 'Internet connectivity and digital literacy in remote communities', date: 'September 2024', type: 'grant' },
+        { recipient: 'Telstra — Regional Connectivity Agreement', amount: '$38 Million', purpose: 'Maintaining USO landline and payphone services', date: 'August 2024', type: 'contract' },
+        { recipient: 'Screen Australia', amount: '$98 Million', purpose: 'Australian film, TV and online content production funding', date: 'July 2024', type: 'grant' },
+        { recipient: 'ACCAN (Australian Communications Consumer Action Network)', amount: '$12 Million', purpose: 'Consumer advocacy and research on telecommunications issues', date: 'June 2024', type: 'grant' },
+      ],
+      approveVotes: 334, disapproveVotes: 198, userVote: null
+    },
+    {
+      id: 15, name: 'Employment', minister: 'Tony Burke', budget: '$19.8 Billion', budgetRaw: 19800000000,
+      grants: '$15.2 Billion', employees: 4300,
+      description: 'Responsible for workforce policy, industrial relations, employment programs, and Workplace Relations and Safety',
+      responsibilities: ['Fair Work Act', 'Employment programs', 'Work health and safety', 'Equal opportunity', 'Workforce Australia'],
+      grantsDetail: [
+        { recipient: 'Workforce Australia — Employment Services (privatised)', amount: '$6.2 Billion', purpose: 'Jobactive replacement: employment services for job seekers', date: 'Ongoing 2024', type: 'contract' },
+        { recipient: 'Disability Employment Services (DES) Providers', amount: '$2.1 Billion', purpose: 'Supported employment and job placement for people with disability', date: 'Ongoing 2024', type: 'contract' },
+        { recipient: 'TAFE and VET Sector — Skills Training Packages', amount: '$1.8 Billion', purpose: 'Employer-linked vocational training and apprenticeship subsidies', date: 'Ongoing 2024', type: 'grant' },
+        { recipient: 'Australian Apprenticeships Incentives Program', amount: '$820 Million', purpose: 'Employer and apprentice incentive payments for trade training', date: 'January 2025', type: 'grant' },
+        { recipient: 'Aspen Group — Employment Services', amount: '$285 Million', purpose: 'Regional employment servicing contract under Workforce Australia', date: 'December 2024', type: 'contract' },
+        { recipient: 'MaxSolutions (APM / Ingeus merged)', amount: '$245 Million', purpose: 'Intensive employment support for long-term unemployed', date: 'November 2024', type: 'contract' },
+        { recipient: 'National Disability Insurance Scheme — Employment Supports', amount: '$180 Million', purpose: 'Supported employment transitions for NDIS participants', date: 'October 2024', type: 'grant' },
+        { recipient: 'Comcare — Workplace Safety Programs', amount: '$145 Million', purpose: 'Commonwealth workers compensation and WHS regulatory functions', date: 'September 2024', type: 'grant' },
+        { recipient: 'Fair Work Ombudsman', amount: '$98 Million', purpose: 'Wage theft investigations, compliance and worker education', date: 'August 2024', type: 'grant' },
+        { recipient: 'Jobs and Skills Australia', amount: '$48 Million', purpose: 'National workforce planning, skills needs analysis and advice', date: 'July 2024', type: 'grant' },
+        { recipient: 'Migrant Employment Rights Program', amount: '$28 Million', purpose: 'Worker education on rights for newly arrived migrants', date: 'June 2024', type: 'grant' },
+      ],
+      approveVotes: 378, disapproveVotes: 289, userVote: null
+    },
+  ]);
   
   // Legislative Hub state
   const [legislativeTab, setLegislativeTab] = useState('bills'); // bills, laws, upcoming
@@ -3985,6 +4276,22 @@ function App() {
     }));
   };
 
+  const voteAuDepartment = (deptId, vote) => {
+    setAuDepartments(auDepartments.map(dept => {
+      if (dept.id === deptId) {
+        const d = { ...dept };
+        if (dept.userVote === 'approve') d.approveVotes--;
+        else if (dept.userVote === 'disapprove') d.disapproveVotes--;
+        if (vote === 'approve') { d.approveVotes++; d.userVote = 'approve'; }
+        else if (vote === 'disapprove') { d.disapproveVotes++; d.userVote = 'disapprove'; }
+        else { d.userVote = null; }
+        if (selectedAuDepartment && selectedAuDepartment.id === deptId) setSelectedAuDepartment(d);
+        return d;
+      }
+      return dept;
+    }));
+  };
+
   const voteBill = async (billId, vote) => {
     try {
       const response = await fetch(`https://civic-voice-backend-e3sz.onrender.com/api/bills/${billId}/vote`, {
@@ -6581,7 +6888,7 @@ function App() {
 
               {/* Government Departments */}
               <div
-                onClick={() => { setFinancialDashTab('programs'); setView('money-australia'); }}
+                onClick={() => setView('au-departments')}
                 className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95"
               >
                 <div className="text-amber-700 mb-3 sm:mb-4">
@@ -6590,7 +6897,7 @@ function App() {
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Departments</h2>
                 <p className="text-gray-600 mb-3 text-sm sm:text-base">Review department budgets, programs &amp; ministerial performance</p>
                 <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>18 Federal Departments</span>
+                  <span>15 Federal Departments</span>
                   <ChevronRight className="w-5 h-5 text-amber-700" />
                 </div>
               </div>
@@ -16278,6 +16585,341 @@ function App() {
     );
   };
 
+  const renderAuDepartments = () => {
+    const totalBudget = auDepartments.reduce((sum, d) => sum + d.budgetRaw, 0);
+    const totalEmployees = auDepartments.reduce((sum, d) => sum + d.employees, 0);
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
+            <button
+              onClick={() => setView('government-levels')}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-2 sm:mb-4 text-sm sm:text-base"
+            >
+              ← Back to Australian Federal Government
+            </button>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🇦🇺</span>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Government Departments</h1>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8">
+          {/* Overview Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className="bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-300 rounded-lg p-4 sm:p-6">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-amber-600" />
+                <h3 className="text-base sm:text-lg font-bold text-gray-800">Total Departments</h3>
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-amber-600">{auDepartments.length}</p>
+            </div>
+            <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-300 rounded-lg p-4 sm:p-6">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+                <h3 className="text-base sm:text-lg font-bold text-gray-800">Combined Budget</h3>
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-green-600">${(totalBudget / 1000000000).toFixed(0)}B</p>
+            </div>
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-300 rounded-lg p-4 sm:p-6">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <Users className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
+                <h3 className="text-base sm:text-lg font-bold text-gray-800">Total Employees</h3>
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-purple-600">{totalEmployees.toLocaleString()}</p>
+            </div>
+          </div>
+
+          {/* Departments Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {auDepartments.map(dept => {
+              const totalVotes = dept.approveVotes + dept.disapproveVotes;
+              const approvalRate = totalVotes > 0 ? Math.round((dept.approveVotes / totalVotes) * 100) : 0;
+              return (
+                <div
+                  key={dept.id}
+                  onClick={() => { setSelectedAuDepartment(dept); setView('au-department-detail'); }}
+                  className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95"
+                >
+                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{dept.name}</h3>
+                      <p className="text-sm sm:text-base text-gray-600 mb-2">Minister: {dept.minister}</p>
+                      <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — Budget: ${dept.budget} | Minister: ${dept.minister} | Approval: ${approvalRate}%`, url: window.location.href })}
+                        className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
+                        aria-label="Share"
+                      >
+                        {copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                      </button>
+                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-3 sm:mb-4">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Budget</p>
+                      <p className="text-sm sm:text-lg font-bold text-green-600">{dept.budget}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Grants</p>
+                      <p className="text-sm sm:text-lg font-bold text-blue-600">{dept.grants}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Employees</p>
+                      <p className="text-sm sm:text-lg font-bold text-purple-600">{dept.employees.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-3 sm:pt-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs sm:text-sm text-gray-600">Public Approval</span>
+                      <span className={`text-base sm:text-lg font-bold ${approvalRate >= 60 ? 'text-green-600' : approvalRate >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                        {approvalRate}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                      <div
+                        className={`h-2 rounded-full ${approvalRate >= 60 ? 'bg-green-500' : approvalRate >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                        style={{ width: `${approvalRate}%` }}
+                      ></div>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
+                      <span>👍 {dept.approveVotes}</span>
+                      <span>👎 {dept.disapproveVotes}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAuDepartmentDetail = () => {
+    if (!selectedAuDepartment) return null;
+    const dept = selectedAuDepartment;
+    const totalVotes = dept.approveVotes + dept.disapproveVotes;
+    const approvalRate = totalVotes > 0 ? Math.round((dept.approveVotes / totalVotes) * 100) : 0;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <button
+              onClick={() => { setSelectedAuDepartment(null); setView('au-departments'); }}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
+            >
+              ← Back to Departments
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          {/* Department Header */}
+          <div className="relative bg-white rounded-lg shadow-md p-8 mb-6">
+            <button
+              onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — Budget: ${dept.budget} | Staff: ${dept.employees.toLocaleString()} | Minister: ${dept.minister}`, url: window.location.href })}
+              className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
+              aria-label="Share"
+            >
+              {copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+            </button>
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-3xl">🇦🇺</span>
+                  <h1 className="text-4xl font-bold text-gray-800">Department of {dept.name}</h1>
+                </div>
+                <p className="text-xl text-gray-600 mb-4">Minister: {dept.minister}</p>
+                <p className="text-gray-700 max-w-3xl">{dept.description}</p>
+              </div>
+            </div>
+
+            {/* Key Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <DollarSign className="w-8 h-8 text-green-600" />
+                  <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
+                </div>
+                <p className="text-3xl font-bold text-green-600">{dept.budget}</p>
+              </div>
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <TrendingUp className="w-8 h-8 text-blue-600" />
+                  <h3 className="text-lg font-bold text-gray-800">Grants & Contracts</h3>
+                </div>
+                <p className="text-3xl font-bold text-blue-600">{dept.grants}</p>
+              </div>
+              <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Users className="w-8 h-8 text-purple-600" />
+                  <h3 className="text-lg font-bold text-gray-800">Employees</h3>
+                </div>
+                <p className="text-3xl font-bold text-purple-600">{dept.employees.toLocaleString()}</p>
+              </div>
+            </div>
+
+            {/* Responsibilities */}
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Key Responsibilities</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {dept.responsibilities.map((resp, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700">{resp}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Grants Breakdown */}
+            {dept.grantsDetail && dept.grantsDetail.length > 0 && (
+              <div className="mb-6">
+                <button
+                  onClick={() => setAuDeptGrantsExpanded(!auDeptGrantsExpanded)}
+                  className="w-full bg-gradient-to-r from-amber-50 to-green-50 border-2 border-amber-400 rounded-lg p-5 hover:shadow-lg transition-all flex items-center justify-between cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="w-8 h-8 text-amber-600" />
+                    <div className="text-left">
+                      <h3 className="text-xl font-bold text-gray-800">💰 Grants & Funding Breakdown</h3>
+                      <p className="text-sm text-gray-600">
+                        {dept.grantsDetail.length} major grants • {dept.grants} total allocated
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-amber-600">
+                      {auDeptGrantsExpanded ? 'Hide Details' : 'View All Recipients'}
+                    </span>
+                    {auDeptGrantsExpanded
+                      ? <ChevronDown className="w-6 h-6 text-amber-600" />
+                      : <ChevronRight className="w-6 h-6 text-amber-600" />
+                    }
+                  </div>
+                </button>
+
+                {auDeptGrantsExpanded && (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-gray-700 font-medium mb-3 px-2">
+                      🔍 Major grants and contracts showing organisations receiving taxpayer funding:
+                    </p>
+                    {dept.grantsDetail.map((grant, i) => (
+                      <div
+                        key={i}
+                        className="relative bg-white rounded-lg p-4 pr-12 hover:shadow-md transition-shadow"
+                        style={{ border: '1px solid #e5e7eb', borderLeft: `4px solid ${grant.type === 'contract' ? '#2563eb' : '#16a34a'}` }}
+                      >
+                        <button
+                          onClick={(e) => handleShare(e, { id: 'augrant-' + grant.recipient, title: grant.recipient, text: `💰 ${grant.recipient} — ${grant.amount} ${grant.type === 'contract' ? '(Contract)' : '(Grant)'}: ${grant.purpose}`, url: window.location.href })}
+                          className={`absolute top-2 right-2 p-2 rounded-lg transition-colors z-10 ${copiedShareId === 'augrant-' + grant.recipient ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
+                          aria-label="Share"
+                        >
+                          {copiedShareId === 'augrant-' + grant.recipient ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                        </button>
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                              <h4 className="text-lg font-bold text-gray-800">{grant.recipient}</h4>
+                              {grant.type && (
+                                <span className="text-sm font-bold px-3 py-1 rounded-full flex-shrink-0" style={{ backgroundColor: grant.type === 'contract' ? '#2563eb' : '#16a34a', color: 'white' }}>
+                                  {grant.type === 'contract' ? 'Contract' : 'Grant'}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{grant.purpose}</p>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-2xl font-bold text-green-600">{grant.amount}</p>
+                            <p className="text-xs text-gray-500">{grant.date}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Approval Voting */}
+          <div className="bg-white rounded-lg shadow-md p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Do You Approve of This Department's Performance?</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <ThumbsUp className="w-10 h-10 text-green-600" />
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">Approve</h3>
+                      <p className="text-sm text-gray-600">They're doing a good job</p>
+                    </div>
+                  </div>
+                  <div className="text-3xl font-bold text-green-600">{dept.approveVotes}</div>
+                </div>
+                <button
+                  onClick={() => requireRegion(() => voteAuDepartment(dept.id, dept.userVote === 'approve' ? 'remove' : 'approve'))}
+                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${dept.userVote === 'approve' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
+                >
+                  {dept.userVote === 'approve' ? '✓ You Approve' : 'Vote Approve'}
+                </button>
+              </div>
+
+              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <ThumbsDown className="w-10 h-10 text-red-600" />
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
+                      <p className="text-sm text-gray-600">They need to improve</p>
+                    </div>
+                  </div>
+                  <div className="text-3xl font-bold text-red-600">{dept.disapproveVotes}</div>
+                </div>
+                <button
+                  onClick={() => requireRegion(() => voteAuDepartment(dept.id, dept.userVote === 'disapprove' ? 'remove' : 'disapprove'))}
+                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${dept.userVote === 'disapprove' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
+                >
+                  {dept.userVote === 'disapprove' ? '✓ You Disapprove' : 'Vote Disapprove'}
+                </button>
+              </div>
+            </div>
+
+            {/* Approval Stats */}
+            <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-800">Overall Approval Rating</h3>
+                <span className={`text-3xl font-bold ${approvalRate >= 60 ? 'text-green-600' : approvalRate >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                  {approvalRate}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-300 rounded-full h-4">
+                <div
+                  className={`h-4 rounded-full transition-all ${approvalRate >= 60 ? 'bg-green-500' : approvalRate >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                  style={{ width: `${approvalRate}%` }}
+                ></div>
+              </div>
+              <div className="flex items-center justify-between mt-4 text-gray-600">
+                <span>{totalVotes.toLocaleString()} total votes</span>
+                <span>{dept.approveVotes} approve • {dept.disapproveVotes} disapprove</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Manual riding selector if location fails
   const renderRidingSelector = () => {
     const [ridingSearch, setRidingSearch] = useState('');
@@ -18603,6 +19245,8 @@ function App() {
       {view === 'money-canada' && renderFinancialDashboard()}
       {view === 'money-australia' && renderFinancialDashboard()}
       {view === 'au-legislative-hub' && renderAuLegislativeHub()}
+      {view === 'au-departments' && renderAuDepartments()}
+      {view === 'au-department-detail' && selectedAuDepartment && renderAuDepartmentDetail()}
       
       {/* Riding selector modal */}
       {showLocationPrompt && renderRidingSelector()}
