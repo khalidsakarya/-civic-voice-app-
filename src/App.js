@@ -13557,13 +13557,13 @@ function App() {
                             <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                           </div>
                           <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
-                          {bill.sponsor && <p className="text-sm sm:text-[13px] text-gray-500">Sponsor: <strong>{bill.sponsor}</strong></p>}
+                          {bill.sponsor && <p className="text-sm sm:text-[13px] text-gray-500 font-bold sm:font-normal">Sponsor: <strong>{bill.sponsor}</strong></p>}
                         </div>
 
                         {/* Expanded details */}
                         {isExpanded && (
                           <div className="px-6 border-t border-gray-100">
-                            <p className="text-[17px] sm:text-[15px] text-gray-600 py-4">{bill.summary}</p>
+                            <p className="text-[17px] sm:text-[15px] text-gray-600 py-4 font-bold sm:font-normal">{bill.summary}</p>
                             <button
                               onClick={(e) => { e.stopPropagation(); setSelectedBill(bill); setView('bill-detail'); }}
                               className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 mb-4"
@@ -14009,13 +14009,13 @@ function App() {
                             <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                           </div>
                           <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.title}</h3>
-                          {bill.sponsor && <p className="text-sm sm:text-[13px] text-gray-500">Sponsor: <strong>{bill.sponsor}</strong></p>}
+                          {bill.sponsor && <p className="text-sm sm:text-[13px] text-gray-500 font-bold sm:font-normal">Sponsor: <strong>{bill.sponsor}</strong></p>}
                         </div>
 
                         {/* Expanded details */}
                         {isExpanded && (
                           <div className="px-6 border-t border-gray-100">
-                            <p className="text-[17px] sm:text-[15px] text-gray-600 py-4">{bill.summary || bill.description}</p>
+                            <p className="text-[17px] sm:text-[15px] text-gray-600 py-4 font-bold sm:font-normal">{bill.summary || bill.description}</p>
                             <button
                               onClick={(e) => { e.stopPropagation(); setSelectedBill(bill); setView('us-bill-detail'); }}
                               className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 mb-4"
@@ -14128,7 +14128,7 @@ function App() {
                                 <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                               </div>
                               <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.title}</h3>
-                              <div className="flex items-center gap-4 text-sm sm:text-[13px] text-gray-500">
+                              <div className="flex items-center gap-4 text-sm sm:text-[13px] text-gray-500 font-bold sm:font-normal">
                                 {bill.sponsor && <span>Sponsor: <strong>{bill.sponsor}</strong></span>}
                                 {(bill.dateSigned || bill.dateVoted) && (
                                   <span className="flex items-center gap-1">
@@ -14142,7 +14142,7 @@ function App() {
                             {/* Expanded details */}
                             {isExpanded && (
                               <div className="px-6 border-t border-gray-100">
-                                <p className="text-[17px] sm:text-[15px] text-gray-600 py-4">{bill.summary || bill.description}</p>
+                                <p className="text-[17px] sm:text-[15px] text-gray-600 py-4 font-bold sm:font-normal">{bill.summary || bill.description}</p>
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setSelectedBill(bill); setView('us-bill-detail'); }}
                                   className="text-purple-600 hover:text-purple-800 font-medium text-sm flex items-center gap-1 mb-4"
@@ -14253,7 +14253,7 @@ function App() {
               <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </div>
             <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2 leading-snug">{bill.shortTitle}</h3>
-            <p className="text-sm sm:text-[13px] text-gray-500">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
+            <p className="text-sm sm:text-[13px] text-gray-500 font-bold sm:font-normal">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
           </div>
 
           {/* Expanded details */}
@@ -14263,7 +14263,7 @@ function App() {
                 <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
                 <span className="text-xs text-gray-400 flex items-center gap-1"><Globe className="w-3 h-3" />{bill.chamber}</span>
               </div>
-              <p className="text-[17px] sm:text-[15px] text-gray-600 mb-4 leading-relaxed">{bill.summary}</p>
+              <p className="text-[17px] sm:text-[15px] text-gray-600 mb-4 leading-relaxed font-bold sm:font-normal">{bill.summary}</p>
               <div className="mb-4">
                 <div className="flex justify-between text-xs text-gray-500 mb-1">
                   <span className="text-green-600 font-semibold">Support {supportPct}%</span>
@@ -14283,7 +14283,7 @@ function App() {
                     <p className="text-sm font-bold text-green-700 mb-2">✅ Arguments For</p>
                     <ul className="space-y-1">
                       {bill.pros?.slice(0, 2).map((p, i) => (
-                        <li key={i} className="text-[15px] sm:text-sm text-green-800">• {p}</li>
+                        <li key={i} className="text-[15px] sm:text-sm text-green-800 font-bold sm:font-normal">• {p}</li>
                       ))}
                     </ul>
                   </div>
@@ -14291,7 +14291,7 @@ function App() {
                     <p className="text-sm font-bold text-red-700 mb-2">❌ Arguments Against</p>
                     <ul className="space-y-1">
                       {bill.cons?.slice(0, 2).map((c, i) => (
-                        <li key={i} className="text-[15px] sm:text-sm text-red-800">• {c}</li>
+                        <li key={i} className="text-[15px] sm:text-sm text-red-800 font-bold sm:font-normal">• {c}</li>
                       ))}
                     </ul>
                   </div>
@@ -14452,7 +14452,7 @@ function App() {
                             <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                           </div>
                           <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
-                          <p className="text-sm sm:text-[13px] text-gray-500">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
+                          <p className="text-sm sm:text-[13px] text-gray-500 font-bold sm:font-normal">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
                         </div>
 
                         {/* Expanded details */}
@@ -14461,7 +14461,7 @@ function App() {
                             <div className="flex flex-wrap items-center gap-2 py-3">
                               <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
                             </div>
-                            <p className="text-[17px] sm:text-[15px] text-gray-600 mb-4">{bill.summary}</p>
+                            <p className="text-[17px] sm:text-[15px] text-gray-600 mb-4 font-bold sm:font-normal">{bill.summary}</p>
                             <div className="mb-4">
                               <div className="flex justify-between text-xs text-gray-500 mb-1">
                                 <span className="text-green-600 font-semibold">Support {pct}%</span>
@@ -14481,7 +14481,7 @@ function App() {
                                   <p className="text-sm font-bold text-green-700 mb-2">✅ Arguments For</p>
                                   <ul className="space-y-1">
                                     {bill.pros?.slice(0, 2).map((p, i) => (
-                                      <li key={i} className="text-[15px] sm:text-sm text-green-800">• {p}</li>
+                                      <li key={i} className="text-[15px] sm:text-sm text-green-800 font-bold sm:font-normal">• {p}</li>
                                     ))}
                                   </ul>
                                 </div>
@@ -14489,7 +14489,7 @@ function App() {
                                   <p className="text-sm font-bold text-red-700 mb-2">❌ Arguments Against</p>
                                   <ul className="space-y-1">
                                     {bill.cons?.slice(0, 2).map((c, i) => (
-                                      <li key={i} className="text-[15px] sm:text-sm text-red-800">• {c}</li>
+                                      <li key={i} className="text-[15px] sm:text-sm text-red-800 font-bold sm:font-normal">• {c}</li>
                                     ))}
                                   </ul>
                                 </div>
@@ -14552,7 +14552,7 @@ function App() {
                             <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                           </div>
                           <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
-                          <p className="text-sm sm:text-[13px] text-gray-500">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
+                          <p className="text-sm sm:text-[13px] text-gray-500 font-bold sm:font-normal">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
                         </div>
 
                         {/* Expanded details */}
@@ -14562,14 +14562,14 @@ function App() {
                               <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
                               <span className="text-xs text-gray-400 flex items-center gap-1"><Globe className="w-3 h-3" />{bill.chamber}</span>
                             </div>
-                            <p className="text-[17px] sm:text-[15px] text-gray-600 mb-4">{bill.summary}</p>
+                            <p className="text-[17px] sm:text-[15px] text-gray-600 mb-4 font-bold sm:font-normal">{bill.summary}</p>
                             {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                                 <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                                   <p className="text-sm font-bold text-green-700 mb-2">✅ Key Benefits</p>
                                   <ul className="space-y-1">
                                     {bill.pros?.map((p, i) => (
-                                      <li key={i} className="text-[15px] sm:text-sm text-green-800">• {p}</li>
+                                      <li key={i} className="text-[15px] sm:text-sm text-green-800 font-bold sm:font-normal">• {p}</li>
                                     ))}
                                   </ul>
                                 </div>
@@ -14577,7 +14577,7 @@ function App() {
                                   <p className="text-sm font-bold text-orange-700 mb-2">⚠️ Concerns Raised</p>
                                   <ul className="space-y-1">
                                     {bill.cons?.map((c, i) => (
-                                      <li key={i} className="text-[15px] sm:text-sm text-orange-800">• {c}</li>
+                                      <li key={i} className="text-[15px] sm:text-sm text-orange-800 font-bold sm:font-normal">• {c}</li>
                                     ))}
                                   </ul>
                                 </div>
