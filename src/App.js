@@ -806,6 +806,11 @@ function App() {
   const [expandedUsBills, setExpandedUsBills] = useState({});
   const [caBillVotes, setCaBillVotes] = useState({});
   const [selectedAuState, setSelectedAuState] = useState(null);
+  const [showAuEconomicModal, setShowAuEconomicModal] = useState(false);
+  const [showAuTaxExemptModal, setShowAuTaxExemptModal] = useState(false);
+  const [auTaxExemptSearch, setAuTaxExemptSearch] = useState('');
+  const [showAuGrantsModal, setShowAuGrantsModal] = useState(false);
+  const [auGrantsSearch, setAuGrantsSearch] = useState('');
   const [copiedShareId, setCopiedShareId] = useState(null);
   const [senateSearch, setSenateSearch] = useState('');
   const [senateFilter, setSenateFilter] = useState('All');
@@ -11354,30 +11359,30 @@ function App() {
             <div className="w-24 h-1 mt-3 rounded-full" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {states.map((item, index) => {
               const badgeClass = partyBadgeColors[item.partyShort] || 'bg-gray-100 text-gray-700';
               return (
                 <button
                   key={item.name}
                   onClick={() => { setSelectedAuState(item); setView('au-state-detail'); }}
-                  className="bg-white rounded-xl shadow-sm border border-gray-200 px-3 py-2.5 flex items-center gap-3 hover:shadow-md hover:border-green-300 hover:bg-green-50/40 transition-all text-left w-full animate-scale-in group"
+                  className="bg-white rounded-xl shadow-sm border border-gray-200 px-3 py-2.5 sm:px-5 sm:py-4 flex items-center gap-3 sm:gap-4 hover:shadow-md hover:border-green-300 hover:bg-green-50/40 transition-all text-left w-full animate-scale-in group"
                   style={{ animationDelay: `${Math.min(index * 0.04, 0.35)}s` }}
                 >
                   <img
                     src={item.flagUrl}
                     alt={`Flag of ${item.name}`}
-                    className="w-14 h-9 object-cover rounded shadow-sm flex-shrink-0 border border-gray-100"
+                    className="w-14 h-9 sm:w-24 sm:h-16 object-cover rounded shadow-sm flex-shrink-0 border border-gray-100"
                     onError={(e) => { e.target.style.display = 'none'; }}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-800 text-sm leading-tight truncate">{item.name}</p>
-                    <p className="text-gray-500 text-xs truncate">{item.leaderTitle}: {item.leader}</p>
+                    <p className="font-bold text-gray-800 text-sm sm:text-base leading-tight truncate">{item.name}</p>
+                    <p className="text-gray-500 text-xs sm:text-sm truncate">{item.leaderTitle}: {item.leader}</p>
                   </div>
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${badgeClass}`}>
+                  <span className={`text-xs sm:text-sm font-bold px-2 py-0.5 sm:px-3 sm:py-1 rounded-full flex-shrink-0 ${badgeClass}`}>
                     {item.partyShort}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-green-500 flex-shrink-0 transition-colors" />
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 group-hover:text-green-500 flex-shrink-0 transition-colors" />
                 </button>
               );
             })}
@@ -11534,6 +11539,674 @@ function App() {
             </div>
           </div>
 
+          {/* Action buttons */}
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <button
+              onClick={() => setShowAuEconomicModal(true)}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #003087, #1B4FD8)' }}
+            >
+              <BarChart3 className="w-5 h-5" />
+              Economic &amp; Social Data
+            </button>
+            <button
+              onClick={() => { setAuTaxExemptSearch(''); setShowAuTaxExemptModal(true); }}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #92610A, #C8A400)' }}
+            >
+              <DollarSign className="w-5 h-5" />
+              Tax Exempt Companies
+            </button>
+            <button
+              onClick={() => { setAuGrantsSearch(''); setShowAuGrantsModal(true); }}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #005728, #00843D)' }}
+            >
+              <Award className="w-5 h-5" />
+              Grants Given
+            </button>
+          </div>
+
+        </div>
+      </div>
+    );
+  };
+
+  const renderAuEconomicModal = () => {
+    if (!selectedAuState || !showAuEconomicModal) return null;
+    const item = selectedAuState;
+
+    let h = 5381;
+    for (let i = 0; i < item.name.length; i++) h = (Math.imul(h, 33) ^ item.name.charCodeAt(i)) | 0;
+    h = Math.abs(h) ^ 0xA15A;
+    const rng = (min, max, salt) => {
+      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
+      return Math.round(min + (v % (max - min + 1)));
+    };
+    const rngf = (min, max, salt, dec = 1) => {
+      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
+      const raw = min + (v % 1000) / 1000 * (max - min);
+      return parseFloat(raw.toFixed(dec));
+    };
+
+    const budgetTotal = 100;
+    const edu  = rng(22, 32, 1);
+    const hlt  = rng(18, 28, 2);
+    const inf  = rng(10, 18, 3);
+    const ps   = rng(8, 14, 4);
+    const soc  = budgetTotal - edu - hlt - inf - ps;
+    const budgetData = [
+      { name: 'Education',       value: edu,  color: '#003087' },
+      { name: 'Healthcare',      value: hlt,  color: '#00843D' },
+      { name: 'Infrastructure',  value: inf,  color: '#C8A400' },
+      { name: 'Public Safety',   value: ps,   color: '#C0392B' },
+      { name: 'Social Services', value: soc,  color: '#1B4FD8' },
+    ];
+
+    const spendData = budgetData.map((cat, i) => {
+      const allocated = rng(800, 4200, 10 + i);
+      const variance  = rng(-12, 15, 20 + i);
+      return {
+        category: cat.name.split(' ')[0],
+        Allocated: allocated,
+        Actual: Math.round(allocated * (1 + variance / 100)),
+      };
+    });
+
+    const baseViolent  = rngf(180, 520, 30);
+    const baseProp     = rngf(1400, 3200, 31);
+    const crimeData = Array.from({ length: 10 }, (_, i) => {
+      const yr = 2024 - 9 + i;
+      const trend = 1 - (i * rngf(0.005, 0.025, 40 + i, 4));
+      const noise = (salt) => rngf(-0.06, 0.06, 50 + i + salt, 4);
+      return {
+        year: String(yr),
+        'Violent Crime': parseFloat((baseViolent * trend * (1 + noise(0))).toFixed(1)),
+        'Property Crime': parseFloat((baseProp * trend * (1 + noise(1))).toFixed(1)),
+      };
+    });
+
+    const uBase = rngf(2.8, 7.5, 60);
+    const unempData = [2021, 2022, 2023, 2024].map((yr, i) => {
+      const mult = [1.4, 1.15, 1.05, 1.0][i];
+      const auAvg = [5.1, 3.5, 3.7, 4.0][i];
+      return {
+        year: String(yr),
+        [item.name]: parseFloat((uBase * mult + rngf(-0.3, 0.3, 70 + i, 2)).toFixed(1)),
+        'AU Average': auAvg,
+      };
+    });
+    const unempKeys = [item.name, 'AU Average'];
+
+    const gspData = Array.from({ length: 10 }, (_, i) => {
+      const yr = 2015 + i;
+      let growth;
+      if (i === 5) { growth = rngf(-8.0, -2.0, 85, 1); }
+      else if (i === 6) { growth = rngf(3.5, 7.5, 86, 1); }
+      else { growth = rngf(0.8, 4.5, 80 + i, 1); }
+      return { year: String(yr), 'GSP Growth (%)': growth };
+    });
+
+    const povBase = rngf(9.0, 17.0, 90, 1);
+    const povDecline = rngf(0.1, 0.4, 91, 2);
+    const povData = Array.from({ length: 10 }, (_, i) => {
+      const yr = 2015 + i;
+      const pandemicSpike = i === 5 ? rngf(1.5, 3.5, 96, 1) : 0;
+      const noise = rngf(-0.4, 0.4, 100 + i, 1);
+      const rate = Math.max(4.5, povBase - i * povDecline + pandemicSpike + noise);
+      return { year: String(yr), 'Poverty Rate (%)': parseFloat(rate.toFixed(1)) };
+    });
+
+    const homelessBase = rng(2800, 48000, 110);
+    const homelessData = [2020, 2021, 2022, 2023, 2024].map((yr, i) => {
+      const growthFactor = 1 + i * rngf(0.015, 0.055, 120 + i, 3);
+      const total = Math.round(homelessBase * growthFactor);
+      const unshelteredRatio = rngf(0.25, 0.52, 130 + i, 3);
+      const unsheltered = Math.round(total * unshelteredRatio);
+      return { year: String(yr), Sheltered: total - unsheltered, Unsheltered: unsheltered };
+    });
+
+    const TICK   = { fontSize: 13, fill: '#4b5563' };
+    const TT     = { fontSize: '13px', borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' };
+    const LEG    = { fontSize: '13px', paddingTop: '10px' };
+    const MARGIN = { top: 5, right: 24, left: 0, bottom: 5 };
+    const crimeDataM = crimeData.slice(-6);
+    const gspDataM   = gspData.slice(-6);
+    const povDataM   = povData.slice(-6);
+
+    const Card = ({ title, desc, children }) => (
+      <div className="bg-white rounded-lg shadow-md p-5 mb-4">
+        <h3 className="text-base font-bold text-gray-800 mb-0.5">{title}</h3>
+        <p className="text-sm text-gray-500 mb-4">{desc}</p>
+        {children}
+      </div>
+    );
+
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
+        style={{ background: 'rgba(0,0,0,0.55)' }}
+        onClick={(e) => { if (e.target === e.currentTarget) setShowAuEconomicModal(false); }}
+      >
+        <div className="relative bg-gray-50 w-full max-w-xl md:max-w-4xl mx-2 sm:mx-4 md:mx-auto my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
+            <div>
+              <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug">{item.name} — Economic &amp; Social Data</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Illustrative data · figures are statistically modelled</p>
+            </div>
+            <button onClick={() => setShowAuEconomicModal(false)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 ml-3">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="p-4">
+            <Card title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="name" type="category" width={120} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 5']} />
+                  <Tooltip formatter={(v) => [`${v}%`, 'Budget Share']} contentStyle={TT} />
+                  <Bar dataKey="value" name="Budget Share" radius={[0, 4, 4, 0]} maxBarSize={28}>
+                    {budgetData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5 justify-center mt-3">
+                {budgetData.map((c) => (
+                  <span key={c.name} className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: c.color }} />
+                    {c.name}
+                  </span>
+                ))}
+              </div>
+            </Card>
+            <Card title="Spending vs Budget" desc="Allocated vs actual spending per category ($M AUD)">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart layout="vertical" data={spendData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="category" type="category" width={90} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `$${(v / 1000).toFixed(1)}B`} />
+                  <Tooltip formatter={(v) => [`A$${v.toLocaleString()}M`, '']} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Allocated" fill="#003087" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                  <Bar dataKey="Actual"    fill="#00843D" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+            <Card title="Crime Rate Trends" desc="Incidents per 100,000 people — last 6 years">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
+                  <Tooltip formatter={(v, name) => [`${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Violent Crime"  fill="#C0392B" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                  <Bar dataKey="Property Crime" fill="#C8A400" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+            <Card title="Unemployment Rate" desc="Annual rate (%) vs AU national average — last 4 years">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart layout="vertical" data={unempData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 1']} />
+                  <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey={unempKeys[0]} fill="#003087" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                  <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+            <Card title="Gross State Product Growth" desc="Annual GSP growth rate (%) — last 6 years · green = growth, red = contraction">
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart layout="vertical" data={gspDataM} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} />
+                  <Tooltip formatter={(v) => [`${v}%`, 'GSP Growth']} contentStyle={TT} />
+                  <Bar dataKey="GSP Growth (%)" radius={[0, 4, 4, 0]} maxBarSize={28}>
+                    {gspDataM.map((e, i) => <Cell key={i} fill={e['GSP Growth (%)'] >= 0 ? '#00843D' : '#C0392B'} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div className="flex gap-4 justify-center mt-2">
+                <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: '#00843D' }} /> Growth</span>
+                <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: '#C0392B' }} /> Contraction</span>
+              </div>
+            </Card>
+            <Card title="Poverty Rate Trend" desc="Population living below the poverty line (%) — last 6 years">
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart layout="vertical" data={povDataM} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 2']} />
+                  <Tooltip formatter={(v) => [`${v}%`, 'Poverty Rate']} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Poverty Rate (%)" fill="#C8A400" radius={[0, 4, 4, 0]} maxBarSize={28} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+            <Card title="Homelessness Statistics" desc="Sheltered vs unsheltered population 2020–2024">
+              <ResponsiveContainer width="100%" height={230}>
+                <BarChart layout="vertical" data={homelessData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
+                  <Tooltip formatter={(v, name) => [v.toLocaleString(), name]} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Sheltered"   stackId="a" fill="#003087" maxBarSize={32} />
+                  <Bar dataKey="Unsheltered" stackId="a" fill="#C0392B" radius={[0, 4, 4, 0]} maxBarSize={32} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+            <p className="text-center text-xs text-gray-400 pb-2">
+              Data is statistically modelled for illustrative purposes. Figures use deterministic generation seeded from {item.name}.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAuTaxExemptModal = () => {
+    if (!selectedAuState || !showAuTaxExemptModal) return null;
+    const item = selectedAuState;
+
+    let h = 5381;
+    for (let i = 0; i < item.name.length; i++) h = (Math.imul(h, 33) ^ item.name.charCodeAt(i)) | 0;
+    h = Math.abs(h) ^ 0xAA01;
+    const rng = (min, max, salt) => {
+      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
+      return Math.round(min + (v % (max - min + 1)));
+    };
+    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
+
+    const prefixes = [
+      'Pacific', 'Coral', 'Tasman', 'Kimberley', 'Pilbara', 'Hunter', 'Barossa',
+      'Gippsland', 'Riverina', 'Murray', 'Daintree', 'Nullarbor', 'Kakadu',
+      'Southern Cross', 'Red Centre', 'Blue Mountains', 'Sunshine', 'Gold Coast',
+      'Iron Range', 'Cape York', 'Flinders', 'Grampians', 'Snowy', 'Top End',
+      'Great Barrier', 'Broken Hill', 'Darling', 'Eyre', 'Spencer', 'Bass Strait',
+    ];
+
+    const industryGroups = [
+      { industry: 'Mining & Resources', color: 'bg-stone-100 text-stone-700',   keywords: ['Mining', 'Resources', 'Minerals', 'Extraction', 'Coal'] },
+      { industry: 'Agriculture',        color: 'bg-lime-100 text-lime-700',     keywords: ['Farms', 'Agriculture', 'Pastoral', 'Grain', 'Livestock'] },
+      { industry: 'Technology',         color: 'bg-blue-100 text-blue-700',     keywords: ['Technologies', 'Systems', 'Digital', 'Data Solutions', 'Cyber'] },
+      { industry: 'Healthcare',         color: 'bg-green-100 text-green-700',   keywords: ['Health', 'Medical', 'Pharma', 'Biomedical', 'Care Systems'] },
+      { industry: 'Energy',             color: 'bg-amber-100 text-amber-700',   keywords: ['Energy', 'Power', 'Gas', 'Solar', 'Renewables'] },
+      { industry: 'Finance',            color: 'bg-indigo-100 text-indigo-700', keywords: ['Financial', 'Capital', 'Investments', 'Asset Management'] },
+      { industry: 'Construction',       color: 'bg-yellow-100 text-yellow-700', keywords: ['Construction', 'Building', 'Contractors', 'Infrastructure'] },
+      { industry: 'Manufacturing',      color: 'bg-orange-100 text-orange-700', keywords: ['Manufacturing', 'Industries', 'Products', 'Fabrication'] },
+      { industry: 'Real Estate',        color: 'bg-purple-100 text-purple-700', keywords: ['Properties', 'Realty', 'Development', 'Estates'] },
+      { industry: 'Transportation',     color: 'bg-cyan-100 text-cyan-700',     keywords: ['Transport', 'Logistics', 'Freight', 'Shipping'] },
+      { industry: 'Retail & Trade',     color: 'bg-pink-100 text-pink-700',     keywords: ['Retail', 'Commerce', 'Distribution', 'Wholesale'] },
+      { industry: 'Utilities',          color: 'bg-teal-100 text-teal-700',     keywords: ['Utilities', 'Water', 'Electric', 'Grid Services'] },
+      { industry: 'Food & Beverage',    color: 'bg-red-100 text-red-700',       keywords: ['Foods', 'Beverages', 'Brewing', 'Processing'] },
+      { industry: 'Pharmaceutical',     color: 'bg-emerald-100 text-emerald-700', keywords: ['Pharmaceuticals', 'Biotech', 'Laboratories', 'Therapeutics'] },
+      { industry: 'Tourism',            color: 'bg-sky-100 text-sky-700',       keywords: ['Tourism', 'Resorts', 'Hospitality', 'Travel Services'] },
+    ];
+
+    const suffixes = ['Pty Ltd', 'Ltd', 'Corp.', 'Group', 'Holdings', 'Co.'];
+
+    const exemptionTypes = [
+      'Fringe Benefits Tax Exemption',
+      'GST-Free Status',
+      'Research & Development Tax Incentive',
+      'Small Business Tax Offset',
+      'Capital Gains Tax Exemption',
+      'Land Tax Exemption',
+      'Payroll Tax Exemption',
+      'Stamp Duty Concession',
+      'Enterprise Zone Incentive',
+      'Agricultural Land Exemption',
+      'Renewable Energy Tax Credit',
+      'Export Market Development Grant',
+      'Resource Tax Concession',
+      'Regional Investment Credit',
+      'Non-Profit Charitable Status',
+    ];
+
+    const count = rng(15, 20, 200);
+    const companies = Array.from({ length: count }, (_, i) => {
+      const g        = pick(industryGroups, 201 + i * 9);
+      const keyword  = pick(g.keywords,    202 + i * 9);
+      const prefix   = pick(prefixes,      203 + i * 9);
+      const suffix   = pick(suffixes,      204 + i * 9);
+      const exemType = pick(exemptionTypes,205 + i * 9);
+      const year     = rng(2004, 2023,     206 + i * 9);
+      const isBig    = rng(0, 5,           207 + i * 9) === 0;
+      const rawValue = isBig
+        ? rng(5, 50,    208 + i * 9) * 1_000_000
+        : rng(200, 4800,208 + i * 9) * 1_000;
+      const fmtValue = rawValue >= 1_000_000
+        ? `A$${(rawValue / 1_000_000).toFixed(1)}M`
+        : `A$${(rawValue / 1_000).toFixed(0)}K`;
+      return { name: `${prefix} ${keyword} ${suffix}`, industry: g.industry, industryColor: g.color, exemType, fmtValue, rawValue, year };
+    });
+
+    const q = auTaxExemptSearch.toLowerCase();
+    const filtered = q
+      ? companies.filter(c =>
+          c.name.toLowerCase().includes(q) ||
+          c.industry.toLowerCase().includes(q) ||
+          c.exemType.toLowerCase().includes(q)
+        )
+      : companies;
+
+    const totalRaw = companies.reduce((s, c) => s + c.rawValue, 0);
+    const fmtTotal = totalRaw >= 1_000_000_000
+      ? `A$${(totalRaw / 1_000_000_000).toFixed(2)}B`
+      : `A$${(totalRaw / 1_000_000).toFixed(1)}M`;
+
+    const closeModal = () => { setShowAuTaxExemptModal(false); setAuTaxExemptSearch(''); };
+
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
+        style={{ background: 'rgba(0,0,0,0.55)' }}
+        onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
+      >
+        <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Tax Exempt Companies</h2>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {companies.length} companies &nbsp;·&nbsp; Est. total annual exemption:{' '}
+                  <span className="font-semibold" style={{ color: '#92610A' }}>{fmtTotal}</span>
+                  &nbsp;·&nbsp; Illustrative sample data
+                </p>
+              </div>
+              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors ml-4 flex-shrink-0">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                value={auTaxExemptSearch}
+                onChange={(e) => setAuTaxExemptSearch(e.target.value)}
+                placeholder="Search by company name, industry, or exemption type…"
+                className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 bg-white"
+                style={{ '--tw-ring-color': '#C8A400' }}
+              />
+              {auTaxExemptSearch && (
+                <button onClick={() => setAuTaxExemptSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="p-3 sm:p-5">
+            {filtered.length === 0 ? (
+              <div className="text-center py-14 text-gray-400">
+                <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                <p className="text-sm">No companies match &quot;{auTaxExemptSearch}&quot;</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-elegant overflow-hidden">
+                <div className="sm:hidden divide-y divide-gray-100">
+                  {filtered.map((co, i) => (
+                    <div key={i} className="p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold text-gray-800 text-sm leading-snug">{co.name}</p>
+                        <span className="font-bold text-sm whitespace-nowrap flex-shrink-0" style={{ color: '#92610A' }}>{co.fmtValue}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${co.industryColor}`}>{co.industry}</span>
+                        <span className="text-xs text-gray-400">Granted {co.year}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1.5">{co.exemType}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-100">
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-8">#</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Company Name</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Industry</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Exemption Type</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Annual Value</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Year Granted</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((co, i) => (
+                        <tr key={i} className={`border-b border-gray-50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'}`} style={{ ':hover': { backgroundColor: '#FFF9E6' } }}>
+                          <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
+                          <td className="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">{co.name}</td>
+                          <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${co.industryColor}`}>{co.industry}</span></td>
+                          <td className="px-4 py-3 text-gray-600 text-xs whitespace-nowrap">{co.exemType}</td>
+                          <td className="px-4 py-3 text-right font-bold whitespace-nowrap" style={{ color: '#92610A' }}>{co.fmtValue}</td>
+                          <td className="px-4 py-3 text-right text-gray-500 text-xs">{co.year}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {filtered.length < companies.length && (
+                  <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 text-center text-xs text-gray-400">
+                    Showing {filtered.length} of {companies.length} companies
+                  </div>
+                )}
+              </div>
+            )}
+            <p className="text-center text-xs text-gray-400 mt-4">
+              Sample data for illustrative purposes only. Figures are statistically modelled.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAuGrantsModal = () => {
+    if (!selectedAuState || !showAuGrantsModal) return null;
+    const item = selectedAuState;
+
+    let h = 5381;
+    for (let i = 0; i < item.name.length; i++) h = (Math.imul(h, 33) ^ item.name.charCodeAt(i)) | 0;
+    h = Math.abs(h) ^ 0xAA99;
+    const rng = (min, max, salt) => {
+      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
+      return Math.round(min + (v % (max - min + 1)));
+    };
+    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
+
+    const orgPrefixes  = ['Community', 'Regional', 'Metropolitan', 'National', 'Local', 'Rural', 'Urban', 'Aboriginal', 'Torres Strait', 'Indigenous', 'Multicultural', 'Coastal', 'Outback'];
+    const orgFields    = ['Health', 'Education', 'Research', 'Arts', 'Science', 'Environment', 'Youth', 'Family', 'Housing', 'Development', 'Innovation', 'Reconciliation', 'Wellness', 'Veterans', 'Sport'];
+    const orgTypes     = ['Foundation', 'Institute', 'Association', 'Centre', 'Coalition', 'Trust', 'Fund', 'Alliance', 'Council', 'Society', 'Network', 'Initiative'];
+    const coKeywords   = ['Solutions', 'Technologies', 'Systems', 'Services', 'Consulting', 'Innovations', 'Enterprises', 'Analytics', 'Research', 'Engineering'];
+    const coPrefixes   = ['Apex', 'Summit', 'Vanguard', 'Horizon', 'Pinnacle', 'Allied', 'Catalyst', 'Pioneer', 'Integrated', 'Advanced', 'Southern', 'Pacific'];
+    const coSuffixes   = ['Pty Ltd', 'Ltd', 'Corp.', 'Co.'];
+    const firstNames   = ['James', 'Sarah', 'Michael', 'Emily', 'David', 'Jessica', 'Robert', 'Amanda', 'Christopher', 'Rachel', 'Daniel', 'Stephanie', 'Matthew', 'Nicole', 'Anthony', 'Lauren', 'Mark', 'Megan', 'Thomas', 'Priya', 'Liam', 'Olivia', 'Noah', 'Charlotte', 'Jack', 'Mia', 'William', 'Isabelle', 'Henry', 'Amara'];
+    const lastNames    = ['Smith', 'Jones', 'Williams', 'Brown', 'Wilson', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Robinson', 'Clark', 'Lewis', 'Walker', 'Hall', 'Young', 'Nguyen', 'Kim', 'Patel', 'Chen', 'O\'Brien', 'Murphy', 'Walsh', 'Ryan', 'Singh', 'Kowalski'];
+
+    const purposes = [
+      'STEM Education Program', 'Community Health Initiative', 'Infrastructure Modernisation',
+      'Small Business Development', 'Environmental Conservation', 'Workforce Training Program',
+      'Affordable Housing Project', 'Renewable Energy Research', 'Arts & Culture Promotion',
+      'Public Safety Equipment', 'Agricultural Innovation', 'Mental Health Services',
+      'Digital Literacy Program', 'Economic Recovery Initiative', 'Youth Development Program',
+      'Medical Research Grant', 'Clean Water Infrastructure', 'Transport Improvement',
+      'Emergency Preparedness', 'Indigenous Community Support',
+    ];
+
+    const auDepts = [
+      'Dept. of Health & Aged Care',
+      'Dept. of Education',
+      'Dept. of Infrastructure & Transport',
+      'Dept. of Industry, Science & Resources',
+      'Dept. of Agriculture, Fisheries & Forestry',
+      'Dept. of Climate Change, Energy & Water',
+      'Dept. of Employment & Workplace Relations',
+      'Dept. of Finance',
+      'Dept. of Home Affairs',
+      'Australian Research Council',
+      'National Health & Medical Research Council',
+      'Australian Renewable Energy Agency',
+      'Clean Energy Finance Corporation',
+      'Indigenous Land & Sea Council',
+      'Infrastructure Australia',
+    ];
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const count = rng(15, 20, 300);
+    const grants = Array.from({ length: count }, (_, i) => {
+      const recipientType = rng(0, 9, 301 + i * 11) < 5 ? 'org'
+                          : rng(0, 9, 302 + i * 11) < 7 ? 'company'
+                          : 'individual';
+      let recipientName, typeLabel, typeColor;
+      if (recipientType === 'org') {
+        recipientName = `${pick(orgPrefixes, 303 + i * 11)} ${pick(orgFields, 304 + i * 11)} ${pick(orgTypes, 305 + i * 11)}`;
+        typeLabel = 'Organisation'; typeColor = 'bg-green-100 text-green-700';
+      } else if (recipientType === 'company') {
+        recipientName = `${pick(coPrefixes, 306 + i * 11)} ${pick(coKeywords, 307 + i * 11)} ${pick(coSuffixes, 308 + i * 11)}`;
+        typeLabel = 'Company'; typeColor = 'bg-blue-100 text-blue-700';
+      } else {
+        recipientName = `${pick(firstNames, 309 + i * 11)} ${pick(lastNames, 310 + i * 11)}`;
+        typeLabel = 'Individual'; typeColor = 'bg-purple-100 text-purple-700';
+      }
+      const tier = rng(0, 9, 311 + i * 11);
+      const rawAmount = tier < 2
+        ? rng(10, 99, 312 + i * 11) * 1_000
+        : tier < 8
+          ? rng(100, 999, 312 + i * 11) * 1_000
+          : rng(1, 50, 312 + i * 11) * 100_000;
+      const fmtAmount = rawAmount >= 1_000_000
+        ? `A$${(rawAmount / 1_000_000).toFixed(2)}M`
+        : `A$${(rawAmount / 1_000).toFixed(0)}K`;
+      const yr  = rng(2018, 2024, 313 + i * 11);
+      const mo  = pick(months,   314 + i * 11);
+      const purpose = pick(purposes, 315 + i * 11);
+      const dept    = pick(auDepts,  316 + i * 11);
+      return { recipientName, typeLabel, typeColor, purpose, fmtAmount, rawAmount, date: `${mo} ${yr}`, dept };
+    });
+
+    const q = auGrantsSearch.toLowerCase();
+    const filtered = q
+      ? grants.filter(g =>
+          g.recipientName.toLowerCase().includes(q) ||
+          g.purpose.toLowerCase().includes(q) ||
+          g.dept.toLowerCase().includes(q) ||
+          g.typeLabel.toLowerCase().includes(q)
+        )
+      : grants;
+
+    const totalRaw = grants.reduce((s, g) => s + g.rawAmount, 0);
+    const fmtTotal = totalRaw >= 1_000_000_000
+      ? `A$${(totalRaw / 1_000_000_000).toFixed(2)}B`
+      : `A$${(totalRaw / 1_000_000).toFixed(1)}M`;
+
+    const closeModal = () => { setShowAuGrantsModal(false); setAuGrantsSearch(''); };
+
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
+        style={{ background: 'rgba(0,0,0,0.55)' }}
+        onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
+      >
+        <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Grants Given</h2>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {grants.length} grants &nbsp;·&nbsp; Total awarded:{' '}
+                  <span className="font-semibold" style={{ color: '#005728' }}>{fmtTotal}</span>
+                  &nbsp;·&nbsp; Illustrative sample data
+                </p>
+              </div>
+              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors ml-4 flex-shrink-0">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                value={auGrantsSearch}
+                onChange={(e) => setAuGrantsSearch(e.target.value)}
+                placeholder="Search by recipient, purpose, department, or type…"
+                className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 bg-white"
+              />
+              {auGrantsSearch && (
+                <button onClick={() => setAuGrantsSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="p-3 sm:p-5">
+            {filtered.length === 0 ? (
+              <div className="text-center py-14 text-gray-400">
+                <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                <p className="text-sm">No grants match &quot;{auGrantsSearch}&quot;</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-elegant overflow-hidden">
+                <div className="sm:hidden divide-y divide-gray-100">
+                  {filtered.map((g, i) => (
+                    <div key={i} className="p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold text-gray-800 text-sm leading-snug">{g.recipientName}</p>
+                        <span className="font-bold text-sm whitespace-nowrap flex-shrink-0" style={{ color: '#005728' }}>{g.fmtAmount}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${g.typeColor}`}>{g.typeLabel}</span>
+                        <span className="text-xs text-gray-400">{g.date}</span>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1.5">{g.purpose}</p>
+                      <p className="text-xs text-gray-400 mt-0.5 truncate">{g.dept}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-100">
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-8">#</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Recipient</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Type</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Grant Purpose</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Funding Department</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Amount</th>
+                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((g, i) => (
+                        <tr key={i} className={`border-b border-gray-50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'}`}>
+                          <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
+                          <td className="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">{g.recipientName}</td>
+                          <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${g.typeColor}`}>{g.typeLabel}</span></td>
+                          <td className="px-4 py-3 text-gray-600 text-xs">{g.purpose}</td>
+                          <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{g.dept}</td>
+                          <td className="px-4 py-3 text-right font-bold whitespace-nowrap" style={{ color: '#005728' }}>{g.fmtAmount}</td>
+                          <td className="px-4 py-3 text-right text-gray-500 text-xs whitespace-nowrap">{g.date}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {filtered.length < grants.length && (
+                  <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 text-center text-xs text-gray-400">
+                    Showing {filtered.length} of {grants.length} grants
+                  </div>
+                )}
+              </div>
+            )}
+            <p className="text-center text-xs text-gray-400 mt-4">
+              Sample data for illustrative purposes only. Figures are statistically modelled.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -19300,6 +19973,11 @@ function App() {
 
       {/* Grants Given modal */}
       {showGrantsModal && selectedProvince && renderGrantsModal()}
+
+      {/* Australian state modals */}
+      {showAuEconomicModal && selectedAuState && renderAuEconomicModal()}
+      {showAuTaxExemptModal && selectedAuState && renderAuTaxExemptModal()}
+      {showAuGrantsModal && selectedAuState && renderAuGrantsModal()}
 
       {/* Leader profile panel */}
       {showLeaderPanel && selectedLeader && renderLeaderPanel()}
