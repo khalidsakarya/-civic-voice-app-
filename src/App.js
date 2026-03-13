@@ -6918,22 +6918,6 @@ function App() {
                 </div>
               </div>
 
-              {/* Ministerial Decisions */}
-              <div
-                onClick={() => setView('albanese-detail')}
-                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-400 active:scale-95"
-              >
-                <div className="text-amber-600 mb-3 sm:mb-4">
-                  <Scale className="w-10 h-10 sm:w-12 sm:h-12" />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Ministerial Decisions</h2>
-                <p className="text-gray-600 mb-3 text-sm sm:text-base">Recent policies, cabinet decisions &amp; government priorities</p>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>8 Recent Decisions · 2025–26</span>
-                  <ChevronRight className="w-5 h-5 text-amber-600" />
-                </div>
-              </div>
-
             </div>
           </div>
         </div>
