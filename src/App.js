@@ -6784,7 +6784,7 @@ function App() {
     if (isAustralia) {
       return (
         <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-green-50 p-4 sm:p-8 animate-fade-in">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             <button
               onClick={() => setView('countries')}
               className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
@@ -6795,129 +6795,50 @@ function App() {
             <div className="mb-8 animate-slide-in">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-4xl">🇦🇺</span>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Australian Federal Government</h1>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Australia</h1>
               </div>
-              <p className="text-gray-600 text-base sm:text-lg">Explore federal institutions, legislation, and governance</p>
+              <p className="text-gray-600 text-base sm:text-lg">Choose a level of government to explore</p>
               <div className="w-24 h-1 bg-gradient-to-r from-amber-400 to-green-500 mt-3 rounded-full" />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-
-              {/* Prime Minister & Executive */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Federal Government */}
               <div
-                onClick={() => setView('albanese-detail')}
-                className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
-                style={{ animationDelay: '0.05s' }}
-              >
-                <div className="text-amber-600 mb-3 sm:mb-4">
-                  <Crown className="w-10 h-10 sm:w-12 sm:h-12" />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Prime Minister &amp; Executive</h2>
-                <p className="text-gray-600 mb-3 text-sm sm:text-base">The PMO, Cabinet &amp; Executive Branch</p>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>31st PM · Anthony Albanese</span>
-                  <ChevronRight className="w-5 h-5 text-amber-600" />
-                </div>
-              </div>
-
-              {/* Federal Parliament */}
-              <div
-                onClick={() => { setAuChamber('House'); setAuPartyFilter('All'); setAuSearch(''); setView('au-parliament'); }}
-                className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                onClick={() => setView('au-categories')}
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
                 style={{ animationDelay: '0.1s' }}
               >
-                <div className="text-green-700 mb-3 sm:mb-4">
-                  <Users className="w-10 h-10 sm:w-12 sm:h-12" />
+                <div className="text-amber-600 mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10h1v11H4V10zm6 0h1v11h-1V10zm5 0h1v11h-1V10zm5 0h1v11h-1V10z" />
+                  </svg>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Federal Parliament</h2>
-                <p className="text-gray-600 mb-3 text-sm sm:text-base">House of Representatives — explore all members across every party</p>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>151 Members · Lower House</span>
-                  <ChevronRight className="w-5 h-5 text-green-700" />
-                </div>
-              </div>
-
-              {/* Australian Senate */}
-              <div
-                onClick={() => { setAuChamber('Senate'); setAuPartyFilter('All'); setAuSearch(''); setView('au-parliament'); }}
-                className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
-                style={{ animationDelay: '0.15s' }}
-              >
-                <div className="text-emerald-600 mb-3 sm:mb-4">
-                  <Award className="w-10 h-10 sm:w-12 sm:h-12" />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Australian Senate</h2>
-                <p className="text-gray-600 mb-3 text-sm sm:text-base">76 senators representing all states and territories — upper chamber</p>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>76 Senators · Upper Chamber</span>
-                  <ChevronRight className="w-5 h-5 text-emerald-600" />
-                </div>
-              </div>
-
-              {/* Where the Money Goes */}
-              <div
-                onClick={() => { setFinancialDashTab('overview'); setView('money-australia'); }}
-                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-400 active:scale-95"
-              >
-                <div className="text-amber-500 mb-3 sm:mb-4">
-                  <PieChart className="w-10 h-10 sm:w-12 sm:h-12" />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Where the Money Goes</h2>
-                <p className="text-gray-600 mb-3 text-sm sm:text-base">Financial transparency: how AU$682B in federal spending reaches citizens</p>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span className="font-medium">FY 2024-25 · ANAO Audit</span>
-                  <ChevronRight className="w-5 h-5 text-amber-500" />
-                </div>
-              </div>
-
-              {/* Legislative Hub */}
-              <div
-                onClick={() => { setAuLegTab('active'); setView('au-legislative-hub'); }}
-                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
-              >
-                <div className="text-green-600 mb-3 sm:mb-4">
-                  <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Legislative Hub</h2>
-                <p className="text-gray-600 mb-3 text-sm sm:text-base">Active bills, recent votes &amp; Acts of Parliament</p>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span className="font-medium">12 Bills · 4 Royal Assents</span>
-                  <ChevronRight className="w-5 h-5 text-green-600" />
-                </div>
-              </div>
-
-              {/* Government Departments */}
-              <div
-                onClick={() => setView('au-departments')}
-                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95"
-              >
-                <div className="text-amber-700 mb-3 sm:mb-4">
-                  <Building2 className="w-10 h-10 sm:w-12 sm:h-12" />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Departments</h2>
-                <p className="text-gray-600 mb-3 text-sm sm:text-base">Review department budgets, programs &amp; ministerial performance</p>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>15 Federal Departments</span>
-                  <ChevronRight className="w-5 h-5 text-amber-700" />
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Federal Government</h2>
+                <p className="text-gray-600 mb-4 text-sm">Parliament, federal departments, contracts, legislation &amp; more</p>
+                <div className="flex items-center gap-2 text-amber-600 font-semibold text-sm">
+                  <span>Explore Federal</span>
+                  <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
 
               {/* States & Territories */}
               <div
                 onClick={() => setView('au-states')}
-                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-600 active:scale-95"
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                style={{ animationDelay: '0.2s' }}
               >
-                <div className="text-green-600 mb-3 sm:mb-4">
-                  <MapPin className="w-10 h-10 sm:w-12 sm:h-12" />
+                <div className="text-green-600 mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">States &amp; Territories</h2>
-                <p className="text-gray-600 mb-3 text-sm sm:text-base">6 states · 2 territories · Premiers and Chief Ministers</p>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>8 Jurisdictions · State Governments</span>
-                  <ChevronRight className="w-5 h-5 text-green-600" />
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">States &amp; Territories</h2>
+                <p className="text-gray-600 mb-4 text-sm">Premiers of all 6 states and 2 territories</p>
+                <div className="flex items-center gap-2 text-green-600 font-semibold text-sm">
+                  <span>Explore States</span>
+                  <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -10791,7 +10712,7 @@ function App() {
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 p-4 sm:p-8 animate-fade-in">
         <div className="max-w-6xl mx-auto">
           <button
-            onClick={() => { setAuSearch(''); setAuPartyFilter('All'); setView('government-levels'); }}
+            onClick={() => { setAuSearch(''); setAuPartyFilter('All'); setView('au-categories'); }}
             className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
           >
             ← Back
@@ -11701,7 +11622,7 @@ function App() {
         <div className="bg-white shadow-sm">
           <div className="max-w-6xl mx-auto px-4 py-4">
             <button
-              onClick={() => setView('government-levels')}
+              onClick={() => setView('au-categories')}
               className="text-red-700 hover:text-red-900 flex items-center gap-2 mb-4"
             >
               ← Back to Australian Federal Government
@@ -14616,7 +14537,7 @@ function App() {
         <div className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <button
-              onClick={() => setView('government-levels')}
+              onClick={() => setView('au-categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
               ← Back to Australian Federal Government
@@ -16569,6 +16490,133 @@ function App() {
     );
   };
 
+  const renderAuCategories = () => {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-green-50 p-4 sm:p-8 animate-fade-in">
+        <div className="max-w-6xl mx-auto">
+          <button
+            onClick={() => setView('government-levels')}
+            className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
+          >
+            ← Back
+          </button>
+
+          <div className="mb-8 animate-slide-in">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">🇦🇺</span>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Australian Federal Government</h1>
+            </div>
+            <p className="text-gray-600 text-base sm:text-lg">Explore different aspects of federal governance</p>
+            <div className="w-24 h-1 bg-gradient-to-r from-amber-400 to-green-500 mt-3 rounded-full" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+
+            {/* Prime Minister & Executive */}
+            <div
+              onClick={() => setView('albanese-detail')}
+              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              style={{ animationDelay: '0.05s' }}
+            >
+              <div className="text-amber-600 mb-3 sm:mb-4">
+                <Crown className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Prime Minister &amp; Executive</h2>
+              <p className="text-gray-600 mb-3 text-sm sm:text-base">The PMO, Cabinet &amp; Executive Branch</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>31st PM · Anthony Albanese</span>
+                <ChevronRight className="w-5 h-5 text-amber-600" />
+              </div>
+            </div>
+
+            {/* Federal Parliament */}
+            <div
+              onClick={() => { setAuChamber('House'); setAuPartyFilter('All'); setAuSearch(''); setView('au-parliament'); }}
+              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              style={{ animationDelay: '0.1s' }}
+            >
+              <div className="text-green-700 mb-3 sm:mb-4">
+                <Users className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Federal Parliament</h2>
+              <p className="text-gray-600 mb-3 text-sm sm:text-base">House of Representatives — explore all members across every party</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>151 Members · Lower House</span>
+                <ChevronRight className="w-5 h-5 text-green-700" />
+              </div>
+            </div>
+
+            {/* Australian Senate */}
+            <div
+              onClick={() => { setAuChamber('Senate'); setAuPartyFilter('All'); setAuSearch(''); setView('au-parliament'); }}
+              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              style={{ animationDelay: '0.15s' }}
+            >
+              <div className="text-emerald-600 mb-3 sm:mb-4">
+                <Award className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Australian Senate</h2>
+              <p className="text-gray-600 mb-3 text-sm sm:text-base">76 senators representing all states and territories — upper chamber</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>76 Senators · Upper Chamber</span>
+                <ChevronRight className="w-5 h-5 text-emerald-600" />
+              </div>
+            </div>
+
+            {/* Where the Money Goes */}
+            <div
+              onClick={() => { setFinancialDashTab('overview'); setView('money-australia'); }}
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-400 active:scale-95"
+            >
+              <div className="text-amber-500 mb-3 sm:mb-4">
+                <PieChart className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Where the Money Goes</h2>
+              <p className="text-gray-600 mb-3 text-sm sm:text-base">Financial transparency: how AU$682B in federal spending reaches citizens</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span className="font-medium">FY 2024-25 · ANAO Audit</span>
+                <ChevronRight className="w-5 h-5 text-amber-500" />
+              </div>
+            </div>
+
+            {/* Legislative Hub */}
+            <div
+              onClick={() => { setAuLegTab('active'); setView('au-legislative-hub'); }}
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
+            >
+              <div className="text-green-600 mb-3 sm:mb-4">
+                <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Legislative Hub</h2>
+              <p className="text-gray-600 mb-3 text-sm sm:text-base">Active bills, recent votes &amp; Acts of Parliament</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span className="font-medium">12 Bills · 4 Royal Assents</span>
+                <ChevronRight className="w-5 h-5 text-green-600" />
+              </div>
+            </div>
+
+            {/* Government Departments */}
+            <div
+              onClick={() => setView('au-departments')}
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95"
+            >
+              <div className="text-amber-700 mb-3 sm:mb-4">
+                <Building2 className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Departments</h2>
+              <p className="text-gray-600 mb-3 text-sm sm:text-base">Review department budgets, programs &amp; ministerial performance</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>15 Federal Departments</span>
+                <ChevronRight className="w-5 h-5 text-amber-700" />
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderAuDepartments = () => {
     const totalBudget = auDepartments.reduce((sum, d) => sum + d.budgetRaw, 0);
     const totalEmployees = auDepartments.reduce((sum, d) => sum + d.employees, 0);
@@ -16578,7 +16626,7 @@ function App() {
         <div className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
             <button
-              onClick={() => setView('government-levels')}
+              onClick={() => setView('au-categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-2 sm:mb-4 text-sm sm:text-base"
             >
               ← Back to Australian Federal Government
@@ -19229,6 +19277,7 @@ function App() {
       {view === 'money-canada' && renderFinancialDashboard()}
       {view === 'money-australia' && renderFinancialDashboard()}
       {view === 'au-legislative-hub' && renderAuLegislativeHub()}
+      {view === 'au-categories' && renderAuCategories()}
       {view === 'au-departments' && renderAuDepartments()}
       {view === 'au-department-detail' && selectedAuDepartment && renderAuDepartmentDetail()}
       
