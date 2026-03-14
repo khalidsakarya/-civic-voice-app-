@@ -7863,12 +7863,12 @@ function App() {
                   <p className="text-xs text-gray-400 mt-0.5">{leg.name} &nbsp;·&nbsp; {leg.totalSeats} total seats</p>
                 </div>
                 {/* Mobile: compact party stat squares */}
-                <div className="sm:hidden px-4 pt-2 pb-4 grid grid-cols-2 gap-2">
+                <div className="sm:hidden px-4 pt-2 pb-4 grid grid-cols-2 gap-1.5">
                   {leg.parties.map(p => (
-                    <div key={p.name} className="rounded-xl px-4 py-3" style={{ background: `${p.color}1a`, border: `2px solid ${p.color}40` }}>
-                      <p className="text-xs font-semibold text-gray-600 truncate">{p.name}</p>
-                      <p className="text-2xl font-black mt-0.5 tabular-nums" style={{ color: p.color }}>{p.seats}</p>
-                      <p className="text-xs text-gray-400 font-medium">{Math.round(p.seats / leg.totalSeats * 100)}%</p>
+                    <div key={p.name} className="rounded-lg px-2.5 py-1.5" style={{ background: `${p.color}1a`, border: `2px solid ${p.color}40` }}>
+                      <p className="text-[11px] font-semibold text-gray-600 truncate">{p.name}</p>
+                      <p className="text-lg font-black tabular-nums" style={{ color: p.color }}>{p.seats}</p>
+                      <p className="text-[11px] text-gray-400 font-medium">{Math.round(p.seats / leg.totalSeats * 100)}%</p>
                     </div>
                   ))}
                 </div>
@@ -11719,12 +11719,12 @@ function App() {
               <div className="flex flex-col lg:flex-row items-center gap-8">
 
                 {/* Mobile: compact party stat squares */}
-                <div className="sm:hidden w-full grid grid-cols-2 gap-2 mb-2">
+                <div className="sm:hidden w-full grid grid-cols-2 gap-1.5 mb-0">
                   {leg.parties.map(p => (
-                    <div key={p.name} className="rounded-xl px-4 py-3" style={{ background: `${p.color}1a`, border: `2px solid ${p.color}40` }}>
-                      <p className="text-xs font-semibold text-gray-600 truncate">{p.name}</p>
-                      <p className="text-2xl font-black mt-0.5 tabular-nums" style={{ color: p.color }}>{p.seats}</p>
-                      <p className="text-xs text-gray-400 font-medium">{Math.round(p.seats / leg.totalSeats * 100)}%</p>
+                    <div key={p.name} className="rounded-lg px-2.5 py-1.5" style={{ background: `${p.color}1a`, border: `2px solid ${p.color}40` }}>
+                      <p className="text-[11px] font-semibold text-gray-600 truncate">{p.name}</p>
+                      <p className="text-lg font-black tabular-nums" style={{ color: p.color }}>{p.seats}</p>
+                      <p className="text-[11px] text-gray-400 font-medium">{Math.round(p.seats / leg.totalSeats * 100)}%</p>
                     </div>
                   ))}
                 </div>
@@ -11744,8 +11744,8 @@ function App() {
                   <p className="text-xs text-gray-400 text-center">{leg.totalSeats} total seats</p>
                 </div>
 
-                {/* Seat progress bars */}
-                <div className="flex-1 w-full space-y-3.5">
+                {/* Seat progress bars — desktop only */}
+                <div className="hidden sm:block flex-1 w-full space-y-3.5">
                   {leg.parties.map(p => {
                     const pct = Math.round(p.seats / leg.totalSeats * 100);
                     return (
