@@ -846,6 +846,8 @@ function App() {
   const [selectedUkLord, setSelectedUkLord] = useState(null);
   const [ukLordVotes, setUkLordVotes] = useState({});
   const [expandedLordSections, setExpandedLordSections] = useState({});
+  const [selectedUkDepartment, setSelectedUkDepartment] = useState(null);
+  const [ukDeptGrantsExpanded, setUkDeptGrantsExpanded] = useState(false);
   const [auChamber, setAuChamber] = useState('Senate');
   const [auPartyFilter, setAuPartyFilter] = useState('All');
   const [auSearch, setAuSearch] = useState('');
@@ -1238,7 +1240,322 @@ function App() {
       approveVotes: 378, disapproveVotes: 289, userVote: null
     },
   ]);
-  
+
+  const [ukDepartments, setUkDepartments] = useState([
+    {
+      id: 1, name: 'HM Treasury', minister: 'Rachel Reeves', budget: '£9.1 Billion', budgetRaw: 9100000000,
+      grants: '£2.3 Billion', employees: 1200,
+      description: 'Responsible for the UK\'s economic and financial policy, the Budget, and maintaining fiscal stability.',
+      responsibilities: ['Economic and fiscal policy', 'Setting public spending limits', 'Tax policy and HMRC oversight', 'Financial sector regulation', 'Managing government borrowing', 'Growth and productivity strategy'],
+      grantsDetail: [
+        { recipient: 'Bank of England', amount: '£1.1 Billion', purpose: 'Financial stability operations and monetary policy support', date: 'January 2025', type: 'grant' },
+        { recipient: 'UK Infrastructure Bank', amount: '£620 Million', purpose: 'Capitalisation for infrastructure investment across UK regions', date: 'December 2024', type: 'grant' },
+        { recipient: 'Office for Budget Responsibility', amount: '£4.8 Million', purpose: 'Independent fiscal and economic forecasting', date: 'November 2024', type: 'grant' },
+        { recipient: 'Deloitte LLP', amount: '£38 Million', purpose: 'Financial systems modernisation and digital transformation', date: 'October 2024', type: 'contract' },
+      ],
+      approveVotes: 289, disapproveVotes: 412, userVote: null
+    },
+    {
+      id: 2, name: 'Home Office', minister: 'Yvette Cooper', budget: '£21.4 Billion', budgetRaw: 21400000000,
+      grants: '£3.8 Billion', employees: 37000,
+      description: 'Leads on immigration, policing, counter-terrorism, and national security to keep the UK safe.',
+      responsibilities: ['Policing and crime reduction', 'Immigration and borders', 'Counter-terrorism', 'National security', 'Asylum and refugee policy', 'Serious organised crime'],
+      grantsDetail: [
+        { recipient: 'National Crime Agency', amount: '£785 Million', purpose: 'Combating serious and organised crime, cybercrime and trafficking', date: 'January 2025', type: 'grant' },
+        { recipient: 'Metropolitan Police Service', amount: '£370 Million', purpose: 'Counter-terrorism policing national coordination', date: 'December 2024', type: 'grant' },
+        { recipient: 'Serco Group plc', amount: '£290 Million', purpose: 'Immigration detention centre management and removal operations', date: 'November 2024', type: 'contract' },
+        { recipient: 'G4S UK', amount: '£185 Million', purpose: 'Asylum seeker accommodation and support services', date: 'October 2024', type: 'contract' },
+      ],
+      approveVotes: 334, disapproveVotes: 489, userVote: null
+    },
+    {
+      id: 3, name: 'Foreign, Commonwealth & Development Office', minister: 'David Lammy', budget: '£14.8 Billion', budgetRaw: 14800000000,
+      grants: '£8.2 Billion', employees: 17000,
+      description: 'Promotes UK interests abroad, manages overseas aid, and supports British nationals overseas.',
+      responsibilities: ['Foreign policy and diplomacy', 'Official Development Assistance', 'British nationals overseas', 'International trade policy support', 'Conflict prevention', 'Climate diplomacy'],
+      grantsDetail: [
+        { recipient: 'UN World Food Programme', amount: '£890 Million', purpose: 'Emergency food assistance in conflict zones and climate-affected regions', date: 'January 2025', type: 'grant' },
+        { recipient: 'UNICEF', amount: '£445 Million', purpose: 'Child protection, health and education in developing countries', date: 'December 2024', type: 'grant' },
+        { recipient: 'Global Fund (AIDS/TB/Malaria)', amount: '£520 Million', purpose: 'Disease prevention and treatment programmes in low-income countries', date: 'November 2024', type: 'grant' },
+        { recipient: 'Adam Smith International', amount: '£112 Million', purpose: 'Economic development and governance programmes in Africa and South Asia', date: 'October 2024', type: 'contract' },
+      ],
+      approveVotes: 402, disapproveVotes: 318, userVote: null
+    },
+    {
+      id: 4, name: 'Ministry of Defence', minister: 'John Healey', budget: '£52.1 Billion', budgetRaw: 52100000000,
+      grants: '£22.4 Billion', employees: 230000,
+      description: 'Responsible for the defence of the UK and its interests, providing capability to deter and act against threats.',
+      responsibilities: ['UK armed forces readiness', 'Defence procurement and equipment', 'Nuclear deterrent (Trident)', 'NATO commitments', 'Defence intelligence', 'Veterans welfare'],
+      grantsDetail: [
+        { recipient: 'BAE Systems plc', amount: '£7.2 Billion', purpose: 'Type 26 frigates, Eurofighter Typhoon and submarine programmes', date: 'January 2025', type: 'contract' },
+        { recipient: 'Rolls-Royce Holdings', amount: '£1.8 Billion', purpose: 'Nuclear submarine reactor design and maintenance', date: 'December 2024', type: 'contract' },
+        { recipient: 'MBDA UK', amount: '£940 Million', purpose: 'Missile systems and air defence capability development', date: 'November 2024', type: 'contract' },
+        { recipient: 'Leonardo UK', amount: '£620 Million', purpose: 'Helicopter fleet, radar and electronic warfare systems', date: 'October 2024', type: 'contract' },
+      ],
+      approveVotes: 678, disapproveVotes: 234, userVote: null
+    },
+    {
+      id: 5, name: 'Department of Health & Social Care', minister: 'Wes Streeting', budget: '£225.0 Billion', budgetRaw: 225000000000,
+      grants: '£145.2 Billion', employees: 1600000,
+      description: 'Leads health and social care policy, oversees NHS England and supports people\'s health across their lives.',
+      responsibilities: ['NHS England oversight', 'Social care reform', 'Public health strategy', 'Mental health services', 'Adult social care funding', 'Medicines regulation (MHRA)'],
+      grantsDetail: [
+        { recipient: 'NHS England', amount: '£136.5 Billion', purpose: 'Core NHS operational funding for hospitals, GPs and community services', date: 'April 2024', type: 'grant' },
+        { recipient: 'UK Health Security Agency', amount: '£1.8 Billion', purpose: 'Public health protection, emergency preparedness and health security', date: 'January 2025', type: 'grant' },
+        { recipient: 'DHSC Vaccine Programme', amount: '£890 Million', purpose: 'National vaccination programmes including flu and COVID boosters', date: 'December 2024', type: 'contract' },
+        { recipient: 'Pfizer Limited', amount: '£412 Million', purpose: 'COVID-19 and influenza vaccine procurement', date: 'November 2024', type: 'contract' },
+      ],
+      approveVotes: 512, disapproveVotes: 789, userVote: null
+    },
+    {
+      id: 6, name: 'Department for Education', minister: 'Bridget Phillipson', budget: '£108.6 Billion', budgetRaw: 108600000000,
+      grants: '£76.4 Billion', employees: 6000,
+      description: 'Responsible for education, children\'s services and skills across England, from early years to higher education.',
+      responsibilities: ['School funding and curriculum', 'Children\'s social care', 'Special educational needs', 'Further and higher education', 'Skills and apprenticeships', 'Early years provision'],
+      grantsDetail: [
+        { recipient: 'Local authorities (education)', amount: '£62.3 Billion', purpose: 'School revenue funding via Dedicated Schools Grant', date: 'April 2024', type: 'grant' },
+        { recipient: 'Student Loans Company', amount: '£8.9 Billion', purpose: 'Student loans and grants for higher education students', date: 'September 2024', type: 'grant' },
+        { recipient: 'T-Level provider network', amount: '£320 Million', purpose: 'Technical qualification delivery and employer partnership funding', date: 'January 2025', type: 'grant' },
+        { recipient: 'Capita plc', amount: '£145 Million', purpose: 'UCAS and school admissions technology services', date: 'October 2024', type: 'contract' },
+      ],
+      approveVotes: 489, disapproveVotes: 534, userVote: null
+    },
+    {
+      id: 7, name: 'Ministry of Justice', minister: 'Shabana Mahmood', budget: '£12.3 Billion', budgetRaw: 12300000000,
+      grants: '£1.8 Billion', employees: 88000,
+      description: 'Responsible for courts, prisons, probation services and the legal aid system across England and Wales.',
+      responsibilities: ['HM Prison Service', 'Probation Service', 'Courts and tribunals', 'Legal Aid Agency', 'Reducing reoffending', 'Access to justice'],
+      grantsDetail: [
+        { recipient: 'Legal Aid Agency', amount: '£1.2 Billion', purpose: 'Criminal and civil legal aid for individuals who cannot afford legal representation', date: 'January 2025', type: 'grant' },
+        { recipient: 'Serco Group plc', amount: '£245 Million', purpose: 'Operation of private prisons and electronic tagging services', date: 'December 2024', type: 'contract' },
+        { recipient: 'G4S Justice Services', amount: '£198 Million', purpose: 'Court custody and prisoner escorting services', date: 'November 2024', type: 'contract' },
+        { recipient: 'Citizens Advice', amount: '£89 Million', purpose: 'Community legal advice and social welfare support services', date: 'October 2024', type: 'grant' },
+      ],
+      approveVotes: 298, disapproveVotes: 456, userVote: null
+    },
+    {
+      id: 8, name: 'Department for Transport', minister: 'Heidi Alexander', budget: '£34.9 Billion', budgetRaw: 34900000000,
+      grants: '£18.6 Billion', employees: 17000,
+      description: 'Oversees transport infrastructure, regulation, and investment including roads, rail, aviation and maritime.',
+      responsibilities: ['National roads and Highways England', 'Rail franchising and Network Rail', 'Aviation safety and airports policy', 'Maritime and coastal safety', 'Active travel and cycling', 'Transport decarbonisation'],
+      grantsDetail: [
+        { recipient: 'Network Rail Ltd', amount: '£7.8 Billion', purpose: 'Railway infrastructure maintenance and enhancement across Great Britain', date: 'April 2024', type: 'grant' },
+        { recipient: 'National Highways', amount: '£4.2 Billion', purpose: 'Strategic road network operation, maintenance and improvement', date: 'April 2024', type: 'grant' },
+        { recipient: 'Transport for London', amount: '£1.5 Billion', purpose: 'London public transport operations and infrastructure investment', date: 'January 2025', type: 'grant' },
+        { recipient: 'HS2 Ltd', amount: '£3.1 Billion', purpose: 'High Speed 2 Phase 1 (London to Birmingham) construction', date: 'December 2024', type: 'contract' },
+      ],
+      approveVotes: 378, disapproveVotes: 512, userVote: null
+    },
+    {
+      id: 9, name: 'Dept for Environment, Food & Rural Affairs', minister: 'Steve Reed', budget: '£9.8 Billion', budgetRaw: 9800000000,
+      grants: '£4.1 Billion', employees: 27000,
+      description: 'Responsible for environmental protection, food safety, farming policy and rural affairs across England.',
+      responsibilities: ['Agricultural policy and farming payments', 'Nature recovery and biodiversity', 'Water quality and flood risk', 'Food standards and safety', 'Animal welfare', 'Climate adaptation'],
+      grantsDetail: [
+        { recipient: 'Rural Payments Agency', amount: '£2.1 Billion', purpose: 'Basic Payment Scheme and Sustainable Farming Incentive payments to farmers', date: 'April 2024', type: 'grant' },
+        { recipient: 'Environment Agency', amount: '£890 Million', purpose: 'Flood defence maintenance, environmental regulation and water quality', date: 'January 2025', type: 'grant' },
+        { recipient: 'Natural England', amount: '£312 Million', purpose: 'Nature recovery network and protected site management', date: 'December 2024', type: 'grant' },
+        { recipient: 'Food Standards Agency', amount: '£145 Million', purpose: 'Food safety inspections, testing and consumer protection', date: 'November 2024', type: 'grant' },
+      ],
+      approveVotes: 445, disapproveVotes: 287, userVote: null
+    },
+    {
+      id: 10, name: 'Department for Business & Trade', minister: 'Jonathan Reynolds', budget: '£5.2 Billion', budgetRaw: 5200000000,
+      grants: '£2.7 Billion', employees: 7200,
+      description: 'Promotes UK business, supports trade, drives investment and ensures competitive markets for UK growth.',
+      responsibilities: ['Trade negotiations and export promotion', 'Inward investment attraction', 'Business regulation', 'Competition and markets policy', 'Post Office and Royal Mail policy', 'Industrial strategy'],
+      grantsDetail: [
+        { recipient: 'UK Export Finance', amount: '£1.1 Billion', purpose: 'Export credit guarantees and trade finance for UK exporters', date: 'January 2025', type: 'grant' },
+        { recipient: 'British Business Bank', amount: '£645 Million', purpose: 'SME access to finance and start-up loan schemes', date: 'December 2024', type: 'grant' },
+        { recipient: 'Invest in Great Britain campaign', amount: '£89 Million', purpose: 'International trade and investment promotion activities', date: 'November 2024', type: 'contract' },
+        { recipient: 'Catapult Network', amount: '£198 Million', purpose: 'Technology and innovation commercialisation support for businesses', date: 'October 2024', type: 'grant' },
+      ],
+      approveVotes: 367, disapproveVotes: 245, userVote: null
+    },
+    {
+      id: 11, name: 'Department for Work & Pensions', minister: 'Liz Kendall', budget: '£280.3 Billion', budgetRaw: 280300000000,
+      grants: '£245.8 Billion', employees: 91000,
+      description: 'The UK\'s biggest spending department, delivering welfare, pensions and employment support to millions.',
+      responsibilities: ['State Pension', 'Universal Credit administration', 'Child benefit and disability benefits', 'Back to work support', 'Child maintenance', 'Health and Safety Executive'],
+      grantsDetail: [
+        { recipient: 'State Pension payments', amount: '£124.0 Billion', purpose: 'Basic and new State Pension payments to retired individuals', date: 'April 2024', type: 'grant' },
+        { recipient: 'Universal Credit payments', amount: '£71.0 Billion', purpose: 'Working-age benefits for low-income individuals and families', date: 'April 2024', type: 'grant' },
+        { recipient: 'Disability benefits (PIP/ESA)', amount: '£39.4 Billion', purpose: 'Personal Independence Payments and Employment Support Allowance', date: 'April 2024', type: 'grant' },
+        { recipient: 'NHS Shared Business Services', amount: '£312 Million', purpose: 'IT systems and back-office services for benefits administration', date: 'January 2025', type: 'contract' },
+      ],
+      approveVotes: 634, disapproveVotes: 589, userVote: null
+    },
+    {
+      id: 12, name: 'Housing, Communities & Local Govt', minister: 'Angela Rayner', budget: '£31.8 Billion', budgetRaw: 31800000000,
+      grants: '£22.6 Billion', employees: 4500,
+      description: 'Leads on housing supply, planning reform, levelling up, local government funding and community cohesion.',
+      responsibilities: ['Planning reform and housebuilding', 'Affordable homes programme', 'Local government finance', 'Devolution and combined authorities', 'Building safety', 'Rough sleeping strategy'],
+      grantsDetail: [
+        { recipient: 'Homes England', amount: '£7.4 Billion', purpose: 'Affordable housing development, starter homes and Help to Buy programmes', date: 'April 2024', type: 'grant' },
+        { recipient: 'Local authorities (general grant)', amount: '£12.8 Billion', purpose: 'Revenue support grant, business rates and levelling up funding', date: 'April 2024', type: 'grant' },
+        { recipient: 'Greater Manchester Combined Authority', amount: '£1.1 Billion', purpose: 'Mayoral devolution deal and housing regeneration projects', date: 'January 2025', type: 'grant' },
+        { recipient: 'Mace Group', amount: '£230 Million', purpose: 'Programme management for major regeneration and housing projects', date: 'November 2024', type: 'contract' },
+      ],
+      approveVotes: 489, disapproveVotes: 534, userVote: null
+    },
+    {
+      id: 13, name: 'Dept for Energy Security & Net Zero', minister: 'Ed Miliband', budget: '£6.1 Billion', budgetRaw: 6100000000,
+      grants: '£4.5 Billion', employees: 3200,
+      description: 'Leads the UK\'s transition to clean energy, energy security, and reaching net zero by 2050.',
+      responsibilities: ['Offshore wind and renewables expansion', 'Nuclear energy programme', 'North Sea transition', 'Heat pump and home insulation schemes', 'Smart grids and storage', 'International climate finance'],
+      grantsDetail: [
+        { recipient: 'Great British Energy', amount: '£1.5 Billion', purpose: 'New publicly-owned clean energy company capitalisation', date: 'December 2024', type: 'grant' },
+        { recipient: 'Contracts for Difference auction', amount: '£1.2 Billion', purpose: 'Offshore wind and renewable energy price support', date: 'September 2024', type: 'grant' },
+        { recipient: 'Warm Homes Plan', amount: '£780 Million', purpose: 'Home insulation upgrades and heat pump grants for low-income households', date: 'January 2025', type: 'grant' },
+        { recipient: 'EDF Energy Nuclear', amount: '£560 Million', purpose: 'Hinkley Point C nuclear power station construction support', date: 'November 2024', type: 'contract' },
+      ],
+      approveVotes: 523, disapproveVotes: 345, userVote: null
+    },
+    {
+      id: 14, name: 'Dept for Culture, Media & Sport', minister: 'Lisa Nandy', budget: '£3.4 Billion', budgetRaw: 3400000000,
+      grants: '£2.1 Billion', employees: 1900,
+      description: 'Supports arts, culture, media, sport, tourism and the creative economy to enrich lives across the UK.',
+      responsibilities: ['BBC Charter and media regulation', 'Arts Council and heritage funding', 'Sport England and elite sport', 'Tourism promotion (VisitBritain)', 'Gambling regulation', 'Broadband and digital inclusion'],
+      grantsDetail: [
+        { recipient: 'Arts Council England', amount: '£450 Million', purpose: 'Funding for arts organisations, individuals and cultural initiatives', date: 'April 2024', type: 'grant' },
+        { recipient: 'BBC (government grants)', amount: '£378 Million', purpose: 'World Service and S4C broadcasting public service grants', date: 'April 2024', type: 'grant' },
+        { recipient: 'Sport England', amount: '£289 Million', purpose: 'Grassroots sport, community facilities and active lifestyle programmes', date: 'January 2025', type: 'grant' },
+        { recipient: 'Historic England', amount: '£145 Million', purpose: 'Built heritage protection, conservation and community archaeology', date: 'November 2024', type: 'grant' },
+      ],
+      approveVotes: 512, disapproveVotes: 198, userVote: null
+    },
+    {
+      id: 15, name: 'Dept for Science, Innovation & Technology', minister: 'Peter Kyle', budget: '£13.9 Billion', budgetRaw: 13900000000,
+      grants: '£8.4 Billion', employees: 3800,
+      description: 'Drives UK science investment, technology adoption and digital regulation to boost economic growth.',
+      responsibilities: ['R&D investment and innovation strategy', 'AI and data regulation', 'UK Research and Innovation (UKRI)', 'Gigabit broadband rollout', 'Space sector', 'Digital economy regulation'],
+      grantsDetail: [
+        { recipient: 'UK Research and Innovation (UKRI)', amount: '£8.0 Billion', purpose: 'Grants to universities, businesses and researchers across all disciplines', date: 'April 2024', type: 'grant' },
+        { recipient: 'Innovate UK', amount: '£1.1 Billion', purpose: 'Business innovation grants and R&D tax credit support', date: 'January 2025', type: 'grant' },
+        { recipient: 'British Telecom Group', amount: '£512 Million', purpose: 'Full fibre broadband rollout to rural and hard-to-reach areas', date: 'December 2024', type: 'contract' },
+        { recipient: 'National Physical Laboratory', amount: '£78 Million', purpose: 'Measurement science, AI safety standards and quantum research', date: 'November 2024', type: 'grant' },
+      ],
+      approveVotes: 589, disapproveVotes: 212, userVote: null
+    },
+    {
+      id: 16, name: 'Department for Agriculture', minister: 'Steve Reed', budget: '£3.1 Billion', budgetRaw: 3100000000,
+      grants: '£2.4 Billion', employees: 2800,
+      description: 'Supports farming, food production, and rural communities through policy and direct financial support.',
+      responsibilities: ['Agricultural transition plan', 'Sustainable farming incentives', 'Farm business support', 'Animal disease control', 'Food supply chain security', 'Rural development funding'],
+      grantsDetail: [
+        { recipient: 'Sustainable Farming Incentive', amount: '£1.2 Billion', purpose: 'Payments to farmers for environmental land management actions', date: 'April 2024', type: 'grant' },
+        { recipient: 'Countryside Stewardship programme', amount: '£680 Million', purpose: 'Agri-environment schemes for wildlife, water and soil health', date: 'January 2025', type: 'grant' },
+        { recipient: 'AHDB (Agriculture & Horticulture)', amount: '£89 Million', purpose: 'Research, market intelligence and export promotion for UK farming', date: 'December 2024', type: 'grant' },
+        { recipient: 'Fera Science Ltd', amount: '£56 Million', purpose: 'Plant and bee health testing and agricultural diagnostics', date: 'November 2024', type: 'contract' },
+      ],
+      approveVotes: 412, disapproveVotes: 267, userVote: null
+    },
+    {
+      id: 17, name: 'Department for International Trade', minister: 'Douglas Alexander', budget: '£0.6 Billion', budgetRaw: 600000000,
+      grants: '£0.3 Billion', employees: 3500,
+      description: 'Negotiates free trade agreements and drives UK export growth and inward investment from global markets.',
+      responsibilities: ['Free trade agreement negotiations', 'Export strategy and GREAT campaign', 'Trade remedies authority', 'CPTPP accession implementation', 'Investment security', 'Trade policy post-Brexit'],
+      grantsDetail: [
+        { recipient: 'UK Export Finance', amount: '£145 Million', purpose: 'Soft loans and guarantees to support UK exports to developing markets', date: 'January 2025', type: 'grant' },
+        { recipient: 'GREAT Britain campaign', amount: '£78 Million', purpose: 'International trade, tourism and investment promotion across 150 countries', date: 'December 2024', type: 'contract' },
+        { recipient: 'Open to Export programme', amount: '£34 Million', purpose: 'Online support and guidance platform for small UK exporters', date: 'November 2024', type: 'grant' },
+        { recipient: 'Ipsos MORI', amount: '£12 Million', purpose: 'Trade policy research and market opportunity analysis', date: 'October 2024', type: 'contract' },
+      ],
+      approveVotes: 334, disapproveVotes: 289, userVote: null
+    },
+    {
+      id: 18, name: 'Attorney General\'s Office', minister: 'Lord Hermer KC', budget: '£0.7 Billion', budgetRaw: 700000000,
+      grants: '£0.4 Billion', employees: 520,
+      description: 'Provides independent legal advice to the government and oversees the Crown Prosecution Service and Serious Fraud Office.',
+      responsibilities: ['Legal advice to Cabinet', 'Crown Prosecution Service oversight', 'Serious Fraud Office oversight', 'Government Legal Department', 'Public interest litigation', 'Legal aid policy'],
+      grantsDetail: [
+        { recipient: 'Crown Prosecution Service', amount: '£745 Million', purpose: 'Independent prosecution of criminal cases across England and Wales', date: 'April 2024', type: 'grant' },
+        { recipient: 'Serious Fraud Office', amount: '£58 Million', purpose: 'Investigation and prosecution of serious and complex fraud cases', date: 'January 2025', type: 'grant' },
+        { recipient: 'Government Legal Department', amount: '£112 Million', purpose: 'Legal services to government departments across all policy areas', date: 'November 2024', type: 'grant' },
+        { recipient: 'Law Commission', amount: '£4.2 Million', purpose: 'Independent law reform and statute consolidation work', date: 'October 2024', type: 'grant' },
+      ],
+      approveVotes: 289, disapproveVotes: 198, userVote: null
+    },
+    {
+      id: 19, name: 'Cabinet Office', minister: 'Pat McFadden', budget: '£4.1 Billion', budgetRaw: 4100000000,
+      grants: '£1.6 Billion', employees: 12000,
+      description: 'Supports the Prime Minister and Cabinet, coordinates civil service reform and delivers central government functions.',
+      responsibilities: ['Cabinet coordination and governance', 'Civil Service reform', 'Union policy', 'National security coordination', 'Electoral administration', 'Government commercial function'],
+      grantsDetail: [
+        { recipient: 'Government Digital Service', amount: '£560 Million', purpose: 'GOV.UK platform, digital identity and cross-government technology services', date: 'January 2025', type: 'grant' },
+        { recipient: 'Crown Commercial Service', amount: '£345 Million', purpose: 'Central government procurement frameworks and commercial services', date: 'December 2024', type: 'grant' },
+        { recipient: 'Electoral Commission', amount: '£28 Million', purpose: 'Regulation of elections, referendums and political party funding', date: 'November 2024', type: 'grant' },
+        { recipient: 'Accenture UK', amount: '£198 Million', purpose: 'Government transformation, data and technology advisory services', date: 'October 2024', type: 'contract' },
+      ],
+      approveVotes: 312, disapproveVotes: 378, userVote: null
+    },
+    {
+      id: 20, name: 'Department for Digital', minister: 'Peter Kyle', budget: '£2.5 Billion', budgetRaw: 2500000000,
+      grants: '£1.3 Billion', employees: 2200,
+      description: 'Drives UK\'s digital strategy, online safety regulation, and government technology infrastructure.',
+      responsibilities: ['Online Safety Act implementation', 'AI governance framework', 'Digital public services', 'Cyber resilience', 'Data economy regulation', 'Digital identity infrastructure'],
+      grantsDetail: [
+        { recipient: 'Ofcom (digital regulation)', amount: '£340 Million', purpose: 'Online safety regulation, age verification and harmful content enforcement', date: 'January 2025', type: 'grant' },
+        { recipient: 'National Cyber Security Centre', amount: '£285 Million', purpose: 'Cyber threat intelligence, incident response and public guidance', date: 'December 2024', type: 'grant' },
+        { recipient: 'AI Safety Institute', amount: '£100 Million', purpose: 'Advanced AI model safety evaluation and international standards work', date: 'November 2024', type: 'grant' },
+        { recipient: 'McKinsey & Company UK', amount: '£89 Million', purpose: 'Digital strategy consulting and government technology transformation', date: 'October 2024', type: 'contract' },
+      ],
+      approveVotes: 534, disapproveVotes: 189, userVote: null
+    },
+    {
+      id: 21, name: 'Northern Ireland Office', minister: 'Hilary Benn', budget: '£1.4 Billion', budgetRaw: 1400000000,
+      grants: '£0.9 Billion', employees: 340,
+      description: 'Manages the UK government\'s relationship with Northern Ireland and oversees the devolution settlement.',
+      responsibilities: ['Northern Ireland devolution settlement', 'Irish border and trade policy', 'Good Friday Agreement oversight', 'Security and legacy issues', 'NI elections and institutions', 'Cross-community relations'],
+      grantsDetail: [
+        { recipient: 'Northern Ireland Executive', amount: '£14.5 Billion', purpose: 'Block grant to Northern Ireland devolved government (Barnett formula)', date: 'April 2024', type: 'grant' },
+        { recipient: 'Maze/Long Kesh Development Corporation', amount: '£45 Million', purpose: 'Regeneration of former Maze Prison site as peace and reconciliation centre', date: 'January 2025', type: 'grant' },
+        { recipient: 'Northern Ireland Community Relations Council', amount: '£12 Million', purpose: 'Cross-community dialogue and reconciliation programmes', date: 'November 2024', type: 'grant' },
+        { recipient: 'Independent Commission for Reconciliation & Information Recovery', amount: '£8.9 Million', purpose: 'Addressing legacy of Troubles through independent fact-finding', date: 'October 2024', type: 'grant' },
+      ],
+      approveVotes: 298, disapproveVotes: 234, userVote: null
+    },
+    {
+      id: 22, name: 'Scotland Office', minister: 'Ian Murray', budget: '£0.3 Billion', budgetRaw: 300000000,
+      grants: '£0.1 Billion', employees: 290,
+      description: 'Represents Scottish interests in UK government and promotes the devolution partnership with Holyrood.',
+      responsibilities: ['Scotland Act devolution oversight', 'Scottish Parliament relationship', 'UK funding for Scotland coordination', 'Reserved matters in Scotland', 'Scottish industry support', 'Offshore wind and energy transition'],
+      grantsDetail: [
+        { recipient: 'Scottish Government (reserved funding)', amount: '£45.0 Billion', purpose: 'Barnett formula block grant to the Scottish Government (reserved matters)', date: 'April 2024', type: 'grant' },
+        { recipient: 'Scottish Enterprise', amount: '£89 Million', purpose: 'Business growth, innovation and export support in Scotland', date: 'January 2025', type: 'grant' },
+        { recipient: 'Highlands and Islands Enterprise', amount: '£45 Million', purpose: 'Economic and community development in Scotland\'s remote regions', date: 'December 2024', type: 'grant' },
+        { recipient: 'EventScotland', amount: '£18 Million', purpose: 'National events strategy and major event attraction to Scotland', date: 'November 2024', type: 'grant' },
+      ],
+      approveVotes: 312, disapproveVotes: 267, userVote: null
+    },
+    {
+      id: 23, name: 'Wales Office', minister: 'Jo Stevens', budget: '£0.5 Billion', budgetRaw: 500000000,
+      grants: '£0.2 Billion', employees: 280,
+      description: 'Promotes Wales\'s interests in the UK government and facilitates the Welsh devolution settlement.',
+      responsibilities: ['Government of Wales Act oversight', 'Welsh Government relationship', 'Wales devolution settlement', 'Reserved policy in Wales', 'HS2 Barnett consequentials', 'Welsh language policy'],
+      grantsDetail: [
+        { recipient: 'Welsh Government (block grant)', amount: '£19.8 Billion', purpose: 'Barnett formula funding to the Welsh Government for devolved services', date: 'April 2024', type: 'grant' },
+        { recipient: 'Development Bank of Wales', amount: '£78 Million', purpose: 'Business finance and economic development across Welsh regions', date: 'January 2025', type: 'grant' },
+        { recipient: 'Wales & West Utilities', amount: '£45 Million', purpose: 'Gas network infrastructure and decarbonisation in Wales', date: 'December 2024', type: 'contract' },
+        { recipient: 'Visit Wales campaign', amount: '£22 Million', purpose: 'International tourism promotion and visitor economy development', date: 'November 2024', type: 'grant' },
+      ],
+      approveVotes: 289, disapproveVotes: 234, userVote: null
+    },
+    {
+      id: 24, name: 'Privy Council Office', minister: 'Lucy Powell', budget: '£0.1 Billion', budgetRaw: 100000000,
+      grants: '£0.0 Billion', employees: 120,
+      description: 'Supports the Privy Council and manages royal charters, Orders in Council and the granting of university status.',
+      responsibilities: ['Privy Council meetings (Orders in Council)', 'Royal charter applications', 'University status approval', 'Professional body regulation', 'Parliamentary franchise', 'Ministerial appointments'],
+      grantsDetail: [
+        { recipient: 'Commonwealth Secretariat', amount: '£19 Million', purpose: 'UK contribution to Commonwealth governance and capacity-building programmes', date: 'January 2025', type: 'grant' },
+        { recipient: 'Judicial Appointments Commission', amount: '£12 Million', purpose: 'Independent selection of judges for courts and tribunals in England and Wales', date: 'December 2024', type: 'grant' },
+        { recipient: 'Regulatory bodies charter work', amount: '£4.5 Million', purpose: 'Processing royal charter applications for professional and academic bodies', date: 'November 2024', type: 'contract' },
+        { recipient: 'Parliamentary Archives', amount: '£3.2 Million', purpose: 'Preservation and digitisation of historic Parliamentary records', date: 'October 2024', type: 'grant' },
+      ],
+      approveVotes: 245, disapproveVotes: 156, userVote: null
+    },
+  ]);
+
   // Legislative Hub state
   const [legislativeTab, setLegislativeTab] = useState('bills'); // bills, laws, upcoming
   const [usLegTab, setUsLegTab] = useState('bills');
@@ -4566,6 +4883,22 @@ function App() {
 
   const toggleLordSection = (section) => {
     setExpandedLordSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const voteUkDepartment = (deptId, vote) => {
+    setUkDepartments(ukDepartments.map(dept => {
+      if (dept.id === deptId) {
+        const d = { ...dept };
+        if (dept.userVote === 'approve') d.approveVotes--;
+        else if (dept.userVote === 'disapprove') d.disapproveVotes--;
+        if (vote === 'approve') { d.approveVotes++; d.userVote = 'approve'; }
+        else if (vote === 'disapprove') { d.disapproveVotes++; d.userVote = 'disapprove'; }
+        else { d.userVote = null; }
+        if (selectedUkDepartment && selectedUkDepartment.id === deptId) setSelectedUkDepartment(d);
+        return d;
+      }
+      return dept;
+    }));
   };
 
   // ── HOME REGION (locked once set, used to gate votes) ────────────────────────
@@ -12133,6 +12466,353 @@ function App() {
     );
   };
 
+  const renderUKDepartments = () => {
+    const totalBudget = ukDepartments.reduce((sum, d) => sum + d.budgetRaw, 0);
+    const totalEmployees = ukDepartments.reduce((sum, d) => sum + d.employees, 0);
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
+            <button
+              onClick={() => setView('uk-national')}
+              className="flex items-center gap-2 mb-2 sm:mb-4 text-sm sm:text-base font-medium"
+              style={{ color: '#C8102E' }}
+            >
+              ← Back to Westminster
+            </button>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🇬🇧</span>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">UK Government Departments</h1>
+                <div className="w-20 h-1 mt-1 rounded-full" style={{ background: 'linear-gradient(to right, #C8102E, #012169)' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:py-8">
+          {/* Overview Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className="rounded-lg p-4 sm:p-6 border-2" style={{ background: 'linear-gradient(135deg, #C8102E15, #C8102E08)', borderColor: '#C8102E' }}>
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <Building2 className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: '#C8102E' }} />
+                <h3 className="text-base sm:text-lg font-bold text-gray-800">Total Departments</h3>
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold" style={{ color: '#C8102E' }}>{ukDepartments.length}</p>
+            </div>
+            <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-300 rounded-lg p-4 sm:p-6">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+                <h3 className="text-base sm:text-lg font-bold text-gray-800">Combined Budget</h3>
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold text-green-600">£{(totalBudget / 1000000000000).toFixed(1)}T</p>
+            </div>
+            <div className="rounded-lg p-4 sm:p-6 border-2" style={{ background: 'linear-gradient(135deg, #01216915, #01216908)', borderColor: '#012169' }}>
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <Users className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: '#012169' }} />
+                <h3 className="text-base sm:text-lg font-bold text-gray-800">Total Employees</h3>
+              </div>
+              <p className="text-2xl sm:text-3xl font-bold" style={{ color: '#012169' }}>{totalEmployees.toLocaleString()}</p>
+            </div>
+          </div>
+
+          {/* Departments Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {ukDepartments.map(dept => {
+              const totalVotes = dept.approveVotes + dept.disapproveVotes;
+              const approvalRate = totalVotes > 0 ? Math.round((dept.approveVotes / totalVotes) * 100) : 0;
+              return (
+                <div
+                  key={dept.id}
+                  onClick={() => { setSelectedUkDepartment(dept); setView('uk-department-detail'); }}
+                  className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent active:scale-95"
+                  onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+                >
+                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{dept.name}</h3>
+                      <p className="text-sm sm:text-base text-gray-600 mb-2">Minister: {dept.minister}</p>
+                      <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — Budget: ${dept.budget} | Minister: ${dept.minister} | Approval: ${approvalRate}%`, url: window.location.href })}
+                        className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
+                        aria-label="Share"
+                      >
+                        {copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                      </button>
+                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-3 sm:mb-4">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Budget</p>
+                      <p className="text-sm sm:text-lg font-bold text-green-600">{dept.budget}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Grants</p>
+                      <p className="text-sm sm:text-lg font-bold text-blue-600">{dept.grants}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Employees</p>
+                      <p className="text-sm sm:text-lg font-bold" style={{ color: '#012169' }}>{dept.employees.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-3 sm:pt-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs sm:text-sm text-gray-600">Public Approval</span>
+                      <span className={`text-base sm:text-lg font-bold ${approvalRate >= 60 ? 'text-green-600' : approvalRate >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                        {approvalRate}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                      <div
+                        className={`h-2 rounded-full ${approvalRate >= 60 ? 'bg-green-500' : approvalRate >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                        style={{ width: `${approvalRate}%` }}
+                      ></div>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
+                      <span>👍 {dept.approveVotes}</span>
+                      <span>👎 {dept.disapproveVotes}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderUKDepartmentDetail = () => {
+    if (!selectedUkDepartment) return null;
+    const dept = selectedUkDepartment;
+    const totalVotes = dept.approveVotes + dept.disapproveVotes;
+    const approvalRate = totalVotes > 0 ? Math.round((dept.approveVotes / totalVotes) * 100) : 0;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <button
+              onClick={() => { setSelectedUkDepartment(null); setView('uk-departments'); }}
+              className="flex items-center gap-2 mb-4 font-medium"
+              style={{ color: '#C8102E' }}
+            >
+              ← Back to Departments
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          {/* Department Header */}
+          <div className="relative bg-white rounded-lg shadow-md p-8 mb-6">
+            <button
+              onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — Budget: ${dept.budget} | Staff: ${dept.employees.toLocaleString()} | Minister: ${dept.minister}`, url: window.location.href })}
+              className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
+              aria-label="Share"
+            >
+              {copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+            </button>
+
+            {/* UK flag bar */}
+            <div className="h-1.5 w-full rounded-full mb-6" style={{ background: 'linear-gradient(to right, #C8102E, #FFFFFF, #012169)' }} />
+
+            <div className="flex items-start gap-4 mb-6">
+              <span className="text-4xl flex-shrink-0">🇬🇧</span>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-1">{dept.name}</h1>
+                <p className="text-lg text-gray-600 mb-3">Secretary of State / Minister: <span className="font-semibold" style={{ color: '#012169' }}>{dept.minister}</span></p>
+                <p className="text-gray-700 max-w-3xl">{dept.description}</p>
+              </div>
+            </div>
+
+            {/* Key Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <DollarSign className="w-8 h-8 text-green-600" />
+                  <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
+                </div>
+                <p className="text-3xl font-bold text-green-600">{dept.budget}</p>
+                <p className="text-sm text-gray-500 mt-1">FY 2024–25</p>
+              </div>
+              <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <TrendingUp className="w-8 h-8 text-blue-600" />
+                  <h3 className="text-lg font-bold text-gray-800">Grants & Contracts</h3>
+                </div>
+                <p className="text-3xl font-bold text-blue-600">{dept.grants}</p>
+              </div>
+              <div className="rounded-lg p-6 border-2" style={{ background: '#01216908', borderColor: '#012169' }}>
+                <div className="flex items-center gap-3 mb-2">
+                  <Users className="w-8 h-8" style={{ color: '#012169' }} />
+                  <h3 className="text-lg font-bold text-gray-800">Civil Servants</h3>
+                </div>
+                <p className="text-3xl font-bold" style={{ color: '#012169' }}>{dept.employees.toLocaleString()}</p>
+              </div>
+            </div>
+
+            {/* Responsibilities */}
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-3">Key Responsibilities</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {dept.responsibilities.map((resp, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 flex-shrink-0" style={{ color: '#C8102E' }} />
+                    <span className="text-gray-700">{resp}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Grants Breakdown */}
+            {dept.grantsDetail && dept.grantsDetail.length > 0 && (
+              <div className="mb-6">
+                <button
+                  onClick={() => setUkDeptGrantsExpanded(!ukDeptGrantsExpanded)}
+                  className="w-full rounded-lg p-5 hover:shadow-lg transition-all flex items-center justify-between cursor-pointer border-2"
+                  style={{ background: 'linear-gradient(to right, #C8102E08, #01216908)', borderColor: '#C8102E' }}
+                >
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="w-8 h-8" style={{ color: '#C8102E' }} />
+                    <div className="text-left">
+                      <h3 className="text-xl font-bold text-gray-800">💰 Grants & Funding Breakdown</h3>
+                      <p className="text-sm text-gray-600">
+                        {dept.grantsDetail.length} major grants • {dept.grants} total allocated
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium" style={{ color: '#C8102E' }}>
+                      {ukDeptGrantsExpanded ? 'Hide Details' : 'View All Recipients'}
+                    </span>
+                    {ukDeptGrantsExpanded
+                      ? <ChevronDown className="w-6 h-6" style={{ color: '#C8102E' }} />
+                      : <ChevronRight className="w-6 h-6" style={{ color: '#C8102E' }} />
+                    }
+                  </div>
+                </button>
+
+                {ukDeptGrantsExpanded && (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-gray-700 font-medium mb-3 px-2">
+                      🔍 Major grants and contracts showing organisations receiving taxpayer funding:
+                    </p>
+                    {dept.grantsDetail.map((grant, i) => (
+                      <div
+                        key={i}
+                        className="relative bg-white rounded-lg p-4 pr-12 hover:shadow-md transition-shadow"
+                        style={{ border: '1px solid #e5e7eb', borderLeft: `4px solid ${grant.type === 'contract' ? '#2563eb' : '#C8102E'}` }}
+                      >
+                        <button
+                          onClick={(e) => handleShare(e, { id: 'ukgrant-' + grant.recipient, title: grant.recipient, text: `💰 ${grant.recipient} — ${grant.amount} ${grant.type === 'contract' ? '(Contract)' : '(Grant)'}: ${grant.purpose}`, url: window.location.href })}
+                          className={`absolute top-2 right-2 p-2 rounded-lg transition-colors z-10 ${copiedShareId === 'ukgrant-' + grant.recipient ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
+                          aria-label="Share"
+                        >
+                          {copiedShareId === 'ukgrant-' + grant.recipient ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                        </button>
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                              <h4 className="text-lg font-bold text-gray-800">{grant.recipient}</h4>
+                              {grant.type && (
+                                <span className="text-sm font-bold px-3 py-1 rounded-full flex-shrink-0" style={{ backgroundColor: grant.type === 'contract' ? '#2563eb' : '#C8102E', color: 'white' }}>
+                                  {grant.type === 'contract' ? 'Contract' : 'Grant'}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{grant.purpose}</p>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-2xl font-bold text-green-600">{grant.amount}</p>
+                            <p className="text-xs text-gray-500">{grant.date}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Approval Voting */}
+          <div className="bg-white rounded-lg shadow-md p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Do You Approve of This Department's Performance?</h2>
+            <div className="h-1 w-16 rounded-full mb-6" style={{ background: 'linear-gradient(to right, #C8102E, #012169)' }} />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <ThumbsUp className="w-10 h-10 text-green-600" />
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">Approve</h3>
+                      <p className="text-sm text-gray-600">They're doing a good job</p>
+                    </div>
+                  </div>
+                  <div className="text-3xl font-bold text-green-600">{dept.approveVotes}</div>
+                </div>
+                <button
+                  onClick={() => requireRegion(() => voteUkDepartment(dept.id, dept.userVote === 'approve' ? 'remove' : 'approve'))}
+                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${dept.userVote === 'approve' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
+                >
+                  {dept.userVote === 'approve' ? '✓ You Approve' : 'Vote Approve'}
+                </button>
+              </div>
+
+              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <ThumbsDown className="w-10 h-10 text-red-600" />
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
+                      <p className="text-sm text-gray-600">They need to improve</p>
+                    </div>
+                  </div>
+                  <div className="text-3xl font-bold text-red-600">{dept.disapproveVotes}</div>
+                </div>
+                <button
+                  onClick={() => requireRegion(() => voteUkDepartment(dept.id, dept.userVote === 'disapprove' ? 'remove' : 'disapprove'))}
+                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${dept.userVote === 'disapprove' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
+                >
+                  {dept.userVote === 'disapprove' ? '✓ You Disapprove' : 'Vote Disapprove'}
+                </button>
+              </div>
+            </div>
+
+            {/* Approval Stats */}
+            <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-800">Overall Approval Rating</h3>
+                <span className={`text-3xl font-bold ${approvalRate >= 60 ? 'text-green-600' : approvalRate >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                  {approvalRate}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-300 rounded-full h-4">
+                <div
+                  className={`h-4 rounded-full transition-all ${approvalRate >= 60 ? 'bg-green-500' : approvalRate >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                  style={{ width: `${approvalRate}%` }}
+                ></div>
+              </div>
+              <div className="flex items-center justify-between mt-4 text-gray-600">
+                <span>👍 {dept.approveVotes} Approve</span>
+                <span>👎 {dept.disapproveVotes} Disapprove</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderUKNational = () => (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-6xl mx-auto">
@@ -12243,7 +12923,7 @@ function App() {
 
           {/* Government Departments */}
           <div
-            onClick={() => setView('uk-coming-soon')}
+            onClick={() => setView('uk-departments')}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
             onMouseEnter={e => e.currentTarget.style.borderColor = '#1D4ED8'}
             onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
@@ -24503,6 +25183,8 @@ function App() {
       {view === 'uk-lords' && renderUKLords()}
       {view === 'uk-lord-detail' && selectedUkLord && renderUKLordDetail()}
       {view === 'uk-legislative-hub' && renderUKLegislativeHub()}
+      {view === 'uk-departments' && renderUKDepartments()}
+      {view === 'uk-department-detail' && selectedUkDepartment && renderUKDepartmentDetail()}
       {view === 'uk-regions' && renderUKRegions()}
       {view === 'uk-coming-soon' && renderUKComingSoon()}
       {view === 'au-analytics' && renderAuAnalytics()}
