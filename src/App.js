@@ -229,6 +229,39 @@ const customStyles = `
     color: #9ca3af;
     margin-bottom: 0.5rem;
   }
+
+  /* ── Global Readability Improvements ── */
+
+  /* Darken all light gray text to near-black (#374151 minimum) */
+  .text-gray-400 { color: #4b5563 !important; }
+  .text-gray-500 { color: #374151 !important; }
+  .text-gray-600 { color: #374151 !important; }
+
+  /* Paragraph text: 15px, generous line-height, dark color */
+  p {
+    font-size: 15px;
+    line-height: 1.65;
+    color: #374151;
+  }
+
+  /* Increase base body text size from 14px → 15px */
+  .text-sm {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  /* Increase tiny labels from 12px → 13px */
+  .text-xs {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  /* Keep explicit small p tags (footnotes, disclaimers) legible but compact */
+  p.text-xs { font-size: 13px; }
+
+  /* Restore intentionally tiny UI chrome (badges, chart ticks handled inline) */
+  .text-\[11px\] { font-size: 11px !important; }
+  .text-\[10px\] { font-size: 10px !important; }
 `;
 
 
