@@ -841,6 +841,11 @@ function App() {
   const [selectedUkMember, setSelectedUkMember] = useState(null);
   const [ukMpVotes, setUkMpVotes] = useState({});
   const [expandedUkSections, setExpandedUkSections] = useState({});
+  const [ukLordFilter, setUkLordFilter] = useState('All');
+  const [ukLordSearch, setUkLordSearch] = useState('');
+  const [selectedUkLord, setSelectedUkLord] = useState(null);
+  const [ukLordVotes, setUkLordVotes] = useState({});
+  const [expandedLordSections, setExpandedLordSections] = useState({});
   const [auChamber, setAuChamber] = useState('Senate');
   const [auPartyFilter, setAuPartyFilter] = useState('All');
   const [auSearch, setAuSearch] = useState('');
@@ -4546,6 +4551,18 @@ function App() {
 
   const toggleUkSection = (section) => {
     setExpandedUkSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const voteUkLord = (name, vote) => {
+    setUkLordVotes(prev => {
+      const cur = prev[name] || { support: 0, oppose: 0, userVote: null };
+      const newVote = cur.userVote === vote ? null : vote;
+      return { ...prev, [name]: { support: cur.support, oppose: cur.oppose, userVote: newVote } };
+    });
+  };
+
+  const toggleLordSection = (section) => {
+    setExpandedLordSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   // ── HOME REGION (locked once set, used to gate votes) ────────────────────────
@@ -11077,6 +11094,550 @@ function App() {
     );
   };
 
+  // ── UK House of Lords data ────────────────────────────────────────────────────
+  const ukLords = [
+    // Labour Life Peers (10)
+    { name: 'Baroness Amos', title: 'Baroness Amos', type: 'Life Peer', affiliation: 'Labour', appointed: '1997-07-24', committees: ['International Relations & Defence Committee', 'Equality Act 2010 Committee'], bio: 'Valerie Amos served as Leader of the House of Lords, Secretary of State for International Development, and UN Under-Secretary-General for Humanitarian Affairs. A pioneering figure in British public life, she has dedicated decades to international development and conflict resolution.', supportVotes: 5800, opposeVotes: 1100 },
+    { name: 'Lord Adonis', title: 'Lord Adonis', type: 'Life Peer', affiliation: 'Labour', appointed: '2005-08-05', committees: ['Economic Affairs Committee', 'Built Environment Committee'], bio: 'Andrew Adonis was a key architect of the academies programme and served as Minister of State for Transport. He remains a prominent advocate for infrastructure investment and high-speed rail.', supportVotes: 4600, opposeVotes: 1400 },
+    { name: 'Baroness Chakrabarti', title: 'Baroness Chakrabarti', type: 'Life Peer', affiliation: 'Labour', appointed: '2016-08-04', committees: ['Joint Committee on Human Rights', 'Constitution Committee'], bio: 'Shami Chakrabarti served as Director of Liberty for thirteen years and was the leading voice on civil liberties and human rights in Britain. She serves as Shadow Attorney General.', supportVotes: 6100, opposeVotes: 2300 },
+    { name: 'Lord Darzi', title: 'Lord Darzi', type: 'Life Peer', affiliation: 'Labour', appointed: '2007-06-29', committees: ['Science & Technology Committee', 'Health & Social Care Committee'], bio: 'Ara Darzi is an eminent surgeon and healthcare innovator who led the independent review of NHS England published in 2024. He was appointed as Parliamentary Under-Secretary of State for Health under Keir Starmer.', supportVotes: 5400, opposeVotes: 700 },
+    { name: 'Baroness Thornton', title: 'Baroness Thornton', type: 'Life Peer', affiliation: 'Labour', appointed: '1998-07-21', committees: ['Delegated Powers Committee'], bio: 'Glenys Thornton has served as a Labour peer since 1998 with a focus on women\'s health, co-operative enterprise, and consumer rights legislation.', supportVotes: 3800, opposeVotes: 680 },
+    { name: 'Lord Boateng', title: 'Lord Boateng', type: 'Life Peer', affiliation: 'Labour', appointed: '2010-09-15', committees: ['International Relations & Defence Committee'], bio: 'Paul Boateng was the UK\'s first Black Cabinet minister, serving as Chief Secretary to the Treasury, and later as British High Commissioner to South Africa.', supportVotes: 4900, opposeVotes: 900 },
+    { name: 'Baroness Hayman', title: 'Baroness Hayman', type: 'Life Peer', affiliation: 'Labour', appointed: '1996-06-13', committees: ['Science & Technology Committee'], bio: 'Helene Hayman served as the first Lord Speaker of the House of Lords from 2006 to 2011, and is a patron of Dying in Dignity.', supportVotes: 3600, opposeVotes: 520 },
+    { name: 'Lord Levy', title: 'Lord Levy', type: 'Life Peer', affiliation: 'Labour', appointed: '1997-05-23', committees: ['APPG Middle East'], bio: 'Michael Levy served as Tony Blair\'s personal envoy to the Middle East and was a senior Labour fundraiser. He remains active in Jewish community leadership.', supportVotes: 3200, opposeVotes: 1800 },
+    { name: 'Baroness Warwick', title: 'Baroness Warwick', type: 'Life Peer', affiliation: 'Labour', appointed: '1999-07-15', committees: ['Education Committee'], bio: 'Diana Warwick served as Chief Executive of Universities UK for over a decade and has championed higher education access and research investment in the Lords.', supportVotes: 3400, opposeVotes: 590 },
+    { name: 'Lord Blunkett', title: 'Lord Blunkett', type: 'Life Peer', affiliation: 'Labour', appointed: '2015-05-14', committees: ['Work & Pensions Committee'], bio: 'David Blunkett served as Home Secretary and Education Secretary under Tony Blair. He is the first blind member to sit in the House of Lords and remains a vocal advocate for disability rights.', supportVotes: 4100, opposeVotes: 1200 },
+    // Conservative Life & Hereditary Peers (10)
+    { name: 'Lord Howard of Lympne', title: 'Lord Howard of Lympne', type: 'Life Peer', affiliation: 'Conservative', appointed: '2010-07-19', committees: ['Constitution Committee', 'Justice Committee'], bio: 'Michael Howard served as Conservative Party Leader, Home Secretary and was called to the Bar as a QC. He continues to contribute to criminal justice reform debates in the Lords.', supportVotes: 2900, opposeVotes: 2100 },
+    { name: 'Baroness Harding', title: 'Baroness Harding', type: 'Life Peer', affiliation: 'Conservative', appointed: '2014-06-24', committees: ['Science & Technology Committee'], bio: 'Dido Harding ran TalkTalk and led NHS Test and Trace during COVID-19. She remains an advocate for digital skills and regional economic development.', supportVotes: 2200, opposeVotes: 3800 },
+    { name: 'Lord Forsyth of Drumlean', title: 'Lord Forsyth', type: 'Hereditary Peer', affiliation: 'Conservative', appointed: '1997-07-24', committees: ['Economic Affairs Committee'], bio: 'Michael Forsyth served as Secretary of State for Scotland and chairs the Lords Economic Affairs Committee. He is a prominent advocate for low taxation and devolution reform.', supportVotes: 2600, opposeVotes: 1900 },
+    { name: 'Baroness Neville-Rolfe', title: 'Baroness Neville-Rolfe', type: 'Life Peer', affiliation: 'Conservative', appointed: '2013-10-31', committees: ['Delegated Powers Committee', 'Regulatory Scrutiny Committee'], bio: 'Lucy Neville-Rolfe served as Minister of State for the Treasury and Energy, and previously as Tesco\'s Group Company Secretary and Regulatory Affairs director.', supportVotes: 2700, opposeVotes: 1600 },
+    { name: 'Lord Strathclyde', title: 'Lord Strathclyde', type: 'Hereditary Peer', affiliation: 'Conservative', appointed: '1986-12-01', committees: ['Privileges & Conduct Committee'], bio: 'Thomas Galbraith has served as Conservative Leader of the House of Lords and remains one of its most experienced members on matters of parliamentary procedure.', supportVotes: 2300, opposeVotes: 1700 },
+    { name: 'Lord Lamont of Lerwick', title: 'Lord Lamont', type: 'Life Peer', affiliation: 'Conservative', appointed: '1998-09-23', committees: ['Economic Affairs Committee'], bio: 'Norman Lamont served as Chancellor of the Exchequer under John Major, presiding over Black Wednesday in 1992. He has since advocated for financial regulation reform.', supportVotes: 2100, opposeVotes: 2400 },
+    { name: 'Baroness Finn', title: 'Baroness Finn', type: 'Life Peer', affiliation: 'Conservative', appointed: '2015-08-27', committees: ['Public Services Committee'], bio: 'Simone Finn served as Deputy Chief of Staff at No. 10 under Boris Johnson and a director of the Policy Unit. She chairs the Lords Public Services Committee.', supportVotes: 2800, opposeVotes: 1400 },
+    { name: 'Lord Callanan', title: 'Lord Callanan', type: 'Life Peer', affiliation: 'Conservative', appointed: '2014-06-24', committees: ['Science & Technology Committee'], bio: 'Martin Callanan served as Minister of State for Business, Energy and Industrial Strategy and is a former Member of the European Parliament for North East England.', supportVotes: 2500, opposeVotes: 1800 },
+    { name: 'Lord Frost', title: 'Lord Frost', type: 'Life Peer', affiliation: 'Conservative', appointed: '2020-08-12', committees: ['European Affairs Committee'], bio: 'David Frost led the UK\'s Brexit negotiations with the EU and served as Minister of State for Brexit Opportunities before resigning in December 2021 over COVID restrictions.', supportVotes: 2000, opposeVotes: 4100 },
+    { name: 'Baroness Evans of Bowes Park', title: 'Baroness Evans', type: 'Life Peer', affiliation: 'Conservative', appointed: '2014-06-24', committees: ['Procedure Committee'], bio: 'Natalie Evans served as Conservative Leader of the House of Lords and Lord Privy Seal from 2016 to 2023, managing the government\'s legislative programme.', supportVotes: 2700, opposeVotes: 1500 },
+    // Crossbench (15)
+    { name: 'Baroness O\'Neill of Bengarve', title: 'Baroness O\'Neill', type: 'Life Peer', affiliation: 'Crossbench', appointed: '1999-07-15', committees: ['Communications & Digital Committee', 'Artificial Intelligence Committee'], bio: 'Onora O\'Neill is one of Britain\'s most distinguished philosophers, former President of the British Academy and Newnham College Cambridge. She leads work on AI ethics, trust, and accountability in public institutions.', supportVotes: 5700, opposeVotes: 600 },
+    { name: 'Lord Hague of Richmond', title: 'Lord Hague', type: 'Life Peer', affiliation: 'Crossbench', appointed: '2015-06-11', committees: ['International Relations & Defence Committee'], bio: 'William Hague served as Conservative Party leader, Foreign Secretary and Leader of the House of Commons before standing down from party politics. He now sits as a Crossbencher and chairs the Malala Fund.', supportVotes: 4800, opposeVotes: 1200 },
+    { name: 'Baroness Ashton of Upholland', title: 'Baroness Ashton', type: 'Life Peer', affiliation: 'Crossbench', appointed: '1999-10-14', committees: ['International Relations & Defence Committee'], bio: 'Catherine Ashton served as EU High Representative for Foreign Affairs and Security Policy, and as EU Trade Commissioner. She sat as a Labour peer before taking up her EU roles.', supportVotes: 5100, opposeVotes: 900 },
+    { name: 'Lord Kerr of Kinlochard', title: 'Lord Kerr', type: 'Life Peer', affiliation: 'Crossbench', appointed: '2004-10-21', committees: ['European Affairs Committee', 'International Relations Committee'], bio: 'John Kerr is one of Britain\'s most distinguished diplomats, former UK Ambassador to the EU and US, and is credited with drafting Article 50 of the Treaty on European Union.', supportVotes: 4600, opposeVotes: 800 },
+    { name: 'Lord Kakkar', title: 'Lord Kakkar', type: 'Life Peer', affiliation: 'Crossbench', appointed: '2010-07-21', committees: ['Science & Technology Committee', 'Medical Research Council'], bio: 'Ajay Kakkar is a professor of surgery at University College London and a leading voice on scientific research, healthcare innovation, and international medical partnerships.', supportVotes: 5200, opposeVotes: 550 },
+    { name: 'Baroness Manningham-Buller', title: 'Baroness Manningham-Buller', type: 'Life Peer', affiliation: 'Crossbench', appointed: '2008-07-24', committees: ['Intelligence & Security Committee'], bio: 'Eliza Manningham-Buller served as Director General of MI5 from 2002 to 2007 and chaired the Wellcome Trust. She speaks on security, intelligence, and biomedical research.', supportVotes: 5800, opposeVotes: 700 },
+    { name: 'Lord Boyce', title: 'Lord Boyce', type: 'Life Peer', affiliation: 'Crossbench', appointed: '2003-11-27', committees: ['Defence Committee', 'National Security Strategy Committee'], bio: 'Michael Boyce served as First Sea Lord and Chief of the Defence Staff. He led the UK armed forces during the 2003 invasion of Iraq.', supportVotes: 3800, opposeVotes: 1600 },
+    { name: 'Baroness Greenfield', title: 'Baroness Greenfield', type: 'Life Peer', affiliation: 'Crossbench', appointed: '2001-07-19', committees: ['Science & Technology Committee'], bio: 'Susan Greenfield is a neuroscientist and former Director of the Royal Institution. She is known for her research on consciousness and public commentary on digital technology\'s effects on the brain.', supportVotes: 4900, opposeVotes: 1100 },
+    { name: 'Lord Patel', title: 'Lord Patel', type: 'Life Peer', affiliation: 'Crossbench', appointed: '1999-07-15', committees: ['Science & Technology Committee', 'Genetic Technology Committee'], bio: 'Narendra Patel is a distinguished obstetrician and former President of the Royal College of Obstetricians and Gynaecologists. He chairs the Lords Science & Technology Committee.', supportVotes: 5100, opposeVotes: 480 },
+    { name: 'Earl of Listowel', title: 'Earl of Listowel', type: 'Hereditary Peer', affiliation: 'Crossbench', appointed: '1997-11-11', committees: ['Children & Families Committee'], bio: 'William Hare has been an outspoken advocate for children in care since first sitting as a hereditary peer following House of Lords reform. He has dedicated his parliamentary career to the welfare of vulnerable children.', supportVotes: 4400, opposeVotes: 390 },
+    { name: 'Viscount Slim', title: 'Viscount Slim', type: 'Hereditary Peer', affiliation: 'Crossbench', appointed: '1999-11-11', committees: ['Armed Forces Committee'], bio: 'John Slim, grandson of Field Marshal William Slim, has served as Chairman of the Burma Star Association and the St John Ambulance Foundation. He speaks on defence and veterans\' affairs.', supportVotes: 3500, opposeVotes: 700 },
+    { name: 'Baroness Neuberger', title: 'Baroness Neuberger', type: 'Life Peer', affiliation: 'Crossbench', appointed: '2004-07-29', committees: ['NHS Long Term Sustainability Committee'], bio: 'Julia Neuberger is a rabbi, ethicist and writer. She chaired the review into Liverpool Care Pathway and speaks on end-of-life care, bioethics and social justice.', supportVotes: 5300, opposeVotes: 620 },
+    { name: 'Lord Hope of Craighead', title: 'Lord Hope', type: 'Life Peer', affiliation: 'Crossbench', appointed: '1996-05-09', committees: ['Constitution Committee'], bio: 'David Hope served as a Lord of Appeal in Ordinary and as Deputy President of the UK Supreme Court. He is one of Scotland\'s most eminent jurists.', supportVotes: 4700, opposeVotes: 510 },
+    { name: 'Lord Pannick', title: 'Lord Pannick', type: 'Life Peer', affiliation: 'Crossbench', appointed: '2008-07-24', committees: ['Constitution Committee', 'Joint Committee on Human Rights'], bio: 'David Pannick KC is one of the UK\'s leading public law barristers and a regular contributor to The Times. He argued cases before the Supreme Court on Brexit and prorogation.', supportVotes: 5600, opposeVotes: 800 },
+    { name: 'Baroness Hale of Richmond', title: 'Baroness Hale', type: 'Life Peer', affiliation: 'Crossbench', appointed: '2004-01-12', committees: ['Constitution Committee'], bio: 'Brenda Hale served as the first female President of the UK Supreme Court, famously ruling that Boris Johnson\'s prorogation of Parliament was unlawful in 2019.', supportVotes: 7200, opposeVotes: 1900 },
+    // Liberal Democrats (5)
+    { name: 'Lord Ashdown of Norton-sub-Hamdon', title: 'Lord Ashdown', type: 'Life Peer', affiliation: 'Liberal Democrats', appointed: '2001-08-02', committees: ['International Relations & Defence Committee'], bio: 'Paddy Ashdown served as Leader of the Liberal Democrats for eleven years and as the UN High Representative for Bosnia and Herzegovina. He was a Royal Marine officer and SBS commando.', supportVotes: 5100, opposeVotes: 1100 },
+    { name: 'Baroness Williams of Trafford', title: 'Baroness Williams', type: 'Life Peer', affiliation: 'Liberal Democrats', appointed: '2013-10-31', committees: ['Public Services Committee'], bio: 'Shirley Williams was one of the founding members of the Social Democratic Party and served in Harold Wilson and James Callaghan\'s Cabinets. A towering figure of centrist British politics.', supportVotes: 4800, opposeVotes: 750 },
+    { name: 'Lord Newby', title: 'Lord Newby', type: 'Life Peer', affiliation: 'Liberal Democrats', appointed: '1997-07-24', committees: ['Economic Affairs Committee'], bio: 'Richard Newby has served as Liberal Democrat Chief Whip in the Lords and as a Lords minister during the Coalition Government, with a focus on Treasury and economic policy.', supportVotes: 3700, opposeVotes: 820 },
+    { name: 'Baroness Brinton', title: 'Baroness Brinton', type: 'Life Peer', affiliation: 'Liberal Democrats', appointed: '2011-02-24', committees: ['Health & Social Care Committee'], bio: 'Sarah Brinton served as President of the Liberal Democrats and is a disability rights campaigner. She speaks on health, education and international development from the Lib Dem benches.', supportVotes: 4500, opposeVotes: 690 },
+    { name: 'Lord Oates', title: 'Lord Oates', type: 'Life Peer', affiliation: 'Liberal Democrats', appointed: '2015-08-27', committees: ['Environment & Climate Change Committee'], bio: 'Jonny Oates served as Nick Clegg\'s Chief of Staff during the Coalition Government. He now leads Lib Dem work on climate change, LGBTQ+ rights, and political reform.', supportVotes: 4200, opposeVotes: 770 },
+    // Bishops (5)
+    { name: 'Archbishop of Canterbury', title: 'Most Rev. Justin Welby', type: 'Bishop', affiliation: 'Bishops', appointed: '2013-03-21', committees: ['Communications & Digital Committee'], bio: 'Justin Welby served as the 105th Archbishop of Canterbury until his resignation in November 2024. He sat in the Lords as a Lord Spiritual and spoke on poverty, reconciliation, and social justice.', supportVotes: 4300, opposeVotes: 2200 },
+    { name: 'Bishop of Durham', title: 'Rt Rev. Paul Butler', type: 'Bishop', affiliation: 'Bishops', appointed: '2013-09-01', committees: ['Children & Families Committee'], bio: 'Paul Butler has served as Bishop of Durham since 2013 and is a Lord Spiritual. He chairs the Church of England\'s Children\'s Taskforce and advocates on issues of child poverty and safeguarding.', supportVotes: 3900, opposeVotes: 880 },
+    { name: 'Bishop of Manchester', title: 'Rt Rev. David Walker', type: 'Bishop', affiliation: 'Bishops', appointed: '2013-12-01', committees: ['Built Environment Committee'], bio: 'David Walker served as Bishop of Manchester and a Lord Spiritual with expertise in housing, urban regeneration, and social cohesion in northern cities.', supportVotes: 3700, opposeVotes: 710 },
+    { name: 'Bishop of Bristol', title: 'Rt Rev. Vivienne Faull', type: 'Bishop', affiliation: 'Bishops', appointed: '2023-03-10', committees: ['Women & Equalities Committee'], bio: 'Vivienne Faull became the first female Lord Spiritual when appointed Bishop of Bristol. She advocates for women\'s ordination, refugee support, and interfaith dialogue.', supportVotes: 5200, opposeVotes: 640 },
+    { name: 'Bishop of London', title: 'Rt Rev. Sarah Mullally', type: 'Bishop', affiliation: 'Bishops', appointed: '2018-05-17', committees: ['Health & Social Care Committee'], bio: 'Sarah Mullally served as Chief Nursing Officer for England before her ordination. As Bishop of London she brings a unique clinical perspective to Lords debates on health and social care.', supportVotes: 5500, opposeVotes: 580 },
+    // Non-Affiliated & Others (5)
+    { name: 'Lord Sugar', title: 'Lord Sugar', type: 'Life Peer', affiliation: 'Non-Affiliated', appointed: '2009-06-24', committees: ['APPG Entrepreneurship'], bio: 'Alan Sugar founded Amstrad and became the presenter of The Apprentice UK. Ennobled as a Labour peer by Gordon Brown, he withdrew the Labour whip in 2015 and now sits as non-affiliated.', supportVotes: 3800, opposeVotes: 3200 },
+    { name: 'Baroness Stowell of Beeston', title: 'Baroness Stowell', type: 'Life Peer', affiliation: 'Non-Affiliated', appointed: '2011-10-28', committees: ['Communications & Digital Committee'], bio: 'Tina Stowell served as Leader of the House of Lords under David Cameron and chairs the Lords Communications Committee. She withdrew the Conservative whip in 2018.', supportVotes: 2900, opposeVotes: 1300 },
+    { name: 'Lord Sainsbury of Turville', title: 'Lord Sainsbury', type: 'Life Peer', affiliation: 'Non-Affiliated', appointed: '1997-07-24', committees: ['Science & Technology Committee'], bio: 'David Sainsbury served as a Labour Science minister and has donated over £200m to the Liberal Democrats. He withdrew the Labour whip in 2017 and sits as non-affiliated.', supportVotes: 3400, opposeVotes: 1100 },
+    { name: 'Lord Coe', title: 'Lord Coe', type: 'Life Peer', affiliation: 'Non-Affiliated', appointed: '2000-06-29', committees: ['Sport & Recreation Committee'], bio: 'Sebastian Coe is a double Olympic gold medalist and chaired the London 2012 Olympic Games Organising Committee. Formerly a Conservative MP, he sits as non-affiliated and serves as World Athletics President.', supportVotes: 5600, opposeVotes: 820 },
+    { name: 'Baroness Floella Benjamin', title: 'Baroness Benjamin', type: 'Life Peer', affiliation: 'Liberal Democrats', appointed: '2010-10-12', committees: ['Children & Families Committee', 'Communications & Digital Committee'], bio: 'Floella Benjamin is best known as a television presenter and children\'s book author. She has championed children\'s welfare, the creative arts, and the Windrush generation throughout her time in the Lords.', supportVotes: 6700, opposeVotes: 460 },
+  ];
+
+  const enrichUkLord = (raw) => {
+    let h = 5381;
+    for (let i = 0; i < raw.name.length; i++) h = (Math.imul(h, 33) ^ raw.name.charCodeAt(i)) | 0;
+    h = Math.abs(h);
+    const rng = (min, max, salt) => {
+      const v = Math.abs((Math.imul(h + salt, 1664525) + 1013904223) | 0);
+      return min + (v % (max - min + 1));
+    };
+    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
+    const m = { ...raw };
+
+    m.parliamentPhone = `+44 20 7219 ${rng(1000, 9999, 1)}`;
+    m.email = raw.name.toLowerCase().replace(/[^a-z]/g, '.').replace(/\.+/g, '.').replace(/^\.|\.$/, '') + '@parliament.uk';
+    m.officeAddress = `House of Lords, Westminster, London SW1A 0PW`;
+
+    const total = 150;
+    const pct = rng(55, 96, 7);
+    m.attendance = {
+      percentage: pct,
+      sessionsAttended: Math.round(total * pct / 100),
+      totalSessions: total,
+    };
+
+    const voteChoices = ['Content', 'Content', 'Content', 'Not Content', 'Not Content', 'Abstain'];
+    const lordsVotePool = [
+      { bill: 'HL2024-001', title: 'Safety of Rwanda (Asylum and Immigration) Bill', date: '2024-01-30', description: 'Declares Rwanda safe for asylum seekers, enabling removal of migrants to Rwanda as a deterrent measure.' },
+      { bill: 'HL2024-002', title: 'Great British Energy Bill — Lords Amendments', date: '2024-11-13', description: 'House of Lords amendments to strengthen community energy provisions and indigenous supply-chain requirements.' },
+      { bill: 'HL2024-003', title: 'Football Governance Bill 2024', date: '2024-12-04', description: 'Establishes an Independent Football Regulator to oversee financial sustainability of professional clubs.' },
+      { bill: 'HL2024-004', title: 'Crime & Policing Bill — Amendment 47', date: '2025-02-11', description: 'Lords amendment to introduce independent oversight of stop-and-search powers.' },
+      { bill: 'HL2025-001', title: 'Employment Rights Bill — Lords Stage', date: '2025-03-05', description: 'Lords scrutiny of day-one employment rights, zero-hours contract ban, and fire-and-rehire restrictions.' },
+      { bill: 'HL2025-002', title: 'Renters Rights Bill — Lords Amendments', date: '2025-04-08', description: 'House of Lords amendments to strengthen grounds for landlord repossession under reformed tenancy regime.' },
+      { bill: 'HL2024-005', title: 'Automated Vehicles Act 2024', date: '2024-05-23', description: 'Framework for the safe deployment of self-driving vehicles on UK public roads.' },
+      { bill: 'HL2024-006', title: 'Tobacco & Vapes Bill', date: '2024-11-19', description: 'Generational tobacco ban preventing anyone born after 2009 from ever legally purchasing cigarettes.' },
+    ];
+    const usedV = new Set();
+    const history = [];
+    for (let att = 0; history.length < 4 && att < 20; att++) {
+      const idx = rng(0, lordsVotePool.length - 1, 9 + att);
+      if (!usedV.has(idx)) { usedV.add(idx); history.push({ ...lordsVotePool[idx], vote: pick(voteChoices, 16 + att) }); }
+    }
+    m.votingHistory = history;
+
+    const ukOrgs = ['CBI', 'TUC', 'Institute for Government', 'Chatham House', 'Royal Society', 'National Trust', 'RSPB', 'Amnesty International UK', 'British Red Cross', 'Cancer Research UK', 'Nuffield Foundation', 'Joseph Rowntree Foundation'];
+    const numMeetings = rng(3, 12, 40);
+    m.lobbying = { meetings: [] };
+    const usedOrgs = new Set();
+    for (let i = 0; i < numMeetings; i++) {
+      const org = pick(ukOrgs, 40 + i);
+      if (!usedOrgs.has(org)) {
+        usedOrgs.add(org);
+        const month = rng(1, 12, 41 + i);
+        m.lobbying.meetings.push({
+          organization: org,
+          date: `2024-${String(month).padStart(2, '0')}-${String(rng(1, 28, 42 + i)).padStart(2, '0')}`,
+          topic: pick(['Public Policy', 'Healthcare', 'Climate Change', 'International Relations', 'Economic Affairs', 'Justice & Constitution', 'Digital Rights', 'Social Care'], 43 + i),
+          count: rng(1, 4, 44 + i),
+        });
+      }
+    }
+
+    const baseSalary = 0; // Lords receive daily allowance not salary
+    const dailyAllowance = 332;
+    const daysAttended = m.attendance.sessionsAttended;
+    const annualAllowance = dailyAllowance * daysAttended;
+    const worthBase = rng(200000, 8000000, 30);
+    const growth = 1 + rng(0, 20, 31) / 100;
+    m.financialDisclosure = {
+      appointedYear: parseInt(raw.appointed.split('-')[0]),
+      currentNetWorth: Math.round(worthBase * growth),
+      annualAllowance,
+      dailyAllowance,
+      daysAttended,
+      assets: [
+        { description: 'Primary Residence', value: `£${(rng(350000, 3500000, 33) / 1000).toFixed(0)}k` },
+        { description: 'Investments & Savings', value: `£${(rng(50000, 800000, 34) / 1000).toFixed(0)}k` },
+        { description: 'Pension', value: `£${(rng(80000, 600000, 35) / 1000).toFixed(0)}k` },
+      ],
+    };
+
+    const corpList = ['Lloyd\'s of London', 'Barclays', 'Rolls-Royce', 'GSK', 'BT Group', 'BP', 'Pearson', 'HSBC', 'Aviva', 'Legal & General'];
+    m.corporateConnections = Array.from({ length: rng(0, 4, 50) }, (_, ci) => ({
+      company: pick(corpList, 51 + ci),
+      relationship: pick(['Advisory Board', 'Non-Executive Director', 'Trustee', 'Former Director', 'Shareholder'], 52 + ci),
+      declared: pick([true, true, true, false], 53 + ci),
+    }));
+
+    return m;
+  };
+
+  const renderUKLords = () => {
+    const lordAffilColors = {
+      Labour: '#E4003B',
+      Conservative: '#0087DC',
+      'Liberal Democrats': '#FAA61A',
+      Crossbench: '#6B7280',
+      Bishops: '#7C3AED',
+      'Non-Affiliated': '#374151',
+    };
+    const typeColors = { 'Life Peer': '#2563EB', 'Hereditary Peer': '#B45309', Bishop: '#7C3AED' };
+    const getAffilColor = (a) => lordAffilColors[a] || '#374151';
+    const affiliations = ['All', 'Labour', 'Conservative', 'Liberal Democrats', 'Crossbench', 'Bishops', 'Non-Affiliated'];
+    const otherAffils = ['Non-Affiliated'];
+    const filtered = ukLords.filter(l => {
+      const matchAffil = ukLordFilter === 'All' ? true : l.affiliation === ukLordFilter;
+      const matchSearch = !ukLordSearch || l.title.toLowerCase().includes(ukLordSearch.toLowerCase()) || l.name.toLowerCase().includes(ukLordSearch.toLowerCase());
+      return matchAffil && matchSearch;
+    });
+    const counts = {
+      All: ukLords.length,
+      Labour: ukLords.filter(l => l.affiliation === 'Labour').length,
+      Conservative: ukLords.filter(l => l.affiliation === 'Conservative').length,
+      'Liberal Democrats': ukLords.filter(l => l.affiliation === 'Liberal Democrats').length,
+      Crossbench: ukLords.filter(l => l.affiliation === 'Crossbench').length,
+      Bishops: ukLords.filter(l => l.affiliation === 'Bishops').length,
+      'Non-Affiliated': ukLords.filter(l => l.affiliation === 'Non-Affiliated').length,
+    };
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 animate-fade-in">
+        {/* Sticky header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm px-4 py-3 sm:px-6">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center gap-3">
+            <button
+              onClick={() => setView('uk-national')}
+              className="self-start button-primary text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant flex-shrink-0"
+            >
+              ← Westminster
+            </button>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <span className="text-2xl">🇬🇧</span>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-800 leading-tight truncate">House of Lords</h1>
+                <p className="text-xs text-gray-500">~785 Lords · Upper Revising Chamber of Parliament</p>
+              </div>
+            </div>
+            <div className="relative flex-shrink-0 w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search Lords..."
+                value={ukLordSearch}
+                onChange={e => setUkLordSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+          <div className="h-1 w-32 rounded-full mb-5" style={{ background: 'linear-gradient(to right, #C8102E, #FFFFFF, #012169)' }} />
+
+          {/* Affiliation filter */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {affiliations.map(a => {
+              const isActive = ukLordFilter === a;
+              const color = a === 'All' ? '#012169' : getAffilColor(a);
+              const lightBg = ['Liberal Democrats'].includes(a);
+              return (
+                <button
+                  key={a}
+                  onClick={() => setUkLordFilter(a)}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold transition-all border-2"
+                  style={isActive
+                    ? { backgroundColor: color, color: lightBg ? '#1a1a1a' : 'white', borderColor: color }
+                    : { backgroundColor: 'white', color: '#374151', borderColor: '#E5E7EB' }}
+                >
+                  {a} <span className="opacity-70 font-normal">({counts[a] ?? 0})</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="text-sm text-gray-500 mb-4">Showing <span className="font-semibold text-gray-700">{filtered.length}</span> of {ukLords.length} sample Lords</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map(lord => {
+              const votes = ukLordVotes[lord.name] || { support: lord.supportVotes, oppose: lord.opposeVotes, userVote: null };
+              const affilColor = getAffilColor(lord.affiliation);
+              const typeColor = typeColors[lord.type] || '#6B7280';
+              const lightAfil = ['Liberal Democrats'].includes(lord.affiliation);
+              const initials = lord.name.replace(/^(Lord|Baroness|Earl|Viscount|Archbishop|Bishop|Most Rev\.|Rt Rev\.)\s+/i, '').split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
+              return (
+                <div key={lord.name} className="bg-white rounded-2xl shadow-elegant-lg border border-gray-100 overflow-hidden hover-lift">
+                  <div className="p-5">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold flex-shrink-0" style={{ background: `linear-gradient(135deg, ${affilColor}, ${affilColor}bb)`, color: lightAfil ? '#1a1a1a' : 'white' }}>
+                        {initials}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-gray-900 text-base leading-tight">{lord.title}</h3>
+                        <div className="flex flex-wrap gap-1.5 mt-1.5">
+                          <span className="px-2 py-0.5 rounded-lg text-xs font-semibold" style={{ backgroundColor: `${affilColor}18`, color: affilColor }}>{lord.affiliation}</span>
+                          <span className="px-2 py-0.5 rounded-lg text-xs font-semibold" style={{ backgroundColor: `${typeColor}18`, color: typeColor }}>{lord.type}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-gray-500 mb-3 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                      Appointed {new Date(lord.appointed).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+
+                    <p className="text-xs text-gray-600 leading-relaxed mb-4 line-clamp-2">{lord.bio}</p>
+
+                    <div className="flex gap-2 mb-4">
+                      <button
+                        onClick={() => voteUkLord(lord.name, 'support')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-gray-50 text-green-700 hover:bg-green-50'}`}
+                      >
+                        <ThumbsUp className="w-3.5 h-3.5" /> {votes.support.toLocaleString()}
+                      </button>
+                      <button
+                        onClick={() => voteUkLord(lord.name, 'oppose')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-gray-50 text-red-700 hover:bg-red-50'}`}
+                      >
+                        <ThumbsDown className="w-3.5 h-3.5" /> {votes.oppose.toLocaleString()}
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={() => { setSelectedUkLord(enrichUkLord(lord)); setView('uk-lord-detail'); }}
+                      className="w-full text-center text-sm font-semibold py-2.5 rounded-xl transition-colors text-white"
+                      style={{ background: 'linear-gradient(135deg, #012169, #C8102E)' }}
+                    >
+                      View Full Profile →
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-16 text-gray-400">
+              <Award className="w-12 h-12 mx-auto mb-3 opacity-40" />
+              <p className="text-lg font-medium">No Lords match your search</p>
+              <button onClick={() => { setUkLordFilter('All'); setUkLordSearch(''); }} className="mt-3 text-sm text-blue-600 hover:underline">Clear filters</button>
+            </div>
+          )}
+
+          <p className="text-xs text-gray-400 text-center mt-8">Showing sample Lords — full ~785-member dataset in development</p>
+        </div>
+      </div>
+    );
+  };
+
+  const renderUKLordDetail = () => {
+    const lord = selectedUkLord;
+    if (!lord) return null;
+    const lordAffilColors = { Labour: '#E4003B', Conservative: '#0087DC', 'Liberal Democrats': '#FAA61A', Crossbench: '#6B7280', Bishops: '#7C3AED', 'Non-Affiliated': '#374151' };
+    const typeColors = { 'Life Peer': '#2563EB', 'Hereditary Peer': '#B45309', Bishop: '#7C3AED' };
+    const affilColor = lordAffilColors[lord.affiliation] || '#012169';
+    const typeColor = typeColors[lord.type] || '#6B7280';
+    const lightAfil = ['Liberal Democrats'].includes(lord.affiliation);
+    const textColor = lightAfil ? '#1a1a1a' : 'white';
+    const initials = lord.name.replace(/^(Lord|Baroness|Earl|Viscount|Archbishop|Bishop|Most Rev\.|Rt Rev\.)\s+/i, '').split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
+    const votes = ukLordVotes[lord.name] || { support: lord.supportVotes, oppose: lord.opposeVotes, userVote: null };
+    const totalVotes = (votes.support || 0) + (votes.oppose || 0);
+    const supportPct = totalVotes > 0 ? Math.round((votes.support / totalVotes) * 100) : 50;
+    const formatGBP = (n) => n >= 1000000 ? `£${(n / 1000000).toFixed(2)}M` : n >= 1000 ? `£${(n / 1000).toFixed(0)}k` : `£${n}`;
+    const appointedYear = parseInt((lord.appointed || '2000-01-01').split('-')[0]);
+    const yearsInService = new Date().getFullYear() - appointedYear;
+
+    const SectionHeader = ({ id, icon, title }) => (
+      <button
+        onClick={() => toggleLordSection(id)}
+        className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-xl">{icon}</span>
+          <h3 className="text-base font-bold text-gray-800">{title}</h3>
+        </div>
+        {expandedLordSections[id] ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+      </button>
+    );
+
+    const getVoteColor = (v) => ({ Content: '#16a34a', 'Not Content': '#dc2626', Abstain: '#9ca3af' }[v] || '#9ca3af');
+    const getVoteIcon = (v) => ({ Content: '✓', 'Not Content': '✗', Abstain: '—' }[v] || '—');
+
+    return (
+      <div className="min-h-screen bg-gray-50 animate-fade-in">
+        {/* Header */}
+        <div className="pt-6 pb-8 px-4 sm:px-6" style={{ background: `linear-gradient(135deg, ${affilColor} 0%, ${affilColor}cc 100%)` }}>
+          <div className="max-w-4xl mx-auto">
+            <button
+              onClick={() => setView('uk-lords')}
+              className="mb-5 flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl"
+              style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor }}
+            >
+              ← House of Lords
+            </button>
+            <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
+              <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-black flex-shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.25)', color: textColor }}>
+                {initials}
+              </div>
+              <div className="flex-1">
+                <h1 className="text-2xl sm:text-3xl font-black mb-1" style={{ color: textColor }}>{lord.title}</h1>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className="px-2.5 py-1 rounded-lg text-xs font-semibold" style={{ backgroundColor: 'rgba(255,255,255,0.25)', color: textColor }}>{lord.affiliation}</span>
+                  <span className="px-2.5 py-1 rounded-lg text-xs font-semibold" style={{ backgroundColor: `${typeColor}33`, color: textColor }}>{lord.type}</span>
+                </div>
+                <p className="text-sm" style={{ color: `${textColor}bb` }}>
+                  Appointed {new Date(lord.appointed).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} · {yearsInService} years in service
+                </p>
+              </div>
+            </div>
+
+            {/* Vote bar */}
+            <div className="mt-5 p-4 rounded-2xl" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
+              <div className="flex justify-between text-xs mb-1.5" style={{ color: `${textColor}cc` }}>
+                <span>Support {votes.support.toLocaleString()}</span>
+                <span>{supportPct}% approve</span>
+                <span>Oppose {votes.oppose.toLocaleString()}</span>
+              </div>
+              <div className="h-2 rounded-full bg-white bg-opacity-30 overflow-hidden mb-3">
+                <div className="h-full rounded-full bg-white" style={{ width: `${supportPct}%` }} />
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => voteUkLord(lord.name, 'support')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`} style={votes.userVote !== 'support' ? { color: textColor } : {}}>
+                  <ThumbsUp className="w-3.5 h-3.5" /> Support
+                </button>
+                <button onClick={() => voteUkLord(lord.name, 'oppose')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`} style={votes.userVote !== 'oppose' ? { color: textColor } : {}}>
+                  <ThumbsDown className="w-3.5 h-3.5" /> Oppose
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+          {/* Contact */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+            <div className="p-5 border-b border-gray-100">
+              <h3 className="font-bold text-gray-800 flex items-center gap-2"><MapPin className="w-5 h-5 text-red-600" /> Contact & Office</h3>
+            </div>
+            <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div><p className="text-gray-500 text-xs mb-0.5">Email</p><p className="font-medium text-gray-800 break-all">{lord.email}</p></div>
+              <div><p className="text-gray-500 text-xs mb-0.5">Parliament Phone</p><p className="font-medium text-gray-800">{lord.parliamentPhone}</p></div>
+              <div className="sm:col-span-2"><p className="text-gray-500 text-xs mb-0.5">Address</p><p className="font-medium text-gray-800">{lord.officeAddress}</p></div>
+            </div>
+          </div>
+
+          {/* Biography */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg p-5">
+            <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2"><Users className="w-5 h-5 text-blue-600" /> Biography</h3>
+            <p className="text-sm text-gray-700 leading-relaxed">{lord.bio}</p>
+            {lord.committees?.length > 0 && (
+              <div className="mt-4">
+                <p className="text-xs text-gray-500 mb-2 font-semibold uppercase tracking-wide">Committee Memberships</p>
+                <div className="flex flex-wrap gap-2">
+                  {lord.committees.map(c => <span key={c} className="px-3 py-1.5 rounded-xl text-xs font-medium bg-purple-50 text-purple-800">{c}</span>)}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Voting record */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+            <SectionHeader id="voting" icon="🗳️" title="Division Record" />
+            {expandedLordSections.voting && (
+              <div className="px-5 pb-5 space-y-3">
+                <p className="text-xs text-gray-500 mb-2">Lords vote by Content / Not Content in divisions</p>
+                {(lord.votingHistory || []).map((v, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 text-white" style={{ backgroundColor: getVoteColor(v.vote) }}>{getVoteIcon(v.vote)}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 leading-snug">{v.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{v.date} · {v.bill}</p>
+                      <p className="text-xs text-gray-600 mt-1">{v.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Attendance */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+            <SectionHeader id="attendance" icon="📅" title="Attendance" />
+            {expandedLordSections.attendance && lord.attendance && (
+              <div className="px-5 pb-5">
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {[
+                    { label: 'Attendance Rate', value: `${lord.attendance.percentage}%`, color: lord.attendance.percentage >= 80 ? 'text-green-600' : lord.attendance.percentage >= 60 ? 'text-yellow-600' : 'text-red-600' },
+                    { label: 'Days Attended', value: lord.attendance.sessionsAttended, color: 'text-gray-800' },
+                    { label: 'Total Sittings', value: lord.attendance.totalSessions, color: 'text-gray-800' },
+                  ].map(s => (
+                    <div key={s.label} className="bg-gray-50 rounded-xl p-3 text-center">
+                      <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+                      <p className="text-xs text-gray-500 mt-1">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                  <div className="h-full rounded-full bg-green-500" style={{ width: `${lord.attendance.percentage}%` }} />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Financial disclosure */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+            <SectionHeader id="financial" icon="📊" title="Financial Disclosure" />
+            {expandedLordSections.financial && lord.financialDisclosure && (
+              <div className="px-5 pb-5">
+                <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 mb-4 text-sm text-blue-800">
+                  <p className="font-semibold mb-0.5">Lords receive a daily attendance allowance — not a salary</p>
+                  <p className="text-xs text-blue-600">£{lord.financialDisclosure.dailyAllowance}/day · {lord.financialDisclosure.daysAttended} days = <span className="font-bold">{formatGBP(lord.financialDisclosure.annualAllowance)}</span> claimed in 2024</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  {[
+                    { label: 'Allowance Claimed (2024)', value: formatGBP(lord.financialDisclosure.annualAllowance) },
+                    { label: 'Est. Net Worth', value: formatGBP(lord.financialDisclosure.currentNetWorth) },
+                    { label: 'Year Appointed', value: lord.financialDisclosure.appointedYear },
+                    { label: 'Years in Service', value: yearsInService, isHighlight: false },
+                  ].map(s => (
+                    <div key={s.label} className="p-3 rounded-xl bg-gray-50">
+                      <p className="text-lg font-black text-gray-800">{s.value}</p>
+                      <p className="text-xs text-gray-500">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+                {lord.financialDisclosure.assets?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Declared Assets</p>
+                    {lord.financialDisclosure.assets.map((a, i) => (
+                      <div key={i} className="flex justify-between py-1.5 border-b border-gray-50 text-sm">
+                        <span className="text-gray-600">{a.description}</span>
+                        <span className="font-semibold text-gray-800">{a.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Lobbying */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+            <SectionHeader id="lobbying" icon="🤝" title="Lobbying & Meetings" />
+            {expandedLordSections.lobbying && lord.lobbying?.meetings && (
+              <div className="px-5 pb-5">
+                <p className="text-xs text-gray-500 mb-3">{lord.lobbying.meetings.length} meetings logged in 2024</p>
+                <div className="space-y-2">
+                  {lord.lobbying.meetings.map((mtg, i) => (
+                    <div key={i} className="p-3 rounded-xl bg-gray-50 flex items-start gap-3">
+                      <Briefcase className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800">{mtg.organization}</p>
+                        <p className="text-xs text-gray-500">{mtg.date} · {mtg.topic} · {mtg.count} meeting{mtg.count > 1 ? 's' : ''}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Corporate connections */}
+          {lord.corporateConnections?.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+              <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" />
+              {expandedLordSections.corporate && (
+                <div className="px-5 pb-5 space-y-2">
+                  {lord.corporateConnections.map((c, i) => (
+                    <div key={i} className={`p-3 rounded-xl flex items-center gap-3 ${c.declared ? 'bg-gray-50' : 'bg-red-50 border border-red-100'}`}>
+                      <Building2 className={`w-4 h-4 flex-shrink-0 ${c.declared ? 'text-gray-400' : 'text-red-500'}`} />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-gray-800">{c.company}</p>
+                        <p className="text-xs text-gray-500">{c.relationship}</p>
+                      </div>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${c.declared ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                        {c.declared ? 'Declared' : '⚠ Undisclosed'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderUKNational = () => (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-6xl mx-auto">
@@ -11134,7 +11695,7 @@ function App() {
 
           {/* House of Lords */}
           <div
-            onClick={() => setView('uk-coming-soon')}
+            onClick={() => setView('uk-lords')}
             className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
             style={{ animationDelay: '0.15s' }}
           >
@@ -23376,6 +23937,8 @@ function App() {
       {view === 'uk-pm-detail' && renderStarmerDetail()}
       {view === 'uk-commons' && renderUKCommons()}
       {view === 'uk-member-detail' && selectedUkMember && renderUKMemberDetail()}
+      {view === 'uk-lords' && renderUKLords()}
+      {view === 'uk-lord-detail' && selectedUkLord && renderUKLordDetail()}
       {view === 'uk-regions' && renderUKRegions()}
       {view === 'uk-coming-soon' && renderUKComingSoon()}
       {view === 'au-analytics' && renderAuAnalytics()}
