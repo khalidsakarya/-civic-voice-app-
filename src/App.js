@@ -11449,168 +11449,266 @@ function App() {
   const renderAustralianStateDetail = () => {
     if (!selectedAuState) return null;
     const item = selectedAuState;
+    const leg = item.legislature;
 
     const getInitials = (name) => {
       if (!name) return '?';
       return name.split(' ').filter(n => /^[A-Z]/.test(n)).map(n => n[0]).join('').slice(0, 2) || '?';
     };
 
-    const partyBadge = (p) => ({
-      'ALP': 'bg-red-100 text-red-800',
-      'LNP': 'bg-blue-100 text-blue-800',
-      'Liberal': 'bg-blue-100 text-blue-800',
-      'CLP': 'bg-blue-100 text-blue-800',
-      'Greens': 'bg-green-100 text-green-800',
-    }[p] || 'bg-gray-100 text-gray-700');
+    const partyColors = {
+      'ALP':     { solid: '#CC0000', light: 'rgba(204,0,0,0.09)' },
+      'LNP':     { solid: '#003087', light: 'rgba(0,48,135,0.09)' },
+      'Liberal': { solid: '#003087', light: 'rgba(0,48,135,0.09)' },
+      'CLP':     { solid: '#003087', light: 'rgba(0,48,135,0.09)' },
+      'Greens':  { solid: '#00843D', light: 'rgba(0,132,61,0.09)' },
+    };
+    const pc  = (p) => partyColors[p] || { solid: '#4B5563', light: 'rgba(75,85,99,0.09)' };
+    const mpc = pc(item.partyShort);
+    const dpc = pc(item.deputyParty);
 
-    const leg = item.legislature;
+    const SectionLabel = ({ children }) => (
+      <div className="flex items-center gap-3 mb-5 mt-8">
+        <div className="w-5 h-0.5 rounded-full flex-shrink-0" style={{ background: '#C8A400' }} />
+        <span className="text-xs font-bold uppercase tracking-[0.16em] text-gray-500 whitespace-nowrap">{children}</span>
+        <div className="flex-1 h-px bg-gray-200" />
+      </div>
+    );
+
+    const PersonCard = ({ title, name, party, partyFull, since, bio, cfg }) => (
+      <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+        <div className="h-1.5 flex-shrink-0" style={{ background: cfg.solid }} />
+        <div className="p-5 sm:p-6 flex flex-col flex-1">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] mb-4" style={{ color: cfg.solid }}>{title}</p>
+          <div className="flex items-start gap-4 mb-4">
+            <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-lg font-black select-none" style={{ background: cfg.light, color: cfg.solid }}>
+              {getInitials(name)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-black text-gray-900 text-base sm:text-lg leading-tight">{name}</h3>
+              <span className="inline-block mt-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full text-white" style={{ background: cfg.solid }}>{partyFull || party}</span>
+              <p className="text-xs text-gray-400 mt-1.5">In office since {since}</p>
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 leading-relaxed flex-1">{bio}</p>
+        </div>
+      </div>
+    );
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 p-4 sm:p-8 animate-fade-in">
-        <div className="max-w-3xl mx-auto">
-          <button
-            onClick={() => setView('au-states')}
-            className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
-          >
-            ← Back
-          </button>
+      <div className="min-h-screen animate-fade-in" style={{ background: '#F0F4F8' }}>
 
-          {/* Flag header */}
-          <div className="bg-white rounded-2xl shadow-elegant overflow-hidden mb-6">
-            <div className="h-36 sm:h-48 overflow-hidden relative bg-gray-100">
-              <img
-                src={item.flagUrl}
-                alt={`Flag of ${item.name}`}
-                className="w-full h-full object-cover"
-                onError={(e) => { e.target.style.display = 'none'; }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-            </div>
-            <div className="p-5">
-              <div className="flex items-start justify-between gap-2">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{item.name}</h1>
+        {/* ── HERO ─────────────────────────────────────────────────── */}
+        <div className="relative overflow-hidden" style={{ background: 'linear-gradient(150deg, #071322 0%, #0A1F48 55%, #0D2756 100%)' }}>
+
+          {/* Subtle grid texture */}
+          <div className="absolute inset-0 pointer-events-none select-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+
+          {/* Gold top accent line */}
+          <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: 'linear-gradient(90deg, transparent 0%, #C8A400 30%, #F5D060 50%, #C8A400 70%, transparent 100%)' }} />
+
+          {/* Back nav */}
+          <div className="relative z-10 px-5 sm:px-8 lg:px-12 pt-5">
+            <button
+              onClick={() => setView('au-states')}
+              className="inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-2 transition-colors"
+              style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.88)', border: '1px solid rgba(255,255,255,0.12)' }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.17)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+            >
+              ← States &amp; Territories
+            </button>
+          </div>
+
+          {/* Hero main content */}
+          <div className="relative z-10 max-w-5xl mx-auto px-5 sm:px-8 lg:px-12 pt-8 pb-14">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-7 sm:gap-10">
+
+              {/* Flag */}
+              <div className="flex-shrink-0 flex flex-col items-center gap-2">
+                <div className="relative">
+                  <div className="absolute -inset-1.5 rounded-2xl opacity-40" style={{ background: 'linear-gradient(135deg, #C8A400 0%, transparent 60%)' }} />
+                  <div className="relative rounded-2xl overflow-hidden border-2 border-white/20" style={{ width: '148px', height: '96px', boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }}>
+                    <img src={item.flagUrl} alt={`Flag of ${item.name}`} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                  </div>
+                </div>
+                <span className="text-xs font-black tracking-[0.2em]" style={{ color: '#C8A400' }}>{item.abbr}</span>
+              </div>
+
+              {/* Title block */}
+              <div className="flex-1 text-center sm:text-left">
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-3" style={{ color: '#C8A400' }}>Australian State &amp; Territory</p>
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-4">{item.name}</h1>
+                <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    🏛 <span className="ml-0.5">Capital: <strong className="text-white">{item.capital}</strong></span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    👥 <span className="ml-0.5">Population: <strong className="text-white">{item.population}</strong></span>
+                  </span>
+                  <span className="inline-flex items-center text-xs font-bold rounded-lg px-3 py-1.5 text-white" style={{ background: mpc.solid }}>
+                    {item.partyShort} Government
+                  </span>
+                </div>
+              </div>
+
+              {/* Share button */}
+              <div className="flex-shrink-0 self-start sm:self-end">
                 <button
                   onClick={(e) => handleShare(e, { id: 'au-state-' + item.name, title: item.name, text: `🇦🇺 ${item.name} — ${item.leaderTitle}: ${item.leader} (${item.party}) since ${item.since} - civic-voice-app.vercel.app`, url: window.location.href })}
-                  className={`flex-shrink-0 p-2 rounded-lg transition-colors ${copiedShareId === 'au-state-' + item.name ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+                  style={{ background: copiedShareId === 'au-state-' + item.name ? '#00843D' : 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
                   aria-label="Share"
                 >
-                  {copiedShareId === 'au-state-' + item.name ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                  {copiedShareId === 'au-state-' + item.name ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+                  <span className="hidden sm:inline">{copiedShareId === 'au-state-' + item.name ? 'Copied!' : 'Share'}</span>
                 </button>
               </div>
-              <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2 text-sm text-gray-500">
-                <span>Capital: <strong className="text-gray-700">{item.capital}</strong></span>
-                <span>Population: <strong className="text-gray-700">{item.population}</strong></span>
-                <span>Party: <strong className="text-gray-700">{item.party}</strong></span>
+            </div>
+          </div>
+
+          {/* Bottom fade to page background */}
+          <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, #F0F4F8)' }} />
+        </div>
+
+        {/* ── BODY ─────────────────────────────────────────────────── */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-12 pb-14">
+
+          {/* Stat strip */}
+          <div className="bg-white rounded-2xl border border-gray-100 mt-0 mb-2 px-5 py-4 flex flex-wrap gap-y-3 gap-x-6" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.06)' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0" style={{ background: mpc.light }}>👤</div>
+              <div>
+                <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">{item.leaderTitle}</p>
+                <p className="text-sm font-bold text-gray-900 leading-tight">{item.leader}</p>
+              </div>
+            </div>
+            <div className="w-px bg-gray-200 self-stretch hidden sm:block" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0" style={{ background: 'rgba(200,164,0,0.12)' }}>🏛</div>
+              <div>
+                <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">{leg.name}</p>
+                <p className="text-sm font-bold text-gray-900 leading-tight">{leg.totalSeats} seats</p>
+              </div>
+            </div>
+            <div className="w-px bg-gray-200 self-stretch hidden sm:block" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0" style={{ background: 'rgba(0,132,61,0.1)' }}>📅</div>
+              <div>
+                <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">In Power Since</p>
+                <p className="text-sm font-bold text-gray-900 leading-tight">{item.since}</p>
               </div>
             </div>
           </div>
 
-          {/* Leadership cards */}
-          <h2 className="text-base font-bold text-gray-600 uppercase tracking-wide mb-3 px-1">Leadership</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          {/* ── Leadership ── */}
+          <SectionLabel>Government Leadership</SectionLabel>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <PersonCard title={item.leaderTitle} name={item.leader} party={item.partyShort} partyFull={item.party} since={item.since} bio={item.bio} cfg={mpc} />
+            <PersonCard title={item.deputyTitle} name={item.deputy} party={item.deputyParty} partyFull={item.deputyParty} since={item.deputySince} bio={item.deputyBio} cfg={dpc} />
+          </div>
 
-            {/* Premier / Chief Minister */}
-            <div className="bg-white rounded-2xl shadow-elegant p-6">
-              <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-4">{item.leaderTitle}</p>
-              <div className="flex flex-col items-center mb-5">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-blue-300 flex items-center justify-center text-2xl font-bold text-blue-700 mb-3 shadow-sm select-none">
-                  {getInitials(item.leader)}
-                </div>
-                <h3 className="font-bold text-gray-800 text-lg text-center leading-snug">{item.leader}</h3>
-                <span className={`mt-2 text-xs font-bold px-3 py-1 rounded-full ${partyBadge(item.partyShort)}`}>
-                  {item.party}
-                </span>
-                <p className="text-xs text-gray-400 mt-1.5">In office since {item.since}</p>
-              </div>
-              <p className="text-sm text-gray-600 leading-relaxed">{item.bio}</p>
-            </div>
+          {/* ── Legislature ── */}
+          <SectionLabel>Legislature Composition</SectionLabel>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+            <div className="p-6 sm:p-8">
+              <div className="flex flex-col lg:flex-row items-center gap-8">
 
-            {/* Deputy */}
-            <div className="bg-white rounded-2xl shadow-elegant p-6">
-              <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-4">{item.deputyTitle}</p>
-              <div className="flex flex-col items-center mb-5">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-300 flex items-center justify-center text-2xl font-bold text-emerald-700 mb-3 shadow-sm select-none">
-                  {getInitials(item.deputy)}
+                {/* Donut */}
+                <div className="flex-shrink-0 flex flex-col items-center">
+                  <div style={{ width: '210px', height: '210px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPie>
+                        <Pie data={leg.parties} cx="50%" cy="50%" innerRadius={58} outerRadius={88} paddingAngle={leg.parties.length > 1 ? 3 : 0} dataKey="seats" nameKey="name" startAngle={90} endAngle={-270}>
+                          {leg.parties.map((p, i) => <Cell key={i} fill={p.color} stroke="white" strokeWidth={3} />)}
+                        </Pie>
+                        <Tooltip formatter={(v, n) => [`${v} seats (${Math.round(v / leg.totalSeats * 100)}%)`, n]} contentStyle={{ borderRadius: '10px', fontSize: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                      </RechartsPie>
+                    </ResponsiveContainer>
+                  </div>
+                  <p className="text-xs font-semibold text-gray-600 mt-2 text-center">{leg.name}</p>
+                  <p className="text-xs text-gray-400 text-center">{leg.totalSeats} total seats</p>
                 </div>
-                <h3 className="font-bold text-gray-800 text-lg text-center leading-snug">{item.deputy}</h3>
-                <span className={`mt-2 text-xs font-bold px-3 py-1 rounded-full ${partyBadge(item.deputyParty)}`}>
-                  {item.deputyParty}
-                </span>
-                <p className="text-xs text-gray-400 mt-1.5">In office since {item.deputySince}</p>
+
+                {/* Seat progress bars */}
+                <div className="flex-1 w-full space-y-3.5">
+                  {leg.parties.map(p => {
+                    const pct = Math.round(p.seats / leg.totalSeats * 100);
+                    return (
+                      <div key={p.name}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: p.color }} />
+                            <span className="text-sm font-semibold text-gray-800">{p.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-sm font-black tabular-nums" style={{ color: p.color }}>{p.seats}</span>
+                            <span className="text-xs text-gray-400 w-8 text-right tabular-nums">{pct}%</span>
+                          </div>
+                        </div>
+                        <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.06)' }}>
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: p.color }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed">{item.deputyBio}</p>
             </div>
           </div>
 
-          {/* Legislature Composition */}
-          <div className="bg-white rounded-2xl shadow-elegant overflow-hidden">
-            <div className="px-5 pt-5 pb-2">
-              <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Legislature Composition</h2>
-              <p className="text-xs text-gray-400 mt-0.5">{leg.name} &nbsp;·&nbsp; {leg.totalSeats} total seats</p>
-            </div>
-            <ResponsiveContainer width="100%" height={220}>
-              <RechartsPie>
-                <Pie
-                  data={leg.parties}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={58}
-                  outerRadius={90}
-                  paddingAngle={leg.parties.length > 1 ? 2 : 0}
-                  dataKey="seats"
-                  nameKey="name"
-                  startAngle={90}
-                  endAngle={-270}
-                >
-                  {leg.parties.map((p, i) => (
-                    <Cell key={i} fill={p.color} stroke="white" strokeWidth={2} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value, name) => [`${value} seats (${Math.round(value / leg.totalSeats * 100)}%)`, name]}
-                  contentStyle={{ borderRadius: '10px', fontSize: '12px', border: '1px solid #e5e7eb' }}
-                />
-              </RechartsPie>
-            </ResponsiveContainer>
-            <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 px-5 pb-5">
-              {leg.parties.map(p => (
-                <div key={p.name} className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
-                  <span className="text-xs font-semibold text-gray-700">{p.name}</span>
-                  <span className="text-xs text-gray-400">{p.seats} · {Math.round(p.seats / leg.totalSeats * 100)}%</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* ── Transparency Data ── */}
+          <SectionLabel>Transparency Data</SectionLabel>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-          {/* Action buttons */}
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
               onClick={() => setShowAuEconomicModal(true)}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
-              style={{ background: 'linear-gradient(135deg, #003087, #1B4FD8)' }}
+              className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 text-left transition-all duration-200 hover:-translate-y-1 relative overflow-hidden group"
+              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 12px 36px rgba(0,48,135,0.16)'}
+              onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)'}
             >
-              <BarChart3 className="w-5 h-5" />
-              Economic &amp; Social Data
+              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, #003087, #1B4FD8)' }} />
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-sm" style={{ background: 'linear-gradient(135deg, #003087, #1B4FD8)' }}>
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="font-black text-gray-900 text-base mb-1.5">Economic &amp; Social Data</h3>
+              <p className="text-xs text-gray-500 leading-relaxed mb-4">Budget breakdown, GSP growth, unemployment, crime, poverty &amp; homelessness</p>
+              <span className="text-xs font-bold" style={{ color: '#003087' }}>View charts →</span>
             </button>
+
             <button
               onClick={() => { setAuTaxExemptSearch(''); setShowAuTaxExemptModal(true); }}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
-              style={{ background: 'linear-gradient(135deg, #92610A, #C8A400)' }}
+              className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 text-left transition-all duration-200 hover:-translate-y-1 relative overflow-hidden group"
+              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 12px 36px rgba(146,97,10,0.18)'}
+              onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)'}
             >
-              <DollarSign className="w-5 h-5" />
-              Tax Exempt Companies
+              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, #92610A, #C8A400)' }} />
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-sm" style={{ background: 'linear-gradient(135deg, #92610A, #C8A400)' }}>
+                <DollarSign className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="font-black text-gray-900 text-base mb-1.5">Tax Exempt Companies</h3>
+              <p className="text-xs text-gray-500 leading-relaxed mb-4">Companies receiving tax exemptions, credits and concessions in this state</p>
+              <span className="text-xs font-bold" style={{ color: '#92610A' }}>View companies →</span>
             </button>
+
             <button
               onClick={() => { setAuGrantsSearch(''); setShowAuGrantsModal(true); }}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
-              style={{ background: 'linear-gradient(135deg, #005728, #00843D)' }}
+              className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 text-left transition-all duration-200 hover:-translate-y-1 relative overflow-hidden group"
+              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 12px 36px rgba(0,87,40,0.18)'}
+              onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)'}
             >
-              <Award className="w-5 h-5" />
-              Grants Given
+              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, #005728, #00843D)' }} />
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-sm" style={{ background: 'linear-gradient(135deg, #005728, #00843D)' }}>
+                <Award className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="font-black text-gray-900 text-base mb-1.5">Grants Given</h3>
+              <p className="text-xs text-gray-500 leading-relaxed mb-4">Government grants awarded to organisations, companies and individuals</p>
+              <span className="text-xs font-bold" style={{ color: '#005728' }}>View grants →</span>
             </button>
           </div>
-
         </div>
       </div>
     );
