@@ -918,6 +918,9 @@ function App() {
   // UK Supreme Court data
   const [ukSupremeCourt, setUkSupremeCourt] = useState(null);
   const [ukJusticeVotes, setUkJusticeVotes] = useState({});
+
+  // UK Regions data
+  const [selectedUkRegion, setSelectedUkRegion] = useState(null);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13410,35 +13413,776 @@ function App() {
     </div>
   );
 
-  const renderUKRegions = () => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50 p-4 sm:p-8">
-      <div className="max-w-4xl mx-auto">
-        <button
-          onClick={() => setView('government-levels')}
-          className="mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium shadow-elegant"
-        >
-          ← Back to United Kingdom
-        </button>
-        <div className="flex items-center gap-4 mb-8">
-          <span className="text-4xl">🇬🇧</span>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">England Regions &amp; Counties</h1>
-            <p className="text-gray-500 mt-1 text-sm">Combined authorities and county councils</p>
+  const englandRegions = [
+    {
+      id: 'north-east',
+      name: 'North East England',
+      abbr: 'NE',
+      emoji: '⚙️',
+      population: '2.65M',
+      populationRaw: 2650000,
+      area: '8,592 km²',
+      cities: ['Newcastle upon Tyne', 'Sunderland', 'Middlesbrough', 'Durham', 'Gateshead'],
+      capital: 'Newcastle upon Tyne',
+      gdpPerCapita: '£22,900',
+      gdpTotal: '£60.8B',
+      unemployment: '5.2%',
+      hasRegionalMayor: true,
+      leader: 'Kim McGuinness',
+      leaderTitle: 'North East Mayor',
+      leaderParty: 'Labour',
+      leaderPartyColor: '#E4003B',
+      leaderSince: 'May 2024',
+      leaderBio: 'Former Police and Crime Commissioner for Northumbria. Kim McGuinness became the first ever directly elected Mayor of the North East in May 2024, winning with 50.9% of the vote. She leads the North East Mayoral Combined Authority covering seven local authorities, with devolved powers over transport, skills, economic development and housing.',
+      subMayors: [],
+      economicSectors: [
+        { name: 'Manufacturing', share: '14%', trend: 'declining' },
+        { name: 'Health & Social Care', share: '18%', trend: 'growing' },
+        { name: 'Financial & Professional Services', share: '12%', trend: 'growing' },
+        { name: 'Retail & Hospitality', share: '11%', trend: 'stable' },
+        { name: 'Construction', share: '8%', trend: 'growing' },
+      ],
+      keyFacts: [
+        'Lowest GDP per capita of any English region',
+        'Home to Nissan\'s Sunderland plant — largest car factory in UK',
+        'Net zero ambitions centred on offshore wind in the North Sea',
+        'Historically dependent on coal mining and shipbuilding',
+        'Significant regeneration investment via Levelling Up Fund',
+      ],
+      councils: [
+        { name: 'Newcastle City Council', type: 'Metropolitan', population: '302K', leader: 'Nick Kemp', party: 'Labour' },
+        { name: 'Sunderland City Council', type: 'Metropolitan', population: '277K', leader: 'Graeme Miller', party: 'Labour' },
+        { name: 'Durham County Council', type: 'Unitary', population: '525K', leader: 'Amanda Hopgood', party: 'Labour' },
+        { name: 'Northumberland County Council', type: 'Unitary', population: '320K', leader: 'Glen Sanderson', party: 'Conservative' },
+        { name: 'Gateshead Council', type: 'Metropolitan', population: '201K', leader: 'Martin Gannon', party: 'Labour' },
+        { name: 'South Tyneside Council', type: 'Metropolitan', population: '151K', leader: 'Tracey Dixon', party: 'Labour' },
+        { name: 'Middlesbrough Council', type: 'Unitary', population: '139K', leader: 'Chris Cooke', party: 'Labour' },
+      ],
+    },
+    {
+      id: 'north-west',
+      name: 'North West England',
+      abbr: 'NW',
+      emoji: '🏙️',
+      population: '7.42M',
+      populationRaw: 7420000,
+      area: '14,165 km²',
+      cities: ['Manchester', 'Liverpool', 'Salford', 'Preston', 'Bolton', 'Blackpool', 'Chester'],
+      capital: 'Manchester',
+      gdpPerCapita: '£26,800',
+      gdpTotal: '£198.6B',
+      unemployment: '4.8%',
+      hasRegionalMayor: false,
+      leader: 'No Regional Mayor',
+      leaderTitle: 'Combined Authority Mayors',
+      leaderParty: '',
+      leaderPartyColor: '#6B7280',
+      leaderSince: '',
+      leaderBio: 'The North West does not have a single elected regional mayor. It contains two Combined Authorities: Greater Manchester (Mayor: Andy Burnham, Labour) and Liverpool City Region (Mayor: Steve Rotheram, Labour). Other areas such as Lancashire and Cheshire are governed directly by county and unitary councils.',
+      subMayors: [
+        { name: 'Andy Burnham', title: 'Greater Manchester Mayor', party: 'Labour', since: '2017', area: 'Greater Manchester' },
+        { name: 'Steve Rotheram', title: 'Liverpool City Region Mayor', party: 'Labour', since: '2017', area: 'Liverpool City Region' },
+      ],
+      economicSectors: [
+        { name: 'Financial & Professional Services', share: '22%', trend: 'growing' },
+        { name: 'Digital & Technology', share: '15%', trend: 'fast growing' },
+        { name: 'Health & Life Sciences', share: '13%', trend: 'growing' },
+        { name: 'Manufacturing', share: '10%', trend: 'stable' },
+        { name: 'Creative Industries', share: '9%', trend: 'growing' },
+      ],
+      keyFacts: [
+        'Manchester is the UK\'s largest city outside London',
+        'MediaCityUK (Salford) is home to BBC and ITV studios',
+        'Liverpool is a major port city and UNESCO World Heritage Site',
+        'Greater Manchester has one of Europe\'s largest tram networks (Metrolink)',
+        'Host of inaugural UK Industrial Zones designation',
+      ],
+      councils: [
+        { name: 'Manchester City Council', type: 'Metropolitan', population: '553K', leader: 'Bev Craig', party: 'Labour' },
+        { name: 'Liverpool City Council', type: 'Metropolitan', population: '498K', leader: 'Liam Robinson', party: 'Labour' },
+        { name: 'Salford City Council', type: 'Metropolitan', population: '245K', leader: 'Paul Dennett', party: 'Labour' },
+        { name: 'Lancashire County Council', type: 'County', population: '1.22M', leader: 'Phillippa Williamson', party: 'Labour' },
+        { name: 'Cheshire East Council', type: 'Unitary', population: '383K', leader: 'Sam Corcoran', party: 'Labour' },
+        { name: 'Wigan Council', type: 'Metropolitan', population: '323K', leader: 'David Molyneux', party: 'Labour' },
+        { name: 'Bolton Council', type: 'Metropolitan', population: '282K', leader: 'Nick Peel', party: 'Labour' },
+      ],
+    },
+    {
+      id: 'yorkshire',
+      name: 'Yorkshire & The Humber',
+      abbr: 'YH',
+      emoji: '🌹',
+      population: '5.54M',
+      populationRaw: 5540000,
+      area: '15,420 km²',
+      cities: ['Leeds', 'Sheffield', 'Bradford', 'Hull', 'York', 'Harrogate', 'Doncaster'],
+      capital: 'Leeds',
+      gdpPerCapita: '£24,200',
+      gdpTotal: '£133.9B',
+      unemployment: '4.5%',
+      hasRegionalMayor: false,
+      leader: 'No Regional Mayor',
+      leaderTitle: 'Combined Authority Mayors',
+      leaderParty: '',
+      leaderPartyColor: '#6B7280',
+      leaderSince: '',
+      leaderBio: 'Yorkshire & The Humber has no single elected regional mayor. The region contains two Combined Authorities with elected mayors: West Yorkshire (Mayor: Tracy Brabin, Labour) and South Yorkshire / Sheffield City Region (Mayor: Oliver Coppard, Labour). East Yorkshire and the Humber are covered by county and unitary councils.',
+      subMayors: [
+        { name: 'Tracy Brabin', title: 'West Yorkshire Mayor', party: 'Labour', since: '2021', area: 'West Yorkshire' },
+        { name: 'Oliver Coppard', title: 'South Yorkshire Mayor', party: 'Labour', since: '2022', area: 'South Yorkshire' },
+      ],
+      economicSectors: [
+        { name: 'Manufacturing & Engineering', share: '16%', trend: 'stable' },
+        { name: 'Financial & Legal Services', share: '14%', trend: 'growing' },
+        { name: 'Health & Social Care', share: '14%', trend: 'growing' },
+        { name: 'Retail & Distribution', share: '12%', trend: 'stable' },
+        { name: 'Digital & Creative', share: '8%', trend: 'growing' },
+      ],
+      keyFacts: [
+        'Leeds is a major UK financial centre and legal hub',
+        'Sheffield known as the \'Steel City\' — still a centre for advanced manufacturing',
+        'Hull was UK City of Culture 2017; major offshore wind port',
+        'Bradford has the youngest average population of any major UK city',
+        'Yorkshire produces around 70% of England\'s rhubarb',
+      ],
+      councils: [
+        { name: 'Leeds City Council', type: 'Metropolitan', population: '808K', leader: 'James Lewis', party: 'Labour' },
+        { name: 'Sheffield City Council', type: 'Metropolitan', population: '584K', leader: 'Tom Hunt', party: 'Labour' },
+        { name: 'Bradford City Council', type: 'Metropolitan', population: '539K', leader: 'Susan Hinchcliffe', party: 'Labour' },
+        { name: 'Kingston upon Hull City Council', type: 'Unitary', population: '260K', leader: 'Mike Ross', party: 'Liberal Democrat' },
+        { name: 'City of York Council', type: 'Unitary', population: '209K', leader: 'Claire Douglas', party: 'Labour' },
+        { name: 'Doncaster Metropolitan Council', type: 'Metropolitan', population: '308K', leader: 'Ros Jones', party: 'Labour' },
+        { name: 'North Yorkshire Council', type: 'Unitary', population: '616K', leader: 'Carl Les', party: 'Conservative' },
+      ],
+    },
+    {
+      id: 'east-midlands',
+      name: 'East Midlands',
+      abbr: 'EM',
+      emoji: '🏛️',
+      population: '4.93M',
+      populationRaw: 4930000,
+      area: '15,627 km²',
+      cities: ['Nottingham', 'Leicester', 'Derby', 'Lincoln', 'Northampton', 'Chesterfield'],
+      capital: 'Nottingham',
+      gdpPerCapita: '£26,500',
+      gdpTotal: '£130.7B',
+      unemployment: '4.1%',
+      hasRegionalMayor: true,
+      leader: 'Claire Ward',
+      leaderTitle: 'East Midlands Mayor',
+      leaderParty: 'Labour',
+      leaderPartyColor: '#E4003B',
+      leaderSince: 'May 2024',
+      leaderBio: 'Claire Ward became the first ever Mayor of the East Midlands County Combined Authority in May 2024, covering Derbyshire and Nottinghamshire. A former MP for Watford (1997–2010), she focused her campaign on improving transport links, skills investment and economic growth. The combined authority covers a population of around 2.1 million across the two counties.',
+      subMayors: [],
+      economicSectors: [
+        { name: 'Manufacturing & Logistics', share: '18%', trend: 'stable' },
+        { name: 'Retail & Distribution', share: '14%', trend: 'stable' },
+        { name: 'Health & Social Care', share: '13%', trend: 'growing' },
+        { name: 'Agriculture & Food Production', share: '6%', trend: 'stable' },
+        { name: 'Professional Services', share: '11%', trend: 'growing' },
+      ],
+      keyFacts: [
+        'East Midlands Airport is the UK\'s largest pure freight airport',
+        'Nottingham has the highest rate of electric vehicle charging points per capita outside London',
+        'Leicester is one of England\'s most diverse cities',
+        'Major pharmaceutical manufacturing (Boots HQ in Nottingham)',
+        'Derby is home to Rolls-Royce\'s aero-engine headquarters',
+      ],
+      councils: [
+        { name: 'Nottingham City Council', type: 'Unitary', population: '323K', leader: 'David Mellen', party: 'Labour' },
+        { name: 'Leicester City Council', type: 'Unitary', population: '368K', leader: 'Sir Peter Soulsby', party: 'Labour' },
+        { name: 'Derby City Council', type: 'Unitary', population: '257K', leader: 'Nadine Peatfield', party: 'Labour' },
+        { name: 'Derbyshire County Council', type: 'County', population: '780K', leader: 'Barry Lewis', party: 'Conservative' },
+        { name: 'Nottinghamshire County Council', type: 'County', population: '815K', leader: 'Ben Bradley', party: 'Conservative' },
+        { name: 'Lincolnshire County Council', type: 'County', population: '767K', leader: 'Martin Hill', party: 'Conservative' },
+        { name: 'Northamptonshire', type: 'Unitary (2 councils)', population: '745K', leader: 'Various', party: 'Mixed' },
+      ],
+    },
+    {
+      id: 'west-midlands',
+      name: 'West Midlands',
+      abbr: 'WM',
+      emoji: '🏭',
+      population: '5.92M',
+      populationRaw: 5920000,
+      area: '13,004 km²',
+      cities: ['Birmingham', 'Coventry', 'Wolverhampton', 'Stoke-on-Trent', 'Walsall', 'Dudley'],
+      capital: 'Birmingham',
+      gdpPerCapita: '£24,800',
+      gdpTotal: '£146.8B',
+      unemployment: '5.5%',
+      hasRegionalMayor: true,
+      leader: 'Richard Parker',
+      leaderTitle: 'West Midlands Mayor',
+      leaderParty: 'Labour',
+      leaderPartyColor: '#E4003B',
+      leaderSince: 'May 2024',
+      leaderBio: 'Richard Parker won the West Midlands Mayoral election in May 2024, narrowly defeating Conservative incumbent Andy Street by just 1,508 votes — the closest mayoral election in England\'s history. He leads the West Midlands Combined Authority covering seven metropolitan borough councils. Parker, a former council leader and economic development professional, focuses on transport, housing and inward investment.',
+      subMayors: [],
+      economicSectors: [
+        { name: 'Manufacturing & Automotive', share: '19%', trend: 'transforming' },
+        { name: 'Financial & Professional Services', share: '16%', trend: 'growing' },
+        { name: 'Retail & Hospitality', share: '13%', trend: 'stable' },
+        { name: 'Health & Life Sciences', share: '11%', trend: 'growing' },
+        { name: 'Technology & Digital', share: '9%', trend: 'fast growing' },
+      ],
+      keyFacts: [
+        'Birmingham is the UK\'s second largest city with the youngest population',
+        'Jaguar Land Rover is based in Coventry — largest UK automotive employer',
+        'HSBC moved its UK HQ from London to Birmingham in 2021',
+        'Hosted the 2022 Commonwealth Games',
+        'Major investment zone at Birmingham Curzon (HS2 terminus)',
+      ],
+      councils: [
+        { name: 'Birmingham City Council', type: 'Metropolitan', population: '1.14M', leader: 'John Cotton', party: 'Labour' },
+        { name: 'Coventry City Council', type: 'Metropolitan', population: '366K', leader: 'George Duggins', party: 'Labour' },
+        { name: 'Wolverhampton City Council', type: 'Metropolitan', population: '263K', leader: 'Ian Brookfield', party: 'Labour' },
+        { name: 'Sandwell Metropolitan Council', type: 'Metropolitan', population: '331K', leader: 'Kerrie Carmichael', party: 'Labour' },
+        { name: 'Walsall Council', type: 'Metropolitan', population: '274K', leader: 'Mike Bird', party: 'Conservative' },
+        { name: 'Dudley Metropolitan Council', type: 'Metropolitan', population: '315K', leader: 'Patrick Harley', party: 'Conservative' },
+        { name: 'Stoke-on-Trent City Council', type: 'Unitary', population: '252K', leader: 'Jane Ashworth', party: 'Labour' },
+      ],
+    },
+    {
+      id: 'east-of-england',
+      name: 'East of England',
+      abbr: 'EE',
+      emoji: '🌾',
+      population: '6.33M',
+      populationRaw: 6330000,
+      area: '19,120 km²',
+      cities: ['Cambridge', 'Norwich', 'Luton', 'Ipswich', 'Peterborough', 'Chelmsford', 'Colchester'],
+      capital: 'Cambridge',
+      gdpPerCapita: '£29,200',
+      gdpTotal: '£184.8B',
+      unemployment: '3.4%',
+      hasRegionalMayor: false,
+      leader: 'No Regional Mayor',
+      leaderTitle: 'No Regional Mayor',
+      leaderParty: '',
+      leaderPartyColor: '#6B7280',
+      leaderSince: '',
+      leaderBio: 'The East of England does not have an elected regional or combined authority mayor. The region is governed by county councils, unitary authorities and district councils. There is no formal devolved structure at regional level, though discussions about a potential Greater Cambridge combined authority have been ongoing.',
+      subMayors: [],
+      economicSectors: [
+        { name: 'Knowledge & Technology (Cambridge)', share: '24%', trend: 'fast growing' },
+        { name: 'Agriculture & Food', share: '8%', trend: 'stable' },
+        { name: 'Financial & Business Services', share: '16%', trend: 'growing' },
+        { name: 'Manufacturing & Pharma', share: '12%', trend: 'stable' },
+        { name: 'Logistics & Distribution', share: '10%', trend: 'growing' },
+      ],
+      keyFacts: [
+        'Cambridge is one of Europe\'s leading technology and biotech clusters (Silicon Fen)',
+        'AstraZeneca\'s global HQ is in Cambridge',
+        'Stansted Airport serves as a major low-cost flight hub',
+        'Norfolk and Suffolk are among the UK\'s most productive agricultural counties',
+        'The Fens produce around 40% of England\'s vegetables',
+      ],
+      councils: [
+        { name: 'Cambridgeshire County Council', type: 'County', population: '662K', leader: 'Lucy Nethsingha', party: 'Liberal Democrat' },
+        { name: 'Norfolk County Council', type: 'County', population: '923K', leader: 'Kay Mason Billig', party: 'Labour' },
+        { name: 'Suffolk County Council', type: 'County', population: '760K', leader: 'Matthew Hicks', party: 'Conservative' },
+        { name: 'Essex County Council', type: 'County', population: '1.43M', leader: 'Kevin Bentley', party: 'Conservative' },
+        { name: 'Hertfordshire County Council', type: 'County', population: '1.17M', leader: 'Richard Roberts', party: 'Conservative' },
+        { name: 'Peterborough City Council', type: 'Unitary', population: '209K', leader: 'Mohammed Farooq', party: 'Labour' },
+        { name: 'Luton Borough Council', type: 'Unitary', population: '222K', leader: 'Hazel Simmons', party: 'Labour' },
+      ],
+    },
+    {
+      id: 'london',
+      name: 'London',
+      abbr: 'LON',
+      emoji: '🏙️',
+      population: '9.08M',
+      populationRaw: 9080000,
+      area: '1,572 km²',
+      cities: ['City of London', 'Westminster', 'Canary Wharf', 'Croydon', 'Bromley', 'Hackney', 'Tower Hamlets'],
+      capital: 'City of Westminster',
+      gdpPerCapita: '£57,700',
+      gdpTotal: '£524.0B',
+      unemployment: '5.0%',
+      hasRegionalMayor: true,
+      leader: 'Sadiq Khan',
+      leaderTitle: 'Mayor of London',
+      leaderParty: 'Labour',
+      leaderPartyColor: '#E4003B',
+      leaderSince: 'May 2016',
+      leaderBio: 'Sadiq Khan was first elected Mayor of London in May 2016, becoming the first Muslim mayor of a major Western capital. Re-elected in 2018, 2021 and again in 2024, he leads the Greater London Authority and Transport for London. Khan focuses on housing affordability, the ULEZ (Ultra Low Emission Zone), free school meals for primary pupils, and improving public transport. He is the longest-serving Mayor of London since the office was created in 2000.',
+      subMayors: [],
+      economicSectors: [
+        { name: 'Finance & Insurance', share: '26%', trend: 'stable' },
+        { name: 'Professional Services', share: '20%', trend: 'growing' },
+        { name: 'Technology & Media', share: '14%', trend: 'fast growing' },
+        { name: 'Retail, Tourism & Hospitality', share: '12%', trend: 'recovering' },
+        { name: 'Construction', share: '6%', trend: 'growing' },
+      ],
+      keyFacts: [
+        'London is the world\'s leading financial centre alongside New York',
+        'Greater London contributes over 25% of the entire UK\'s GDP',
+        'The City of London is home to the Bank of England and Stock Exchange',
+        'Over 300 languages spoken — one of the most linguistically diverse cities on Earth',
+        'TfL network carries over 5 million journeys a day',
+      ],
+      councils: [
+        { name: 'City of London Corporation', type: 'City', population: '9K', leader: 'Alastair King', party: 'Non-partisan' },
+        { name: 'Westminster City Council', type: 'London Borough', population: '261K', leader: 'Adam Hug', party: 'Labour' },
+        { name: 'Tower Hamlets London Borough', type: 'London Borough', population: '317K', leader: 'Lutfur Rahman', party: 'Aspire' },
+        { name: 'Croydon London Borough', type: 'London Borough', population: '385K', leader: 'Jason Perry', party: 'Conservative' },
+        { name: 'Barnet London Borough', type: 'London Borough', population: '395K', leader: 'Barry Rawlings', party: 'Labour' },
+        { name: 'Ealing London Borough', type: 'London Borough', population: '361K', leader: 'Peter Mason', party: 'Labour' },
+        { name: '+ 26 other London Boroughs', type: '', population: '', leader: '', party: '' },
+      ],
+    },
+    {
+      id: 'south-east',
+      name: 'South East England',
+      abbr: 'SE',
+      emoji: '🏖️',
+      population: '9.18M',
+      populationRaw: 9180000,
+      area: '19,095 km²',
+      cities: ['Brighton', 'Southampton', 'Oxford', 'Reading', 'Portsmouth', 'Guildford', 'Canterbury'],
+      capital: 'Brighton (unofficial)',
+      gdpPerCapita: '£33,700',
+      gdpTotal: '£309.2B',
+      unemployment: '3.2%',
+      hasRegionalMayor: false,
+      leader: 'No Regional Mayor',
+      leaderTitle: 'No Regional Mayor',
+      leaderParty: '',
+      leaderPartyColor: '#6B7280',
+      leaderSince: '',
+      leaderBio: 'The South East does not have an elected regional mayor or combined authority. It is the most populous English region and is governed by county councils, unitary authorities and district councils. Its proximity to London and major airports (Gatwick, Heathrow) makes it one of the wealthiest regions in Europe.',
+      subMayors: [],
+      economicSectors: [
+        { name: 'Professional & Business Services', share: '22%', trend: 'growing' },
+        { name: 'Technology & Defence', share: '18%', trend: 'growing' },
+        { name: 'Finance & Banking', share: '14%', trend: 'stable' },
+        { name: 'Tourism & Hospitality', share: '9%', trend: 'growing' },
+        { name: 'Agriculture & Horticulture', share: '5%', trend: 'stable' },
+      ],
+      keyFacts: [
+        'The South East has the lowest unemployment rate of any English region',
+        'Oxford and Cambridge universities are among the world\'s top institutions',
+        'Home to Gatwick Airport — UK\'s second busiest airport',
+        'Major defence industry cluster around Portsmouth and Farnborough',
+        'Silicon Roundabout spillover — significant tech presence in Reading and Guildford',
+      ],
+      councils: [
+        { name: 'Kent County Council', type: 'County', population: '1.86M', leader: 'Roger Gough', party: 'Conservative' },
+        { name: 'Hampshire County Council', type: 'County', population: '1.40M', leader: 'Nick Adams-King', party: 'Conservative' },
+        { name: 'Surrey County Council', type: 'County', population: '1.17M', leader: 'Tim Oliver', party: 'Conservative' },
+        { name: 'Brighton & Hove City Council', type: 'Unitary', population: '290K', leader: 'Bella Sankey', party: 'Labour' },
+        { name: 'Oxfordshire County Council', type: 'County', population: '688K', leader: 'Liz Leffman', party: 'Liberal Democrat' },
+        { name: 'Buckinghamshire Council', type: 'Unitary', population: '544K', leader: 'Martin Tett', party: 'Conservative' },
+        { name: 'East Sussex County Council', type: 'County', population: '566K', leader: 'Bob Standley', party: 'Conservative' },
+      ],
+    },
+    {
+      id: 'south-west',
+      name: 'South West England',
+      abbr: 'SW',
+      emoji: '🌊',
+      population: '5.70M',
+      populationRaw: 5700000,
+      area: '23,829 km²',
+      cities: ['Bristol', 'Plymouth', 'Exeter', 'Bath', 'Swindon', 'Gloucester', 'Truro'],
+      capital: 'Bristol (unofficial)',
+      gdpPerCapita: '£27,100',
+      gdpTotal: '£154.5B',
+      unemployment: '3.6%',
+      hasRegionalMayor: false,
+      leader: 'No Regional Mayor',
+      leaderTitle: 'No Regional Mayor',
+      leaderParty: '',
+      leaderPartyColor: '#6B7280',
+      leaderSince: '',
+      leaderBio: 'The South West does not have an elected regional mayor. Bristol has its own directly elected mayor (Marvin Rees, Labour). A West of England Combined Authority exists covering Bristol, Bath and North East Somerset, and South Gloucestershire, though its mayoral model was under review in 2024. The wider South West is governed by county, unitary and district councils.',
+      subMayors: [
+        { name: 'Marvin Rees', title: 'Mayor of Bristol', party: 'Labour', since: '2016', area: 'Bristol' },
+      ],
+      economicSectors: [
+        { name: 'Aerospace & Defence', share: '16%', trend: 'growing' },
+        { name: 'Tourism & Hospitality', share: '14%', trend: 'growing' },
+        { name: 'Professional Services', share: '13%', trend: 'stable' },
+        { name: 'Agriculture & Food & Drink', share: '9%', trend: 'stable' },
+        { name: 'Health & Life Sciences', share: '10%', trend: 'growing' },
+      ],
+      keyFacts: [
+        'Bristol is a major hub for aerospace (Airbus, Rolls-Royce), with the largest aerospace cluster in the UK',
+        'The South West has the longest coastline of any English region',
+        'Cornwall has a Celtic language heritage and distinct cultural identity',
+        'Tourism contributes over £9B annually to the regional economy',
+        'The Eden Project in Cornwall is one of the UK\'s most visited attractions',
+      ],
+      councils: [
+        { name: 'Bristol City Council', type: 'Unitary', population: '467K', leader: 'Tony Dyer', party: 'Green' },
+        { name: 'Cornwall Council', type: 'Unitary', population: '568K', leader: 'Linda Taylor', party: 'Conservative' },
+        { name: 'Devon County Council', type: 'County', population: '793K', leader: 'John Hart', party: 'Conservative' },
+        { name: 'Somerset Council', type: 'Unitary', population: '576K', leader: 'Bill Revans', party: 'Liberal Democrat' },
+        { name: 'Wiltshire Council', type: 'Unitary', population: '500K', leader: 'Richard Clewer', party: 'Conservative' },
+        { name: 'Gloucestershire County Council', type: 'County', population: '648K', leader: 'Mark Hawthorne', party: 'Conservative' },
+        { name: 'Swindon Borough Council', type: 'Unitary', population: '221K', leader: 'Jim Robbins', party: 'Labour' },
+      ],
+    },
+  ];
+
+  const renderUKRegions = () => {
+    const totalPop = englandRegions.reduce((s, r) => s + r.populationRaw, 0);
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Sticky header */}
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
+            <button
+              onClick={() => setView('government-levels')}
+              className="flex items-center gap-2 text-sm sm:text-base font-medium mb-2"
+              style={{ color: '#C8102E' }}
+            >
+              ← Back to United Kingdom
+            </button>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-800">England Regions &amp; Counties</h1>
+                <div className="w-20 h-1 mt-1 rounded-full" style={{ background: 'linear-gradient(to right, #C8102E, #012169)' }} />
+              </div>
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-md p-12 text-center border border-gray-100">
-          <p className="text-6xl mb-5">🗺️</p>
-          <h2 className="text-2xl font-bold text-gray-700 mb-3">Content Coming Soon</h2>
-          <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
-            England's regions, combined authorities and county council data will be available here.
-          </p>
-          <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold" style={{ backgroundColor: '#01216915', color: '#012169' }}>
-            <span>🚧</span> In Development
+
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+
+          {/* Overview stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div className="rounded-xl p-5 border-2 text-center" style={{ background: '#C8102E08', borderColor: '#C8102E' }}>
+              <p className="text-3xl font-black" style={{ color: '#C8102E' }}>9</p>
+              <p className="text-sm font-semibold text-gray-600 mt-1">Statistical Regions</p>
+            </div>
+            <div className="rounded-xl p-5 border-2 text-center" style={{ background: '#01216908', borderColor: '#012169' }}>
+              <p className="text-3xl font-black" style={{ color: '#012169' }}>{(totalPop / 1000000).toFixed(1)}M</p>
+              <p className="text-sm font-semibold text-gray-600 mt-1">Total Population</p>
+            </div>
+            <div className="bg-green-50 rounded-xl p-5 border-2 border-green-300 text-center">
+              <p className="text-3xl font-black text-green-700">4</p>
+              <p className="text-sm font-semibold text-gray-600 mt-1">Elected Mayors</p>
+            </div>
+          </div>
+
+          {/* Region cards grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+            {englandRegions.map((region, i) => (
+              <div
+                key={region.id}
+                onClick={() => { setSelectedUkRegion(region); setView('uk-region-detail'); }}
+                className="bg-white rounded-xl shadow-md border-2 border-transparent cursor-pointer hover:shadow-xl transition-all active:scale-95"
+                onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+              >
+                {/* Colour bar */}
+                <div className="h-1.5 rounded-t-xl" style={{ background: region.hasRegionalMayor ? 'linear-gradient(to right, #C8102E, #012169)' : 'linear-gradient(to right, #6B7280, #9CA3AF)' }} />
+
+                <div className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{region.emoji}</span>
+                      <div>
+                        <h3 className="font-black text-gray-800 text-base leading-tight">{region.name}</h3>
+                        <span className="text-xs font-bold text-gray-400">{region.abbr}</span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0 mt-1" />
+                  </div>
+
+                  {/* Key stats row */}
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    <div className="text-center">
+                      <p className="text-xs text-gray-400">Population</p>
+                      <p className="text-sm font-bold text-gray-800">{region.population}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-gray-400">GDP/capita</p>
+                      <p className="text-sm font-bold text-gray-800">{region.gdpPerCapita}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-gray-400">Unemployment</p>
+                      <p className="text-sm font-bold text-gray-800">{region.unemployment}</p>
+                    </div>
+                  </div>
+
+                  {/* Cities */}
+                  <p className="text-xs text-gray-500 mb-3">
+                    <span className="font-medium text-gray-600">Main cities: </span>
+                    {region.cities.slice(0, 4).join(', ')}{region.cities.length > 4 ? '…' : ''}
+                  </p>
+
+                  {/* Mayor badge */}
+                  {region.hasRegionalMayor ? (
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-white" style={{ backgroundColor: region.leaderPartyColor }}>
+                      <Crown className="w-3.5 h-3.5" />
+                      <span>{region.leaderTitle}: {region.leader}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-500">
+                      <span>No regional mayor</span>
+                      {region.subMayors.length > 0 && <span>· {region.subMayors.length} sub-regional mayor{region.subMayors.length > 1 ? 's' : ''}</span>}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  const renderUKRegionDetail = () => {
+    if (!selectedUkRegion) return null;
+    const r = selectedUkRegion;
+
+    const SectionLabel = ({ children }) => (
+      <div className="flex items-center gap-3 mb-5 mt-8">
+        <div className="w-5 h-0.5 rounded-full flex-shrink-0" style={{ background: '#C8102E' }} />
+        <span className="text-xs font-bold uppercase tracking-widest text-gray-500 whitespace-nowrap">{children}</span>
+        <div className="flex-1 h-px bg-gray-200" />
+      </div>
+    );
+
+    return (
+      <div className="min-h-screen" style={{ background: '#F0F4F8' }}>
+
+        {/* Hero */}
+        <div className="relative overflow-hidden" style={{ background: 'linear-gradient(150deg, #071322 0%, #0A1F48 55%, #0D2756 100%)' }}>
+          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+          {/* UK red/white/blue top accent */}
+          <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: 'linear-gradient(90deg, #C8102E 0%, #FFFFFF 50%, #012169 100%)' }} />
+
+          <div className="relative z-10 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5">
+            <button
+              onClick={() => { setSelectedUkRegion(null); setView('uk-regions'); }}
+              className="inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-2 transition-colors"
+              style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.88)', border: '1px solid rgba(255,255,255,0.12)' }}
+            >
+              ← England Regions
+            </button>
+          </div>
+
+          <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-8 lg:px-12 pt-5 pb-10 sm:pb-14">
+            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-8">
+              <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-4xl sm:text-5xl border-2 border-white/20 bg-white/10">
+                {r.emoji}
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#C8102E' }}>England · Statistical Region</p>
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-3">{r.name}</h1>
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    👥 {r.population}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    📐 {r.area}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    🏙️ {r.cities[0]}
+                  </span>
+                  {r.hasRegionalMayor && (
+                    <span className="inline-flex items-center gap-1 text-xs font-bold rounded-lg px-3 py-1.5 text-white" style={{ background: r.leaderPartyColor }}>
+                      <Crown className="w-3 h-3" /> Elected Mayor
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, #F0F4F8)' }} />
+        </div>
+
+        {/* Body */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-12 pb-14">
+
+          {/* Key stats strip */}
+          <div className="bg-white rounded-2xl border border-gray-100 mt-0 mb-2 px-4 py-4 flex flex-wrap gap-y-3 gap-x-5" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.06)' }}>
+            {[
+              { icon: '👥', label: 'Population', value: r.population },
+              { icon: '💷', label: 'GDP (total)', value: r.gdpTotal },
+              { icon: '📊', label: 'GDP per capita', value: r.gdpPerCapita },
+              { icon: '📉', label: 'Unemployment', value: r.unemployment },
+              { icon: '📐', label: 'Area', value: r.area },
+              { icon: '🏙️', label: 'Major city', value: r.cities[0] },
+            ].map(stat => (
+              <div key={stat.label} className="flex items-center gap-2 min-w-[120px]">
+                <span className="text-lg">{stat.icon}</span>
+                <div>
+                  <p className="text-xs text-gray-400 leading-none mb-0.5">{stat.label}</p>
+                  <p className="text-sm font-bold text-gray-800">{stat.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Mayor / Leadership */}
+          <SectionLabel>Regional Leadership</SectionLabel>
+          {r.hasRegionalMayor ? (
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+              <div className="h-1.5" style={{ background: r.leaderPartyColor }} />
+              <div className="p-6 sm:p-8">
+                <div className="flex items-start gap-5">
+                  <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center text-xl font-black border-4" style={{ background: r.leaderPartyColor + '20', borderColor: r.leaderPartyColor, color: r.leaderPartyColor }}>
+                    {r.leader.split(' ').map(n => n[0]).join('').slice(0,2)}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <h3 className="text-xl font-black text-gray-800">{r.leader}</h3>
+                      <span className="text-xs font-bold px-2.5 py-0.5 rounded-full text-white" style={{ background: r.leaderPartyColor }}>{r.leaderParty}</span>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-500 mb-3">{r.leaderTitle} · In office since {r.leaderSince}</p>
+                    <p className="text-sm text-gray-700 leading-relaxed">{r.leaderBio}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                  <MapPin className="w-6 h-6 text-gray-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-700">No Elected Regional Mayor</h3>
+                  <p className="text-sm text-gray-500">Governed by county and unitary councils</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-700 leading-relaxed">{r.leaderBio}</p>
+            </div>
+          )}
+
+          {/* Sub-regional mayors */}
+          {r.subMayors.length > 0 && (
+            <>
+              <SectionLabel>Sub-Regional Mayors</SectionLabel>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {r.subMayors.map((m, i) => (
+                  <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
+                    <div className="h-1" style={{ background: '#E4003B' }} />
+                    <div className="p-5 flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-sm font-black text-white" style={{ background: '#E4003B' }}>
+                        {m.name.split(' ').map(n => n[0]).join('').slice(0,2)}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-800 text-sm">{m.name}</h4>
+                        <p className="text-xs text-gray-500">{m.title}</p>
+                        <p className="text-xs text-gray-500">In office since {m.since}</p>
+                        <span className="inline-block mt-1.5 text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: '#E4003B' }}>{m.party}</span>
+                        <p className="text-xs text-gray-500 mt-1">📍 {m.area}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Economic data */}
+          <SectionLabel>Economic Sectors</SectionLabel>
+          <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+            <div className="space-y-4">
+              {r.economicSectors.map((sector, i) => {
+                const pct = parseInt(sector.share);
+                return (
+                  <div key={i}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-semibold text-gray-700">{sector.name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-gray-800">{sector.share}</span>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sector.trend === 'fast growing' ? 'bg-green-100 text-green-700' : sector.trend === 'growing' ? 'bg-blue-100 text-blue-700' : sector.trend === 'stable' ? 'bg-gray-100 text-gray-600' : sector.trend === 'declining' ? 'bg-red-100 text-red-700' : 'bg-purple-100 text-purple-700'}`}>
+                          {sector.trend}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2">
+                      <div className="h-2 rounded-full transition-all" style={{ width: `${Math.min(pct * 4, 100)}%`, background: i % 2 === 0 ? '#C8102E' : '#012169' }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Key facts */}
+          <SectionLabel>Key Facts</SectionLabel>
+          <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+            <div className="space-y-3">
+              {r.keyFacts.map((fact, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5" style={{ background: i % 2 === 0 ? '#C8102E' : '#012169' }}>
+                    {i + 1}
+                  </div>
+                  <p className="text-sm text-gray-700 leading-relaxed">{fact}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Councils */}
+          <SectionLabel>Major Councils</SectionLabel>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ background: '#01216910' }}>
+                    <th className="text-left px-5 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider">Council</th>
+                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider hidden sm:table-cell">Type</th>
+                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider hidden md:table-cell">Population</th>
+                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider hidden lg:table-cell">Leader</th>
+                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider">Party</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {r.councils.filter(c => c.name).map((council, i) => {
+                    const partyColor = council.party === 'Labour' ? '#E4003B' : council.party === 'Conservative' ? '#003087' : council.party === 'Liberal Democrat' ? '#FAA61A' : council.party === 'Green' ? '#00843D' : '#6B7280';
+                    return (
+                      <tr key={i} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-5 py-3 font-semibold text-gray-800">{council.name}</td>
+                        <td className="px-4 py-3 text-gray-500 hidden sm:table-cell">{council.type}</td>
+                        <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{council.population}</td>
+                        <td className="px-4 py-3 text-gray-500 hidden lg:table-cell">{council.leader}</td>
+                        <td className="px-4 py-3">
+                          {council.party && council.party !== 'Mixed' && (
+                            <span className="inline-block text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: partyColor }}>
+                              {council.party === 'Liberal Democrat' ? 'Lib Dem' : council.party}
+                            </span>
+                          )}
+                          {council.party === 'Mixed' && (
+                            <span className="inline-block text-xs font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">Mixed</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* All cities */}
+          <SectionLabel>Towns &amp; Cities</SectionLabel>
+          <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+            <div className="flex flex-wrap gap-2">
+              {r.cities.map((city, i) => (
+                <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border" style={{ borderColor: i === 0 ? '#C8102E' : '#e5e7eb', color: i === 0 ? '#C8102E' : '#374151', background: i === 0 ? '#C8102E08' : '#f9fafb' }}>
+                  {i === 0 && '🏛️'} {city}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderUKComingSoon = () => (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8">
@@ -25634,6 +26378,7 @@ function App() {
       {view === 'uk-department-detail' && selectedUkDepartment && renderUKDepartmentDetail()}
       {view === 'uk-supreme-court' && renderUKSupremeCourt()}
       {view === 'uk-regions' && renderUKRegions()}
+      {view === 'uk-region-detail' && selectedUkRegion && renderUKRegionDetail()}
       {view === 'uk-coming-soon' && renderUKComingSoon()}
       {view === 'au-analytics' && renderAuAnalytics()}
       {view === 'au-contracts' && renderAuContracts()}
