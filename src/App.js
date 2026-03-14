@@ -931,6 +931,7 @@ function App() {
   const [grantsExpanded, setGrantsExpanded] = useState(false);
   const [auDeptGrantsExpanded, setAuDeptGrantsExpanded] = useState(false);
   const [selectedAuDepartment, setSelectedAuDepartment] = useState(null);
+  const [selectedAuContract, setSelectedAuContract] = useState(null);
   const [auDepartments, setAuDepartments] = useState([
     {
       id: 1, name: 'Treasury', minister: 'Jim Chalmers', budget: '$61.5 Billion', budgetRaw: 61500000000,
@@ -18357,6 +18358,188 @@ function App() {
     );
   };
 
+  const renderAuContracts = () => {
+    const auContracts = [
+      { id: 1,  company: 'BAE Systems Australia',          project: 'Hunter-class Frigate Program (SEA 5000)',                    amountRaw: 45600000000, contractType: 'Sole-Source',       category: 'Defence',          department: 'Department of Defence',                           dateAwarded: 'June 2018',      duration: '25 years', status: 'Active',
+        description: 'Design and construction of nine Hunter-class guided-missile frigates for the Royal Australian Navy, replacing the Anzac-class. Largest single defence procurement in Australian history.',
+        justification: 'Sole-source selection followed a rigorous competitive evaluation phase (SEA 5000 Phase 1) in which BAE Systems\' Type 26 Global Combat Ship was down-selected as the preferred design in June 2018.' },
+      { id: 2,  company: 'Laing O\'Rourke / Bouygues JV',  project: 'North East Link — Tunnels Package (Victoria)',              amountRaw: 15800000000, contractType: 'Open Tender',        category: 'Infrastructure',   department: 'Major Road Projects Victoria',                    dateAwarded: 'August 2021',    duration: '6 years',  status: 'Active',
+        description: 'Design and construction of twin 6.5 km tunnels connecting the Eastern Freeway to the Ring Road, forming the centrepiece of Victoria\'s largest ever road project, reducing travel times by up to 35 minutes.',
+        justification: 'Awarded through a competitive market process following Expression of Interest and Request for Proposal stages. The Laing O\'Rourke/Bouygues joint venture offered the best value for money outcome.' },
+      { id: 3,  company: 'CPB Contractors / John Holland JV', project: 'Sydney Metro West — Central Tunnelling Package',          amountRaw: 14500000000, contractType: 'Open Tender',        category: 'Transport',        department: 'Transport for NSW',                               dateAwarded: 'February 2022',  duration: '7 years',  status: 'Active',
+        description: 'Twin 11 km rail tunnels from The Bays to Sydney CBD for Sydney Metro West, Australia\'s biggest public transport project. Will double rail capacity in the Sydney CBD corridor.',
+        justification: 'Competitive request for tender process managed by Transport for NSW. CPB/John Holland JV selected on the basis of technical capability, schedule certainty, and value for money.' },
+      { id: 4,  company: 'Future Generation JV (Webuild / Lane)',   project: 'Snowy 2.0 Pumped Hydro Power Station',              amountRaw: 12000000000, contractType: 'Restricted Tender',  category: 'Energy',           department: 'Snowy Hydro Ltd (Commonwealth-owned)',            dateAwarded: 'November 2018',  duration: '9 years',  status: 'Active',
+        description: 'Underground pumped hydro expansion of Snowy Scheme: 2,000 MW of dispatchable generation and 350,000 MWh of large-scale storage via 27 km of tunnels between Tantangara and Talbingo reservoirs.',
+        justification: 'Restricted tender with pre-qualified international contractors. Future Generation JV (formerly Salini Impregilo / Clough) selected following detailed evaluation of technical proposals and commercial submissions.' },
+      { id: 5,  company: 'CIMIC Group (CPB Contractors)',   project: 'Cross River Rail — Tunnel, Stations & Development',       amountRaw:  5400000000, contractType: 'Open Tender',        category: 'Transport',        department: 'Cross River Rail Delivery Authority (QLD)',       dateAwarded: 'March 2019',     duration: '6 years',  status: 'Active',
+        description: 'Construction of 10.2 km of twin rail tunnels under the Brisbane River and CBD, four new underground stations, and associated track and systems works for Queensland\'s largest ever infrastructure project.',
+        justification: 'Competitive procurement process run by the Cross River Rail Delivery Authority. CIMIC/CPB selected on value, program delivery confidence and technical approach.' },
+      { id: 6,  company: 'Rheinmetall Defence Australia',   project: 'Land 400 Phase 2 — Boxer Combat Reconnaissance Vehicle',  amountRaw:  5200000000, contractType: 'Competitive',        category: 'Defence',          department: 'Department of Defence',                           dateAwarded: 'March 2019',     duration: '10 years', status: 'Active',
+        description: 'Acquisition of 211 Boxer Combat Reconnaissance Vehicles (CRVs) for the Australian Army, replacing the ASLAV. Includes a significant Australian Industry Content (AIC) commitment with a vehicle assembly facility in Queensland.',
+        justification: 'Won through a rigorous competitive evaluation against BAE Systems\' AMV35. Rheinmetall\'s Boxer was selected for superior protection, growth potential, and industry capability benefits.' },
+      { id: 7,  company: 'John Holland / CPB Contractors',  project: 'Inland Rail Program — Southern NSW Packages',             amountRaw:  4800000000, contractType: 'Panel Arrangement',  category: 'Transport',        department: 'Australian Rail Track Corporation (ARTC)',        dateAwarded: 'July 2020',      duration: '8 years',  status: 'Active',
+        description: 'Design and construction of new and upgraded rail corridor across southern New South Wales forming part of the 1,700 km Melbourne–Brisbane Inland Rail. Includes new bridges, earthworks, and track.',
+        justification: 'ARTC panel arrangement for major civil works. John Holland/CPB selected through competitive evaluation of panel-listed contractors for southern NSW packages.' },
+      { id: 8,  company: 'Boeing Defence Australia',        project: 'AIR 7000 Phase 2B — P-8A Poseidon Maritime Patrol',      amountRaw:  4100000000, contractType: 'Sole-Source',        category: 'Defence',          department: 'Department of Defence',                           dateAwarded: 'March 2014',     duration: '30 years', status: 'Active',
+        description: 'Acquisition of 15 Boeing P-8A Poseidon maritime patrol and anti-submarine warfare aircraft, replacing the AP-3C Orion. Includes through-life support, simulation, and ground support equipment.',
+        justification: 'Sole-source selection following Australian government alignment with the US Navy\'s P-8A program, providing interoperability benefits, schedule certainty, and lower through-life costs.' },
+      { id: 9,  company: 'Lockheed Martin Australia',       project: 'Joint Air Battle Management System (AIR 6500 Phase 1)',   amountRaw:  2900000000, contractType: 'Sole-Source',        category: 'Defence',          department: 'Department of Defence',                           dateAwarded: 'December 2021',  duration: '15 years', status: 'Active',
+        description: 'Design and integration of a sovereign Air Battle Management System providing integrated air and missile defence capabilities for the ADF, connecting sensors, weapons and command nodes.',
+        justification: 'Sole-source contract leveraging Lockheed Martin\'s IBCS integration work with the US Army and Five Eyes allies, providing the fastest pathway to a sovereign, interoperable ADF capability.' },
+      { id: 10, company: 'Pfizer Australia / AstraZeneca',  project: 'National COVID-19 Vaccine Procurement and Distribution',  amountRaw:  2700000000, contractType: 'Sole-Source',        category: 'Health',           department: 'Department of Health and Aged Care',             dateAwarded: 'November 2020',  duration: '3 years',  status: 'Completed',
+        description: 'Procurement of 85 million Pfizer (Comirnaty) and 53.8 million AstraZeneca (Vaxzevria) COVID-19 vaccine doses for the Australian adult population, including cold-chain logistics and distribution.',
+        justification: 'Emergency sole-source procurement under Commonwealth Procurement Rules crisis provisions. Advance Purchase Agreements signed concurrently with multiple vaccine developers to ensure supply certainty.' },
+      { id: 11, company: 'NBN Co / Ventia',                 project: 'HFC Network Maintenance and Upgrade Services',            amountRaw:  3200000000, contractType: 'Panel Arrangement',  category: 'Telecommunications', department: 'NBN Co (Commonwealth-owned Corporation)',         dateAwarded: 'January 2021',   duration: '10 years', status: 'Active',
+        description: 'Comprehensive maintenance, remediation, and capacity upgrade of the 4.2 million-premises HFC cable network, including node splits, amplifier replacements, and DOCSIS 3.1 upgrades.',
+        justification: 'Competitive panel procurement by NBN Co. Ventia selected for network engineering capability, geographic coverage, and demonstrated delivery track record on the HFC rollout.' },
+      { id: 12, company: 'Amazon Web Services (AWS)',        project: 'Whole of Australian Government Cloud (WofG) Panel',      amountRaw:  1300000000, contractType: 'Panel Arrangement',  category: 'Technology',       department: 'Services Australia / Digital Transformation Agency', dateAwarded: 'July 2022',     duration: '5 years',  status: 'Active',
+        description: 'Whole of Government cloud computing services providing IaaS, PaaS, and SaaS to Australian federal agencies through the Cloud Marketplace Panel, hosted in AWS Sydney and Melbourne regions.',
+        justification: 'Competitive panel assessment under the Cloud Services Panel. AWS selected for sovereign capability commitments, ASD-certified data centres, and breadth of services available to government.' },
+      { id: 13, company: 'Accenture Australia',             project: 'Australian Taxation Office Enterprise Transformation',    amountRaw:   780000000, contractType: 'Restricted Tender',  category: 'Technology',       department: 'Australian Taxation Office',                      dateAwarded: 'April 2021',     duration: '6 years',  status: 'Active',
+        description: 'End-to-end digital transformation of ATO core systems including the Online Services for Business platform, myTax lodgement systems, and Single Touch Payroll Phase 2 implementation.',
+        justification: 'Restricted tender to pre-qualified ICT service providers. Accenture selected for proven public sector transformation experience, ATO relationship continuity, and competitive commercial proposal.' },
+      { id: 14, company: 'Deloitte Australia / DXC Technology', project: 'Services Australia ICT Modernisation Program',       amountRaw:  1100000000, contractType: 'Restricted Tender',  category: 'Technology',       department: 'Services Australia',                              dateAwarded: 'September 2020', duration: '7 years',  status: 'Active',
+        description: 'Modernisation of legacy CENTRELINK and Medicare payment processing systems supporting 1.4 trillion in annual social payments, migrating to modern cloud-native platforms with improved citizen experience.',
+        justification: 'Restricted to experienced large-scale government ICT providers. Deloitte/DXC consortium selected for combined breadth of system integration and legacy modernisation capabilities.' },
+      { id: 15, company: 'Acciona / Ferrovial',             project: 'Melbourne Airport Rail Link — Main Civil Works',          amountRaw: 10800000000, contractType: 'Open Tender',        category: 'Transport',        department: 'Major Transport Infrastructure Authority (VIC)',   dateAwarded: 'March 2024',     duration: '7 years',  status: 'Active',
+        description: 'Design and construction of a 26 km dedicated rail line from Southern Cross Station to Melbourne Airport, including twin tunnels under the inner suburbs and three new stations.',
+        justification: 'Competitive open tender managed by the Major Transport Infrastructure Authority. Acciona/Ferrovial JV selected on technical merit, programme certainty, and value for money.' },
+    ];
+
+    const totalValue = auContracts.reduce((sum, c) => sum + c.amountRaw, 0);
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <button onClick={() => setView('au-categories')} className="text-rose-700 hover:text-rose-900 flex items-center gap-2">
+              ← Back to Australian Federal Government
+            </button>
+            <h1 className="text-2xl font-bold text-gray-800">Government Contracts</h1>
+            <div className="w-20" />
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200 rounded-lg p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">💰 Follow the Taxpayer Money</h2>
+            <p className="text-gray-600">Australian federal contracts worth A${(totalValue / 1e9).toFixed(1)} Billion</p>
+          </div>
+
+          <div className="space-y-6">
+            {auContracts.map(contract => (
+              <div key={contract.id}
+                onClick={() => { setSelectedAuContract(contract); setView('au-contract-detail'); }}
+                className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-rose-500 cursor-pointer p-6"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-3 flex-wrap">
+                      <span className="bg-rose-100 text-rose-800 px-4 py-2 rounded-full text-lg font-bold">
+                        A${contract.amountRaw >= 1e9 ? (contract.amountRaw / 1e9).toFixed(1) + 'B' : (contract.amountRaw / 1e6).toFixed(0) + 'M'}
+                      </span>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        contract.contractType === 'Sole-Source' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {contract.contractType}
+                      </span>
+                      <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
+                        {contract.category}
+                      </span>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">{contract.company}</h2>
+                    <h3 className="text-lg text-gray-600 mb-3">{contract.project}</h3>
+                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 flex-wrap">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        <span>{contract.dateAwarded}</span>
+                      </div>
+                      <span>⏱️ {contract.duration}</span>
+                      <span>🏛️ {contract.department}</span>
+                    </div>
+                    <p className="text-gray-700 mb-4">{contract.description}</p>
+                    <button className="text-rose-600 hover:text-rose-800 font-medium text-sm flex items-center gap-1">
+                      View Full Details <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAuContractDetail = () => {
+    if (!selectedAuContract) return null;
+    const contract = selectedAuContract;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <button onClick={() => { setSelectedAuContract(null); setView('au-contracts'); }}
+              className="text-rose-700 hover:text-rose-900 flex items-center gap-2 mb-4">
+              ← Back to Contracts
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <span className="bg-rose-100 text-rose-800 px-4 py-2 rounded-full text-2xl font-bold">
+                A${contract.amountRaw >= 1e9 ? (contract.amountRaw / 1e9).toFixed(2) + ' Billion' : (contract.amountRaw / 1e6).toFixed(0) + ' Million'}
+              </span>
+              <span className={`px-4 py-2 rounded-full font-medium ${
+                contract.contractType === 'Sole-Source' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
+              }`}>
+                {contract.contractType}
+              </span>
+              <span className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full">
+                {contract.category}
+              </span>
+            </div>
+
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">{contract.company}</h1>
+            <h2 className="text-xl text-gray-600 mb-6">{contract.project}</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Date Awarded</p>
+                <p className="text-lg font-bold text-blue-700">{contract.dateAwarded}</p>
+              </div>
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Duration</p>
+                <p className="text-lg font-bold text-purple-700">{contract.duration}</p>
+              </div>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Status</p>
+                <p className="text-lg font-bold text-green-700">{contract.status}</p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
+              <h3 className="font-bold text-gray-800 mb-2 text-lg">Department</h3>
+              <p className="text-gray-700">{contract.department}</p>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <h3 className="font-bold text-gray-800 mb-2 text-lg">Project Description</h3>
+              <p className="text-gray-700">{contract.description}</p>
+            </div>
+
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+              <h3 className="font-bold text-gray-800 mb-2 text-lg">Justification</h3>
+              <p className="text-gray-700">{contract.justification}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderAuAnalytics = () => {
     const au = {
       economy: {
@@ -18851,6 +19034,22 @@ function App() {
               <div className="flex items-center justify-between text-sm" style={{ color: '#C8A400' }}>
                 <span className="font-semibold">7 Justices · Chief Justice Gageler</span>
                 <ChevronRight className="w-5 h-5" style={{ color: '#C8A400' }} />
+              </div>
+            </div>
+
+            {/* Government Contracts */}
+            <div
+              onClick={() => setView('au-contracts')}
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-rose-500 active:scale-95"
+            >
+              <div className="text-rose-700 mb-3 sm:mb-4">
+                <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Contracts</h2>
+              <p className="text-gray-600 mb-3 text-sm sm:text-base">Federal procurement — follow the taxpayer money across defence, infrastructure &amp; technology</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span className="font-medium">15 Major Contracts · A$149B+</span>
+                <ChevronRight className="w-5 h-5 text-rose-700" />
               </div>
             </div>
 
@@ -21540,6 +21739,8 @@ function App() {
       {view === 'au-categories' && renderAuCategories()}
       {view === 'au-high-court' && renderAuHighCourt()}
       {view === 'au-analytics' && renderAuAnalytics()}
+      {view === 'au-contracts' && renderAuContracts()}
+      {view === 'au-contract-detail' && selectedAuContract && renderAuContractDetail()}
       {view === 'au-departments' && renderAuDepartments()}
       {view === 'au-department-detail' && selectedAuDepartment && renderAuDepartmentDetail()}
       
