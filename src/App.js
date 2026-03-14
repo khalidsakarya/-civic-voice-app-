@@ -848,6 +848,7 @@ function App() {
   const [expandedLordSections, setExpandedLordSections] = useState({});
   const [selectedUkDepartment, setSelectedUkDepartment] = useState(null);
   const [ukDeptGrantsExpanded, setUkDeptGrantsExpanded] = useState(false);
+  const [selectedUkContract, setSelectedUkContract] = useState(null);
   const [auChamber, setAuChamber] = useState('Senate');
   const [auPartyFilter, setAuPartyFilter] = useState('All');
   const [auSearch, setAuSearch] = useState('');
@@ -13262,6 +13263,497 @@ function App() {
     );
   };
 
+  const renderUKContracts = () => {
+    const RED = '#C8102E', NAVY = '#012169';
+    const ukContracts = [
+      { id: 1,  company: 'BAE Systems plc',                  project: 'Dreadnought-class Ballistic Missile Submarine Programme',          amountRaw: 31000000000, contractType: 'Sole-Source',      category: 'Defence',         department: 'Ministry of Defence',                         dateAwarded: 'October 2016',   duration: '25 years', status: 'Active',
+        description: 'Design, build and integration of four Dreadnought-class nuclear-armed ballistic missile submarines to replace the Vanguard-class Trident boats. Maintains the UK\'s Continuous At Sea Deterrent (CASD) and is the largest defence procurement in British history.',
+        justification: 'Sole-source award to BAE Systems Submarines (Barrow-in-Furness) as the only UK facility with the capability and security clearance to build nuclear-armed submarines. Dreadnought is a national sovereign programme with no competitive alternative.' },
+      { id: 2,  company: 'HS2 Ltd / Balfour Beatty Vinci SYSTRA JV', project: 'High Speed 2 Phase 1 — Main Works Civils Contract',   amountRaw: 11100000000, contractType: 'Open Tender',      category: 'Infrastructure', department: 'Department for Transport / HS2 Ltd',           dateAwarded: 'July 2017',      duration: '9 years',  status: 'Active',
+        description: 'Design and construction of the main civil infrastructure for HS2 Phase 1 (London–Birmingham), including viaducts, cuttings, embankments, tunnels and over 50 structures. The largest civil engineering contract ever awarded in the United Kingdom.',
+        justification: 'Competitive two-stage open tender process managed by HS2 Ltd. BBVS JV won on technical capability, programme confidence and value for money against five shortlisted consortia.' },
+      { id: 3,  company: 'Rolls-Royce Holdings plc',          project: 'Dreadnought Nuclear Propulsion and Reactor Systems',             amountRaw:  9200000000, contractType: 'Sole-Source',      category: 'Defence',         department: 'Ministry of Defence',                         dateAwarded: 'November 2016',  duration: '30 years', status: 'Active',
+        description: 'Design, development, manufacture and through-life support of the nuclear propulsion reactor plant for the Dreadnought-class submarines, including the Core H reactor and associated systems at Rolls-Royce\'s Derby facility.',
+        justification: 'Sole-source contract as Rolls-Royce Submarines is the only UK company with the sovereign nuclear propulsion capability. Maintaining this expertise is a national security requirement under the Nuclear Enterprise.' },
+      { id: 4,  company: 'Serco Group plc',                   project: 'National Probation Service Unpaid Work & Rehabilitation',        amountRaw:  3800000000, contractType: 'Open Tender',      category: 'Justice',         department: 'Ministry of Justice',                         dateAwarded: 'June 2021',      duration: '7 years',  status: 'Active',
+        description: 'Delivery of unpaid work placements, accredited programmes, rehabilitation activities and Through the Gate services for National Probation Service offenders across six regions of England and Wales.',
+        justification: 'Competitive tender under the NPS Regional Operating Hubs model. Serco selected on quality of service methodology and value for money across designated probation regions.' },
+      { id: 5,  company: 'BT Group plc',                      project: 'Emergency Services Network (ESN) — Critical National Infrastructure', amountRaw: 9000000000, contractType: 'Sole-Source',   category: 'Technology',      department: 'Home Office',                                 dateAwarded: 'December 2015',  duration: '20 years', status: 'Active',
+        description: 'Design, build and operation of the Emergency Services Network replacing Airwave — a 4G/5G LTE communications network for police, fire and ambulance services across the UK. Originally estimated at £1.2B; programme has experienced significant cost escalation.',
+        justification: 'Sole-source EE/BT selected as the only UK operator with a nationwide 4G network meeting coverage requirements. The technical complexity and incumbent scale precluded competitive re-tender at contract revision.' },
+      { id: 6,  company: 'Airbus Defence & Space UK',          project: 'Skynet 6 Military Satellite Communications Programme',            amountRaw:  6000000000, contractType: 'Sole-Source',      category: 'Defence',         department: 'Ministry of Defence / DSIT',                  dateAwarded: 'July 2020',      duration: '15 years', status: 'Active',
+        description: 'Design, build, launch and operation of the next generation of UK military SATCOM satellites (Skynet 6A and 6B), sustaining secure, resilient communications for UK and allied armed forces worldwide to 2050 and beyond.',
+        justification: 'Sole-source award leveraging Airbus\'s unique expertise from Skynet 5 operations. The transition continuity requirement and national security sensitivity of the programme precluded open competition.' },
+      { id: 7,  company: 'Capita plc',                        project: 'British Army Recruiting Partnership Programme',                    amountRaw:  1400000000, contractType: 'Open Tender',      category: 'Defence',         department: 'Ministry of Defence / British Army',          dateAwarded: 'March 2012',     duration: '10 years', status: 'Completed',
+        description: 'End-to-end management of British Army officer and soldier recruitment, including marketing, application processing, assessment centres and medical screening. The programme faced significant public criticism for recruitment shortfalls.',
+        justification: 'Competitive tender under the Recruiting Partnership Project. Capita selected on total cost of ownership and transformation capability. Contract extension granted after initial performance issues.' },
+      { id: 8,  company: 'Stagecoach / Avanti West Coast JV', project: 'West Coast Partnership Rail Franchise',                           amountRaw:  7600000000, contractType: 'Open Tender',      category: 'Transport',        department: 'Department for Transport',                    dateAwarded: 'March 2019',     duration: '9 years',  status: 'Active',
+        description: 'Operation of intercity passenger rail services on the West Coast Main Line (London Euston to Glasgow, Liverpool, Birmingham and Manchester), including direct award of HS2 services. Carries over 30 million passengers annually.',
+        justification: 'Competitive tender process under DfT\'s Rail franchising programme. Avanti West Coast consortium selected on bid quality, investment plans and passenger experience commitments.' },
+      { id: 9,  company: 'MBDA UK Ltd',                       project: 'Future Ground Based Air Defence (FGBAD) — Sky Sabre System',      amountRaw:  2700000000, contractType: 'Sole-Source',      category: 'Defence',         department: 'Ministry of Defence',                         dateAwarded: 'May 2019',       duration: '10 years', status: 'Active',
+        description: 'Procurement and through-life support of the Sky Sabre ground-based air defence system, replacing Rapier. Integrates CAMM missiles with a Common Anti-Air Modular Missile launcher able to track and engage 1,000 targets simultaneously.',
+        justification: 'Sole-source to MBDA as developer of the CAMM missile system and integration prime. The sovereign missile capability and interoperability requirements precluded open competition.' },
+      { id: 10, company: 'Northrop Grumman / Leonardo UK',    project: 'E-7 Wedgetail Airborne Early Warning & Control Aircraft',         amountRaw:  2000000000, contractType: 'Sole-Source',      category: 'Defence',         department: 'Ministry of Defence',                         dateAwarded: 'March 2019',     duration: '20 years', status: 'Active',
+        description: 'Purchase and conversion of five Boeing 737-based E-7A Wedgetail AEW&C aircraft to replace the Sentry (E-3D), providing the RAF with advanced airborne surveillance and battle management capability.',
+        justification: 'Sole-source acquisition aligned with the US Air Force\'s E-7A programme, maximising interoperability with Five Eyes partners. Unique capability requirement precluded open tender.' },
+      { id: 11, company: 'NHS Shared Business Services / DXC Technology', project: 'NHS National IT Infrastructure Managed Services',    amountRaw:  1800000000, contractType: 'Restricted Tender', category: 'Health',           department: 'Department of Health & Social Care / NHS England', dateAwarded: 'April 2023',  duration: '7 years',  status: 'Active',
+        description: 'End-to-end managed IT services for NHS England\'s national infrastructure including data centres, network operations, end-user computing, service desk and cloud migration for 1.3 million NHS employees.',
+        justification: 'Restricted to Crown Commercial Service-approved managed service providers. DXC Technology selected on NHS transformation experience, security clearance and commercial value.' },
+      { id: 12, company: 'Palantir Technologies UK Ltd',      project: 'NHS Federated Data Platform (FDP)',                               amountRaw:   480000000, contractType: 'Open Tender',      category: 'Technology',      department: 'Department of Health & Social Care / NHS England', dateAwarded: 'November 2023', duration: '7 years', status: 'Active',
+        description: 'Build and operation of a national NHS Federated Data Platform integrating patient records, operational data and analytics across all NHS trusts — enabling joined-up care planning and reducing waiting lists.',
+        justification: 'Open competitive tender under NHS procurement rules. Palantir\'s Foundry platform selected after evaluation of six shortlisted bidders on technical capability, interoperability and patient data governance.' },
+      { id: 13, company: 'G4S / Serco (AASC Consortium)',     project: 'Asylum Accommodation & Support Contract (AASC)',                  amountRaw:  4500000000, contractType: 'Open Tender',      category: 'Immigration',     department: 'Home Office',                                 dateAwarded: 'January 2019',   duration: '10 years', status: 'Active',
+        description: 'Provision of accommodation, transport and support services for asylum seekers in initial, dispersal and contingency accommodation across England, Scotland and Wales. Covers around 110,000 service users at any one time.',
+        justification: 'Competitive procurement under AASC framework. G4S and Serco awarded regional lots on value for money, property supply capacity and support service quality commitments.' },
+      { id: 14, company: 'Babcock International Group',       project: 'Type 31 Frigate (Inspiration Class) — Arrowhead 140',             amountRaw:  1250000000, contractType: 'Open Tender',      category: 'Defence',         department: 'Ministry of Defence',                         dateAwarded: 'November 2019',  duration: '8 years',  status: 'Active',
+        description: 'Design and build of five Type 31 general-purpose frigates for the Royal Navy at Babcock\'s Rosyth dockyard, replacing the Type 23. An exportable warship design aiming to rebuild UK shipbuilding capacity.',
+        justification: 'Competitive tender under the Type 31 programme; Babcock\'s Arrowhead 140 won against Cammell Laird and BMT on technical merit and cost. Programme supported by £20M Type 31 design competition.' },
+      { id: 15, company: 'Deloitte UK / Accenture UK',        project: 'HMRC Making Tax Digital (MTD) Programme Delivery',               amountRaw:   890000000, contractType: 'Restricted Tender', category: 'Technology',      department: 'HM Revenue & Customs',                        dateAwarded: 'September 2021', duration: '6 years',  status: 'Active',
+        description: 'Programme management, architecture and delivery support for HMRC\'s Making Tax Digital transformation — moving businesses and landlords to quarterly digital tax reporting and eliminating paper self-assessment.',
+        justification: 'Restricted to government-approved programme delivery partners. Deloitte/Accenture consortium selected for HMRC relationship continuity, tax technology expertise and delivery capability.' },
+    ];
+    const totalValue = ukContracts.reduce((s, c) => s + c.amountRaw, 0);
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <button onClick={() => setView('uk-national')} className="flex items-center gap-2 font-medium" style={{ color: RED }}>
+              ← Back to Westminster
+            </button>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Government Contracts</h1>
+            <div className="w-20" />
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+          <div className="rounded-xl p-6 mb-8 border-2" style={{ background: 'linear-gradient(to right, #C8102E08, #01216908)', borderColor: '#C8102E' }}>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-3xl">💷</span>
+              <h2 className="text-2xl font-bold text-gray-800">Follow the Taxpayer Money</h2>
+            </div>
+            <p className="text-gray-600">Major UK government contracts worth £{(totalValue / 1e9).toFixed(1)} Billion · {ukContracts.length} contracts listed</p>
+            <div className="w-16 h-1 mt-3 rounded-full" style={{ background: `linear-gradient(to right, ${RED}, ${NAVY})` }} />
+          </div>
+
+          <div className="space-y-5">
+            {ukContracts.map(contract => (
+              <div key={contract.id}
+                onClick={() => { setSelectedUkContract(contract); setView('uk-contract-detail'); }}
+                className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all border-2 border-transparent cursor-pointer p-5 sm:p-6 active:scale-[0.99]"
+                onMouseEnter={e => e.currentTarget.style.borderColor = RED}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+              >
+                <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-4 py-1.5 rounded-full text-base font-bold text-white" style={{ backgroundColor: RED }}>
+                      £{contract.amountRaw >= 1e9 ? (contract.amountRaw / 1e9).toFixed(1) + 'B' : (contract.amountRaw / 1e6).toFixed(0) + 'M'}
+                    </span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${contract.contractType === 'Sole-Source' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}`}>
+                      {contract.contractType}
+                    </span>
+                    <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">{contract.category}</span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${contract.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{contract.status}</span>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0 mt-1" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800 mb-1">{contract.company}</h2>
+                <h3 className="text-base text-gray-600 mb-3">{contract.project}</h3>
+                <div className="flex items-center gap-4 text-xs sm:text-sm text-gray-500 mb-3 flex-wrap">
+                  <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{contract.dateAwarded}</span>
+                  <span>⏱️ {contract.duration}</span>
+                  <span className="truncate">🏛️ {contract.department}</span>
+                </div>
+                <p className="text-sm text-gray-700 line-clamp-2">{contract.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderUKContractDetail = () => {
+    if (!selectedUkContract) return null;
+    const c = selectedUkContract;
+    const RED = '#C8102E', NAVY = '#012169';
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <button onClick={() => { setSelectedUkContract(null); setView('uk-contracts'); }} className="flex items-center gap-2 font-medium mb-4" style={{ color: RED }}>
+              ← Back to Contracts
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+          <div className="bg-white rounded-xl shadow-md p-6 sm:p-8 mb-6">
+            {/* UK flag bar */}
+            <div className="h-1.5 w-full rounded-full mb-6" style={{ background: `linear-gradient(to right, ${RED}, #FFFFFF, ${NAVY})` }} />
+
+            <div className="flex items-center gap-3 mb-5 flex-wrap">
+              <span className="px-4 py-2 rounded-full text-xl font-bold text-white" style={{ backgroundColor: RED }}>
+                £{c.amountRaw >= 1e9 ? (c.amountRaw / 1e9).toFixed(2) + ' Billion' : (c.amountRaw / 1e6).toFixed(0) + ' Million'}
+              </span>
+              <span className={`px-4 py-2 rounded-full font-medium ${c.contractType === 'Sole-Source' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}`}>{c.contractType}</span>
+              <span className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full">{c.category}</span>
+              <span className={`px-4 py-2 rounded-full font-semibold ${c.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{c.status}</span>
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">{c.company}</h1>
+            <h2 className="text-lg sm:text-xl text-gray-600 mb-6">{c.project}</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Date Awarded</p>
+                <p className="text-lg font-bold text-blue-700">{c.dateAwarded}</p>
+              </div>
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Duration</p>
+                <p className="text-lg font-bold text-purple-700">{c.duration}</p>
+              </div>
+              <div className="rounded-lg p-4 border" style={{ background: '#01216908', borderColor: NAVY }}>
+                <p className="text-sm text-gray-600 mb-1">Awarding Department</p>
+                <p className="text-base font-bold" style={{ color: NAVY }}>{c.department}</p>
+              </div>
+            </div>
+
+            <div className="rounded-lg p-5 mb-5 border" style={{ background: '#01216908', borderColor: NAVY }}>
+              <h3 className="font-bold text-gray-800 mb-2 text-lg">Project Description</h3>
+              <p className="text-gray-700 leading-relaxed">{c.description}</p>
+            </div>
+
+            <div className="rounded-lg p-5 border" style={{ background: '#C8102E08', borderColor: RED }}>
+              <h3 className="font-bold text-gray-800 mb-2 text-lg">Contract Justification</h3>
+              <p className="text-gray-700 leading-relaxed">{c.justification}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderUKAnalytics = () => {
+    const RED = '#C8102E', NAVY = '#012169';
+    const uk = {
+      economy: {
+        years: [2022, 2023, 2024, 2025],
+        gdpGrowth:    [4.3,  0.1, 1.1, 1.6],
+        unemployment: [3.7,  4.2, 4.4, 4.2],
+        inflation:    [9.1,  6.7, 2.6, 2.8],
+        consumerConf: [74,   69,  76,  78],
+      },
+      spending: {
+        totalBudget: 1193_000_000_000,
+        sectors: [
+          { name: 'Social Protection (DWP)',        amount: 280_300_000_000, pct: 23 },
+          { name: 'Health (NHS England)',           amount: 225_000_000_000, pct: 19 },
+          { name: 'Education',                      amount: 108_600_000_000, pct:  9 },
+          { name: 'Debt Interest',                  amount:  95_800_000_000, pct:  8 },
+          { name: 'Housing & Local Government',     amount:  80_700_000_000, pct:  7 },
+          { name: 'Transport',                      amount:  34_900_000_000, pct:  3 },
+          { name: 'Defence',                        amount:  52_100_000_000, pct:  4 },
+          { name: 'Other Departments',              amount: 315_600_000_000, pct: 27 },
+        ],
+      },
+      nhs: {
+        years: [2022, 2023, 2024, 2025],
+        waitingListM:  [6.5, 7.4, 7.6, 7.2],
+        avgWaitWeeks:  [16,  19,  18,  17],
+        aEWaitPct:     [68,  63,  65,  67],
+        gpWaitDays:    [12,  15,  14,  13],
+      },
+      housing: {
+        years: [2022, 2023, 2024, 2025],
+        avgHousePrice: [295000, 285000, 290000, 298000],
+        avgSalary:     [31772,  34963,  36000,  37500],
+        affordRatio:   [9.3,    8.2,    8.1,    7.9],
+        newBuilds:     [232820, 215000, 220000, 225000],
+        targetBuilds:  [300000, 300000, 300000, 300000],
+      },
+      crime: {
+        years:        [2022, 2023, 2024, 2025],
+        policeRec:    [6140, 6230, 5980, 5720],
+        violentCrime: [1590, 1610, 1540, 1480],
+        cybercrime:   [1200, 1380, 1510, 1620],
+        percentChg:   [+1.5, +1.5, -4.0, -4.3],
+      },
+      parliament: {
+        commons: 650,
+        parties: [
+          { name: 'Labour',           seats: 412, color: '#E4003B' },
+          { name: 'Conservative',     seats: 121, color: '#003087' },
+          { name: 'Liberal Democrats',seats:  72, color: '#FAA61A' },
+          { name: 'SNP',              seats:   9, color: '#FDF38E' },
+          { name: 'Others',           seats:  36, color: '#6B7280' },
+        ],
+      },
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <button onClick={() => setView('uk-national')} className="flex items-center gap-2 font-medium" style={{ color: RED }}>
+              ← Back to Westminster
+            </button>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
+            <div className="w-20" />
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          {/* Banner */}
+          <div className="rounded-xl p-5 sm:p-6 mb-6 border-2" style={{ background: `linear-gradient(to right, ${RED}08, ${NAVY}08)`, borderColor: NAVY }}>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">📊 UK Government Analytics</h2>
+            <p className="text-gray-600 text-sm sm:text-base">Economy, NHS, housing, crime & parliament — FY 2024–25</p>
+            <div className="w-16 h-1 mt-3 rounded-full" style={{ background: `linear-gradient(to right, ${RED}, ${NAVY})` }} />
+          </div>
+
+          {/* Key Economic Indicators */}
+          <div className="bg-white rounded-xl shadow-md p-5 sm:p-6 mb-6">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" style={{ color: NAVY }} />
+              📈 Key Economic Indicators (2025)
+            </h3>
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="rounded-lg p-4 border-2 text-center" style={{ background: '#01216908', borderColor: NAVY }}>
+                <p className="text-xs text-gray-600 mb-1">GDP Growth</p>
+                <p className="text-3xl font-bold" style={{ color: NAVY }}>{uk.economy.gdpGrowth[3]}%</p>
+              </div>
+              <div className="bg-amber-50 p-4 rounded-lg border-2 border-amber-200 text-center">
+                <p className="text-xs text-gray-600 mb-1">Unemployment</p>
+                <p className="text-3xl font-bold text-amber-600">{uk.economy.unemployment[3]}%</p>
+              </div>
+              <div className="rounded-lg p-4 border-2 text-center" style={{ background: '#C8102E08', borderColor: RED }}>
+                <p className="text-xs text-gray-600 mb-1">Inflation (CPI)</p>
+                <p className="text-3xl font-bold" style={{ color: RED }}>{uk.economy.inflation[3]}%</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200 text-center">
+                <p className="text-xs text-gray-600 mb-1">Consumer Confidence</p>
+                <p className="text-3xl font-bold text-green-600">{uk.economy.consumerConf[3]}/100</p>
+              </div>
+            </div>
+            <h4 className="font-bold text-gray-700 mb-3 text-sm">Year-over-Year Trends</h4>
+            <div className="space-y-3">
+              {uk.economy.years.map((yr, i) => (
+                <div key={yr}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700 font-medium text-sm">{yr}</span>
+                    <span className="text-xs text-gray-500">GDP {uk.economy.gdpGrowth[i]}% · Unemployment {uk.economy.unemployment[i]}% · Inflation {uk.economy.inflation[i]}%</span>
+                  </div>
+                  <div className="flex gap-1 h-4">
+                    <div className="rounded-l" style={{ width: `${Math.max((uk.economy.gdpGrowth[i] / 12) * 100, 4)}%`, backgroundColor: NAVY }} title={`GDP ${uk.economy.gdpGrowth[i]}%`} />
+                    <div className="bg-amber-400" style={{ width: `${(uk.economy.unemployment[i] / 12) * 100}%` }} title={`Unemp ${uk.economy.unemployment[i]}%`} />
+                    <div className="rounded-r" style={{ width: `${(uk.economy.inflation[i] / 12) * 100}%`, backgroundColor: RED }} title={`Inflation ${uk.economy.inflation[i]}%`} />
+                  </div>
+                </div>
+              ))}
+              <div className="flex gap-4 text-xs text-gray-600 mt-2 flex-wrap">
+                <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded" style={{ backgroundColor: NAVY }} /> GDP Growth</span>
+                <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-amber-400 rounded" /> Unemployment</span>
+                <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 rounded" style={{ backgroundColor: RED }} /> Inflation</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Government Spending */}
+          <div className="bg-white rounded-xl shadow-md p-5 sm:p-6 mb-6">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-green-600" />
+              💰 Government Spending by Sector (FY 2024–25)
+            </h3>
+            <div className="rounded-lg p-4 mb-4 border-2" style={{ background: '#01216908', borderColor: NAVY }}>
+              <p className="font-bold text-lg" style={{ color: NAVY }}>Total Budget: £{(uk.spending.totalBudget / 1e12).toFixed(2)} Trillion</p>
+              <p className="text-sm text-gray-600">HM Treasury · Public Sector Expenditure 2024–25</p>
+            </div>
+            <div className="space-y-3">
+              {uk.spending.sectors.map((s, i) => (
+                <div key={i}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700 text-sm">{s.name}</span>
+                    <span className="font-bold text-gray-800 text-sm">£{(s.amount / 1e9).toFixed(0)}B ({s.pct}%)</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-3">
+                    <div className="h-3 rounded-full" style={{ width: `${s.pct * 3}%`, backgroundColor: [RED, NAVY, '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16'][i % 8] }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* NHS Waiting Times */}
+          <div className="bg-white rounded-xl shadow-md p-5 sm:p-6 mb-6">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" style={{ color: RED }} />
+              🏥 NHS Performance & Waiting Times
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+              <div className="rounded-lg p-3 border-2 text-center" style={{ background: '#C8102E08', borderColor: RED }}>
+                <p className="text-xs text-gray-600">Waiting List</p>
+                <p className="text-2xl font-bold" style={{ color: RED }}>{uk.nhs.waitingListM[3]}M</p>
+                <p className="text-xs text-gray-500">patients</p>
+              </div>
+              <div className="bg-amber-50 p-3 rounded-lg border-2 border-amber-200 text-center">
+                <p className="text-xs text-gray-600">Avg Wait</p>
+                <p className="text-2xl font-bold text-amber-600">{uk.nhs.avgWaitWeeks[3]} wks</p>
+                <p className="text-xs text-gray-500">elective care</p>
+              </div>
+              <div className="bg-blue-50 p-3 rounded-lg border-2 border-blue-200 text-center">
+                <p className="text-xs text-gray-600">A&E in 4h</p>
+                <p className="text-2xl font-bold text-blue-600">{uk.nhs.aEWaitPct[3]}%</p>
+                <p className="text-xs text-gray-500">target: 95%</p>
+              </div>
+              <div className="bg-green-50 p-3 rounded-lg border-2 border-green-200 text-center">
+                <p className="text-xs text-gray-600">GP Wait</p>
+                <p className="text-2xl font-bold text-green-600">{uk.nhs.gpWaitDays[3]} days</p>
+                <p className="text-xs text-gray-500">avg appointment</p>
+              </div>
+            </div>
+            <h4 className="font-bold text-gray-700 mb-3 text-sm">NHS Waiting List (millions of patients)</h4>
+            <div className="space-y-3">
+              {uk.nhs.years.map((yr, i) => (
+                <div key={yr}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium text-gray-700">{yr}</span>
+                    <span className="text-xs text-gray-500">{uk.nhs.waitingListM[i]}M patients · avg {uk.nhs.avgWaitWeeks[i]} weeks</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-4">
+                    <div className="h-4 rounded-full" style={{ width: `${(uk.nhs.waitingListM[i] / 10) * 100}%`, backgroundColor: RED }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Housing Affordability */}
+          <div className="bg-white rounded-xl shadow-md p-5 sm:p-6 mb-6">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <Building2 className="w-5 h-5" style={{ color: NAVY }} />
+              🏠 Housing Affordability
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+              <div className="rounded-lg p-3 border-2 text-center" style={{ background: '#01216908', borderColor: NAVY }}>
+                <p className="text-xs text-gray-600">Avg House Price</p>
+                <p className="text-xl font-bold" style={{ color: NAVY }}>£{(uk.housing.avgHousePrice[3] / 1000).toFixed(0)}K</p>
+              </div>
+              <div className="bg-amber-50 p-3 rounded-lg border-2 border-amber-200 text-center">
+                <p className="text-xs text-gray-600">Avg Salary</p>
+                <p className="text-xl font-bold text-amber-600">£{(uk.housing.avgSalary[3] / 1000).toFixed(1)}K</p>
+              </div>
+              <div className="rounded-lg p-3 border-2 text-center" style={{ background: '#C8102E08', borderColor: RED }}>
+                <p className="text-xs text-gray-600">Price/Income Ratio</p>
+                <p className="text-xl font-bold" style={{ color: RED }}>{uk.housing.affordRatio[3]}×</p>
+              </div>
+              <div className="bg-green-50 p-3 rounded-lg border-2 border-green-200 text-center">
+                <p className="text-xs text-gray-600">New Builds (2025)</p>
+                <p className="text-xl font-bold text-green-600">{(uk.housing.newBuilds[3] / 1000).toFixed(0)}K</p>
+                <p className="text-xs text-gray-500">target 300K</p>
+              </div>
+            </div>
+            <h4 className="font-bold text-gray-700 mb-3 text-sm">New Homes Built vs Government Target (300,000/yr)</h4>
+            <div className="space-y-3">
+              {uk.housing.years.map((yr, i) => {
+                const pct = Math.round((uk.housing.newBuilds[i] / uk.housing.targetBuilds[i]) * 100);
+                return (
+                  <div key={yr}>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm font-medium text-gray-700">{yr}</span>
+                      <span className="text-xs text-gray-500">{(uk.housing.newBuilds[i] / 1000).toFixed(0)}K of {(uk.housing.targetBuilds[i] / 1000).toFixed(0)}K target ({pct}%)</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-4">
+                      <div className="h-4 rounded-full" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: pct >= 80 ? '#16a34a' : pct >= 60 ? '#ca8a04' : RED }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Crime Trends */}
+          <div className="bg-white rounded-xl shadow-md p-5 sm:p-6 mb-6">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-600" />
+              🚨 Crime Rate Trends
+            </h3>
+            <div className="grid grid-cols-3 gap-3 mb-5">
+              <div className="rounded-lg p-3 border-2 text-center" style={{ background: '#C8102E08', borderColor: RED }}>
+                <p className="text-xs text-gray-600">Violent Crime</p>
+                <p className="text-2xl font-bold" style={{ color: RED }}>{uk.crime.violentCrime[3].toLocaleString()}</p>
+                <p className="text-xs text-gray-500">per 100K</p>
+              </div>
+              <div className="bg-amber-50 p-3 rounded-lg border-2 border-amber-200 text-center">
+                <p className="text-xs text-gray-600">Cyber Crime</p>
+                <p className="text-2xl font-bold text-amber-600">{uk.crime.cybercrime[3].toLocaleString()}</p>
+                <p className="text-xs text-gray-500">per 100K</p>
+              </div>
+              <div className="bg-green-50 p-3 rounded-lg border-2 border-green-200 text-center">
+                <p className="text-xs text-gray-600">YoY Change</p>
+                <p className="text-2xl font-bold text-green-600">{uk.crime.percentChg[3]}%</p>
+                <p className="text-xs text-gray-500">police recorded</p>
+              </div>
+            </div>
+            <h4 className="font-bold text-gray-700 mb-3 text-sm">Police-Recorded Crime (thousands) by Year</h4>
+            <div className="space-y-3">
+              {uk.crime.years.map((yr, i) => (
+                <div key={yr}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium text-gray-700">{yr}</span>
+                    <span className="text-xs text-gray-500">{uk.crime.policeRec[i].toLocaleString()}K total · violent {uk.crime.violentCrime[i].toLocaleString()}/100K</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-4">
+                    <div className="h-4 rounded-full" style={{ width: `${(uk.crime.policeRec[i] / 7000) * 100}%`, backgroundColor: RED }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Parliament Composition */}
+          <div className="bg-white rounded-xl shadow-md p-5 sm:p-6 mb-6">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <Users className="w-5 h-5" style={{ color: NAVY }} />
+              🏛️ House of Commons Composition (2024 Election)
+            </h3>
+            <p className="text-gray-600 text-sm mb-4">{uk.parliament.commons} seats total · Labour supermajority</p>
+            <div className="space-y-3">
+              {uk.parliament.parties.map((p, i) => (
+                <div key={i}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium text-gray-700">{p.name}</span>
+                    <span className="font-bold text-gray-800 text-sm">{p.seats} seats ({Math.round((p.seats / uk.parliament.commons) * 100)}%)</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-4">
+                    <div className="h-4 rounded-full" style={{ width: `${(p.seats / uk.parliament.commons) * 100}%`, backgroundColor: p.color === '#FDF38E' ? '#b5a800' : p.color }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Summary stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <div className="rounded-xl p-5 text-center border-2" style={{ background: `linear-gradient(135deg, ${RED}15, ${RED}08)`, borderColor: RED }}>
+              <p className="text-sm text-gray-600 mb-1">UK Departments</p>
+              <p className="text-4xl font-bold" style={{ color: RED }}>24</p>
+              <p className="text-xs text-gray-500 mt-1">Ministerial Departments</p>
+            </div>
+            <div className="rounded-xl p-5 text-center border-2" style={{ background: `linear-gradient(135deg, ${NAVY}15, ${NAVY}08)`, borderColor: NAVY }}>
+              <p className="text-sm text-gray-600 mb-1">Parliament Members</p>
+              <p className="text-4xl font-bold" style={{ color: NAVY }}>1,435</p>
+              <p className="text-xs text-gray-500 mt-1">Commons + Lords</p>
+            </div>
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 text-center border-2 border-green-300">
+              <p className="text-sm text-gray-600 mb-1">Annual Budget</p>
+              <p className="text-4xl font-bold text-green-700">£1.19T</p>
+              <p className="text-xs text-gray-500 mt-1">FY 2024–25</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderUKNational = () => (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-6xl mx-auto">
@@ -13404,6 +13896,42 @@ function App() {
             <div className="flex items-center justify-between text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>
               <span className="font-semibold">12 Justices · Lord Reed</span>
               <ChevronRight className="w-5 h-5 text-white" />
+            </div>
+          </div>
+
+          {/* Government Contracts */}
+          <div
+            onClick={() => setView('uk-contracts')}
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
+            onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+          >
+            <div className="mb-3 sm:mb-4" style={{ color: '#C8102E' }}>
+              <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Contracts</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Major public procurement contracts — defence, infrastructure &amp; services</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>15 Major Contracts · £92B+</span>
+              <ChevronRight className="w-5 h-5" style={{ color: '#C8102E' }} />
+            </div>
+          </div>
+
+          {/* Analytics Dashboard */}
+          <div
+            onClick={() => setView('uk-analytics')}
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
+            onMouseEnter={e => e.currentTarget.style.borderColor = '#012169'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+          >
+            <div className="mb-3 sm:mb-4" style={{ color: '#012169' }}>
+              <BarChart3 className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Analytics Dashboard</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">GDP growth, unemployment, NHS waiting times, housing &amp; crime trends</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>Economy · Health · Housing · Crime</span>
+              <ChevronRight className="w-5 h-5" style={{ color: '#012169' }} />
             </div>
           </div>
 
@@ -26378,6 +26906,9 @@ function App() {
       {view === 'uk-supreme-court' && renderUKSupremeCourt()}
       {view === 'uk-regions' && renderUKRegions()}
       {view === 'uk-region-detail' && selectedUkRegion && renderUKRegionDetail()}
+      {view === 'uk-contracts' && renderUKContracts()}
+      {view === 'uk-contract-detail' && selectedUkContract && renderUKContractDetail()}
+      {view === 'uk-analytics' && renderUKAnalytics()}
       {view === 'uk-coming-soon' && renderUKComingSoon()}
       {view === 'au-analytics' && renderAuAnalytics()}
       {view === 'au-contracts' && renderAuContracts()}
