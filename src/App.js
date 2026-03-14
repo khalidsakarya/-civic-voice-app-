@@ -6886,8 +6886,8 @@ function App() {
     const isUSA = selectedCountry?.type === 'usa';
     const isAustralia = selectedCountry?.type === 'australia';
     const isUK = selectedCountry?.type === 'uk';
-    const countryName = isUSA ? 'United States' : isWide ? 'Australia' : isUK ? 'United Kingdom' : 'Canada';
-    const flag = isUSA ? '🇺🇸' : isWide ? '🇦🇺' : isUK ? '🇬🇧' : '🇨🇦';
+    const countryName = isUSA ? 'United States' : isAustralia ? 'Australia' : isUK ? 'United Kingdom' : 'Canada';
+    const flag = isUSA ? '🇺🇸' : isAustralia ? '🇦🇺' : isUK ? '🇬🇧' : '🇨🇦';
 
     if (isUK) {
       return (
