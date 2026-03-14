@@ -11589,8 +11589,8 @@ function App() {
           {/* Gold top accent line */}
           <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: 'linear-gradient(90deg, transparent 0%, #C8A400 30%, #F5D060 50%, #C8A400 70%, transparent 100%)' }} />
 
-          {/* Back nav */}
-          <div className="relative z-10 px-5 sm:px-8 lg:px-12 pt-5">
+          {/* Back nav — share button lives here on mobile to keep it out of the column stack */}
+          <div className="relative z-10 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 flex items-center justify-between">
             <button
               onClick={() => setView('au-states')}
               className="inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-2 transition-colors"
@@ -11600,17 +11600,26 @@ function App() {
             >
               ← States &amp; Territories
             </button>
+            {/* Share — shown inline on mobile, hidden on sm+ (reappears in hero column below) */}
+            <button
+              onClick={(e) => handleShare(e, { id: 'au-state-' + item.name, title: item.name, text: `🇦🇺 ${item.name} — ${item.leaderTitle}: ${item.leader} (${item.party}) since ${item.since} - civic-voice-app.vercel.app`, url: window.location.href })}
+              className="sm:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
+              style={{ background: copiedShareId === 'au-state-' + item.name ? '#00843D' : 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
+              aria-label="Share"
+            >
+              {copiedShareId === 'au-state-' + item.name ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+            </button>
           </div>
 
           {/* Hero main content */}
-          <div className="relative z-10 max-w-5xl mx-auto px-5 sm:px-8 lg:px-12 pt-8 pb-14">
-            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-7 sm:gap-10">
+          <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-8 lg:px-12 pt-4 sm:pt-8 pb-8 sm:pb-14">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3 sm:gap-10">
 
               {/* Flag */}
-              <div className="flex-shrink-0 flex flex-col items-center gap-2">
+              <div className="flex-shrink-0 flex flex-col items-center gap-1 sm:gap-2">
                 <div className="relative">
-                  <div className="absolute -inset-1.5 rounded-2xl opacity-40" style={{ background: 'linear-gradient(135deg, #C8A400 0%, transparent 60%)' }} />
-                  <div className="relative rounded-2xl overflow-hidden border-2 border-white/20" style={{ width: '148px', height: '96px', boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }}>
+                  <div className="absolute -inset-1 sm:-inset-1.5 rounded-xl sm:rounded-2xl opacity-40" style={{ background: 'linear-gradient(135deg, #C8A400 0%, transparent 60%)' }} />
+                  <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border-2 border-white/20 w-[104px] h-[67px] sm:w-[148px] sm:h-[96px]" style={{ boxShadow: '0 8px 28px rgba(0,0,0,0.5)' }}>
                     <img src={item.flagUrl} alt={`Flag of ${item.name}`} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
                   </div>
                 </div>
@@ -11619,23 +11628,23 @@ function App() {
 
               {/* Title block */}
               <div className="flex-1 text-center sm:text-left">
-                <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-3" style={{ color: '#C8A400' }}>Australian State &amp; Territory</p>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-4">{item.name}</h1>
-                <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-1 sm:mb-3" style={{ color: '#C8A400' }}>Australian State &amp; Territory</p>
+                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2 sm:mb-4">{item.name}</h1>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center sm:justify-start">
+                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
                     🏛 <span className="ml-0.5">Capital: <strong className="text-white">{item.capital}</strong></span>
                   </span>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    👥 <span className="ml-0.5">Population: <strong className="text-white">{item.population}</strong></span>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    👥 <span className="ml-0.5">Pop: <strong className="text-white">{item.population}</strong></span>
                   </span>
-                  <span className="inline-flex items-center text-xs font-bold rounded-lg px-3 py-1.5 text-white" style={{ background: mpc.solid }}>
-                    {item.partyShort} Government
+                  <span className="inline-flex items-center text-xs font-bold rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5 text-white" style={{ background: mpc.solid }}>
+                    {item.partyShort} Gov.
                   </span>
                 </div>
               </div>
 
-              {/* Share button */}
-              <div className="flex-shrink-0 self-start sm:self-end">
+              {/* Share button — desktop only (mobile share is in nav bar above) */}
+              <div className="hidden sm:flex flex-shrink-0 self-end">
                 <button
                   onClick={(e) => handleShare(e, { id: 'au-state-' + item.name, title: item.name, text: `🇦🇺 ${item.name} — ${item.leaderTitle}: ${item.leader} (${item.party}) since ${item.since} - civic-voice-app.vercel.app`, url: window.location.href })}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
@@ -11643,7 +11652,7 @@ function App() {
                   aria-label="Share"
                 >
                   {copiedShareId === 'au-state-' + item.name ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
-                  <span className="hidden sm:inline">{copiedShareId === 'au-state-' + item.name ? 'Copied!' : 'Share'}</span>
+                  <span>{copiedShareId === 'au-state-' + item.name ? 'Copied!' : 'Share'}</span>
                 </button>
               </div>
             </div>
