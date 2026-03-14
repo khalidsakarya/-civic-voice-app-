@@ -7862,38 +7862,51 @@ function App() {
                   <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Legislature Composition</h2>
                   <p className="text-xs text-gray-400 mt-0.5">{leg.name} &nbsp;·&nbsp; {leg.totalSeats} total seats</p>
                 </div>
-                <ResponsiveContainer width="100%" height={220}>
-                  <RechartsPie>
-                    <Pie
-                      data={leg.parties}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={58}
-                      outerRadius={90}
-                      paddingAngle={leg.parties.length > 1 ? 2 : 0}
-                      dataKey="seats"
-                      nameKey="name"
-                      startAngle={90}
-                      endAngle={-270}
-                    >
-                      {leg.parties.map((p, i) => (
-                        <Cell key={i} fill={p.color} stroke="white" strokeWidth={2} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value, name) => [`${value} seats (${Math.round(value / leg.totalSeats * 100)}%)`, name]}
-                      contentStyle={{ borderRadius: '10px', fontSize: '12px', border: '1px solid #e5e7eb' }}
-                    />
-                  </RechartsPie>
-                </ResponsiveContainer>
-                <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 px-5 pb-5">
+                {/* Mobile: compact party stat squares */}
+                <div className="sm:hidden px-4 pt-2 pb-4 grid grid-cols-2 gap-2">
                   {leg.parties.map(p => (
-                    <div key={p.name} className="flex items-center gap-1.5">
-                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
-                      <span className="text-xs font-semibold text-gray-700">{p.name}</span>
-                      <span className="text-xs text-gray-400">{p.seats} · {Math.round(p.seats / leg.totalSeats * 100)}%</span>
+                    <div key={p.name} className="rounded-xl px-4 py-3" style={{ background: `${p.color}1a`, border: `2px solid ${p.color}40` }}>
+                      <p className="text-xs font-semibold text-gray-600 truncate">{p.name}</p>
+                      <p className="text-2xl font-black mt-0.5 tabular-nums" style={{ color: p.color }}>{p.seats}</p>
+                      <p className="text-xs text-gray-400 font-medium">{Math.round(p.seats / leg.totalSeats * 100)}%</p>
                     </div>
                   ))}
+                </div>
+                {/* Desktop: pie chart + legend */}
+                <div className="hidden sm:block">
+                  <ResponsiveContainer width="100%" height={220}>
+                    <RechartsPie>
+                      <Pie
+                        data={leg.parties}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={58}
+                        outerRadius={90}
+                        paddingAngle={leg.parties.length > 1 ? 2 : 0}
+                        dataKey="seats"
+                        nameKey="name"
+                        startAngle={90}
+                        endAngle={-270}
+                      >
+                        {leg.parties.map((p, i) => (
+                          <Cell key={i} fill={p.color} stroke="white" strokeWidth={2} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value, name) => [`${value} seats (${Math.round(value / leg.totalSeats * 100)}%)`, name]}
+                        contentStyle={{ borderRadius: '10px', fontSize: '12px', border: '1px solid #e5e7eb' }}
+                      />
+                    </RechartsPie>
+                  </ResponsiveContainer>
+                  <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 px-5 pb-5">
+                    {leg.parties.map(p => (
+                      <div key={p.name} className="flex items-center gap-1.5">
+                        <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
+                        <span className="text-xs font-semibold text-gray-700">{p.name}</span>
+                        <span className="text-xs text-gray-400">{p.seats} · {Math.round(p.seats / leg.totalSeats * 100)}%</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             );
@@ -11705,8 +11718,18 @@ function App() {
             <div className="p-6 sm:p-8">
               <div className="flex flex-col lg:flex-row items-center gap-8">
 
-                {/* Donut */}
-                <div className="flex-shrink-0 flex flex-col items-center">
+                {/* Mobile: compact party stat squares */}
+                <div className="sm:hidden w-full grid grid-cols-2 gap-2 mb-2">
+                  {leg.parties.map(p => (
+                    <div key={p.name} className="rounded-xl px-4 py-3" style={{ background: `${p.color}1a`, border: `2px solid ${p.color}40` }}>
+                      <p className="text-xs font-semibold text-gray-600 truncate">{p.name}</p>
+                      <p className="text-2xl font-black mt-0.5 tabular-nums" style={{ color: p.color }}>{p.seats}</p>
+                      <p className="text-xs text-gray-400 font-medium">{Math.round(p.seats / leg.totalSeats * 100)}%</p>
+                    </div>
+                  ))}
+                </div>
+                {/* Desktop: donut chart */}
+                <div className="hidden sm:flex flex-shrink-0 flex-col items-center">
                   <div style={{ width: '210px', height: '210px' }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <RechartsPie>
