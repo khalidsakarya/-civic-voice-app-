@@ -10091,10 +10091,10 @@ function App() {
     const unknownAboveThreshold = unknownEntry && unknownEntry.value > 10;
 
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className={`min-h-screen ${isAustralia ? 'bg-[#f0f2f7]' : 'bg-gray-50'}`}>
         {/* Back header */}
-        <div className="bg-white shadow-sm">
-          <div className="max-w-6xl mx-auto px-4 py-4">
+        <div className={`bg-white ${isAustralia ? 'border-b border-gray-200' : 'shadow-sm'}`}>
+          <div className={isAustralia ? 'w-full px-4 lg:px-10 xl:px-14 py-4' : 'max-w-6xl mx-auto px-4 py-4'}>
             <button
               onClick={() => setView(isAustralia ? 'government-levels' : 'categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
@@ -10104,21 +10104,21 @@ function App() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className={isAustralia ? 'px-4 lg:px-10 xl:px-14 py-8 lg:py-10' : 'max-w-6xl mx-auto px-4 py-8'}>
 
           {/* Page title */}
-          <div className="mb-6">
+          <div className={`${isAustralia ? 'mb-8 lg:mb-10' : 'mb-6'}`}>
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-3xl">{data.flag}</span>
-              <h1 className="text-3xl font-bold text-gray-800">Where the Money Goes</h1>
+              <span className={`${isAustralia ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.flag}</span>
+              <h1 className={`font-bold text-gray-800 ${isAustralia ? 'text-3xl lg:text-4xl xl:text-5xl' : 'text-3xl'}`}>Where the Money Goes</h1>
             </div>
-            <p className="text-gray-600 text-lg">{data.countryName} — Financial Transparency Dashboard</p>
-            <p className="text-sm text-gray-400 mt-1">Source: {data.source}</p>
+            <p className={`text-gray-600 ${isAustralia ? 'text-lg lg:text-xl' : 'text-lg'}`}>{data.countryName} — Financial Transparency Dashboard</p>
+            <p className={`text-gray-400 mt-1 ${isAustralia ? 'text-sm lg:text-base' : 'text-sm'}`}>Source: {data.source}</p>
           </div>
 
-          {/* Tab navigation — scrollable on mobile, icon + label stacked */}
+          {/* Tab navigation — scrollable on mobile, full-width premium on desktop for AU */}
           <div className="w-full overflow-x-auto mb-8" style={{ WebkitOverflowScrolling: 'touch' }}>
-            <div className="flex gap-1 bg-gray-200 rounded-xl p-1 w-max">
+            <div className={`flex gap-1 rounded-xl p-1.5 ${isAustralia ? 'bg-white border border-gray-200 shadow-sm w-max lg:w-full' : 'bg-gray-200 w-max'}`}>
               {[
                 { key: 'overview',   icon: '📊', label: 'Overview'   },
                 { key: 'money-flow', icon: '💸', label: 'Money Flow' },
@@ -10129,14 +10129,15 @@ function App() {
                 <button
                   key={key}
                   onClick={() => setFinancialDashTab(key)}
-                  className={`flex flex-col items-center flex-shrink-0 px-5 py-3 rounded-lg transition-all gap-1 ${
-                    financialDashTab === key
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
+                  className={`flex flex-col items-center flex-shrink-0 rounded-lg transition-all gap-1 ${
+                    isAustralia
+                      ? `lg:flex-1 px-5 py-3 lg:px-6 lg:py-4 ${financialDashTab === key ? 'shadow-md' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`
+                      : `px-5 py-3 ${financialDashTab === key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`
                   }`}
+                  style={isAustralia && financialDashTab === key ? { backgroundColor: '#C9952A', color: 'white' } : {}}
                 >
-                  <span className="text-xl leading-none">{icon}</span>
-                  <span className="text-xs font-semibold whitespace-nowrap">{label}</span>
+                  <span className={`leading-none ${isAustralia ? 'text-xl lg:text-2xl' : 'text-xl'}`}>{icon}</span>
+                  <span className={`font-semibold whitespace-nowrap ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>{label}</span>
                 </button>
               ))}
             </div>
@@ -10146,81 +10147,65 @@ function App() {
           {financialDashTab === 'overview' && (
             <div>
               {/* Hero: Total Federal Budget */}
-              <div className="bg-white rounded-xl shadow-md p-8 mb-6 text-center border border-gray-100">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Total Federal Budget</p>
-                <p className="text-5xl sm:text-7xl font-black text-gray-900 mb-2 leading-none">{data.totalBudget}</p>
-                <p className="text-gray-500 text-base mt-3">{data.currency} · {data.fiscalYear} · {data.fiscalYearDetail}</p>
+              <div className={`bg-white rounded-2xl border border-gray-100 text-center mb-6 ${isAustralia ? 'shadow-md p-8 lg:p-14' : 'shadow-md p-8'}`}>
+                {isAustralia && <div className="flex justify-center mb-4"><span className="inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest" style={{ backgroundColor: '#C9952A22', color: '#C9952A' }}>Australian Federal Budget</span></div>}
+                <p className={`font-semibold text-gray-400 uppercase tracking-widest mb-3 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Total Federal Budget</p>
+                <p className={`font-black text-gray-900 mb-2 leading-none ${isAustralia ? 'text-5xl sm:text-7xl lg:text-8xl xl:text-9xl' : 'text-5xl sm:text-7xl'}`}>{data.totalBudget}</p>
+                <p className={`text-gray-500 mt-3 ${isAustralia ? 'text-base lg:text-lg' : 'text-base'}`}>{data.currency} · {data.fiscalYear} · {data.fiscalYearDetail}</p>
               </div>
 
-              {/* Fiscal Year + Department */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="bg-white rounded-xl shadow-md p-6 flex items-start gap-4">
+              {/* Fiscal Year + Department — 3-col on desktop for AU, 2-col otherwise */}
+              <div className={`grid grid-cols-1 gap-6 mb-6 ${isAustralia ? 'md:grid-cols-2 xl:grid-cols-3' : 'md:grid-cols-2'}`}>
+                <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 ${isAustralia ? 'p-6 lg:p-8' : 'p-6'}`}>
                   <div className="bg-blue-100 p-3 rounded-lg flex-shrink-0">
-                    <Calendar className="w-6 h-6 text-blue-600" />
+                    <Calendar className={`text-blue-600 ${isAustralia ? 'w-6 h-6 lg:w-7 lg:h-7' : 'w-6 h-6'}`} />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Fiscal Year</p>
-                    <p className="text-xl font-bold text-gray-800">{data.fiscalYear}</p>
-                    <p className="text-sm text-gray-500 mt-1">{data.fiscalYearDetail}</p>
+                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-1 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Fiscal Year</p>
+                    <p className={`font-bold text-gray-800 ${isAustralia ? 'text-xl lg:text-2xl' : 'text-xl'}`}>{data.fiscalYear}</p>
+                    <p className={`text-gray-500 mt-1 ${isAustralia ? 'text-sm lg:text-base' : 'text-sm'}`}>{data.fiscalYearDetail}</p>
                   </div>
                 </div>
-                <div className="bg-white rounded-xl shadow-md p-6 flex items-start gap-4">
+                <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 ${isAustralia ? 'p-6 lg:p-8' : 'p-6'}`}>
                   <div className="bg-purple-100 p-3 rounded-lg flex-shrink-0">
-                    <Building2 className="w-6 h-6 text-purple-600" />
+                    <Building2 className={`text-purple-600 ${isAustralia ? 'w-6 h-6 lg:w-7 lg:h-7' : 'w-6 h-6'}`} />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Responsible Department</p>
-                    <p className="text-xl font-bold text-gray-800">{data.department}</p>
-                    <p className="text-sm text-gray-500 mt-1">{data.departmentNote}</p>
+                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-1 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Responsible Department</p>
+                    <p className={`font-bold text-gray-800 ${isAustralia ? 'text-xl lg:text-2xl' : 'text-xl'}`}>{data.department}</p>
+                    <p className={`text-gray-500 mt-1 ${isAustralia ? 'text-sm lg:text-base' : 'text-sm'}`}>{data.departmentNote}</p>
                   </div>
                 </div>
-              </div>
-
-              {/* Efficiency Score */}
-              <div className={`bg-white rounded-xl shadow-md p-6 mb-6 border-l-4 ${scoreBorder}`}>
-                <div className="flex items-start justify-between mb-5">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${scoreBg}`}>
-                      <TrendingUp className={`w-5 h-5 ${scoreNum}`} />
+                {/* Efficiency Score card — third column on desktop for AU, full row otherwise */}
+                <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 border-l-4 ${scoreBorder} ${isAustralia ? 'p-6 lg:p-8 xl:col-span-1' : 'p-6 md:col-span-2'}`}>
+                  <div className={`p-3 rounded-lg flex-shrink-0 ${scoreBg}`}>
+                    <TrendingUp className={`${scoreNum} ${isAustralia ? 'w-6 h-6 lg:w-7 lg:h-7' : 'w-6 h-6'}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-1 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Efficiency Score</p>
+                    <div className="flex items-end justify-between gap-2 mb-3">
+                      <div>
+                        <p className={`font-black ${scoreNum} ${isAustralia ? 'text-4xl lg:text-5xl' : 'text-4xl'}`}>{eff}%</p>
+                        <p className={`font-semibold mt-0.5 ${scoreNum} ${isAustralia ? 'text-sm' : 'text-sm'}`}>{scoreLabel}</p>
+                      </div>
+                      <p className={`text-gray-500 text-right hidden sm:block ${isAustralia ? 'text-sm lg:text-base' : 'text-sm'}`}>Share reaching<br/>citizens directly</p>
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Efficiency Score</p>
-                      <p className="text-sm text-gray-500">Share of spending that reaches citizens directly</p>
+                    <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${scoreBar}`} style={{ width: `${eff}%` }}></div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className={`text-5xl font-black ${scoreNum}`}>{eff}%</p>
-                    <p className={`text-sm font-semibold mt-1 ${scoreNum}`}>{scoreLabel}</p>
-                  </div>
-                </div>
-                <div className="h-5 bg-gray-100 rounded-full overflow-hidden mb-3">
-                  <div className={`h-full rounded-full ${scoreBar}`} style={{ width: `${eff}%` }}></div>
-                </div>
-                <div className="flex flex-wrap gap-5 text-sm text-gray-600">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-full bg-red-400 flex-shrink-0 inline-block"></span>
-                    Below 50% — Poor
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-full bg-yellow-400 flex-shrink-0 inline-block"></span>
-                    50–70% — Fair
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-full bg-green-400 flex-shrink-0 inline-block"></span>
-                    Above 70% — Good
-                  </span>
                 </div>
               </div>
 
               {/* Plain language summary */}
-              <div className="bg-gray-900 text-white rounded-xl shadow-md p-6">
+              <div className={`bg-gray-900 text-white rounded-xl shadow-md ${isAustralia ? 'p-6 lg:p-8' : 'p-6'}`}>
                 <div className="flex items-start gap-4">
                   <div className="bg-white/10 p-3 rounded-lg flex-shrink-0">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Plain Language Summary</p>
-                    <p className="text-lg font-medium leading-relaxed text-white">{data.summary}</p>
+                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-2 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Plain Language Summary</p>
+                    <p className={`font-medium leading-relaxed text-white ${isAustralia ? 'text-lg lg:text-xl' : 'text-lg'}`}>{data.summary}</p>
                   </div>
                 </div>
               </div>
@@ -10229,12 +10214,12 @@ function App() {
 
           {/* ── MONEY FLOW TAB ── */}
           {financialDashTab === 'money-flow' && (
-            <div>
+            <div className={isAustralia ? 'xl:grid xl:grid-cols-2 xl:gap-6 xl:items-start' : ''}>
 
               {/* Pie chart */}
-              <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-1">Budget Allocation by Category</h2>
-                <p className="text-sm text-gray-500 mb-4">{data.currency} · {data.fiscalYear} · {data.totalBudget} total</p>
+              <div className={`bg-white rounded-xl shadow-md mb-6 xl:mb-0 ${isAustralia ? 'p-6 lg:p-8' : 'p-6'}`}>
+                <h2 className={`font-bold text-gray-800 mb-1 ${isAustralia ? 'text-xl lg:text-2xl' : 'text-xl'}`}>Budget Allocation by Category</h2>
+                <p className={`text-gray-500 mb-4 ${isAustralia ? 'text-sm lg:text-base' : 'text-sm'}`}>{data.currency} · {data.fiscalYear} · {data.totalBudget} total</p>
                 <ResponsiveContainer width="100%" height={380}>
                   <RechartsPie>
                     <Pie
@@ -10284,9 +10269,9 @@ function App() {
 
               {/* Breakdown list */}
               <div className="bg-white rounded-xl shadow-md overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <h2 className="text-xl font-bold text-gray-800">Spending Breakdown</h2>
-                  <p className="text-sm text-gray-500">All figures in {data.currency} · {data.fiscalYear}</p>
+                <div className={`border-b border-gray-100 ${isAustralia ? 'px-6 py-4 lg:px-8 lg:py-5' : 'px-6 py-4'}`}>
+                  <h2 className={`font-bold text-gray-800 ${isAustralia ? 'text-xl lg:text-2xl' : 'text-xl'}`}>Spending Breakdown</h2>
+                  <p className={`text-gray-500 ${isAustralia ? 'text-sm lg:text-base' : 'text-sm'}`}>All figures in {data.currency} · {data.fiscalYear}</p>
                 </div>
                 <div className="divide-y divide-gray-100">
                   {data.flowData.map((item, idx) => (
@@ -10330,8 +10315,8 @@ function App() {
 
           {/* ── Programs Tab ── */}
           {financialDashTab === 'programs' && (
-            <div className="space-y-4">
-              <p className="text-sm text-gray-500 mb-2">
+            <div className={isAustralia ? 'grid grid-cols-1 xl:grid-cols-2 gap-4' : 'space-y-4'}>
+              <p className={`text-gray-500 mb-2 ${isAustralia ? 'xl:col-span-2 text-sm lg:text-base' : 'text-sm'}`}>
                 Top 10 federal spending programs — tap any card to see details.
               </p>
               {data.programs.map((prog) => {
@@ -10467,24 +10452,24 @@ function App() {
             <div>
               {/* Summary bar */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-                <div className="bg-white rounded-xl shadow-sm p-4 text-center border border-gray-100">
-                  <p className="text-3xl font-black text-gray-900">{data.audit.totalFindings.toLocaleString()}</p>
-                  <p className="text-xs text-gray-400 mt-1 font-medium uppercase tracking-wide">Total Findings</p>
+                <div className={`bg-white rounded-xl shadow-sm text-center border border-gray-100 ${isAustralia ? 'p-4 lg:p-6' : 'p-4'}`}>
+                  <p className={`font-black text-gray-900 ${isAustralia ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.totalFindings.toLocaleString()}</p>
+                  <p className={`text-gray-400 mt-1 font-medium uppercase tracking-wide ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Total Findings</p>
                 </div>
-                <div className="bg-green-50 rounded-xl shadow-sm p-4 text-center border border-green-100">
-                  <p className="text-3xl font-black text-green-700">{data.audit.resolved.toLocaleString()}</p>
-                  <p className="text-xs text-green-600 mt-1 font-medium uppercase tracking-wide">Resolved</p>
-                  <p className="text-xs text-green-500 mt-0.5">{Math.round(data.audit.resolved / data.audit.totalFindings * 100)}%</p>
+                <div className={`bg-green-50 rounded-xl shadow-sm text-center border border-green-100 ${isAustralia ? 'p-4 lg:p-6' : 'p-4'}`}>
+                  <p className={`font-black text-green-700 ${isAustralia ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.resolved.toLocaleString()}</p>
+                  <p className={`text-green-600 mt-1 font-medium uppercase tracking-wide ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Resolved</p>
+                  <p className={`text-green-500 mt-0.5 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>{Math.round(data.audit.resolved / data.audit.totalFindings * 100)}%</p>
                 </div>
-                <div className="bg-red-50 rounded-xl shadow-sm p-4 text-center border border-red-100">
-                  <p className="text-3xl font-black text-red-600">{data.audit.open.toLocaleString()}</p>
-                  <p className="text-xs text-red-500 mt-1 font-medium uppercase tracking-wide">Open</p>
-                  <p className="text-xs text-red-400 mt-0.5">{Math.round(data.audit.open / data.audit.totalFindings * 100)}%</p>
+                <div className={`bg-red-50 rounded-xl shadow-sm text-center border border-red-100 ${isAustralia ? 'p-4 lg:p-6' : 'p-4'}`}>
+                  <p className={`font-black text-red-600 ${isAustralia ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.open.toLocaleString()}</p>
+                  <p className={`text-red-500 mt-1 font-medium uppercase tracking-wide ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Open</p>
+                  <p className={`text-red-400 mt-0.5 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>{Math.round(data.audit.open / data.audit.totalFindings * 100)}%</p>
                 </div>
-                <div className="bg-blue-50 rounded-xl shadow-sm p-4 text-center border border-blue-100">
-                  <p className="text-3xl font-black text-blue-700">{data.audit.avgResolutionDays}</p>
-                  <p className="text-xs text-blue-500 mt-1 font-medium uppercase tracking-wide">Avg. Resolution</p>
-                  <p className="text-xs text-blue-400 mt-0.5">days</p>
+                <div className={`bg-blue-50 rounded-xl shadow-sm text-center border border-blue-100 ${isAustralia ? 'p-4 lg:p-6' : 'p-4'}`}>
+                  <p className={`font-black text-blue-700 ${isAustralia ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.avgResolutionDays}</p>
+                  <p className={`text-blue-500 mt-1 font-medium uppercase tracking-wide ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Avg. Resolution</p>
+                  <p className={`text-blue-400 mt-0.5 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>days</p>
                 </div>
               </div>
 
@@ -10563,8 +10548,8 @@ function App() {
 
           {/* ── Results Tab ── */}
           {financialDashTab === 'results' && (
-            <div className="space-y-4">
-              <p className="text-sm text-gray-500 mb-2">
+            <div className={isAustralia ? 'grid grid-cols-1 xl:grid-cols-2 gap-4' : 'space-y-4'}>
+              <p className={`text-gray-500 mb-2 ${isAustralia ? 'xl:col-span-2 text-sm lg:text-base' : 'text-sm'}`}>
                 Measured outcomes against committed targets for key government programs.
               </p>
               {data.results.map((r) => {
