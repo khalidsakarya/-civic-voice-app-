@@ -845,6 +845,7 @@ function App() {
   const [showAuGrantsModal, setShowAuGrantsModal] = useState(false);
   const [auGrantsSearch, setAuGrantsSearch] = useState('');
   const [auExpandedChartId, setAuExpandedChartId] = useState(null);
+  const [expandedBios, setExpandedBios] = useState({});
   const [copiedShareId, setCopiedShareId] = useState(null);
   const [senateSearch, setSenateSearch] = useState('');
   const [senateFilter, setSenateFilter] = useState('All');
@@ -7709,6 +7710,34 @@ function App() {
     return (isUSA ? us : ca)[name] || { name: `${name} Legislature`, totalSeats: 1, parties: [{ name: 'Data Unavailable', seats: 1, color: '#9ca3af' }] };
   };
 
+  // Collapsible bio helper — used across Canada/US/AU leader cards
+  const renderBio = (bio, id, extraClass = '') => {
+    if (!bio) return null;
+    const isExpanded = !!expandedBios[id];
+    const isLong = bio.length > 150;
+    return (
+      <div>
+        <p
+          className={`text-sm text-gray-600 leading-relaxed ${extraClass}`}
+          style={!isExpanded && isLong ? { overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' } : {}}
+        >
+          {bio}
+        </p>
+        {isLong && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setExpandedBios(prev => ({ ...prev, [id]: !isExpanded })); }}
+            className="mt-1.5 text-xs font-semibold transition-colors"
+            style={{ color: '#2563EB' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#1D4ED8'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#2563EB'}
+          >
+            {isExpanded ? '↑ Read less' : '↓ Read more'}
+          </button>
+        )}
+      </div>
+    );
+  };
+
   const renderProvinceDetail = () => {
     if (!selectedProvince) return null;
     const item = selectedProvince;
@@ -7793,7 +7822,7 @@ function App() {
                 </span>
                 <p className="text-xs text-gray-400 mt-1.5">In office since {item.since}</p>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed">{item.bio}</p>
+              {renderBio(item.bio, `${item.name}-leader`)}
               <p className="text-xs text-blue-400 font-semibold mt-3 opacity-0 group-hover:opacity-100 transition-opacity text-right">View full profile →</p>
             </div>
 
@@ -7819,9 +7848,7 @@ function App() {
                   <p className="text-xs text-gray-400 mt-1.5">In office since {deputySince}</p>
                 )}
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {deputyBio || 'No information available for this position.'}
-              </p>
+              {renderBio(deputyBio || 'No information available for this position.', `${item.name}-deputy`)}
               {!noDeputy && <p className="text-xs text-emerald-400 font-semibold mt-3 opacity-0 group-hover:opacity-100 transition-opacity text-right">View full profile →</p>}
             </div>
           </div>
@@ -11508,25 +11535,47 @@ function App() {
       </div>
     );
 
-    const PersonCard = ({ title, name, party, partyFull, since, bio, cfg }) => (
-      <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
-        <div className="h-1.5 flex-shrink-0" style={{ background: cfg.solid }} />
-        <div className="p-5 sm:p-6 flex flex-col flex-1">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] mb-4" style={{ color: cfg.solid }}>{title}</p>
-          <div className="flex items-start gap-4 mb-4">
-            <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-lg font-black select-none" style={{ background: cfg.light, color: cfg.solid }}>
-              {getInitials(name)}
+    const PersonCard = ({ title, name, party, partyFull, since, bio, cfg, bioId }) => {
+      const isExpanded = !!expandedBios[bioId];
+      const isLong = bio && bio.length > 150;
+      return (
+        <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+          <div className="h-1.5 flex-shrink-0" style={{ background: cfg.solid }} />
+          <div className="p-5 sm:p-6 flex flex-col flex-1">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] mb-4" style={{ color: cfg.solid }}>{title}</p>
+            <div className="flex items-start gap-4 mb-4">
+              <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-lg font-black select-none" style={{ background: cfg.light, color: cfg.solid }}>
+                {getInitials(name)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-black text-gray-900 text-base sm:text-lg leading-tight">{name}</h3>
+                <span className="inline-block mt-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full text-white" style={{ background: cfg.solid }}>{partyFull || party}</span>
+                <p className="text-xs text-gray-400 mt-1.5">In office since {since}</p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-black text-gray-900 text-base sm:text-lg leading-tight">{name}</h3>
-              <span className="inline-block mt-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full text-white" style={{ background: cfg.solid }}>{partyFull || party}</span>
-              <p className="text-xs text-gray-400 mt-1.5">In office since {since}</p>
+            <div className="flex-1">
+              <p
+                className="text-sm text-gray-600 leading-relaxed"
+                style={!isExpanded && isLong ? { overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' } : {}}
+              >
+                {bio}
+              </p>
+              {isLong && (
+                <button
+                  onClick={() => setExpandedBios(prev => ({ ...prev, [bioId]: !isExpanded }))}
+                  className="mt-1.5 text-xs font-semibold transition-colors"
+                  style={{ color: cfg.solid }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.75'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                >
+                  {isExpanded ? '↑ Read less' : '↓ Read more'}
+                </button>
+              )}
             </div>
           </div>
-          <p className="text-sm text-gray-600 leading-relaxed flex-1">{bio}</p>
         </div>
-      </div>
-    );
+      );
+    };
 
     return (
       <div className="min-h-screen animate-fade-in" style={{ background: '#F0F4F8' }}>
@@ -11637,8 +11686,8 @@ function App() {
           {/* ── Leadership ── */}
           <SectionLabel>Government Leadership</SectionLabel>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PersonCard title={item.leaderTitle} name={item.leader} party={item.partyShort} partyFull={item.party} since={item.since} bio={item.bio} cfg={mpc} />
-            <PersonCard title={item.deputyTitle} name={item.deputy} party={item.deputyParty} partyFull={item.deputyParty} since={item.deputySince} bio={item.deputyBio} cfg={dpc} />
+            <PersonCard title={item.leaderTitle} name={item.leader} party={item.partyShort} partyFull={item.party} since={item.since} bio={item.bio} cfg={mpc} bioId={`au-${item.name}-leader`} />
+            <PersonCard title={item.deputyTitle} name={item.deputy} party={item.deputyParty} partyFull={item.deputyParty} since={item.deputySince} bio={item.deputyBio} cfg={dpc} bioId={`au-${item.name}-deputy`} />
           </div>
 
           {/* ── Legislature ── */}
