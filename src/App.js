@@ -829,6 +829,13 @@ function App() {
   const [expandedAlbaneseSections, setExpandedAlbaneseSections] = useState({
     activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false,
   });
+  const [starmerVotes, setStarmerVotes] = useState(() => {
+    const saved = localStorage.getItem('cvStarmerVote');
+    return saved ? JSON.parse(saved) : { support: 8520, oppose: 6340, userVote: null };
+  });
+  const [expandedStarmerSections, setExpandedStarmerSections] = useState({
+    activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false,
+  });
   const [auChamber, setAuChamber] = useState('Senate');
   const [auPartyFilter, setAuPartyFilter] = useState('All');
   const [auSearch, setAuSearch] = useState('');
@@ -4505,6 +4512,23 @@ function App() {
 
   const toggleAlbaneseSection = (section) => {
     setExpandedAlbaneseSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const voteStarmer = (vote) => {
+    setStarmerVotes(prev => {
+      const newVote = prev.userVote === vote ? null : vote;
+      let support = 8520;
+      let oppose  = 6340;
+      if (newVote === 'support') support++;
+      else if (newVote === 'oppose') oppose++;
+      const next = { support, oppose, userVote: newVote };
+      localStorage.setItem('cvStarmerVote', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const toggleStarmerSection = (section) => {
+    setExpandedStarmerSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   // ── HOME REGION (locked once set, used to gate votes) ────────────────────────
@@ -9949,6 +9973,504 @@ function App() {
     );
   };
 
+  const renderStarmerDetail = () => {
+    const partyColor = '#E4003B'; // Labour red
+
+    const starmer = {
+      name: 'Sir Keir Starmer',
+      initials: 'KS',
+      born: 'September 2, 1962',
+      birthplace: 'Southwark, London, England',
+      education: 'LLB Law, University of Leeds; DPhil European Law, University of Oxford',
+      party: 'Labour Party',
+      email: 'pm@10downingstreet.gov.uk',
+      phone: '+44 20 7930 4433',
+      bio: 'Sir Keir Starmer is the 58th Prime Minister of the United Kingdom, taking office on 5 July 2024 following Labour\'s landslide general election victory — the party\'s largest majority since 1997. Born in Southwark and raised in Surrey, Starmer studied law at Leeds and Oxford before becoming a prominent human rights barrister. He served as Director of Public Prosecutions and Head of the Crown Prosecution Service from 2008 to 2013, overseeing major cases including phone hacking prosecutions. He was knighted in 2014 for services to law and criminal justice. Elected MP for Holborn and St Pancras in 2015, he became Labour leader in April 2020 and transformed the party\'s electoral prospects, securing a 174-seat parliamentary majority in 2024. His government\'s priorities centre on NHS reform, clean energy, economic growth, housing delivery, and restoring public trust in government institutions.',
+      policies: [
+        'NHS Reform & Reduced Waiting Lists',
+        'Great British Energy (Clean Power)',
+        'Housing & Planning Reform (1.5M Homes)',
+        'Workers\' Rights & Employment',
+        'Economic Growth & Investment',
+        'Education & Skills',
+        'National Security & Defence',
+      ],
+      recentActivity: [
+        { type: 'Health Policy', date: 'Feb 2026', title: 'NHS 10-Year Plan Published', description: 'Government published the NHS 10-Year Plan targeting a 50% reduction in waiting lists by 2029, backed by the largest sustained NHS funding increase in a generation.' },
+        { type: 'Energy', date: 'Jan 2026', title: 'Great British Energy Operational', description: 'Great British Energy — the publicly owned clean energy company — became operational, with an initial £8.3B investment commitment to offshore wind and solar projects across the UK.' },
+        { type: 'Housing', date: 'Dec 2025', title: 'Planning & Infrastructure Bill Second Reading', description: 'The Planning & Infrastructure Bill completed its second reading, unlocking major reforms to the planning system to accelerate delivery of 1.5 million new homes by 2030.' },
+        { type: 'Workers\' Rights', date: 'Nov 2025', title: 'Employment Rights Act Passed', description: 'The Employment Rights Act received Royal Assent, delivering the most significant strengthening of workers\' rights in a generation, including day-one unfair dismissal protections.' },
+        { type: 'Foreign Policy', date: 'Oct 2025', title: 'UK–EU Reset Summit', description: 'Hosted the first UK–EU Summit since Brexit at Lancaster House, agreeing a new UK–EU defence and security partnership and a framework for simplified trade in agricultural goods.' },
+      ],
+      executiveActions: [
+        'Launched NHS 10-Year Plan — target to halve waiting lists and end the 18-week backlog by 2029',
+        'Established Great British Energy — publicly owned clean energy company with £8.3B investment',
+        'Passed Employment Rights Act — day-one unfair dismissal protection and stronger unions',
+        'Published National Wealth Fund — £7.3B in green industry and infrastructure investment',
+        'Commissioned Strategic Defence Review — first comprehensive review since 2010',
+        'Launched English Devolution Bill — new powers for metro mayors across England',
+        'Introduced Planning & Infrastructure Bill — targeting 1.5M homes by 2030',
+        'Hosted UK–EU Reset Summit — first joint summit since Brexit at Lancaster House',
+      ],
+      attendance: { percentage: 88, sessionsAttended: 132, totalSessions: 150 },
+      financialDisclosure: {
+        electedYear: 2024,
+        worthWhenElected: 3100000,
+        currentNetWorth: 3400000,
+        percentageIncrease: 9.7,
+        annualSalary: 172153,
+        assets: [
+          { type: 'Primary Residence (London)', value: 1800000 },
+          { type: 'Investment Property', value: 900000 },
+          { type: 'Pension & Savings', value: 580000 },
+          { type: 'Cash & Bank Deposits', value: 120000 },
+        ],
+      },
+      stockTrades: [
+        { company: 'HSBC Holdings', ticker: 'HSBA', type: 'Disclosure', assetType: 'Equity', value: '£5K–£25K', date: 'Jul 2024', conflict: false },
+        { company: 'Legal & General Group', ticker: 'LGEN', type: 'Disclosure', assetType: 'Equity', value: '£5K–£15K', date: 'Jul 2024', conflict: false },
+        { company: 'National Grid', ticker: 'NG.', type: 'Disclosure', assetType: 'Equity', value: '£5K–£25K', date: 'Jul 2024', conflict: true },
+      ],
+      lobbying: [
+        { name: 'Trades Union Congress', sector: 'Labour Movement', meetings: 8, lastMeeting: 'Feb 2026' },
+        { name: 'Confederation of British Industry', sector: 'Business & Industry', meetings: 6, lastMeeting: 'Jan 2026' },
+        { name: 'NHS Confederation', sector: 'Healthcare', meetings: 5, lastMeeting: 'Feb 2026' },
+        { name: 'Energy UK', sector: 'Energy & Utilities', meetings: 5, lastMeeting: 'Jan 2026' },
+        { name: 'UK Finance', sector: 'Financial Services', meetings: 4, lastMeeting: 'Dec 2025' },
+      ],
+      cabinet: [
+        { name: 'Angela Rayner', role: 'Deputy Prime Minister & Secretary of State for Housing' },
+        { name: 'Rachel Reeves', role: 'Chancellor of the Exchequer' },
+        { name: 'David Lammy', role: 'Secretary of State for Foreign, Commonwealth and Development Affairs' },
+        { name: 'Yvette Cooper', role: 'Secretary of State for the Home Department' },
+        { name: 'Wes Streeting', role: 'Secretary of State for Health and Social Care' },
+        { name: 'Bridget Phillipson', role: 'Secretary of State for Education' },
+        { name: 'Pat McFadden', role: 'Chancellor of the Duchy of Lancaster' },
+        { name: 'Jonathan Reynolds', role: 'Secretary of State for Business and Trade' },
+        { name: 'Ed Miliband', role: 'Secretary of State for Energy Security and Net Zero' },
+        { name: 'Peter Kyle', role: 'Secretary of State for Science, Innovation and Technology' },
+        { name: 'John Healey', role: 'Secretary of State for Defence' },
+        { name: 'Shabana Mahmood', role: 'Lord Chancellor and Secretary of State for Justice' },
+      ],
+      seniorAdvisors: [
+        { name: 'Morgan McSweeney', title: 'Chief of Staff', bio: 'The architect of Labour\'s 2024 general election strategy and former director of Labour Together. McSweeney led the campaign that delivered Labour\'s 174-seat majority, the party\'s biggest since 1997, and now manages the day-to-day operations of 10 Downing Street and coordinates the government\'s legislative programme.' },
+        { name: 'Jill Cuthbertson', title: 'Deputy Chief of Staff', bio: 'Senior Downing Street official overseeing policy development and inter-departmental coordination. Cuthbertson ensures alignment between No. 10, the Cabinet Office and departmental secretaries of state, managing the government\'s delivery agenda across public services and economic reform.' },
+        { name: 'Jonathan Powell', title: 'National Security Adviser & Special Envoy', bio: 'Former Chief of Staff to Tony Blair and key architect of the Good Friday Agreement. Powell serves as National Security Adviser, leading UK engagement on European security partnerships, the Ukraine crisis, and post-Brexit relations with the EU, drawing on decades of diplomatic experience.' },
+      ],
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <button
+              onClick={() => setView('uk-national')}
+              className="flex items-center gap-2 mb-4"
+              style={{ color: partyColor }}
+            >
+              ← Back to UK National Government
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 py-8">
+
+          {/* Profile card */}
+          <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
+            <div
+              style={{ background: `linear-gradient(135deg, ${partyColor}18 0%, ${'#012169'}08 100%)`, borderBottom: `3px solid ${partyColor}` }}
+              className="px-4 pt-4 pb-4 md:px-8 md:pt-8 md:pb-6"
+            >
+              <div className="flex items-start gap-4">
+                <div
+                  style={{ background: `linear-gradient(135deg, ${partyColor}, #012169)` }}
+                  className="w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center text-white text-xl md:text-3xl font-bold flex-shrink-0 shadow-lg"
+                >
+                  {starmer.initials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl md:text-3xl font-bold text-gray-900 leading-tight">{starmer.name}</h1>
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    <span
+                      style={{ backgroundColor: partyColor }}
+                      className="text-white text-xs md:text-sm font-bold px-2.5 md:px-3 py-1 md:py-1.5 rounded-full shadow-sm"
+                    >
+                      58th Prime Minister
+                    </span>
+                    <span className="text-sm text-gray-600 font-medium">🇬🇧 United Kingdom</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1 truncate">{starmer.party} · London · In office since 5 July 2024</p>
+                  <div className="hidden md:grid md:grid-cols-2 gap-4 mt-4">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <span className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: partyColor }}></span>
+                      <span className="font-medium">{starmer.party}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <MapPin className="w-4 h-4" />
+                      <span>10 Downing Street, London</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Calendar className="w-4 h-4" />
+                      <span>In office since 5 July 2024</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Clock className="w-4 h-4" />
+                      <span>MP for Holborn &amp; St Pancras since 2015</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Approval bar */}
+              {(() => {
+                const total = (starmerVotes.support || 0) + (starmerVotes.oppose || 0);
+                const pct = total > 0 ? Math.round((starmerVotes.support / total) * 100) : 50;
+                return (
+                  <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 mt-4">
+                    <div className="flex items-center gap-1.5">
+                      <ThumbsUp className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-semibold text-gray-700">{starmerVotes.support.toLocaleString()}</span>
+                      <span className="text-xs text-gray-500">support</span>
+                    </div>
+                    <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[60px]">
+                      <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-gray-500">oppose</span>
+                      <span className="text-sm font-semibold text-gray-700">{starmerVotes.oppose.toLocaleString()}</span>
+                      <ThumbsDown className="w-4 h-4 text-red-500" />
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Vote buttons */}
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => voteStarmer('support')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${starmerVotes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
+                >
+                  <ThumbsUp className="w-4 h-4" /> Support
+                </button>
+                <button
+                  onClick={() => voteStarmer('oppose')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${starmerVotes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
+                >
+                  <ThumbsDown className="w-4 h-4" /> Oppose
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">📧 Contact Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="rounded-lg p-4" style={{ backgroundColor: '#E4003B10', border: '1px solid #E4003B40' }}>
+                <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
+                <a href={`mailto:${starmer.email}`} className="font-medium break-all hover:underline" style={{ color: partyColor }}>{starmer.email}</a>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-2 font-medium">No. 10 Switchboard</p>
+                <a href={`tel:${starmer.phone}`} className="text-blue-700 hover:text-blue-900 font-medium text-lg">{starmer.phone}</a>
+              </div>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 md:col-span-2">
+                <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
+                <p className="text-gray-700 text-sm">10 Downing Street, Westminster, London SW1A 2AA, United Kingdom</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Two-column layout */}
+          <div className="md:grid md:grid-cols-2 md:gap-6">
+
+            {/* Left column */}
+            <div className="space-y-6">
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">📖 Biography</h3>
+                <p className="text-gray-700 leading-relaxed">{starmer.bio}</p>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">📋 Key Policy Areas</h3>
+                <div className="flex flex-wrap gap-2">
+                  {starmer.policies.map((policy, i) => (
+                    <span key={i} className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full" style={{ backgroundColor: '#E4003B10', border: '1px solid #E4003B40', color: '#9B0020' }}>
+                      <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                      {policy}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">🗓️ Term Information</h3>
+                <div className="grid grid-cols-3 gap-3 mb-3">
+                  <div className="p-4 rounded-lg text-center" style={{ backgroundColor: '#E4003B10' }}>
+                    <p className="text-sm text-gray-600 mb-1">Current Term</p>
+                    <p className="text-2xl font-bold" style={{ color: partyColor }}>2024–</p>
+                  </div>
+                  <div className="bg-blue-50 p-4 rounded-lg text-center">
+                    <p className="text-sm text-gray-600 mb-1">Prior Role</p>
+                    <p className="text-lg font-bold text-blue-800">Opp. Leader</p>
+                  </div>
+                  <div className="p-4 rounded-lg text-center" style={{ backgroundColor: '#01216915' }}>
+                    <p className="text-sm text-gray-600 mb-1">PM #</p>
+                    <p className="text-3xl font-bold" style={{ color: '#012169' }}>58</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Born</p>
+                    <p className="font-semibold text-gray-800">{starmer.born}, {starmer.birthplace}</p>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">Education</p>
+                    <p className="font-semibold text-gray-800">{starmer.education}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cabinet */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">🏛️ Key Cabinet Members</h3>
+                <div className="space-y-2">
+                  {starmer.cabinet.map((c, i) => (
+                    <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                      <h4 className="font-bold text-gray-800">{c.name}</h4>
+                      <p className="text-sm font-medium" style={{ color: partyColor }}>{c.role}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Senior Advisors */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">🌟 Senior No. 10 Advisors</h3>
+                <div className="space-y-2">
+                  {starmer.seniorAdvisors.map((advisor) => (
+                    <div key={advisor.name} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                      <h4 className="font-bold text-gray-800">{advisor.name}</h4>
+                      <p className="text-sm font-medium mb-1" style={{ color: partyColor }}>{advisor.title}</p>
+                      <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right column — collapsible sections */}
+            <div className="space-y-6 mt-6 md:mt-0">
+
+              {/* Recent Activity */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleStarmerSection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-6 h-6" style={{ color: partyColor }} />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
+                      <p className="text-sm text-gray-600">{starmer.recentActivity.length} recent actions</p>
+                    </div>
+                  </div>
+                  {expandedStarmerSections.activity ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedStarmerSections.activity && (
+                  <div className="px-6 pb-6 space-y-4">
+                    {starmer.recentActivity.map((item, i) => (
+                      <div key={i} className="border rounded-lg p-4" style={{ backgroundColor: '#E4003B08', borderColor: '#E4003B30' }}>
+                        <div className="flex items-start justify-between mb-2">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ backgroundColor: '#E4003B20', color: '#9B0020' }}>{item.type}</span>
+                          <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>{item.date}</span>
+                          </div>
+                        </div>
+                        <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                        <p className="text-sm text-gray-600">{item.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Key Government Commitments */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleStarmerSection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <Scale className="w-6 h-6" style={{ color: partyColor }} />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">⚖️ Key Government Commitments</h2>
+                      <p className="text-sm text-gray-600">{starmer.executiveActions.length} key commitments</p>
+                    </div>
+                  </div>
+                  {expandedStarmerSections.keyDecisions ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedStarmerSections.keyDecisions && (
+                  <div className="px-6 pb-6 space-y-2">
+                    {starmer.executiveActions.map((action, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <span className="text-sm text-gray-700 font-medium">{action}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Attendance Record */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleStarmerSection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <Award className="w-6 h-6" style={{ color: partyColor }} />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
+                      <p className="text-sm text-gray-600">{starmer.attendance.percentage}% Parliamentary Question Time attendance</p>
+                    </div>
+                  </div>
+                  {expandedStarmerSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedStarmerSections.attendance && (
+                  <div className="px-6 pb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#E4003B10' }}>
+                        <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
+                        <p className="text-3xl font-bold" style={{ color: partyColor }}>{starmer.attendance.percentage}%</p>
+                      </div>
+                      <div className="bg-blue-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
+                        <p className="text-3xl font-bold text-blue-700">{starmer.attendance.sessionsAttended}/{starmer.attendance.totalSessions}</p>
+                      </div>
+                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#01216915' }}>
+                        <p className="text-sm text-gray-600 mb-1">National Ranking</p>
+                        <p className="text-3xl font-bold" style={{ color: '#012169' }}>#1</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Financial Disclosures */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleStarmerSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                      <p className="text-sm text-gray-600">Net worth up {starmer.financialDisclosure.percentageIncrease}% since taking office</p>
+                    </div>
+                  </div>
+                  {expandedStarmerSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedStarmerSections.financial && (
+                  <div className="px-6 pb-6 space-y-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="bg-purple-50 p-3 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">Worth in {starmer.financialDisclosure.electedYear}</p>
+                        <p className="font-bold text-purple-700 text-sm">£{(starmer.financialDisclosure.worthWhenElected / 1000000).toFixed(1)}M</p>
+                      </div>
+                      <div className="bg-green-50 p-3 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
+                        <p className="font-bold text-green-700 text-sm">£{(starmer.financialDisclosure.currentNetWorth / 1000000).toFixed(1)}M</p>
+                      </div>
+                      <div className="bg-blue-50 p-3 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">Increase</p>
+                        <p className="font-bold text-blue-700 text-sm">+{starmer.financialDisclosure.percentageIncrease}%</p>
+                      </div>
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">Annual Salary</p>
+                        <p className="font-bold text-gray-700 text-sm">£{starmer.financialDisclosure.annualSalary.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">Asset Breakdown</h4>
+                      <div className="space-y-2">
+                        {starmer.financialDisclosure.assets.map((asset, i) => (
+                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                            <span className="text-sm text-gray-700">{asset.type}</span>
+                            <span className="text-sm font-bold text-gray-800">£{asset.value.toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Asset Disclosures */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleStarmerSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="w-6 h-6 text-blue-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">📈 Asset Disclosures</h2>
+                      <p className="text-sm text-gray-600">{starmer.stockTrades.length} disclosed holdings on taking office</p>
+                    </div>
+                  </div>
+                  {expandedStarmerSections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedStarmerSections.stockTrades && (
+                  <div className="px-6 pb-6 space-y-3">
+                    {starmer.stockTrades.map((trade, i) => (
+                      <div key={i} className={`border rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-300' : 'bg-gray-50 border-gray-200'}`}>
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <div>
+                            <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
+                            <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
+                            {trade.conflict && <span className="ml-2 text-xs bg-red-100 text-red-700 font-bold px-1.5 py-0.5 rounded">⚠ Potential Conflict</span>}
+                          </div>
+                          <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 mt-1">
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
+                          <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
+                        </div>
+                      </div>
+                    ))}
+                    <p className="text-xs text-gray-400 mt-2">Disclosures filed with the UK Parliament's Register of Members' Financial Interests.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Lobbying Activity */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleStarmerSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <Users className="w-6 h-6 text-orange-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
+                      <p className="text-sm text-gray-600">{starmer.lobbying.reduce((s, l) => s + l.meetings, 0)} meetings with registered lobbyists</p>
+                    </div>
+                  </div>
+                  {expandedStarmerSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedStarmerSections.lobbying && (
+                  <div className="px-6 pb-6 space-y-3">
+                    {starmer.lobbying.map((org, i) => (
+                      <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h4 className="font-bold text-gray-800 text-sm">{org.name}</h4>
+                            <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
+                            <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderUKNational = () => (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-6xl mx-auto">
@@ -9972,7 +10494,7 @@ function App() {
 
           {/* Prime Minister & Executive */}
           <div
-            onClick={() => setView('uk-coming-soon')}
+            onClick={() => setView('uk-pm-detail')}
             className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
             style={{ animationDelay: '0.05s' }}
           >
@@ -22245,6 +22767,7 @@ function App() {
       {view === 'au-categories' && renderAuCategories()}
       {view === 'au-high-court' && renderAuHighCourt()}
       {view === 'uk-national' && renderUKNational()}
+      {view === 'uk-pm-detail' && renderStarmerDetail()}
       {view === 'uk-regions' && renderUKRegions()}
       {view === 'uk-coming-soon' && renderUKComingSoon()}
       {view === 'au-analytics' && renderAuAnalytics()}
