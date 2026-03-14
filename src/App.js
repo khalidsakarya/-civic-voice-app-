@@ -10116,8 +10116,8 @@ function App() {
             <p className={`text-gray-400 mt-1 ${isAustralia ? 'text-sm lg:text-base' : 'text-sm'}`}>Source: {data.source}</p>
           </div>
 
-          {/* Tab navigation — scrollable on mobile, full-width premium on desktop for AU */}
-          <div className="w-full overflow-x-auto mb-8" style={{ WebkitOverflowScrolling: 'touch' }}>
+          {/* Tab navigation — desktop only (mobile uses accordion below) */}
+          <div className="hidden lg:block w-full overflow-x-auto mb-8" style={{ WebkitOverflowScrolling: 'touch' }}>
             <div className={`flex gap-1 rounded-xl p-1.5 ${isAustralia ? 'bg-white border border-gray-200 shadow-sm w-max lg:w-full' : 'bg-gray-200 w-max'}`}>
               {[
                 { key: 'overview',   icon: '📊', label: 'Overview'   },
@@ -10142,6 +10142,249 @@ function App() {
               ))}
             </div>
           </div>
+
+          {/* ══ MOBILE ACCORDION — shown on mobile only ══ */}
+          <div className="lg:hidden space-y-3 mb-4">
+            {[
+              { key: 'overview',   icon: '📊', label: 'Overview',   desc: 'Budget totals & efficiency'   },
+              { key: 'money-flow', icon: '💸', label: 'Money Flow', desc: 'How every dollar is spent'    },
+              { key: 'programs',   icon: '🏛️', label: 'Programs',   desc: 'Top federal spending programs' },
+              { key: 'audit',      icon: '🔍', label: 'Audit',      desc: 'Oversight & audit findings'   },
+              { key: 'results',    icon: '✅', label: 'Results',    desc: 'Outcomes vs targets'          },
+            ].map(({ key, icon, label, desc }) => {
+              const isOpen = financialDashTab === key;
+              return (
+                <div key={key} className={`bg-white rounded-2xl overflow-hidden border-2 transition-all ${isOpen ? 'border-blue-200 shadow-md' : 'border-gray-100 shadow-sm'}`}>
+                  {/* Card header — always visible */}
+                  <button
+                    onClick={() => setFinancialDashTab(isOpen ? null : key)}
+                    className="w-full flex items-center gap-4 p-5 text-left"
+                  >
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 ${isOpen ? 'bg-blue-50' : 'bg-gray-50'}`}>
+                      {icon}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xl font-bold text-gray-900">{label}</p>
+                      <p className="text-sm text-gray-500 mt-0.5">{desc}</p>
+                    </div>
+                    <ChevronDown className={`w-6 h-6 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-500' : 'text-gray-300'}`} />
+                  </button>
+
+                  {/* ── Overview content ── */}
+                  {isOpen && key === 'overview' && (
+                    <div className="border-t border-gray-100 px-5 pb-6 pt-5 space-y-5">
+                      <div className="bg-gray-50 rounded-2xl p-6 text-center">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Total Federal Budget</p>
+                        <p className="text-6xl font-black text-gray-900 leading-none">{data.totalBudget}</p>
+                        <p className="text-base text-gray-500 mt-3">{data.fiscalYear} · {data.currency}</p>
+                        <p className="text-sm text-gray-400 mt-1">{data.fiscalYearDetail}</p>
+                      </div>
+                      <div className={`bg-white border-2 rounded-2xl p-5 ${scoreBorder}`}>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Efficiency Score</p>
+                        <p className={`text-6xl font-black leading-none ${scoreNum}`}>{eff}%</p>
+                        <p className={`text-base font-bold mt-1 mb-4 ${scoreNum}`}>{scoreLabel}</p>
+                        <div className="h-4 bg-gray-100 rounded-full overflow-hidden mb-3">
+                          <div className={`h-full rounded-full ${scoreBar}`} style={{ width: `${eff}%` }}></div>
+                        </div>
+                        <p className="text-sm text-gray-500">Share of spending that reaches citizens directly</p>
+                      </div>
+                      <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Calendar className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Fiscal Year</p>
+                        </div>
+                        <p className="text-2xl font-bold text-gray-800">{data.fiscalYear}</p>
+                        <p className="text-sm text-gray-500 mt-1">{data.fiscalYearDetail}</p>
+                      </div>
+                      <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Building2 className="w-5 h-5 text-purple-500 flex-shrink-0" />
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Responsible Department</p>
+                        </div>
+                        <p className="text-xl font-bold text-gray-800">{data.department}</p>
+                        <p className="text-sm text-gray-500 mt-1">{data.departmentNote}</p>
+                      </div>
+                      <div className="bg-gray-900 rounded-2xl p-5">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Plain Language Summary</p>
+                        <p className="text-base font-medium text-white leading-relaxed">{data.summary}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Money Flow content ── */}
+                  {isOpen && key === 'money-flow' && (
+                    <div className="border-t border-gray-100 px-4 pb-6 pt-5">
+                      <p className="text-lg font-bold text-gray-800 mb-1">Budget Allocation</p>
+                      <p className="text-sm text-gray-500 mb-4">{data.totalBudget} · {data.fiscalYear}</p>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <RechartsPie>
+                          <Pie data={data.flowData} cx="50%" cy="50%" outerRadius={105} innerRadius={45} dataKey="value" paddingAngle={2}>
+                            {data.flowData.map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                          </Pie>
+                          <Tooltip formatter={(value, name, props) => [`${value}%  ·  ${props.payload.amount}`, name]} contentStyle={{ borderRadius: '8px', fontSize: '12px', border: '1px solid #e5e7eb' }} />
+                          <Legend formatter={(value) => <span style={{ fontSize: '12px', color: '#374151' }}>{value}</span>} />
+                        </RechartsPie>
+                      </ResponsiveContainer>
+                      <div className="mt-5 space-y-3">
+                        {data.flowData.map((item, idx) => (
+                          <div key={idx} className="bg-gray-50 rounded-xl p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }}></span>
+                                <span className="font-bold text-gray-800 text-sm truncate">{item.name}</span>
+                              </div>
+                              <div className="text-right flex-shrink-0 ml-3">
+                                <span className="text-xl font-black text-gray-900">{item.amount}</span>
+                                <span className="text-sm text-gray-400 ml-1">({item.value}%)</span>
+                              </div>
+                            </div>
+                            <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden mb-2">
+                              <div className="h-full rounded-full" style={{ width: `${item.value}%`, backgroundColor: item.color }}></div>
+                            </div>
+                            <p className="text-sm text-gray-500 leading-snug">{item.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Programs content ── */}
+                  {isOpen && key === 'programs' && (
+                    <div className="border-t border-gray-100 px-4 pb-4 pt-4 space-y-3">
+                      <p className="text-sm text-gray-500">Top federal spending programs — tap to expand.</p>
+                      {data.programs.map((prog) => {
+                        const isProgOpen = selectedProgram === prog.id;
+                        return (
+                          <div key={prog.id} className={`bg-white rounded-xl border-2 overflow-hidden transition-all ${isProgOpen ? 'border-emerald-400' : 'border-gray-100'}`}>
+                            <button onClick={() => setSelectedProgram(isProgOpen ? null : prog.id)} className="w-full text-left p-4">
+                              <div className="flex items-start gap-3">
+                                <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style={{ backgroundColor: prog.color + '22' }}>{prog.icon}</div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <h3 className="font-bold text-gray-900 text-base leading-snug">{prog.name}</h3>
+                                    {isProgOpen ? <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" /> : <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />}
+                                  </div>
+                                  <p className="text-xs text-gray-500 mt-0.5">{prog.department}</p>
+                                  <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
+                                    <div><p className="text-xs text-gray-400">Allocated</p><p className="font-bold text-gray-800">{prog.allocated}</p></div>
+                                    <div><p className="text-xs text-gray-400">Spent</p><p className="font-bold text-gray-800">{prog.spent}</p></div>
+                                  </div>
+                                  <div className="mt-2.5">
+                                    <div className="flex justify-between text-xs text-gray-500 mb-1"><span>Utilization</span><span className="font-bold">{prog.spentPct}%</span></div>
+                                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                      <div className="h-full rounded-full" style={{ width: `${prog.spentPct}%`, backgroundColor: prog.color }}></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </button>
+                            {isProgOpen && (
+                              <div className="border-t border-gray-100 px-4 pb-5 pt-3">
+                                <p className="text-sm text-gray-700 mb-4 leading-relaxed">{prog.description}</p>
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Budget Breakdown</p>
+                                <div className="space-y-2">
+                                  {prog.breakdown.map((b, i) => (
+                                    <div key={i}>
+                                      <div className="flex justify-between text-sm mb-0.5"><span className="text-gray-700">{b.label}</span><span className="font-bold">{b.pct}%</span></div>
+                                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${b.pct}%`, backgroundColor: b.color }}></div></div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* ── Audit content ── */}
+                  {isOpen && key === 'audit' && (
+                    <div className="border-t border-gray-100 px-4 pb-5 pt-4">
+                      <div className="grid grid-cols-2 gap-3 mb-5">
+                        <div className="bg-gray-50 rounded-xl p-4 text-center">
+                          <p className="text-4xl font-black text-gray-900">{data.audit.totalFindings.toLocaleString()}</p>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mt-1">Total Findings</p>
+                        </div>
+                        <div className="bg-green-50 rounded-xl p-4 text-center">
+                          <p className="text-4xl font-black text-green-700">{data.audit.resolved.toLocaleString()}</p>
+                          <p className="text-xs font-bold text-green-600 uppercase tracking-wide mt-1">Resolved</p>
+                          <p className="text-xs text-green-500 mt-0.5">{Math.round(data.audit.resolved / data.audit.totalFindings * 100)}%</p>
+                        </div>
+                        <div className="bg-red-50 rounded-xl p-4 text-center">
+                          <p className="text-4xl font-black text-red-600">{data.audit.open.toLocaleString()}</p>
+                          <p className="text-xs font-bold text-red-500 uppercase tracking-wide mt-1">Open Issues</p>
+                          <p className="text-xs text-red-400 mt-0.5">{Math.round(data.audit.open / data.audit.totalFindings * 100)}%</p>
+                        </div>
+                        <div className="bg-blue-50 rounded-xl p-4 text-center">
+                          <p className="text-4xl font-black text-blue-700">{data.audit.avgResolutionDays}</p>
+                          <p className="text-xs font-bold text-blue-500 uppercase tracking-wide mt-1">Avg Days</p>
+                          <p className="text-xs text-blue-400 mt-0.5">to resolve</p>
+                        </div>
+                      </div>
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">{data.audit.auditingBody}</p>
+                      <div className="space-y-3">
+                        {data.audit.findings.map((f) => {
+                          const sevStyles = { critical: { badge: 'bg-red-100 text-red-700', border: 'border-red-400' }, high: { badge: 'bg-orange-100 text-orange-700', border: 'border-orange-300' }, medium: { badge: 'bg-yellow-100 text-yellow-700', border: 'border-yellow-300' }, low: { badge: 'bg-blue-100 text-blue-700', border: 'border-blue-300' } };
+                          const sev = sevStyles[f.severity] || sevStyles.medium;
+                          return (
+                            <div key={f.id} className={`bg-white rounded-xl border-l-4 p-4 shadow-sm ${sev.border}`}>
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <h3 className="font-bold text-gray-900 text-base leading-snug">{f.title}</h3>
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full capitalize flex-shrink-0 ${sev.badge}`}>{f.severity}</span>
+                              </div>
+                              <p className="text-xs text-gray-400 mb-2">{f.auditBody} · {f.date}</p>
+                              <p className="text-sm text-gray-700 leading-relaxed">{f.description}</p>
+                              {f.amountAtRisk && <p className="text-sm font-bold text-gray-800 mt-2">At risk: {f.amountAtRisk}</p>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Results content ── */}
+                  {isOpen && key === 'results' && (
+                    <div className="border-t border-gray-100 px-4 pb-5 pt-4 space-y-3">
+                      <p className="text-sm text-gray-500">Measured outcomes against committed targets.</p>
+                      {data.results.map((r) => {
+                        const sta = { 'on-track': { badge: 'bg-green-100 text-green-700', label: 'On Track', bar: '#22c55e' }, 'delayed': { badge: 'bg-yellow-100 text-yellow-700', label: 'Delayed', bar: '#eab308' }, 'completed': { badge: 'bg-blue-100 text-blue-700', label: 'Completed', bar: '#3b82f6' } }[r.status] || { badge: 'bg-yellow-100 text-yellow-700', label: 'Delayed', bar: '#eab308' };
+                        return (
+                          <div key={r.id} className="bg-gray-50 rounded-xl p-4">
+                            <div className="flex items-start justify-between gap-2 mb-3">
+                              <h3 className="font-bold text-gray-900 text-base leading-snug">{r.program}</h3>
+                              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full flex-shrink-0 ${sta.badge}`}>{sta.label}</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                              <div className="bg-white rounded-lg p-3">
+                                <p className="text-xs text-gray-400 mb-1">Target Goal</p>
+                                <p className="text-sm font-bold text-gray-800">{r.goal}</p>
+                              </div>
+                              <div className="bg-white rounded-lg p-3">
+                                <p className="text-xs text-gray-400 mb-1">Actual Result</p>
+                                <p className="text-sm font-bold text-gray-800">{r.result}</p>
+                              </div>
+                            </div>
+                            <div className="flex justify-between text-xs text-gray-400 mb-1.5">
+                              <span>Progress toward goal</span>
+                              <span className="font-bold" style={{ color: sta.bar }}>{r.achievedPct}%</span>
+                            </div>
+                            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                              <div className="h-full rounded-full" style={{ width: `${Math.min(r.achievedPct, 100)}%`, backgroundColor: sta.bar }}></div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ══ DESKTOP TAB CONTENT — hidden on mobile ══ */}
+          <div className="hidden lg:block">
 
           {/* ── OVERVIEW TAB ── */}
           {financialDashTab === 'overview' && (
@@ -10593,6 +10836,8 @@ function App() {
               })}
             </div>
           )}
+
+          </div>{/* end hidden lg:block desktop tab content */}
 
         </div>
       </div>
