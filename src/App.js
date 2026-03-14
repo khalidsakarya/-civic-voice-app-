@@ -6883,8 +6883,8 @@ function App() {
     const isUSA = selectedCountry?.type === 'usa';
     const isAustralia = selectedCountry?.type === 'australia';
     const isUK = selectedCountry?.type === 'uk';
-    const countryName = isUSA ? 'United States' : isAustralia ? 'Australia' : isUK ? 'United Kingdom' : 'Canada';
-    const flag = isUSA ? '🇺🇸' : isAustralia ? '🇦🇺' : isUK ? '🇬🇧' : '🇨🇦';
+    const countryName = isUSA ? 'United States' : isWide ? 'Australia' : isUK ? 'United Kingdom' : 'Canada';
+    const flag = isUSA ? '🇺🇸' : isWide ? '🇦🇺' : isUK ? '🇬🇧' : '🇨🇦';
 
     if (isUK) {
       return (
@@ -11712,7 +11712,7 @@ function App() {
 
           {/* Where the Money Goes */}
           <div
-            onClick={() => setView('uk-coming-soon')}
+            onClick={() => setView('money-uk')}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
             onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
             onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
@@ -11851,6 +11851,8 @@ function App() {
   const renderFinancialDashboard = () => {
     const isUSA = view === 'money-usa';
     const isAustralia = view === 'money-australia';
+    const isUK = view === 'money-uk';
+    const isWide = isAustralia || isUK;
 
     const data = isUSA
       ? {
@@ -11980,6 +11982,70 @@ function App() {
             { id: 'defence-spending',    program: 'Defence Spending (% GDP)',               goal: '2.4% of GDP by 2033-34',                      result: '2.1% of GDP achieved in FY2024-25',        achievedPct: 88,  status: 'on-track'  },
           ],
         }
+      : isUK
+      ? {
+          totalBudget: '£1.193 Trillion',
+          currency: 'GBP',
+          fiscalYear: 'FY 2024-25',
+          fiscalYearDetail: 'April 1, 2024 – March 31, 2025',
+          department: 'HM Treasury',
+          departmentNote: 'In coordination with the Office for Budget Responsibility (OBR)',
+          efficiencyScore: 63,
+          summary:
+            'For every £100 of public spending, £63 reached citizens directly through the NHS, State Pension, Universal Credit, and education. The remaining £37 covers administration, contractors, debt interest, and undisclosed items.',
+          flag: '🇬🇧',
+          countryName: 'United Kingdom',
+          backLabel: 'UK National Government',
+          source: 'HM Treasury Spring Budget 2024 / Office for Budget Responsibility',
+          flowData: [
+            { name: 'Direct Citizen Benefits', value: 62, amount: '£740B',  color: '#22c55e', description: 'NHS, State Pension, Universal Credit, housing benefit, disability benefits, education grants' },
+            { name: 'Administration',           value: 8,  amount: '£95B',   color: '#8b5cf6', description: 'Civil Service salaries, ministerial offices, departmental overhead, arms-length bodies' },
+            { name: 'Contractors & Consultants',value: 10, amount: '£119B',  color: '#f97316', description: 'IT outsourcing, management consultants, defence contractors, professional services' },
+            { name: 'NGOs & Intermediaries',    value: 6,  amount: '£72B',   color: '#06b6d4', description: 'Housing associations, registered charities, third-sector social care providers' },
+            { name: 'Planning & Studies',       value: 3,  amount: '£36B',   color: '#84cc16', description: 'Policy reviews, infrastructure feasibility, environmental assessments' },
+            { name: 'Unknown & Undisclosed',    value: 11, amount: '£131B',  color: '#ef4444', description: 'Classified intelligence programs, confidential commercial contracts, emergency reserves' },
+          ],
+          programs: [
+            { id: 'dwp', name: 'Social Protection (DWP)', department: 'Department for Work & Pensions (DWP)', icon: '👴', color: '#22c55e', allocated: '£280B', spent: '£274B', spentPct: 98, citizens: '22 million benefit recipients', description: 'The UK\'s largest spending area. Covers the State Pension, Universal Credit, Personal Independence Payment, Housing Benefit, and Child Benefit. DWP supports 1 in 3 UK adults.', breakdown: [{ label: 'State Pension', pct: 52, color: '#22c55e' }, { label: 'Universal Credit & Legacy Benefits', pct: 28, color: '#3b82f6' }, { label: 'Personal Independence Payment', pct: 13, color: '#f97316' }, { label: 'Housing Benefit', pct: 7, color: '#84cc16' }], timeline: [{ year: '1948', event: 'National Insurance Act creates post-war welfare state' }, { year: '2013', event: 'Universal Credit begins rollout, replacing 6 legacy benefits' }, { year: '2021', event: '£20/week UC uplift removed — charities warn of hardship' }, { year: '2024', event: 'State Pension rises 8.5% under triple lock to £221.20/week' }], milestones: ['State Pension rises to £221.20/week from April 2024 under the triple lock', 'Universal Credit fully rolled out — 6.5 million households now receiving UC', 'PIP caseload reaches 3.7 million — DWP review underway amid cost pressures'] },
+            { id: 'nhs', name: 'NHS England', department: 'Department of Health & Social Care / NHS England', icon: '🏥', color: '#3b82f6', allocated: '£162B', spent: '£160B', spentPct: 99, citizens: '67 million patients', description: 'NHS England funds hospital trusts, GP practices, mental health services, and community health. Covers 8.1 million people on waiting lists while running at near capacity.', breakdown: [{ label: 'Acute & Hospital Trusts', pct: 47, color: '#3b82f6' }, { label: 'GP & Primary Care', pct: 22, color: '#8b5cf6' }, { label: 'Mental Health & Community', pct: 18, color: '#06b6d4' }, { label: 'Medicines & Prescriptions', pct: 13, color: '#22c55e' }], timeline: [{ year: '1948', event: 'NHS founded — free at the point of need for all citizens' }, { year: '2012', event: 'Health & Social Care Act — major NHS reorganisation' }, { year: '2020', event: 'COVID-19 pandemic — NHS treated 460,000 hospitalised patients' }, { year: '2024', event: 'Waiting list reaches 7.8 million; £3.4B productivity plan launched' }], milestones: ['NHS waiting list reached 7.8 million referrals in 2024 — worst in history', 'Darzi Review (Sept 2024) found NHS in "critical condition" with 12% less time on frontline', '£3.4B NHS productivity investment announced to reduce waiting lists by 2026'] },
+            { id: 'debt-interest', name: 'Debt Interest', department: 'HM Treasury / Debt Management Office', icon: '📈', color: '#ef4444', allocated: '£100B', spent: '£100B', spentPct: 100, citizens: '67 million taxpayers', description: 'UK government interest payments on £2.7 trillion of public sector net debt. Debt interest is now the third largest spending category, exceeding the defence and education budgets combined.', breakdown: [{ label: 'Conventional Gilts', pct: 68, color: '#ef4444' }, { label: 'Index-Linked Gilts', pct: 26, color: '#f97316' }, { label: 'Treasury Bills & Other', pct: 6, color: '#fca5a5' }], timeline: [{ year: '2010', event: 'Osborne\'s austerity programme targets deficit reduction' }, { year: '2020', event: 'COVID-19 borrowing surges — £300B added to national debt' }, { year: '2022', event: 'Bank of England raises rates — debt interest costs soar' }, { year: '2024', event: 'Debt interest reaches £100B — more than education budget' }], milestones: ['UK debt interest exceeds £100B for the first time in 2024', 'Public sector net debt: £2.73 trillion (98.8% of GDP)', 'Index-linked gilts cost soared due to RPI inflation linkage during 2022-23'] },
+            { id: 'education', name: 'Education & Skills', department: 'Department for Education (DfE)', icon: '🎓', color: '#f59e0b', allocated: '£116B', spent: '£112B', spentPct: 97, citizens: '8 million pupils & 2.4 million students', description: 'Covers school funding, further education, higher education research grants, and apprenticeship levies. England\'s RAAC concrete school crisis accelerated emergency capital spending.', breakdown: [{ label: 'School Funding (GAG)', pct: 52, color: '#f59e0b' }, { label: 'Further Education & Skills', pct: 18, color: '#d97706' }, { label: 'Higher Education Grants', pct: 17, color: '#92400e' }, { label: 'Special Educational Needs', pct: 13, color: '#fde68a' }], timeline: [{ year: '2010', event: 'Academy programme accelerated — 203 academies to 2,000+' }, { year: '2017', event: 'Schools block National Funding Formula introduced' }, { year: '2023', event: 'RAAC concrete crisis — 150 schools ordered immediate closures' }, { year: '2024', event: 'SEND reform plan launched; high-needs block deficit reaches £4B' }], milestones: ['SEND (Special Educational Needs) high-needs block deficit reaches £4B nationally', 'RAAC remediation: £1.8B emergency capital programme for 150+ affected schools', 'Free school meal eligibility expanded to all primary-age children of UC recipients'] },
+            { id: 'defence', name: 'Ministry of Defence', department: 'Ministry of Defence (MoD)', icon: '⚔️', color: '#64748b', allocated: '£54B', spent: '£53B', spentPct: 98, citizens: '200,000 Armed Forces personnel', description: 'UK defence spending covering British Army, Royal Navy, Royal Air Force, nuclear deterrent, Trident renewal, and Ukraine military aid. UK has committed to 2.5% of GDP by 2030.', breakdown: [{ label: 'Personnel & Welfare', pct: 35, color: '#64748b' }, { label: 'Equipment & Procurement', pct: 41, color: '#475569' }, { label: 'Operations & Maintenance', pct: 24, color: '#94a3b8' }], timeline: [{ year: '1952', event: 'UK tests first nuclear weapon — independent deterrent established' }, { year: '1998', event: 'Strategic Defence Review — Armed Forces restructured post-Cold War' }, { year: '2022', event: 'Ukraine invasion — UK becomes third-largest military donor to Ukraine' }, { year: '2024', event: 'Defence budget 2.3% GDP; PM commits to 2.5% by 2030' }], milestones: ['UK defence reaches 2.3% of GDP in FY2024-25 — highest since Cold War', '£7.8B in military aid committed to Ukraine since February 2022', 'Type 26 City-class frigates and E7 Wedgetail aircraft entering service'] },
+            { id: 'transport', name: 'Transport & Infrastructure', department: 'Department for Transport (DfT)', icon: '🚆', color: '#0891b2', allocated: '£43B', spent: '£39B', spentPct: 91, citizens: '67 million travellers', description: 'Rail, roads, buses, aviation and maritime. The cancellation of HS2 Phase 2 (Birmingham–Manchester) released £36B; the Integrated Rail Plan redirects investment to Northern Powerhouse Rail.', breakdown: [{ label: 'National Highways (roads)', pct: 38, color: '#0891b2' }, { label: 'Rail (Network Rail/GBR)', pct: 41, color: '#0e7490' }, { label: 'Local Transport & Buses', pct: 14, color: '#155e75' }, { label: 'Aviation & Maritime', pct: 7, color: '#67e8f9' }], timeline: [{ year: '2012', event: 'HS2 Ltd established; Birmingham–London construction begins' }, { year: '2021', event: 'Integrated Rail Plan published — Northern Powerhouse Rail revised' }, { year: '2023', event: 'Sunak cancels HS2 north of Birmingham — £36B redirected' }, { year: '2025', event: 'Great British Railways transitional body established' }], milestones: ['HS2 Phase 2 cancellation saves £36B — redirected to road and Northern rail', 'Great British Railways established to unify fragmented rail franchises', 'Pothole Action Fund: £8.3B announced over five years for road maintenance'] },
+            { id: 'local-govt', name: 'Local Government Funding', department: 'Ministry of Housing, Communities & Local Government', icon: '🏘️', color: '#7c3aed', allocated: '£60B', spent: '£58B', spentPct: 97, citizens: '67 million residents', description: 'Central government grants to 343 English councils for adult social care, children\'s services, refuse collection, libraries, planning and local infrastructure. Several councils have issued Section 114 notices.', breakdown: [{ label: 'Adult Social Care', pct: 42, color: '#7c3aed' }, { label: "Children's Services", pct: 26, color: '#8b5cf6' }, { label: 'Housing & Planning', pct: 18, color: '#a78bfa' }, { label: 'Other Council Services', pct: 14, color: '#ddd6fe' }], timeline: [{ year: '2011', event: 'Localism Act — councils gain general power of competence' }, { year: '2018', event: 'Northamptonshire County Council — first S114 notice since 1980s' }, { year: '2023', event: 'Birmingham, Woking, Thurrock issue Section 114 bankruptcy notices' }, { year: '2024', event: '£600M adult social care discharge fund; councils face £4.3B funding gap' }], milestones: ['Birmingham City Council issues largest Section 114 notice in UK history (£760M deficit)', 'Adult social care accounts for 40%+ of total council spending in most authorities', 'Local Government Finance Settlement 2024-25: 4.3% increase — below inflation'] },
+            { id: 'housing', name: 'Housing & Planning', department: 'Ministry of Housing, Communities & Local Government', icon: '🏠', color: '#ea580c', allocated: '£24B', spent: '£22B', spentPct: 92, citizens: '4.2 million social renters', description: 'Affordable homes programme, Help to Buy winding down, Homes England grants, planning reform, and the Renters Rights Bill. UK needs 1.5M homes in this Parliament but approved only 235,000 in 2023.', breakdown: [{ label: 'Affordable Homes Programme', pct: 45, color: '#ea580c' }, { label: 'Regeneration & MHCLG Grants', pct: 28, color: '#c2410c' }, { label: 'Rough Sleeping & Homelessness', pct: 17, color: '#f97316' }, { label: 'Planning Reform & Inspectors', pct: 10, color: '#fde68a' }], timeline: [{ year: '2013', event: 'Help to Buy mortgage guarantee scheme launches' }, { year: '2021', event: 'Affordable Homes Programme: £11.5B committed to 2026' }, { year: '2023', event: 'Housebuilding falls to 232,000 — well below 300,000 target' }, { year: '2024', event: 'Renters Rights Bill abolishes S21 no-fault evictions; 1.5M home target' }], milestones: ['Renters Rights Bill abolishes Section 21 no-fault evictions — 11 million private renters protected', 'Labour target: 1.5 million new homes in this Parliament (by 2029)', 'Rough sleeping rose 27% in 2023 — 3,898 people sleeping rough on a single night'] },
+            { id: 'home-office', name: 'Home Office & Justice', department: 'Home Office / Ministry of Justice', icon: '🔒', color: '#dc2626', allocated: '£20B', spent: '£19.5B', spentPct: 98, citizens: '67 million residents', description: 'UK Border Force, police grant, immigration, counter-terrorism, prisons, probation, and courts. England and Wales now have the highest imprisonment rate in Western Europe.', breakdown: [{ label: 'Police Grant (43 forces)', pct: 38, color: '#dc2626' }, { label: 'Prisons & Probation', pct: 34, color: '#b91c1c' }, { label: 'Border Force & Immigration', pct: 18, color: '#fca5a5' }, { label: 'Counter-Terrorism', pct: 10, color: '#7f1d1d' }], timeline: [{ year: '2010', event: 'Police cuts begin — 21,000 officers lost by 2019' }, { year: '2019', event: 'Cummings "Beating Crime Plan" — 20,000 new officers pledged' }, { year: '2022', event: 'Prison population reaches 89,000 — near total capacity' }, { year: '2024', event: 'Early release scheme introduced; emergency release of 5,500 prisoners' }], milestones: ['Emergency early release of 5,500 prisoners in September 2024 — prisons at 99% capacity', 'Police officer numbers reach 148,000 — up from 2019 low but still below 2010 peak', 'Asylum case backlog exceeded 116,000 pending initial decisions in 2024'] },
+            { id: 'net-zero', name: 'Clean Energy & Net Zero', department: 'Department for Energy Security & Net Zero (DESNZ)', icon: '⚡', color: '#10b981', allocated: '£15B', spent: '£13.2B', spentPct: 88, citizens: '28 million households', description: 'Great British Energy, Contracts for Difference (CfD) auctions, Boiler Upgrade Scheme, energy bill support, and offshore wind expansion. UK aims for clean power grid by 2030.', breakdown: [{ label: 'Renewable Energy (CfD)', pct: 44, color: '#10b981' }, { label: 'Energy Bill Support', pct: 28, color: '#34d399' }, { label: 'Heat Pump & Boiler Upgrade', pct: 15, color: '#059669' }, { label: 'Great British Energy', pct: 13, color: '#84cc16' }], timeline: [{ year: '2019', event: 'Net Zero by 2050 enshrined in law — Climate Change Act amendment' }, { year: '2022', event: 'Energy Price Guarantee introduced — households capped at £2,500/year' }, { year: '2024', event: 'GB Energy Bill passed — £8.3B public clean energy company funded' }, { year: '2030', event: 'Target: 100% clean electricity grid — 50GW offshore wind' }], milestones: ['Great British Energy launched with £8.3B capitalisation — first state energy company since 1980s', 'UK offshore wind capacity reaches 15GW — largest in Europe', 'Boiler Upgrade Scheme grants increased to £7,500 for heat pumps in 2024'] },
+          ],
+          audit: {
+            totalFindings: 186,
+            resolved: 112,
+            open: 74,
+            avgResolutionDays: 782,
+            auditingBody: 'National Audit Office (NAO) / Public Accounts Committee (PAC)',
+            lastUpdated: 'NAO Annual Report 2023-24',
+            findings: [
+              { id: 'ppe-procurement', title: 'COVID-19 PPE Procurement — £8.7B Waste', auditBody: 'National Audit Office (NAO)', date: 'November 2023', severity: 'critical', status: 'partial', description: 'The NAO found £8.7B of the £12.1B PPE procurement budget was wasted on unusable, overpriced, or non-compliant equipment. The VIP lane — a fast-track system for politically connected suppliers — awarded £1.7B without due diligence.' },
+              { id: 'hs2-cancellation', title: 'HS2 Phase 2 Cancellation — £2.6B Spent on Cancelled Sections', auditBody: 'National Audit Office (NAO)', date: 'February 2024', severity: 'critical', status: 'open', description: 'The NAO found £2.6B was spent on planning, land acquisition, and preparatory works for the Birmingham–Manchester leg before cancellation in October 2023. Total HS2 cost estimate reached £71.7B before scope reduction.' },
+              { id: 'universal-credit', title: 'Universal Credit — Adequacy, Debt & Hardship', auditBody: 'National Audit Office (NAO)', date: 'June 2024', severity: 'high', status: 'open', description: 'The NAO found 4 in 10 new UC claimants are in debt to DWP within 12 months. Five-week wait causes advance loan debt that perpetuates hardship. Clawback deductions leaving families below subsistence level.' },
+              { id: 'illegal-migration-act', title: 'Rwanda Asylum Scheme — £700M Spent, Zero Flights Departed', auditBody: 'National Audit Office (NAO)', date: 'September 2024', severity: 'high', status: 'open', description: 'The NAO found the UK government spent over £700M on the Rwanda asylum policy — including a £290M economic development partnership payment — before the scheme was cancelled by the incoming Labour government having relocated zero asylum seekers.' },
+              { id: 'raac-schools', title: 'RAAC Reinforced Concrete in Schools — Emergency Response', auditBody: 'National Audit Office (NAO)', date: 'January 2024', severity: 'high', status: 'partial', description: 'The NAO found the DfE was aware of RAAC risks in schools for years before acting. Emergency closures affected 150+ schools affecting 70,000 pupils. Emergency capital programme totalling £1.8B required to replace and remediate affected buildings.' },
+              { id: 'water-regulation', title: 'Water Company Regulation — Sewage Discharge Failures', auditBody: 'National Audit Office (NAO)', date: 'March 2024', severity: 'high', status: 'open', description: 'The NAO found Ofwat\'s regulatory framework failed to prevent 3.6 million hours of illegal sewage discharge in 2023. Water companies paid £2.4B in dividends while allowing infrastructure to deteriorate. Thames Water faces potential special administration.' },
+              { id: 'dfe-send', title: 'SEND Provision — £4B Local Authority Deficit', auditBody: 'National Audit Office (NAO)', date: 'October 2023', severity: 'medium', status: 'open', description: 'The NAO found the high-needs block deficit — the funding gap for Special Educational Needs — has reached £4B across English councils. Statutory override defers the accounting treatment but does not resolve underlying overspend.' },
+              { id: 'border-force-it', title: 'e-Borders and Border Systems Programme', auditBody: 'National Audit Office (NAO)', date: 'August 2023', severity: 'medium', status: 'partial', description: 'The NAO found the Home Office\'s e-Borders programme, which began in 2003, remains incomplete and has cost £1.1B against an original budget of £650M. The successor Border Crossing programme faces further delays and cost pressures.' },
+            ],
+          },
+          results: [
+            { id: 'nhs-waits',       program: 'NHS Waiting List Reduction',       goal: 'Eliminate 65-week waits by March 2025',         result: '65-week waits reduced to 98,000 (from 413,000 peak)', achievedPct: 76, status: 'on-track'  },
+            { id: 'housing-target',  program: '1.5 Million New Homes',             goal: '1.5M homes in this Parliament (by 2029)',       result: '235,000 completions in FY2023-24 — 64% of annual target', achievedPct: 64, status: 'delayed'   },
+            { id: 'clean-power',     program: 'Clean Power by 2030',               goal: '100% clean electricity grid by 2030',           result: '59% of UK electricity from low-carbon sources in 2024', achievedPct: 59, status: 'on-track'  },
+            { id: 'defence-gdp',     program: 'Defence 2.5% GDP Target',           goal: '2.5% of GDP by 2030',                           result: '2.3% of GDP in FY2024-25',                 achievedPct: 92, status: 'on-track'  },
+            { id: 'childcare',       program: 'Free Childcare Expansion',          goal: '30 free hours/week for all under-5s by 2024',   result: '30 hours available for 3-4 year olds; 15h extended to 9-month-olds', achievedPct: 70, status: 'on-track'  },
+            { id: 'rough-sleeping',  program: 'End Rough Sleeping',                goal: 'End rough sleeping in England by 2024',         result: '3,898 sleeping rough in Nov 2023 — up 27%',achievedPct: 0,  status: 'delayed'   },
+            { id: 'levelling-up',    program: 'Levelling Up (Regional Investment)', goal: '£4.8B Levelling Up Fund fully committed',       result: '£4.0B of £4.8B allocated to 1,100+ projects', achievedPct: 83, status: 'on-track'  },
+            { id: 'net-zero',        program: 'Net Zero Emissions 2050',           goal: 'Carbon net zero by 2050',                       result: 'Emissions 49% below 1990 levels as of 2024', achievedPct: 98, status: 'completed' },
+          ],
+        }
       : {
           totalBudget: '$534.8 Billion',
           currency: 'CAD',
@@ -12056,12 +12122,12 @@ function App() {
     const unknownAboveThreshold = unknownEntry && unknownEntry.value > 10;
 
     return (
-      <div className={`min-h-screen ${isAustralia ? 'bg-[#f0f2f7]' : 'bg-gray-50'}`}>
+      <div className={`min-h-screen ${isWide ? 'bg-[#f0f2f7]' : 'bg-gray-50'}`}>
         {/* Back header */}
-        <div className={`bg-white ${isAustralia ? 'border-b border-gray-200' : 'shadow-sm'}`}>
-          <div className={isAustralia ? 'w-full px-4 lg:px-10 xl:px-14 py-4' : 'max-w-6xl mx-auto px-4 py-4'}>
+        <div className={`bg-white ${isWide ? 'border-b border-gray-200' : 'shadow-sm'}`}>
+          <div className={isWide ? 'w-full px-4 lg:px-10 xl:px-14 py-4' : 'max-w-6xl mx-auto px-4 py-4'}>
             <button
-              onClick={() => setView(isAustralia ? 'government-levels' : 'categories')}
+              onClick={() => setView(isUK ? 'uk-national' : isAustralia ? 'government-levels' : 'categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
               ← Back to {data.backLabel}
@@ -12069,21 +12135,21 @@ function App() {
           </div>
         </div>
 
-        <div className={isAustralia ? 'px-4 lg:px-10 xl:px-14 py-8 lg:py-10' : 'max-w-6xl mx-auto px-4 py-8'}>
+        <div className={isWide ? 'px-4 lg:px-10 xl:px-14 py-8 lg:py-10' : 'max-w-6xl mx-auto px-4 py-8'}>
 
           {/* Page title */}
-          <div className={`${isAustralia ? 'mb-8 lg:mb-10' : 'mb-6'}`}>
+          <div className={`${isWide ? 'mb-8 lg:mb-10' : 'mb-6'}`}>
             <div className="flex items-center gap-3 mb-2">
-              <span className={`${isAustralia ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.flag}</span>
-              <h1 className={`font-bold text-gray-800 ${isAustralia ? 'text-3xl lg:text-4xl xl:text-5xl' : 'text-3xl'}`}>Where the Money Goes</h1>
+              <span className={`${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.flag}</span>
+              <h1 className={`font-bold text-gray-800 ${isWide ? 'text-3xl lg:text-4xl xl:text-5xl' : 'text-3xl'}`}>Where the Money Goes</h1>
             </div>
-            <p className={`text-gray-600 ${isAustralia ? 'text-lg lg:text-xl' : 'text-lg'}`}>{data.countryName} — Financial Transparency Dashboard</p>
-            <p className={`text-gray-400 mt-1 ${isAustralia ? 'text-sm lg:text-base' : 'text-sm'}`}>Source: {data.source}</p>
+            <p className={`text-gray-600 ${isWide ? 'text-lg lg:text-xl' : 'text-lg'}`}>{data.countryName} — Financial Transparency Dashboard</p>
+            <p className={`text-gray-400 mt-1 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>Source: {data.source}</p>
           </div>
 
           {/* Tab navigation — desktop only (mobile uses accordion below) */}
           <div className="hidden lg:block w-full overflow-x-auto mb-8" style={{ WebkitOverflowScrolling: 'touch' }}>
-            <div className={`flex gap-1 rounded-xl p-1.5 ${isAustralia ? 'bg-white border border-gray-200 shadow-sm w-max lg:w-full' : 'bg-gray-200 w-max'}`}>
+            <div className={`flex gap-1 rounded-xl p-1.5 ${isWide ? 'bg-white border border-gray-200 shadow-sm w-max lg:w-full' : 'bg-gray-200 w-max'}`}>
               {[
                 { key: 'overview',   icon: '📊', label: 'Overview'   },
                 { key: 'money-flow', icon: '💸', label: 'Money Flow' },
@@ -12095,14 +12161,14 @@ function App() {
                   key={key}
                   onClick={() => setFinancialDashTab(key)}
                   className={`flex flex-col items-center flex-shrink-0 rounded-lg transition-all gap-1 ${
-                    isAustralia
+                    isWide
                       ? `lg:flex-1 px-5 py-3 lg:px-6 lg:py-4 ${financialDashTab === key ? 'shadow-md' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`
                       : `px-5 py-3 ${financialDashTab === key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`
                   }`}
-                  style={isAustralia && financialDashTab === key ? { backgroundColor: '#C9952A', color: 'white' } : {}}
+                  style={isWide && financialDashTab === key ? { backgroundColor: isUK ? '#C8102E' : '#C9952A', color: 'white' } : {}}
                 >
-                  <span className={`leading-none ${isAustralia ? 'text-xl lg:text-2xl' : 'text-xl'}`}>{icon}</span>
-                  <span className={`font-semibold whitespace-nowrap ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>{label}</span>
+                  <span className={`leading-none ${isWide ? 'text-xl lg:text-2xl' : 'text-xl'}`}>{icon}</span>
+                  <span className={`font-semibold whitespace-nowrap ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>{label}</span>
                 </button>
               ))}
             </div>
@@ -12355,48 +12421,49 @@ function App() {
           {financialDashTab === 'overview' && (
             <div>
               {/* Hero: Total Federal Budget */}
-              <div className={`bg-white rounded-2xl border border-gray-100 text-center mb-6 ${isAustralia ? 'shadow-md p-8 lg:p-14' : 'shadow-md p-8'}`}>
+              <div className={`bg-white rounded-2xl border border-gray-100 text-center mb-6 ${isWide ? 'shadow-md p-8 lg:p-14' : 'shadow-md p-8'}`}>
                 {isAustralia && <div className="flex justify-center mb-4"><span className="inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest" style={{ backgroundColor: '#C9952A22', color: '#C9952A' }}>Australian Federal Budget</span></div>}
-                <p className={`font-semibold text-gray-400 uppercase tracking-widest mb-3 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Total Federal Budget</p>
-                <p className={`font-black text-gray-900 mb-2 leading-none ${isAustralia ? 'text-5xl sm:text-7xl lg:text-8xl xl:text-9xl' : 'text-5xl sm:text-7xl'}`}>{data.totalBudget}</p>
-                <p className={`text-gray-500 mt-3 ${isAustralia ? 'text-base lg:text-lg' : 'text-base'}`}>{data.currency} · {data.fiscalYear} · {data.fiscalYearDetail}</p>
+                {isUK && <div className="flex justify-center mb-4"><span className="inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest" style={{ backgroundColor: '#C8102E22', color: '#C8102E' }}>🇬🇧 UK Public Spending</span></div>}
+                <p className={`font-semibold text-gray-400 uppercase tracking-widest mb-3 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Total Federal Budget</p>
+                <p className={`font-black text-gray-900 mb-2 leading-none ${isWide ? 'text-5xl sm:text-7xl lg:text-8xl xl:text-9xl' : 'text-5xl sm:text-7xl'}`}>{data.totalBudget}</p>
+                <p className={`text-gray-500 mt-3 ${isWide ? 'text-base lg:text-lg' : 'text-base'}`}>{data.currency} · {data.fiscalYear} · {data.fiscalYearDetail}</p>
               </div>
 
               {/* Fiscal Year + Department — 3-col on desktop for AU, 2-col otherwise */}
-              <div className={`grid grid-cols-1 gap-6 mb-6 ${isAustralia ? 'md:grid-cols-2 xl:grid-cols-3' : 'md:grid-cols-2'}`}>
-                <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 ${isAustralia ? 'p-6 lg:p-8' : 'p-6'}`}>
+              <div className={`grid grid-cols-1 gap-6 mb-6 ${isWide ? 'md:grid-cols-2 xl:grid-cols-3' : 'md:grid-cols-2'}`}>
+                <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 ${isWide ? 'p-6 lg:p-8' : 'p-6'}`}>
                   <div className="bg-blue-100 p-3 rounded-lg flex-shrink-0">
-                    <Calendar className={`text-blue-600 ${isAustralia ? 'w-6 h-6 lg:w-7 lg:h-7' : 'w-6 h-6'}`} />
+                    <Calendar className={`text-blue-600 ${isWide ? 'w-6 h-6 lg:w-7 lg:h-7' : 'w-6 h-6'}`} />
                   </div>
                   <div>
-                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-1 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Fiscal Year</p>
-                    <p className={`font-bold text-gray-800 ${isAustralia ? 'text-xl lg:text-2xl' : 'text-xl'}`}>{data.fiscalYear}</p>
-                    <p className={`text-gray-500 mt-1 ${isAustralia ? 'text-sm lg:text-base' : 'text-sm'}`}>{data.fiscalYearDetail}</p>
+                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-1 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Fiscal Year</p>
+                    <p className={`font-bold text-gray-800 ${isWide ? 'text-xl lg:text-2xl' : 'text-xl'}`}>{data.fiscalYear}</p>
+                    <p className={`text-gray-500 mt-1 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>{data.fiscalYearDetail}</p>
                   </div>
                 </div>
-                <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 ${isAustralia ? 'p-6 lg:p-8' : 'p-6'}`}>
+                <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 ${isWide ? 'p-6 lg:p-8' : 'p-6'}`}>
                   <div className="bg-purple-100 p-3 rounded-lg flex-shrink-0">
-                    <Building2 className={`text-purple-600 ${isAustralia ? 'w-6 h-6 lg:w-7 lg:h-7' : 'w-6 h-6'}`} />
+                    <Building2 className={`text-purple-600 ${isWide ? 'w-6 h-6 lg:w-7 lg:h-7' : 'w-6 h-6'}`} />
                   </div>
                   <div>
-                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-1 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Responsible Department</p>
-                    <p className={`font-bold text-gray-800 ${isAustralia ? 'text-xl lg:text-2xl' : 'text-xl'}`}>{data.department}</p>
-                    <p className={`text-gray-500 mt-1 ${isAustralia ? 'text-sm lg:text-base' : 'text-sm'}`}>{data.departmentNote}</p>
+                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-1 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Responsible Department</p>
+                    <p className={`font-bold text-gray-800 ${isWide ? 'text-xl lg:text-2xl' : 'text-xl'}`}>{data.department}</p>
+                    <p className={`text-gray-500 mt-1 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>{data.departmentNote}</p>
                   </div>
                 </div>
                 {/* Efficiency Score card — third column on desktop for AU, full row otherwise */}
-                <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 border-l-4 ${scoreBorder} ${isAustralia ? 'p-6 lg:p-8 xl:col-span-1' : 'p-6 md:col-span-2'}`}>
+                <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 border-l-4 ${scoreBorder} ${isWide ? 'p-6 lg:p-8 xl:col-span-1' : 'p-6 md:col-span-2'}`}>
                   <div className={`p-3 rounded-lg flex-shrink-0 ${scoreBg}`}>
-                    <TrendingUp className={`${scoreNum} ${isAustralia ? 'w-6 h-6 lg:w-7 lg:h-7' : 'w-6 h-6'}`} />
+                    <TrendingUp className={`${scoreNum} ${isWide ? 'w-6 h-6 lg:w-7 lg:h-7' : 'w-6 h-6'}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-1 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Efficiency Score</p>
+                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-1 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Efficiency Score</p>
                     <div className="flex items-end justify-between gap-2 mb-3">
                       <div>
-                        <p className={`font-black ${scoreNum} ${isAustralia ? 'text-4xl lg:text-5xl' : 'text-4xl'}`}>{eff}%</p>
-                        <p className={`font-semibold mt-0.5 ${scoreNum} ${isAustralia ? 'text-sm' : 'text-sm'}`}>{scoreLabel}</p>
+                        <p className={`font-black ${scoreNum} ${isWide ? 'text-4xl lg:text-5xl' : 'text-4xl'}`}>{eff}%</p>
+                        <p className={`font-semibold mt-0.5 ${scoreNum} ${isWide ? 'text-sm' : 'text-sm'}`}>{scoreLabel}</p>
                       </div>
-                      <p className={`text-gray-500 text-right hidden sm:block ${isAustralia ? 'text-sm lg:text-base' : 'text-sm'}`}>Share reaching<br/>citizens directly</p>
+                      <p className={`text-gray-500 text-right hidden sm:block ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>Share reaching<br/>citizens directly</p>
                     </div>
                     <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
                       <div className={`h-full rounded-full ${scoreBar}`} style={{ width: `${eff}%` }}></div>
@@ -12406,14 +12473,14 @@ function App() {
               </div>
 
               {/* Plain language summary */}
-              <div className={`bg-gray-900 text-white rounded-xl shadow-md ${isAustralia ? 'p-6 lg:p-8' : 'p-6'}`}>
+              <div className={`bg-gray-900 text-white rounded-xl shadow-md ${isWide ? 'p-6 lg:p-8' : 'p-6'}`}>
                 <div className="flex items-start gap-4">
                   <div className="bg-white/10 p-3 rounded-lg flex-shrink-0">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-2 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Plain Language Summary</p>
-                    <p className={`font-medium leading-relaxed text-white ${isAustralia ? 'text-lg lg:text-xl' : 'text-lg'}`}>{data.summary}</p>
+                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-2 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Plain Language Summary</p>
+                    <p className={`font-medium leading-relaxed text-white ${isWide ? 'text-lg lg:text-xl' : 'text-lg'}`}>{data.summary}</p>
                   </div>
                 </div>
               </div>
@@ -12422,12 +12489,12 @@ function App() {
 
           {/* ── MONEY FLOW TAB ── */}
           {financialDashTab === 'money-flow' && (
-            <div className={isAustralia ? 'xl:grid xl:grid-cols-2 xl:gap-6 xl:items-start' : ''}>
+            <div className={isWide ? 'xl:grid xl:grid-cols-2 xl:gap-6 xl:items-start' : ''}>
 
               {/* Pie chart */}
-              <div className={`bg-white rounded-xl shadow-md mb-6 xl:mb-0 ${isAustralia ? 'p-6 lg:p-8' : 'p-6'}`}>
-                <h2 className={`font-bold text-gray-800 mb-1 ${isAustralia ? 'text-xl lg:text-2xl' : 'text-xl'}`}>Budget Allocation by Category</h2>
-                <p className={`text-gray-500 mb-4 ${isAustralia ? 'text-sm lg:text-base' : 'text-sm'}`}>{data.currency} · {data.fiscalYear} · {data.totalBudget} total</p>
+              <div className={`bg-white rounded-xl shadow-md mb-6 xl:mb-0 ${isWide ? 'p-6 lg:p-8' : 'p-6'}`}>
+                <h2 className={`font-bold text-gray-800 mb-1 ${isWide ? 'text-xl lg:text-2xl' : 'text-xl'}`}>Budget Allocation by Category</h2>
+                <p className={`text-gray-500 mb-4 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>{data.currency} · {data.fiscalYear} · {data.totalBudget} total</p>
                 <ResponsiveContainer width="100%" height={380}>
                   <RechartsPie>
                     <Pie
@@ -12477,9 +12544,9 @@ function App() {
 
               {/* Breakdown list */}
               <div className="bg-white rounded-xl shadow-md overflow-hidden">
-                <div className={`border-b border-gray-100 ${isAustralia ? 'px-6 py-4 lg:px-8 lg:py-5' : 'px-6 py-4'}`}>
-                  <h2 className={`font-bold text-gray-800 ${isAustralia ? 'text-xl lg:text-2xl' : 'text-xl'}`}>Spending Breakdown</h2>
-                  <p className={`text-gray-500 ${isAustralia ? 'text-sm lg:text-base' : 'text-sm'}`}>All figures in {data.currency} · {data.fiscalYear}</p>
+                <div className={`border-b border-gray-100 ${isWide ? 'px-6 py-4 lg:px-8 lg:py-5' : 'px-6 py-4'}`}>
+                  <h2 className={`font-bold text-gray-800 ${isWide ? 'text-xl lg:text-2xl' : 'text-xl'}`}>Spending Breakdown</h2>
+                  <p className={`text-gray-500 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>All figures in {data.currency} · {data.fiscalYear}</p>
                 </div>
                 <div className="divide-y divide-gray-100">
                   {data.flowData.map((item, idx) => (
@@ -12523,8 +12590,8 @@ function App() {
 
           {/* ── Programs Tab ── */}
           {financialDashTab === 'programs' && (
-            <div className={isAustralia ? 'grid grid-cols-1 xl:grid-cols-2 gap-4' : 'space-y-4'}>
-              <p className={`text-gray-500 mb-2 ${isAustralia ? 'xl:col-span-2 text-sm lg:text-base' : 'text-sm'}`}>
+            <div className={isWide ? 'grid grid-cols-1 xl:grid-cols-2 gap-4' : 'space-y-4'}>
+              <p className={`text-gray-500 mb-2 ${isWide ? 'xl:col-span-2 text-sm lg:text-base' : 'text-sm'}`}>
                 Top 10 federal spending programs — tap any card to see details.
               </p>
               {data.programs.map((prog) => {
@@ -12660,24 +12727,24 @@ function App() {
             <div>
               {/* Summary bar */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-                <div className={`bg-white rounded-xl shadow-sm text-center border border-gray-100 ${isAustralia ? 'p-4 lg:p-6' : 'p-4'}`}>
-                  <p className={`font-black text-gray-900 ${isAustralia ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.totalFindings.toLocaleString()}</p>
-                  <p className={`text-gray-400 mt-1 font-medium uppercase tracking-wide ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Total Findings</p>
+                <div className={`bg-white rounded-xl shadow-sm text-center border border-gray-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
+                  <p className={`font-black text-gray-900 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.totalFindings.toLocaleString()}</p>
+                  <p className={`text-gray-400 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Total Findings</p>
                 </div>
-                <div className={`bg-green-50 rounded-xl shadow-sm text-center border border-green-100 ${isAustralia ? 'p-4 lg:p-6' : 'p-4'}`}>
-                  <p className={`font-black text-green-700 ${isAustralia ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.resolved.toLocaleString()}</p>
-                  <p className={`text-green-600 mt-1 font-medium uppercase tracking-wide ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Resolved</p>
-                  <p className={`text-green-500 mt-0.5 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>{Math.round(data.audit.resolved / data.audit.totalFindings * 100)}%</p>
+                <div className={`bg-green-50 rounded-xl shadow-sm text-center border border-green-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
+                  <p className={`font-black text-green-700 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.resolved.toLocaleString()}</p>
+                  <p className={`text-green-600 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Resolved</p>
+                  <p className={`text-green-500 mt-0.5 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>{Math.round(data.audit.resolved / data.audit.totalFindings * 100)}%</p>
                 </div>
-                <div className={`bg-red-50 rounded-xl shadow-sm text-center border border-red-100 ${isAustralia ? 'p-4 lg:p-6' : 'p-4'}`}>
-                  <p className={`font-black text-red-600 ${isAustralia ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.open.toLocaleString()}</p>
-                  <p className={`text-red-500 mt-1 font-medium uppercase tracking-wide ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Open</p>
-                  <p className={`text-red-400 mt-0.5 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>{Math.round(data.audit.open / data.audit.totalFindings * 100)}%</p>
+                <div className={`bg-red-50 rounded-xl shadow-sm text-center border border-red-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
+                  <p className={`font-black text-red-600 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.open.toLocaleString()}</p>
+                  <p className={`text-red-500 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Open</p>
+                  <p className={`text-red-400 mt-0.5 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>{Math.round(data.audit.open / data.audit.totalFindings * 100)}%</p>
                 </div>
-                <div className={`bg-blue-50 rounded-xl shadow-sm text-center border border-blue-100 ${isAustralia ? 'p-4 lg:p-6' : 'p-4'}`}>
-                  <p className={`font-black text-blue-700 ${isAustralia ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.avgResolutionDays}</p>
-                  <p className={`text-blue-500 mt-1 font-medium uppercase tracking-wide ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>Avg. Resolution</p>
-                  <p className={`text-blue-400 mt-0.5 ${isAustralia ? 'text-xs lg:text-sm' : 'text-xs'}`}>days</p>
+                <div className={`bg-blue-50 rounded-xl shadow-sm text-center border border-blue-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
+                  <p className={`font-black text-blue-700 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.avgResolutionDays}</p>
+                  <p className={`text-blue-500 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Avg. Resolution</p>
+                  <p className={`text-blue-400 mt-0.5 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>days</p>
                 </div>
               </div>
 
@@ -12756,8 +12823,8 @@ function App() {
 
           {/* ── Results Tab ── */}
           {financialDashTab === 'results' && (
-            <div className={isAustralia ? 'grid grid-cols-1 xl:grid-cols-2 gap-4' : 'space-y-4'}>
-              <p className={`text-gray-500 mb-2 ${isAustralia ? 'xl:col-span-2 text-sm lg:text-base' : 'text-sm'}`}>
+            <div className={isWide ? 'grid grid-cols-1 xl:grid-cols-2 gap-4' : 'space-y-4'}>
+              <p className={`text-gray-500 mb-2 ${isWide ? 'xl:col-span-2 text-sm lg:text-base' : 'text-sm'}`}>
                 Measured outcomes against committed targets for key government programs.
               </p>
               {data.results.map((r) => {
@@ -23930,6 +23997,7 @@ function App() {
       {view === 'money-usa' && renderFinancialDashboard()}
       {view === 'money-canada' && renderFinancialDashboard()}
       {view === 'money-australia' && renderFinancialDashboard()}
+      {view === 'money-uk' && renderFinancialDashboard()}
       {view === 'au-legislative-hub' && renderAuLegislativeHub()}
       {view === 'au-categories' && renderAuCategories()}
       {view === 'au-high-court' && renderAuHighCourt()}
