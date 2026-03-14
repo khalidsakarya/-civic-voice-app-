@@ -846,6 +846,9 @@ function App() {
   const [auGrantsSearch, setAuGrantsSearch] = useState('');
   const [auExpandedChartId, setAuExpandedChartId] = useState(null);
   const [expandedBios, setExpandedBios] = useState({});
+  const [selectedAuLeader, setSelectedAuLeader] = useState(null);
+  const [auLeaderVotes, setAuLeaderVotes] = useState({});
+  const [expandedAuLeaderSections, setExpandedAuLeaderSections] = useState({});
   const [copiedShareId, setCopiedShareId] = useState(null);
   const [senateSearch, setSenateSearch] = useState('');
   const [senateFilter, setSenateFilter] = useState('All');
@@ -11548,14 +11551,26 @@ function App() {
       </div>
     );
 
-    const PersonCard = ({ title, name, party, partyFull, since, bio, cfg, bioId }) => {
+    const PersonCard = ({ title, name, party, partyFull, since, bio, cfg, bioId, isDeputy }) => {
       const isExpanded = !!expandedBios[bioId];
       const isLong = bio && bio.length > 150;
+      const handleCardClick = () => {
+        setSelectedAuLeader({ state: item, isDeputy: !!isDeputy });
+        setExpandedAuLeaderSections({});
+        setView('au-leader-detail');
+      };
       return (
-        <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+        <div
+          onClick={handleCardClick}
+          className="bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col cursor-pointer hover:shadow-lg transition-all group"
+          style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
+        >
           <div className="h-1.5 flex-shrink-0" style={{ background: cfg.solid }} />
           <div className="p-5 sm:p-6 flex flex-col flex-1">
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] mb-4" style={{ color: cfg.solid }}>{title}</p>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: cfg.solid }}>{title}</p>
+              <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" style={{ color: cfg.solid }} />
+            </div>
             <div className="flex items-start gap-4 mb-4">
               <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-lg font-black select-none" style={{ background: cfg.light, color: cfg.solid }}>
                 {getInitials(name)}
@@ -11575,7 +11590,7 @@ function App() {
               </p>
               {isLong && (
                 <button
-                  onClick={() => setExpandedBios(prev => ({ ...prev, [bioId]: !isExpanded }))}
+                  onClick={(e) => { e.stopPropagation(); setExpandedBios(prev => ({ ...prev, [bioId]: !isExpanded })); }}
                   className="mt-1.5 text-xs font-semibold transition-colors"
                   style={{ color: cfg.solid }}
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.75'}
@@ -11708,8 +11723,8 @@ function App() {
           {/* ── Leadership ── */}
           <SectionLabel>Government Leadership</SectionLabel>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PersonCard title={item.leaderTitle} name={item.leader} party={item.partyShort} partyFull={item.party} since={item.since} bio={item.bio} cfg={mpc} bioId={`au-${item.name}-leader`} />
-            <PersonCard title={item.deputyTitle} name={item.deputy} party={item.deputyParty} partyFull={item.deputyParty} since={item.deputySince} bio={item.deputyBio} cfg={dpc} bioId={`au-${item.name}-deputy`} />
+            <PersonCard title={item.leaderTitle} name={item.leader} party={item.partyShort} partyFull={item.party} since={item.since} bio={item.bio} cfg={mpc} bioId={`au-${item.name}-leader`} isDeputy={false} />
+            <PersonCard title={item.deputyTitle} name={item.deputy} party={item.deputyParty} partyFull={item.deputyParty} since={item.deputySince} bio={item.deputyBio} cfg={dpc} bioId={`au-${item.name}-deputy`} isDeputy={true} />
           </div>
 
           {/* ── Legislature ── */}
@@ -12651,6 +12666,552 @@ function App() {
           <p className="text-center text-xs text-gray-400 mt-6 mb-8">
             Sample data for illustrative purposes only. Figures are statistically modelled.
           </p>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAuLeaderDetail = () => {
+    if (!selectedAuLeader) return null;
+    const { state: item, isDeputy } = selectedAuLeader;
+    const leaderName  = isDeputy ? item.deputy      : item.leader;
+    const leaderTitle = isDeputy ? item.deputyTitle  : item.leaderTitle;
+    const leaderParty = isDeputy ? item.deputyParty  : item.party;
+    const leaderSince = isDeputy ? item.deputySince  : item.since;
+    const leaderBio   = isDeputy ? item.deputyBio    : item.bio;
+
+    const partyColors = {
+      'ALP': '#CC0000', 'Labor': '#CC0000',
+      'LNP': '#003087', 'Liberal': '#003087', 'Liberal/National': '#003087',
+      'CLP': '#003087', 'Liberal Alliance': '#003087',
+      'Greens': '#00843D',
+    };
+    const partyColor = partyColors[leaderParty] || '#003087';
+
+    // djb2 hash for deterministic data
+    let h = 5381;
+    for (let i = 0; i < leaderName.length; i++) h = (Math.imul(h, 33) ^ leaderName.charCodeAt(i)) | 0;
+    h = Math.abs(h);
+    const rng = (min, max, salt) => {
+      const v = Math.abs((Math.imul(h + salt, 1664525) + 1013904223) | 0);
+      return min + (v % (max - min + 1));
+    };
+    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
+
+    const firstName = leaderName.split(' ')[0];
+    const lastName  = leaderName.split(' ').slice(-1)[0];
+    const abbr      = item.abbr ? item.abbr.toLowerCase() : item.name.toLowerCase().replace(/\s/g, '');
+    const email     = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${abbr}.gov.au`;
+    const phone     = `+61 ${rng(2,8,10)} ${rng(1000,9999,11)} ${rng(1000,9999,12)}`;
+    const streets   = ['Treasury Place', 'Collins Street', 'George Street', 'St Georges Terrace', 'Macquarie Street', 'Spring Street', 'Mitchell Street'];
+    const officeAddr = `${rng(1,99,13)} ${pick(streets,14)}, ${item.capital} ${item.abbr || ''} ${rng(2000,7999,15)}`;
+
+    const policyPools = {
+      'ALP':     ['Housing Affordability','Cost of Living Relief','Climate Action','Healthcare Funding','Infrastructure Investment','Education Reform','Workers Rights'],
+      'Labor':   ['Housing Affordability','Cost of Living Relief','Climate Action','Healthcare Funding','Infrastructure Investment','Education Reform','Workers Rights'],
+      'LNP':     ['Economic Growth','Fiscal Responsibility','Regional Development','Law & Order','Business Investment','Energy Reliability','Tourism'],
+      'Liberal': ['Economic Growth','Fiscal Responsibility','Small Business Support','Law & Order','Infrastructure','Energy Reliability','Defence'],
+      'Greens':  ['Climate Emergency Action','Renewable Energy','Public Transport','Social Housing','Medicare Expansion','Environmental Protection','Electoral Reform'],
+      'CLP':     ['Territory Development','Indigenous Affairs','Economic Growth','Fiscal Responsibility','Law & Order','Regional Infrastructure','Tourism'],
+    };
+    const policyPool = policyPools[leaderParty] || policyPools['Liberal'];
+    const numPolicies = rng(4, 6, 20);
+    const policies = [];
+    const usedPolicyIdx = new Set();
+    for (let i = 0; i < numPolicies; i++) {
+      let idx = rng(0, policyPool.length - 1, 20 + i * 7);
+      let tries = 0;
+      while (usedPolicyIdx.has(idx) && tries < 10) { idx = (idx + 1) % policyPool.length; tries++; }
+      usedPolicyIdx.add(idx);
+      policies.push(policyPool[idx]);
+    }
+
+    const activityTypes = ['Economic Policy','Housing','Infrastructure','Health','Education','Environment','Industry','Budget','Transport'];
+    const activityTitles = [
+      'State Budget Mid-Year Review Released',
+      'New Infrastructure Investment Announced',
+      'Housing Strategy Updated',
+      'Health Funding Agreement Signed',
+      'Regional Development Fund Launched',
+      'Education Reform Package Passed',
+      'Economic Growth Plan Unveiled',
+      'Climate Action Targets Set',
+      'Public Transport Expansion Approved',
+    ];
+    const activityDescs = [
+      `The ${item.name} government released updated fiscal forecasts projecting a return to surplus, underpinned by strong GST revenues and controlled expenditure growth.`,
+      `A major infrastructure package worth A$${rng(1,12,30)}B was announced targeting road, rail and digital connectivity across the state.`,
+      `New housing affordability measures including stamp duty concessions and build-to-rent incentives were introduced to address a shortage of ${rng(5,30,31)}k dwellings.`,
+      `A landmark health funding agreement was signed with the Commonwealth, securing A$${rng(200,900,32)}M for public hospital services over four years.`,
+      `A A$${rng(50,500,33)}M regional development fund was launched targeting job creation and infrastructure in rural and remote communities.`,
+    ];
+    const months = ['Oct 2025','Nov 2025','Dec 2025','Jan 2026','Feb 2026'];
+    const recentActivity = Array.from({ length: 4 }, (_, i) => ({
+      type: pick(activityTypes, 40 + i * 3),
+      date: months[rng(0, months.length - 1, 41 + i * 3)],
+      title: activityTitles[rng(0, activityTitles.length - 1, 42 + i * 3)],
+      description: activityDescs[rng(0, activityDescs.length - 1, 43 + i * 3)],
+    }));
+
+    const priorityPool = [
+      'Deliver balanced state budget by 2026–27',
+      `Build ${rng(5,25,50)}k new homes over next four years`,
+      'Reduce cost of living through targeted rebates',
+      'Expand public transport network statewide',
+      'Attract $${rng(2,15,51)}B in new investment',
+      'Achieve 50% renewable energy by 2030',
+      'Improve public hospital waiting times by 20%',
+      'Reform TAFE and skills training system',
+      'Boost regional employment by 10,000 jobs',
+      'Implement new domestic violence prevention strategy',
+    ];
+    const numPriorities = rng(5, 7, 60);
+    const priorities = [];
+    const usedPriIdx = new Set();
+    for (let i = 0; i < numPriorities; i++) {
+      let idx = rng(0, priorityPool.length - 1, 60 + i * 7);
+      let tries = 0;
+      while (usedPriIdx.has(idx) && tries < 10) { idx = (idx + 1) % priorityPool.length; tries++; }
+      usedPriIdx.add(idx);
+      priorities.push(priorityPool[idx]);
+    }
+
+    const attPct = rng(78, 97, 70);
+    const attTotal = rng(80, 120, 71);
+    const attAttended = Math.round(attTotal * attPct / 100);
+
+    const electedYear = parseInt(leaderSince) || rng(2018, 2024, 80);
+    const worthWhenElected = rng(8, 45, 81) * 100000;
+    const increase = rng(5, 28, 82);
+    const currentNetWorth = Math.round(worthWhenElected * (1 + increase / 100));
+    const salary = rng(280, 420, 83) * 1000;
+    const assetTypes = [
+      ['Primary Residence', rng(6, 25, 90) * 100000],
+      ['Investment Property', rng(4, 18, 91) * 100000],
+      ['Superannuation', rng(2, 12, 92) * 100000],
+      ['Savings & Term Deposits', rng(5, 30, 93) * 10000],
+    ];
+    const numAssets = rng(3, 4, 94);
+    const assets = assetTypes.slice(0, numAssets).map(([type, value]) => ({ type: `${type} (${item.capital})`, value }));
+
+    const asxCompanies = [
+      { company: 'BHP Group', ticker: 'BHP' }, { company: 'Commonwealth Bank of Australia', ticker: 'CBA' },
+      { company: 'Westpac Banking Corporation', ticker: 'WBC' }, { company: 'ANZ Banking Group', ticker: 'ANZ' },
+      { company: 'National Australia Bank', ticker: 'NAB' }, { company: 'Telstra Group', ticker: 'TLS' },
+      { company: 'Macquarie Group', ticker: 'MQG' }, { company: 'Wesfarmers', ticker: 'WES' },
+    ];
+    const tradeValues = ['A$5K–A$20K', 'A$10K–A$50K', 'A$20K–A$100K'];
+    const numTrades = rng(2, 3, 95);
+    const usedTickers = new Set();
+    const stockTrades = Array.from({ length: numTrades }, (_, i) => {
+      let idx = rng(0, asxCompanies.length - 1, 95 + i * 5);
+      let tries = 0;
+      while (usedTickers.has(idx) && tries < 8) { idx = (idx + 1) % asxCompanies.length; tries++; }
+      usedTickers.add(idx);
+      return { ...asxCompanies[idx], type: 'Disclosure', value: pick(tradeValues, 96 + i * 5), date: pick(['Jun 2023','Jun 2022','Jun 2024'], 97 + i * 5) };
+    });
+
+    const lobbyOrgs = [
+      { name: 'Business Council of Australia', sector: 'Business Advocacy' },
+      { name: 'Property Council of Australia', sector: 'Property & Development' },
+      { name: 'Australian Industry Group', sector: 'Industry' },
+      { name: 'Australian Medical Association', sector: 'Healthcare' },
+      { name: 'Master Builders Australia', sector: 'Construction' },
+      { name: 'Australian Council of Trade Unions', sector: 'Labour' },
+      { name: 'National Farmers Federation', sector: 'Agriculture' },
+      { name: 'Tourism & Transport Forum', sector: 'Tourism & Transport' },
+    ];
+    const numLobby = rng(3, 5, 100);
+    const usedLobbyIdx = new Set();
+    const lobbying = Array.from({ length: numLobby }, (_, i) => {
+      let idx = rng(0, lobbyOrgs.length - 1, 100 + i * 7);
+      let tries = 0;
+      while (usedLobbyIdx.has(idx) && tries < 8) { idx = (idx + 1) % lobbyOrgs.length; tries++; }
+      usedLobbyIdx.add(idx);
+      return { ...lobbyOrgs[idx], meetings: rng(2, 9, 101 + i * 7), lastMeeting: pick(months, 102 + i * 7) };
+    });
+
+    const totalMeetings = lobbying.reduce((s, l) => s + l.meetings, 0);
+
+    const voteKey = leaderName;
+    const initVotes = (() => {
+      const base = rng(200, 2500, 200);
+      const oppBase = rng(100, 2000, 201);
+      return { support: base, oppose: oppBase, userVote: null };
+    })();
+    const currentVotes = auLeaderVotes[voteKey] || initVotes;
+
+    const castVote = (type) => {
+      setAuLeaderVotes(prev => {
+        const cur = prev[voteKey] || initVotes;
+        if (cur.userVote === type) return prev;
+        const next = { ...cur, userVote: type };
+        if (type === 'support') next.support = (cur.support || 0) + 1;
+        else next.oppose = (cur.oppose || 0) + 1;
+        if (cur.userVote) {
+          if (cur.userVote === 'support') next.support = Math.max(0, next.support - 1);
+          else next.oppose = Math.max(0, next.oppose - 1);
+        }
+        return { ...prev, [voteKey]: next };
+      });
+    };
+
+    const toggle = (section) => setExpandedAuLeaderSections(prev => ({ ...prev, [section]: !prev[section] }));
+    const exp = expandedAuLeaderSections;
+
+    const total = (currentVotes.support || 0) + (currentVotes.oppose || 0);
+    const pct   = total > 0 ? Math.round((currentVotes.support / total) * 100) : 50;
+
+    const getInitialsLocal = (name) => name ? name.split(' ').filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase() : '??';
+
+    return (
+      <div className="min-h-screen animate-fade-in" style={{ background: '#F0F4F8' }}>
+
+        {/* ── HEADER ─────────────────────────────────────────────────── */}
+        <div className="sticky top-0 z-10" style={{ background: 'linear-gradient(135deg, #071322 0%, #0A1F48 100%)', paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
+          <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #C8A400, #F0C808, #C8A400)' }} />
+          <div className="max-w-5xl mx-auto px-4 sm:px-8 py-4 flex items-center gap-4">
+            <button
+              onClick={() => { setView('au-state-detail'); setSelectedAuLeader(null); }}
+              className="inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-2 transition-colors flex-shrink-0"
+              style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.88)', border: '1px solid rgba(255,255,255,0.18)' }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" /><span>Back</span>
+            </button>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>{item.name} · {leaderTitle}</p>
+              <h1 className="font-black text-white text-lg sm:text-xl leading-tight truncate">{leaderName}</h1>
+            </div>
+            {item.flagUrl && <img src={item.flagUrl} alt="" className="hidden sm:block rounded-lg object-cover flex-shrink-0" style={{ width: '72px', height: '46px', boxShadow: '0 0 0 2px rgba(200,164,0,0.5)' }} />}
+          </div>
+        </div>
+
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 py-8">
+
+          {/* ── PROFILE CARD ─────────────────────────────────────────── */}
+          <div className="bg-white rounded-2xl overflow-hidden mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.10)' }}>
+            <div className="h-1.5 w-full" style={{ background: partyColor }} />
+            <div className="px-6 pt-6 pb-4" style={{ background: `linear-gradient(135deg, ${partyColor}12 0%, ${partyColor}04 100%)` }}>
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl font-black flex-shrink-0 shadow-lg" style={{ background: partyColor }}>
+                  {getInitialsLocal(leaderName)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl sm:text-2xl font-black text-gray-900 leading-tight">{leaderName}</h2>
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    <span className="text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm" style={{ background: partyColor }}>{leaderTitle}</span>
+                    <span className="text-sm text-gray-600 font-medium">{item.name}</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">{leaderParty} · {item.capital} · In office since {leaderSince}</p>
+                </div>
+              </div>
+
+              {/* Approval bar */}
+              <div className="bg-white bg-opacity-60 rounded-xl p-3 flex items-center gap-4">
+                <div className="flex items-center gap-1.5">
+                  <ThumbsUp className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-semibold text-gray-700">{currentVotes.support.toLocaleString()}</span>
+                  <span className="text-xs text-gray-500">support</span>
+                </div>
+                <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[60px]">
+                  <div className="h-2 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-500">oppose</span>
+                  <span className="text-sm font-semibold text-gray-700">{currentVotes.oppose.toLocaleString()}</span>
+                  <ThumbsDown className="w-4 h-4 text-red-500" />
+                </div>
+              </div>
+
+              {/* Vote buttons */}
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => castVote('support')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${currentVotes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
+                >
+                  <ThumbsUp className="w-4 h-4" /> Support
+                </button>
+                <button
+                  onClick={() => castVote('oppose')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${currentVotes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
+                >
+                  <ThumbsDown className="w-4 h-4" /> Oppose
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ── CONTACT ──────────────────────────────────────────────── */}
+          <div className="bg-white rounded-2xl shadow-sm p-6 mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+            <h3 className="text-lg font-black text-gray-900 mb-4">📧 Contact Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="rounded-xl p-4" style={{ background: `${partyColor}0d`, border: `1px solid ${partyColor}30` }}>
+                <p className="text-sm text-gray-600 mb-1 font-medium">Official Email</p>
+                <a href={`mailto:${email}`} className="font-semibold break-all text-sm" style={{ color: partyColor }}>{email}</a>
+              </div>
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <p className="text-sm text-gray-600 mb-1 font-medium">Office Phone</p>
+                <a href={`tel:${phone}`} className="text-green-700 font-semibold text-sm">{phone}</a>
+              </div>
+              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 md:col-span-2">
+                <p className="text-sm text-gray-600 mb-1 font-medium">Office Address</p>
+                <p className="text-gray-700 text-sm font-medium">{officeAddr}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* ── TWO-COLUMN LAYOUT ─────────────────────────────────────── */}
+          <div className="md:grid md:grid-cols-2 md:gap-6">
+
+            {/* Left column */}
+            <div className="space-y-6">
+
+              {/* Biography */}
+              <div className="bg-white rounded-2xl p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+                <h3 className="text-lg font-black text-gray-900 mb-4">📖 Biography</h3>
+                <p className="text-gray-700 leading-relaxed text-sm">{leaderBio}</p>
+              </div>
+
+              {/* Key Policy Areas */}
+              <div className="bg-white rounded-2xl p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+                <h3 className="text-lg font-black text-gray-900 mb-4">📋 Key Policy Areas</h3>
+                <div className="flex flex-wrap gap-2">
+                  {policies.map((policy, i) => (
+                    <span key={i} className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full border" style={{ background: `${partyColor}0d`, color: partyColor, borderColor: `${partyColor}30` }}>
+                      <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                      {policy}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Term Information */}
+              <div className="bg-white rounded-2xl p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+                <h3 className="text-lg font-black text-gray-900 mb-4">🗓️ Term Information</h3>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div className="rounded-xl p-4 text-center" style={{ background: `${partyColor}0d` }}>
+                    <p className="text-xs text-gray-500 mb-1">In Office Since</p>
+                    <p className="text-xl font-black" style={{ color: partyColor }}>{leaderSince}</p>
+                  </div>
+                  <div className="bg-blue-50 rounded-xl p-4 text-center">
+                    <p className="text-xs text-gray-500 mb-1">State / Territory</p>
+                    <p className="text-base font-black text-blue-700">{item.abbr || item.name}</p>
+                  </div>
+                </div>
+                <div className="rounded-xl p-3" style={{ background: '#F8F9FA' }}>
+                  <p className="text-xs text-gray-500 mb-1">Role</p>
+                  <p className="font-semibold text-gray-800 text-sm">{leaderTitle} of {item.name}</p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right column — collapsible sections */}
+            <div className="space-y-4 mt-6 md:mt-0">
+
+              {/* Recent Activity */}
+              <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+                <div onClick={() => toggle('activity')} className="p-5 cursor-pointer flex items-center justify-between hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-5 h-5" style={{ color: partyColor }} />
+                    <div>
+                      <h4 className="text-base font-black text-gray-900">📊 Recent Activity</h4>
+                      <p className="text-xs text-gray-500">{recentActivity.length} recent actions</p>
+                    </div>
+                  </div>
+                  {exp.activity ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+                </div>
+                {exp.activity && (
+                  <div className="px-5 pb-5 space-y-3">
+                    {recentActivity.map((act, i) => (
+                      <div key={i} className="rounded-xl p-4" style={{ background: `${partyColor}0a`, border: `1px solid ${partyColor}20` }}>
+                        <div className="flex items-start justify-between mb-1.5">
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: partyColor }}>{act.type}</span>
+                          <span className="text-xs text-gray-500">{act.date}</span>
+                        </div>
+                        <h5 className="font-semibold text-gray-800 text-sm mb-0.5">{act.title}</h5>
+                        <p className="text-xs text-gray-600 leading-relaxed">{act.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Key Priorities */}
+              <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+                <div onClick={() => toggle('priorities')} className="p-5 cursor-pointer flex items-center justify-between hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <Scale className="w-5 h-5" style={{ color: partyColor }} />
+                    <div>
+                      <h4 className="text-base font-black text-gray-900">⚖️ Key Government Priorities</h4>
+                      <p className="text-xs text-gray-500">{priorities.length} commitments</p>
+                    </div>
+                  </div>
+                  {exp.priorities ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+                </div>
+                {exp.priorities && (
+                  <div className="px-5 pb-5 space-y-2">
+                    {priorities.map((p, i) => (
+                      <div key={i} className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: partyColor }} />
+                        <span className="text-sm text-gray-700">{p}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Attendance */}
+              <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+                <div onClick={() => toggle('attendance')} className="p-5 cursor-pointer flex items-center justify-between hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <Award className="w-5 h-5" style={{ color: partyColor }} />
+                    <div>
+                      <h4 className="text-base font-black text-gray-900">📈 Attendance Record</h4>
+                      <p className="text-xs text-gray-500">{attPct}% sitting day attendance</p>
+                    </div>
+                  </div>
+                  {exp.attendance ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+                </div>
+                {exp.attendance && (
+                  <div className="px-5 pb-5">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="rounded-xl p-4 text-center" style={{ background: `${partyColor}0d` }}>
+                        <p className="text-xs text-gray-500 mb-1">Rate</p>
+                        <p className="text-2xl font-black" style={{ color: partyColor }}>{attPct}%</p>
+                      </div>
+                      <div className="bg-green-50 rounded-xl p-4 text-center">
+                        <p className="text-xs text-gray-500 mb-1">Attended</p>
+                        <p className="text-2xl font-black text-green-700">{attAttended}/{attTotal}</p>
+                      </div>
+                      <div className="bg-purple-50 rounded-xl p-4 text-center">
+                        <p className="text-xs text-gray-500 mb-1">Total Days</p>
+                        <p className="text-2xl font-black text-purple-700">{attTotal}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Financial Disclosures */}
+              <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+                <div onClick={() => toggle('financial')} className="p-5 cursor-pointer flex items-center justify-between hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="w-5 h-5 text-purple-600" />
+                    <div>
+                      <h4 className="text-base font-black text-gray-900">💰 Financial Disclosures</h4>
+                      <p className="text-xs text-gray-500">Net worth up {increase}% since election</p>
+                    </div>
+                  </div>
+                  {exp.financial ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+                </div>
+                {exp.financial && (
+                  <div className="px-5 pb-5 space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-purple-50 rounded-xl p-3">
+                        <p className="text-xs text-gray-500 mb-1">Worth in {electedYear}</p>
+                        <p className="font-black text-purple-700">A${(worthWhenElected / 1000000).toFixed(1)}M</p>
+                      </div>
+                      <div className="bg-green-50 rounded-xl p-3">
+                        <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
+                        <p className="font-black text-green-700">A${(currentNetWorth / 1000000).toFixed(1)}M</p>
+                      </div>
+                      <div className="bg-blue-50 rounded-xl p-3">
+                        <p className="text-xs text-gray-500 mb-1">Increase</p>
+                        <p className="font-black text-blue-700">+{increase}%</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-3">
+                        <p className="text-xs text-gray-500 mb-1">Annual Salary</p>
+                        <p className="font-black text-gray-700">A${salary.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="font-semibold text-gray-700 mb-2 text-sm">Asset Breakdown</h5>
+                      <div className="space-y-2">
+                        {assets.map((asset, i) => (
+                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                            <span className="text-sm text-gray-700">{asset.type}</span>
+                            <span className="text-sm font-black text-gray-800">A${asset.value.toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Asset Disclosures */}
+              <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+                <div onClick={() => toggle('stocks')} className="p-5 cursor-pointer flex items-center justify-between hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <h4 className="text-base font-black text-gray-900">📈 Asset Disclosures</h4>
+                      <p className="text-xs text-gray-500">{stockTrades.length} disclosed holdings</p>
+                    </div>
+                  </div>
+                  {exp.stocks ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+                </div>
+                {exp.stocks && (
+                  <div className="px-5 pb-5 space-y-3">
+                    {stockTrades.map((trade, i) => (
+                      <div key={i} className="border border-gray-100 rounded-xl p-4 bg-gray-50">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <div>
+                            <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
+                            <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
+                          </div>
+                          <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 mt-1">
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
+                          <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
+                        </div>
+                      </div>
+                    ))}
+                    <p className="text-xs text-gray-400">Disclosures filed with the Australian Parliament's Register of Members' Interests.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Lobbying Activity */}
+              <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+                <div onClick={() => toggle('lobbying')} className="p-5 cursor-pointer flex items-center justify-between hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <Users className="w-5 h-5 text-orange-600" />
+                    <div>
+                      <h4 className="text-base font-black text-gray-900">🤝 Lobbying Activity</h4>
+                      <p className="text-xs text-gray-500">{totalMeetings} meetings with registered lobbyists</p>
+                    </div>
+                  </div>
+                  {exp.lobbying ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+                </div>
+                {exp.lobbying && (
+                  <div className="px-5 pb-5 space-y-3">
+                    {lobbying.map((org, i) => (
+                      <div key={i} className="border border-gray-100 rounded-xl p-4 bg-gray-50">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h5 className="font-bold text-gray-800 text-sm">{org.name}</h5>
+                            <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
+                            <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-400 text-center mt-8 pb-4">Data is statistically modelled for illustrative purposes. Figures use deterministic generation seeded from {leaderName}.</p>
         </div>
       </div>
     );
@@ -20380,6 +20941,7 @@ function App() {
       {view === 'senate' && renderSenate()}
       {view === 'senator-detail' && selectedSenator && renderSenatorPanel()}
       {view === 'canada-pm-detail' && renderCarneyDetail()}
+      {view === 'au-leader-detail' && selectedAuLeader && renderAuLeaderDetail()}
       {view === 'albanese-detail' && renderAlbaneseDetail()}
       {view === 'au-parliament' && renderAustralianParliament()}
       {view === 'au-states' && renderAustralianStates()}
