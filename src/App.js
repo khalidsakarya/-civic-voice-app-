@@ -11817,36 +11817,51 @@ function App() {
     const povDataM   = povData.slice(-6);
 
     const AuCard = ({ id, title, desc, children, legend }) => (
-      <div className="bg-white rounded-lg shadow-md p-5 mb-4">
-        <h3 className="text-base font-bold text-gray-800 mb-0.5">{title}</h3>
-        <p className="text-sm text-gray-500 mb-4">{desc}</p>
-        {children}
-        {legend}
-        <button onClick={() => setAuExpandedChartId(id)} className="mt-3 w-full py-2 text-sm font-medium rounded-lg transition-colors" style={{ color: '#003087', background: '#EBF0FF' }}>
-          📈 View Full Screen
-        </button>
+      <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+        <div className="h-1 w-full flex-shrink-0" style={{ background: 'linear-gradient(90deg, #003087, #1B4FD8)' }} />
+        <div className="p-5 sm:p-6">
+          <h3 className="font-black text-gray-900 text-base sm:text-lg mb-0.5">{title}</h3>
+          <p className="text-xs text-gray-500 mb-5">{desc}</p>
+          {children}
+          {legend}
+          <button onClick={() => setAuExpandedChartId(id)} className="mt-4 w-full py-2.5 text-sm font-semibold rounded-xl transition-all" style={{ color: '#003087', background: '#EBF0FF' }}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#D6E4FF'}
+            onMouseLeave={(e) => e.currentTarget.style.background = '#EBF0FF'}
+          >
+            📈 View Full Screen
+          </button>
+        </div>
       </div>
     );
 
     return (
       <>
-      <div
-        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
-        style={{ background: 'rgba(0,0,0,0.55)' }}
-        onClick={(e) => { if (e.target === e.currentTarget) setShowAuEconomicModal(false); }}
-      >
-        <div className="relative bg-gray-50 w-full max-w-xl md:max-w-4xl mx-2 sm:mx-4 md:mx-auto my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-center gap-3 border-b border-gray-100 shadow-sm">
-            <button onClick={() => setShowAuEconomicModal(false)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0">
-              <X className="w-4 h-4" />
+      <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in" style={{ background: '#F0F4F8' }}>
+        {/* Premium header */}
+        <div className="sticky top-0 z-10" style={{ background: 'linear-gradient(135deg, #071322 0%, #0A1F48 100%)', paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
+          <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #C8A400, #F0C808, #C8A400)' }} />
+          <div className="max-w-6xl mx-auto px-4 sm:px-8 py-4 sm:py-5 flex items-center gap-4">
+            <button
+              onClick={() => setShowAuEconomicModal(false)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0 transition-colors"
+              style={{ background: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.18)' }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" />
               <span>Back</span>
             </button>
             <div className="flex-1 min-w-0">
-              <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug truncate">{item.name} — Economic &amp; Social Data</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Illustrative data · figures are statistically modelled</p>
+              <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>Australian State · Economic &amp; Social Data</p>
+              <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{item.name}</h1>
             </div>
+            {item.flag && (
+              <img src={item.flag} alt={item.name} className="hidden sm:block w-20 rounded-lg object-cover flex-shrink-0" style={{ height: '52px', boxShadow: '0 0 0 2px rgba(200,164,0,0.5)' }} />
+            )}
           </div>
-          <div className="p-4">
+        </div>
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <AuCard id="au-budget" title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
@@ -11952,13 +11967,10 @@ function App() {
                 </BarChart>
               </ResponsiveContainer>
             </AuCard>
-            <p className="text-center text-xs text-gray-400 pb-2">
-              Data is statistically modelled for illustrative purposes. Figures use deterministic generation seeded from {item.name}.
-            </p>
-            <button onClick={() => setShowAuEconomicModal(false)} className="w-full mt-2 mb-1 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
-              <X className="w-4 h-4" /> Close
-            </button>
           </div>
+          <p className="text-center text-xs text-gray-400 mt-8 mb-6">
+            Data is statistically modelled for illustrative purposes. Figures use deterministic generation seeded from {item.name}.
+          </p>
         </div>
       </div>
 
@@ -12186,55 +12198,69 @@ function App() {
     const closeModal = () => { setShowAuTaxExemptModal(false); setAuTaxExemptSearch(''); };
 
     return (
-      <div
-        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
-        style={{ background: 'rgba(0,0,0,0.55)' }}
-        onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
-      >
-        <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
-            <div className="flex items-start gap-3 mb-3">
-              <button onClick={closeModal} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
-                <X className="w-4 h-4" />
-                <span>Back</span>
-              </button>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Tax Exempt Companies</h2>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {companies.length} companies &nbsp;·&nbsp; Est. total annual exemption:{' '}
-                  <span className="font-semibold" style={{ color: '#92610A' }}>{fmtTotal}</span>
-                  &nbsp;·&nbsp; Illustrative sample data
-                </p>
-              </div>
-              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
-                <X className="w-5 h-5" />
-              </button>
+      <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in" style={{ background: '#F0F4F8' }}>
+        {/* Premium header */}
+        <div className="sticky top-0 z-10" style={{ background: 'linear-gradient(135deg, #071322 0%, #0A1F48 100%)', paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
+          <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #C8A400, #F0C808, #C8A400)' }} />
+          <div className="max-w-6xl mx-auto px-4 sm:px-8 py-4 sm:py-5 flex items-center gap-4">
+            <button
+              onClick={closeModal}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0 transition-colors"
+              style={{ background: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.18)' }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" />
+              <span>Back</span>
+            </button>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>Australian State · Tax Exempt Companies</p>
+              <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{item.name}</h1>
             </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              <input
-                type="text"
-                value={auTaxExemptSearch}
-                onChange={(e) => setAuTaxExemptSearch(e.target.value)}
-                placeholder="Search by company name, industry, or exemption type…"
-                className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 bg-white"
-                style={{ '--tw-ring-color': '#C8A400' }}
-              />
-              {auTaxExemptSearch && (
-                <button onClick={() => setAuTaxExemptSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
+            {item.flag && (
+              <img src={item.flag} alt={item.name} className="hidden sm:block w-20 rounded-lg object-cover flex-shrink-0" style={{ height: '52px', boxShadow: '0 0 0 2px rgba(200,164,0,0.5)' }} />
+            )}
+          </div>
+        </div>
+        {/* Stat strip + search */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 pt-6 pb-4">
+          <div className="bg-white rounded-2xl px-5 py-4 mb-5 flex flex-wrap items-center gap-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-400 mb-0.5">Companies</p>
+              <p className="font-black text-gray-900 text-lg sm:text-xl">{companies.length}</p>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-400 mb-0.5">Est. Annual Exemption</p>
+              <p className="font-black text-lg sm:text-xl" style={{ color: '#92610A' }}>{fmtTotal}</p>
+            </div>
+            <div className="w-full sm:w-auto sm:flex-1 min-w-[200px]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={auTaxExemptSearch}
+                  onChange={(e) => setAuTaxExemptSearch(e.target.value)}
+                  placeholder="Search companies, industry, exemption…"
+                  className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 bg-gray-50"
+                  style={{ '--tw-ring-color': '#C8A400' }}
+                />
+                {auTaxExemptSearch && (
+                  <button onClick={() => setAuTaxExemptSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-          <div className="p-3 sm:p-5">
+          <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+            <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #C8A400, #F0C808)' }} />
             {filtered.length === 0 ? (
               <div className="text-center py-14 text-gray-400">
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
                 <p className="text-sm">No companies match &quot;{auTaxExemptSearch}&quot;</p>
               </div>
             ) : (
-              <div className="bg-white rounded-2xl shadow-elegant overflow-hidden">
+              <>
                 <div className="sm:hidden divide-y divide-gray-100">
                   {filtered.map((co, i) => (
                     <div key={i} className="p-4">
@@ -12281,15 +12307,12 @@ function App() {
                     Showing {filtered.length} of {companies.length} companies
                   </div>
                 )}
-              </div>
+              </>
             )}
-            <p className="text-center text-xs text-gray-400 mt-4">
-              Sample data for illustrative purposes only. Figures are statistically modelled.
-            </p>
-            <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
-              <X className="w-4 h-4" /> Close
-            </button>
           </div>
+          <p className="text-center text-xs text-gray-400 mt-6 mb-8">
+            Sample data for illustrative purposes only. Figures are statistically modelled.
+          </p>
         </div>
       </div>
     );
@@ -12397,54 +12420,68 @@ function App() {
     const closeModal = () => { setShowAuGrantsModal(false); setAuGrantsSearch(''); };
 
     return (
-      <div
-        className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
-        style={{ background: 'rgba(0,0,0,0.55)' }}
-        onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
-      >
-        <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
-            <div className="flex items-start gap-3 mb-3">
-              <button onClick={closeModal} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
-                <X className="w-4 h-4" />
-                <span>Back</span>
-              </button>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Grants Given</h2>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {grants.length} grants &nbsp;·&nbsp; Total awarded:{' '}
-                  <span className="font-semibold" style={{ color: '#005728' }}>{fmtTotal}</span>
-                  &nbsp;·&nbsp; Illustrative sample data
-                </p>
-              </div>
-              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
-                <X className="w-5 h-5" />
-              </button>
+      <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in" style={{ background: '#F0F4F8' }}>
+        {/* Premium header */}
+        <div className="sticky top-0 z-10" style={{ background: 'linear-gradient(135deg, #071322 0%, #0A1F48 100%)', paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
+          <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #00843D, #00C853, #00843D)' }} />
+          <div className="max-w-6xl mx-auto px-4 sm:px-8 py-4 sm:py-5 flex items-center gap-4">
+            <button
+              onClick={closeModal}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0 transition-colors"
+              style={{ background: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.18)' }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" />
+              <span>Back</span>
+            </button>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#86efac' }}>Australian State · Grants Given</p>
+              <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{item.name}</h1>
             </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              <input
-                type="text"
-                value={auGrantsSearch}
-                onChange={(e) => setAuGrantsSearch(e.target.value)}
-                placeholder="Search by recipient, purpose, department, or type…"
-                className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 bg-white"
-              />
-              {auGrantsSearch && (
-                <button onClick={() => setAuGrantsSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
+            {item.flag && (
+              <img src={item.flag} alt={item.name} className="hidden sm:block w-20 rounded-lg object-cover flex-shrink-0" style={{ height: '52px', boxShadow: '0 0 0 2px rgba(0,132,61,0.5)' }} />
+            )}
+          </div>
+        </div>
+        {/* Stat strip + search */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 pt-6 pb-4">
+          <div className="bg-white rounded-2xl px-5 py-4 mb-5 flex flex-wrap items-center gap-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-400 mb-0.5">Total Grants</p>
+              <p className="font-black text-gray-900 text-lg sm:text-xl">{grants.length}</p>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-400 mb-0.5">Total Awarded</p>
+              <p className="font-black text-lg sm:text-xl" style={{ color: '#005728' }}>{fmtTotal}</p>
+            </div>
+            <div className="w-full sm:w-auto sm:flex-1 min-w-[200px]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={auGrantsSearch}
+                  onChange={(e) => setAuGrantsSearch(e.target.value)}
+                  placeholder="Search recipient, purpose, department…"
+                  className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 bg-gray-50"
+                />
+                {auGrantsSearch && (
+                  <button onClick={() => setAuGrantsSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-          <div className="p-3 sm:p-5">
+          <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+            <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #00843D, #00C853)' }} />
             {filtered.length === 0 ? (
               <div className="text-center py-14 text-gray-400">
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
                 <p className="text-sm">No grants match &quot;{auGrantsSearch}&quot;</p>
               </div>
             ) : (
-              <div className="bg-white rounded-2xl shadow-elegant overflow-hidden">
+              <>
                 <div className="sm:hidden divide-y divide-gray-100">
                   {filtered.map((g, i) => (
                     <div key={i} className="p-4">
@@ -12494,15 +12531,12 @@ function App() {
                     Showing {filtered.length} of {grants.length} grants
                   </div>
                 )}
-              </div>
+              </>
             )}
-            <p className="text-center text-xs text-gray-400 mt-4">
-              Sample data for illustrative purposes only. Figures are statistically modelled.
-            </p>
-            <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
-              <X className="w-4 h-4" /> Close
-            </button>
           </div>
+          <p className="text-center text-xs text-gray-400 mt-6 mb-8">
+            Sample data for illustrative purposes only. Figures are statistically modelled.
+          </p>
         </div>
       </div>
     );
