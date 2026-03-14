@@ -4881,7 +4881,8 @@ function App() {
   const countries = [
     { id: 1, name: 'Canada', flag: '🇨🇦', members: mps.length || 338, type: 'canada' },
     { id: 2, name: 'United States', flag: '🇺🇸', members: congressMembers.length || 535, type: 'usa' },
-    { id: 3, name: 'Australia', flag: '🇦🇺', members: 227, type: 'australia' }
+    { id: 3, name: 'Australia', flag: '🇦🇺', members: 227, type: 'australia' },
+    { id: 4, name: 'United Kingdom', flag: '🇬🇧', members: 650, type: 'uk' }
   ];
 
   const categories = [
@@ -6776,7 +6777,7 @@ function App() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12 animate-slide-in">
           <h1 className="text-5xl font-bold text-gray-800 mb-3 text-shadow">Civic Voice</h1>
-          <p className="text-xl text-gray-600">Full Government Transparency Platform - North America</p>
+          <p className="text-xl text-gray-600">Full Government Transparency Platform</p>
           <div className="w-24 h-1 bg-gradient-blue mx-auto mt-4 rounded-full"></div>
         </div>
         
@@ -6790,7 +6791,7 @@ function App() {
           </div>
         )}
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {countries.map((country, index) => (
             <div
               key={country.id}
@@ -6823,8 +6824,73 @@ function App() {
   const renderGovernmentLevels = () => {
     const isUSA = selectedCountry?.type === 'usa';
     const isAustralia = selectedCountry?.type === 'australia';
-    const countryName = isUSA ? 'United States' : isAustralia ? 'Australia' : 'Canada';
-    const flag = isUSA ? '🇺🇸' : isAustralia ? '🇦🇺' : '🇨🇦';
+    const isUK = selectedCountry?.type === 'uk';
+    const countryName = isUSA ? 'United States' : isAustralia ? 'Australia' : isUK ? 'United Kingdom' : 'Canada';
+    const flag = isUSA ? '🇺🇸' : isAustralia ? '🇦🇺' : isUK ? '🇬🇧' : '🇨🇦';
+
+    if (isUK) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
+          <div className="max-w-4xl mx-auto">
+            <button
+              onClick={() => setView('countries')}
+              className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
+            >
+              ← Back to Countries
+            </button>
+
+            <div className="mb-8 animate-slide-in">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-4xl">🇬🇧</span>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">United Kingdom</h1>
+              </div>
+              <p className="text-gray-600 text-base sm:text-lg">Choose a level of government to explore</p>
+              <div className="w-24 h-1 mt-3 rounded-full" style={{ background: 'linear-gradient(to right, #C8102E, #012169)' }} />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* National Government (Westminster) */}
+              <div
+                onClick={() => setView('uk-national')}
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                style={{ animationDelay: '0.1s' }}
+              >
+                <div className="mb-4" style={{ color: '#C8102E' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10h1v11H4V10zm6 0h1v11h-1V10zm5 0h1v11h-1V10zm5 0h1v11h-1V10z" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">National Government (Westminster)</h2>
+                <p className="text-gray-600 mb-4 text-sm">Parliament, Prime Minister, Cabinet, courts &amp; more</p>
+                <div className="flex items-center gap-2 font-semibold text-sm" style={{ color: '#C8102E' }}>
+                  <span>Explore National</span>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
+
+              {/* England Regions & Counties */}
+              <div
+                onClick={() => setView('uk-regions')}
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                style={{ animationDelay: '0.2s' }}
+              >
+                <div className="mb-4" style={{ color: '#012169' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">England Regions &amp; Counties</h2>
+                <p className="text-gray-600 mb-4 text-sm">England's regions, combined authorities and county councils</p>
+                <div className="flex items-center gap-2 font-semibold text-sm" style={{ color: '#012169' }}>
+                  <span>Explore Regions</span>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     if (isAustralia) {
       return (
@@ -9882,6 +9948,66 @@ function App() {
       </div>
     );
   };
+
+  const renderUKNational = () => (
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8">
+      <div className="max-w-4xl mx-auto">
+        <button
+          onClick={() => setView('government-levels')}
+          className="mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium shadow-elegant"
+        >
+          ← Back to United Kingdom
+        </button>
+        <div className="flex items-center gap-4 mb-8">
+          <span className="text-4xl">🇬🇧</span>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">National Government (Westminster)</h1>
+            <p className="text-gray-500 mt-1 text-sm">Parliament, Prime Minister &amp; Cabinet</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl shadow-md p-12 text-center border border-gray-100">
+          <p className="text-6xl mb-5">🏛️</p>
+          <h2 className="text-2xl font-bold text-gray-700 mb-3">Content Coming Soon</h2>
+          <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
+            Westminster Parliament, Prime Minister, Cabinet, courts and spending data will be available here.
+          </p>
+          <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold" style={{ backgroundColor: '#C8102E15', color: '#C8102E' }}>
+            <span>🚧</span> In Development
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderUKRegions = () => (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50 p-4 sm:p-8">
+      <div className="max-w-4xl mx-auto">
+        <button
+          onClick={() => setView('government-levels')}
+          className="mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium shadow-elegant"
+        >
+          ← Back to United Kingdom
+        </button>
+        <div className="flex items-center gap-4 mb-8">
+          <span className="text-4xl">🇬🇧</span>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">England Regions &amp; Counties</h1>
+            <p className="text-gray-500 mt-1 text-sm">Combined authorities and county councils</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl shadow-md p-12 text-center border border-gray-100">
+          <p className="text-6xl mb-5">🗺️</p>
+          <h2 className="text-2xl font-bold text-gray-700 mb-3">Content Coming Soon</h2>
+          <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
+            England's regions, combined authorities and county council data will be available here.
+          </p>
+          <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold" style={{ backgroundColor: '#01216915', color: '#012169' }}>
+            <span>🚧</span> In Development
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   const renderFinancialDashboard = () => {
     const isUSA = view === 'money-usa';
@@ -21968,6 +22094,8 @@ function App() {
       {view === 'au-legislative-hub' && renderAuLegislativeHub()}
       {view === 'au-categories' && renderAuCategories()}
       {view === 'au-high-court' && renderAuHighCourt()}
+      {view === 'uk-national' && renderUKNational()}
+      {view === 'uk-regions' && renderUKRegions()}
       {view === 'au-analytics' && renderAuAnalytics()}
       {view === 'au-contracts' && renderAuContracts()}
       {view === 'au-contract-detail' && selectedAuContract && renderAuContractDetail()}
