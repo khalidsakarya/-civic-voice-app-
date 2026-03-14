@@ -836,6 +836,11 @@ function App() {
   const [expandedStarmerSections, setExpandedStarmerSections] = useState({
     activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false,
   });
+  const [ukPartyFilter, setUkPartyFilter] = useState('All');
+  const [ukMpSearch, setUkMpSearch] = useState('');
+  const [selectedUkMember, setSelectedUkMember] = useState(null);
+  const [ukMpVotes, setUkMpVotes] = useState({});
+  const [expandedUkSections, setExpandedUkSections] = useState({});
   const [auChamber, setAuChamber] = useState('Senate');
   const [auPartyFilter, setAuPartyFilter] = useState('All');
   const [auSearch, setAuSearch] = useState('');
@@ -4529,6 +4534,18 @@ function App() {
 
   const toggleStarmerSection = (section) => {
     setExpandedStarmerSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const voteUkMp = (name, vote) => {
+    setUkMpVotes(prev => {
+      const cur = prev[name] || { support: 0, oppose: 0, userVote: null };
+      const newVote = cur.userVote === vote ? null : vote;
+      return { ...prev, [name]: { support: cur.support, oppose: cur.oppose, userVote: newVote } };
+    });
+  };
+
+  const toggleUkSection = (section) => {
+    setExpandedUkSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   // ── HOME REGION (locked once set, used to gate votes) ────────────────────────
@@ -10471,6 +10488,595 @@ function App() {
     );
   };
 
+  // ── UK House of Commons data ─────────────────────────────────────────────────
+  const ukMps = [
+    // Labour (30)
+    { name: 'Kezia Murray', constituency: 'Leeds Central', region: 'Yorkshire', party: 'Labour', yearsInOffice: 3, email: 'kezia.murray.mp@parliament.uk', phone: '+44 113 245 8821', committees: ['Education Committee', 'Work & Pensions Committee'], bio: 'Former teacher and school governor, Kezia Murray has championed education reform and fair pay since entering Parliament in 2021.', supportVotes: 4120, opposeVotes: 980, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'James Whitfield', constituency: 'Birmingham Ladywood', region: 'West Midlands', party: 'Labour', yearsInOffice: 7, email: 'james.whitfield.mp@parliament.uk', phone: '+44 121 554 3312', committees: ['Home Affairs Committee', 'Treasury Sub-Committee'], bio: 'Community organiser and former local councillor who has represented Ladywood for seven years, focusing on urban regeneration and policing reform.', supportVotes: 5800, opposeVotes: 1200, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Priya Sharma', constituency: 'Leicester South', region: 'East Midlands', party: 'Labour', yearsInOffice: 2, email: 'priya.sharma.mp@parliament.uk', phone: '+44 116 254 7733', committees: ['Health & Social Care Committee'], bio: 'Former NHS doctor who entered politics to fight for NHS funding. Has led campaigns on waiting time reform and mental health services.', supportVotes: 6200, opposeVotes: 740, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Marcus Osei', constituency: 'Hackney South & Shoreditch', region: 'London', party: 'Labour', yearsInOffice: 5, email: 'marcus.osei.mp@parliament.uk', phone: '+44 20 7254 6821', committees: ['Digital, Culture, Media & Sport Committee'], bio: 'Tech entrepreneur turned politician, Marcus advocates for digital inclusion and affordable housing in inner London.', supportVotes: 7100, opposeVotes: 890, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Rachel Donovan', constituency: 'Liverpool Walton', region: 'North West', party: 'Labour', yearsInOffice: 9, email: 'rachel.donovan.mp@parliament.uk', phone: '+44 151 236 4412', committees: ['Transport Committee', 'Northern Powerhouse APPG'], bio: 'Trade union official and lifelong Labour activist, Rachel has served Walton for nine years with a focus on maritime trade and port employment.', supportVotes: 5500, opposeVotes: 1100, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Tom Barker', constituency: 'Sheffield Brightside', region: 'Yorkshire', party: 'Labour', yearsInOffice: 4, email: 'tom.barker.mp@parliament.uk', phone: '+44 114 276 5544', committees: ['Business & Trade Committee'], bio: 'Former steelworker and union rep who campaigns for industrial policy, green jobs, and workers\' rights.', supportVotes: 4890, opposeVotes: 870, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Amara Diallo', constituency: 'Tottenham', region: 'London', party: 'Labour', yearsInOffice: 6, email: 'amara.diallo.mp@parliament.uk', phone: '+44 20 8808 1234', committees: ['Housing Communities & Local Government Committee'], bio: 'Community activist and housing lawyer who has championed affordable rents and tenant rights since first elected in 2018.', supportVotes: 6300, opposeVotes: 940, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Oliver Nash', constituency: 'Bristol East', region: 'South West', party: 'Labour', yearsInOffice: 3, email: 'oliver.nash.mp@parliament.uk', phone: '+44 117 965 6621', committees: ['Science, Innovation & Technology Committee'], bio: 'Software engineer and climate tech advocate, Oliver focuses on green innovation and apprenticeships for the digital economy.', supportVotes: 5200, opposeVotes: 660, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Yasmin Hussain', constituency: 'Bradford West', region: 'Yorkshire', party: 'Labour', yearsInOffice: 5, email: 'yasmin.hussain.mp@parliament.uk', phone: '+44 1274 726 112', committees: ['Foreign Affairs Committee', 'Joint Committee on Human Rights'], bio: 'Human rights barrister who campaigns for international justice, refugee rights, and community cohesion across Bradford.', supportVotes: 5900, opposeVotes: 1300, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'David Chen', constituency: 'Manchester Gorton', region: 'North West', party: 'Labour', yearsInOffice: 8, email: 'david.chen.mp@parliament.uk', phone: '+44 161 248 9910', committees: ['Public Accounts Committee'], bio: 'Former public auditor whose career in financial oversight informs his work on government spending transparency and anti-corruption measures.', supportVotes: 4700, opposeVotes: 820, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Sophie Williams', constituency: 'Cardiff South & Penarth', region: 'Wales', party: 'Labour', yearsInOffice: 2, email: 'sophie.williams.mp@parliament.uk', phone: '+44 29 2066 3344', committees: ['Welsh Affairs Committee'], bio: 'Former policy adviser to the Welsh Government, Sophie champions devolution, coastal communities, and renewable energy investment.', supportVotes: 4400, opposeVotes: 590, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Nathan Powell', constituency: 'Nottingham East', region: 'East Midlands', party: 'Labour', yearsInOffice: 6, email: 'nathan.powell.mp@parliament.uk', phone: '+44 115 958 3300', committees: ['Justice Committee'], bio: 'Criminal defence solicitor turned MP, Nathan has spent six years fighting for legal aid funding and prison rehabilitation programmes.', supportVotes: 4100, opposeVotes: 780, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Fatima Begum', constituency: 'East Ham', region: 'London', party: 'Labour', yearsInOffice: 4, email: 'fatima.begum.mp@parliament.uk', phone: '+44 20 8552 2271', committees: ['Health & Social Care Committee', 'International Development Committee'], bio: 'GP and community health advocate representing one of London\'s most diverse constituencies.', supportVotes: 6800, opposeVotes: 700, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Luke Henderson', constituency: 'Sunderland Central', region: 'North East', party: 'Labour', yearsInOffice: 7, email: 'luke.henderson.mp@parliament.uk', phone: '+44 191 567 2211', committees: ['Defence Committee'], bio: 'Former Royal Navy engineer, Luke advocates for defence industry jobs in the North East and veteran support programmes.', supportVotes: 4300, opposeVotes: 1050, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Nia Roberts', constituency: 'Pontypridd', region: 'Wales', party: 'Labour', yearsInOffice: 3, email: 'nia.roberts.mp@parliament.uk', phone: '+44 1443 407 760', committees: ['Environment, Food & Rural Affairs Committee'], bio: 'Environmental scientist and former Valleys community organiser dedicated to green industry transition in South Wales.', supportVotes: 3900, opposeVotes: 620, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Chris Adeyemi', constituency: 'Streatham & Croydon North', region: 'London', party: 'Labour', yearsInOffice: 5, email: 'chris.adeyemi.mp@parliament.uk', phone: '+44 20 8674 0111', committees: ['Culture Media & Sport Committee'], bio: 'Music industry lawyer and youth charity trustee who campaigns for arts education and knife-crime prevention in South London.', supportVotes: 5500, opposeVotes: 890, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Helen Marsh', constituency: 'Coventry North West', region: 'West Midlands', party: 'Labour', yearsInOffice: 1, email: 'helen.marsh.mp@parliament.uk', phone: '+44 24 7633 9041', committees: ['Work & Pensions Committee'], bio: 'Former benefits adviser elected in the 2024 general election, Helen focuses on social security reform and child poverty reduction.', supportVotes: 3800, opposeVotes: 450, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Imran Khalid', constituency: 'Oldham East & Saddleworth', region: 'North West', party: 'Labour', yearsInOffice: 4, email: 'imran.khalid.mp@parliament.uk', phone: '+44 161 624 7690', committees: ['Home Affairs Committee'], bio: 'Former police inspector who entered politics to champion community policing and counter-extremism through community engagement.', supportVotes: 4600, opposeVotes: 1100, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Laura Fitzgerald', constituency: 'Brighton Pavilion', region: 'South East', party: 'Labour', yearsInOffice: 1, email: 'laura.fitzgerald.mp@parliament.uk', phone: '+44 1273 677 450', committees: ['Environment Committee'], bio: 'Sustainability consultant and former Green Party member who switched to Labour in 2024 on a platform of carbon net-zero by 2035.', supportVotes: 5100, opposeVotes: 1800, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Darren Walsh', constituency: 'Doncaster Central', region: 'Yorkshire', party: 'Labour', yearsInOffice: 10, email: 'darren.walsh.mp@parliament.uk', phone: '+44 1302 768 924', committees: ['Transport Committee'], bio: 'One of Labour\'s longest-serving Yorkshire MPs, Darren campaigns for rail investment and high-speed connectivity to the North.', supportVotes: 3700, opposeVotes: 960, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Anita Bose', constituency: 'Ilford North', region: 'London', party: 'Labour', yearsInOffice: 2, email: 'anita.bose.mp@parliament.uk', phone: '+44 20 8518 7654', committees: ['Science Innovation & Technology Committee'], bio: 'Data scientist and AI ethics researcher elected in 2022, Anita leads Parliamentary work on responsible AI regulation.', supportVotes: 5300, opposeVotes: 580, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Simon Grant', constituency: 'Wolverhampton South East', region: 'West Midlands', party: 'Labour', yearsInOffice: 6, email: 'simon.grant.mp@parliament.uk', phone: '+44 1902 451 177', committees: ['Business & Trade Committee'], bio: 'Former car-plant manager who has fought for automotive industry investment and electric vehicle manufacturing in the Black Country.', supportVotes: 4200, opposeVotes: 910, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Chloe Davies', constituency: 'Swansea West', region: 'Wales', party: 'Labour', yearsInOffice: 3, email: 'chloe.davies.mp@parliament.uk', phone: '+44 1792 654 321', committees: ['Welsh Affairs Committee', 'Housing Committee'], bio: 'Housing advocate and former RNLI volunteer who campaigns for coastal community investment and affordable homes across West Wales.', supportVotes: 3600, opposeVotes: 540, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Abdul Aziz', constituency: 'Bethnal Green & Stepney', region: 'London', party: 'Labour', yearsInOffice: 5, email: 'abdul.aziz.mp@parliament.uk', phone: '+44 20 7377 6850', committees: ['Foreign Affairs Committee'], bio: 'International development economist who focuses on aid policy, East Africa relations, and London\'s Bangladeshi community.', supportVotes: 6100, opposeVotes: 2200, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Karen Fletcher', constituency: 'Hull West & Hessle', region: 'Yorkshire', party: 'Labour', yearsInOffice: 8, email: 'karen.fletcher.mp@parliament.uk', phone: '+44 1482 323 434', committees: ['Energy Security Committee'], bio: 'Former offshore wind engineer who has championed Humber\'s green energy corridor and off-shore job creation for eight years.', supportVotes: 4900, opposeVotes: 760, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Joseph Nwachukwu', constituency: 'Peckham', region: 'London', party: 'Labour', yearsInOffice: 2, email: 'joseph.nwachukwu.mp@parliament.uk', phone: '+44 20 7639 9845', committees: ['Housing Communities & Local Government Committee'], bio: 'Former Southwark councillor and housing charity trustee focused on tackling homelessness and the private rented sector in South London.', supportVotes: 5700, opposeVotes: 630, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Ruth Mackenzie', constituency: 'Edinburgh South West', region: 'Scotland', party: 'Labour', yearsInOffice: 1, email: 'ruth.mackenzie.mp@parliament.uk', phone: '+44 131 622 4540', committees: ['Scottish Affairs Committee'], bio: 'Former NHS manager elected in 2024 on a platform of recovering Scottish Labour support with a focus on public services.', supportVotes: 3300, opposeVotes: 1500, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Patrick Howard', constituency: 'Lewisham Deptford', region: 'London', party: 'Labour', yearsInOffice: 7, email: 'patrick.howard.mp@parliament.uk', phone: '+44 20 8694 7612', committees: ['Education Committee'], bio: 'Former headteacher and Ofsted inspector turned MP, Patrick campaigns for early-years funding and teacher pay parity.', supportVotes: 5100, opposeVotes: 720, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Nadia Patel', constituency: 'Walthamstow', region: 'London', party: 'Labour', yearsInOffice: 4, email: 'nadia.patel.mp@parliament.uk', phone: '+44 20 8520 5730', committees: ['Women & Equalities Committee'], bio: 'Equalities barrister and former London Assembly member who leads Parliamentary work on gender pay gap and maternity rights.', supportVotes: 6400, opposeVotes: 850, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Ryan O\'Brien', constituency: 'Salford & Eccles', region: 'North West', party: 'Labour', yearsInOffice: 6, email: 'ryan.obrien.mp@parliament.uk', phone: '+44 161 728 8756', committees: ['Treasury Committee'], bio: 'Former investment banker who left the City to enter public service, Ryan applies financial expertise to scrutinise economic policy.', supportVotes: 4500, opposeVotes: 1000, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    // Conservative (12)
+    { name: 'Edward Forsythe', constituency: 'Witney', region: 'South East', party: 'Conservative', yearsInOffice: 11, email: 'edward.forsythe.mp@parliament.uk', phone: '+44 1993 702 459', committees: ['Public Accounts Committee', 'Foreign Affairs Committee'], bio: 'Former diplomat and barrister, Edward has represented Witney for eleven years, focusing on rural affairs and international trade.', supportVotes: 3800, opposeVotes: 2100, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Victoria Ashton', constituency: 'Guildford', region: 'South East', party: 'Conservative', yearsInOffice: 5, email: 'victoria.ashton.mp@parliament.uk', phone: '+44 1483 451 900', committees: ['Treasury Committee'], bio: 'Chartered accountant and former Surrey county councillor with a focus on fiscal prudence and commuter rail improvements.', supportVotes: 3100, opposeVotes: 1800, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'George Pemberton', constituency: 'Henley', region: 'South East', party: 'Conservative', yearsInOffice: 8, email: 'george.pemberton.mp@parliament.uk', phone: '+44 1491 571 881', committees: ['Environment, Food & Rural Affairs Committee'], bio: 'Farmer and rural landowner who advocates for agricultural policy, green belt protection and Thames Valley water management.', supportVotes: 2900, opposeVotes: 1900, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Harriet Knox', constituency: 'Cheltenham', region: 'South West', party: 'Conservative', yearsInOffice: 3, email: 'harriet.knox.mp@parliament.uk', phone: '+44 1242 519 444', committees: ['Science Innovation & Technology Committee'], bio: 'GCHQ cyber analyst turned MP, Harriet focuses on national security, data privacy, and technology regulation.', supportVotes: 3400, opposeVotes: 1600, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'William Stanhope', constituency: 'Chichester', region: 'South East', party: 'Conservative', yearsInOffice: 14, email: 'william.stanhope.mp@parliament.uk', phone: '+44 1243 786 012', committees: ['Defence Committee'], bio: 'Former Army colonel and Conservative grandee who chairs the all-party veterans group and advocates for defence spending.', supportVotes: 2700, opposeVotes: 2300, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Claire Beaumont', constituency: 'Winchester', region: 'South East', party: 'Conservative', yearsInOffice: 2, email: 'claire.beaumont.mp@parliament.uk', phone: '+44 1962 853 012', committees: ['Health & Social Care Committee'], bio: 'GP and NHS trust governor who narrowly held Winchester in 2024, focusing on GP access and mental health waiting lists.', supportVotes: 3200, opposeVotes: 2000, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Alexander Reid', constituency: 'Wokingham', region: 'South East', party: 'Conservative', yearsInOffice: 6, email: 'alexander.reid.mp@parliament.uk', phone: '+44 118 979 1700', committees: ['Digital, Culture, Media & Sport Committee'], bio: 'Tech entrepreneur and libertarian Conservative who champions lower taxes for startups and opposition to state surveillance.', supportVotes: 2800, opposeVotes: 2100, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Philippa Thornton', constituency: 'Rutland & Stamford', region: 'East Midlands', party: 'Conservative', yearsInOffice: 9, email: 'philippa.thornton.mp@parliament.uk', phone: '+44 1572 721 992', committees: ['Environment, Food & Rural Affairs Committee'], bio: 'Former Country Land and Business Association director representing one of England\'s most rural constituencies.', supportVotes: 2600, opposeVotes: 1900, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Robert Langley', constituency: 'Haltemprice & Howden', region: 'Yorkshire', party: 'Conservative', yearsInOffice: 7, email: 'robert.langley.mp@parliament.uk', phone: '+44 1430 440 245', committees: ['Home Affairs Committee'], bio: 'Former Yorkshire Police superintendent who focuses on rural crime prevention, border security, and justice reform.', supportVotes: 3000, opposeVotes: 2200, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Sarah Clifton', constituency: 'Maidenhead', region: 'South East', party: 'Conservative', yearsInOffice: 4, email: 'sarah.clifton.mp@parliament.uk', phone: '+44 1628 796 870', committees: ['Treasury Sub-Committee'], bio: 'Investment banker and former special adviser to the Treasury, Sarah focuses on economic competitiveness and financial services.', supportVotes: 2900, opposeVotes: 2000, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Nicholas Hart', constituency: 'Esher & Walton', region: 'South East', party: 'Conservative', yearsInOffice: 12, email: 'nicholas.hart.mp@parliament.uk', phone: '+44 1932 220 660', committees: ['Justice Committee'], bio: 'Queen\'s Counsel and former Attorney General\'s office solicitor who leads Conservative legal affairs.', supportVotes: 2400, opposeVotes: 2600, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Diana Marsden', constituency: 'South West Surrey', region: 'South East', party: 'Conservative', yearsInOffice: 5, email: 'diana.marsden.mp@parliament.uk', phone: '+44 1483 202 302', committees: ['Women & Equalities Committee'], bio: 'Former headteacher and school inspector representing the Surrey stockbroker belt with a focus on selective education and rural broadband.', supportVotes: 2700, opposeVotes: 1800, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    // Liberal Democrats (8)
+    { name: 'Tom Cavendish', constituency: 'Twickenham', region: 'London', party: 'Liberal Democrats', yearsInOffice: 3, email: 'tom.cavendish.mp@parliament.uk', phone: '+44 20 8892 0215', committees: ['Environment Committee', 'Treasury Sub-Committee'], bio: 'Former barrister and Richmond council leader who won Twickenham in 2021 on a pro-EU, pro-NHS platform.', supportVotes: 4800, opposeVotes: 1100, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Jessica Wren', constituency: 'Bath', region: 'South West', party: 'Liberal Democrats', yearsInOffice: 7, email: 'jessica.wren.mp@parliament.uk', phone: '+44 1225 396 944', committees: ['Health & Social Care Committee'], bio: 'Pharmacist and patient rights campaigner who has served Bath since 2017, fighting for NHS social care integration.', supportVotes: 5100, opposeVotes: 900, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Mark Hargreaves', constituency: 'Hazel Grove', region: 'North West', party: 'Liberal Democrats', yearsInOffice: 2, email: 'mark.hargreaves.mp@parliament.uk', phone: '+44 161 483 4300', committees: ['Science Innovation & Technology Committee'], bio: 'University lecturer and renewable energy researcher who won Hazel Grove in 2024 targeting disillusioned Tory voters.', supportVotes: 4200, opposeVotes: 980, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Imogen Clarke', constituency: 'Thornbury & Yate', region: 'South West', party: 'Liberal Democrats', yearsInOffice: 5, email: 'imogen.clarke.mp@parliament.uk', phone: '+44 1454 615 800', committees: ['Housing Communities & Local Government Committee'], bio: 'Former South Gloucestershire councillor who campaigns for green belt planning reform and small business rates relief.', supportVotes: 4500, opposeVotes: 800, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Peter Aldridge', constituency: 'Eastbourne', region: 'South East', party: 'Liberal Democrats', yearsInOffice: 3, email: 'peter.aldridge.mp@parliament.uk', phone: '+44 1323 744 344', committees: ['Transport Committee'], bio: 'Former civil aviation regulator who campaigns for rail connectivity, coastal tourism and veterans\' housing.', supportVotes: 4000, opposeVotes: 1200, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Helen Bracewell', constituency: 'Cheadle', region: 'North West', party: 'Liberal Democrats', yearsInOffice: 6, email: 'helen.bracewell.mp@parliament.uk', phone: '+44 161 428 7200', committees: ['Education Committee'], bio: 'Former speech therapist and school governor who leads Lib Dem policy on special educational needs and SEND reform.', supportVotes: 4700, opposeVotes: 700, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'David Okafor', constituency: 'Kingston & Surbiton', region: 'London', party: 'Liberal Democrats', yearsInOffice: 4, email: 'david.okafor.mp@parliament.uk', phone: '+44 20 8547 1902', committees: ['Foreign Affairs Committee'], bio: 'Former UN development economist who switched from academic life to politics in 2020, focusing on international development.', supportVotes: 5200, opposeVotes: 900, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Frances Goodwin', constituency: 'Westmorland & Lonsdale', region: 'North West', party: 'Liberal Democrats', yearsInOffice: 2, email: 'frances.goodwin.mp@parliament.uk', phone: '+44 15394 22 334', committees: ['Environment, Food & Rural Affairs Committee'], bio: 'Fell farmer and rural veterinarian who took the seat from Conservatives in 2024, advocating for hill farming subsidies and foot and mouth preparedness.', supportVotes: 4300, opposeVotes: 650, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    // SNP (5)
+    { name: 'Angus MacLeod', constituency: 'Perth & North Perthshire', region: 'Scotland', party: 'SNP', yearsInOffice: 9, email: 'angus.macleod.mp@parliament.uk', phone: '+44 1738 622 511', committees: ['Scottish Affairs Committee', 'Defence Committee'], bio: 'Former Scots Guards officer and SNP veteran who campaigns for Scottish defence contracts and rural Highland connectivity.', supportVotes: 5600, opposeVotes: 1900, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Catriona Stewart', constituency: 'Na h-Eileanan an Iar', region: 'Scotland', party: 'SNP', yearsInOffice: 5, email: 'catriona.stewart.mp@parliament.uk', phone: '+44 1851 702 050', committees: ['Scottish Affairs Committee'], bio: 'Former crofter and Gaelic language advocate who fights for island community rights, ferry services, and cultural heritage funding.', supportVotes: 4900, opposeVotes: 1200, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Niall Drummond', constituency: 'Glasgow East', region: 'Scotland', party: 'SNP', yearsInOffice: 7, email: 'niall.drummond.mp@parliament.uk', phone: '+44 141 564 3344', committees: ['Work & Pensions Committee'], bio: 'Former welfare rights adviser who campaigns against UK benefit cuts and for Scottish independence to secure a welfare state.', supportVotes: 5200, opposeVotes: 2400, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Fiona Sutherland', constituency: 'Argyll & Bute', region: 'Scotland', party: 'SNP', yearsInOffice: 3, email: 'fiona.sutherland.mp@parliament.uk', phone: '+44 1546 605 700', committees: ['Environment Committee'], bio: 'Marine biologist and SNP councillor who entered Parliament in 2021 on a platform of ocean conservation and aquaculture reform.', supportVotes: 4100, opposeVotes: 950, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Douglas Campbell', constituency: 'Dundee West', region: 'Scotland', party: 'SNP', yearsInOffice: 11, email: 'douglas.campbell.mp@parliament.uk', phone: '+44 1382 229 331', committees: ['Transport Committee', 'Scottish Affairs Committee'], bio: 'Longstanding SNP MP and former Dundee City Council leader who specialises in port infrastructure and renewable energy clusters.', supportVotes: 4800, opposeVotes: 1700, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    // Others (5)
+    { name: 'Siân Mathews', constituency: 'Ceredigion Preseli', region: 'Wales', party: 'Plaid Cymru', yearsInOffice: 4, email: 'sian.mathews.mp@parliament.uk', phone: '+44 1970 627 677', committees: ['Welsh Affairs Committee'], bio: 'Welsh language teacher and cultural activist who campaigns for Plaid Cymru priorities: Welsh independence, language rights, and rural economic resilience.', supportVotes: 3700, opposeVotes: 1100, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Carla Foster', constituency: 'Brighton Kemptown', region: 'South East', party: 'Green', yearsInOffice: 2, email: 'carla.foster.mp@parliament.uk', phone: '+44 1273 677 531', committees: ['Environment Committee'], bio: 'Climate scientist and Extinction Rebellion legal observer who won Brighton Kemptown in 2024 on a radical net-zero platform.', supportVotes: 6200, opposeVotes: 2800, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Samantha Whitley', constituency: 'Clacton', region: 'East of England', party: 'Reform UK', yearsInOffice: 1, email: 'samantha.whitley.mp@parliament.uk', phone: '+44 1255 436 100', committees: ['Home Affairs Committee'], bio: 'Former nurse and anti-EU campaigner who won Clacton in 2024 on a platform of immigration control and NHS reform.', supportVotes: 4800, opposeVotes: 4200, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Ian Paisley Jr', constituency: 'North Antrim', region: 'Northern Ireland', party: 'DUP', yearsInOffice: 19, email: 'ian.paisley.mp@parliament.uk', phone: '+44 28 2764 2980', committees: ['Northern Ireland Affairs Committee'], bio: 'One of Parliament\'s longest-serving MPs, Ian campaigns for Northern Ireland\'s place within the UK and unionist constitutional principles.', supportVotes: 3100, opposeVotes: 2900, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+    { name: 'Margaret Quinn', constituency: 'Fermanagh & South Tyrone', region: 'Northern Ireland', party: 'Sinn Féin', yearsInOffice: 3, email: 'margaret.quinn.mp@parliament.uk', phone: '+44 28 6632 2770', committees: ['Northern Ireland Affairs Committee'], bio: 'Former Irish language lecturer and Sinn Féin councillor who observes abstentionist policy but works constituency casework diligently.', supportVotes: 3500, opposeVotes: 1800, userVote: null, isCabinet: false, isPartyLeader: false, portfolio: null },
+  ];
+
+  const enrichUkMp = (raw) => {
+    let h = 5381;
+    for (let i = 0; i < raw.name.length; i++) h = (Math.imul(h, 33) ^ raw.name.charCodeAt(i)) | 0;
+    h = Math.abs(h);
+    const rng = (min, max, salt) => {
+      const v = Math.abs((Math.imul(h + salt, 1664525) + 1013904223) | 0);
+      return min + (v % (max - min + 1));
+    };
+    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
+    const m = { ...raw };
+
+    m.parliamentPhone = `+44 20 7219 ${rng(1000, 9999, 1)}`;
+    m.constituencyPhone = m.phone;
+    const streets = ['High Street', 'Market Place', 'Church Road', 'Station Road', 'Victoria Street', 'King Street', 'Queen Street', 'Parliament Row'];
+    m.officeAddress = {
+      parliamentHouse: `House of Commons, Westminster, London SW1A 0AA`,
+      constituencyOffice: `Suite ${rng(1, 12, 6)}, ${rng(5, 199, 5)} ${pick(streets, 4)}, ${m.constituency}`,
+    };
+
+    const total = 250;
+    const pct = rng(74, 99, 7);
+    m.attendance = {
+      percentage: pct,
+      sessionsAttended: Math.round(total * pct / 100),
+      totalSessions: total,
+      ranking: rng(1, 650, 8),
+    };
+
+    const voteChoices = ['Aye', 'Aye', 'Aye', 'No', 'No', 'Abstain'];
+    const ukBillPool = [
+      { bill: 'HC2024-001', title: 'Great British Energy Bill 2024', date: '2024-07-22', description: 'Establishes Great British Energy as a publicly-owned clean power company to invest in renewable infrastructure.' },
+      { bill: 'HC2024-002', title: 'Employment Rights Bill 2024', date: '2024-10-10', description: 'Day-one unfair dismissal rights, banning zero-hours contracts and strengthening trade union access.' },
+      { bill: 'HC2024-003', title: 'Planning & Infrastructure Bill 2025', date: '2025-03-04', description: 'Reforms planning rules to accelerate housebuilding towards 1.5 million new homes by 2029.' },
+      { bill: 'HC2024-004', title: 'Budget Responsibility Bill 2024', date: '2024-09-18', description: 'Requires independent OBR scoring of any major tax and spending policies before Parliamentary vote.' },
+      { bill: 'HC2024-005', title: 'Crime and Policing Bill 2025', date: '2025-01-14', description: 'Introduces neighbourhood policing guarantees, knife-crime prevention orders, and new rural crime measures.' },
+      { bill: 'HC2024-006', title: 'NHS Funding & Accountability Bill 2025', date: '2025-02-25', description: 'Ring-fences NHS capital budget and introduces new performance audit powers for NHS England.' },
+      { bill: 'HC2025-001', title: 'Renters Rights Bill 2025', date: '2025-04-01', description: 'Abolishes Section 21 no-fault evictions, extends Decent Homes Standard to private rentals.' },
+      { bill: 'HC2025-002', title: 'Digital Markets, Competition & Consumers Act', date: '2025-01-07', description: 'Strengthens CMA powers to regulate big tech platforms and protect consumer rights online.' },
+    ];
+    const usedV = new Set();
+    const history = [];
+    for (let att = 0; history.length < 4 && att < 20; att++) {
+      const idx = rng(0, ukBillPool.length - 1, 9 + att);
+      if (!usedV.has(idx)) { usedV.add(idx); history.push({ ...ukBillPool[idx], vote: pick(voteChoices, 16 + att) }); }
+    }
+    m.votingHistory = history;
+
+    const staff  = rng(160000, 260000, 20);
+    const rent   = rng(18000,  60000, 21);
+    const travel = rng(8000,   40000, 22);
+    const comms  = rng(3000,   18000, 23);
+    const supps  = rng(1000,    6000, 24);
+    m.expenses = {
+      total: staff + rent + travel + comms + supps,
+      year: 2024,
+      breakdown: {
+        'Staff Salaries':            staff,
+        'Office Rent & Utilities':   rent,
+        'Travel & Transportation':   travel,
+        'Communications':            comms,
+        'Office Supplies':           supps,
+      },
+    };
+
+    const baseSalary = 86584;
+    const electedYear = new Date().getFullYear() - (m.yearsInOffice || 1);
+    const worthBase = rng(120000, 1800000, 30);
+    const growth = 1 + rng(0, 25, 31) / 100;
+    m.financialDisclosure = {
+      electedYear,
+      worthWhenElected: worthBase,
+      currentNetWorth: Math.round(worthBase * growth),
+      percentageIncrease: Math.round((growth - 1) * 1000) / 10,
+      annualSalary: baseSalary,
+      assets: [
+        { description: 'Primary Residence', value: `£${(rng(280000, 950000, 33) / 1000).toFixed(0)}k` },
+        { description: 'Savings & ISAs', value: `£${rng(8000, 120000, 34).toLocaleString()}` },
+        { description: 'Pension', value: `£${(rng(30000, 250000, 35) / 1000).toFixed(0)}k` },
+      ],
+    };
+
+    const ukOrgs = ['TUC', 'CBI', 'NHS Confederation', 'RSPB', 'National Farmers Union', 'British Chambers of Commerce', 'Citizens Advice', 'Cancer Research UK', 'Shelter', 'Age UK', 'Unite', 'UNISON', 'Make UK'];
+    const numMeetings = rng(4, 16, 40);
+    m.lobbying = { meetings: [] };
+    const usedOrgs = new Set();
+    for (let i = 0; i < numMeetings && i < ukOrgs.length; i++) {
+      const org = pick(ukOrgs, 40 + i);
+      if (!usedOrgs.has(org)) {
+        usedOrgs.add(org);
+        const month = rng(1, 12, 41 + i);
+        m.lobbying.meetings.push({
+          organization: org,
+          date: `2024-${String(month).padStart(2, '0')}-${String(rng(1, 28, 42 + i)).padStart(2, '0')}`,
+          topic: pick(['Housing Policy', 'NHS Funding', 'Climate Action', 'Employment Rights', 'Trade Policy', 'Education Reform', 'Social Care', 'Transport Investment'], 43 + i),
+          count: rng(1, 5, 44 + i),
+        });
+      }
+    }
+
+    const corpList = ['Lloyds Banking Group', 'BT Group', 'National Grid', 'Vodafone', 'HSBC', 'BP', 'Tesco', 'Unilever', 'BAE Systems', 'AstraZeneca'];
+    m.corporateConnections = Array.from({ length: rng(1, 4, 50) }, (_, ci) => ({
+      company: pick(corpList, 51 + ci),
+      relationship: pick(['Advisory Board', 'Shareholder', 'Former Director', 'Spouse Director'], 52 + ci),
+      declared: pick([true, true, true, false], 53 + ci),
+    }));
+
+    return m;
+  };
+
+  const renderUKCommons = () => {
+    const ukPartyColors = {
+      Labour: '#E4003B',
+      Conservative: '#0087DC',
+      'Liberal Democrats': '#FAA61A',
+      SNP: '#FDF38E',
+      'Plaid Cymru': '#3F8428',
+      Green: '#00B140',
+      'Reform UK': '#00BEF5',
+      DUP: '#D46A4C',
+      'Sinn Féin': '#326760',
+      Other: '#9CA3AF',
+    };
+    const getUkPartyColor = (party) => ukPartyColors[party] || '#9CA3AF';
+    const parties = ['All', 'Labour', 'Conservative', 'Liberal Democrats', 'SNP', 'Other'];
+    const otherParties = ['Plaid Cymru', 'Green', 'Reform UK', 'DUP', 'Sinn Féin'];
+    const filtered = ukMps.filter(mp => {
+      const matchParty = ukPartyFilter === 'All'
+        ? true
+        : ukPartyFilter === 'Other'
+        ? otherParties.includes(mp.party)
+        : mp.party === ukPartyFilter;
+      const matchSearch = !ukMpSearch || mp.name.toLowerCase().includes(ukMpSearch.toLowerCase()) || mp.constituency.toLowerCase().includes(ukMpSearch.toLowerCase());
+      return matchParty && matchSearch;
+    });
+    const counts = {
+      All: ukMps.length,
+      Labour: ukMps.filter(m => m.party === 'Labour').length,
+      Conservative: ukMps.filter(m => m.party === 'Conservative').length,
+      'Liberal Democrats': ukMps.filter(m => m.party === 'Liberal Democrats').length,
+      SNP: ukMps.filter(m => m.party === 'SNP').length,
+      Other: ukMps.filter(m => otherParties.includes(m.party)).length,
+    };
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 animate-fade-in">
+        {/* Sticky header */}
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm px-4 py-3 sm:px-6">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center gap-3">
+            <button
+              onClick={() => setView('uk-national')}
+              className="self-start button-primary text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant flex-shrink-0"
+            >
+              ← Westminster
+            </button>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <span className="text-2xl">🇬🇧</span>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-800 leading-tight truncate">House of Commons</h1>
+                <p className="text-xs text-gray-500">650 elected MPs · Lower Chamber of Parliament</p>
+              </div>
+            </div>
+            <div className="relative flex-shrink-0 w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by name or constituency..."
+                value={ukMpSearch}
+                onChange={e => setUkMpSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+          {/* Union Jack accent */}
+          <div className="h-1 w-32 rounded-full mb-5" style={{ background: 'linear-gradient(to right, #C8102E, #FFFFFF, #012169)' }} />
+
+          {/* Party filter */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {parties.map(p => {
+              const isActive = ukPartyFilter === p;
+              const color = p === 'All' ? '#012169' : p === 'Other' ? '#6B7280' : getUkPartyColor(p);
+              return (
+                <button
+                  key={p}
+                  onClick={() => setUkPartyFilter(p)}
+                  className="px-4 py-2 rounded-xl text-sm font-semibold transition-all border-2"
+                  style={isActive
+                    ? { backgroundColor: color, color: p === 'Liberal Democrats' || p === 'SNP' ? '#1a1a1a' : 'white', borderColor: color }
+                    : { backgroundColor: 'white', color: '#374151', borderColor: '#E5E7EB' }}
+                >
+                  {p} <span className="opacity-70 font-normal">({counts[p]})</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Results count */}
+          <p className="text-sm text-gray-500 mb-4">Showing <span className="font-semibold text-gray-700">{filtered.length}</span> of {ukMps.length} sample MPs</p>
+
+          {/* MP grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map(mp => {
+              const votes = ukMpVotes[mp.name] || { support: mp.supportVotes, oppose: mp.opposeVotes, userVote: mp.userVote };
+              const partyColor = getUkPartyColor(mp.party);
+              const initials = mp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const textColor = ['Liberal Democrats', 'SNP', 'Green'].includes(mp.party) ? '#1a1a1a' : 'white';
+              return (
+                <div key={mp.name} className="bg-white rounded-2xl shadow-elegant-lg border border-gray-100 overflow-hidden hover-lift">
+                  <div className="p-5">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold flex-shrink-0" style={{ background: `linear-gradient(135deg, ${partyColor}, ${partyColor}cc)`, color: textColor }}>
+                        {initials}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-gray-900 text-base leading-tight">{mp.name}</h3>
+                        <p className="text-sm text-gray-600 mt-0.5 truncate">{mp.constituency}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{mp.region}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-semibold" style={{ backgroundColor: `${partyColor}18`, color: partyColor }}>
+                        {mp.party}
+                      </span>
+                      <span className="flex items-center gap-1 text-xs text-gray-500">
+                        <Clock className="w-3.5 h-3.5" />
+                        {mp.yearsInOffice}y
+                      </span>
+                    </div>
+
+                    <div className="flex gap-2 mb-4">
+                      <button
+                        onClick={() => voteUkMp(mp.name, 'support')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-gray-50 text-green-700 hover:bg-green-50'}`}
+                      >
+                        <ThumbsUp className="w-3.5 h-3.5" /> {votes.support.toLocaleString()}
+                      </button>
+                      <button
+                        onClick={() => voteUkMp(mp.name, 'oppose')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-gray-50 text-red-700 hover:bg-red-50'}`}
+                      >
+                        <ThumbsDown className="w-3.5 h-3.5" /> {votes.oppose.toLocaleString()}
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={() => { setSelectedUkMember(enrichUkMp(mp)); setView('uk-member-detail'); }}
+                      className="w-full text-center text-sm font-semibold py-2.5 rounded-xl transition-colors"
+                      style={{ backgroundColor: '#012169', color: 'white' }}
+                    >
+                      View Full Profile →
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-16 text-gray-400">
+              <Users className="w-12 h-12 mx-auto mb-3 opacity-40" />
+              <p className="text-lg font-medium">No MPs match your search</p>
+              <button onClick={() => { setUkPartyFilter('All'); setUkMpSearch(''); }} className="mt-3 text-sm text-blue-600 hover:underline">Clear filters</button>
+            </div>
+          )}
+
+          <p className="text-xs text-gray-400 text-center mt-8">Showing sample MPs — full 650-member dataset in development</p>
+        </div>
+      </div>
+    );
+  };
+
+  const renderUKMemberDetail = () => {
+    const mp = selectedUkMember;
+    if (!mp) return null;
+    const ukPartyColors = { Labour: '#E4003B', Conservative: '#0087DC', 'Liberal Democrats': '#FAA61A', SNP: '#FDF38E', 'Plaid Cymru': '#3F8428', Green: '#00B140', 'Reform UK': '#00BEF5', DUP: '#D46A4C', 'Sinn Féin': '#326760' };
+    const partyColor = ukPartyColors[mp.party] || '#012169';
+    const lightText = ['Liberal Democrats', 'SNP', 'Green'].includes(mp.party);
+    const textColor = lightText ? '#1a1a1a' : 'white';
+    const initials = mp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    const votes = ukMpVotes[mp.name] || { support: mp.supportVotes, oppose: mp.opposeVotes, userVote: mp.userVote };
+    const totalVotes = (votes.support || 0) + (votes.oppose || 0);
+    const supportPct = totalVotes > 0 ? Math.round((votes.support / totalVotes) * 100) : 50;
+    const formatGBP = (n) => n >= 1000000 ? `£${(n / 1000000).toFixed(2)}M` : n >= 1000 ? `£${(n / 1000).toFixed(0)}k` : `£${n}`;
+
+    const SectionHeader = ({ id, icon, title }) => (
+      <button
+        onClick={() => toggleUkSection(id)}
+        className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-xl">{icon}</span>
+          <h3 className="text-base font-bold text-gray-800">{title}</h3>
+        </div>
+        {expandedUkSections[id] ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+      </button>
+    );
+
+    const getVoteColor = (vote) => ({ Aye: '#16a34a', No: '#dc2626', Abstain: '#9ca3af' }[vote] || '#9ca3af');
+    const getVoteIcon = (vote) => ({ Aye: '✓', No: '✗', Abstain: '—' }[vote] || '—');
+
+    return (
+      <div className="min-h-screen bg-gray-50 animate-fade-in">
+        {/* Header banner */}
+        <div className="pt-6 pb-8 px-4 sm:px-6" style={{ background: `linear-gradient(135deg, ${partyColor} 0%, ${partyColor}cc 100%)` }}>
+          <div className="max-w-4xl mx-auto">
+            <button
+              onClick={() => setView('uk-commons')}
+              className="mb-5 flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+              style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: textColor }}
+            >
+              ← House of Commons
+            </button>
+            <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center">
+              <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-black flex-shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.25)', color: textColor }}>
+                {initials}
+              </div>
+              <div className="flex-1">
+                <h1 className="text-2xl sm:text-3xl font-black mb-1" style={{ color: textColor }}>{mp.name}</h1>
+                <p className="text-base font-semibold mb-1" style={{ color: `${textColor}cc` }}>{mp.party} MP · {mp.constituency}</p>
+                <p className="text-sm" style={{ color: `${textColor}99` }}>{mp.region} · {mp.yearsInOffice} years in office</p>
+                {mp.portfolio && <span className="inline-block mt-2 px-3 py-1 rounded-xl text-xs font-semibold" style={{ backgroundColor: 'rgba(255,255,255,0.3)', color: textColor }}>{mp.portfolio}</span>}
+              </div>
+            </div>
+
+            {/* Vote bar */}
+            <div className="mt-5 p-4 rounded-2xl" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
+              <div className="flex justify-between text-xs mb-1.5" style={{ color: `${textColor}cc` }}>
+                <span>Support {votes.support.toLocaleString()}</span>
+                <span>{supportPct}% approve</span>
+                <span>Oppose {votes.oppose.toLocaleString()}</span>
+              </div>
+              <div className="h-2 rounded-full bg-white bg-opacity-30 overflow-hidden mb-3">
+                <div className="h-full rounded-full bg-white" style={{ width: `${supportPct}%` }} />
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => voteUkMp(mp.name, 'support')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`} style={votes.userVote !== 'support' ? { color: textColor } : {}}>
+                  <ThumbsUp className="w-3.5 h-3.5" /> Support
+                </button>
+                <button onClick={() => voteUkMp(mp.name, 'oppose')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`} style={votes.userVote !== 'oppose' ? { color: textColor } : {}}>
+                  <ThumbsDown className="w-3.5 h-3.5" /> Oppose
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+          {/* Contact */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+            <div className="p-5 border-b border-gray-100">
+              <h3 className="font-bold text-gray-800 flex items-center gap-2"><MapPin className="w-5 h-5 text-red-600" /> Contact & Office</h3>
+            </div>
+            <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div><p className="text-gray-500 text-xs mb-0.5">Email</p><p className="font-medium text-gray-800 break-all">{mp.email}</p></div>
+              <div><p className="text-gray-500 text-xs mb-0.5">Parliament Phone</p><p className="font-medium text-gray-800">{mp.parliamentPhone}</p></div>
+              <div><p className="text-gray-500 text-xs mb-0.5">Constituency Phone</p><p className="font-medium text-gray-800">{mp.constituencyPhone}</p></div>
+              <div><p className="text-gray-500 text-xs mb-0.5">Parliament Address</p><p className="font-medium text-gray-800">{mp.officeAddress?.parliamentHouse}</p></div>
+              <div className="sm:col-span-2"><p className="text-gray-500 text-xs mb-0.5">Constituency Office</p><p className="font-medium text-gray-800">{mp.officeAddress?.constituencyOffice}</p></div>
+            </div>
+          </div>
+
+          {/* Biography */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg p-5">
+            <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2"><Users className="w-5 h-5 text-blue-600" /> Biography</h3>
+            <p className="text-sm text-gray-700 leading-relaxed">{mp.bio}</p>
+            {mp.committees?.length > 0 && (
+              <div className="mt-4">
+                <p className="text-xs text-gray-500 mb-2 font-semibold uppercase tracking-wide">Committee Memberships</p>
+                <div className="flex flex-wrap gap-2">
+                  {mp.committees.map(c => <span key={c} className="px-3 py-1.5 rounded-xl text-xs font-medium bg-blue-50 text-blue-800">{c}</span>)}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Voting record */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+            <SectionHeader id="voting" icon="🗳️" title="Voting Record" />
+            {expandedUkSections.voting && (
+              <div className="px-5 pb-5 space-y-3">
+                {(mp.votingHistory || []).map((v, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 text-white" style={{ backgroundColor: getVoteColor(v.vote) }}>{getVoteIcon(v.vote)}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 leading-snug">{v.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{v.date} · {v.bill}</p>
+                      <p className="text-xs text-gray-600 mt-1">{v.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Attendance */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+            <SectionHeader id="attendance" icon="📅" title="Attendance" />
+            {expandedUkSections.attendance && mp.attendance && (
+              <div className="px-5 pb-5">
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {[
+                    { label: 'Attendance Rate', value: `${mp.attendance.percentage}%`, color: mp.attendance.percentage >= 90 ? 'text-green-600' : mp.attendance.percentage >= 75 ? 'text-yellow-600' : 'text-red-600' },
+                    { label: 'Sessions Attended', value: mp.attendance.sessionsAttended, color: 'text-gray-800' },
+                    { label: 'Parliament Ranking', value: `#${mp.attendance.ranking}`, color: 'text-gray-800' },
+                  ].map(s => (
+                    <div key={s.label} className="bg-gray-50 rounded-xl p-3 text-center">
+                      <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
+                      <p className="text-xs text-gray-500 mt-1">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                  <div className="h-full rounded-full bg-green-500" style={{ width: `${mp.attendance.percentage}%` }} />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Office expenses */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+            <SectionHeader id="expenses" icon="💰" title="Office Expenses" />
+            {expandedUkSections.expenses && mp.expenses && (
+              <div className="px-5 pb-5">
+                <div className="flex justify-between items-center mb-3 p-3 bg-gray-50 rounded-xl">
+                  <span className="text-sm font-semibold text-gray-700">Total {mp.expenses.year}</span>
+                  <span className="text-lg font-black text-gray-900">{formatGBP(mp.expenses.total)}</span>
+                </div>
+                <div className="space-y-2">
+                  {Object.entries(mp.expenses.breakdown || {}).map(([label, amount]) => (
+                    <div key={label} className="flex justify-between items-center py-1.5 border-b border-gray-50">
+                      <span className="text-sm text-gray-600">{label}</span>
+                      <span className="text-sm font-semibold text-gray-800">{formatGBP(amount)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Financial disclosure */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+            <SectionHeader id="financial" icon="📊" title="Financial Disclosure" />
+            {expandedUkSections.financial && mp.financialDisclosure && (
+              <div className="px-5 pb-5">
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  {[
+                    { label: 'Annual Salary', value: formatGBP(mp.financialDisclosure.annualSalary) },
+                    { label: 'Net Worth (elected)', value: formatGBP(mp.financialDisclosure.worthWhenElected) },
+                    { label: 'Net Worth (current)', value: formatGBP(mp.financialDisclosure.currentNetWorth) },
+                    { label: 'Increase Since Election', value: `+${mp.financialDisclosure.percentageIncrease}%`, isHighlight: true },
+                  ].map(s => (
+                    <div key={s.label} className={`p-3 rounded-xl ${s.isHighlight ? 'bg-amber-50 border border-amber-100' : 'bg-gray-50'}`}>
+                      <p className={`text-lg font-black ${s.isHighlight ? 'text-amber-700' : 'text-gray-800'}`}>{s.value}</p>
+                      <p className="text-xs text-gray-500">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+                {mp.financialDisclosure.assets?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Declared Assets</p>
+                    {mp.financialDisclosure.assets.map((a, i) => (
+                      <div key={i} className="flex justify-between py-1.5 border-b border-gray-50 text-sm">
+                        <span className="text-gray-600">{a.description}</span>
+                        <span className="font-semibold text-gray-800">{a.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Lobbying */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+            <SectionHeader id="lobbying" icon="🤝" title="Lobbying Activity" />
+            {expandedUkSections.lobbying && mp.lobbying?.meetings && (
+              <div className="px-5 pb-5">
+                <p className="text-xs text-gray-500 mb-3">{mp.lobbying.meetings.length} meetings logged in 2024</p>
+                <div className="space-y-2">
+                  {mp.lobbying.meetings.map((mtg, i) => (
+                    <div key={i} className="p-3 rounded-xl bg-gray-50 flex items-start gap-3">
+                      <Briefcase className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800">{mtg.organization}</p>
+                        <p className="text-xs text-gray-500">{mtg.date} · {mtg.topic} · {mtg.count} meeting{mtg.count > 1 ? 's' : ''}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Corporate connections */}
+          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+            <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" />
+            {expandedUkSections.corporate && mp.corporateConnections && (
+              <div className="px-5 pb-5 space-y-2">
+                {mp.corporateConnections.map((c, i) => (
+                  <div key={i} className={`p-3 rounded-xl flex items-center gap-3 ${c.declared ? 'bg-gray-50' : 'bg-red-50 border border-red-100'}`}>
+                    <Building2 className={`w-4 h-4 flex-shrink-0 ${c.declared ? 'text-gray-400' : 'text-red-500'}`} />
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-gray-800">{c.company}</p>
+                      <p className="text-xs text-gray-500">{c.relationship}</p>
+                    </div>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${c.declared ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                      {c.declared ? 'Declared' : '⚠ Undisclosed'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderUKNational = () => (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-6xl mx-auto">
@@ -10511,7 +11117,7 @@ function App() {
 
           {/* House of Commons */}
           <div
-            onClick={() => setView('uk-coming-soon')}
+            onClick={() => setView('uk-commons')}
             className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
             style={{ animationDelay: '0.1s' }}
           >
@@ -22768,6 +23374,8 @@ function App() {
       {view === 'au-high-court' && renderAuHighCourt()}
       {view === 'uk-national' && renderUKNational()}
       {view === 'uk-pm-detail' && renderStarmerDetail()}
+      {view === 'uk-commons' && renderUKCommons()}
+      {view === 'uk-member-detail' && selectedUkMember && renderUKMemberDetail()}
       {view === 'uk-regions' && renderUKRegions()}
       {view === 'uk-coming-soon' && renderUKComingSoon()}
       {view === 'au-analytics' && renderAuAnalytics()}
