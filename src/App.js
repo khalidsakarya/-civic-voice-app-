@@ -914,6 +914,10 @@ function App() {
   // Canadian Supreme Court data
   const [canadaSupremeCourt, setCanadaSupremeCourt] = useState(null);
   const [selectedCase, setSelectedCase] = useState(null);
+
+  // UK Supreme Court data
+  const [ukSupremeCourt, setUkSupremeCourt] = useState(null);
+  const [ukJusticeVotes, setUkJusticeVotes] = useState({});
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -1982,6 +1986,7 @@ function App() {
     initializeUSAnalytics();
     initializeCanadaSupremeCourt();
     initializeUSSupremeCourt();
+    initializeUKSupremeCourt();
     initializeUSContracts();
     initializeUSBills();
     initializeUSLaws();
@@ -3497,7 +3502,233 @@ function App() {
     
     setUsSupremeCourt(supremeCourtData);
   };
-  
+
+  const initializeUKSupremeCourt = () => {
+    const data = {
+      justices: [
+        {
+          name: 'Lord Reed (Robert Reed)',
+          role: 'President',
+          appointedBy: 'David Cameron', year: 2012,
+          background: 'Scots advocate and judge; specialist in EU law, human rights and Scots private law. Called to the Bar 1979; raised to the bench as a judge of the Court of Session in 1998.',
+          notableCases: ['R (Miller) v Prime Minister [2019] – prorogation unlawful', 'Unison v Lord Chancellor [2017] – employment tribunal fees struck down', 'Pham v Home Secretary [2015] – EU citizenship rights'],
+          supportVotes: 412, opposeVotes: 178
+        },
+        {
+          name: 'Lord Hodge (Patrick Hodge)',
+          role: 'Deputy President',
+          appointedBy: 'David Cameron', year: 2013,
+          background: 'Scots judge and commercial lawyer. Called to the Scottish Bar 1983; appointed Senator of the College of Justice 2005. Expert in company law and contract.',
+          notableCases: ['R v Jogee [2016] – joint enterprise law reformulated', 'Patel v Mirza [2016] – illegality doctrine reformed', 'BritvicPlc v Britvic Brands [2021]'],
+          supportVotes: 356, opposeVotes: 201
+        },
+        {
+          name: 'Lord Lloyd-Jones (David Lloyd-Jones)',
+          role: 'Justice',
+          appointedBy: 'Theresa May', year: 2017,
+          background: 'Welsh barrister; specialist in public international law and human rights. Former judge of the Court of Appeal and Law Commissioner for England and Wales.',
+          notableCases: ['Belhaj v Straw [2017] – state immunity and torture', 'Reyes v Al-Malki [2017] – diplomatic immunity', 'Shamima Begum v Home Secretary [2021]'],
+          supportVotes: 289, opposeVotes: 234
+        },
+        {
+          name: 'Lord Sales (Philip Sales)',
+          role: 'Justice',
+          appointedBy: 'Theresa May', year: 2019,
+          background: 'Former First Treasury Counsel; specialist in public and administrative law. Called to the Bar 1985; appointed QC 2006. Expertise in constitutional and EU law.',
+          notableCases: ['R (Evans) v Attorney General [2015] – Prince Charles letters disclosure', 'R (Nicklinson) v Ministry of Justice [2014] – assisted dying', 'Bank Mellat v HM Treasury [2013]'],
+          supportVotes: 312, opposeVotes: 267
+        },
+        {
+          name: 'Lord Hamblen (Nicholas Hamblen)',
+          role: 'Justice',
+          appointedBy: 'Theresa May', year: 2019,
+          background: 'Specialist in commercial and insurance law. Called to the Bar 1984; appointed QC 1997. Former judge of the Court of Appeal with expertise in shipping and reinsurance.',
+          notableCases: ['FCA v Arch Insurance UK [2021] – pandemic business interruption policies', 'Tillman v Egon Zehnder [2019] – restrictive covenants in employment', 'Cavendish Square v Makdessi [2015]'],
+          supportVotes: 334, opposeVotes: 198
+        },
+        {
+          name: 'Lord Kitchin (Richard Kitchin)',
+          role: 'Justice',
+          appointedBy: 'Theresa May', year: 2019,
+          background: 'Specialist in intellectual property law. Called to the Bar 1977; appointed QC 1994. Former Patents Court judge and Court of Appeal judge. Expert in copyright, trade marks and patents.',
+          notableCases: ['Thaler v Comptroller-General [2023] – AI cannot be named as inventor', 'Sky v SkyKick [2021] – trade mark bad faith', 'Unwired Planet v Huawei [2020] – FRAND licensing'],
+          supportVotes: 289, opposeVotes: 156
+        },
+        {
+          name: 'Lord Leggatt (George Leggatt)',
+          role: 'Justice',
+          appointedBy: 'Boris Johnson', year: 2020,
+          background: 'Commercial barrister and judge. Called to the Bar 1983; appointed QC 2000. Specialist in contract, restitution and public law. Delivered influential judgments on good faith in English contract law.',
+          notableCases: ['Potanin v Potanina [2024] – divorce jurisdiction', 'Al Fayed v Commissioner of Police [2021]', 'Yam Seng v ITC [2013] – good faith in commercial contracts'],
+          supportVotes: 378, opposeVotes: 212
+        },
+        {
+          name: 'Lord Burrows (Andrew Burrows)',
+          role: 'Justice',
+          appointedBy: 'Boris Johnson', year: 2020,
+          background: 'Oxford academic and practising barrister. Law Commission member 2001–2007. Leading authority on unjust enrichment, restitution and contract law. First academic appointed directly to the Supreme Court.',
+          notableCases: ['Prudential Assurance v HMRC [2023] – compound interest and unjust enrichment', 'Stanford International Bank v HSBC [2022]', 'Test Claimants in FII Group Litigation [2020]'],
+          supportVotes: 423, opposeVotes: 189
+        },
+        {
+          name: 'Lord Stephens (Declan Stephens)',
+          role: 'Justice',
+          appointedBy: 'Boris Johnson', year: 2020,
+          background: 'Northern Irish judge; specialist in commercial and public law. Called to the Bar of Northern Ireland 1985; appointed QC 1996. Former Lord Justice of Appeal in Northern Ireland.',
+          notableCases: ['R (Northern Ireland Human Rights Commission) [2018] – abortion rights', 'In the matter of an application by JR80 [2022]', 'Reference by the Attorney General for Northern Ireland [2022]'],
+          supportVotes: 267, opposeVotes: 198
+        },
+        {
+          name: 'Lady Rose (Vivien Rose)',
+          role: 'Justice',
+          appointedBy: 'Boris Johnson', year: 2021,
+          background: 'Competition law specialist. Called to the Bar 1985; appointed QC 2006. Former President of the Competition Appeal Tribunal and judge of the Court of Appeal. Expert in EU and domestic competition law.',
+          notableCases: ['BritNed Development v ABB [2019] – cartel damages', 'Interchange Fee litigation [2022]', 'Trucks Cartel damages appeals [2023]'],
+          supportVotes: 345, opposeVotes: 167
+        },
+        {
+          name: 'Lord Richards (Stephen Richards)',
+          role: 'Justice',
+          appointedBy: 'Boris Johnson', year: 2022,
+          background: 'Commercial chancery lawyer. Called to the Bar 1979; appointed QC 1995. Former judge of the Court of Appeal specialising in company law, insolvency and financial services.',
+          notableCases: ['Philipp v Barclays Bank [2023] – authorised push payment fraud', 'Stanford International Bank v HSBC [2022] – receiver\'s duties', 'BTI 2014 v Sequana [2022] – directors\' duties on insolvency'],
+          supportVotes: 312, opposeVotes: 189
+        },
+        {
+          name: 'Lady Simler (Ingrid Simler)',
+          role: 'Justice',
+          appointedBy: 'Rishi Sunak', year: 2023,
+          background: 'Employment and equality law specialist. Called to the Bar 1987; appointed QC 2006. Former President of the Employment Appeal Tribunal and Court of Appeal judge. Expert in discrimination and workers\' rights.',
+          notableCases: ['Uber BV v Aslam [2021] – Uber drivers are workers', 'Forstater v CGD Europe [2022] – gender-critical beliefs protected', 'P v Commissioner of Police [2017] – whistleblower protections'],
+          supportVotes: 478, opposeVotes: 145
+        },
+      ],
+
+      casesInProcess: [
+        {
+          id: 'uksc-2025-01',
+          name: 'R (Begum) v Special Immigration Appeals Commission',
+          caseNumber: 'UKSC 2025/0021',
+          topic: 'National Security – Citizenship Deprivation',
+          dateArgued: 'February 2025',
+          status: 'In Process',
+          issue: 'Whether fair hearing rights apply when citizenship deprivation orders are made on national security grounds',
+          summary: 'Appeal examining the extent to which closed material proceedings satisfy Article 6 ECHR in citizenship deprivation cases. Could reshape the balance between national security and fair trial rights.'
+        },
+        {
+          id: 'uksc-2025-02',
+          name: 'Barclays Bank v Various Claimants (PCP Finance)',
+          caseNumber: 'UKSC 2025/0034',
+          topic: 'Financial Services – Undisclosed Commission',
+          dateArgued: 'March 2025',
+          status: 'In Process',
+          issue: 'Whether motor finance lenders owe fiduciary duties to customers when paying undisclosed commission to brokers',
+          summary: 'Landmark case that could expose major banks to billions in compensation claims. Examines whether the secret commission paid to car dealers when arranging finance was unlawful.'
+        },
+        {
+          id: 'uksc-2025-03',
+          name: 'NHS England v Bloom',
+          caseNumber: 'UKSC 2025/0047',
+          topic: 'Employment Law – Whistleblowing',
+          dateArgued: 'January 2025',
+          status: 'In Process',
+          issue: 'Scope of protection for NHS whistleblowers who raise patient safety concerns through external channels',
+          summary: 'Examines whether dismissal of a clinical manager who contacted regulators about unsafe practices was automatically unfair, and the extent of protected disclosure rights.'
+        }
+      ],
+
+      recentDecisions: [
+        {
+          id: 'uksc-2024-01',
+          name: 'R (Motherhood Plan) v HM Treasury',
+          caseNumber: 'UKSC 2024/0018',
+          topic: 'Equality Law – Indirect Discrimination',
+          dateDecided: 'November 2024',
+          status: 'Decided',
+          voteSplit: '5-0',
+          decision: 'Appeal dismissed',
+          issue: 'Whether HMRC self-employed income support scheme indirectly discriminated against women who had taken maternity leave',
+          summary: 'Court held the support scheme did not constitute unlawful indirect sex discrimination, finding the difference in treatment was justified by the statutory basis for calculating profit.',
+          impact: 'Clarifies how equality law applies to pandemic-era financial support schemes'
+        },
+        {
+          id: 'uksc-2024-02',
+          name: 'Philipp v Barclays Bank UK plc',
+          caseNumber: 'UKSC 2023/0028',
+          topic: 'Banking Law – Fraud Restitution',
+          dateDecided: 'July 2024',
+          status: 'Decided',
+          voteSplit: '4-1',
+          decision: 'Appeal allowed',
+          issue: 'Whether a bank owes a duty to reimburse customers who are deceived into authorising fraudulent payments',
+          summary: 'Court held that the Quincecare duty — requiring banks to refuse instructions where fraud is suspected — does not apply where the customer themselves is the victim who authorised payment.',
+          impact: 'Major impact on consumer fraud claims; shifts responsibility for APP fraud to statutory regime'
+        },
+        {
+          id: 'uksc-2024-03',
+          name: 'Thaler v Comptroller-General of Patents',
+          caseNumber: 'UKSC 2023/0052',
+          topic: 'Intellectual Property – AI Inventorship',
+          dateDecided: 'May 2024',
+          status: 'Decided',
+          voteSplit: 'Unanimous',
+          decision: 'Appeal dismissed',
+          issue: 'Whether an AI system can be named as the inventor on a UK patent application',
+          summary: 'Court unanimously ruled that under the Patents Act 1977, an inventor must be a natural person. An AI machine cannot be an "inventor" and cannot hold or transfer patent rights.',
+          impact: 'Landmark ruling on AI and intellectual property; leaves reform to Parliament'
+        },
+        {
+          id: 'uksc-2024-04',
+          name: 'R (PACCAR Inc) v Competition Appeal Tribunal',
+          caseNumber: 'UKSC 2022/0177',
+          topic: 'Competition Law – Litigation Funding',
+          dateDecided: 'January 2024',
+          status: 'Decided',
+          voteSplit: '4-1',
+          decision: 'Appeal allowed',
+          issue: 'Whether litigation funding agreements constitute "damages-based agreements" requiring regulatory authorisation',
+          summary: 'Court ruled that litigation funding agreements where funders receive a share of proceeds are DBAs, requiring compliance with DBA Regulations. Invalidated many existing funding agreements.',
+          impact: 'Significant blow to class action litigation funding industry; prompted emergency legislative response'
+        }
+      ],
+
+      upcomingCases: [
+        {
+          id: 'uksc-2025-04',
+          name: 'R (Miller) v Secretary of State for Environment',
+          caseNumber: 'UKSC 2025/0062',
+          topic: 'Environmental Law – Climate Targets',
+          dateScheduled: 'May 2025',
+          status: 'Upcoming',
+          issue: 'Whether the government\'s Net Zero Strategy satisfies its statutory obligations under the Climate Change Act 2008',
+          summary: 'Challenge to adequacy of government climate plans. Court will determine whether ministerial plans to meet 2050 net zero target meet the legal standard of specificity required.'
+        },
+        {
+          id: 'uksc-2025-05',
+          name: 'Independent Workers Union v Deliveroo',
+          caseNumber: 'UKSC 2025/0078',
+          topic: 'Employment Law – Gig Economy',
+          dateScheduled: 'June 2025',
+          status: 'Upcoming',
+          issue: 'Whether Deliveroo riders are entitled to collective bargaining rights under Article 11 ECHR',
+          summary: 'Gig economy test case on whether the right to freedom of association requires collective bargaining access for platform workers classified as self-employed.'
+        },
+        {
+          id: 'uksc-2025-06',
+          name: 'AG Reference: Assisted Dying (Scotland) Bill',
+          caseNumber: 'UKSC 2025/0091',
+          topic: 'Constitutional Law – Devolution',
+          dateScheduled: 'September 2025',
+          status: 'Upcoming',
+          issue: 'Whether the Scottish Parliament has legislative competence to pass an assisted dying law',
+          summary: 'Reference on whether assisted dying legislation falls within devolved competence or engages reserved matters. Will clarify the boundary between health policy and criminal law in the devolution settlement.'
+        }
+      ]
+    };
+
+    setUkSupremeCourt(data);
+  };
+
   const initializeUSContracts = () => {
     const contracts = [
       // Defense Contracts
@@ -4899,6 +5130,14 @@ function App() {
       }
       return dept;
     }));
+  };
+
+  const voteUkJustice = (name, vote) => {
+    setUkJusticeVotes(prev => {
+      const cur = prev[name] || { support: 0, oppose: 0, userVote: null };
+      const newVote = cur.userVote === vote ? null : vote;
+      return { ...prev, [name]: { support: cur.support, oppose: cur.oppose, userVote: newVote } };
+    });
   };
 
   // ── HOME REGION (locked once set, used to gate votes) ────────────────────────
@@ -12466,6 +12705,214 @@ function App() {
     );
   };
 
+  const renderUKSupremeCourt = () => {
+    if (!ukSupremeCourt) return <div className="p-8 text-center text-gray-500">Loading UK Supreme Court data...</div>;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Sticky header */}
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
+            <button
+              onClick={() => setView('uk-national')}
+              className="flex items-center gap-2 text-sm sm:text-base font-medium mb-2 sm:mb-4"
+              style={{ color: '#C8102E' }}
+            >
+              ← Back to Westminster
+            </button>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🇬🇧</span>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-800">UK Supreme Court</h1>
+                <div className="w-20 h-1 mt-1 rounded-full" style={{ background: 'linear-gradient(to right, #C8102E, #012169)' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+
+          {/* Hero banner */}
+          <div className="rounded-xl p-6 sm:p-8 mb-8 border-2" style={{ background: 'linear-gradient(135deg, #01216908 0%, #C8102E08 100%)', borderColor: '#012169' }}>
+            <div className="flex items-start gap-4">
+              <Scale className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 mt-1" style={{ color: '#012169' }} />
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">The Supreme Court of the United Kingdom</h2>
+                <p className="text-gray-600 text-sm sm:text-base">The final court of appeal for civil cases in England, Wales, Scotland and Northern Ireland — and for criminal cases in England, Wales and Northern Ireland. Established by the Constitutional Reform Act 2005, it assumed the functions of the Appellate Committee of the House of Lords on 1 October 2009.</p>
+                <div className="flex flex-wrap gap-4 mt-4 text-sm">
+                  <span className="px-3 py-1 rounded-full font-semibold text-white" style={{ backgroundColor: '#012169' }}>12 Justices</span>
+                  <span className="px-3 py-1 rounded-full font-semibold text-white" style={{ backgroundColor: '#C8102E' }}>President: Lord Reed</span>
+                  <span className="px-3 py-1 rounded-full font-semibold bg-gray-700 text-white">Parliament Square, London</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Justices Section */}
+          <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">12 Supreme Court Justices</h3>
+            <div className="w-12 h-1 rounded-full mb-6" style={{ background: 'linear-gradient(to right, #C8102E, #012169)' }} />
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+              {ukSupremeCourt.justices.map((justice, i) => {
+                const jv = ukJusticeVotes[justice.name] || { support: justice.supportVotes, oppose: justice.opposeVotes, userVote: null };
+                const total = jv.support + jv.oppose;
+                const supportPct = total > 0 ? Math.round((jv.support / total) * 100) : 0;
+                return (
+                  <div
+                    key={i}
+                    className="rounded-xl border-2 p-5 flex flex-col gap-3 transition-all hover:shadow-lg"
+                    style={{ borderColor: justice.role === 'President' ? '#C8102E' : justice.role === 'Deputy President' ? '#012169' : '#e5e7eb', background: justice.role === 'President' ? '#C8102E08' : justice.role === 'Deputy President' ? '#01216908' : '#f9fafb' }}
+                  >
+                    {/* Header */}
+                    <div className="flex items-start gap-2">
+                      {justice.role === 'President' && <Crown className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#C8102E' }} />}
+                      {justice.role === 'Deputy President' && <Star className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#012169' }} />}
+                      <div>
+                        <h4 className="font-bold text-gray-800 text-base leading-tight">{justice.name}</h4>
+                        <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded-full mt-1 text-white" style={{ backgroundColor: justice.role === 'President' ? '#C8102E' : justice.role === 'Deputy President' ? '#012169' : '#6B7280' }}>
+                          {justice.role}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Appointment */}
+                    <div className="text-xs text-gray-500 space-y-0.5">
+                      <p>Appointed by: <span className="font-medium text-gray-700">{justice.appointedBy}</span> ({justice.year})</p>
+                    </div>
+
+                    {/* Background */}
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Legal Background</p>
+                      <p className="text-sm text-gray-700 leading-relaxed">{justice.background}</p>
+                    </div>
+
+                    {/* Notable Cases */}
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Notable Cases</p>
+                      <ul className="space-y-1">
+                        {justice.notableCases.map((c, ci) => (
+                          <li key={ci} className="flex items-start gap-1.5 text-xs text-gray-600">
+                            <span className="mt-0.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5" />
+                            {c}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Approval bar */}
+                    <div className="mt-auto">
+                      <div className="flex justify-between text-xs text-gray-500 mb-1">
+                        <span>Public support</span>
+                        <span className="font-semibold" style={{ color: supportPct >= 60 ? '#16a34a' : supportPct >= 40 ? '#ca8a04' : '#dc2626' }}>{supportPct}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${supportPct}%`, backgroundColor: supportPct >= 60 ? '#16a34a' : supportPct >= 40 ? '#ca8a04' : '#C8102E' }} />
+                      </div>
+                    </div>
+
+                    {/* Support/Oppose buttons */}
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); requireRegion(() => voteUkJustice(justice.name, 'support')); }}
+                        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-colors ${jv.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'}`}
+                      >
+                        👍 Support {jv.support > 0 ? jv.support : ''}
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); requireRegion(() => voteUkJustice(justice.name, 'oppose')); }}
+                        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-colors ${jv.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'}`}
+                      >
+                        👎 Oppose {jv.oppose > 0 ? jv.oppose : ''}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Cases In Process */}
+          <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1 flex items-center gap-2">
+              <Clock className="w-6 h-6" style={{ color: '#012169' }} />
+              Cases In Process ({ukSupremeCourt.casesInProcess.length})
+            </h3>
+            <div className="w-12 h-1 rounded-full mb-5" style={{ background: '#012169' }} />
+            <p className="text-gray-600 mb-5 text-sm">Currently being argued or awaiting judgment</p>
+            <div className="space-y-4">
+              {ukSupremeCourt.casesInProcess.map(c => (
+                <div key={c.id} className="border-l-4 bg-blue-50 p-4 rounded-r-xl hover:shadow-md transition-shadow" style={{ borderColor: '#012169' }}>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
+                    <h4 className="font-bold text-gray-800 text-base">{c.name}</h4>
+                    <span className="text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0 self-start text-white" style={{ backgroundColor: '#012169' }}>
+                      {c.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-2">{c.caseNumber} · {c.topic}</p>
+                  <p className="text-sm text-gray-700 mb-2">{c.issue}</p>
+                  <p className="text-xs text-gray-500">Argued: {c.dateArgued}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Decisions */}
+          <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1 flex items-center gap-2">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+              Recent Decisions (Last 12 Months)
+            </h3>
+            <div className="w-12 h-1 rounded-full mb-5 bg-green-500" />
+            <p className="text-gray-600 mb-5 text-sm">Major rulings and their legal impact</p>
+            <div className="space-y-4">
+              {ukSupremeCourt.recentDecisions.map(c => (
+                <div key={c.id} className="border-l-4 border-green-500 bg-green-50 p-4 rounded-r-xl hover:shadow-md transition-shadow">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
+                    <h4 className="font-bold text-gray-800 text-base">{c.name}</h4>
+                    <div className="flex flex-col items-start sm:items-end gap-1">
+                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-green-200 text-green-800">{c.status}</span>
+                      {c.voteSplit && <span className="text-sm font-bold text-gray-700">{c.voteSplit}</span>}
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-2">{c.caseNumber} · {c.topic}</p>
+                  <p className="text-sm text-gray-700 mb-2">{c.issue}</p>
+                  <p className="text-sm font-semibold text-green-700 mb-1">Decision: {c.decision}</p>
+                  <p className="text-xs text-gray-500">Decided: {c.dateDecided}</p>
+                  {c.impact && <p className="text-xs text-gray-600 mt-2 italic">Impact: {c.impact}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Upcoming Cases */}
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1 flex items-center gap-2">
+              <Calendar className="w-6 h-6" style={{ color: '#C8102E' }} />
+              Upcoming Cases ({ukSupremeCourt.upcomingCases.length})
+            </h3>
+            <div className="w-12 h-1 rounded-full mb-5" style={{ background: '#C8102E' }} />
+            <p className="text-gray-600 mb-5 text-sm">Scheduled to be heard</p>
+            <div className="space-y-4">
+              {ukSupremeCourt.upcomingCases.map(c => (
+                <div key={c.id} className="border-l-4 p-4 rounded-r-xl hover:shadow-md transition-shadow" style={{ borderColor: '#C8102E', backgroundColor: '#C8102E08' }}>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
+                    <h4 className="font-bold text-gray-800 text-base">{c.name}</h4>
+                    <span className="text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0 self-start text-white" style={{ backgroundColor: '#C8102E' }}>
+                      {c.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-2">{c.caseNumber} · {c.topic}</p>
+                  <p className="text-sm text-gray-700 mb-2">{c.issue}</p>
+                  <p className="text-xs text-gray-500">Scheduled: {c.dateScheduled}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderUKDepartments = () => {
     const totalBudget = ukDepartments.reduce((sum, d) => sum + d.budgetRaw, 0);
     const totalEmployees = ukDepartments.reduce((sum, d) => sum + d.employees, 0);
@@ -12941,7 +13388,7 @@ function App() {
 
           {/* Supreme Court */}
           <div
-            onClick={() => setView('uk-coming-soon')}
+            onClick={() => setView('uk-supreme-court')}
             className="rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 active:scale-95"
             style={{ background: 'linear-gradient(135deg, #012169 0%, #0a1f5c 100%)', borderColor: 'rgba(200,16,46,0.3)' }}
             onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
@@ -25185,6 +25632,7 @@ function App() {
       {view === 'uk-legislative-hub' && renderUKLegislativeHub()}
       {view === 'uk-departments' && renderUKDepartments()}
       {view === 'uk-department-detail' && selectedUkDepartment && renderUKDepartmentDetail()}
+      {view === 'uk-supreme-court' && renderUKSupremeCourt()}
       {view === 'uk-regions' && renderUKRegions()}
       {view === 'uk-coming-soon' && renderUKComingSoon()}
       {view === 'au-analytics' && renderAuAnalytics()}
