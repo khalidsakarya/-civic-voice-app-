@@ -18357,6 +18357,363 @@ function App() {
     );
   };
 
+  const renderAuAnalytics = () => {
+    const au = {
+      economy: {
+        years: [2022, 2023, 2024, 2025],
+        gdpGrowth:         [3.7, 2.0, 1.5, 2.1],
+        unemployment:      [3.5, 3.7, 4.1, 3.9],
+        inflation:         [7.8, 5.4, 3.5, 3.2],
+        consumerConfidence:[81,  79,  84,  87 ],
+      },
+      spending: {
+        totalBudget: 682_000_000_000,
+        sectors: [
+          { name: 'Social Security & Welfare', amount: 225_260_000_000, percentage: 33 },
+          { name: 'Health',                    amount: 108_960_000_000, percentage: 16 },
+          { name: 'Defence',                   amount:  54_560_000_000, percentage:  8 },
+          { name: 'Education',                 amount:  40_920_000_000, percentage:  6 },
+          { name: 'Transport & Infrastructure', amount: 27_280_000_000, percentage:  4 },
+          { name: 'Housing & Community Services', amount: 20_460_000_000, percentage: 3 },
+          { name: 'Environment & Energy',       amount:  13_640_000_000, percentage:  2 },
+          { name: 'Other Programs',             amount: 190_920_000_000, percentage: 28 },
+        ],
+      },
+      immigration: {
+        years:    [2022, 2023, 2024, 2025],
+        targets:  [195_000, 195_000, 185_000, 185_000],
+        accepted: [183_000, 222_000, 186_000, 171_000],
+        analysis: { stance: 'Points-based & Managed', targetAchievement: 92 },
+        byCategory: {
+          '2025': { 'Skilled Migration': 104_000, 'Family Stream': 48_000, 'Humanitarian': 19_000 },
+        },
+      },
+      crime: {
+        years:         [2022, 2023, 2024, 2025],
+        overallIndex:  [72, 68, 65, 63],
+        violentCrime:  [140, 135, 128, 122],
+        propertyCrime: [2820, 2690, 2540, 2380],
+        percentChange: [-5.6, -4.2, -4.4, -3.1],
+      },
+      foreignAid: {
+        totalAmount: 4_870_000_000,
+        breakdown: { totalGrants: 3_600_000_000, grantPercentage: 74, totalLoans: 1_270_000_000, loanPercentage: 26 },
+        byCountry: [
+          { country: 'Papua New Guinea',  amount: 480_000_000, purpose: 'Bilateral development partnership — health, education & governance', type: 'Grant' },
+          { country: 'Indonesia',         amount: 370_000_000, purpose: 'Economic growth, disaster resilience & education programs',          type: 'Grant' },
+          { country: 'Solomon Islands',   amount: 280_000_000, purpose: 'Security partnership, infrastructure & government capacity building', type: 'Grant' },
+          { country: 'Timor-Leste',       amount: 210_000_000, purpose: 'Economic development & public financial management reform',          type: 'Grant' },
+          { country: 'Vanuatu',           amount: 160_000_000, purpose: 'Infrastructure, climate resilience & governance support',            type: 'Grant' },
+          { country: 'Philippines',       amount: 140_000_000, purpose: 'Inclusive economic growth & human development programs',             type: 'Grant' },
+          { country: 'Cambodia',          amount:  95_000_000, purpose: 'Rule of law, land rights & infrastructure',                         type: 'Loan'  },
+          { country: 'Myanmar',           amount:  88_000_000, purpose: 'Humanitarian assistance & civil society support',                   type: 'Grant' },
+        ],
+      },
+      parliament: {
+        houseSeats: 151, senateSeats: 76,
+        parties: [
+          { name: 'Labor (ALP)', seats: 77, color: '#CC0000' },
+          { name: 'Liberal/National Coalition', seats: 58, color: '#003087' },
+          { name: 'Greens', seats: 4, color: '#00843D' },
+          { name: 'Independents & Others', seats: 12, color: '#6B7280' },
+        ],
+      },
+    };
+
+    const TEAL = '#0f766e';
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <button
+              onClick={() => setView('au-categories')}
+              className="flex items-center gap-2"
+              style={{ color: TEAL }}
+            >
+              ← Back to Australian Federal Government
+            </button>
+            <h1 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
+            <div className="w-20" />
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="rounded-lg p-6 mb-6 border" style={{ background: 'linear-gradient(to right, #f0fdf4, #ecfdf5)', borderColor: '#6ee7b7' }}>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">📊 Australian Government Analytics</h2>
+            <p className="text-gray-600">Budget, economic trends & social indicators — Federal Government FY 2024–25</p>
+          </div>
+
+          {/* Key Economic Indicators */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+              <TrendingUp className="w-6 h-6" style={{ color: TEAL }} />
+              📈 Key Economic Indicators (2025)
+            </h3>
+            <p className="text-gray-600 mb-4">Current snapshot of Australia's economic health</p>
+
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200 text-center">
+                <p className="text-xs text-gray-600 mb-1">GDP Growth</p>
+                <p className="text-3xl font-bold text-emerald-600">{au.economy.gdpGrowth[3]}%</p>
+              </div>
+              <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 text-center">
+                <p className="text-xs text-gray-600 mb-1">Unemployment</p>
+                <p className="text-3xl font-bold text-amber-600">{au.economy.unemployment[3]}%</p>
+              </div>
+              <div className="bg-red-50 p-4 rounded-lg border border-red-200 text-center">
+                <p className="text-xs text-gray-600 mb-1">Inflation Rate</p>
+                <p className="text-3xl font-bold text-red-600">{au.economy.inflation[3]}%</p>
+              </div>
+              <div className="bg-teal-50 p-4 rounded-lg border border-teal-200 text-center">
+                <p className="text-xs text-gray-600 mb-1">Consumer Confidence</p>
+                <p className="text-3xl font-bold text-teal-600">{au.economy.consumerConfidence[3]}/100</p>
+              </div>
+            </div>
+
+            <h4 className="font-bold text-gray-700 mb-3">Year-over-Year Trends</h4>
+            <div className="space-y-4">
+              {au.economy.years.map((year, i) => (
+                <div key={year}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700 font-medium">{year}</span>
+                    <span className="text-sm text-gray-600">GDP {au.economy.gdpGrowth[i]}% · Unemployment {au.economy.unemployment[i]}% · Inflation {au.economy.inflation[i]}%</span>
+                  </div>
+                  <div className="flex gap-1 h-4">
+                    <div className="bg-emerald-500 rounded-l" style={{ width: `${(au.economy.gdpGrowth[i] / 10) * 100}%` }} title={`GDP ${au.economy.gdpGrowth[i]}%`} />
+                    <div className="bg-amber-400"              style={{ width: `${(au.economy.unemployment[i] / 10) * 100}%` }} title={`Unemployment ${au.economy.unemployment[i]}%`} />
+                    <div className="bg-red-400 rounded-r"      style={{ width: `${(au.economy.inflation[i] / 10) * 100}%` }} title={`Inflation ${au.economy.inflation[i]}%`} />
+                  </div>
+                </div>
+              ))}
+              <div className="flex gap-4 text-xs text-gray-600 mt-2">
+                <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-emerald-500 rounded" /> GDP Growth</span>
+                <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-amber-400 rounded" /> Unemployment</span>
+                <span className="flex items-center gap-1"><span className="inline-block w-3 h-3 bg-red-400 rounded" /> Inflation</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Government Spending */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+              <DollarSign className="w-6 h-6 text-emerald-600" />
+              💰 Government Spending by Sector (FY 2024–25)
+            </h3>
+            <div className="p-4 rounded-lg mb-4 border-2" style={{ background: '#f0fdf4', borderColor: '#6ee7b7' }}>
+              <p className="font-bold text-lg" style={{ color: '#065f46' }}>Total Budget: A${(au.spending.totalBudget / 1e9).toFixed(1)} Billion</p>
+              <p className="text-sm" style={{ color: '#047857' }}>Federal government spending across all sectors</p>
+            </div>
+            <div className="space-y-3">
+              {au.spending.sectors.map((sector, index) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700 text-sm">{sector.name}</span>
+                    <span className="font-bold text-gray-800 text-sm">A${(sector.amount / 1e9).toFixed(1)}B ({sector.percentage}%)</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="h-3 rounded-full"
+                      style={{ width: `${sector.percentage}%`, backgroundColor: ['#0f766e','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#84cc16'][index % 8] }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Immigration */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+              <Globe className="w-6 h-6 text-violet-600" />
+              🌏 Immigration Policy &amp; Acceptance
+            </h3>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-violet-50 p-3 rounded-lg border border-violet-200 text-center">
+                <p className="text-xs text-gray-600">Stance</p>
+                <p className="text-sm font-bold text-violet-700">{au.immigration.analysis.stance}</p>
+              </div>
+              <div className="bg-violet-50 p-3 rounded-lg border border-violet-200 text-center">
+                <p className="text-xs text-gray-600">2025 Accepted</p>
+                <p className="text-sm font-bold text-violet-700">{(au.immigration.accepted[3] / 1000).toFixed(0)}K</p>
+              </div>
+              <div className="bg-violet-50 p-3 rounded-lg border border-violet-200 text-center">
+                <p className="text-xs text-gray-600">Target Met</p>
+                <p className="text-sm font-bold text-violet-700">{au.immigration.analysis.targetAchievement}%</p>
+              </div>
+            </div>
+            <h4 className="font-bold text-gray-700 mb-3">Target vs Actual by Year</h4>
+            <div className="space-y-3">
+              {au.immigration.years.map((year, i) => {
+                const pct = Math.round((au.immigration.accepted[i] / au.immigration.targets[i]) * 100);
+                return (
+                  <div key={year}>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-gray-700 font-medium">{year}</span>
+                      <span className="text-sm text-gray-600">{(au.immigration.accepted[i]/1000).toFixed(0)}K of {(au.immigration.targets[i]/1000).toFixed(0)}K target ({pct}%)</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-4">
+                      <div className="bg-violet-500 h-4 rounded-full" style={{ width: `${Math.min(pct, 100)}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-4 bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-bold text-gray-800 mb-3">2025 Immigration by Category</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(au.immigration.byCategory['2025']).map(([category, count]) => (
+                  <div key={category} className="bg-white p-3 rounded border">
+                    <p className="text-xs text-gray-600">{category}</p>
+                    <p className="text-lg font-bold text-gray-800">{count.toLocaleString()}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Crime Trends */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <AlertCircle className="w-6 h-6 text-red-600" />
+              🚨 Crime Rate Trends
+            </h3>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Overall Crime Trend</p>
+                  <p className="text-xl font-bold text-green-700">Declining {Math.abs(au.crime.percentChange[3])}% Year-over-Year</p>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-red-50 p-3 rounded-lg border border-red-200 text-center">
+                <p className="text-xs text-gray-600">Violent Crime</p>
+                <p className="text-2xl font-bold text-red-600">{au.crime.violentCrime[3]}</p>
+                <p className="text-xs text-gray-500">per 100K</p>
+              </div>
+              <div className="bg-amber-50 p-3 rounded-lg border border-amber-200 text-center">
+                <p className="text-xs text-gray-600">Property Crime</p>
+                <p className="text-2xl font-bold text-amber-600">{au.crime.propertyCrime[3].toLocaleString()}</p>
+                <p className="text-xs text-gray-500">per 100K</p>
+              </div>
+              <div className="bg-green-50 p-3 rounded-lg border border-green-200 text-center">
+                <p className="text-xs text-gray-600">YoY Improvement</p>
+                <p className="text-2xl font-bold text-green-600">{Math.abs(au.crime.percentChange[3])}%</p>
+                <p className="text-xs text-gray-500">Better</p>
+              </div>
+            </div>
+            <h4 className="font-bold text-gray-700 mb-3">Crime Index by Year (lower is better)</h4>
+            <div className="space-y-3">
+              {au.crime.years.map((year, i) => (
+                <div key={year}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700 font-medium">{year}</span>
+                    <span className="text-sm text-gray-600">Overall index: {au.crime.overallIndex[i]}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-4">
+                    <div className="bg-red-400 h-4 rounded-full" style={{ width: `${(au.crime.overallIndex[i] / 100) * 100}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Pacific & International Aid */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+              <Globe className="w-6 h-6 text-teal-600" />
+              🌏 Pacific &amp; International Development Aid (2025)
+            </h3>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-teal-50 p-3 rounded-lg border border-teal-200 text-center">
+                <p className="text-xs text-gray-600">Total Aid</p>
+                <p className="text-lg font-bold text-teal-600">A${(au.foreignAid.totalAmount / 1e9).toFixed(2)}B</p>
+              </div>
+              <div className="bg-green-50 p-3 rounded-lg border border-green-200 text-center">
+                <p className="text-xs text-gray-600">Grants</p>
+                <p className="text-lg font-bold text-green-600">A${(au.foreignAid.breakdown.totalGrants / 1e9).toFixed(2)}B</p>
+                <p className="text-xs text-gray-500">{au.foreignAid.breakdown.grantPercentage}%</p>
+              </div>
+              <div className="bg-orange-50 p-3 rounded-lg border border-orange-200 text-center">
+                <p className="text-xs text-gray-600">Loans</p>
+                <p className="text-lg font-bold text-orange-600">A${(au.foreignAid.breakdown.totalLoans / 1e9).toFixed(2)}B</p>
+                <p className="text-xs text-gray-500">{au.foreignAid.breakdown.loanPercentage}%</p>
+              </div>
+            </div>
+            <h4 className="font-bold text-gray-700 mb-3">Top Recipients</h4>
+            <div className="space-y-2">
+              {au.foreignAid.byCountry.map((aid, idx) => (
+                <div key={idx} className="border-l-4 pl-4 py-2" style={{ borderColor: aid.type === 'Grant' ? '#10B981' : '#F59E0B' }}>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <span className="text-gray-800 font-bold">{idx + 1}. {aid.country}</span>
+                      <p className="text-xs text-gray-600">{aid.purpose}</p>
+                    </div>
+                    <div className="text-right ml-4">
+                      <span className="font-bold text-gray-800">A${(aid.amount / 1e6).toFixed(0)}M</span>
+                      <span className={`block text-xs px-2 py-0.5 rounded mt-1 ${aid.type === 'Grant' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>{aid.type}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 bg-teal-50 border border-teal-200 rounded-lg p-3">
+              <p className="text-xs text-gray-700"><strong>Note:</strong> Australia's aid program focuses primarily on the Pacific and Southeast Asia. Grants are non-repayable; loans carry concessional terms.</p>
+            </div>
+          </div>
+
+          {/* Parliament Composition */}
+          <div className="rounded-lg p-6 mb-6 border" style={{ background: 'linear-gradient(to right, #f0fdf4, #ecfdf5)', borderColor: '#6ee7b7' }}>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">🏛️ Parliament Composition</h2>
+            <p className="text-gray-600">House of Representatives seat distribution — 47th Parliament</p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+              <Users className="w-6 h-6" style={{ color: TEAL }} />
+              Seats by Political Party (House of Representatives)
+            </h3>
+            <p className="text-gray-600 mb-4">Current seat distribution — {au.parliament.houseSeats} total seats</p>
+            <div className="space-y-3">
+              {au.parliament.parties.map((party, index) => (
+                <div key={index}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-gray-700 font-medium">{party.name}</span>
+                    <span className="font-bold text-gray-800">{party.seats} seats ({Math.round((party.seats / au.parliament.houseSeats) * 100)}%)</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-4">
+                    <div className="h-4 rounded-full" style={{ width: `${(party.seats / au.parliament.houseSeats) * 100}%`, backgroundColor: party.color }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Summary Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="rounded-lg p-6 text-center border-2" style={{ background: 'linear-gradient(to bottom right, #ecfdf5, #d1fae5)', borderColor: '#6ee7b7' }}>
+              <p className="text-sm text-gray-700 mb-2">Federal Departments</p>
+              <p className="text-4xl font-bold" style={{ color: TEAL }}>15</p>
+              <p className="text-xs text-gray-600 mt-2">Commonwealth Agencies</p>
+            </div>
+            <div className="rounded-lg p-6 text-center border-2" style={{ background: 'linear-gradient(to bottom right, #fffbeb, #fef3c7)', borderColor: '#fcd34d' }}>
+              <p className="text-sm text-gray-700 mb-2">Parliament Members</p>
+              <p className="text-4xl font-bold text-amber-700">{au.parliament.houseSeats + au.parliament.senateSeats}</p>
+              <p className="text-xs text-gray-600 mt-2">House + Senate</p>
+            </div>
+            <div className="rounded-lg p-6 text-center border-2" style={{ background: 'linear-gradient(to bottom right, #f5f3ff, #ede9fe)', borderColor: '#c4b5fd' }}>
+              <p className="text-sm text-gray-700 mb-2">Annual Budget</p>
+              <p className="text-4xl font-bold text-violet-700">$682B</p>
+              <p className="text-xs text-gray-600 mt-2">FY 2024–25 Federal</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderAuCategories = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-green-50 p-4 sm:p-8 animate-fade-in">
@@ -18494,6 +18851,22 @@ function App() {
               <div className="flex items-center justify-between text-sm" style={{ color: '#C8A400' }}>
                 <span className="font-semibold">7 Justices · Chief Justice Gageler</span>
                 <ChevronRight className="w-5 h-5" style={{ color: '#C8A400' }} />
+              </div>
+            </div>
+
+            {/* Analytics Dashboard */}
+            <div
+              onClick={() => setView('au-analytics')}
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-teal-500 active:scale-95"
+            >
+              <div className="text-teal-600 mb-3 sm:mb-4">
+                <BarChart3 className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Analytics Dashboard</h2>
+              <p className="text-gray-600 mb-3 text-sm sm:text-base">GDP, unemployment, inflation, immigration, crime &amp; spending trends</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span className="font-medium">FY 2024–25 · Australian Data</span>
+                <ChevronRight className="w-5 h-5 text-teal-600" />
               </div>
             </div>
 
@@ -21166,6 +21539,7 @@ function App() {
       {view === 'au-legislative-hub' && renderAuLegislativeHub()}
       {view === 'au-categories' && renderAuCategories()}
       {view === 'au-high-court' && renderAuHighCourt()}
+      {view === 'au-analytics' && renderAuAnalytics()}
       {view === 'au-departments' && renderAuDepartments()}
       {view === 'au-department-detail' && selectedAuDepartment && renderAuDepartmentDetail()}
       
