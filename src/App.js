@@ -8011,14 +8011,15 @@ function App() {
         <div className="relative bg-gray-50 w-full max-w-xl md:max-w-4xl mx-2 sm:mx-4 md:mx-auto my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
 
           {/* Header */}
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
-            <div>
-              <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug">{item.name} — Economic &amp; Social Data</h2>
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-center gap-3 border-b border-gray-100 shadow-sm">
+            <button onClick={() => setShowEconomicModal(false)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0">
+              <X className="w-4 h-4" />
+              <span>Back</span>
+            </button>
+            <div className="flex-1 min-w-0">
+              <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug truncate">{item.name} — Economic &amp; Social Data</h2>
               <p className="text-xs text-gray-400 mt-0.5">Illustrative data · figures are statistically modelled</p>
             </div>
-            <button onClick={() => setShowEconomicModal(false)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 ml-3">
-              <X className="w-5 h-5" />
-            </button>
           </div>
 
           {/* Charts — single column, full width, scrollable */}
@@ -8151,6 +8152,9 @@ function App() {
             <p className="text-center text-xs text-gray-400 pb-2">
               Data is statistically modelled for illustrative purposes. Figures use deterministic generation seeded from {item.name}.
             </p>
+            <button onClick={() => setShowEconomicModal(false)} className="w-full mt-2 mb-1 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+              <X className="w-4 h-4" /> Close
+            </button>
           </div>
         </div>
       </div>
@@ -8402,8 +8406,12 @@ function App() {
 
           {/* Sticky header */}
           <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
-            <div className="flex items-start justify-between mb-3">
-              <div>
+            <div className="flex items-start gap-3 mb-3">
+              <button onClick={closeModal} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
+                <X className="w-4 h-4" />
+                <span>Back</span>
+              </button>
+              <div className="flex-1 min-w-0">
                 <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Tax Exempt Companies</h2>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {companies.length} companies &nbsp;·&nbsp; Est. total annual exemption:{' '}
@@ -8411,7 +8419,7 @@ function App() {
                   &nbsp;·&nbsp; Illustrative sample data
                 </p>
               </div>
-              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors ml-4 flex-shrink-0">
+              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -8500,6 +8508,9 @@ function App() {
             <p className="text-center text-xs text-gray-400 mt-4">
               Sample data for illustrative purposes only. Figures are statistically modelled.
             </p>
+            <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+              <X className="w-4 h-4" /> Close
+            </button>
           </div>
 
         </div>
@@ -8628,8 +8639,12 @@ function App() {
 
           {/* Sticky header */}
           <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
-            <div className="flex items-start justify-between mb-3">
-              <div>
+            <div className="flex items-start gap-3 mb-3">
+              <button onClick={closeModal} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
+                <X className="w-4 h-4" />
+                <span>Back</span>
+              </button>
+              <div className="flex-1 min-w-0">
                 <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Grants Given</h2>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {grants.length} grants &nbsp;·&nbsp; Total awarded:{' '}
@@ -8637,7 +8652,7 @@ function App() {
                   &nbsp;·&nbsp; Illustrative sample data
                 </p>
               </div>
-              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors ml-4 flex-shrink-0">
+              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -8729,6 +8744,9 @@ function App() {
             <p className="text-center text-xs text-gray-400 mt-4">
               Sample data for illustrative purposes only. Figures are statistically modelled.
             </p>
+            <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+              <X className="w-4 h-4" /> Close
+            </button>
           </div>
 
         </div>
@@ -11720,14 +11738,15 @@ function App() {
         onClick={(e) => { if (e.target === e.currentTarget) setShowAuEconomicModal(false); }}
       >
         <div className="relative bg-gray-50 w-full max-w-xl md:max-w-4xl mx-2 sm:mx-4 md:mx-auto my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-center justify-between border-b border-gray-100 shadow-sm">
-            <div>
-              <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug">{item.name} — Economic &amp; Social Data</h2>
+          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-center gap-3 border-b border-gray-100 shadow-sm">
+            <button onClick={() => setShowAuEconomicModal(false)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0">
+              <X className="w-4 h-4" />
+              <span>Back</span>
+            </button>
+            <div className="flex-1 min-w-0">
+              <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug truncate">{item.name} — Economic &amp; Social Data</h2>
               <p className="text-xs text-gray-400 mt-0.5">Illustrative data · figures are statistically modelled</p>
             </div>
-            <button onClick={() => setShowAuEconomicModal(false)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 ml-3">
-              <X className="w-5 h-5" />
-            </button>
           </div>
           <div className="p-4">
             <AuCard id="au-budget" title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
@@ -11838,6 +11857,9 @@ function App() {
             <p className="text-center text-xs text-gray-400 pb-2">
               Data is statistically modelled for illustrative purposes. Figures use deterministic generation seeded from {item.name}.
             </p>
+            <button onClick={() => setShowAuEconomicModal(false)} className="w-full mt-2 mb-1 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+              <X className="w-4 h-4" /> Close
+            </button>
           </div>
         </div>
       </div>
@@ -12073,8 +12095,12 @@ function App() {
       >
         <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
           <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
-            <div className="flex items-start justify-between mb-3">
-              <div>
+            <div className="flex items-start gap-3 mb-3">
+              <button onClick={closeModal} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
+                <X className="w-4 h-4" />
+                <span>Back</span>
+              </button>
+              <div className="flex-1 min-w-0">
                 <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Tax Exempt Companies</h2>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {companies.length} companies &nbsp;·&nbsp; Est. total annual exemption:{' '}
@@ -12082,7 +12108,7 @@ function App() {
                   &nbsp;·&nbsp; Illustrative sample data
                 </p>
               </div>
-              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors ml-4 flex-shrink-0">
+              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -12162,6 +12188,9 @@ function App() {
             <p className="text-center text-xs text-gray-400 mt-4">
               Sample data for illustrative purposes only. Figures are statistically modelled.
             </p>
+            <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+              <X className="w-4 h-4" /> Close
+            </button>
           </div>
         </div>
       </div>
@@ -12277,8 +12306,12 @@ function App() {
       >
         <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
           <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
-            <div className="flex items-start justify-between mb-3">
-              <div>
+            <div className="flex items-start gap-3 mb-3">
+              <button onClick={closeModal} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
+                <X className="w-4 h-4" />
+                <span>Back</span>
+              </button>
+              <div className="flex-1 min-w-0">
                 <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Grants Given</h2>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {grants.length} grants &nbsp;·&nbsp; Total awarded:{' '}
@@ -12286,7 +12319,7 @@ function App() {
                   &nbsp;·&nbsp; Illustrative sample data
                 </p>
               </div>
-              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors ml-4 flex-shrink-0">
+              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -12368,6 +12401,9 @@ function App() {
             <p className="text-center text-xs text-gray-400 mt-4">
               Sample data for illustrative purposes only. Figures are statistically modelled.
             </p>
+            <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+              <X className="w-4 h-4" /> Close
+            </button>
           </div>
         </div>
       </div>
@@ -20144,20 +20180,22 @@ function App() {
       {/* Leader profile panel */}
       {showLeaderPanel && selectedLeader && renderLeaderPanel()}
 
-      {/* Notification bell — always visible */}
-      <button
-        onClick={openNotifications}
-        aria-label="Notifications"
-        className="fixed top-3 right-4 z-[52] w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center"
-        style={{ position: 'fixed' }}
-      >
-        <Bell className="w-4 h-4 text-gray-600" />
-        {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 leading-none">
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
-      </button>
+      {/* Notification bell — only on home and top-level landing */}
+      {(view === 'countries' || view === 'government-levels') && (
+        <button
+          onClick={openNotifications}
+          aria-label="Notifications"
+          className="fixed top-3 right-4 z-[52] w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center"
+          style={{ position: 'fixed' }}
+        >
+          <Bell className="w-4 h-4 text-gray-600" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 leading-none">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </button>
+      )}
 
       {/* Notifications panel */}
       {showNotifications && renderNotificationsPanel()}
