@@ -852,7 +852,6 @@ function App() {
   const [auPartyFilter, setAuPartyFilter] = useState('All');
   const [auSearch, setAuSearch] = useState('');
   const [auMemberVotes, setAuMemberVotes] = useState({});
-  const [auDecisionVotes, setAuDecisionVotes] = useState({});
   const [expandedAuBills, setExpandedAuBills] = useState({});
   const [expandedCaBills, setExpandedCaBills] = useState({});
   const [expandedUsBills, setExpandedUsBills] = useState({});
