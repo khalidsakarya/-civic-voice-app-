@@ -811,6 +811,7 @@ function App() {
   const [auTaxExemptSearch, setAuTaxExemptSearch] = useState('');
   const [showAuGrantsModal, setShowAuGrantsModal] = useState(false);
   const [auGrantsSearch, setAuGrantsSearch] = useState('');
+  const [auExpandedChartId, setAuExpandedChartId] = useState(null);
   const [copiedShareId, setCopiedShareId] = useState(null);
   const [senateSearch, setSenateSearch] = useState('');
   const [senateFilter, setSenateFilter] = useState('All');
@@ -8155,110 +8156,135 @@ function App() {
       </div>
 
       {/* Full-screen chart overlay */}
-      {expandedChartId && (
-        <div className="fixed inset-0 z-[400] flex flex-col bg-white">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 flex-shrink-0">
-            <span className="font-bold text-gray-800 text-base">
-              {{ budget: 'Government Budget Distribution', spending: 'Spending vs Budget', crime: 'Crime Rate Trends', unemployment: 'Unemployment Rate', gdp: 'GDP Growth Over Time', poverty: 'Poverty Rate Trend', homeless: 'Homelessness Statistics' }[expandedChartId]}
-            </span>
-            <button onClick={() => setExpandedChartId(null)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500" aria-label="Close">
-              <X className="w-7 h-7" />
-            </button>
+      {expandedChartId && (() => {
+        const chartTitles = { budget: 'Government Budget Distribution', spending: 'Spending vs Budget', crime: 'Crime Rate Trends', unemployment: 'Unemployment Rate', gdp: 'GDP Growth Over Time', poverty: 'Poverty Rate Trend', homeless: 'Homelessness Statistics' };
+        const chartTitle = chartTitles[expandedChartId] || '';
+        const chartH = 'calc(100vh - 210px)';
+        return (
+          <div className="fixed inset-0 z-[400] flex flex-col" style={{ background: '#f1f5f9' }}>
+            {/* Polished header */}
+            <div className="flex-shrink-0 shadow-lg" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
+              <div className="flex items-center gap-4 px-5 py-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-widest mb-0.5" style={{ color: '#94a3b8' }}>Full Screen · {isUSA ? 'US State' : 'Province'}</p>
+                  <span className="font-bold text-white text-base sm:text-lg leading-snug block">{chartTitle}</span>
+                </div>
+                <button
+                  onClick={() => setExpandedChartId(null)}
+                  className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.15)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5 text-white" />
+                </button>
+              </div>
+            </div>
+            {/* Chart body */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4 sm:p-6">
+                <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-4 sm:p-6">
+                  <div style={{ height: chartH, minHeight: '300px' }}>
+                    {expandedChartId === 'budget' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="name" type="category" width={120} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 5']} />
+                          <Tooltip formatter={(v) => [`${v}%`, 'Budget Share']} contentStyle={TT} />
+                          <Bar dataKey="value" name="Budget Share" radius={[0, 4, 4, 0]} maxBarSize={40}>
+                            {budgetData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {expandedChartId === 'spending' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={spendData} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="category" type="category" width={90} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `$${(v / 1000).toFixed(1)}B`} />
+                          <Tooltip formatter={(v) => [`$${v.toLocaleString()}M`, '']} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey="Allocated" fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          <Bar dataKey="Actual"    fill="#10b981" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {expandedChartId === 'crime' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
+                          <Tooltip formatter={(v, name) => [`${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey="Violent Crime"  fill="#ef4444" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          <Bar dataKey="Property Crime" fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {expandedChartId === 'unemployment' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={unempData} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 1']} />
+                          <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey={unempKeys[0]} fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {expandedChartId === 'gdp' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={gdpDataM} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} />
+                          <Tooltip formatter={(v) => [`${v}%`, 'GDP Growth']} contentStyle={TT} />
+                          <Bar dataKey="GDP Growth (%)" radius={[0, 4, 4, 0]} maxBarSize={40}>
+                            {gdpDataM.map((e, i) => <Cell key={i} fill={e['GDP Growth (%)'] >= 0 ? '#10b981' : '#ef4444'} />)}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {expandedChartId === 'poverty' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={povDataM} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 2']} />
+                          <Tooltip formatter={(v) => [`${v}%`, 'Poverty Rate']} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey="Poverty Rate (%)" fill="#f59e0b" radius={[0, 4, 4, 0]} maxBarSize={40} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {expandedChartId === 'homeless' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={homelessData} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
+                          <Tooltip formatter={(v, name) => [v.toLocaleString(), name]} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey="Sheltered"   stackId="a" fill="#6366f1" maxBarSize={40} />
+                          <Bar dataKey="Unsheltered" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} maxBarSize={40} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {/* Bottom safe area */}
+              <div style={{ height: 'max(env(safe-area-inset-bottom), 16px)' }} />
+            </div>
           </div>
-          <div className="flex-1 overflow-auto p-4">
-            {expandedChartId === 'budget' && (
-              <ResponsiveContainer width="100%" height={500}>
-                <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="name" type="category" width={120} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 5']} />
-                  <Tooltip formatter={(v) => [`${v}%`, 'Budget Share']} contentStyle={TT} />
-                  <Bar dataKey="value" name="Budget Share" radius={[0, 4, 4, 0]} maxBarSize={40}>
-                    {budgetData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-            {expandedChartId === 'spending' && (
-              <ResponsiveContainer width="100%" height={500}>
-                <BarChart layout="vertical" data={spendData} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="category" type="category" width={90} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `$${(v / 1000).toFixed(1)}B`} />
-                  <Tooltip formatter={(v) => [`$${v.toLocaleString()}M`, '']} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey="Allocated" fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={28} />
-                  <Bar dataKey="Actual"    fill="#10b981" radius={[0, 3, 3, 0]} maxBarSize={28} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-            {expandedChartId === 'crime' && (
-              <ResponsiveContainer width="100%" height={500}>
-                <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
-                  <Tooltip formatter={(v, name) => [`${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey="Violent Crime"  fill="#ef4444" radius={[0, 3, 3, 0]} maxBarSize={28} />
-                  <Bar dataKey="Property Crime" fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={28} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-            {expandedChartId === 'unemployment' && (
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart layout="vertical" data={unempData} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 1']} />
-                  <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey={unempKeys[0]} fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={28} />
-                  <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={28} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-            {expandedChartId === 'gdp' && (
-              <ResponsiveContainer width="100%" height={500}>
-                <BarChart layout="vertical" data={gdpDataM} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} />
-                  <Tooltip formatter={(v) => [`${v}%`, 'GDP Growth']} contentStyle={TT} />
-                  <Bar dataKey="GDP Growth (%)" radius={[0, 4, 4, 0]} maxBarSize={40}>
-                    {gdpDataM.map((e, i) => <Cell key={i} fill={e['GDP Growth (%)'] >= 0 ? '#10b981' : '#ef4444'} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-            {expandedChartId === 'poverty' && (
-              <ResponsiveContainer width="100%" height={500}>
-                <BarChart layout="vertical" data={povDataM} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 2']} />
-                  <Tooltip formatter={(v) => [`${v}%`, 'Poverty Rate']} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey="Poverty Rate (%)" fill="#f59e0b" radius={[0, 4, 4, 0]} maxBarSize={40} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-            {expandedChartId === 'homeless' && (
-              <ResponsiveContainer width="100%" height={460}>
-                <BarChart layout="vertical" data={homelessData} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
-                  <Tooltip formatter={(v, name) => [v.toLocaleString(), name]} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey="Sheltered"   stackId="a" fill="#6366f1" maxBarSize={40} />
-                  <Bar dataKey="Unsheltered" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} maxBarSize={40} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
-      )}
+        );
+      })()}
       </>
     );
   };
@@ -11674,15 +11700,20 @@ function App() {
     const gspDataM   = gspData.slice(-6);
     const povDataM   = povData.slice(-6);
 
-    const Card = ({ title, desc, children }) => (
+    const AuCard = ({ id, title, desc, children, legend }) => (
       <div className="bg-white rounded-lg shadow-md p-5 mb-4">
         <h3 className="text-base font-bold text-gray-800 mb-0.5">{title}</h3>
         <p className="text-sm text-gray-500 mb-4">{desc}</p>
         {children}
+        {legend}
+        <button onClick={() => setAuExpandedChartId(id)} className="mt-3 w-full py-2 text-sm font-medium rounded-lg transition-colors" style={{ color: '#003087', background: '#EBF0FF' }}>
+          📈 View Full Screen
+        </button>
       </div>
     );
 
     return (
+      <>
       <div
         className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto panel-backdrop"
         style={{ background: 'rgba(0,0,0,0.55)' }}
@@ -11699,7 +11730,7 @@ function App() {
             </button>
           </div>
           <div className="p-4">
-            <Card title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
+            <AuCard id="au-budget" title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
@@ -11719,8 +11750,8 @@ function App() {
                   </span>
                 ))}
               </div>
-            </Card>
-            <Card title="Spending vs Budget" desc="Allocated vs actual spending per category ($M AUD)">
+            </AuCard>
+            <AuCard id="au-spending" title="Spending vs Budget" desc="Allocated vs actual spending per category ($M AUD)">
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart layout="vertical" data={spendData} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
@@ -11732,8 +11763,8 @@ function App() {
                   <Bar dataKey="Actual"    fill="#00843D" radius={[0, 3, 3, 0]} maxBarSize={18} />
                 </BarChart>
               </ResponsiveContainer>
-            </Card>
-            <Card title="Crime Rate Trends" desc="Incidents per 100,000 people — last 6 years">
+            </AuCard>
+            <AuCard id="au-crime" title="Crime Rate Trends" desc="Incidents per 100,000 people — last 6 years">
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
@@ -11745,8 +11776,8 @@ function App() {
                   <Bar dataKey="Property Crime" fill="#C8A400" radius={[0, 3, 3, 0]} maxBarSize={18} />
                 </BarChart>
               </ResponsiveContainer>
-            </Card>
-            <Card title="Unemployment Rate" desc="Annual rate (%) vs AU national average — last 4 years">
+            </AuCard>
+            <AuCard id="au-unemployment" title="Unemployment Rate" desc="Annual rate (%) vs AU national average — last 4 years">
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart layout="vertical" data={unempData} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
@@ -11758,8 +11789,15 @@ function App() {
                   <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={18} />
                 </BarChart>
               </ResponsiveContainer>
-            </Card>
-            <Card title="Gross State Product Growth" desc="Annual GSP growth rate (%) — last 6 years · green = growth, red = contraction">
+            </AuCard>
+            <AuCard id="au-gsp" title="Gross State Product Growth" desc="Annual GSP growth rate (%) — last 6 years · green = growth, red = contraction"
+              legend={
+                <div className="flex gap-4 justify-center mt-2">
+                  <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: '#00843D' }} /> Growth</span>
+                  <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: '#C0392B' }} /> Contraction</span>
+                </div>
+              }
+            >
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart layout="vertical" data={gspDataM} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
@@ -11771,12 +11809,8 @@ function App() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-              <div className="flex gap-4 justify-center mt-2">
-                <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: '#00843D' }} /> Growth</span>
-                <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: '#C0392B' }} /> Contraction</span>
-              </div>
-            </Card>
-            <Card title="Poverty Rate Trend" desc="Population living below the poverty line (%) — last 6 years">
+            </AuCard>
+            <AuCard id="au-poverty" title="Poverty Rate Trend" desc="Population living below the poverty line (%) — last 6 years">
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart layout="vertical" data={povDataM} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
@@ -11787,8 +11821,8 @@ function App() {
                   <Bar dataKey="Poverty Rate (%)" fill="#C8A400" radius={[0, 4, 4, 0]} maxBarSize={28} />
                 </BarChart>
               </ResponsiveContainer>
-            </Card>
-            <Card title="Homelessness Statistics" desc="Sheltered vs unsheltered population 2020–2024">
+            </AuCard>
+            <AuCard id="au-homeless" title="Homelessness Statistics" desc="Sheltered vs unsheltered population 2020–2024">
               <ResponsiveContainer width="100%" height={230}>
                 <BarChart layout="vertical" data={homelessData} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
@@ -11800,13 +11834,141 @@ function App() {
                   <Bar dataKey="Unsheltered" stackId="a" fill="#C0392B" radius={[0, 4, 4, 0]} maxBarSize={32} />
                 </BarChart>
               </ResponsiveContainer>
-            </Card>
+            </AuCard>
             <p className="text-center text-xs text-gray-400 pb-2">
               Data is statistically modelled for illustrative purposes. Figures use deterministic generation seeded from {item.name}.
             </p>
           </div>
         </div>
       </div>
+
+      {/* Polished full-screen chart overlay */}
+      {auExpandedChartId && (() => {
+        const auChartTitles = { 'au-budget': 'Government Budget Distribution', 'au-spending': 'Spending vs Budget', 'au-crime': 'Crime Rate Trends', 'au-unemployment': 'Unemployment Rate', 'au-gsp': 'Gross State Product Growth', 'au-poverty': 'Poverty Rate Trend', 'au-homeless': 'Homelessness Statistics' };
+        const chartH = 'calc(100vh - 210px)';
+        return (
+          <div className="fixed inset-0 z-[400] flex flex-col" style={{ background: '#f1f5f9' }}>
+            <div className="flex-shrink-0 shadow-lg" style={{ background: 'linear-gradient(135deg, #002060 0%, #003087 100%)', paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
+              <div className="flex items-center gap-4 px-5 py-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-widest mb-0.5" style={{ color: '#93c5fd' }}>Full Screen · Australian State</p>
+                  <span className="font-bold text-white text-base sm:text-lg leading-snug block">{auChartTitles[auExpandedChartId] || ''}</span>
+                </div>
+                <button
+                  onClick={() => setAuExpandedChartId(null)}
+                  className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.15)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5 text-white" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4 sm:p-6">
+                <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-4 sm:p-6">
+                  <div style={{ height: chartH, minHeight: '300px' }}>
+                    {auExpandedChartId === 'au-budget' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="name" type="category" width={120} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 5']} />
+                          <Tooltip formatter={(v) => [`${v}%`, 'Budget Share']} contentStyle={TT} />
+                          <Bar dataKey="value" name="Budget Share" radius={[0, 4, 4, 0]} maxBarSize={40}>
+                            {budgetData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {auExpandedChartId === 'au-spending' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={spendData} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="category" type="category" width={90} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `$${(v / 1000).toFixed(1)}B`} />
+                          <Tooltip formatter={(v) => [`A$${v.toLocaleString()}M`, '']} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey="Allocated" fill="#003087" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          <Bar dataKey="Actual"    fill="#00843D" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {auExpandedChartId === 'au-crime' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
+                          <Tooltip formatter={(v, name) => [`${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey="Violent Crime"  fill="#C0392B" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          <Bar dataKey="Property Crime" fill="#C8A400" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {auExpandedChartId === 'au-unemployment' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={unempData} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 1']} />
+                          <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey={unempKeys[0]} fill="#003087" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {auExpandedChartId === 'au-gsp' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={gspDataM} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} />
+                          <Tooltip formatter={(v) => [`${v}%`, 'GSP Growth']} contentStyle={TT} />
+                          <Bar dataKey="GSP Growth (%)" radius={[0, 4, 4, 0]} maxBarSize={40}>
+                            {gspDataM.map((e, i) => <Cell key={i} fill={e['GSP Growth (%)'] >= 0 ? '#00843D' : '#C0392B'} />)}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {auExpandedChartId === 'au-poverty' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={povDataM} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 2']} />
+                          <Tooltip formatter={(v) => [`${v}%`, 'Poverty Rate']} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey="Poverty Rate (%)" fill="#C8A400" radius={[0, 4, 4, 0]} maxBarSize={40} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {auExpandedChartId === 'au-homeless' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={homelessData} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
+                          <Tooltip formatter={(v, name) => [v.toLocaleString(), name]} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey="Sheltered"   stackId="a" fill="#003087" maxBarSize={40} />
+                          <Bar dataKey="Unsheltered" stackId="a" fill="#C0392B" radius={[0, 4, 4, 0]} maxBarSize={40} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div style={{ height: 'max(env(safe-area-inset-bottom), 16px)' }} />
+            </div>
+          </div>
+        );
+      })()}
+      </>
     );
   };
 
