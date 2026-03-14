@@ -1246,6 +1246,9 @@ function App() {
   const [auLegTab, setAuLegTab] = useState('active');
   const [auBills, setAuBills] = useState([]);
   const [auBillVotes, setAuBillVotes] = useState({});
+  const [ukLegTab, setUkLegTab] = useState('active');
+  const [ukBillVotes, setUkBillVotes] = useState({});
+  const [expandedUkBills, setExpandedUkBills] = useState({});
   const [ministries, setMinistries] = useState([
     {
       id: 1,
@@ -10505,6 +10508,498 @@ function App() {
     );
   };
 
+  // ── UK Legislative Hub ───────────────────────────────────────────────────────
+  const ukBills = [
+    // Active Bills — Before the House of Commons
+    {
+      id: 'uk-planning-infra', number: 'HC Bill 2024-25 (7)', shortTitle: 'Planning and Infrastructure Bill 2025',
+      sponsor: 'Angela Rayner MP (Deputy PM)', dateIntroduced: '11 March 2025', chamber: 'House of Commons',
+      status: 'Second Reading', category: 'Housing & Planning',
+      summary: 'Reforms England\'s planning system to accelerate delivery of 1.5 million new homes in this Parliament. Introduces a national planning framework, strips back local authority veto powers, creates Infrastructure Delivery Zones, and sets mandatory housing targets for councils.',
+      pros: ['Addresses chronic housing shortage — UK needs 380,000 new homes per year', 'Mandatory targets remove NIMBY blockages from local councils', 'Fast-tracks approval for hospitals, schools and renewable energy', 'Streamlines judicial review of planning decisions to reduce delay'],
+      cons: ['Reduces local democratic accountability over planning decisions', 'Critics say targets are undeliverable without more construction workers', 'Green belt and greenbelt protections weakened in "grey belt" reforms', 'Housing associations warn affordable quota could be undermined by viability loopholes'],
+      support: 8420, oppose: 6130,
+    },
+    {
+      id: 'uk-crime-policing', number: 'HC Bill 2024-25 (12)', shortTitle: 'Crime and Policing Bill 2025',
+      sponsor: 'Yvette Cooper MP (Home Secretary)', dateIntroduced: '14 January 2025', chamber: 'House of Commons',
+      status: 'Committee Stage', category: 'Home Affairs & Justice',
+      summary: 'Introduces neighbourhood policing guarantees — a named officer for every community. Creates Respect Orders to tackle anti-social behaviour. New knife-crime prevention orders, rural crime measures, and expanded powers for the Independent Office for Police Conduct (IOPC).',
+      pros: ['Named neighbourhood officers restore community trust in policing', 'Knife-crime prevention orders target carrying before offending occurs', 'Strengthened IOPC oversight improves police accountability', 'Rural crime funding addresses long-overlooked agricultural theft'],
+      cons: ['Policing guarantee unfunded — forces say 20,000 more officers needed', 'Respect Orders risk criminalising low-level behaviour unfairly', 'Civil liberties groups warn knife-crime orders may disproportionately target minorities', 'New powers duplicate existing ASB legislation without root-cause investment'],
+      support: 7890, oppose: 4210,
+    },
+    {
+      id: 'uk-data-use', number: 'HC Bill 2024-25 (14)', shortTitle: 'Data Use and Access Bill 2024',
+      sponsor: 'Peter Kyle MP (Secretary of State for Science)', dateIntroduced: '23 October 2024', chamber: 'House of Lords',
+      status: 'Lords Report Stage', category: 'Digital & Technology',
+      summary: 'Modernises UK data protection law post-Brexit, replacing parts of UK GDPR. Establishes a Data Use and Access framework, creates smart data schemes for energy and finance sectors, and introduces digital identity verification standards to replace physical document checks.',
+      pros: ['Reduces bureaucratic GDPR burden on small businesses', 'Smart data schemes empower consumers to switch energy and finance providers easily', 'Digital ID reduces reliance on paper documents for employment and tenancy checks', 'Aligns UK data rules to attract international business post-Brexit'],
+      cons: ['ICO independence concerns — government gets greater oversight of the regulator', 'Privacy campaigners warn adequacy with EU may be threatened', 'Digital ID risks excluding elderly and digitally excluded citizens', 'Industry groups warn transitional period is too short for compliance'],
+      support: 5640, oppose: 3870,
+    },
+    {
+      id: 'uk-border-security', number: 'HC Bill 2024-25 (5)', shortTitle: 'Border Security, Asylum and Immigration Bill 2024',
+      sponsor: 'Yvette Cooper MP (Home Secretary)', dateIntroduced: '29 October 2024', chamber: 'House of Commons',
+      status: 'Report Stage', category: 'Immigration & Borders',
+      summary: 'Creates a new Border Security Command to tackle criminal smuggling gangs. Introduces new offences for facilitating dangerous Channel crossings. Repeals the Safety of Rwanda Act and Illegal Migration Act 2023. Restores case-by-case asylum assessment under ECHR.',
+      pros: ['Targets criminal smuggling networks rather than refugees themselves', 'Removes Rwanda policy that cost £700M and deported nobody', 'Restores individual asylum assessment — legally compliant with ECHR', 'Cross-border intelligence sharing strengthens deterrence'],
+      cons: ['Conservatives warn repeal of Rwanda Act removes deterrence', 'Critics say Border Security Command duplicates existing NCA/Border Force functions', 'Channel crossing numbers in 2024 show no immediate reduction', 'Reform UK MPs argue bill is too soft on illegal entry'],
+      support: 9120, oppose: 8450,
+    },
+    {
+      id: 'uk-employment-rights', number: 'HC Bill 2024-25 (10)', shortTitle: 'Employment Rights Bill 2024',
+      sponsor: 'Jonathan Reynolds MP (Business Secretary)', dateIntroduced: '10 October 2024', chamber: 'House of Lords',
+      status: 'Lords Second Reading', category: 'Employment & Business',
+      summary: 'The most significant employment law reform in a generation. Delivers day-one unfair dismissal rights, bans exploitative zero-hours contracts, strengthens trade union access rights, introduces rights to flexible working from day one, and creates a Fair Work Agency to enforce workers\' rights.',
+      pros: ['Day-one rights end the insecurity of 2-year qualifying period for unfair dismissal', 'Zero-hours ban gives 900,000 workers predictable income', 'Flexible working rights support carers, parents and disabled workers', 'Fair Work Agency consolidates enforcement — reducing exploitation'],
+      cons: ['CBI warns bill will increase hiring costs and deter employment', 'Small businesses warn day-one rights will reduce willingness to take hiring risks', 'Zero-hours ban may reduce flexibility for workers who prefer variable hours', 'Trade union access provisions raise concerns about workplace disruption'],
+      support: 11200, oppose: 6340,
+    },
+    {
+      id: 'uk-renters-rights', number: 'HC Bill 2024-25 (2)', shortTitle: 'Renters Rights Bill 2025',
+      sponsor: 'Matthew Pennycook MP (Housing Minister)', dateIntroduced: '11 September 2024', chamber: 'House of Lords',
+      status: 'Lords Committee Stage', category: 'Housing & Planning',
+      summary: 'Abolishes Section 21 "no-fault" evictions — fulfilling a 2019 Conservative and 2024 Labour manifesto pledge. Extends the Decent Homes Standard to private rentals, creates a Private Rented Sector Ombudsman, and introduces a national landlord register.',
+      pros: ['11 million private renters gain security of tenure against arbitrary eviction', 'Decent Homes Standard ends damp, mould and disrepair in private rentals', 'Ombudsman provides redress without costly court action', 'Landlord register enables enforcement of standards'],
+      cons: ['Landlord associations warn accelerated exit from market will reduce supply', 'Section 21 repeal without court reform means slow possession for legitimate cases', 'New regulatory burden may deter institutional investment in build-to-rent', 'Ombudsman funding mechanism not yet confirmed'],
+      support: 14300, oppose: 4890,
+    },
+    // Recent Votes — Passed Commons or in Lords
+    {
+      id: 'uk-tobacco-vapes', number: 'HC Bill 2024-25 (3)', shortTitle: 'Tobacco and Vapes Bill 2025',
+      sponsor: 'Wes Streeting MP (Health Secretary)', dateIntroduced: '5 November 2024', chamber: 'House of Commons',
+      status: 'Passed Commons — Lords Second Reading', category: 'Public Health',
+      voteResult: { ayes: 415, noes: 47, date: '26 November 2024' },
+      summary: 'Introduces a generational tobacco ban — anyone born on or after 1 January 2009 will never legally be sold cigarettes in England. Regulates vaping and e-cigarettes, restricting flavours, nicotine levels, and packaging to reduce youth uptake.',
+      pros: ['Prevents the next generation from ever starting smoking', 'Vaping flavour restrictions target youth gateway into nicotine addiction', 'Modelling shows 170,000 fewer cases of cancer and heart disease', 'UK becomes world leader on tobacco-free generation policy'],
+      cons: ['Libertarians argue it is paternalistic state overreach', 'Tobacco retailers warn economic disruption for convenience stores', 'Critics question enforceability — who checks customer date of birth at 60?', 'Vaping industry argues restrictions will push users back to cigarettes'],
+      support: 18700, oppose: 3200,
+    },
+    {
+      id: 'uk-great-british-energy', number: 'HC Bill 2024-25 (1)', shortTitle: 'Great British Energy Act 2025',
+      sponsor: 'Ed Miliband MP (Energy Secretary)', dateIntroduced: '25 July 2024', chamber: 'House of Commons',
+      status: 'Royal Assent', dateRoyalAssent: '7 February 2025', category: 'Energy & Climate',
+      voteResult: { ayes: 349, noes: 194, date: '30 January 2025' },
+      summary: 'Establishes Great British Energy — a publicly-owned clean power company capitalised at £8.3B. GBE will invest in offshore wind, solar, and tidal energy, partnering with industry to accelerate clean power. The UK aims for a fully clean electricity grid by 2030.',
+      pros: ['Public ownership ensures clean energy profits returned to communities', 'Accelerates 50GW offshore wind target for clean grid by 2030', '£8.3B capitalisation leverages multiples of private co-investment', 'Creates tens of thousands of green jobs in coastal and industrial communities'],
+      cons: ['Conservatives argue state energy company repeats 1970s nationalisation mistakes', '£8.3B is insufficient without larger private investment alongside', 'Opposition notes GBE will not reduce household energy bills directly', 'Risk of political interference in commercial investment decisions'],
+      support: 22400, oppose: 8100,
+    },
+    {
+      id: 'uk-football-governance', number: 'HC Bill 2024-25 (8)', shortTitle: 'Football Governance Act 2024',
+      sponsor: 'Lisa Nandy MP (Culture Secretary)', dateIntroduced: '29 October 2024', chamber: 'House of Commons',
+      status: 'Royal Assent', dateRoyalAssent: '8 January 2025', category: 'Sport & Culture',
+      voteResult: { ayes: 382, noes: 68, date: '17 December 2024' },
+      summary: 'Creates the Independent Football Regulator (IFR) — a statutory body to ensure financial sustainability of clubs from the Premier League to National League. Clubs must pass owner and director tests, maintain a fan advisory board, and demonstrate financial resilience.',
+      pros: ['Protects historic clubs from reckless ownership and financial collapse', 'Fan advisory boards give supporters genuine voice in club governance', 'Parachute payments reform levels competition between leagues', 'Prevents club relocations that devastate local communities'],
+      cons: ['Premier League argues regulation undermines competitiveness vs. overseas rivals', 'IFR scope creep risks over-regulating footballing decisions', 'Compliance costs may hit smaller clubs hardest', 'Critics say government should not regulate a private sport'],
+      support: 19600, oppose: 4300,
+    },
+    // Acts & Laws
+    {
+      id: 'uk-automated-vehicles', number: 'HL Bill 2023-24 (4)', shortTitle: 'Automated Vehicles Act 2024',
+      sponsor: 'Lord Davies of Gower (Transport Minister)', dateIntroduced: '10 November 2023', chamber: 'House of Lords',
+      status: 'Royal Assent', dateRoyalAssent: '20 May 2024', category: 'Transport & Technology',
+      summary: 'Provides a legal framework for the safe deployment of self-driving vehicles on UK roads. Establishes the Automated Vehicles Safety Ambition, creates legal liability framework (manufacturer not driver), and creates a new regulatory regime for licensing autonomous vehicle operators.',
+      pros: ['UK becomes first major economy with comprehensive AV legislation', 'Clear liability framework enables insurance market development', 'Safety regulation ensures autonomous vehicles reduce road casualties', 'Positions UK as global leader in autonomous vehicle technology and investment'],
+      cons: ['Early deployment limited — full public roads access years away', 'Liability framework may increase vehicle insurance premiums initially', 'Disability groups warn AV accessibility features not adequately mandated', 'Privacy concerns over vehicle data collection remain unresolved'],
+      support: 12400, oppose: 3900,
+    },
+    {
+      id: 'uk-criminal-justice', number: 'HC Bill 2022-23 (156)', shortTitle: 'Criminal Justice Act 2025',
+      sponsor: 'Shabana Mahmood MP (Lord Chancellor)', dateIntroduced: '7 February 2024', chamber: 'House of Commons',
+      status: 'Royal Assent', dateRoyalAssent: '14 February 2025', category: 'Justice & Courts',
+      summary: 'Reforms the criminal courts and prisons system. Introduces early release provisions to ease prison overcrowding, creates new community sentences for low-risk offenders, increases Magistrates\' sentencing powers, and establishes Independent Sentencing Review recommendations.',
+      pros: ['Eases prison overcrowding crisis — 89,000 prisoners at 99% capacity', 'Extended Magistrates powers reduce Crown Court backlogs', 'Community sentencing reduces reoffending more effectively than short prison terms', 'Independent Sentencing Review modernises inconsistent sentencing guidelines'],
+      cons: ['Victims groups oppose early release — "insult to survivors"', 'Prison governors warn capacity crisis requires new prison build not early release', 'Expanded community sentences require underfunded probation service', 'Magistrates warn increased powers without training risks miscarriages of justice'],
+      support: 9800, oppose: 11200,
+    },
+    {
+      id: 'uk-budget-responsibility', number: 'HC Bill 2024-25 (4)', shortTitle: 'Budget Responsibility Act 2024',
+      sponsor: 'Rachel Reeves MP (Chancellor)', dateIntroduced: '25 July 2024', chamber: 'House of Commons',
+      status: 'Royal Assent', dateRoyalAssent: '8 October 2024', category: 'Finance & Treasury',
+      summary: 'Requires an independent OBR economic and fiscal forecast for any major fiscal event involving tax or spending changes above a specified threshold. A direct response to the 2022 Liz Truss mini-budget which caused market chaos without independent assessment.',
+      pros: ['Prevents repeat of 2022 mini-budget market crisis — £65B gilt market meltdown', 'OBR independence restored after Kwarteng bypassed it in September 2022', 'Fiscal credibility reduces UK borrowing costs', 'Mandatory forecasts improve parliamentary scrutiny of fiscal decisions'],
+      cons: ['Limits Chancellor\'s flexibility in economic emergencies', 'Some economists argue OBR forecasts are not sufficiently independent', 'Opposition argues Act is unnecessary — convention was sufficient', 'Tight timelines for OBR scoring may constrain emergency fiscal response'],
+      support: 15300, oppose: 4700,
+    },
+  ];
+
+  const renderUKLegislativeHub = () => {
+    const activeBills = ukBills.filter(b =>
+      ['Second Reading', 'Committee Stage', 'Report Stage', 'Third Reading', 'Lords Second Reading', 'Lords Committee Stage', 'Lords Report Stage'].includes(b.status)
+    );
+    const recentVotes = ukBills.filter(b =>
+      b.status === 'Passed Commons — Lords Second Reading' || b.voteResult
+    );
+    const acts = ukBills.filter(b => b.status === 'Royal Assent');
+
+    const voteUkBill = (billId, vote) => {
+      setUkBillVotes(prev => {
+        const cur = prev[billId];
+        return { ...prev, [billId]: cur === vote ? null : vote };
+      });
+    };
+
+    const statusBadge = (status) => {
+      const map = {
+        'Second Reading':         'bg-blue-100 text-blue-800 border-blue-300',
+        'Committee Stage':        'bg-yellow-100 text-yellow-800 border-yellow-300',
+        'Report Stage':           'bg-orange-100 text-orange-800 border-orange-300',
+        'Third Reading':          'bg-teal-100 text-teal-800 border-teal-300',
+        'Lords Second Reading':   'bg-indigo-100 text-indigo-800 border-indigo-300',
+        'Lords Committee Stage':  'bg-purple-100 text-purple-800 border-purple-300',
+        'Lords Report Stage':     'bg-violet-100 text-violet-800 border-violet-300',
+        'Passed Commons — Lords Second Reading': 'bg-green-100 text-green-800 border-green-300',
+        'Royal Assent':           'bg-red-100 text-red-800 border-red-300',
+      };
+      return map[status] || 'bg-gray-100 text-gray-800 border-gray-300';
+    };
+
+    const BillCard = ({ bill, accentColor = '#012169' }) => {
+      const isExpanded = expandedUkBills[bill.id] || false;
+      const uv = ukBillVotes[bill.id] || null;
+      const total = bill.support + bill.oppose;
+      const supportPct = total > 0 ? Math.round((bill.support / total) * 100) : 50;
+      return (
+        <div className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-red-300 transition-all">
+          <div
+            className="p-6 cursor-pointer select-none"
+            onClick={() => setExpandedUkBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
+          >
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">{bill.number}</span>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusBadge(bill.status)}`}>{bill.status}</span>
+              {bill.status === 'Royal Assent' && bill.dateRoyalAssent && (
+                <span className="text-xs text-gray-400">· Royal Assent {bill.dateRoyalAssent}</span>
+              )}
+              <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            </div>
+            <h3 className="text-lg font-bold text-gray-800 mb-2 leading-snug">{bill.shortTitle}</h3>
+            <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+              <span>Sponsored by <strong className="text-gray-700">{bill.sponsor}</strong></span>
+              <span>· Introduced {bill.dateIntroduced}</span>
+              <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> {bill.chamber}</span>
+            </div>
+          </div>
+
+          {isExpanded && (
+            <div className="px-6 border-t border-gray-100">
+              <div className="flex flex-wrap gap-2 py-3">
+                <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">{bill.category}</span>
+                {bill.voteResult && (
+                  <span className="bg-green-50 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
+                    Ayes {bill.voteResult.ayes} — Noes {bill.voteResult.noes} · {bill.voteResult.date}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-gray-600 mb-4 leading-relaxed">{bill.summary}</p>
+              <div className="mb-4">
+                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                  <span className="text-green-600 font-semibold">Public Support {supportPct}%</span>
+                  <span className="text-red-500 font-semibold">Oppose {100 - supportPct}%</span>
+                </div>
+                <div className="h-2 bg-red-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${supportPct}%` }} />
+                </div>
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                  <span>{bill.support.toLocaleString()} support</span>
+                  <span>{bill.oppose.toLocaleString()} oppose</span>
+                </div>
+              </div>
+              {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-sm font-bold text-green-700 mb-2">✅ Arguments For</p>
+                    <ul className="space-y-1">
+                      {bill.pros?.slice(0, 3).map((p, i) => <li key={i} className="text-sm text-green-800">• {p}</li>)}
+                    </ul>
+                  </div>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p className="text-sm font-bold text-red-700 mb-2">❌ Arguments Against</p>
+                    <ul className="space-y-1">
+                      {bill.cons?.slice(0, 3).map((c, i) => <li key={i} className="text-sm text-red-800">• {c}</li>)}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="px-6 pb-6 pt-4 flex gap-3">
+            <button
+              onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'support'); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
+            >
+              <ThumbsUp className="w-4 h-4" /> Aye
+            </button>
+            <button
+              onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'oppose'); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
+            >
+              <ThumbsDown className="w-4 h-4" /> No
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 animate-fade-in">
+        {/* Sticky header */}
+        <div className="bg-white shadow-sm sticky top-0 z-10 border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <button
+              onClick={() => setView('uk-national')}
+              className="button-primary text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant"
+            >
+              ← Westminster
+            </button>
+            <h1 className="text-xl font-bold text-gray-800">Legislative Hub</h1>
+            <div className="w-28" />
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Page header */}
+          <div className="flex items-center gap-4 mb-6">
+            <span className="text-4xl">🇬🇧</span>
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">UK Parliament</h2>
+              <p className="text-gray-500 text-sm">House of Commons · House of Lords · Bills, Votes & Acts</p>
+            </div>
+          </div>
+          <div className="h-1 w-32 rounded-full mb-6" style={{ background: 'linear-gradient(to right, #C8102E, #FFFFFF, #012169)' }} />
+
+          {/* Tabs */}
+          <div className="bg-white rounded-xl shadow-md mb-6 p-2">
+            <div className="flex gap-2">
+              {[
+                { key: 'active', label: '📋 Active Bills', activeClass: 'text-white', activeBg: '#012169' },
+                { key: 'votes',  label: '🗳️ Recent Votes', activeClass: 'text-white', activeBg: '#15803D' },
+                { key: 'acts',   label: '📜 Acts & Laws',  activeClass: 'text-white', activeBg: '#C8102E' },
+              ].map(t => (
+                <button
+                  key={t.key}
+                  onClick={() => setUkLegTab(t.key)}
+                  className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all text-sm ${ukLegTab === t.key ? 'shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
+                  style={ukLegTab === t.key ? { backgroundColor: t.activeBg, color: 'white' } : {}}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ── TAB 1: Active Bills ── */}
+          {ukLegTab === 'active' && (
+            <div className="animate-fade-in">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-1">📋 Active Bills Before Parliament</h2>
+                <p className="text-gray-600 text-sm mb-4">Bills currently progressing through the House of Commons or House of Lords — at First, Second or Third Reading, or in Committee / Report Stage</p>
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { label: 'Second Reading', color: 'blue', count: ukBills.filter(b => b.status === 'Second Reading').length },
+                    { label: 'Committee Stage', color: 'yellow', count: ukBills.filter(b => b.status === 'Committee Stage').length },
+                    { label: 'Report Stage', color: 'orange', count: ukBills.filter(b => b.status === 'Report Stage').length },
+                    { label: 'Lords Stages', color: 'indigo', count: ukBills.filter(b => b.status.startsWith('Lords')).length },
+                  ].map(s => (
+                    <div key={s.label} className={`bg-white px-4 py-2 rounded-lg border-2 border-${s.color}-200 shadow-sm`}>
+                      <p className="text-xs text-gray-500">{s.label}</p>
+                      <p className={`text-xl font-bold text-${s.color}-600`}>{s.count}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {activeBills.map(bill => <BillCard key={bill.id} bill={bill} />)}
+              </div>
+
+              <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-blue-800">
+                  <strong>How UK bills become law:</strong> A bill must pass through First Reading (introduction), Second Reading (general debate), Committee Stage (detailed scrutiny), Report Stage (further amendments), and Third Reading in both Houses. If the Lords amend a bill, it returns to the Commons ("ping-pong"). The bill then receives <strong>Royal Assent</strong> from the King to become an Act of Parliament.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB 2: Recent Votes ── */}
+          {ukLegTab === 'votes' && (
+            <div className="animate-fade-in">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-1">🗳️ Recent Parliamentary Divisions</h2>
+                <p className="text-gray-600 text-sm">Bills that have recently passed a division (vote) in the House of Commons or House of Lords. Members vote by physically walking through Aye or No lobbies.</p>
+              </div>
+
+              <div className="space-y-5">
+                {recentVotes.map(bill => {
+                  const isExpanded = expandedUkBills[bill.id] || false;
+                  const uv = ukBillVotes[bill.id] || null;
+                  const total = bill.support + bill.oppose;
+                  const pct = total > 0 ? Math.round((bill.support / total) * 100) : 50;
+                  return (
+                    <div key={bill.id} className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-green-400 transition-all">
+                      <div
+                        className="p-6 cursor-pointer select-none"
+                        onClick={() => setExpandedUkBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
+                      >
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">{bill.number}</span>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusBadge(bill.status)}`}>{bill.status}</span>
+                          {bill.voteResult && (
+                            <span className="bg-green-50 text-green-700 border border-green-200 px-3 py-1 rounded-full text-xs font-medium">
+                              ✓ Ayes {bill.voteResult.ayes} — Noes {bill.voteResult.noes}
+                            </span>
+                          )}
+                          <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
+                        <p className="text-xs text-gray-500">Sponsored by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
+                      </div>
+
+                      {isExpanded && (
+                        <div className="px-6 border-t border-gray-100">
+                          <div className="py-3 flex flex-wrap gap-2">
+                            <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-4 leading-relaxed">{bill.summary}</p>
+                          <div className="mb-4">
+                            <div className="flex justify-between text-xs text-gray-500 mb-1">
+                              <span className="text-green-600 font-semibold">Support {pct}%</span>
+                              <span className="text-red-500 font-semibold">Oppose {100 - pct}%</span>
+                            </div>
+                            <div className="h-2 bg-red-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-green-500 rounded-full" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                          {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                <p className="text-sm font-bold text-green-700 mb-2">✅ Arguments For</p>
+                                <ul className="space-y-1">
+                                  {bill.pros?.slice(0, 3).map((p, i) => <li key={i} className="text-sm text-green-800">• {p}</li>)}
+                                </ul>
+                              </div>
+                              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                <p className="text-sm font-bold text-red-700 mb-2">❌ Arguments Against</p>
+                                <ul className="space-y-1">
+                                  {bill.cons?.slice(0, 3).map((c, i) => <li key={i} className="text-sm text-red-800">• {c}</li>)}
+                                </ul>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="px-6 pb-6 pt-4 flex gap-3">
+                        <button onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'support'); }} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:bg-green-50'}`}>
+                          <ThumbsUp className="w-4 h-4" /> Aye
+                        </button>
+                        <button onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'oppose'); }} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:bg-red-50'}`}>
+                          <ThumbsDown className="w-4 h-4" /> No
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-green-800">
+                  <strong>Parliamentary Divisions:</strong> In the House of Commons, MPs vote by physically walking through the Aye lobby or No lobby. The tellers count members as they exit. Divisions are recorded in Hansard — the official record of Parliament. Whipping means party managers instruct MPs how to vote; a "free vote" is unwhipped.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB 3: Acts & Laws ── */}
+          {ukLegTab === 'acts' && (
+            <div className="animate-fade-in">
+              <div className="bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 rounded-xl p-6 mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-1">📜 Acts of Parliament</h2>
+                <p className="text-gray-600 text-sm">Bills that have received <strong>Royal Assent</strong> from His Majesty the King and are now law. Administered by legislation.gov.uk — the official UK legislation database.</p>
+              </div>
+
+              <div className="space-y-5">
+                {acts.map(bill => {
+                  const isExpanded = expandedUkBills[bill.id] || false;
+                  return (
+                    <div key={bill.id} className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-red-400 transition-all">
+                      <div
+                        className="p-6 cursor-pointer select-none"
+                        onClick={() => setExpandedUkBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
+                      >
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold">{bill.number}</span>
+                          <span className="bg-red-100 text-red-800 border border-red-300 px-3 py-1 rounded-full text-xs font-medium">
+                            ✓ Royal Assent {bill.dateRoyalAssent && `· ${bill.dateRoyalAssent}`}
+                          </span>
+                          <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
+                        <p className="text-xs text-gray-500">Sponsored by <strong>{bill.sponsor}</strong> · Introduced {bill.dateIntroduced}</p>
+                      </div>
+
+                      {isExpanded && (
+                        <div className="px-6 border-t border-gray-100">
+                          <div className="py-3 flex flex-wrap gap-2">
+                            <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
+                            {bill.voteResult && (
+                              <span className="bg-green-50 text-green-700 px-2 py-1 rounded-full text-xs">
+                                Final Division: Ayes {bill.voteResult.ayes} — Noes {bill.voteResult.noes}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600 mb-4 leading-relaxed">{bill.summary}</p>
+                          {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                <p className="text-sm font-bold text-green-700 mb-2">✅ Key Benefits</p>
+                                <ul className="space-y-1">
+                                  {bill.pros?.map((p, i) => <li key={i} className="text-sm text-green-800">• {p}</li>)}
+                                </ul>
+                              </div>
+                              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                <p className="text-sm font-bold text-red-700 mb-2">⚠️ Criticisms</p>
+                                <ul className="space-y-1">
+                                  {bill.cons?.map((c, i) => <li key={i} className="text-sm text-red-800">• {c}</li>)}
+                                </ul>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="px-6 pb-6 pt-4 flex gap-3">
+                        <button onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'support'); }} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${ukBillVotes[bill.id] === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:bg-green-50'}`}>
+                          <ThumbsUp className="w-4 h-4" /> Support
+                        </button>
+                        <button onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'oppose'); }} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${ukBillVotes[bill.id] === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:bg-red-50'}`}>
+                          <ThumbsDown className="w-4 h-4" /> Oppose
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-red-800">
+                  <strong>Royal Assent:</strong> Royal Assent is formally granted by the King — today by written notification rather than in person. Once granted, a bill becomes an Act of Parliament and is added to the UK Statute Book at <strong>legislation.gov.uk</strong>. Acts may be commenced immediately or in phases via Statutory Instruments.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   // ── UK House of Commons data ─────────────────────────────────────────────────
   const ukMps = [
     // Labour (30)
@@ -11730,7 +12225,7 @@ function App() {
 
           {/* Legislative Hub */}
           <div
-            onClick={() => setView('uk-coming-soon')}
+            onClick={() => setView('uk-legislative-hub')}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
             onMouseEnter={e => e.currentTarget.style.borderColor = '#15803D'}
             onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
@@ -24007,6 +24502,7 @@ function App() {
       {view === 'uk-member-detail' && selectedUkMember && renderUKMemberDetail()}
       {view === 'uk-lords' && renderUKLords()}
       {view === 'uk-lord-detail' && selectedUkLord && renderUKLordDetail()}
+      {view === 'uk-legislative-hub' && renderUKLegislativeHub()}
       {view === 'uk-regions' && renderUKRegions()}
       {view === 'uk-coming-soon' && renderUKComingSoon()}
       {view === 'au-analytics' && renderAuAnalytics()}
