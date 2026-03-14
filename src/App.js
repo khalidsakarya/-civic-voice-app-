@@ -18170,137 +18170,36 @@ function App() {
   };
 
   const renderAuHighCourt = () => {
-    const NAVY = '#071D3B';
-    const GOLD = '#C8A400';
-    const GOLD_LIGHT = '#F0C808';
+    const highCourt = {
+      justices: [
+        { name: 'Stephen Gageler', role: 'Chief Justice', appointedBy: 'PM Albanese (ALP)', year: 2024, state: 'New South Wales' },
+        { name: 'James Edelman', role: 'Justice', appointedBy: 'PM Turnbull (Liberal)', year: 2017, state: 'Western Australia' },
+        { name: 'Simon Steward', role: 'Justice', appointedBy: 'PM Morrison (Liberal)', year: 2020, state: 'Victoria' },
+        { name: 'Jacqueline Gleeson', role: 'Justice', appointedBy: 'PM Morrison (Liberal)', year: 2021, state: 'New South Wales' },
+        { name: 'Jayne Jagot', role: 'Justice', appointedBy: 'PM Albanese (ALP)', year: 2023, state: 'New South Wales' },
+        { name: 'Robert Beech-Jones', role: 'Justice', appointedBy: 'PM Albanese (ALP)', year: 2023, state: 'New South Wales' },
+        { name: 'Andrew Bell', role: 'Justice', appointedBy: 'PM Albanese (ALP)', year: 2024, state: 'New South Wales' },
+      ],
+      casesInProcess: [
+        { id: 'hca-2025-01', name: 'Commonwealth v Yunupingu', caseNumber: 'M12/2025', topic: 'Native Title', status: 'Under Consideration', dateArgued: 'February 2026', issue: 'Whether sea country native title rights recognised under the Native Title Act extend to exclusive possession and commercial fishing rights over offshore areas within the territorial sea.' },
+        { id: 'hca-2025-02', name: 'Minister for Home Affairs v Ahmed', caseNumber: 'S38/2025', topic: 'Migration & Constitutional Law', status: 'Reserved', dateArgued: 'March 2026', issue: 'Scope of executive power to detain non-citizens under s 189 of the Migration Act following NZYQ; whether a continuing obligation to remove must be actively pursued.' },
+        { id: 'hca-2025-03', name: 'Australian Competition & Consumer Commission v Alphabet Inc', caseNumber: 'C7/2025', topic: 'Competition Law', status: 'Hearing Listed', dateArgued: 'April 2026', issue: 'Whether Google\'s exclusive pre-installation agreements with Australian device manufacturers constitute misuse of market power under s 46 of the Competition and Consumer Act 2010.' },
+        { id: 'hca-2025-04', name: 'Doyle v Commonwealth', caseNumber: 'B22/2025', topic: 'Constitutional Law', status: 'Special Leave Granted', dateArgued: 'May 2026', issue: 'Whether the referral powers in s 51(xxxvii) of the Constitution permit the Commonwealth to exercise plenary legislative power over state-referred matters, including criminal sentencing.' },
+      ],
+      recentDecisions: [
+        { id: 'hca-dec-01', name: 'NZYQ v Minister for Immigration', caseNumber: 'S28/2023', topic: 'Constitutional Law · Migration', status: 'Decided', dateDecided: 'November 2023', voteSplit: '7–0', decision: 'Indefinite immigration detention unconstitutional', issue: 'Whether the Commonwealth may indefinitely detain a non-citizen where there is no real prospect of removal from Australia.', impact: 'Overturned Al-Kateb v Godwin (2004); forced release of approximately 140 long-term immigration detainees.' },
+        { id: 'hca-dec-02', name: 'Babet v Commonwealth', caseNumber: 'M5/2024', topic: 'Constitutional Law · Disqualification', status: 'Decided', dateDecided: 'June 2024', voteSplit: '5–2', decision: 'Senator declared ineligible under s 44(i)', issue: 'Whether a senator holding dual Australian-Belgian citizenship at the time of nomination was disqualified under s 44(i) of the Constitution.', impact: 'Reaffirmed the strict application of s 44 disqualification provisions; senator\'s seat declared vacant and filled by a count-back.' },
+        { id: 'hca-dec-03', name: 'Vanderstock v Victoria', caseNumber: 'S35/2022', topic: 'Constitutional Law · Taxation', status: 'Decided', dateDecided: 'October 2023', voteSplit: '4–3', decision: 'EV road-user charge struck down as an excise', issue: 'Whether Victoria\'s zero and low-emission vehicle road-user charge under the Zero and Low Emission Vehicle Distance-based Charge Act 2021 was an excise duty, a form of taxation reserved exclusively to the Commonwealth under s 90 of the Constitution.', impact: 'Invalidated the Victorian charge; clarified the constitutional boundary between state charges and Commonwealth excise duties.' },
+        { id: 'hca-dec-04', name: 'DP World Australia v Maritime Union of Australia', caseNumber: 'S18/2024', topic: 'Industrial Relations · Fair Work Act', status: 'Decided', dateDecided: 'September 2024', voteSplit: '6–1', decision: 'Protected industrial action provisions upheld', issue: 'Whether provisions of the Fair Work Act 2009 permitting protected industrial action during enterprise bargaining infringe the implied constitutional freedom of trade and commerce under s 92.', impact: 'Confirmed Parliament\'s broad power to regulate industrial relations; strengthened union right to bargain collectively.' },
+      ],
+      upcomingCases: [
+        { id: 'hca-up-01', name: 'Northern Land Council v Surfing Australia', caseNumber: 'D11/2025', topic: 'Native Title · Land Access', status: 'Special Leave Granted', dateScheduled: 'June 2026', issue: 'Whether native title holders may exclude non-Indigenous recreational users from beaches that form part of a recognised native title determination, and the interaction with the Racial Discrimination Act 1975.' },
+        { id: 'hca-up-02', name: 'Optus Networks v ACCC', caseNumber: 'S44/2025', topic: 'Telecommunications · Competition Law', status: 'Special Leave Granted', dateScheduled: 'July 2026', issue: 'Proper construction of the access regime under Part XIC of the Competition and Consumer Act; whether the ACCC\'s final access determination for the national broadband network constitutes a taking of property requiring just terms compensation.' },
+        { id: 'hca-up-03', name: 'State of Queensland v Adani Mining', caseNumber: 'B19/2025', topic: 'Environment · Resource Law', status: 'Listed for Hearing', dateScheduled: 'August 2026', issue: 'Whether state environmental approval conditions that effectively prohibit lawful mining activities authorised under a Commonwealth approval constitute an acquisition of property on other than just terms under s 51(xxxi).' },
+      ],
+    };
 
-    const justices = [
-      {
-        name: 'Stephen Gageler',
-        title: 'Chief Justice',
-        initials: 'SG',
-        appointed: '1 March 2024',
-        appointedJustice: '9 October 2012',
-        appointedBy: 'PM Julia Gillard (ALP)',
-        state: 'New South Wales',
-        education: 'BA/LLB (Hons), University of Sydney; LLM, Harvard Law School',
-        background: 'Gageler practised at the NSW Bar and served as Solicitor-General of Australia from 2008 to 2012. He was the leading Commonwealth advocate of his generation, arguing landmark constitutional cases before the High Court. He was appointed to the Court by PM Gillard in 2012 and elevated to Chief Justice by PM Albanese in 2024 following Susan Kiefel\'s retirement.',
-        notableCases: [
-          { name: 'NZYQ v Minister for Immigration (2023)', desc: 'Landmark ruling declaring indefinite immigration detention unconstitutional, overturning the 2004 Al-Kateb precedent.' },
-          { name: 'Roach v Electoral Commissioner (2007)', desc: 'As Solicitor-General, argued the Commonwealth case; the Court held that blanket prisoner voting bans were unconstitutional.' },
-          { name: 'Williams v Commonwealth (2012)', desc: 'Court struck down Commonwealth funding of school chaplaincy program without legislative authority.' },
-        ],
-        ideology: 'Progressive',
-      },
-      {
-        name: 'James Edelman',
-        title: 'Justice',
-        initials: 'JE',
-        appointed: '11 September 2017',
-        appointedJustice: '11 September 2017',
-        appointedBy: 'PM Malcolm Turnbull (Liberal)',
-        state: 'Western Australia',
-        education: 'BA/LLB (Hons), University of Western Australia; DPhil, University of Oxford',
-        background: 'Edelman is one of the Court\'s foremost legal scholars, having served as Professor of Law at Oxford and Queensland before his judicial career. He served on the Federal Court from 2015 and was elevated to the High Court at age 43, one of the youngest appointments in decades. His scholarship in unjust enrichment, restitution, and equity has shaped Australian private law.',
-        notableCases: [
-          { name: 'Peter v Najjar (2023)', desc: 'Clarified the scope of equitable compensation and the relationship between equity and common law damages.' },
-          { name: 'Dring v Cape Intermediate Holdings (2019)', desc: 'Key judgment on open justice and public access to court documents in civil litigation.' },
-          { name: 'Binsaris v Northern Territory (2020)', desc: 'Addressed unlawful detention and the constitutional limits of executive detention power.' },
-        ],
-        ideology: 'Centre',
-      },
-      {
-        name: 'Simon Steward',
-        title: 'Justice',
-        initials: 'SS',
-        appointed: '10 February 2020',
-        appointedJustice: '10 February 2020',
-        appointedBy: 'PM Scott Morrison (Liberal)',
-        state: 'Victoria',
-        education: 'LLB (Hons), University of Melbourne; LLM, University of Cambridge',
-        background: 'Steward spent over two decades at the Victorian Bar specialising in revenue law, commercial law, and constitutional matters. He appeared as senior counsel in major tax disputes and constitutional cases. He served on the Federal Court from 2017 before appointment to the High Court, where he has become a prominent voice on taxation and statutory interpretation.',
-        notableCases: [
-          { name: 'Commissioner of Taxation v Normandy Finance (2022)', desc: 'Major ruling on Part IVA general anti-avoidance provisions and the limits of tax planning arrangements.' },
-          { name: 'NZYQ v Minister for Immigration (2023)', desc: 'Joined the majority in overturning Al-Kateb, holding that indefinite detention without prospect of deportation is unconstitutional.' },
-          { name: 'Glencore International v Commissioner of Taxation (2019)', desc: 'As Federal Court judge, held that legal professional privilege extends to documents prepared for dominant purpose of legal advice.' },
-        ],
-        ideology: 'Conservative',
-      },
-      {
-        name: 'Jacqueline Gleeson',
-        title: 'Justice',
-        initials: 'JG',
-        appointed: '10 December 2021',
-        appointedJustice: '10 December 2021',
-        appointedBy: 'PM Scott Morrison (Liberal)',
-        state: 'New South Wales',
-        education: 'BA/LLB, University of New South Wales; LLM, University of Sydney',
-        background: 'Gleeson practised at the NSW Bar with a focus on public and administrative law, equity, and commercial disputes. She is the daughter of former Chief Justice Murray Gleeson. She served on the Federal Court and the NSW Court of Appeal before her High Court appointment. She brings deep expertise in constitutional law, administrative law, and statutory interpretation.',
-        notableCases: [
-          { name: 'Minister for Immigration v Viane (2023)', desc: 'Clarified the scope of ministerial discretion in character-based visa cancellation, emphasising procedural fairness.' },
-          { name: 'MZAPC v Minister for Immigration (2021)', desc: 'Key ruling on jurisdictional error in migration tribunal decisions and the distinction between legal and factual error.' },
-          { name: 'Australian Competition and Consumer Commission v Bytecard (2020)', desc: 'Addressed consumer contract terms and the unfair contract terms regime under the Australian Consumer Law.' },
-        ],
-        ideology: 'Centre',
-      },
-      {
-        name: 'Jayne Jagot',
-        title: 'Justice',
-        initials: 'JJ',
-        appointed: '13 April 2023',
-        appointedJustice: '13 April 2023',
-        appointedBy: 'PM Anthony Albanese (ALP)',
-        state: 'New South Wales',
-        education: 'BA/LLB (Hons), University of Sydney; LLM, University College London',
-        background: 'Jagot spent over two decades on the Federal Court, where she developed expertise in native title, intellectual property, administrative law, and competition law. She was appointed to the Federal Court by PM Rudd in 2008. She is recognised for her rigorous, methodical judgments and her contribution to native title law, having presided over complex land rights proceedings across Australia.',
-        notableCases: [
-          { name: 'NZYQ v Minister for Immigration (2023)', desc: 'Joined the unanimous Court in ruling indefinite immigration detention unconstitutional where there is no real prospect of removal.' },
-          { name: 'Northern Territory v Mr A Griffiths (Deceased) (2017)', desc: 'As Federal Court judge, delivered a comprehensive native title determination over significant areas of the Northern Territory.' },
-          { name: 'Phonographic Performance Company v Federation of Australian Commercial Television Stations (2013)', desc: 'Resolved a major dispute over broadcast royalties and the scope of copyright in sound recordings.' },
-        ],
-        ideology: 'Progressive',
-      },
-      {
-        name: 'Robert Beech-Jones',
-        title: 'Justice',
-        initials: 'RB',
-        appointed: '1 September 2023',
-        appointedJustice: '1 September 2023',
-        appointedBy: 'PM Anthony Albanese (ALP)',
-        state: 'New South Wales',
-        education: 'BA/LLB (Hons), University of Sydney',
-        background: 'Beech-Jones served as a NSW Supreme Court judge from 2011 to 2023, becoming one of the most prominent trial judges in Australia. He presided over the criminal trial of Cardinal George Pell and numerous high-profile proceedings. He chaired the COVID-19 Vaccine Claims Review Panel and developed expertise in class actions, criminal law, and complex civil litigation before his High Court appointment.',
-        notableCases: [
-          { name: 'NZYQ v Minister for Immigration (2023)', desc: 'In his first sitting term, joined the unanimous Court in the landmark immigration detention ruling.' },
-          { name: 'Pell v The Queen (2019)', desc: 'As NSW Supreme Court judge, presided over related proceedings; the High Court unanimously acquitted Pell in 2020.' },
-          { name: 'Perera v GetSwift Ltd (2018)', desc: 'Delivered major class action judgment addressing continuous disclosure obligations and shareholder compensation.' },
-        ],
-        ideology: 'Centre',
-      },
-      {
-        name: 'Attach Bell',
-        title: 'Justice',
-        initials: 'AB',
-        appointed: '1 March 2024',
-        appointedJustice: '1 March 2024',
-        appointedBy: 'PM Anthony Albanese (ALP)',
-        state: 'New South Wales',
-        education: 'LLB (Hons), University of Sydney; BCL, University of Oxford',
-        background: 'Bell served as Chief Justice of the NSW Court of Appeal from 2019 to 2024, making him one of Australia\'s most experienced appellate judges prior to his High Court appointment. His practice at the NSW Bar spanned commercial law, equity, and constitutional matters, and his appellate judgments are widely cited in commercial and equity disputes across Australian jurisdictions.',
-        notableCases: [
-          { name: 'Minogue v Human Rights and Equal Opportunity Commission (2023)', desc: 'As Court of Appeal Chief Justice, addressed prisoner rights and the application of anti-discrimination law in custodial settings.' },
-          { name: 'Thiess v MCC Mining (2011)', desc: 'Landmark commercial arbitration decision clarifying the scope of judicial review of international arbitral awards in Australia.' },
-          { name: 'Lavin v Toppi (2015)', desc: 'Key ruling on contribution between co-sureties and the principles governing restitutionary claims in commercial contexts.' },
-        ],
-        ideology: 'Centre',
-      },
-    ];
-
-    // Fix the typo in data
-    justices[6].name = 'Andrew Bell';
-
-    const ideologyColor = { Progressive: '#1d4ed8', Centre: '#374151', Conservative: '#b91c1c' };
-    const ideologyBg = { Progressive: '#eff6ff', Centre: '#f9fafb', Conservative: '#fef2f2' };
+    const totalCases = highCourt.casesInProcess.length + highCourt.recentDecisions.length + highCourt.upcomingCases.length;
 
     const castVote = (justiceName, type) => {
       setAuHighCourtVotes(prev => {
@@ -18318,196 +18217,141 @@ function App() {
     };
 
     return (
-      <div className="min-h-screen animate-fade-in" style={{ background: '#F0F4F8' }}>
-
-        {/* ── HEADER ─────────────────────────────────────────────────── */}
-        <div className="sticky top-0 z-20" style={{ background: `linear-gradient(135deg, ${NAVY} 0%, #0A2040 100%)`, paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
-          <div className="h-0.5 w-full" style={{ background: `linear-gradient(90deg, ${GOLD}, ${GOLD_LIGHT}, ${GOLD})` }} />
-          <div className="max-w-6xl mx-auto px-4 sm:px-8 py-4 flex items-center gap-5">
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4">
             <button
               onClick={() => setView('au-categories')}
-              className="inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-2 transition-colors flex-shrink-0"
-              style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.88)', border: '1px solid rgba(255,255,255,0.18)' }}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+              className="text-amber-600 hover:text-amber-800 flex items-center gap-2"
             >
-              <ChevronRight className="w-4 h-4 rotate-180" /><span>Back</span>
+              ← Back to Australian Federal Government
             </button>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] mb-0.5" style={{ color: GOLD }}>Australian Federal Government</p>
-              <h1 className="font-black text-white text-lg sm:text-2xl leading-tight">High Court of Australia</h1>
-            </div>
-            <div className="hidden sm:flex items-center justify-center w-12 h-12 rounded-full flex-shrink-0" style={{ background: `${GOLD}22`, border: `2px solid ${GOLD}55` }}>
-              <Scale className="w-6 h-6" style={{ color: GOLD }} />
-            </div>
           </div>
         </div>
 
-        {/* ── HERO BANNER ──────────────────────────────────────────────── */}
-        <div className="relative overflow-hidden" style={{ background: `linear-gradient(160deg, ${NAVY} 0%, #0C2550 60%, #0F2D60 100%)` }}>
-          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)', backgroundSize: '56px 56px' }} />
-          <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, #F0F4F8)' }} />
-          <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-8 py-10 sm:py-14">
-            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 sm:gap-10">
-              {/* Crest / emblem */}
-              <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex items-center justify-center shadow-2xl" style={{ background: `linear-gradient(135deg, ${GOLD} 0%, ${GOLD_LIGHT} 100%)`, boxShadow: `0 0 0 3px rgba(200,164,0,0.3), 0 12px 40px rgba(0,0,0,0.4)` }}>
-                <Scale className="w-10 h-10 sm:w-12 sm:h-12 text-white" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
-              </div>
-              <div className="text-center sm:text-left">
-                <p className="text-xs font-bold uppercase tracking-[0.22em] mb-2" style={{ color: GOLD }}>Commonwealth of Australia · Est. 1903</p>
-                <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-3">High Court of Australia</h2>
-                <p className="text-sm sm:text-base text-blue-200 leading-relaxed max-w-xl">The apex court and final court of appeal. Guardian of the Constitution and ultimate interpreter of Australian law since federation.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── STAT STRIP ─────────────────────────────────────────────── */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-8 -mt-2 mb-8">
-          <div className="bg-white rounded-2xl border border-gray-100 px-5 py-4 flex flex-wrap gap-y-3 gap-x-8" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
-            {[
-              { label: 'Justices', value: '7', emoji: '⚖️' },
-              { label: 'Established', value: '1903', emoji: '🏛️' },
-              { label: 'Chief Justice', value: 'Gageler', emoji: '👤' },
-              { label: 'Jurisdiction', value: 'Federal & Constitutional', emoji: '🇦🇺' },
-            ].map(({ label, value, emoji }) => (
-              <div key={label} className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0" style={{ background: `${GOLD}1a` }}>{emoji}</div>
-                <div>
-                  <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">{label}</p>
-                  <p className="text-sm font-black text-gray-900 leading-tight">{value}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── ABOUT ─────────────────────────────────────────────────── */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-8 mb-8">
-          <div className="rounded-2xl overflow-hidden" style={{ background: `linear-gradient(135deg, ${NAVY}08 0%, ${NAVY}03 100%)`, border: `1px solid ${GOLD}30` }}>
-            <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${GOLD}, ${GOLD_LIGHT}, ${GOLD})` }} />
-            <div className="p-5 sm:p-6">
-              <h3 className="font-black text-gray-900 text-base mb-2">About the High Court</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">The High Court of Australia is the supreme court of Australia and the final court of appeal. It has original jurisdiction over matters arising under the Constitution, matters between states, and matters in which the Commonwealth is a party. Its seven justices — one Chief Justice and six Justices — are appointed by the Governor-General on the advice of the Federal Executive Council. Justices serve until the mandatory retirement age of 70.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* ── JUSTICES GRID ─────────────────────────────────────────── */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-8 pb-14">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-5 h-0.5 rounded-full" style={{ background: GOLD }} />
-            <span className="text-xs font-black uppercase tracking-[0.18em] text-gray-500">Current Bench · 7 Justices</span>
-            <div className="flex-1 h-px bg-gray-200" />
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-gradient-to-r from-amber-50 to-green-50 border border-amber-300 rounded-lg p-6 mb-8">
+            <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
+              <Scale className="w-10 h-10 text-amber-600" />
+              High Court of Australia
+            </h2>
+            <p className="text-gray-600">The apex court and final court of appeal in Australia — guardian of the Constitution and final interpreter of Australian law since 1903</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {justices.map((j, idx) => {
-              const votes = auHighCourtVotes[j.name] || { support: 0, oppose: 0, userVote: null };
-              const total = votes.support + votes.oppose;
-              const pct = total > 0 ? Math.round((votes.support / total) * 100) : 50;
-              const isChief = j.title === 'Chief Justice';
-
-              return (
-                <div
-                  key={idx}
-                  className="bg-white rounded-2xl overflow-hidden"
-                  style={{ boxShadow: '0 4px 28px rgba(0,0,0,0.09)', border: isChief ? `2px solid ${GOLD}60` : '1px solid #e5e7eb' }}
-                >
-                  {/* Top accent stripe */}
-                  <div className="h-1.5 w-full" style={{ background: isChief ? `linear-gradient(90deg, ${GOLD}, ${GOLD_LIGHT})` : `linear-gradient(90deg, ${NAVY}, #1B4FD8)` }} />
-
-                  <div className="p-5 sm:p-6">
-                    {/* Header row */}
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center font-black text-lg shadow-md" style={{ background: isChief ? `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})` : `linear-gradient(135deg, ${NAVY}, #1B4FD8)`, color: 'white' }}>
-                        {j.initials}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-black text-gray-900 text-base sm:text-lg leading-tight">{j.name}</h3>
-                          {isChief && <Crown className="w-4 h-4 flex-shrink-0" style={{ color: GOLD }} />}
-                        </div>
-                        <p className="text-xs font-bold uppercase tracking-[0.12em] mt-0.5" style={{ color: isChief ? GOLD : '#1B4FD8' }}>{j.title}</p>
-                        <p className="text-xs text-gray-500 mt-1">{j.state}</p>
-                      </div>
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: `${ideologyBg[j.ideology]}`, color: ideologyColor[j.ideology], border: `1px solid ${ideologyColor[j.ideology]}30` }}>{j.ideology}</span>
+          {/* Justices Section */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4">7 High Court Justices</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {highCourt.justices.map((justice, index) => {
+                const votes = auHighCourtVotes[justice.name] || { support: 0, oppose: 0, userVote: null };
+                const total = votes.support + votes.oppose;
+                const pct = total > 0 ? Math.round((votes.support / total) * 100) : 50;
+                return (
+                  <div key={index} className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      {justice.role === 'Chief Justice' && <Crown className="w-5 h-5 text-amber-600" />}
+                      <h4 className="font-bold text-gray-800">{justice.name}</h4>
                     </div>
-
-                    {/* Appointment info */}
-                    <div className="grid grid-cols-2 gap-2 mb-4">
-                      <div className="rounded-xl px-3 py-2" style={{ background: `${NAVY}08` }}>
-                        <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-0.5">Appointed</p>
-                        <p className="text-xs font-bold text-gray-800">{j.appointed}</p>
-                      </div>
-                      <div className="rounded-xl px-3 py-2" style={{ background: `${GOLD}10` }}>
-                        <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-0.5">Appointed By</p>
-                        <p className="text-xs font-bold text-gray-800">{j.appointedBy}</p>
-                      </div>
-                    </div>
-
-                    {/* Education */}
-                    <div className="mb-4">
-                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-gray-400 mb-1">Education</p>
-                      <p className="text-xs text-gray-700 leading-relaxed">{j.education}</p>
-                    </div>
-
-                    {/* Background */}
-                    <div className="mb-4">
-                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-gray-400 mb-1">Legal Background</p>
-                      <p className="text-xs text-gray-700 leading-relaxed">{j.background}</p>
-                    </div>
-
-                    {/* Notable cases */}
-                    <div className="mb-5">
-                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-gray-400 mb-2">Notable Cases</p>
-                      <div className="space-y-2">
-                        {j.notableCases.map((c, ci) => (
-                          <div key={ci} className="rounded-xl px-3 py-2.5" style={{ background: `${NAVY}06`, border: `1px solid ${NAVY}12` }}>
-                            <p className="text-xs font-bold text-gray-800 leading-snug mb-0.5">{c.name}</p>
-                            <p className="text-xs text-gray-600 leading-relaxed">{c.desc}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
+                    <p className="text-sm text-gray-600">{justice.role}</p>
+                    <p className="text-sm text-gray-500 mt-1">Appointed by: {justice.appointedBy} ({justice.year})</p>
+                    <p className="text-sm text-gray-500">State: {justice.state}</p>
                     {/* Approval bar */}
-                    <div className="bg-gray-50 rounded-xl px-3 py-2.5 flex items-center gap-3 mb-2">
-                      <div className="flex items-center gap-1.5">
-                        <ThumbsUp className="w-3.5 h-3.5 text-green-600" />
-                        <span className="text-xs font-bold text-gray-700">{votes.support.toLocaleString()}</span>
-                      </div>
+                    <div className="flex items-center gap-2 mt-3">
+                      <ThumbsUp className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
                       <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, background: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold text-gray-700">{votes.oppose.toLocaleString()}</span>
-                        <ThumbsDown className="w-3.5 h-3.5 text-red-500" />
-                      </div>
+                      <ThumbsDown className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
                     </div>
-
-                    {/* Vote buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5 mt-2">
                       <button
-                        onClick={() => castVote(j.name, 'support')}
-                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all ${votes.userVote === 'support' ? 'bg-green-500 text-white shadow-sm' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
+                        onClick={() => castVote(justice.name, 'support')}
+                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-semibold transition-colors ${votes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white text-green-700 hover:bg-green-50 border border-green-200'}`}
                       >
-                        <ThumbsUp className="w-3.5 h-3.5" /> Support
+                        <ThumbsUp className="w-3 h-3" /> {votes.support > 0 ? votes.support : 'Support'}
                       </button>
                       <button
-                        onClick={() => castVote(j.name, 'oppose')}
-                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all ${votes.userVote === 'oppose' ? 'bg-red-500 text-white shadow-sm' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
+                        onClick={() => castVote(justice.name, 'oppose')}
+                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-semibold transition-colors ${votes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white text-red-700 hover:bg-red-50 border border-red-200'}`}
                       >
-                        <ThumbsDown className="w-3.5 h-3.5" /> Oppose
+                        <ThumbsDown className="w-3 h-3" /> {votes.oppose > 0 ? votes.oppose : 'Oppose'}
                       </button>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
-          <p className="text-xs text-gray-400 text-center mt-8">Justice profiles are illustrative and based on publicly available information. Appointment dates and case descriptions may be approximate.</p>
+          {/* Cases In Process */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Clock className="w-6 h-6 text-blue-600" />
+              Cases In Process ({highCourt.casesInProcess.length})
+            </h3>
+            <p className="text-gray-600 mb-4">Currently being argued or awaiting decision</p>
+            <div className="space-y-4">
+              {highCourt.casesInProcess.map((case_) => (
+                <div key={case_.id} className="border-l-4 border-blue-500 bg-blue-50 p-4 rounded-r-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-bold text-gray-800 text-lg">{case_.name}</h4>
+                    <span className="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{case_.status}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">Case #{case_.caseNumber} • {case_.topic}</p>
+                  <p className="text-gray-700 mb-2">{case_.issue}</p>
+                  <p className="text-sm text-gray-500">Argued: {case_.dateArgued}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Decisions */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+              Recent Decisions (Last 12 Months)
+            </h3>
+            <p className="text-gray-600 mb-4">Major rulings and their impact</p>
+            <div className="space-y-4">
+              {highCourt.recentDecisions.map((case_) => (
+                <div key={case_.id} className="border-l-4 border-green-500 bg-green-50 p-4 rounded-r-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-bold text-gray-800 text-lg">{case_.name}</h4>
+                    <div className="text-right">
+                      <span className="bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm font-medium block mb-1">{case_.status}</span>
+                      <span className="text-sm font-bold text-gray-700">{case_.voteSplit}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">Case #{case_.caseNumber} • {case_.topic}</p>
+                  <p className="text-gray-700 mb-2">{case_.issue}</p>
+                  <p className="text-sm font-semibold text-green-700 mb-1">Decision: {case_.decision}</p>
+                  <p className="text-sm text-gray-500">Decided: {case_.dateDecided} • Impact: {case_.impact}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Upcoming Cases */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Calendar className="w-6 h-6 text-purple-600" />
+              Upcoming Cases ({highCourt.upcomingCases.length})
+            </h3>
+            <p className="text-gray-600 mb-4">Scheduled to be heard</p>
+            <div className="space-y-4">
+              {highCourt.upcomingCases.map((case_) => (
+                <div key={case_.id} className="border-l-4 border-purple-500 bg-purple-50 p-4 rounded-r-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-bold text-gray-800 text-lg">{case_.name}</h4>
+                    <span className="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">{case_.status}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">Case #{case_.caseNumber} • {case_.topic}</p>
+                  <p className="text-gray-700 mb-2">{case_.issue}</p>
+                  <p className="text-sm text-gray-500">Scheduled: {case_.dateScheduled}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
