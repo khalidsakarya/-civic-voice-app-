@@ -9950,30 +9950,150 @@ function App() {
   };
 
   const renderUKNational = () => (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
+      <div className="max-w-6xl mx-auto">
         <button
           onClick={() => setView('government-levels')}
-          className="mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium shadow-elegant"
+          className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
         >
-          ← Back to United Kingdom
+          ← Back
         </button>
-        <div className="flex items-center gap-4 mb-8">
-          <span className="text-4xl">🇬🇧</span>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">National Government (Westminster)</h1>
-            <p className="text-gray-500 mt-1 text-sm">Parliament, Prime Minister &amp; Cabinet</p>
+
+        <div className="mb-8 animate-slide-in">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-4xl">🇬🇧</span>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">UK National Government (Westminster)</h1>
           </div>
+          <p className="text-gray-600 text-base sm:text-lg">Explore different aspects of national governance</p>
+          <div className="w-24 h-1 mt-3 rounded-full" style={{ background: 'linear-gradient(to right, #C8102E, #012169)' }} />
         </div>
-        <div className="bg-white rounded-2xl shadow-md p-12 text-center border border-gray-100">
-          <p className="text-6xl mb-5">🏛️</p>
-          <h2 className="text-2xl font-bold text-gray-700 mb-3">Content Coming Soon</h2>
-          <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
-            Westminster Parliament, Prime Minister, Cabinet, courts and spending data will be available here.
-          </p>
-          <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold" style={{ backgroundColor: '#C8102E15', color: '#C8102E' }}>
-            <span>🚧</span> In Development
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+
+          {/* Prime Minister & Executive */}
+          <div
+            onClick={() => setView('uk-coming-soon')}
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+            style={{ animationDelay: '0.05s' }}
+          >
+            <div className="mb-3 sm:mb-4" style={{ color: '#C8102E' }}>
+              <Crown className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Prime Minister &amp; Executive</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">The Cabinet Office, Cabinet &amp; Executive Branch</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>PM · Keir Starmer</span>
+              <ChevronRight className="w-5 h-5" style={{ color: '#C8102E' }} />
+            </div>
           </div>
+
+          {/* House of Commons */}
+          <div
+            onClick={() => setView('uk-coming-soon')}
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+            style={{ animationDelay: '0.1s' }}
+          >
+            <div className="mb-3 sm:mb-4" style={{ color: '#012169' }}>
+              <Users className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">House of Commons</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Explore all 650 MPs — elected members of the lower chamber</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>650 MPs · Lower Chamber</span>
+              <ChevronRight className="w-5 h-5" style={{ color: '#012169' }} />
+            </div>
+          </div>
+
+          {/* House of Lords */}
+          <div
+            onClick={() => setView('uk-coming-soon')}
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+            style={{ animationDelay: '0.15s' }}
+          >
+            <div className="mb-3 sm:mb-4" style={{ color: '#6B21A8' }}>
+              <Award className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">House of Lords</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Appointed & hereditary peers — the upper revising chamber of Parliament</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>~785 Lords · Upper Chamber</span>
+              <ChevronRight className="w-5 h-5" style={{ color: '#6B21A8' }} />
+            </div>
+          </div>
+
+          {/* Where the Money Goes */}
+          <div
+            onClick={() => setView('uk-coming-soon')}
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
+            onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+          >
+            <div className="mb-3 sm:mb-4" style={{ color: '#B45309' }}>
+              <PieChart className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Where the Money Goes</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Financial transparency: how £1.2T in public spending reaches citizens</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span className="font-medium">FY 2024–25 · HM Treasury</span>
+              <ChevronRight className="w-5 h-5" style={{ color: '#B45309' }} />
+            </div>
+          </div>
+
+          {/* Legislative Hub */}
+          <div
+            onClick={() => setView('uk-coming-soon')}
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
+            onMouseEnter={e => e.currentTarget.style.borderColor = '#15803D'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+          >
+            <div className="text-green-700 mb-3 sm:mb-4">
+              <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Legislative Hub</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Active bills, recent votes &amp; Acts of Parliament</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span className="font-medium">Bills · Royal Assents</span>
+              <ChevronRight className="w-5 h-5 text-green-700" />
+            </div>
+          </div>
+
+          {/* Government Departments */}
+          <div
+            onClick={() => setView('uk-coming-soon')}
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
+            onMouseEnter={e => e.currentTarget.style.borderColor = '#1D4ED8'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+          >
+            <div className="mb-3 sm:mb-4" style={{ color: '#1D4ED8' }}>
+              <Building2 className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Departments</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Review department budgets, programmes &amp; ministerial performance</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>24 Ministerial Departments</span>
+              <ChevronRight className="w-5 h-5" style={{ color: '#1D4ED8' }} />
+            </div>
+          </div>
+
+          {/* Supreme Court */}
+          <div
+            onClick={() => setView('uk-coming-soon')}
+            className="rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #012169 0%, #0a1f5c 100%)', borderColor: 'rgba(200,16,46,0.3)' }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(200,16,46,0.3)'}
+          >
+            <div className="mb-3 sm:mb-4">
+              <Scale className="w-10 h-10 sm:w-12 sm:h-12" style={{ color: '#FFFFFF' }} />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Supreme Court</h2>
+            <p className="mb-3 text-sm sm:text-base" style={{ color: 'rgba(255,255,255,0.75)' }}>The apex court — 12 justices, final arbiter of UK law since 2009</p>
+            <div className="flex items-center justify-between text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>
+              <span className="font-semibold">12 Justices · Lord Reed</span>
+              <ChevronRight className="w-5 h-5 text-white" />
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -10002,6 +10122,36 @@ function App() {
             England's regions, combined authorities and county council data will be available here.
           </p>
           <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold" style={{ backgroundColor: '#01216915', color: '#012169' }}>
+            <span>🚧</span> In Development
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderUKComingSoon = () => (
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8">
+      <div className="max-w-4xl mx-auto">
+        <button
+          onClick={() => setView('uk-national')}
+          className="mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium shadow-elegant"
+        >
+          ← Back to Westminster
+        </button>
+        <div className="flex items-center gap-3 mb-8">
+          <span className="text-4xl">🇬🇧</span>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">UK National Government</h1>
+            <p className="text-gray-500 mt-1 text-sm">Content in development</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-2xl shadow-md p-12 text-center border border-gray-100">
+          <p className="text-6xl mb-5">🏛️</p>
+          <h2 className="text-2xl font-bold text-gray-700 mb-3">Content Coming Soon</h2>
+          <p className="text-gray-500 max-w-md mx-auto leading-relaxed">
+            Detailed UK government data will be available here in a future update.
+          </p>
+          <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold" style={{ backgroundColor: '#C8102E15', color: '#C8102E' }}>
             <span>🚧</span> In Development
           </div>
         </div>
@@ -22096,6 +22246,7 @@ function App() {
       {view === 'au-high-court' && renderAuHighCourt()}
       {view === 'uk-national' && renderUKNational()}
       {view === 'uk-regions' && renderUKRegions()}
+      {view === 'uk-coming-soon' && renderUKComingSoon()}
       {view === 'au-analytics' && renderAuAnalytics()}
       {view === 'au-contracts' && renderAuContracts()}
       {view === 'au-contract-detail' && selectedAuContract && renderAuContractDetail()}
