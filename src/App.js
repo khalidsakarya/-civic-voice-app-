@@ -5626,7 +5626,7 @@ function App() {
               onClick={() => setView('categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Government Levels
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
             </button>
           </div>
         </div>
@@ -5757,7 +5757,7 @@ function App() {
               }}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Departments
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Departments</span>
             </button>
           </div>
         </div>
@@ -5960,7 +5960,7 @@ function App() {
               onClick={() => setView('categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Government Levels
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
             </button>
             
             <h1 className="text-2xl font-bold text-gray-800">US Budget Analytics</h1>
@@ -6281,7 +6281,7 @@ function App() {
               onClick={() => setView('categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Government Levels
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
             </button>
           </div>
         </div>
@@ -6428,7 +6428,7 @@ function App() {
               onClick={() => setView('categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Government Levels
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
             </button>
           </div>
         </div>
@@ -6589,7 +6589,7 @@ function App() {
               }}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Supreme Court
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Supreme Court</span>
             </button>
           </div>
         </div>
@@ -6701,7 +6701,7 @@ function App() {
               onClick={() => setView('categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Government Levels
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
             </button>
           </div>
         </div>
@@ -6911,7 +6911,7 @@ function App() {
               onClick={() => setView('parties')}
               className="button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium shadow-elegant mb-4"
             >
-              ← Back to {selectedCountry?.type === 'usa' ? 'Congress' : 'Parliament'}
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to {selectedCountry?.type === 'usa' ? 'Congress' : 'Parliament'}</span>
             </button>
             <div className="flex items-center justify-between">
               <div>
@@ -7104,7 +7104,7 @@ function App() {
               }}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Federal Bills
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Federal Bills</span>
             </button>
           </div>
         </div>
@@ -7271,7 +7271,7 @@ function App() {
               onClick={() => setView('categories')}
               className="button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium shadow-elegant"
             >
-              ← Back to Categories
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Categories</span>
             </button>
           </div>
         </div>
@@ -7485,7 +7485,7 @@ function App() {
               onClick={() => setView('countries')}
               className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
             >
-              ← Back to Countries
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Countries</span>
             </button>
 
             <div className="mb-8 animate-slide-in">
@@ -7549,7 +7549,7 @@ function App() {
               onClick={() => setView('countries')}
               className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
             >
-              ← Back to Countries
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Countries</span>
             </button>
 
             <div className="mb-8 animate-slide-in">
@@ -7612,7 +7612,7 @@ function App() {
             onClick={() => setView('countries')}
             className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
           >
-            ← Back to Countries
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Countries</span>
           </button>
 
           <div className="mb-8 animate-slide-in">
@@ -9651,7 +9651,7 @@ function App() {
               onClick={() => setView('categories')}
               className="text-red-600 hover:text-red-800 flex items-center gap-2 mb-4"
             >
-              ← Back to Canadian Federal Government
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Canadian Federal Government</span>
             </button>
           </div>
         </div>
@@ -10144,7 +10144,7 @@ function App() {
               onClick={() => setView('president-executive')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
             >
-              ← Back to President &amp; Executive Branch
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to President &amp; Executive Branch</span>
             </button>
           </div>
         </div>
@@ -10693,7 +10693,7 @@ function App() {
               className="flex items-center gap-2 mb-4"
               style={{ color: partyColor }}
             >
-              ← Back to UK National Government
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to UK National Government</span>
             </button>
           </div>
         </div>
@@ -11449,7 +11449,7 @@ function App() {
               onClick={() => setView('uk-national')}
               className="button-primary text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant"
             >
-              ← Westminster
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Westminster</span>
             </button>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-gray-800">Legislative Hub</h1>
@@ -11457,17 +11457,11 @@ function App() {
                 <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">LIVE</span>
               )}
             </div>
-            <button
-              onClick={() => {
-                const next = !ukLiveData;
-                setUkLiveData(next);
-                if (next && ukFirestoreBills.length === 0) fetchFirestoreBills('UK', setUkFirestoreBills, setUkFirestoreLoading);
-              }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold border-2 transition-all ${ukLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:border-green-400'}`}
-            >
-              <span className={`w-2 h-2 rounded-full ${ukLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
-              {ukFirestoreLoading ? 'Loading…' : 'Live Data'}
-            </button>
+            <div className="w-8 flex justify-center">
+              {ukLiveData && ukFirestoreBills.length > 0 && !ukFirestoreLoading && (
+                <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse block" />
+              )}
+            </div>
           </div>
         </div>
 
@@ -12856,7 +12850,7 @@ function App() {
               className="flex items-center gap-2 text-sm sm:text-base font-medium mb-2 sm:mb-4"
               style={{ color: '#C8102E' }}
             >
-              ← Back to Westminster
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Westminster</span>
             </button>
             <div className="flex items-center gap-3">
               <span className="text-2xl">🇬🇧</span>
@@ -13064,7 +13058,7 @@ function App() {
               className="flex items-center gap-2 mb-2 sm:mb-4 text-sm sm:text-base font-medium"
               style={{ color: '#C8102E' }}
             >
-              ← Back to Westminster
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Westminster</span>
             </button>
             <div className="flex items-center gap-3">
               <span className="text-2xl">🇬🇧</span>
@@ -13190,7 +13184,7 @@ function App() {
               className="flex items-center gap-2 mb-4 font-medium"
               style={{ color: '#C8102E' }}
             >
-              ← Back to Departments
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Departments</span>
             </button>
           </div>
         </div>
@@ -13453,7 +13447,7 @@ function App() {
         <div className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <button onClick={() => setView('uk-national')} className="flex items-center gap-2 font-medium" style={{ color: RED }}>
-              ← Back to Westminster
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Westminster</span>
             </button>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Government Contracts</h1>
             <div className="w-20" />
@@ -13516,7 +13510,7 @@ function App() {
         <div className="bg-white shadow-sm">
           <div className="max-w-6xl mx-auto px-4 py-4">
             <button onClick={() => { setSelectedUkContract(null); setView('uk-contracts'); }} className="flex items-center gap-2 font-medium mb-4" style={{ color: RED }}>
-              ← Back to Contracts
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Contracts</span>
             </button>
           </div>
         </div>
@@ -13630,7 +13624,7 @@ function App() {
         <div className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <button onClick={() => setView('uk-national')} className="flex items-center gap-2 font-medium" style={{ color: RED }}>
-              ← Back to Westminster
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Westminster</span>
             </button>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
             <div className="w-20" />
@@ -13994,6 +13988,18 @@ function App() {
             <div className="flex items-center justify-between text-sm text-gray-500">
               <span className="font-medium">Bills · Royal Assents</span>
               <ChevronRight className="w-5 h-5 text-green-700" />
+            </div>
+            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2" onClick={e => e.stopPropagation()}>
+              <button
+                onClick={(e) => { e.stopPropagation(); const next = !ukLiveData; setUkLiveData(next); if (next && ukFirestoreBills.length === 0) fetchFirestoreBills('UK', setUkFirestoreBills, setUkFirestoreLoading); }}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all ${ukLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400'}`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${ukLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
+                {ukFirestoreLoading ? 'Loading…' : ukLiveData ? 'Live: On' : 'Live Data'}
+              </button>
+              {ukLiveData && !ukFirestoreLoading && ukFirestoreBills.length > 0 && (
+                <span className="text-xs text-green-600 font-medium">{ukFirestoreBills.length} live bills</span>
+              )}
             </div>
           </div>
 
@@ -14503,7 +14509,7 @@ function App() {
               className="flex items-center gap-2 text-sm sm:text-base font-medium mb-2"
               style={{ color: '#C8102E' }}
             >
-              ← Back to United Kingdom
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to United Kingdom</span>
             </button>
             <div className="flex items-center gap-3">
               <span className="text-2xl">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
@@ -14853,7 +14859,7 @@ function App() {
           onClick={() => setView('uk-national')}
           className="mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium shadow-elegant"
         >
-          ← Back to Westminster
+          <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Westminster</span>
         </button>
         <div className="flex items-center gap-3 mb-8">
           <span className="text-4xl">🇬🇧</span>
@@ -15158,7 +15164,7 @@ function App() {
               onClick={() => setView(isUK ? 'uk-national' : isAustralia ? 'government-levels' : 'categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to {data.backLabel}
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to {data.backLabel}</span>
             </button>
           </div>
         </div>
@@ -18595,7 +18601,7 @@ function App() {
               onClick={() => setView('au-categories')}
               className="text-red-700 hover:text-red-900 flex items-center gap-2 mb-4"
             >
-              ← Back to Australian Federal Government
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Australian Federal Government</span>
             </button>
           </div>
         </div>
@@ -19218,6 +19224,18 @@ function App() {
                 <span className="font-medium">{bills.length} Bills • {laws.length} Laws</span>
                 <ChevronRight className="w-5 h-5 text-green-600" />
               </div>
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); const next = !caLiveData; setCaLiveData(next); if (next && caFirestoreBills.length === 0) fetchFirestoreBills('CA', setCaFirestoreBills, setCaFirestoreLoading); }}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all ${caLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400'}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${caLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
+                  {caFirestoreLoading ? 'Loading…' : caLiveData ? 'Live: On' : 'Live Data'}
+                </button>
+                {caLiveData && !caFirestoreLoading && caFirestoreBills.length > 0 && (
+                  <span className="text-xs text-green-600 font-medium">{caFirestoreBills.length} live bills</span>
+                )}
+              </div>
             </div>
           )}
 
@@ -19235,6 +19253,18 @@ function App() {
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <span className="font-medium">{usBills.length} Bills • {usLaws.length} Laws</span>
                 <ChevronRight className="w-5 h-5 text-green-600" />
+              </div>
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); const next = !usLiveData; setUsLiveData(next); if (next && usFirestoreBills.length === 0) fetchFirestoreBills('US', setUsFirestoreBills, setUsFirestoreLoading); }}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all ${usLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400'}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${usLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
+                  {usFirestoreLoading ? 'Loading…' : usLiveData ? 'Live: On' : 'Live Data'}
+                </button>
+                {usLiveData && !usFirestoreLoading && usFirestoreBills.length > 0 && (
+                  <span className="text-xs text-green-600 font-medium">{usFirestoreBills.length} live bills</span>
+                )}
               </div>
             </div>
           )}
@@ -19353,7 +19383,7 @@ function App() {
               onClick={() => setView('categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Government Levels
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
             </button>
           </div>
         </div>
@@ -19492,7 +19522,7 @@ function App() {
               onClick={() => setView(isUSA && selectedChamber ? 'chambers' : 'categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to {isUSA && selectedChamber ? 'Chambers' : 'Government Levels'}
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to {isUSA && selectedChamber ? 'Chambers' : 'Government Levels'}</span>
             </button>
             
             <h1 className="text-2xl font-bold text-gray-800">{legislatureName}</h1>
@@ -19594,7 +19624,7 @@ function App() {
               }}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Parties
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Parties</span>
             </button>
             
             <h1 className="text-2xl font-bold text-gray-800">{selectedParty?.name}</h1>
@@ -19736,7 +19766,7 @@ function App() {
             onClick={() => setView('categories')}
             className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
           >
-            ← Back to Government Levels
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
           </button>
           
           <h1 className="text-2xl font-bold text-gray-800">Parliamentary Bills</h1>
@@ -19869,7 +19899,7 @@ function App() {
             }}
             className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
           >
-            ← Back to Bills
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Bills</span>
           </button>
         </div>
       </div>
@@ -20468,7 +20498,7 @@ function App() {
               onClick={() => setView('categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Government Levels
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
             </button>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-gray-800">Legislative Hub</h1>
@@ -20476,17 +20506,11 @@ function App() {
                 <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">LIVE</span>
               )}
             </div>
-            <button
-              onClick={() => {
-                const next = !caLiveData;
-                setCaLiveData(next);
-                if (next && caFirestoreBills.length === 0) fetchFirestoreBills('CA', setCaFirestoreBills, setCaFirestoreLoading);
-              }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold border-2 transition-all ${caLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:border-green-400'}`}
-            >
-              <span className={`w-2 h-2 rounded-full ${caLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
-              {caFirestoreLoading ? 'Loading…' : 'Live Data'}
-            </button>
+            <div className="w-8 flex justify-center">
+              {caLiveData && caFirestoreBills.length > 0 && !caFirestoreLoading && (
+                <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse block" />
+              )}
+            </div>
           </div>
         </div>
 
@@ -20978,7 +21002,7 @@ function App() {
               onClick={() => setView('categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Government Levels
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
             </button>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-gray-800">Legislative Hub</h1>
@@ -20986,17 +21010,11 @@ function App() {
                 <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">LIVE</span>
               )}
             </div>
-            <button
-              onClick={() => {
-                const next = !usLiveData;
-                setUsLiveData(next);
-                if (next && usFirestoreBills.length === 0) fetchFirestoreBills('US', setUsFirestoreBills, setUsFirestoreLoading);
-              }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold border-2 transition-all ${usLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:border-green-400'}`}
-            >
-              <span className={`w-2 h-2 rounded-full ${usLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
-              {usFirestoreLoading ? 'Loading…' : 'Live Data'}
-            </button>
+            <div className="w-8 flex justify-center">
+              {usLiveData && usFirestoreBills.length > 0 && !usFirestoreLoading && (
+                <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse block" />
+              )}
+            </div>
           </div>
         </div>
 
@@ -21585,7 +21603,7 @@ function App() {
               onClick={() => setView('au-categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Australian Federal Government
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Australian Federal Government</span>
             </button>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-gray-800">Legislative Hub</h1>
@@ -21593,17 +21611,11 @@ function App() {
                 <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">LIVE</span>
               )}
             </div>
-            <button
-              onClick={() => {
-                const next = !auLiveData;
-                setAuLiveData(next);
-                if (next && auFirestoreBills.length === 0) fetchFirestoreBills('AU', setAuFirestoreBills, setAuFirestoreLoading);
-              }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold border-2 transition-all ${auLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:border-green-400'}`}
-            >
-              <span className={`w-2 h-2 rounded-full ${auLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
-              {auFirestoreLoading ? 'Loading…' : 'Live Data'}
-            </button>
+            <div className="w-8 flex justify-center">
+              {auLiveData && auFirestoreBills.length > 0 && !auFirestoreLoading && (
+                <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse block" />
+              )}
+            </div>
           </div>
         </div>
 
@@ -21918,7 +21930,7 @@ function App() {
               onClick={() => setView('categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Back to Government Levels
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
             </button>
             <h1 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
             <div className="w-20"></div>
@@ -22342,7 +22354,7 @@ function App() {
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button onClick={() => setView('categories')} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">
-            ← Back to Government Levels
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
           </button>
           <h1 className="text-2xl font-bold text-gray-800">Government Contracts</h1>
           <div className="w-20"></div>
@@ -22413,7 +22425,7 @@ function App() {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <button onClick={() => { setSelectedContract(null); setView('contracts'); }}
             className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4">
-            ← Back to Contracts
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Contracts</span>
           </button>
         </div>
       </div>
@@ -22479,7 +22491,7 @@ function App() {
             onClick={() => setView('categories')}
             className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
           >
-            ← Back to Government Levels
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
           </button>
           
           <h1 className="text-2xl font-bold text-gray-800">Latest Laws & Regulations</h1>
@@ -22576,7 +22588,7 @@ function App() {
             }}
             className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
           >
-            ← Back to Laws & Regulations
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Laws &amp; Regulations</span>
           </button>
         </div>
       </div>
@@ -22653,7 +22665,7 @@ function App() {
             }}
             className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
           >
-            ← Back to {selectedParty?.name} Members
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to {selectedParty?.name} Members</span>
           </button>
         </div>
       </div>
@@ -23210,7 +23222,7 @@ function App() {
               onClick={() => setView('categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-2 sm:mb-4 text-sm sm:text-base"
             >
-              ← Back to Government Levels
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
             </button>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Government Ministries</h1>
           </div>
@@ -23341,7 +23353,7 @@ function App() {
               }}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
             >
-              ← Back to Ministries
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Ministries</span>
             </button>
           </div>
         </div>
@@ -23605,7 +23617,7 @@ function App() {
               onClick={() => setView('au-categories')}
               className="text-amber-600 hover:text-amber-800 flex items-center gap-2"
             >
-              ← Back to Australian Federal Government
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Australian Federal Government</span>
             </button>
           </div>
         </div>
@@ -23794,7 +23806,7 @@ function App() {
         <div className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <button onClick={() => setView('au-categories')} className="text-rose-700 hover:text-rose-900 flex items-center gap-2">
-              ← Back to Australian Federal Government
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Australian Federal Government</span>
             </button>
             <h1 className="text-2xl font-bold text-gray-800">Government Contracts</h1>
             <div className="w-20" />
@@ -23861,7 +23873,7 @@ function App() {
           <div className="max-w-6xl mx-auto px-4 py-4">
             <button onClick={() => { setSelectedAuContract(null); setView('au-contracts'); }}
               className="text-rose-700 hover:text-rose-900 flex items-center gap-2 mb-4">
-              ← Back to Contracts
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Contracts</span>
             </button>
           </div>
         </div>
@@ -23994,7 +24006,7 @@ function App() {
               className="flex items-center gap-2"
               style={{ color: TEAL }}
             >
-              ← Back to Australian Federal Government
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Australian Federal Government</span>
             </button>
             <h1 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
             <div className="w-20" />
@@ -24380,6 +24392,18 @@ function App() {
                 <span className="font-medium">12 Bills · 4 Royal Assents</span>
                 <ChevronRight className="w-5 h-5 text-green-600" />
               </div>
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); const next = !auLiveData; setAuLiveData(next); if (next && auFirestoreBills.length === 0) fetchFirestoreBills('AU', setAuFirestoreBills, setAuFirestoreLoading); }}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all ${auLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400'}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${auLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
+                  {auFirestoreLoading ? 'Loading…' : auLiveData ? 'Live: On' : 'Live Data'}
+                </button>
+                {auLiveData && !auFirestoreLoading && auFirestoreBills.length > 0 && (
+                  <span className="text-xs text-green-600 font-medium">{auFirestoreBills.length} live bills</span>
+                )}
+              </div>
             </div>
 
             {/* Government Departments */}
@@ -24467,7 +24491,7 @@ function App() {
               onClick={() => setView('au-categories')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-2 sm:mb-4 text-sm sm:text-base"
             >
-              ← Back to Australian Federal Government
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Australian Federal Government</span>
             </button>
             <div className="flex items-center gap-3">
               <span className="text-2xl">🇦🇺</span>
@@ -24587,7 +24611,7 @@ function App() {
               onClick={() => { setSelectedAuDepartment(null); setView('au-departments'); }}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
             >
-              ← Back to Departments
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Departments</span>
             </button>
           </div>
         </div>
@@ -26261,7 +26285,7 @@ function App() {
               onClick={() => { setSelectedSenator(null); setView('senate'); }}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
             >
-              ← Back to Canadian Senate
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Canadian Senate</span>
             </button>
           </div>
         </div>
