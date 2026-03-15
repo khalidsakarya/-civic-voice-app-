@@ -1597,6 +1597,9 @@ function App() {
   const [auTaxSalary, setAuTaxSalary] = useState('');
   const [auTaxTerritory, setAuTaxTerritory] = useState('NSW');
   const [auTaxResult, setAuTaxResult] = useState(null);
+  const [ukTaxSalary, setUkTaxSalary] = useState('');
+  const [ukTaxRegion, setUkTaxRegion] = useState('London');
+  const [ukTaxResult, setUkTaxResult] = useState(null);
   const [ministries, setMinistries] = useState([
     {
       id: 1,
@@ -8131,6 +8134,316 @@ function App() {
     );
   };
 
+  const renderUkTaxFull = () => {
+    const fmt = (n) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(n);
+
+    const regions = [
+      'London', 'South East', 'South West', 'East of England',
+      'East Midlands', 'West Midlands', 'Yorkshire and The Humber',
+      'North West', 'North East',
+    ];
+
+    // 2024-25 income tax brackets (England/Wales/NI — personal allowance £12,570)
+    // Personal allowance tapers: -£1 per £2 over £100,000
+    const calcIncomeTax = (income) => {
+      const taper = income > 100000 ? Math.min(12570, Math.floor((income - 100000) / 2)) : 0;
+      const allowance = 12570 - taper;
+      const taxable = Math.max(0, income - allowance);
+      // Basic rate band (up to £37,700 above allowance = up to £50,270 gross)
+      const basicBand = Math.max(0, 50270 - allowance);
+      // Higher rate band (up to £125,140 gross)
+      const higherBand = Math.max(0, 125140 - 50270);
+      let tax = 0;
+      let remaining = taxable;
+      // Basic rate 20%
+      const inBasic = Math.min(remaining, basicBand);
+      tax += inBasic * 0.20; remaining -= inBasic;
+      // Higher rate 40%
+      const inHigher = Math.min(remaining, higherBand);
+      tax += inHigher * 0.40; remaining -= inHigher;
+      // Additional rate 45%
+      tax += Math.max(0, remaining) * 0.45;
+      return tax;
+    };
+
+    // National Insurance Class 1 employee 2024-25
+    // Primary threshold £12,570, UEL £50,270
+    // 8% between PT and UEL, 2% above UEL
+    const calcNI = (income) => {
+      const PT = 12570, UEL = 50270;
+      if (income <= PT) return 0;
+      const inMainBand = Math.min(income, UEL) - PT;
+      const aboveUEL   = Math.max(0, income - UEL);
+      return inMainBand * 0.08 + aboveUEL * 0.02;
+    };
+
+    const calcTax = () => {
+      const s = parseFloat(String(ukTaxSalary).replace(/[^0-9.]/g, ''));
+      if (!s || s <= 0) return;
+      const incomeTax = calcIncomeTax(s);
+      const ni = calcNI(s);
+      const total = incomeTax + ni;
+      setUkTaxResult({
+        salary: s,
+        region: ukTaxRegion,
+        incomeTax,
+        ni,
+        total,
+        itRate:       (incomeTax / s) * 100,
+        niRate:       (ni / s) * 100,
+        combinedRate: (total / s) * 100,
+      });
+    };
+
+    // UK 2024-25 budget breakdown (HM Treasury)
+    const categories = [
+      { emoji: '🤝', name: 'Social Protection & Pensions', pct: 28.0, rating: 72, note: 'State pension, UC, housing benefit' },
+      { emoji: '🏥', name: 'NHS & Health',                 pct: 20.5, rating: 65, note: 'NHS England, health agencies' },
+      { emoji: '🏫', name: 'Education',                    pct: 10.0, rating: 68, note: 'Schools, colleges & student finance' },
+      { emoji: '💳', name: 'Debt Interest',                pct:  9.0, rating: 28, note: 'Servicing £2.7 trillion national debt' },
+      { emoji: '🛡️', name: 'Defence',                     pct:  5.0, rating: 60, note: 'Armed Forces & NATO commitments' },
+      { emoji: '🏘️', name: 'Local Government Grants',     pct:  4.0, rating: 55, note: 'Block grants to councils' },
+      { emoji: '⚖️', name: 'Law & Order',                  pct:  3.5, rating: 62, note: 'Police, courts & prisons' },
+      { emoji: '🚂', name: 'Transport',                    pct:  4.0, rating: 52, note: 'Rail, roads & active travel' },
+      { emoji: '🏠', name: 'Housing & Planning',           pct:  2.5, rating: 38, note: 'Worst housing crisis in decades' },
+      { emoji: '💼', name: 'Employment & Industry',        pct:  3.0, rating: 58, note: 'DWP, DfT, business support' },
+      { emoji: '🌿', name: 'Environment & Net Zero',       pct:  2.0, rating: 62, note: 'DESNZ, clean energy transition' },
+      { emoji: '🌐', name: 'Foreign Aid & International',  pct:  1.5, rating: 65, note: 'FCDO & development spending' },
+      { emoji: '🔬', name: 'Science & Research',           pct:  1.5, rating: 78, note: 'UKRI, Horizon, R&D investment' },
+      { emoji: '🏦', name: 'Other Programs',               pct:  5.5, rating: 50, note: 'Agriculture, culture, devolved grants' },
+    ];
+
+    const ratingBadge = (r) => r >= 80 ? 'bg-green-100 text-green-700 border-green-200' : r >= 60 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : 'bg-red-100 text-red-700 border-red-200';
+    const ratingBar   = (r) => r >= 80 ? 'bg-green-500' : r >= 60 ? 'bg-yellow-500' : 'bg-red-500';
+
+    const ukRed  = '#C8102E';
+    const ukNavy = '#012169';
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 animate-fade-in">
+        {/* Page header */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-8 pb-4">
+          <button
+            onClick={() => { setUkTaxResult(null); setView('government-levels'); }}
+            className="mb-6 button-primary text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant"
+          >
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to United Kingdom</span>
+          </button>
+
+          <div className="flex items-center gap-4 mb-2">
+            <span className="text-5xl">🇬🇧</span>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Your Tax Calculator</h1>
+              <p className="text-gray-500 mt-1">Calculate your 2024–25 income tax and National Insurance, and see exactly where every pound goes.</p>
+            </div>
+          </div>
+          <div className="w-24 h-1 mt-4 rounded-full" style={{ background: `linear-gradient(to right, ${ukRed}, ${ukNavy})` }} />
+        </div>
+
+        {/* Two-column layout on md+ */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 pb-12">
+          <div className="flex flex-col md:flex-row gap-8 items-start">
+
+            {/* ── LEFT COLUMN ── */}
+            <div className="w-full md:w-96 md:shrink-0 md:sticky md:top-6">
+
+              {/* Input card */}
+              <div className="bg-white rounded-2xl shadow-lg p-8 border" style={{ borderColor: '#C8102E33' }}>
+                <h2 className="text-xl font-bold text-gray-800 mb-6">Enter Your Details</h2>
+
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Annual Income (GBP)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xl">£</span>
+                      <input
+                        type="number" min="0" placeholder="e.g. 45000"
+                        value={ukTaxSalary}
+                        onChange={(e) => setUkTaxSalary(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && calcTax()}
+                        className="w-full pl-9 pr-4 py-4 border-2 border-gray-200 rounded-xl text-xl font-semibold focus:ring-2 outline-none transition-all"
+                        style={{ '--tw-ring-color': ukRed }}
+                        onFocus={(e) => e.target.style.borderColor = ukRed}
+                        onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">England Region</label>
+                    <select
+                      value={ukTaxRegion}
+                      onChange={(e) => setUkTaxRegion(e.target.value)}
+                      className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-base font-medium outline-none transition-all bg-white"
+                      onFocus={(e) => e.target.style.borderColor = ukRed}
+                      onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                    >
+                      {regions.map((r) => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1.5">England regions do not levy regional income tax — HMRC collects all income tax centrally on behalf of HM Treasury.</p>
+                  </div>
+
+                  <button
+                    onClick={calcTax}
+                    className="w-full py-5 text-white font-bold rounded-xl transition-all active:scale-95 text-lg shadow-md"
+                    style={{ backgroundColor: ukRed }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#a00d25'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = ukRed}
+                  >
+                    Calculate My Tax
+                  </button>
+                </div>
+
+                <p className="text-xs text-gray-400 mt-4 leading-relaxed">England/Wales rates. Includes personal allowance taper above £100,000. Based on 2024–25 HMRC brackets.</p>
+              </div>
+
+              {/* Tax summary */}
+              {ukTaxResult && (
+                <div className="mt-6 space-y-3 animate-fade-in">
+                  <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Income Tax</p>
+                    <p className="text-3xl font-bold text-gray-800">{fmt(ukTaxResult.incomeTax)}</p>
+                    <p className="text-sm text-gray-400 mt-1">{ukTaxResult.itRate.toFixed(1)}% effective rate</p>
+                  </div>
+                  <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">National Insurance (Class 1)</p>
+                    <p className="text-3xl font-bold text-gray-800">{fmt(ukTaxResult.ni)}</p>
+                    <p className="text-sm text-gray-400 mt-1">{ukTaxResult.niRate.toFixed(1)}% effective rate</p>
+                  </div>
+                  <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                    <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: ukNavy }}>{ukTaxResult.region} — Regional Tax</p>
+                    <p className="text-2xl font-bold" style={{ color: ukNavy }}>No Regional Income Tax</p>
+                    <p className="text-sm text-gray-400 mt-1">Regions funded via Treasury grants</p>
+                  </div>
+                  <div className="rounded-2xl p-6 shadow-md text-white" style={{ backgroundColor: ukRed }}>
+                    <p className="text-xs font-semibold uppercase tracking-wider mb-1 opacity-80">Total Deductions</p>
+                    <p className="text-4xl font-bold">{fmt(ukTaxResult.total)}</p>
+                    <p className="text-sm mt-1 opacity-80">{ukTaxResult.combinedRate.toFixed(1)}% combined effective rate</p>
+                    <div className="mt-3 pt-3 border-t border-white/30">
+                      <p className="text-sm opacity-90">
+                        That's <strong>{fmt(ukTaxResult.total / 12)}/month</strong> or <strong>{fmt(ukTaxResult.total / 52)}/week</strong>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Brackets legend */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">2024–25 Income Tax Bands</p>
+                    <div className="space-y-2">
+                      {[
+                        { range: 'Up to £12,570',            rate: '0% (Personal Allowance)' },
+                        { range: '£12,571 – £50,270',        rate: '20% Basic Rate'          },
+                        { range: '£50,271 – £125,140',       rate: '40% Higher Rate'         },
+                        { range: 'Over £125,140',            rate: '45% Additional Rate'     },
+                      ].map((b, i) => (
+                        <div key={i} className="flex justify-between text-sm gap-2">
+                          <span className="text-gray-600 shrink-0">{b.range}</span>
+                          <span className="font-bold text-gray-800 text-right">{b.rate}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-3">Personal allowance tapers by £1 per £2 over £100,000.</p>
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">National Insurance (Class 1)</p>
+                      <div className="space-y-1">
+                        {[
+                          { range: 'Up to £12,570',     rate: '0%' },
+                          { range: '£12,571 – £50,270', rate: '8%' },
+                          { range: 'Over £50,270',      rate: '2%' },
+                        ].map((b, i) => (
+                          <div key={i} className="flex justify-between text-sm">
+                            <span className="text-gray-600">{b.range}</span>
+                            <span className="font-bold text-gray-800">{b.rate}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Pre-calc brackets on desktop */}
+              {!ukTaxResult && (
+                <div className="hidden md:block mt-6 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">2024–25 Income Tax Bands</p>
+                  <div className="space-y-2">
+                    {[
+                      { range: 'Up to £12,570',       rate: '0%'  },
+                      { range: '£12,571 – £50,270',   rate: '20%' },
+                      { range: '£50,271 – £125,140',  rate: '40%' },
+                      { range: 'Over £125,140',       rate: '45%' },
+                    ].map((b, i) => (
+                      <div key={i} className="flex justify-between text-sm">
+                        <span className="text-gray-600">{b.range}</span>
+                        <span className="font-bold text-gray-800">{b.rate}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ── RIGHT COLUMN: Breakdown grid ── */}
+            <div className="flex-1 min-w-0">
+              {!ukTaxResult ? (
+                <div className="flex flex-col items-center justify-center py-24 text-center">
+                  <span className="text-7xl mb-4">🇬🇧</span>
+                  <h3 className="text-2xl font-bold text-gray-400 mb-2">Enter your salary to see the breakdown</h3>
+                  <p className="text-gray-400 max-w-sm">We'll show you exactly where every pound of your tax goes across 14 spending categories — with efficiency scores for each.</p>
+                </div>
+              ) : (
+                <div className="animate-fade-in">
+                  <div className="flex items-baseline justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-800">Where Your Tax Goes</h2>
+                      <p className="text-gray-500 mt-1">How {fmt(ukTaxResult.total)} in combined deductions funds UK public spending</p>
+                    </div>
+                    <div className="hidden sm:flex items-center gap-4 text-sm text-gray-500 shrink-0 ml-4">
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-green-500 rounded-full" />80+ Excellent</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-yellow-500 rounded-full" />60–79 Average</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-red-500 rounded-full" />Below 60 Poor</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4">
+                    {categories.map((cat) => {
+                      const amount = (ukTaxResult.total * cat.pct) / 100;
+                      return (
+                        <div key={cat.name} className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <span className="text-3xl">{cat.emoji}</span>
+                              <div>
+                                <p className="font-bold text-gray-800 text-base leading-tight">{cat.name}</p>
+                                <p className="text-base font-semibold text-gray-600 mt-1">{cat.note}</p>
+                              </div>
+                            </div>
+                            <span className={`text-base font-bold px-2.5 py-1 rounded-lg border ${ratingBadge(cat.rating)}`}>{cat.rating}/100</span>
+                          </div>
+                          <p className="text-2xl font-bold text-gray-900 mb-1">{fmt(amount)}</p>
+                          <p className="text-sm text-gray-400 mb-4">{cat.pct}% of public spending</p>
+                          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${ratingBar(cat.rating)}`}
+                              style={{ width: `${Math.min(cat.pct * 3, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-xs text-gray-400 mt-6 leading-relaxed">Income tax + National Insurance only. Excludes employer NI (13.8%), VAT, council tax &amp; stamp duty. Breakdown based on HM Treasury 2024–25 spending plans. Efficiency ratings based on NAO and OBR performance data.</p>
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderAuTaxFull = () => {
     const fmt = (n) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(n);
 
@@ -8449,7 +8762,7 @@ function App() {
               <div className="w-24 h-1 mt-3 rounded-full" style={{ background: 'linear-gradient(to right, #C8102E, #012169)' }} />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* National Government (Westminster) */}
               <div
                 onClick={() => setView('uk-national')}
@@ -8484,6 +8797,23 @@ function App() {
                 <p className="text-gray-600 mb-4 text-sm">England's regions, combined authorities and county councils</p>
                 <div className="flex items-center gap-2 font-semibold text-sm" style={{ color: '#012169' }}>
                   <span>Explore Regions</span>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
+
+              {/* Tax Calculator */}
+              <div
+                onClick={() => setView('uk-tax-full')}
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                style={{ animationDelay: '0.3s' }}
+              >
+                <div className="mb-4" style={{ color: '#C8102E' }}>
+                  <DollarSign className="w-12 h-12" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Your Tax Calculator</h2>
+                <p className="text-gray-600 mb-4 text-sm">Enter your salary and region — see your income tax, National Insurance, and where every pound goes</p>
+                <div className="flex items-center gap-2 font-semibold text-sm" style={{ color: '#C8102E' }}>
+                  <span>Calculate My Tax</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
@@ -28294,6 +28624,7 @@ function App() {
         {view === 'ca-tax-full' && renderCaTaxFull()}
         {view === 'us-tax-full' && renderUsTaxFull()}
         {view === 'au-tax-full' && renderAuTaxFull()}
+        {view === 'uk-tax-full' && renderUkTaxFull()}
         {view === 'ca-tax-calculator' && renderCaTaxCalculator()}
         {view === 'legislative-hub' && renderLegislativeHub()}
         {view === 'us-legislative-hub' && renderUSLegislativeHub()}
