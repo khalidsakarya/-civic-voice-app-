@@ -1588,6 +1588,9 @@ function App() {
   const [auFirestoreLoading, setAuFirestoreLoading] = useState(false);
   const [caTaxSalary, setCaTaxSalary] = useState('');
   const [caTaxResult, setCaTaxResult] = useState(null);
+  const [caTaxFullSalary, setCaTaxFullSalary] = useState('');
+  const [caTaxProvince, setCaTaxProvince] = useState('ON');
+  const [caTaxFullResult, setCaTaxFullResult] = useState(null);
   const [ministries, setMinistries] = useState([
     {
       id: 1,
@@ -7472,6 +7475,202 @@ function App() {
     </div>
   );
 
+  const renderCaTaxFull = () => {
+    const fmt = (n) => new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(n);
+
+    const provData = {
+      AB: { name: 'Alberta',                 brackets: [{max:148269,rate:0.10},{max:177922,rate:0.12},{max:237230,rate:0.13},{max:355845,rate:0.14},{max:Infinity,rate:0.15}], bpa:21003, r0:0.10 },
+      BC: { name: 'British Columbia',        brackets: [{max:45654,rate:0.0506},{max:91310,rate:0.077},{max:104835,rate:0.105},{max:127299,rate:0.1229},{max:172602,rate:0.147},{max:240716,rate:0.168},{max:Infinity,rate:0.205}], bpa:11981, r0:0.0506 },
+      MB: { name: 'Manitoba',                brackets: [{max:47000,rate:0.108},{max:100000,rate:0.1275},{max:Infinity,rate:0.174}], bpa:15780, r0:0.108 },
+      NB: { name: 'New Brunswick',           brackets: [{max:49958,rate:0.094},{max:99916,rate:0.1482},{max:185064,rate:0.1652},{max:Infinity,rate:0.195}], bpa:12458, r0:0.094 },
+      NL: { name: 'Newfoundland & Labrador', brackets: [{max:43198,rate:0.087},{max:86395,rate:0.145},{max:154244,rate:0.158},{max:215943,rate:0.178},{max:275870,rate:0.198},{max:551739,rate:0.208},{max:Infinity,rate:0.213}], bpa:10818, r0:0.087 },
+      NS: { name: 'Nova Scotia',             brackets: [{max:29590,rate:0.0879},{max:59180,rate:0.1495},{max:93000,rate:0.1667},{max:150000,rate:0.175},{max:Infinity,rate:0.21}], bpa:8481, r0:0.0879 },
+      NT: { name: 'Northwest Territories',   brackets: [{max:50597,rate:0.059},{max:101198,rate:0.086},{max:164525,rate:0.122},{max:Infinity,rate:0.1405}], bpa:16593, r0:0.059 },
+      NU: { name: 'Nunavut',                 brackets: [{max:53268,rate:0.04},{max:106537,rate:0.07},{max:173205,rate:0.09},{max:Infinity,rate:0.115}], bpa:17925, r0:0.04 },
+      ON: { name: 'Ontario',                 brackets: [{max:51446,rate:0.0505},{max:102894,rate:0.0915},{max:150000,rate:0.1116},{max:220000,rate:0.1216},{max:Infinity,rate:0.1316}], bpa:11865, r0:0.0505 },
+      PE: { name: 'Prince Edward Island',    brackets: [{max:32656,rate:0.0965},{max:64313,rate:0.1363},{max:105000,rate:0.1665},{max:140000,rate:0.18},{max:Infinity,rate:0.1875}], bpa:12000, r0:0.0965 },
+      QC: { name: 'Quebec',                  brackets: [{max:51780,rate:0.14},{max:103545,rate:0.19},{max:126000,rate:0.24},{max:Infinity,rate:0.2575}], bpa:17183, r0:0.14 },
+      SK: { name: 'Saskatchewan',            brackets: [{max:49720,rate:0.105},{max:142058,rate:0.125},{max:Infinity,rate:0.145}], bpa:17661, r0:0.105 },
+      YT: { name: 'Yukon',                   brackets: [{max:55867,rate:0.064},{max:111733,rate:0.09},{max:154906,rate:0.109},{max:500000,rate:0.128},{max:Infinity,rate:0.15}], bpa:15705, r0:0.064 },
+    };
+
+    const fedBrackets = [{max:55867,rate:0.15},{max:111733,rate:0.205},{max:154906,rate:0.26},{max:220000,rate:0.29},{max:Infinity,rate:0.33}];
+
+    const applyBrackets = (salary, brackets) => {
+      let tax = 0, prev = 0;
+      for (const b of brackets) {
+        if (salary <= prev) break;
+        tax += (Math.min(salary, b.max) - prev) * b.rate;
+        prev = b.max;
+      }
+      return tax;
+    };
+
+    const calcTax = () => {
+      const s = parseFloat(String(caTaxFullSalary).replace(/[^0-9.]/g, ''));
+      if (!s || s <= 0) return;
+      const prov = provData[caTaxProvince];
+      if (!prov) return;
+      const fedNet = Math.max(0, applyBrackets(s, fedBrackets) - 15705 * 0.15);
+      const provNet = Math.max(0, applyBrackets(s, prov.brackets) - prov.bpa * prov.r0);
+      const total = fedNet + provNet;
+      setCaTaxFullResult({ salary: s, province: prov.name, fedNet, provNet, total, fedRate: (fedNet/s)*100, provRate: (provNet/s)*100, combinedRate: (total/s)*100 });
+    };
+
+    const categories = [
+      { emoji: '🏥', name: 'Healthcare',                  pct: 29.5, rating: 65, note: 'Universal coverage, long wait times' },
+      { emoji: '👴', name: 'Old Age Security & Pensions', pct: 11.8, rating: 78, note: 'Reliable benefit delivery' },
+      { emoji: '🏫', name: 'Education',                   pct: 10.8, rating: 72, note: 'Strong outcomes, regional gaps' },
+      { emoji: '💳', name: 'Public Debt Charges',         pct:  6.8, rating: 40, note: 'High debt-servicing costs' },
+      { emoji: '🤝', name: 'Social Services',             pct:  5.8, rating: 64, note: 'Patchwork delivery system' },
+      { emoji: '🚂', name: 'Infrastructure',              pct:  5.2, rating: 52, note: 'Aging infrastructure backlog' },
+      { emoji: '🛡️', name: 'National Defence',           pct:  4.2, rating: 58, note: 'Below NATO 2% GDP target' },
+      { emoji: '👶', name: "Children's Benefits",         pct:  4.0, rating: 82, note: 'Measurably reduces child poverty' },
+      { emoji: '💼', name: 'Employment Insurance',        pct:  3.5, rating: 55, note: 'Uneven geographic coverage' },
+      { emoji: '🏘️', name: 'Indigenous Services',        pct:  3.2, rating: 48, note: 'Historically underfunded' },
+      { emoji: '🏠', name: 'Housing Programs',            pct:  2.5, rating: 38, note: 'Severe affordability crisis' },
+      { emoji: '🌿', name: 'Environment & Climate',       pct:  2.2, rating: 61, note: 'Carbon pricing progress' },
+      { emoji: '🌐', name: 'Immigration & IRCC',          pct:  1.5, rating: 70, note: 'Managed intake, integration gaps' },
+      { emoji: '🏛️', name: 'Other Programs',             pct:  9.0, rating: 55, note: 'Various federal/provincial programs' },
+    ];
+
+    const ratingBadge = (r) => r >= 80 ? 'bg-green-100 text-green-700' : r >= 60 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700';
+    const ratingBar   = (r) => r >= 80 ? 'bg-green-500' : r >= 60 ? 'bg-yellow-500' : 'bg-red-500';
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50 animate-fade-in">
+        <div className="max-w-2xl mx-auto px-4 py-8">
+
+          <button
+            onClick={() => { setCaTaxFullResult(null); setView('government-levels'); }}
+            className="mb-6 button-primary text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant"
+          >
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Canada</span>
+          </button>
+
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">🍁</span>
+              <h1 className="text-3xl font-bold text-gray-800">Your Tax Calculator</h1>
+            </div>
+            <p className="text-gray-500 text-sm">Calculate your combined 2024 federal + provincial income tax and see exactly where every dollar goes.</p>
+            <div className="w-20 h-1 bg-red-600 rounded-full mt-3" />
+          </div>
+
+          {/* Input */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-red-100">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Annual Income (CAD)</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg">$</span>
+                  <input
+                    type="number" min="0" placeholder="e.g. 75000"
+                    value={caTaxFullSalary}
+                    onChange={(e) => setCaTaxFullSalary(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && calcTax()}
+                    className="w-full pl-8 pr-4 py-3.5 border-2 border-gray-200 rounded-xl text-lg font-semibold focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none transition-all"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Province / Territory</label>
+                <select
+                  value={caTaxProvince}
+                  onChange={(e) => setCaTaxProvince(e.target.value)}
+                  className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl text-base font-medium focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none transition-all bg-white"
+                >
+                  <option value="AB">Alberta</option>
+                  <option value="BC">British Columbia</option>
+                  <option value="MB">Manitoba</option>
+                  <option value="NB">New Brunswick</option>
+                  <option value="NL">Newfoundland &amp; Labrador</option>
+                  <option value="NS">Nova Scotia</option>
+                  <option value="NT">Northwest Territories</option>
+                  <option value="NU">Nunavut</option>
+                  <option value="ON">Ontario</option>
+                  <option value="PE">Prince Edward Island</option>
+                  <option value="QC">Quebec</option>
+                  <option value="SK">Saskatchewan</option>
+                  <option value="YT">Yukon</option>
+                </select>
+              </div>
+              <button
+                onClick={calcTax}
+                className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all active:scale-95 text-base"
+              >
+                Calculate My Tax
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mt-3">Includes federal &amp; provincial basic personal amount credits. Based on 2024 CRA brackets.</p>
+          </div>
+
+          {/* Results */}
+          {caTaxFullResult && (
+            <div className="animate-fade-in">
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+                  <p className="text-xs text-gray-500 mb-1">Federal Tax</p>
+                  <p className="text-lg font-bold text-gray-800">{fmt(caTaxFullResult.fedNet)}</p>
+                  <p className="text-xs text-gray-400">{caTaxFullResult.fedRate.toFixed(1)}% eff.</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+                  <p className="text-xs text-gray-500 mb-1 truncate">{caTaxFullResult.province}</p>
+                  <p className="text-lg font-bold text-gray-800">{fmt(caTaxFullResult.provNet)}</p>
+                  <p className="text-xs text-gray-400">{caTaxFullResult.provRate.toFixed(1)}% eff.</p>
+                </div>
+                <div className="bg-red-600 rounded-xl p-4 shadow-sm text-center">
+                  <p className="text-xs text-red-200 mb-1">Total Tax</p>
+                  <p className="text-lg font-bold text-white">{fmt(caTaxFullResult.total)}</p>
+                  <p className="text-xs text-red-200">{caTaxFullResult.combinedRate.toFixed(1)}% eff.</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                <h2 className="text-xl font-bold text-gray-800 mb-1">Where Your Tax Goes</h2>
+                <p className="text-sm text-gray-500 mb-5">How {fmt(caTaxFullResult.total)} in combined federal + {caTaxFullResult.province} tax is allocated</p>
+
+                <div className="space-y-4">
+                  {categories.map((cat) => {
+                    const amount = (caTaxFullResult.total * cat.pct) / 100;
+                    return (
+                      <div key={cat.name}>
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-base shrink-0 w-6 text-center">{cat.emoji}</span>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-gray-800 leading-tight">{cat.name}</p>
+                              <p className="text-xs text-gray-400">{cat.note}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-sm font-bold text-gray-800">{fmt(amount)}</span>
+                            <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${ratingBadge(cat.rating)}`}>{cat.rating}/100</span>
+                          </div>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${ratingBar(cat.rating)}`} style={{ width: `${cat.pct}%` }} />
+                        </div>
+                        <p className="text-xs text-gray-400 mt-0.5">{cat.pct}% of combined budget</p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-gray-100 flex flex-wrap gap-4 text-xs text-gray-500">
+                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-green-500 rounded-full inline-block" />80+ Excellent</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-yellow-500 rounded-full inline-block" />60–79 Average</span>
+                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-red-500 rounded-full inline-block" />Below 60 Needs work</span>
+                </div>
+                <p className="text-xs text-gray-400 mt-3">Federal + provincial income tax only. Excludes CPP, EI premiums, HST/GST &amp; property tax. Efficiency ratings derived from OECD and auditor general performance data.</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderGovernmentLevels = () => {
     const isUSA = selectedCountry?.type === 'usa';
     const isAustralia = selectedCountry?.type === 'australia';
@@ -7626,7 +7825,7 @@ function App() {
             <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Federal Government */}
             <div
               onClick={() => setView('categories')}
@@ -7674,6 +7873,25 @@ function App() {
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
+
+            {/* Tax Calculator — Canada only */}
+            {!isUSA && (
+              <div
+                onClick={() => setView('ca-tax-full')}
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                style={{ animationDelay: '0.3s' }}
+              >
+                <div className="text-red-600 mb-4">
+                  <DollarSign className="w-12 h-12" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Your Tax Calculator</h2>
+                <p className="text-gray-600 mb-4 text-sm">Enter your salary and province — see your federal + provincial tax and where every dollar goes</p>
+                <div className="flex items-center gap-2 text-red-600 font-semibold text-sm">
+                  <span>Calculate My Tax</span>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -27301,6 +27519,7 @@ function App() {
         {view === 'analytics' && renderAnalytics()}
         {view === 'us-analytics' && renderUSAnalytics()}
         {view === 'bills' && renderBills()}
+        {view === 'ca-tax-full' && renderCaTaxFull()}
         {view === 'ca-tax-calculator' && renderCaTaxCalculator()}
         {view === 'legislative-hub' && renderLegislativeHub()}
         {view === 'us-legislative-hub' && renderUSLegislativeHub()}
