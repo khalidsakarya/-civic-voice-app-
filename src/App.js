@@ -7534,13 +7534,13 @@ function App() {
       { emoji: '🏛️', name: 'Other Programs',             pct:  9.0, rating: 55, note: 'Various federal/provincial programs' },
     ];
 
-    const ratingBadge = (r) => r >= 80 ? 'bg-green-100 text-green-700' : r >= 60 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700';
+    const ratingBadge = (r) => r >= 80 ? 'bg-green-100 text-green-700 border-green-200' : r >= 60 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : 'bg-red-100 text-red-700 border-red-200';
     const ratingBar   = (r) => r >= 80 ? 'bg-green-500' : r >= 60 ? 'bg-yellow-500' : 'bg-red-500';
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50 animate-fade-in">
-        <div className="max-w-2xl mx-auto px-4 py-8">
-
+        {/* Page header — full width */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-8 pb-4">
           <button
             onClick={() => { setCaTaxFullResult(null); setView('government-levels'); }}
             className="mb-6 button-primary text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant"
@@ -7548,124 +7548,205 @@ function App() {
             <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Canada</span>
           </button>
 
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-4xl">🍁</span>
-              <h1 className="text-3xl font-bold text-gray-800">Your Tax Calculator</h1>
+          <div className="flex items-center gap-4 mb-2">
+            <span className="text-5xl">🍁</span>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Your Tax Calculator</h1>
+              <p className="text-gray-500 mt-1">Calculate your combined 2024 federal + provincial income tax and see exactly where every dollar goes.</p>
             </div>
-            <p className="text-gray-500 text-sm">Calculate your combined 2024 federal + provincial income tax and see exactly where every dollar goes.</p>
-            <div className="w-20 h-1 bg-red-600 rounded-full mt-3" />
           </div>
+          <div className="w-24 h-1 bg-red-600 rounded-full mt-4" />
+        </div>
 
-          {/* Input */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-red-100">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Annual Income (CAD)</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg">$</span>
-                  <input
-                    type="number" min="0" placeholder="e.g. 75000"
-                    value={caTaxFullSalary}
-                    onChange={(e) => setCaTaxFullSalary(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && calcTax()}
-                    className="w-full pl-8 pr-4 py-3.5 border-2 border-gray-200 rounded-xl text-lg font-semibold focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none transition-all"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Province / Territory</label>
-                <select
-                  value={caTaxProvince}
-                  onChange={(e) => setCaTaxProvince(e.target.value)}
-                  className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl text-base font-medium focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none transition-all bg-white"
-                >
-                  <option value="AB">Alberta</option>
-                  <option value="BC">British Columbia</option>
-                  <option value="MB">Manitoba</option>
-                  <option value="NB">New Brunswick</option>
-                  <option value="NL">Newfoundland &amp; Labrador</option>
-                  <option value="NS">Nova Scotia</option>
-                  <option value="NT">Northwest Territories</option>
-                  <option value="NU">Nunavut</option>
-                  <option value="ON">Ontario</option>
-                  <option value="PE">Prince Edward Island</option>
-                  <option value="QC">Quebec</option>
-                  <option value="SK">Saskatchewan</option>
-                  <option value="YT">Yukon</option>
-                </select>
-              </div>
-              <button
-                onClick={calcTax}
-                className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all active:scale-95 text-base"
-              >
-                Calculate My Tax
-              </button>
-            </div>
-            <p className="text-xs text-gray-400 mt-3">Includes federal &amp; provincial basic personal amount credits. Based on 2024 CRA brackets.</p>
-          </div>
+        {/* Two-column layout on md+ */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 pb-12">
+          <div className="flex flex-col md:flex-row gap-8 items-start">
 
-          {/* Results */}
-          {caTaxFullResult && (
-            <div className="animate-fade-in">
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-                  <p className="text-xs text-gray-500 mb-1">Federal Tax</p>
-                  <p className="text-lg font-bold text-gray-800">{fmt(caTaxFullResult.fedNet)}</p>
-                  <p className="text-xs text-gray-400">{caTaxFullResult.fedRate.toFixed(1)}% eff.</p>
+            {/* ── LEFT COLUMN: Input + tax summary ── */}
+            <div className="w-full md:w-96 md:shrink-0 md:sticky md:top-6">
+
+              {/* Input card */}
+              <div className="bg-white rounded-2xl shadow-lg p-8 border border-red-100">
+                <h2 className="text-xl font-bold text-gray-800 mb-6">Enter Your Details</h2>
+
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Annual Income (CAD)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xl">$</span>
+                      <input
+                        type="number" min="0" placeholder="e.g. 75000"
+                        value={caTaxFullSalary}
+                        onChange={(e) => setCaTaxFullSalary(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && calcTax()}
+                        className="w-full pl-9 pr-4 py-4 border-2 border-gray-200 rounded-xl text-xl font-semibold focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Province / Territory</label>
+                    <select
+                      value={caTaxProvince}
+                      onChange={(e) => setCaTaxProvince(e.target.value)}
+                      className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-base font-medium focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none transition-all bg-white"
+                    >
+                      <option value="AB">Alberta</option>
+                      <option value="BC">British Columbia</option>
+                      <option value="MB">Manitoba</option>
+                      <option value="NB">New Brunswick</option>
+                      <option value="NL">Newfoundland &amp; Labrador</option>
+                      <option value="NS">Nova Scotia</option>
+                      <option value="NT">Northwest Territories</option>
+                      <option value="NU">Nunavut</option>
+                      <option value="ON">Ontario</option>
+                      <option value="PE">Prince Edward Island</option>
+                      <option value="QC">Quebec</option>
+                      <option value="SK">Saskatchewan</option>
+                      <option value="YT">Yukon</option>
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={calcTax}
+                    className="w-full py-5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all active:scale-95 text-lg shadow-md"
+                  >
+                    Calculate My Tax
+                  </button>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-                  <p className="text-xs text-gray-500 mb-1 truncate">{caTaxFullResult.province}</p>
-                  <p className="text-lg font-bold text-gray-800">{fmt(caTaxFullResult.provNet)}</p>
-                  <p className="text-xs text-gray-400">{caTaxFullResult.provRate.toFixed(1)}% eff.</p>
-                </div>
-                <div className="bg-red-600 rounded-xl p-4 shadow-sm text-center">
-                  <p className="text-xs text-red-200 mb-1">Total Tax</p>
-                  <p className="text-lg font-bold text-white">{fmt(caTaxFullResult.total)}</p>
-                  <p className="text-xs text-red-200">{caTaxFullResult.combinedRate.toFixed(1)}% eff.</p>
-                </div>
+
+                <p className="text-xs text-gray-400 mt-4 leading-relaxed">Includes federal &amp; provincial basic personal amount credits. Based on 2024 CRA tax brackets.</p>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                <h2 className="text-xl font-bold text-gray-800 mb-1">Where Your Tax Goes</h2>
-                <p className="text-sm text-gray-500 mb-5">How {fmt(caTaxFullResult.total)} in combined federal + {caTaxFullResult.province} tax is allocated</p>
+              {/* Tax summary — shown after calculation */}
+              {caTaxFullResult && (
+                <div className="mt-6 space-y-3 animate-fade-in">
+                  <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Federal Income Tax</p>
+                    <p className="text-3xl font-bold text-gray-800">{fmt(caTaxFullResult.fedNet)}</p>
+                    <p className="text-sm text-gray-400 mt-1">{caTaxFullResult.fedRate.toFixed(1)}% effective rate</p>
+                  </div>
+                  <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{caTaxFullResult.province} Tax</p>
+                    <p className="text-3xl font-bold text-gray-800">{fmt(caTaxFullResult.provNet)}</p>
+                    <p className="text-sm text-gray-400 mt-1">{caTaxFullResult.provRate.toFixed(1)}% effective rate</p>
+                  </div>
+                  <div className="bg-red-600 rounded-2xl p-6 shadow-md">
+                    <p className="text-xs font-semibold text-red-200 uppercase tracking-wider mb-1">Total Tax Owed</p>
+                    <p className="text-4xl font-bold text-white">{fmt(caTaxFullResult.total)}</p>
+                    <p className="text-sm text-red-200 mt-1">{caTaxFullResult.combinedRate.toFixed(1)}% combined effective rate</p>
+                    <div className="mt-3 pt-3 border-t border-red-500">
+                      <p className="text-sm text-red-100">
+                        That's <strong className="text-white">{fmt(caTaxFullResult.total / 12)}/month</strong> or <strong className="text-white">{fmt(caTaxFullResult.total / 52)}/week</strong>
+                      </p>
+                    </div>
+                  </div>
 
-                <div className="space-y-4">
-                  {categories.map((cat) => {
-                    const amount = (caTaxFullResult.total * cat.pct) / 100;
-                    return (
-                      <div key={cat.name}>
-                        <div className="flex items-start justify-between gap-2 mb-1.5">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-base shrink-0 w-6 text-center">{cat.emoji}</span>
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-gray-800 leading-tight">{cat.name}</p>
-                              <p className="text-xs text-gray-400">{cat.note}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className="text-sm font-bold text-gray-800">{fmt(amount)}</span>
-                            <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${ratingBadge(cat.rating)}`}>{cat.rating}/100</span>
-                          </div>
+                  {/* Federal tax brackets legend */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">2024 Federal Brackets</p>
+                    <div className="space-y-2">
+                      {[
+                        { range: 'Up to $55,867',      rate: '15%'   },
+                        { range: '$55,868–$111,733',    rate: '20.5%' },
+                        { range: '$111,734–$154,906',   rate: '26%'   },
+                        { range: '$154,907–$220,000',   rate: '29%'   },
+                        { range: 'Over $220,000',       rate: '33%'   },
+                      ].map((b, i) => (
+                        <div key={i} className="flex justify-between text-sm">
+                          <span className="text-gray-600">{b.range}</span>
+                          <span className="font-bold text-gray-800">{b.rate}</span>
                         </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${ratingBar(cat.rating)}`} style={{ width: `${cat.pct}%` }} />
-                        </div>
-                        <p className="text-xs text-gray-400 mt-0.5">{cat.pct}% of combined budget</p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Pre-calc placeholder on desktop */}
+              {!caTaxFullResult && (
+                <div className="hidden md:block mt-6 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">2024 Federal Brackets</p>
+                  <div className="space-y-2">
+                    {[
+                      { range: 'Up to $55,867',      rate: '15%'   },
+                      { range: '$55,868–$111,733',    rate: '20.5%' },
+                      { range: '$111,734–$154,906',   rate: '26%'   },
+                      { range: '$154,907–$220,000',   rate: '29%'   },
+                      { range: 'Over $220,000',       rate: '33%'   },
+                    ].map((b, i) => (
+                      <div key={i} className="flex justify-between text-sm">
+                        <span className="text-gray-600">{b.range}</span>
+                        <span className="font-bold text-gray-800">{b.rate}</span>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
-
-                <div className="mt-5 pt-4 border-t border-gray-100 flex flex-wrap gap-4 text-xs text-gray-500">
-                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-green-500 rounded-full inline-block" />80+ Excellent</span>
-                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-yellow-500 rounded-full inline-block" />60–79 Average</span>
-                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-red-500 rounded-full inline-block" />Below 60 Needs work</span>
-                </div>
-                <p className="text-xs text-gray-400 mt-3">Federal + provincial income tax only. Excludes CPP, EI premiums, HST/GST &amp; property tax. Efficiency ratings derived from OECD and auditor general performance data.</p>
-              </div>
+              )}
             </div>
-          )}
+
+            {/* ── RIGHT COLUMN: Breakdown grid ── */}
+            <div className="flex-1 min-w-0">
+              {!caTaxFullResult ? (
+                <div className="flex flex-col items-center justify-center py-24 text-center">
+                  <span className="text-7xl mb-4">🍁</span>
+                  <h3 className="text-2xl font-bold text-gray-400 mb-2">Enter your salary to see the breakdown</h3>
+                  <p className="text-gray-400 max-w-sm">We'll show you exactly where every dollar of your tax goes across 14 spending categories — with efficiency scores for each.</p>
+                </div>
+              ) : (
+                <div className="animate-fade-in">
+                  <div className="flex items-baseline justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-800">Where Your Tax Goes</h2>
+                      <p className="text-gray-500 mt-1">How {fmt(caTaxFullResult.total)} in combined tax is allocated across {caTaxFullResult.province} + federal spending</p>
+                    </div>
+                    <div className="hidden sm:flex items-center gap-4 text-sm text-gray-500 shrink-0 ml-4">
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-green-500 rounded-full" />80+ Excellent</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-yellow-500 rounded-full" />60–79 Average</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-red-500 rounded-full" />Below 60 Poor</span>
+                    </div>
+                  </div>
+
+                  {/* Category cards grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4">
+                    {categories.map((cat) => {
+                      const amount = (caTaxFullResult.total * cat.pct) / 100;
+                      return (
+                        <div key={cat.name} className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+                          {/* Card header */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <span className="text-3xl">{cat.emoji}</span>
+                              <div>
+                                <p className="font-bold text-gray-800 text-base leading-tight">{cat.name}</p>
+                                <p className="text-xs text-gray-400 mt-0.5">{cat.note}</p>
+                              </div>
+                            </div>
+                            <span className={`text-sm font-bold px-2.5 py-1 rounded-lg border ${ratingBadge(cat.rating)}`}>{cat.rating}/100</span>
+                          </div>
+
+                          {/* Dollar amount */}
+                          <p className="text-2xl font-bold text-gray-900 mb-1">{fmt(amount)}</p>
+                          <p className="text-sm text-gray-400 mb-4">{cat.pct}% of combined budget</p>
+
+                          {/* Progress bar */}
+                          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${ratingBar(cat.rating)}`}
+                              style={{ width: `${cat.pct}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-xs text-gray-400 mt-6 leading-relaxed">Federal + provincial income tax only. Excludes CPP, EI premiums, HST/GST &amp; property tax. Efficiency ratings derived from OECD and Auditor General performance data.</p>
+                </div>
+              )}
+            </div>
+
+          </div>
         </div>
       </div>
     );
