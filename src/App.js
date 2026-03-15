@@ -1586,6 +1586,8 @@ function App() {
   const [auLiveData, setAuLiveData] = useState(false);
   const [auFirestoreBills, setAuFirestoreBills] = useState([]);
   const [auFirestoreLoading, setAuFirestoreLoading] = useState(false);
+  const [caTaxSalary, setCaTaxSalary] = useState('');
+  const [caTaxResult, setCaTaxResult] = useState(null);
   const [ministries, setMinistries] = useState([
     {
       id: 1,
@@ -19349,7 +19351,7 @@ function App() {
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Supreme Court</h2>
             <p className="text-gray-600 mb-3 text-sm sm:text-base">
-              {isUSA 
+              {isUSA
                 ? 'Track major cases, decisions & constitutional rulings'
                 : 'Track major cases, decisions & Charter challenges'
               }
@@ -19359,6 +19361,24 @@ function App() {
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
+
+          {/* Tax Calculator — Canada only */}
+          {!isUSA && (
+            <div
+              onClick={() => setView('ca-tax-calculator')}
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 active:scale-95"
+            >
+              <div className="text-red-600 mb-3 sm:mb-4">
+                <DollarSign className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Your Tax Calculator</h2>
+              <p className="text-gray-600 mb-3 text-sm sm:text-base">Enter your salary and see your federal tax — plus exactly where every dollar goes</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span className="font-medium">2024 Federal Brackets</span>
+                <ChevronRight className="w-5 h-5 text-red-500" />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -20490,6 +20510,169 @@ function App() {
       })()}
     </div>
   );
+
+  const renderCaTaxCalculator = () => {
+    const fmt = (n) => new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(n);
+
+    const calcTax = () => {
+      const s = parseFloat(String(caTaxSalary).replace(/[^0-9.]/g, ''));
+      if (!s || s <= 0) return;
+      const brackets = [
+        { max: 55867,    rate: 0.15 },
+        { max: 111733,   rate: 0.205 },
+        { max: 154906,   rate: 0.26 },
+        { max: 220000,   rate: 0.29 },
+        { max: Infinity, rate: 0.33 },
+      ];
+      let tax = 0, prev = 0;
+      for (const b of brackets) {
+        if (s <= prev) break;
+        tax += (Math.min(s, b.max) - prev) * b.rate;
+        prev = b.max;
+      }
+      const credit = 15705 * 0.15;
+      const net = Math.max(0, tax - credit);
+      setCaTaxResult({ salary: s, gross: tax, credit, net, rate: (net / s) * 100 });
+    };
+
+    const budgetCategories = [
+      { emoji: '👴', name: 'Old Age Security & Pensions',   pct: 14.7 },
+      { emoji: '💳', name: 'Public Debt Charges',            pct: 10.1 },
+      { emoji: '🏥', name: 'Canada Health Transfer',         pct:  9.2 },
+      { emoji: '👶', name: "Children's Benefits (CCB)",      pct:  5.0 },
+      { emoji: '🛡️', name: 'National Defence',              pct:  5.0 },
+      { emoji: '💼', name: 'Employment Insurance',           pct:  4.7 },
+      { emoji: '🏘️', name: 'Indigenous Services',           pct:  4.0 },
+      { emoji: '🤝', name: 'Canada Social Transfer',         pct:  3.1 },
+      { emoji: '🚂', name: 'Infrastructure & Transport',     pct:  2.2 },
+      { emoji: '🏠', name: 'Housing Programs',               pct:  1.5 },
+      { emoji: '🌿', name: 'Environment & Climate',          pct:  1.2 },
+      { emoji: '🌐', name: 'Immigration & Citizenship',      pct:  1.0 },
+      { emoji: '🏛️', name: 'Other Federal Programs',        pct: 38.3 },
+    ];
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50 animate-fade-in">
+        <div className="max-w-2xl mx-auto px-4 py-8">
+
+          <button
+            onClick={() => { setCaTaxResult(null); setView('categories'); }}
+            className="mb-6 button-primary text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant"
+          >
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
+          </button>
+
+          {/* Title */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">🍁</span>
+              <h1 className="text-3xl font-bold text-gray-800">Your Tax Calculator</h1>
+            </div>
+            <p className="text-gray-500 text-sm">Estimate your 2024 Canadian federal income tax and see exactly where it goes.</p>
+            <div className="w-20 h-1 bg-red-600 rounded-full mt-3" />
+          </div>
+
+          {/* Input */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-5 border border-red-100">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Annual Income (CAD)</label>
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-lg">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="e.g. 75000"
+                  value={caTaxSalary}
+                  onChange={(e) => setCaTaxSalary(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && calcTax()}
+                  className="w-full pl-8 pr-4 py-4 border-2 border-gray-200 rounded-xl text-lg font-semibold focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none transition-all"
+                />
+              </div>
+              <button
+                onClick={calcTax}
+                className="px-6 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all active:scale-95 whitespace-nowrap"
+              >
+                Calculate
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mt-2">Includes basic personal amount credit of $15,705 × 15% = $2,356.</p>
+          </div>
+
+          {/* Brackets reference */}
+          <div className="bg-white rounded-2xl shadow-sm p-5 mb-6 border border-gray-100">
+            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">2024 Federal Tax Brackets</h3>
+            <div className="space-y-2">
+              {[
+                { range: 'Up to $55,867',           rate: '15%'   },
+                { range: '$55,868 – $111,733',       rate: '20.5%' },
+                { range: '$111,734 – $154,906',      rate: '26%'   },
+                { range: '$154,907 – $220,000',      rate: '29%'   },
+                { range: 'Over $220,000',            rate: '33%'   },
+              ].map((b, i) => (
+                <div key={i} className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">{b.range}</span>
+                  <span className="font-bold text-gray-800 bg-gray-100 px-2 py-0.5 rounded text-xs">{b.rate}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Results */}
+          {caTaxResult && (
+            <div className="animate-fade-in">
+              {/* Summary cards */}
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                  <p className="text-xs text-gray-500 mb-1">Gross Federal Tax</p>
+                  <p className="text-xl font-bold text-gray-800">{fmt(caTaxResult.gross)}</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                  <p className="text-xs text-gray-500 mb-1">BPA Tax Credit</p>
+                  <p className="text-xl font-bold text-green-600">−{fmt(caTaxResult.credit)}</p>
+                </div>
+                <div className="bg-red-600 rounded-xl p-4 shadow-sm col-span-2">
+                  <p className="text-xs text-red-200 mb-1">Net Federal Tax Owed</p>
+                  <div className="flex items-end justify-between">
+                    <p className="text-3xl font-bold text-white">{fmt(caTaxResult.net)}</p>
+                    <p className="text-red-200 text-sm font-semibold">{caTaxResult.rate.toFixed(1)}% effective rate</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Breakdown */}
+              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                <h2 className="text-xl font-bold text-gray-800 mb-1">Where Your Tax Goes</h2>
+                <p className="text-sm text-gray-500 mb-5">How your {fmt(caTaxResult.net)} in federal tax is allocated across Canada's 2024–25 budget</p>
+                <div className="space-y-4">
+                  {budgetCategories.map((cat) => {
+                    const amount = (caTaxResult.net * cat.pct) / 100;
+                    return (
+                      <div key={cat.name}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <span className="text-base w-6 text-center">{cat.emoji}</span>
+                            {cat.name}
+                          </span>
+                          <span className="text-sm font-bold text-gray-800 ml-3 shrink-0">{fmt(amount)}</span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-red-500 rounded-full" style={{ width: `${cat.pct}%` }} />
+                        </div>
+                        <p className="text-xs text-gray-400 mt-0.5">{cat.pct}% of federal budget</p>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-gray-400 mt-5 pt-4 border-t border-gray-100">
+                  Federal income tax only. Does not include CPP contributions, EI premiums, or provincial/territorial tax. Based on 2024 CRA federal brackets and Canada's 2024–25 federal budget.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   // NEW: Legislative Hub - Combines Bills, Laws & Upcoming Legislation
   const renderLegislativeHub = () => {
@@ -27118,6 +27301,7 @@ function App() {
         {view === 'analytics' && renderAnalytics()}
         {view === 'us-analytics' && renderUSAnalytics()}
         {view === 'bills' && renderBills()}
+        {view === 'ca-tax-calculator' && renderCaTaxCalculator()}
         {view === 'legislative-hub' && renderLegislativeHub()}
         {view === 'us-legislative-hub' && renderUSLegislativeHub()}
         {view === 'bill-detail' && selectedBill && renderBillDetail()}
