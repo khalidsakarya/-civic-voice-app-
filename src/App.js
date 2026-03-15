@@ -1594,6 +1594,9 @@ function App() {
   const [usTaxSalary, setUsTaxSalary] = useState('');
   const [usTaxState, setUsTaxState] = useState('CA');
   const [usTaxResult, setUsTaxResult] = useState(null);
+  const [auTaxSalary, setAuTaxSalary] = useState('');
+  const [auTaxTerritory, setAuTaxTerritory] = useState('NSW');
+  const [auTaxResult, setAuTaxResult] = useState(null);
   const [ministries, setMinistries] = useState([
     {
       id: 1,
@@ -8128,6 +8131,297 @@ function App() {
     );
   };
 
+  const renderAuTaxFull = () => {
+    const fmt = (n) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(n);
+
+    const territories = {
+      NSW: 'New South Wales',
+      VIC: 'Victoria',
+      QLD: 'Queensland',
+      WA:  'Western Australia',
+      SA:  'South Australia',
+      TAS: 'Tasmania',
+      ACT: 'Australian Capital Territory',
+      NT:  'Northern Territory',
+    };
+
+    // 2024-25 federal brackets (Stage 3 tax cuts — effective 1 July 2024)
+    const fedBrackets = [
+      { max: 18200,     rate: 0.00 },
+      { max: 45000,     rate: 0.16 },
+      { max: 135000,    rate: 0.30 },
+      { max: 190000,    rate: 0.37 },
+      { max: Infinity,  rate: 0.45 },
+    ];
+
+    const applyBrackets = (income, brackets) => {
+      let tax = 0, prev = 0;
+      for (const b of brackets) {
+        if (income <= prev) break;
+        tax += (Math.min(income, b.max) - prev) * b.rate;
+        prev = b.max;
+      }
+      return tax;
+    };
+
+    const calcLITO = (income) => {
+      if (income <= 37500)  return 700;
+      if (income <= 45000)  return Math.max(0, 700  - (income - 37500) * 0.05);
+      if (income <= 66667)  return Math.max(0, 325  - (income - 45000) * 0.015);
+      return 0;
+    };
+
+    const calcTax = () => {
+      const s = parseFloat(String(auTaxSalary).replace(/[^0-9.]/g, ''));
+      if (!s || s <= 0) return;
+      const grossTax = applyBrackets(s, fedBrackets);
+      const lito = calcLITO(s);
+      const fedNet = Math.max(0, grossTax - lito);
+      // Medicare levy: 2% with low-income reduction threshold
+      const medicareLevy = s > 26000 ? s * 0.02 : 0;
+      const total = fedNet + medicareLevy;
+      setAuTaxResult({
+        salary: s,
+        territory: territories[auTaxTerritory] || auTaxTerritory,
+        fedNet,
+        medicareLevy,
+        total,
+        fedRate:      (fedNet / s) * 100,
+        medicareRate: (medicareLevy / s) * 100,
+        combinedRate: (total / s) * 100,
+      });
+    };
+
+    const categories = [
+      { emoji: '🤝', name: 'Social Security & Welfare',   pct: 35.5, rating: 70, note: 'Age pension, disability, family payments' },
+      { emoji: '🏥', name: 'Health & Medicare',           pct: 16.5, rating: 68, note: 'Universal Medicare, hospitals & PBS' },
+      { emoji: '🏫', name: 'Education',                   pct:  7.5, rating: 72, note: 'Schools, universities & vocational training' },
+      { emoji: '🛡️', name: 'Defence',                    pct:  6.5, rating: 62, note: 'ADF capability & procurement' },
+      { emoji: '💳', name: 'Interest on Public Debt',     pct:  6.0, rating: 30, note: 'Fastest-growing budget item' },
+      { emoji: '🏛️', name: 'General Government Services', pct:  4.5, rating: 55, note: 'ATO, public administration' },
+      { emoji: '🚂', name: 'Transport & Infrastructure',  pct:  3.5, rating: 52, note: 'Roads, rail and freight networks' },
+      { emoji: '🏠', name: 'Housing & Community',         pct:  2.5, rating: 40, note: 'Persistent housing affordability crisis' },
+      { emoji: '🌿', name: 'Environment & Climate',       pct:  1.5, rating: 58, note: 'Clean energy transition underway' },
+      { emoji: '🌾', name: 'Agriculture & Resources',     pct:  1.5, rating: 65, note: 'Supporting rural & export industries' },
+      { emoji: '🔬', name: 'Science & Innovation',        pct:  1.5, rating: 75, note: 'CSIRO, research & STEM investment' },
+      { emoji: '🌐', name: 'International Affairs & Aid', pct:  1.0, rating: 62, note: 'Pacific focus, DFAT, AusAID' },
+      { emoji: '🤝', name: 'Community Development',       pct:  2.0, rating: 60, note: 'Indigenous & regional programs' },
+      { emoji: '🏦', name: 'Other Programs',              pct: 10.0, rating: 50, note: 'Industry, justice & other agencies' },
+    ];
+
+    const ratingBadge = (r) => r >= 80 ? 'bg-green-100 text-green-700 border-green-200' : r >= 60 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : 'bg-red-100 text-red-700 border-red-200';
+    const ratingBar   = (r) => r >= 80 ? 'bg-green-500' : r >= 60 ? 'bg-yellow-500' : 'bg-red-500';
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-green-50 animate-fade-in">
+        {/* Page header */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-8 pb-4">
+          <button
+            onClick={() => { setAuTaxResult(null); setView('government-levels'); }}
+            className="mb-6 button-primary text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant"
+          >
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Australia</span>
+          </button>
+
+          <div className="flex items-center gap-4 mb-2">
+            <span className="text-5xl">🇦🇺</span>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Your Tax Calculator</h1>
+              <p className="text-gray-500 mt-1">Calculate your 2024–25 federal income tax and Medicare levy, and see exactly where every dollar goes.</p>
+            </div>
+          </div>
+          <div className="w-24 h-1 bg-amber-500 rounded-full mt-4" />
+        </div>
+
+        {/* Two-column layout on md+ */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 pb-12">
+          <div className="flex flex-col md:flex-row gap-8 items-start">
+
+            {/* ── LEFT COLUMN ── */}
+            <div className="w-full md:w-96 md:shrink-0 md:sticky md:top-6">
+
+              {/* Input card */}
+              <div className="bg-white rounded-2xl shadow-lg p-8 border border-amber-100">
+                <h2 className="text-xl font-bold text-gray-800 mb-6">Enter Your Details</h2>
+
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Annual Income (AUD)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xl">$</span>
+                      <input
+                        type="number" min="0" placeholder="e.g. 80000"
+                        value={auTaxSalary}
+                        onChange={(e) => setAuTaxSalary(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && calcTax()}
+                        className="w-full pl-9 pr-4 py-4 border-2 border-gray-200 rounded-xl text-xl font-semibold focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">State / Territory</label>
+                    <select
+                      value={auTaxTerritory}
+                      onChange={(e) => setAuTaxTerritory(e.target.value)}
+                      className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-base font-medium focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all bg-white"
+                    >
+                      <option value="NSW">New South Wales</option>
+                      <option value="VIC">Victoria</option>
+                      <option value="QLD">Queensland</option>
+                      <option value="WA">Western Australia</option>
+                      <option value="SA">South Australia</option>
+                      <option value="TAS">Tasmania</option>
+                      <option value="ACT">Australian Capital Territory</option>
+                      <option value="NT">Northern Territory</option>
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1.5">Australian states &amp; territories do not levy personal income tax — all income tax is collected federally.</p>
+                  </div>
+
+                  <button
+                    onClick={calcTax}
+                    className="w-full py-5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all active:scale-95 text-lg shadow-md"
+                  >
+                    Calculate My Tax
+                  </button>
+                </div>
+
+                <p className="text-xs text-gray-400 mt-4 leading-relaxed">Includes Low Income Tax Offset (LITO) &amp; 2% Medicare levy. Based on 2024–25 ATO brackets (Stage 3 tax cuts).</p>
+              </div>
+
+              {/* Tax summary */}
+              {auTaxResult && (
+                <div className="mt-6 space-y-3 animate-fade-in">
+                  <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Federal Income Tax</p>
+                    <p className="text-3xl font-bold text-gray-800">{fmt(auTaxResult.fedNet)}</p>
+                    <p className="text-sm text-gray-400 mt-1">{auTaxResult.fedRate.toFixed(1)}% effective rate</p>
+                  </div>
+                  <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Medicare Levy (2%)</p>
+                    <p className="text-3xl font-bold text-gray-800">{fmt(auTaxResult.medicareLevy)}</p>
+                    <p className="text-sm text-gray-400 mt-1">Funds the universal Medicare system</p>
+                  </div>
+                  <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                    <p className="text-xs font-semibold text-green-600 uppercase tracking-wider mb-1">{auTaxResult.territory} — State Tax</p>
+                    <p className="text-2xl font-bold text-green-600">No State Income Tax</p>
+                    <p className="text-sm text-gray-400 mt-1">States funded via federal GST grants</p>
+                  </div>
+                  <div className="bg-amber-600 rounded-2xl p-6 shadow-md">
+                    <p className="text-xs font-semibold text-amber-200 uppercase tracking-wider mb-1">Total Tax Owed</p>
+                    <p className="text-4xl font-bold text-white">{fmt(auTaxResult.total)}</p>
+                    <p className="text-sm text-amber-200 mt-1">{auTaxResult.combinedRate.toFixed(1)}% combined effective rate</p>
+                    <div className="mt-3 pt-3 border-t border-amber-500">
+                      <p className="text-sm text-amber-100">
+                        That's <strong className="text-white">{fmt(auTaxResult.total / 12)}/month</strong> or <strong className="text-white">{fmt(auTaxResult.total / 52)}/week</strong>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Federal brackets legend */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">2024–25 Federal Brackets</p>
+                    <div className="space-y-2">
+                      {[
+                        { range: '$0 – $18,200',          rate: '0%'   },
+                        { range: '$18,201 – $45,000',     rate: '16%'  },
+                        { range: '$45,001 – $135,000',    rate: '30%'  },
+                        { range: '$135,001 – $190,000',   rate: '37%'  },
+                        { range: 'Over $190,000',         rate: '45%'  },
+                      ].map((b, i) => (
+                        <div key={i} className="flex justify-between text-sm">
+                          <span className="text-gray-600">{b.range}</span>
+                          <span className="font-bold text-gray-800">{b.rate}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Pre-calc brackets on desktop */}
+              {!auTaxResult && (
+                <div className="hidden md:block mt-6 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">2024–25 Federal Brackets</p>
+                  <div className="space-y-2">
+                    {[
+                      { range: '$0 – $18,200',        rate: '0%'  },
+                      { range: '$18,201 – $45,000',   rate: '16%' },
+                      { range: '$45,001 – $135,000',  rate: '30%' },
+                      { range: '$135,001 – $190,000', rate: '37%' },
+                      { range: 'Over $190,000',       rate: '45%' },
+                    ].map((b, i) => (
+                      <div key={i} className="flex justify-between text-sm">
+                        <span className="text-gray-600">{b.range}</span>
+                        <span className="font-bold text-gray-800">{b.rate}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ── RIGHT COLUMN: Breakdown grid ── */}
+            <div className="flex-1 min-w-0">
+              {!auTaxResult ? (
+                <div className="flex flex-col items-center justify-center py-24 text-center">
+                  <span className="text-7xl mb-4">🇦🇺</span>
+                  <h3 className="text-2xl font-bold text-gray-400 mb-2">Enter your salary to see the breakdown</h3>
+                  <p className="text-gray-400 max-w-sm">We'll show you exactly where every dollar of your tax goes across 14 spending categories — with efficiency scores for each.</p>
+                </div>
+              ) : (
+                <div className="animate-fade-in">
+                  <div className="flex items-baseline justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-800">Where Your Tax Goes</h2>
+                      <p className="text-gray-500 mt-1">How {fmt(auTaxResult.total)} in combined tax is allocated across Australia's 2024–25 federal budget</p>
+                    </div>
+                    <div className="hidden sm:flex items-center gap-4 text-sm text-gray-500 shrink-0 ml-4">
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-green-500 rounded-full" />80+ Excellent</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-yellow-500 rounded-full" />60–79 Average</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-red-500 rounded-full" />Below 60 Poor</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4">
+                    {categories.map((cat) => {
+                      const amount = (auTaxResult.total * cat.pct) / 100;
+                      return (
+                        <div key={cat.name} className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <span className="text-3xl">{cat.emoji}</span>
+                              <div>
+                                <p className="font-bold text-gray-800 text-base leading-tight">{cat.name}</p>
+                                <p className="text-base font-semibold text-gray-600 mt-1">{cat.note}</p>
+                              </div>
+                            </div>
+                            <span className={`text-base font-bold px-2.5 py-1 rounded-lg border ${ratingBadge(cat.rating)}`}>{cat.rating}/100</span>
+                          </div>
+                          <p className="text-2xl font-bold text-gray-900 mb-1">{fmt(amount)}</p>
+                          <p className="text-sm text-gray-400 mb-4">{cat.pct}% of federal budget</p>
+                          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${ratingBar(cat.rating)}`}
+                              style={{ width: `${Math.min(cat.pct * 2.5, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-xs text-gray-400 mt-6 leading-relaxed">Federal income tax + Medicare levy only. Excludes superannuation (11.5% employer SG), GST, stamp duty &amp; payroll tax. Efficiency ratings based on ANAO and Productivity Commission data.</p>
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderGovernmentLevels = () => {
     const isUSA = selectedCountry?.type === 'usa';
     const isAustralia = selectedCountry?.type === 'australia';
@@ -8219,7 +8513,7 @@ function App() {
               <div className="w-24 h-1 bg-gradient-to-r from-amber-400 to-green-500 mt-3 rounded-full" />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Federal Government */}
               <div
                 onClick={() => setView('au-categories')}
@@ -8254,6 +8548,23 @@ function App() {
                 <p className="text-gray-600 mb-4 text-sm">Premiers of all 6 states and 2 territories</p>
                 <div className="flex items-center gap-2 text-green-600 font-semibold text-sm">
                   <span>Explore States</span>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
+
+              {/* Tax Calculator */}
+              <div
+                onClick={() => setView('au-tax-full')}
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                style={{ animationDelay: '0.3s' }}
+              >
+                <div className="text-amber-700 mb-4">
+                  <DollarSign className="w-12 h-12" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Your Tax Calculator</h2>
+                <p className="text-gray-600 mb-4 text-sm">Enter your salary and state — see your federal income tax, Medicare levy, and where every dollar goes</p>
+                <div className="flex items-center gap-2 text-amber-700 font-semibold text-sm">
+                  <span>Calculate My Tax</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
@@ -27982,6 +28293,7 @@ function App() {
         {view === 'bills' && renderBills()}
         {view === 'ca-tax-full' && renderCaTaxFull()}
         {view === 'us-tax-full' && renderUsTaxFull()}
+        {view === 'au-tax-full' && renderAuTaxFull()}
         {view === 'ca-tax-calculator' && renderCaTaxCalculator()}
         {view === 'legislative-hub' && renderLegislativeHub()}
         {view === 'us-legislative-hub' && renderUSLegislativeHub()}
