@@ -7722,10 +7722,10 @@ function App() {
                               <span className="text-3xl">{cat.emoji}</span>
                               <div>
                                 <p className="font-bold text-gray-800 text-base leading-tight">{cat.name}</p>
-                                <p className="text-xs text-gray-400 mt-0.5">{cat.note}</p>
+                                <p className="text-base font-semibold text-gray-600 mt-1">{cat.note}</p>
                               </div>
                             </div>
-                            <span className={`text-sm font-bold px-2.5 py-1 rounded-lg border ${ratingBadge(cat.rating)}`}>{cat.rating}/100</span>
+                            <span className={`text-base font-bold px-2.5 py-1 rounded-lg border ${ratingBadge(cat.rating)}`}>{cat.rating}/100</span>
                           </div>
 
                           {/* Dollar amount */}
@@ -8099,10 +8099,10 @@ function App() {
                               <span className="text-3xl">{cat.emoji}</span>
                               <div>
                                 <p className="font-bold text-gray-800 text-base leading-tight">{cat.name}</p>
-                                <p className="text-xs text-gray-400 mt-0.5">{cat.note}</p>
+                                <p className="text-base font-semibold text-gray-600 mt-1">{cat.note}</p>
                               </div>
                             </div>
-                            <span className={`text-sm font-bold px-2.5 py-1 rounded-lg border ${ratingBadge(cat.rating)}`}>{cat.rating}/100</span>
+                            <span className={`text-base font-bold px-2.5 py-1 rounded-lg border ${ratingBadge(cat.rating)}`}>{cat.rating}/100</span>
                           </div>
                           <p className="text-2xl font-bold text-gray-900 mb-1">{fmt(amount)}</p>
                           <p className="text-sm text-gray-400 mb-4">{cat.pct}% of federal budget</p>
