@@ -1591,6 +1591,9 @@ function App() {
   const [caTaxFullSalary, setCaTaxFullSalary] = useState('');
   const [caTaxProvince, setCaTaxProvince] = useState('ON');
   const [caTaxFullResult, setCaTaxFullResult] = useState(null);
+  const [usTaxSalary, setUsTaxSalary] = useState('');
+  const [usTaxState, setUsTaxState] = useState('CA');
+  const [usTaxResult, setUsTaxResult] = useState(null);
   const [ministries, setMinistries] = useState([
     {
       id: 1,
@@ -7752,6 +7755,379 @@ function App() {
     );
   };
 
+  const renderUsTaxFull = () => {
+    const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+
+    const stateData = {
+      AL: { name: 'Alabama',           brackets: [{max:500,rate:0.02},{max:3000,rate:0.04},{max:Infinity,rate:0.05}], stdDed: 2500 },
+      AK: { name: 'Alaska',            brackets: [], stdDed: 0 },
+      AZ: { name: 'Arizona',           brackets: [{max:Infinity,rate:0.025}], stdDed: 14600 },
+      AR: { name: 'Arkansas',          brackets: [{max:4999,rate:0.02},{max:9999,rate:0.04},{max:Infinity,rate:0.044}], stdDed: 2200 },
+      CA: { name: 'California',        brackets: [{max:10412,rate:0.01},{max:24684,rate:0.02},{max:38959,rate:0.04},{max:54081,rate:0.06},{max:68350,rate:0.08},{max:349137,rate:0.093},{max:418961,rate:0.103},{max:698274,rate:0.113},{max:Infinity,rate:0.123}], stdDed: 5202 },
+      CO: { name: 'Colorado',          brackets: [{max:Infinity,rate:0.044}], stdDed: 14600 },
+      CT: { name: 'Connecticut',       brackets: [{max:10000,rate:0.03},{max:50000,rate:0.05},{max:100000,rate:0.055},{max:200000,rate:0.06},{max:250000,rate:0.065},{max:500000,rate:0.069},{max:Infinity,rate:0.0699}], stdDed: 0 },
+      DE: { name: 'Delaware',          brackets: [{max:2000,rate:0},{max:5000,rate:0.022},{max:10000,rate:0.039},{max:20000,rate:0.048},{max:25000,rate:0.052},{max:60000,rate:0.0555},{max:Infinity,rate:0.066}], stdDed: 3250 },
+      FL: { name: 'Florida',           brackets: [], stdDed: 0 },
+      GA: { name: 'Georgia',           brackets: [{max:Infinity,rate:0.0549}], stdDed: 5400 },
+      HI: { name: 'Hawaii',            brackets: [{max:2400,rate:0.014},{max:4800,rate:0.032},{max:9600,rate:0.055},{max:14400,rate:0.064},{max:19200,rate:0.068},{max:24000,rate:0.072},{max:36000,rate:0.076},{max:48000,rate:0.079},{max:150000,rate:0.0825},{max:175000,rate:0.09},{max:200000,rate:0.10},{max:Infinity,rate:0.11}], stdDed: 2200 },
+      ID: { name: 'Idaho',             brackets: [{max:Infinity,rate:0.058}], stdDed: 14600 },
+      IL: { name: 'Illinois',          brackets: [{max:Infinity,rate:0.0495}], stdDed: 0 },
+      IN: { name: 'Indiana',           brackets: [{max:Infinity,rate:0.0305}], stdDed: 1000 },
+      IA: { name: 'Iowa',              brackets: [{max:6210,rate:0.044},{max:31050,rate:0.044},{max:Infinity,rate:0.057}], stdDed: 14600 },
+      KS: { name: 'Kansas',            brackets: [{max:15000,rate:0.031},{max:30000,rate:0.0525},{max:Infinity,rate:0.057}], stdDed: 3500 },
+      KY: { name: 'Kentucky',          brackets: [{max:Infinity,rate:0.04}], stdDed: 2980 },
+      LA: { name: 'Louisiana',         brackets: [{max:12500,rate:0.0185},{max:50000,rate:0.035},{max:Infinity,rate:0.0425}], stdDed: 4500 },
+      ME: { name: 'Maine',             brackets: [{max:26050,rate:0.058},{max:61600,rate:0.0675},{max:Infinity,rate:0.0715}], stdDed: 14600 },
+      MD: { name: 'Maryland',          brackets: [{max:1000,rate:0.02},{max:2000,rate:0.03},{max:3000,rate:0.04},{max:100000,rate:0.0475},{max:125000,rate:0.05},{max:150000,rate:0.0525},{max:250000,rate:0.055},{max:Infinity,rate:0.0575}], stdDed: 2350 },
+      MA: { name: 'Massachusetts',     brackets: [{max:1000000,rate:0.05},{max:Infinity,rate:0.09}], stdDed: 4400 },
+      MI: { name: 'Michigan',          brackets: [{max:Infinity,rate:0.0405}], stdDed: 5400 },
+      MN: { name: 'Minnesota',         brackets: [{max:31690,rate:0.0535},{max:104090,rate:0.068},{max:183340,rate:0.0785},{max:Infinity,rate:0.0985}], stdDed: 14600 },
+      MS: { name: 'Mississippi',       brackets: [{max:10000,rate:0},{max:Infinity,rate:0.047}], stdDed: 2300 },
+      MO: { name: 'Missouri',          brackets: [{max:1207,rate:0},{max:2414,rate:0.015},{max:3621,rate:0.02},{max:4828,rate:0.025},{max:6035,rate:0.03},{max:7242,rate:0.035},{max:8432,rate:0.04},{max:9639,rate:0.045},{max:Infinity,rate:0.049}], stdDed: 14600 },
+      MT: { name: 'Montana',           brackets: [{max:20500,rate:0.047},{max:Infinity,rate:0.059}], stdDed: 14600 },
+      NE: { name: 'Nebraska',          brackets: [{max:3700,rate:0.0246},{max:22170,rate:0.0351},{max:35730,rate:0.0501},{max:Infinity,rate:0.0584}], stdDed: 7900 },
+      NV: { name: 'Nevada',            brackets: [], stdDed: 0 },
+      NH: { name: 'New Hampshire',     brackets: [], stdDed: 0 },
+      NJ: { name: 'New Jersey',        brackets: [{max:20000,rate:0.014},{max:35000,rate:0.0175},{max:40000,rate:0.035},{max:75000,rate:0.05525},{max:500000,rate:0.0637},{max:1000000,rate:0.0897},{max:Infinity,rate:0.1075}], stdDed: 0 },
+      NM: { name: 'New Mexico',        brackets: [{max:5500,rate:0.017},{max:11000,rate:0.032},{max:16000,rate:0.047},{max:210000,rate:0.049},{max:Infinity,rate:0.059}], stdDed: 14600 },
+      NY: { name: 'New York',          brackets: [{max:17150,rate:0.04},{max:23600,rate:0.045},{max:27900,rate:0.0525},{max:161550,rate:0.0585},{max:323200,rate:0.0625},{max:2155350,rate:0.0685},{max:5000000,rate:0.0965},{max:25000000,rate:0.103},{max:Infinity,rate:0.109}], stdDed: 8000 },
+      NC: { name: 'North Carolina',    brackets: [{max:Infinity,rate:0.045}], stdDed: 12750 },
+      ND: { name: 'North Dakota',      brackets: [{max:44725,rate:0.0195},{max:225975,rate:0.025},{max:Infinity,rate:0.029}], stdDed: 14600 },
+      OH: { name: 'Ohio',              brackets: [{max:26050,rate:0},{max:100000,rate:0.027},{max:Infinity,rate:0.0357}], stdDed: 0 },
+      OK: { name: 'Oklahoma',          brackets: [{max:1000,rate:0.0025},{max:2500,rate:0.0075},{max:3750,rate:0.0175},{max:4900,rate:0.0275},{max:7200,rate:0.0375},{max:Infinity,rate:0.0475}], stdDed: 6350 },
+      OR: { name: 'Oregon',            brackets: [{max:18400,rate:0.0475},{max:250000,rate:0.0875},{max:Infinity,rate:0.099}], stdDed: 2420 },
+      PA: { name: 'Pennsylvania',      brackets: [{max:Infinity,rate:0.0307}], stdDed: 0 },
+      RI: { name: 'Rhode Island',      brackets: [{max:77450,rate:0.0375},{max:176050,rate:0.0475},{max:Infinity,rate:0.0599}], stdDed: 10550 },
+      SC: { name: 'South Carolina',    brackets: [{max:3460,rate:0},{max:Infinity,rate:0.064}], stdDed: 14600 },
+      SD: { name: 'South Dakota',      brackets: [], stdDed: 0 },
+      TN: { name: 'Tennessee',         brackets: [], stdDed: 0 },
+      TX: { name: 'Texas',             brackets: [], stdDed: 0 },
+      UT: { name: 'Utah',              brackets: [{max:Infinity,rate:0.0455}], stdDed: 886 },
+      VT: { name: 'Vermont',           brackets: [{max:45400,rate:0.0335},{max:110050,rate:0.066},{max:229550,rate:0.076},{max:Infinity,rate:0.0875}], stdDed: 7000 },
+      VA: { name: 'Virginia',          brackets: [{max:3000,rate:0.02},{max:5000,rate:0.03},{max:17000,rate:0.05},{max:Infinity,rate:0.0575}], stdDed: 8000 },
+      WA: { name: 'Washington',        brackets: [], stdDed: 0 },
+      WV: { name: 'West Virginia',     brackets: [{max:10000,rate:0.0236},{max:25000,rate:0.0315},{max:40000,rate:0.0354},{max:60000,rate:0.0472},{max:Infinity,rate:0.0512}], stdDed: 0 },
+      WI: { name: 'Wisconsin',         brackets: [{max:14320,rate:0.035},{max:28640,rate:0.044},{max:315310,rate:0.053},{max:Infinity,rate:0.0765}], stdDed: 12140 },
+      WY: { name: 'Wyoming',           brackets: [], stdDed: 0 },
+      DC: { name: 'Washington D.C.',   brackets: [{max:10000,rate:0.04},{max:40000,rate:0.06},{max:60000,rate:0.065},{max:250000,rate:0.085},{max:500000,rate:0.0925},{max:1000000,rate:0.0975},{max:Infinity,rate:0.1075}], stdDed: 12550 },
+    };
+
+    // 2024 federal brackets (single filer) + $14,600 standard deduction
+    const fedBrackets = [
+      {max:11600,rate:0.10},{max:47150,rate:0.12},{max:100525,rate:0.22},
+      {max:191950,rate:0.24},{max:243725,rate:0.32},{max:609350,rate:0.35},{max:Infinity,rate:0.37}
+    ];
+    const FED_STD_DED = 14600;
+
+    const applyBrackets = (income, brackets) => {
+      let tax = 0, prev = 0;
+      for (const b of brackets) {
+        if (income <= prev) break;
+        tax += (Math.min(income, b.max) - prev) * b.rate;
+        prev = b.max;
+      }
+      return tax;
+    };
+
+    const calcTax = () => {
+      const s = parseFloat(String(usTaxSalary).replace(/[^0-9.]/g, ''));
+      if (!s || s <= 0) return;
+      const st = stateData[usTaxState];
+      if (!st) return;
+      const fedNet = applyBrackets(Math.max(0, s - FED_STD_DED), fedBrackets);
+      const stateNet = st.brackets.length === 0 ? 0 : applyBrackets(Math.max(0, s - st.stdDed), st.brackets);
+      const total = fedNet + stateNet;
+      setUsTaxResult({
+        salary: s,
+        stateName: st.name,
+        noStateTax: st.brackets.length === 0,
+        fedNet,
+        stateNet,
+        total,
+        fedRate: (fedNet / s) * 100,
+        stateRate: (stateNet / s) * 100,
+        combinedRate: (total / s) * 100,
+      });
+    };
+
+    const categories = [
+      { emoji: '👴', name: 'Social Security',              pct: 21.0, rating: 75, note: 'Retirement & disability benefits' },
+      { emoji: '🏥', name: 'Medicare',                     pct: 13.5, rating: 62, note: 'Health coverage for seniors' },
+      { emoji: '🛡️', name: 'National Defense',            pct: 13.0, rating: 65, note: 'Military & defense spending' },
+      { emoji: '💳', name: 'Interest on National Debt',    pct: 13.0, rating: 28, note: 'Fastest-growing budget item' },
+      { emoji: '🤝', name: 'Medicaid & CHIP',              pct:  8.0, rating: 58, note: 'Low-income health coverage' },
+      { emoji: '💼', name: 'Income Security',              pct:  7.5, rating: 55, note: 'SNAP, housing, unemployment' },
+      { emoji: '🏅', name: 'Veterans Benefits',            pct:  4.5, rating: 72, note: 'VA health care & compensation' },
+      { emoji: '🏫', name: 'Education',                    pct:  2.0, rating: 52, note: 'Federal education programs' },
+      { emoji: '🚂', name: 'Transportation',               pct:  2.5, rating: 48, note: 'Roads, rail & transit' },
+      { emoji: '🔬', name: 'Science & Research',           pct:  1.0, rating: 80, note: 'NIH, NASA, basic research' },
+      { emoji: '🌿', name: 'Environment & Energy',         pct:  1.0, rating: 55, note: 'EPA, clean energy initiatives' },
+      { emoji: '🌐', name: 'International Affairs',        pct:  1.0, rating: 60, note: 'Foreign aid & diplomacy' },
+      { emoji: '🏠', name: 'Housing & Urban Development',  pct:  1.5, rating: 42, note: 'Affordable housing crisis' },
+      { emoji: '🏛️', name: 'Other Programs',              pct:  9.5, rating: 50, note: 'Agriculture, justice & more' },
+    ];
+
+    const ratingBadge = (r) => r >= 80 ? 'bg-green-100 text-green-700 border-green-200' : r >= 60 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : 'bg-red-100 text-red-700 border-red-200';
+    const ratingBar   = (r) => r >= 80 ? 'bg-green-500' : r >= 60 ? 'bg-yellow-500' : 'bg-red-500';
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50 animate-fade-in">
+        {/* Page header — full width */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-8 pb-4">
+          <button
+            onClick={() => { setUsTaxResult(null); setView('government-levels'); }}
+            className="mb-6 button-primary text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant"
+          >
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to United States</span>
+          </button>
+
+          <div className="flex items-center gap-4 mb-2">
+            <span className="text-5xl">🇺🇸</span>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Your Tax Calculator</h1>
+              <p className="text-gray-500 mt-1">Calculate your combined 2024 federal + state income tax and see exactly where every dollar goes.</p>
+            </div>
+          </div>
+          <div className="w-24 h-1 bg-blue-600 rounded-full mt-4" />
+        </div>
+
+        {/* Two-column layout on md+ */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 pb-12">
+          <div className="flex flex-col md:flex-row gap-8 items-start">
+
+            {/* ── LEFT COLUMN: Input + tax summary ── */}
+            <div className="w-full md:w-96 md:shrink-0 md:sticky md:top-6">
+
+              {/* Input card */}
+              <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
+                <h2 className="text-xl font-bold text-gray-800 mb-6">Enter Your Details</h2>
+
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Annual Income (USD)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xl">$</span>
+                      <input
+                        type="number" min="0" placeholder="e.g. 75000"
+                        value={usTaxSalary}
+                        onChange={(e) => setUsTaxSalary(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && calcTax()}
+                        className="w-full pl-9 pr-4 py-4 border-2 border-gray-200 rounded-xl text-xl font-semibold focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">State</label>
+                    <select
+                      value={usTaxState}
+                      onChange={(e) => setUsTaxState(e.target.value)}
+                      className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-base font-medium focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white"
+                    >
+                      <option value="AL">Alabama</option>
+                      <option value="AK">Alaska (No Income Tax)</option>
+                      <option value="AZ">Arizona</option>
+                      <option value="AR">Arkansas</option>
+                      <option value="CA">California</option>
+                      <option value="CO">Colorado</option>
+                      <option value="CT">Connecticut</option>
+                      <option value="DE">Delaware</option>
+                      <option value="FL">Florida (No Income Tax)</option>
+                      <option value="GA">Georgia</option>
+                      <option value="HI">Hawaii</option>
+                      <option value="ID">Idaho</option>
+                      <option value="IL">Illinois</option>
+                      <option value="IN">Indiana</option>
+                      <option value="IA">Iowa</option>
+                      <option value="KS">Kansas</option>
+                      <option value="KY">Kentucky</option>
+                      <option value="LA">Louisiana</option>
+                      <option value="ME">Maine</option>
+                      <option value="MD">Maryland</option>
+                      <option value="MA">Massachusetts</option>
+                      <option value="MI">Michigan</option>
+                      <option value="MN">Minnesota</option>
+                      <option value="MS">Mississippi</option>
+                      <option value="MO">Missouri</option>
+                      <option value="MT">Montana</option>
+                      <option value="NE">Nebraska</option>
+                      <option value="NV">Nevada (No Income Tax)</option>
+                      <option value="NH">New Hampshire (No Income Tax)</option>
+                      <option value="NJ">New Jersey</option>
+                      <option value="NM">New Mexico</option>
+                      <option value="NY">New York</option>
+                      <option value="NC">North Carolina</option>
+                      <option value="ND">North Dakota</option>
+                      <option value="OH">Ohio</option>
+                      <option value="OK">Oklahoma</option>
+                      <option value="OR">Oregon</option>
+                      <option value="PA">Pennsylvania</option>
+                      <option value="RI">Rhode Island</option>
+                      <option value="SC">South Carolina</option>
+                      <option value="SD">South Dakota (No Income Tax)</option>
+                      <option value="TN">Tennessee (No Income Tax)</option>
+                      <option value="TX">Texas (No Income Tax)</option>
+                      <option value="UT">Utah</option>
+                      <option value="VT">Vermont</option>
+                      <option value="VA">Virginia</option>
+                      <option value="WA">Washington (No Income Tax)</option>
+                      <option value="WV">West Virginia</option>
+                      <option value="WI">Wisconsin</option>
+                      <option value="WY">Wyoming (No Income Tax)</option>
+                      <option value="DC">Washington D.C.</option>
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={calcTax}
+                    className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all active:scale-95 text-lg shadow-md"
+                  >
+                    Calculate My Tax
+                  </button>
+                </div>
+
+                <p className="text-xs text-gray-400 mt-4 leading-relaxed">Single filer with standard deduction ($14,600 federal). Based on 2024 IRS tax brackets.</p>
+              </div>
+
+              {/* Tax summary — shown after calculation */}
+              {usTaxResult && (
+                <div className="mt-6 space-y-3 animate-fade-in">
+                  <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Federal Income Tax</p>
+                    <p className="text-3xl font-bold text-gray-800">{fmt(usTaxResult.fedNet)}</p>
+                    <p className="text-sm text-gray-400 mt-1">{usTaxResult.fedRate.toFixed(1)}% effective rate</p>
+                  </div>
+                  <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{usTaxResult.stateName} State Tax</p>
+                    {usTaxResult.noStateTax ? (
+                      <p className="text-2xl font-bold text-green-600">No State Income Tax</p>
+                    ) : (
+                      <>
+                        <p className="text-3xl font-bold text-gray-800">{fmt(usTaxResult.stateNet)}</p>
+                        <p className="text-sm text-gray-400 mt-1">{usTaxResult.stateRate.toFixed(1)}% effective rate</p>
+                      </>
+                    )}
+                  </div>
+                  <div className="bg-blue-700 rounded-2xl p-6 shadow-md">
+                    <p className="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-1">Total Tax Owed</p>
+                    <p className="text-4xl font-bold text-white">{fmt(usTaxResult.total)}</p>
+                    <p className="text-sm text-blue-200 mt-1">{usTaxResult.combinedRate.toFixed(1)}% combined effective rate</p>
+                    <div className="mt-3 pt-3 border-t border-blue-600">
+                      <p className="text-sm text-blue-100">
+                        That's <strong className="text-white">{fmt(usTaxResult.total / 12)}/month</strong> or <strong className="text-white">{fmt(usTaxResult.total / 52)}/week</strong>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Federal tax brackets legend */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">2024 Federal Brackets (Single)</p>
+                    <div className="space-y-2">
+                      {[
+                        { range: 'Up to $11,600',            rate: '10%' },
+                        { range: '$11,601–$47,150',          rate: '12%' },
+                        { range: '$47,151–$100,525',         rate: '22%' },
+                        { range: '$100,526–$191,950',        rate: '24%' },
+                        { range: '$191,951–$243,725',        rate: '32%' },
+                        { range: '$243,726–$609,350',        rate: '35%' },
+                        { range: 'Over $609,350',            rate: '37%' },
+                      ].map((b, i) => (
+                        <div key={i} className="flex justify-between text-sm">
+                          <span className="text-gray-600">{b.range}</span>
+                          <span className="font-bold text-gray-800">{b.rate}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Pre-calc brackets on desktop */}
+              {!usTaxResult && (
+                <div className="hidden md:block mt-6 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">2024 Federal Brackets (Single)</p>
+                  <div className="space-y-2">
+                    {[
+                      { range: 'Up to $11,600',     rate: '10%' },
+                      { range: '$11,601–$47,150',   rate: '12%' },
+                      { range: '$47,151–$100,525',  rate: '22%' },
+                      { range: '$100,526–$191,950', rate: '24%' },
+                      { range: '$191,951–$243,725', rate: '32%' },
+                      { range: '$243,726–$609,350', rate: '35%' },
+                      { range: 'Over $609,350',     rate: '37%' },
+                    ].map((b, i) => (
+                      <div key={i} className="flex justify-between text-sm">
+                        <span className="text-gray-600">{b.range}</span>
+                        <span className="font-bold text-gray-800">{b.rate}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ── RIGHT COLUMN: Breakdown grid ── */}
+            <div className="flex-1 min-w-0">
+              {!usTaxResult ? (
+                <div className="flex flex-col items-center justify-center py-24 text-center">
+                  <span className="text-7xl mb-4">🇺🇸</span>
+                  <h3 className="text-2xl font-bold text-gray-400 mb-2">Enter your salary to see the breakdown</h3>
+                  <p className="text-gray-400 max-w-sm">We'll show you exactly where every dollar of your federal tax goes across 14 spending categories — with efficiency scores for each.</p>
+                </div>
+              ) : (
+                <div className="animate-fade-in">
+                  <div className="flex items-baseline justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-800">Where Your Federal Tax Goes</h2>
+                      <p className="text-gray-500 mt-1">How {fmt(usTaxResult.fedNet)} in federal tax is allocated across US government spending</p>
+                    </div>
+                    <div className="hidden sm:flex items-center gap-4 text-sm text-gray-500 shrink-0 ml-4">
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-green-500 rounded-full" />80+ Excellent</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-yellow-500 rounded-full" />60–79 Average</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-red-500 rounded-full" />Below 60 Poor</span>
+                    </div>
+                  </div>
+
+                  {/* Category cards grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4">
+                    {categories.map((cat) => {
+                      const amount = (usTaxResult.fedNet * cat.pct) / 100;
+                      return (
+                        <div key={cat.name} className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <span className="text-3xl">{cat.emoji}</span>
+                              <div>
+                                <p className="font-bold text-gray-800 text-base leading-tight">{cat.name}</p>
+                                <p className="text-xs text-gray-400 mt-0.5">{cat.note}</p>
+                              </div>
+                            </div>
+                            <span className={`text-sm font-bold px-2.5 py-1 rounded-lg border ${ratingBadge(cat.rating)}`}>{cat.rating}/100</span>
+                          </div>
+                          <p className="text-2xl font-bold text-gray-900 mb-1">{fmt(amount)}</p>
+                          <p className="text-sm text-gray-400 mb-4">{cat.pct}% of federal budget</p>
+                          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${ratingBar(cat.rating)}`}
+                              style={{ width: `${Math.min(cat.pct * 3, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-xs text-gray-400 mt-6 leading-relaxed">Federal income tax only. Excludes FICA (Social Security + Medicare payroll taxes), state income tax, sales tax &amp; property tax. Breakdown based on FY2024 federal budget allocations. Efficiency ratings based on CBO and GAO performance data.</p>
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderGovernmentLevels = () => {
     const isUSA = selectedCountry?.type === 'usa';
     const isAustralia = selectedCountry?.type === 'australia';
@@ -7955,19 +8331,23 @@ function App() {
               </div>
             </div>
 
-            {/* Tax Calculator — Canada only */}
-            {!isUSA && (
+            {/* Tax Calculator — Canada + USA */}
+            {!isAustralia && !isUK && (
               <div
-                onClick={() => setView('ca-tax-full')}
+                onClick={() => setView(isUSA ? 'us-tax-full' : 'ca-tax-full')}
                 className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
                 style={{ animationDelay: '0.3s' }}
               >
-                <div className="text-red-600 mb-4">
+                <div className="text-blue-600 mb-4">
                   <DollarSign className="w-12 h-12" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Your Tax Calculator</h2>
-                <p className="text-gray-600 mb-4 text-sm">Enter your salary and province — see your federal + provincial tax and where every dollar goes</p>
-                <div className="flex items-center gap-2 text-red-600 font-semibold text-sm">
+                <p className="text-gray-600 mb-4 text-sm">
+                  {isUSA
+                    ? 'Enter your salary and state — see your federal + state tax and where every dollar goes'
+                    : 'Enter your salary and province — see your federal + provincial tax and where every dollar goes'}
+                </p>
+                <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm">
                   <span>Calculate My Tax</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
@@ -27601,6 +27981,7 @@ function App() {
         {view === 'us-analytics' && renderUSAnalytics()}
         {view === 'bills' && renderBills()}
         {view === 'ca-tax-full' && renderCaTaxFull()}
+        {view === 'us-tax-full' && renderUsTaxFull()}
         {view === 'ca-tax-calculator' && renderCaTaxCalculator()}
         {view === 'legislative-hub' && renderLegislativeHub()}
         {view === 'us-legislative-hub' && renderUSLegislativeHub()}
