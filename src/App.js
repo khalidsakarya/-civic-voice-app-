@@ -11376,6 +11376,9 @@ function App() {
               <span>Sponsored by <strong className="text-gray-700">{bill.sponsor}</strong></span>
               <span>· Introduced {bill.dateIntroduced}</span>
               <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> {bill.chamber}</span>
+              {bill.last_updated && (
+                <span className="text-gray-400 ml-auto">Updated {timeAgo(bill.last_updated)}</span>
+              )}
             </div>
           </div>
 
@@ -20796,7 +20799,12 @@ function App() {
                             <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                           </div>
                           <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
-                          {bill.sponsor && <p className="text-sm sm:text-[13px] text-gray-500 font-bold sm:font-normal">Sponsor: <strong>{bill.sponsor}</strong></p>}
+                          <div className="flex items-center justify-between gap-2">
+                            {bill.sponsor && <p className="text-sm sm:text-[13px] text-gray-500 font-bold sm:font-normal">Sponsor: <strong>{bill.sponsor}</strong></p>}
+                            {bill.last_updated && (
+                              <span className="text-xs text-gray-400 shrink-0">Updated {timeAgo(bill.last_updated)}</span>
+                            )}
+                          </div>
                         </div>
 
                         {/* Expanded details */}
@@ -21528,7 +21536,12 @@ function App() {
               <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </div>
             <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2 leading-snug">{bill.shortTitle}</h3>
-            <p className="text-sm sm:text-[13px] text-gray-500 font-bold sm:font-normal">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm sm:text-[13px] text-gray-500 font-bold sm:font-normal">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
+              {bill.last_updated && (
+                <span className="text-xs text-gray-400 shrink-0">Updated {timeAgo(bill.last_updated)}</span>
+              )}
+            </div>
           </div>
 
           {/* Expanded details */}
