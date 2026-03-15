@@ -7704,15 +7704,15 @@ function App() {
                 </div>
               ) : (
                 <div className="animate-fade-in">
-                  <div className="flex items-baseline justify-between mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8 pb-6 border-b border-gray-200">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-800">Where Your Tax Goes</h2>
-                      <p className="text-gray-500 mt-1">How {fmt(caTaxFullResult.total)} in combined tax is allocated across {caTaxFullResult.province} + federal spending</p>
+                      <h2 className="text-3xl sm:text-4xl font-bold text-gray-800">Where Your Tax Goes</h2>
+                      <p className="text-gray-500 mt-2 text-base">How {fmt(caTaxFullResult.total)} in combined tax is allocated across {caTaxFullResult.province} + federal spending</p>
                     </div>
-                    <div className="hidden sm:flex items-center gap-4 text-sm text-gray-500 shrink-0 ml-4">
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-green-500 rounded-full" />80+ Excellent</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-yellow-500 rounded-full" />60–79 Average</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-red-500 rounded-full" />Below 60 Poor</span>
+                    <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:ml-4 sm:mt-1">
+                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 text-green-700 font-bold text-sm"><span className="w-3 h-3 bg-green-500 rounded-full" />80+ Excellent</span>
+                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-700 font-bold text-sm"><span className="w-3 h-3 bg-yellow-500 rounded-full" />60–79 Average</span>
+                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 text-red-700 font-bold text-sm"><span className="w-3 h-3 bg-red-500 rounded-full" />Below 60 Poor</span>
                     </div>
                   </div>
 
@@ -8082,15 +8082,15 @@ function App() {
                 </div>
               ) : (
                 <div className="animate-fade-in">
-                  <div className="flex items-baseline justify-between mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8 pb-6 border-b border-gray-200">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-800">Where Your Federal Tax Goes</h2>
-                      <p className="text-gray-500 mt-1">How {fmt(usTaxResult.fedNet)} in federal tax is allocated across US government spending</p>
+                      <h2 className="text-3xl sm:text-4xl font-bold text-gray-800">Where Your Federal Tax Goes</h2>
+                      <p className="text-gray-500 mt-2 text-base">How {fmt(usTaxResult.fedNet)} in federal tax is allocated across US government spending</p>
                     </div>
-                    <div className="hidden sm:flex items-center gap-4 text-sm text-gray-500 shrink-0 ml-4">
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-green-500 rounded-full" />80+ Excellent</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-yellow-500 rounded-full" />60–79 Average</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-red-500 rounded-full" />Below 60 Poor</span>
+                    <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:ml-4 sm:mt-1">
+                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 text-green-700 font-bold text-sm"><span className="w-3 h-3 bg-green-500 rounded-full" />80+ Excellent</span>
+                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-700 font-bold text-sm"><span className="w-3 h-3 bg-yellow-500 rounded-full" />60–79 Average</span>
+                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 text-red-700 font-bold text-sm"><span className="w-3 h-3 bg-red-500 rounded-full" />Below 60 Poor</span>
                     </div>
                   </div>
 
@@ -8393,15 +8393,15 @@ function App() {
                 </div>
               ) : (
                 <div className="animate-fade-in">
-                  <div className="flex items-baseline justify-between mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8 pb-6 border-b border-gray-200">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-800">Where Your Tax Goes</h2>
-                      <p className="text-gray-500 mt-1">How {fmt(ukTaxResult.total)} in combined deductions funds UK public spending</p>
+                      <h2 className="text-3xl sm:text-4xl font-bold text-gray-800">Where Your Tax Goes</h2>
+                      <p className="text-gray-500 mt-2 text-base">How {fmt(ukTaxResult.total)} in combined deductions funds UK public spending</p>
                     </div>
-                    <div className="hidden sm:flex items-center gap-4 text-sm text-gray-500 shrink-0 ml-4">
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-green-500 rounded-full" />80+ Excellent</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-yellow-500 rounded-full" />60–79 Average</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-red-500 rounded-full" />Below 60 Poor</span>
+                    <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:ml-4 sm:mt-1">
+                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 text-green-700 font-bold text-sm"><span className="w-3 h-3 bg-green-500 rounded-full" />80+ Excellent</span>
+                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-700 font-bold text-sm"><span className="w-3 h-3 bg-yellow-500 rounded-full" />60–79 Average</span>
+                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 text-red-700 font-bold text-sm"><span className="w-3 h-3 bg-red-500 rounded-full" />Below 60 Poor</span>
                     </div>
                   </div>
 
@@ -8684,15 +8684,15 @@ function App() {
                 </div>
               ) : (
                 <div className="animate-fade-in">
-                  <div className="flex items-baseline justify-between mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8 pb-6 border-b border-gray-200">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-800">Where Your Tax Goes</h2>
-                      <p className="text-gray-500 mt-1">How {fmt(auTaxResult.total)} in combined tax is allocated across Australia's 2024–25 federal budget</p>
+                      <h2 className="text-3xl sm:text-4xl font-bold text-gray-800">Where Your Tax Goes</h2>
+                      <p className="text-gray-500 mt-2 text-base">How {fmt(auTaxResult.total)} in combined tax is allocated across Australia's 2024–25 federal budget</p>
                     </div>
-                    <div className="hidden sm:flex items-center gap-4 text-sm text-gray-500 shrink-0 ml-4">
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-green-500 rounded-full" />80+ Excellent</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-yellow-500 rounded-full" />60–79 Average</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-red-500 rounded-full" />Below 60 Poor</span>
+                    <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:ml-4 sm:mt-1">
+                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 text-green-700 font-bold text-sm"><span className="w-3 h-3 bg-green-500 rounded-full" />80+ Excellent</span>
+                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-700 font-bold text-sm"><span className="w-3 h-3 bg-yellow-500 rounded-full" />60–79 Average</span>
+                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 text-red-700 font-bold text-sm"><span className="w-3 h-3 bg-red-500 rounded-full" />Below 60 Poor</span>
                     </div>
                   </div>
 
