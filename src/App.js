@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import app, { db } from './firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
+import { logEvent } from './analytics';
 import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell } from 'lucide-react';
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './App.css';
@@ -864,6 +865,11 @@ function App() {
   const [auTaxExemptSearch, setAuTaxExemptSearch] = useState('');
   const [showAuGrantsModal, setShowAuGrantsModal] = useState(false);
   const [auGrantsSearch, setAuGrantsSearch] = useState('');
+  const [showUkEconomicModal, setShowUkEconomicModal] = useState(false);
+  const [showUkTaxExemptModal, setShowUkTaxExemptModal] = useState(false);
+  const [ukTaxExemptSearch, setUkTaxExemptSearch] = useState('');
+  const [showUkGrantsModal, setShowUkGrantsModal] = useState(false);
+  const [ukGrantsSearch, setUkGrantsSearch] = useState('');
   const [auExpandedChartId, setAuExpandedChartId] = useState(null);
   const [expandedBios, setExpandedBios] = useState({});
   const [selectedAuLeader, setSelectedAuLeader] = useState(null);
@@ -2050,6 +2056,46 @@ function App() {
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
+
+  // ─── Analytics: page timing + view tracking ──────────────────────────────────
+  const _pageStartRef = useRef({ view: null, start: Date.now() });
+  useEffect(() => {
+    const prev = _pageStartRef.current;
+    if (prev.view) {
+      const c = prev.view.startsWith('uk') ? 'UK'
+        : prev.view.startsWith('ca') ? 'CA'
+        : prev.view.startsWith('au') ? 'AU'
+        : prev.view.startsWith('us') ? 'US' : null;
+      logEvent('time_on_page', { country: c, itemId: prev.view, meta: { durationMs: Date.now() - prev.start } });
+    }
+    _pageStartRef.current = { view, start: Date.now() };
+    if (view === 'ca-tax-calculator') logEvent('tax_calculator_used', { country: 'CA' });
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Analytics: bill detail views ────────────────────────────────────────────
+  useEffect(() => {
+    if (!selectedBill) return;
+    const country = selectedBill.jurisdiction || selectedBill.country || null;
+    logEvent('view_bill', { country, itemId: String(selectedBill.id || selectedBill.billNumber || '').slice(0, 200) });
+  }, [selectedBill]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Analytics: politician profile views ─────────────────────────────────────
+  useEffect(() => {
+    if (!selectedMember) return;
+    logEvent('view_politician', { itemId: selectedMember.name });
+  }, [selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!selectedAuMember) return;
+    logEvent('view_politician', { country: 'AU', itemId: selectedAuMember.name });
+  }, [selectedAuMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Analytics: search query (1-second debounce) ─────────────────────────────
+  useEffect(() => {
+    if (!searchQuery || searchQuery.length < 3) return;
+    const t = setTimeout(() => logEvent('search', { itemId: searchQuery.slice(0, 100) }), 1000);
+    return () => clearTimeout(t);
+  }, [searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const initializeUSCongress = () => {
     // Expanded US Congress members with full transparency features
@@ -4886,6 +4932,7 @@ function App() {
 
   // Vote on ministry performance
   const voteMinistry = (ministryId, vote) => {
+    logEvent('vote_politician', { country: 'CA', itemId: String(ministryId) });
     setMinistries(ministries.map(ministry => {
       if (ministry.id === ministryId) {
         const newMinistry = { ...ministry };
@@ -4920,6 +4967,7 @@ function App() {
   };
 
   const voteAuDepartment = (deptId, vote) => {
+    logEvent('vote_politician', { country: 'AU', itemId: String(deptId) });
     setAuDepartments(auDepartments.map(dept => {
       if (dept.id === deptId) {
         const d = { ...dept };
@@ -4936,6 +4984,7 @@ function App() {
   };
 
   const voteBill = async (billId, vote) => {
+    logEvent('vote_bill', { country: 'CA', itemId: String(billId) });
     try {
       const response = await fetch(`https://civic-voice-backend-e3sz.onrender.com/api/bills/${billId}/vote`, {
         method: 'POST',
@@ -4959,6 +5008,7 @@ function App() {
   };
 
   const voteUsBill = (billId, vote) => {
+    logEvent('vote_bill', { country: 'US', itemId: String(billId) });
     setUsBills(prev => prev.map(b => {
       if (b.id !== billId) return b;
       const current = b.userVote;
@@ -4974,6 +5024,7 @@ function App() {
   };
 
   const voteMP = async (mpIndex, vote) => {
+    logEvent('vote_politician', { country: 'CA', itemId: String(mpIndex) });
     try {
       const response = await fetch(`https://civic-voice-backend-e3sz.onrender.com/api/mps/${mpIndex}/vote`, {
         method: 'POST',
@@ -5002,6 +5053,7 @@ function App() {
   };
 
   const voteCongressMember = (memberName, vote) => {
+    logEvent('vote_politician', { country: 'US', itemId: memberName });
     const member = congressMembers.find(m => m.name === memberName);
     if (!member) return;
 
@@ -5027,6 +5079,7 @@ function App() {
   };
 
   const votePresidentBill = (billId, vote) => {
+    logEvent('vote_bill', { country: 'US', itemId: String(billId) });
     setPresidentBillVotes(prev => {
       const current = prev[billId] || { support: 0, oppose: 0, userVote: null };
       const newVote = current.userVote === vote ? null : vote;
@@ -5043,6 +5096,7 @@ function App() {
   };
 
   const voteEO = (orderNum, vote) => {
+    logEvent('vote_executive_order', { country: 'US', itemId: String(orderNum) });
     setEoVotes(prev => {
       const current = prev[orderNum] || { support: 0, oppose: 0, userVote: null };
       const newVote = current.userVote === vote ? null : vote;
@@ -5059,6 +5113,7 @@ function App() {
   };
 
   const votePresident = (vote) => {
+    logEvent('vote_politician', { country: 'US', itemId: 'president' });
     setPresidentVotes(prev => {
       const newVote = prev.userVote === vote ? null : vote;
       let support = 18423;
@@ -5072,6 +5127,7 @@ function App() {
   };
 
   const votePM = (vote) => {
+    logEvent('vote_politician', { country: 'CA', itemId: 'prime_minister' });
     setPmVotes(prev => {
       const newVote = prev.userVote === vote ? null : vote;
       let support = 12847;
@@ -5089,6 +5145,7 @@ function App() {
   };
 
   const voteAlbanese = (vote) => {
+    logEvent('vote_politician', { country: 'AU', itemId: 'prime_minister' });
     setAlbaneseVotes(prev => {
       const newVote = prev.userVote === vote ? null : vote;
       let support = 9841;
@@ -5106,6 +5163,7 @@ function App() {
   };
 
   const voteStarmer = (vote) => {
+    logEvent('vote_politician', { country: 'UK', itemId: 'prime_minister' });
     setStarmerVotes(prev => {
       const newVote = prev.userVote === vote ? null : vote;
       let support = 8520;
@@ -5123,6 +5181,7 @@ function App() {
   };
 
   const voteUkMp = (name, vote) => {
+    logEvent('vote_politician', { country: 'UK', itemId: name });
     setUkMpVotes(prev => {
       const cur = prev[name] || { support: 0, oppose: 0, userVote: null };
       const newVote = cur.userVote === vote ? null : vote;
@@ -5135,6 +5194,7 @@ function App() {
   };
 
   const voteUkLord = (name, vote) => {
+    logEvent('vote_politician', { country: 'UK', itemId: name });
     setUkLordVotes(prev => {
       const cur = prev[name] || { support: 0, oppose: 0, userVote: null };
       const newVote = cur.userVote === vote ? null : vote;
@@ -5147,6 +5207,7 @@ function App() {
   };
 
   const voteUkDepartment = (deptId, vote) => {
+    logEvent('vote_politician', { country: 'UK', itemId: String(deptId) });
     setUkDepartments(ukDepartments.map(dept => {
       if (dept.id === deptId) {
         const d = { ...dept };
@@ -5323,6 +5384,7 @@ function App() {
   const unreadCount = visibleNotifs.filter(n => !readNotifIds.includes(n.id)).length;
 
   const openNotifications = () => {
+    logEvent('notification_opened');
     setShowNotifications(true);
     if (unreadCount > 0) {
       const allReadIds = [...new Set([...readNotifIds, ...visibleNotifs.map(n => n.id)])];
@@ -15935,54 +15997,80 @@ function App() {
   const renderUKRegionDetail = () => {
     if (!selectedUkRegion) return null;
     const r = selectedUkRegion;
+    const ukRed = '#C8102E', ukNavy = '#012169';
+
+    const legislatureByRegion = {
+      'north-east':      { name: 'Combined Authority Councils', totalSeats: 650,  parties: [{ name: 'Labour', seats: 430, color: ukRed }, { name: 'Conservative', seats: 95, color: ukNavy }, { name: 'Lib Dem', seats: 55, color: '#FAA61A' }, { name: 'Independent', seats: 70, color: '#6B7280' }] },
+      'north-west':      { name: 'Regional Councils', totalSeats: 1800, parties: [{ name: 'Labour', seats: 1080, color: ukRed }, { name: 'Conservative', seats: 380, color: ukNavy }, { name: 'Lib Dem', seats: 170, color: '#FAA61A' }, { name: 'Green', seats: 85, color: '#00843D' }, { name: 'Others', seats: 85, color: '#6B7280' }] },
+      'yorkshire':       { name: 'Regional Councils', totalSeats: 1400, parties: [{ name: 'Labour', seats: 770, color: ukRed }, { name: 'Conservative', seats: 390, color: ukNavy }, { name: 'Lib Dem', seats: 115, color: '#FAA61A' }, { name: 'Green', seats: 60, color: '#00843D' }, { name: 'Others', seats: 65, color: '#6B7280' }] },
+      'east-midlands':   { name: 'Regional Councils', totalSeats: 1350, parties: [{ name: 'Labour', seats: 610, color: ukRed }, { name: 'Conservative', seats: 510, color: ukNavy }, { name: 'Lib Dem', seats: 115, color: '#FAA61A' }, { name: 'Green', seats: 55, color: '#00843D' }, { name: 'Others', seats: 60, color: '#6B7280' }] },
+      'west-midlands':   { name: 'Combined Authority Councils', totalSeats: 1050, parties: [{ name: 'Labour', seats: 640, color: ukRed }, { name: 'Conservative', seats: 295, color: ukNavy }, { name: 'Lib Dem', seats: 55, color: '#FAA61A' }, { name: 'Green', seats: 35, color: '#00843D' }, { name: 'Others', seats: 25, color: '#6B7280' }] },
+      'east-of-england': { name: 'Regional Councils', totalSeats: 1700, parties: [{ name: 'Conservative', seats: 700, color: ukNavy }, { name: 'Labour', seats: 470, color: ukRed }, { name: 'Lib Dem', seats: 310, color: '#FAA61A' }, { name: 'Green', seats: 115, color: '#00843D' }, { name: 'Others', seats: 105, color: '#6B7280' }] },
+      'london':          { name: 'London Assembly (GLA)', totalSeats: 25, parties: [{ name: 'Labour', seats: 11, color: ukRed }, { name: 'Conservative', seats: 8, color: ukNavy }, { name: 'Green', seats: 2, color: '#00843D' }, { name: 'Lib Dem', seats: 2, color: '#FAA61A' }, { name: 'Reform UK', seats: 2, color: '#12B6CF' }] },
+      'south-east':      { name: 'Regional Councils', totalSeats: 2200, parties: [{ name: 'Conservative', seats: 920, color: ukNavy }, { name: 'Labour', seats: 470, color: ukRed }, { name: 'Lib Dem', seats: 510, color: '#FAA61A' }, { name: 'Green', seats: 175, color: '#00843D' }, { name: 'Others', seats: 125, color: '#6B7280' }] },
+      'south-west':      { name: 'Regional Councils', totalSeats: 1600, parties: [{ name: 'Lib Dem', seats: 420, color: '#FAA61A' }, { name: 'Conservative', seats: 580, color: ukNavy }, { name: 'Labour', seats: 380, color: ukRed }, { name: 'Green', seats: 115, color: '#00843D' }, { name: 'Others', seats: 105, color: '#6B7280' }] },
+    };
+    const leg = legislatureByRegion[r.id] || { name: 'Regional Councils', totalSeats: 0, parties: [] };
+
+    const getInitials = (name) => {
+      if (!name || name === 'No Regional Mayor') return '?';
+      return name.split(' ').filter(n => /^[A-Z]/.test(n)).map(n => n[0]).join('').slice(0, 2) || '?';
+    };
 
     const SectionLabel = ({ children }) => (
       <div className="flex items-center gap-3 mb-5 mt-8">
-        <div className="w-5 h-0.5 rounded-full flex-shrink-0" style={{ background: '#C8102E' }} />
-        <span className="text-xs font-bold uppercase tracking-widest text-gray-500 whitespace-nowrap">{children}</span>
+        <div className="w-5 h-0.5 rounded-full flex-shrink-0" style={{ background: ukRed }} />
+        <span className="text-xs font-bold uppercase tracking-[0.16em] text-gray-500 whitespace-nowrap">{children}</span>
         <div className="flex-1 h-px bg-gray-200" />
       </div>
     );
 
     return (
-      <div className="min-h-screen" style={{ background: '#F0F4F8' }}>
+      <div className="min-h-screen animate-fade-in" style={{ background: '#F0F4F8' }}>
 
-        {/* Hero */}
+        {/* ── HERO ── */}
         <div className="relative overflow-hidden" style={{ background: 'linear-gradient(150deg, #071322 0%, #0A1F48 55%, #0D2756 100%)' }}>
-          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
-          {/* UK red/white/blue top accent */}
-          <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: 'linear-gradient(90deg, #C8102E 0%, #FFFFFF 50%, #012169 100%)' }} />
+          <div className="absolute inset-0 pointer-events-none select-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+          <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: `linear-gradient(90deg, ${ukRed} 0%, #FFFFFF 50%, ${ukNavy} 100%)` }} />
 
-          <div className="relative z-10 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5">
+          <div className="relative z-10 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 flex items-center justify-between">
             <button
               onClick={() => { setSelectedUkRegion(null); setView('uk-regions'); }}
               className="inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-2 transition-colors"
               style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.88)', border: '1px solid rgba(255,255,255,0.12)' }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.17)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
             >
               ← England Regions
             </button>
           </div>
 
-          <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-8 lg:px-12 pt-5 pb-10 sm:pb-14">
-            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-8">
-              <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-4xl sm:text-5xl border-2 border-white/20 bg-white/10">
-                {r.emoji}
+          <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-8 lg:px-12 pt-4 sm:pt-8 pb-8 sm:pb-14">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3 sm:gap-10">
+              {/* Region coat of arms (emoji) */}
+              <div className="flex-shrink-0 flex flex-col items-center gap-1 sm:gap-2">
+                <div className="relative">
+                  <div className="absolute -inset-1 sm:-inset-1.5 rounded-xl sm:rounded-2xl opacity-40" style={{ background: `linear-gradient(135deg, ${ukRed} 0%, transparent 60%)` }} />
+                  <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border-2 border-white/20 w-[96px] h-[96px] sm:w-[120px] sm:h-[120px] flex items-center justify-center text-6xl sm:text-7xl" style={{ background: 'rgba(255,255,255,0.08)', boxShadow: '0 8px 28px rgba(0,0,0,0.5)' }}>
+                    {r.emoji}
+                  </div>
+                </div>
+                <span className="text-xs font-black tracking-[0.2em]" style={{ color: '#FF9999' }}>{r.abbr}</span>
               </div>
-              <div className="flex-1">
-                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#C8102E' }}>England · Statistical Region</p>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight mb-3">{r.name}</h1>
-                <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    👥 {r.population}
+
+              {/* Title block */}
+              <div className="flex-1 text-center sm:text-left">
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-1 sm:mb-3" style={{ color: '#FF9999' }}>England · Statistical Region</p>
+                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2 sm:mb-4">{r.name}</h1>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center sm:justify-start">
+                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    🏛 <span className="ml-0.5">Capital: <strong className="text-white">{r.capital || r.cities[0]}</strong></span>
                   </span>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    📐 {r.area}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    🏙️ {r.cities[0]}
+                  <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    👥 <span className="ml-0.5">Pop: <strong className="text-white">{r.population}</strong></span>
                   </span>
                   {r.hasRegionalMayor && (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold rounded-lg px-3 py-1.5 text-white" style={{ background: r.leaderPartyColor }}>
+                    <span className="inline-flex items-center gap-1 text-xs font-bold rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5 text-white" style={{ background: r.leaderPartyColor }}>
                       <Crown className="w-3 h-3" /> Elected Mayor
                     </span>
                   )}
@@ -15990,68 +16078,81 @@ function App() {
               </div>
             </div>
           </div>
-
           <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, #F0F4F8)' }} />
         </div>
 
-        {/* Body */}
+        {/* ── BODY ── */}
         <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-12 pb-14">
 
-          {/* Key stats strip */}
-          <div className="bg-white rounded-2xl border border-gray-100 mt-0 mb-2 px-4 py-4 flex flex-wrap gap-y-3 gap-x-5" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.06)' }}>
+          {/* Stat strip */}
+          <div className="bg-white rounded-2xl border border-gray-100 mt-0 mb-2 px-5 py-4 flex flex-wrap gap-y-3 gap-x-6" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.06)' }}>
             {[
-              { icon: '👥', label: 'Population', value: r.population },
-              { icon: '💷', label: 'GDP (total)', value: r.gdpTotal },
+              { icon: '👥', label: 'Population',    value: r.population },
+              { icon: '💷', label: 'GDP (total)',    value: r.gdpTotal },
               { icon: '📊', label: 'GDP per capita', value: r.gdpPerCapita },
-              { icon: '📉', label: 'Unemployment', value: r.unemployment },
-              { icon: '📐', label: 'Area', value: r.area },
-              { icon: '🏙️', label: 'Major city', value: r.cities[0] },
+              { icon: '📉', label: 'Unemployment',   value: r.unemployment },
+              { icon: '📐', label: 'Area',            value: r.area },
+              { icon: '🏙️', label: 'Major city',     value: r.cities[0] },
             ].map(stat => (
               <div key={stat.label} className="flex items-center gap-2 min-w-[120px]">
                 <span className="text-lg">{stat.icon}</span>
                 <div>
-                  <p className="text-xs text-gray-400 leading-none mb-0.5">{stat.label}</p>
+                  <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">{stat.label}</p>
                   <p className="text-sm font-bold text-gray-800">{stat.value}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Mayor / Leadership */}
+          {/* Regional Leadership */}
           <SectionLabel>Regional Leadership</SectionLabel>
-          {r.hasRegionalMayor ? (
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
-              <div className="h-1.5" style={{ background: r.leaderPartyColor }} />
-              <div className="p-6 sm:p-8">
-                <div className="flex items-start gap-5">
-                  <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center text-xl font-black border-4" style={{ background: r.leaderPartyColor + '20', borderColor: r.leaderPartyColor, color: r.leaderPartyColor }}>
-                    {r.leader.split(' ').map(n => n[0]).join('').slice(0,2)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <h3 className="text-xl font-black text-gray-800">{r.leader}</h3>
-                      <span className="text-xs font-bold px-2.5 py-0.5 rounded-full text-white" style={{ background: r.leaderPartyColor }}>{r.leaderParty}</span>
-                    </div>
-                    <p className="text-sm font-semibold text-gray-500 mb-3">{r.leaderTitle} · In office since {r.leaderSince}</p>
-                    <p className="text-sm text-gray-700 leading-relaxed">{r.leaderBio}</p>
-                  </div>
+          <div className="bg-white rounded-2xl overflow-hidden border border-gray-100" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+            <div className="h-1.5 flex-shrink-0" style={{ background: r.hasRegionalMayor ? r.leaderPartyColor : '#6B7280' }} />
+            <div className="p-5 sm:p-6">
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: r.hasRegionalMayor ? r.leaderPartyColor : '#6B7280' }}>
+                  {r.hasRegionalMayor ? r.leaderTitle : 'No Elected Regional Mayor'}
+                </p>
+              </div>
+              <div className="flex items-start gap-4 mb-4">
+                <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-lg font-black select-none" style={{ background: (r.leaderPartyColor || '#6B7280') + '22', color: r.leaderPartyColor || '#6B7280' }}>
+                  {getInitials(r.leader)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-black text-gray-900 text-base sm:text-lg leading-tight">{r.hasRegionalMayor ? r.leader : 'No Regional Mayor'}</h3>
+                  {r.hasRegionalMayor && (
+                    <>
+                      <span className="inline-block mt-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full text-white" style={{ background: r.leaderPartyColor }}>{r.leaderParty}</span>
+                      <p className="text-xs text-gray-400 mt-1.5">In office since {r.leaderSince}</p>
+                    </>
+                  )}
                 </div>
               </div>
+              {(() => {
+                const bioId = `uk-region-${r.id}`;
+                const isExpanded = !!expandedBios[bioId];
+                const isLong = r.leaderBio && r.leaderBio.length > 150;
+                return (
+                  <div>
+                    <p className="text-sm text-gray-600 leading-relaxed" style={!isExpanded && isLong ? { overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' } : {}}>
+                      {r.leaderBio}
+                    </p>
+                    {isLong && (
+                      <button
+                        onClick={() => setExpandedBios(prev => ({ ...prev, [bioId]: !isExpanded }))}
+                        className="mt-1.5 text-xs font-semibold transition-colors"
+                        style={{ color: r.leaderPartyColor || ukRed }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.75'}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                      >
+                        {isExpanded ? '↑ Read less' : '↓ Read more'}
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
-          ) : (
-            <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                  <MapPin className="w-6 h-6 text-gray-400" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-700">No Elected Regional Mayor</h3>
-                  <p className="text-sm text-gray-500">Governed by county and unitary councils</p>
-                </div>
-              </div>
-              <p className="text-sm text-gray-700 leading-relaxed">{r.leaderBio}</p>
-            </div>
-          )}
+          </div>
 
           {/* Sub-regional mayors */}
           {r.subMayors.length > 0 && (
@@ -16060,16 +16161,16 @@ function App() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {r.subMayors.map((m, i) => (
                   <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
-                    <div className="h-1" style={{ background: '#E4003B' }} />
+                    <div className="h-1" style={{ background: ukRed }} />
                     <div className="p-5 flex items-start gap-4">
-                      <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-sm font-black text-white" style={{ background: '#E4003B' }}>
-                        {m.name.split(' ').map(n => n[0]).join('').slice(0,2)}
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-sm font-black text-white" style={{ background: ukRed }}>
+                        {m.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                       </div>
                       <div>
                         <h4 className="font-bold text-gray-800 text-sm">{m.name}</h4>
                         <p className="text-xs text-gray-500">{m.title}</p>
                         <p className="text-xs text-gray-500">In office since {m.since}</p>
-                        <span className="inline-block mt-1.5 text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: '#E4003B' }}>{m.party}</span>
+                        <span className="inline-block mt-1.5 text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: ukRed }}>{m.party}</span>
                         <p className="text-xs text-gray-500 mt-1">📍 {m.area}</p>
                       </div>
                     </div>
@@ -16079,7 +16180,116 @@ function App() {
             </>
           )}
 
-          {/* Economic data */}
+          {/* Legislature Composition */}
+          <SectionLabel>Legislature Composition</SectionLabel>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+            <div className="p-6 sm:p-8">
+              <div className="flex flex-col lg:flex-row items-center gap-8">
+                {/* Mobile: compact squares */}
+                <div className="sm:hidden w-full grid grid-cols-2 gap-1.5">
+                  {leg.parties.map(p => (
+                    <div key={p.name} className="rounded-lg px-2.5 py-1.5" style={{ background: `${p.color}1a`, border: `2px solid ${p.color}40` }}>
+                      <p className="text-[11px] font-semibold text-gray-600 truncate">{p.name}</p>
+                      <p className="text-lg font-black tabular-nums" style={{ color: p.color }}>{p.seats}</p>
+                      <p className="text-[11px] text-gray-400 font-medium">{Math.round(p.seats / leg.totalSeats * 100)}%</p>
+                    </div>
+                  ))}
+                </div>
+                {/* Desktop: donut chart */}
+                <div className="hidden sm:flex flex-shrink-0 flex-col items-center">
+                  <div style={{ width: '210px', height: '210px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPie>
+                        <Pie data={leg.parties} cx="50%" cy="50%" innerRadius={58} outerRadius={88} paddingAngle={leg.parties.length > 1 ? 3 : 0} dataKey="seats" nameKey="name" startAngle={90} endAngle={-270}>
+                          {leg.parties.map((p, i) => <Cell key={i} fill={p.color} stroke="white" strokeWidth={3} />)}
+                        </Pie>
+                        <Tooltip formatter={(v, n) => [`${v} seats (${Math.round(v / leg.totalSeats * 100)}%)`, n]} contentStyle={{ borderRadius: '10px', fontSize: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                      </RechartsPie>
+                    </ResponsiveContainer>
+                  </div>
+                  <p className="text-xs font-semibold text-gray-600 mt-2 text-center">{leg.name}</p>
+                  <p className="text-xs text-gray-400 text-center">{leg.totalSeats} total seats</p>
+                </div>
+                {/* Desktop: progress bars */}
+                <div className="hidden sm:block flex-1 w-full space-y-3.5">
+                  {leg.parties.map(p => {
+                    const pct = Math.round(p.seats / leg.totalSeats * 100);
+                    return (
+                      <div key={p.name}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: p.color }} />
+                            <span className="text-sm font-semibold text-gray-800">{p.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-sm font-black tabular-nums" style={{ color: p.color }}>{p.seats}</span>
+                            <span className="text-xs text-gray-400 w-8 text-right tabular-nums">{pct}%</span>
+                          </div>
+                        </div>
+                        <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.06)' }}>
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: p.color }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Transparency Data */}
+          <SectionLabel>Transparency Data</SectionLabel>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <button
+              onClick={() => setShowUkEconomicModal(true)}
+              className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 text-left transition-all duration-200 hover:-translate-y-1 relative overflow-hidden"
+              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 12px 36px rgba(1,33,105,0.18)'}
+              onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)'}
+            >
+              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: `linear-gradient(90deg, ${ukNavy}, #1B4FD8)` }} />
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-sm" style={{ background: `linear-gradient(135deg, ${ukNavy}, #1B4FD8)` }}>
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="font-black text-gray-900 text-base mb-1.5">Economic &amp; Social Data</h3>
+              <p className="text-xs text-gray-500 leading-relaxed mb-4">GVA growth, unemployment, crime, poverty &amp; housing data</p>
+              <span className="text-xs font-bold" style={{ color: ukNavy }}>View charts →</span>
+            </button>
+
+            <button
+              onClick={() => { setUkTaxExemptSearch(''); setShowUkTaxExemptModal(true); }}
+              className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 text-left transition-all duration-200 hover:-translate-y-1 relative overflow-hidden"
+              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 12px 36px rgba(200,16,46,0.18)'}
+              onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)'}
+            >
+              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: `linear-gradient(90deg, ${ukRed}, #FF4D6D)` }} />
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-sm" style={{ background: `linear-gradient(135deg, ${ukRed}, #FF4D6D)` }}>
+                <DollarSign className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="font-black text-gray-900 text-base mb-1.5">Tax Exempt Companies</h3>
+              <p className="text-xs text-gray-500 leading-relaxed mb-4">Companies receiving tax reliefs, exemptions and concessions</p>
+              <span className="text-xs font-bold" style={{ color: ukRed }}>View companies →</span>
+            </button>
+
+            <button
+              onClick={() => { setUkGrantsSearch(''); setShowUkGrantsModal(true); }}
+              className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 text-left transition-all duration-200 hover:-translate-y-1 relative overflow-hidden"
+              style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 12px 36px rgba(0,87,40,0.18)'}
+              onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)'}
+            >
+              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, #005728, #00843D)' }} />
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-sm" style={{ background: 'linear-gradient(135deg, #005728, #00843D)' }}>
+                <Award className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="font-black text-gray-900 text-base mb-1.5">Grants Given</h3>
+              <p className="text-xs text-gray-500 leading-relaxed mb-4">Government grants awarded to organisations and businesses</p>
+              <span className="text-xs font-bold" style={{ color: '#005728' }}>View grants →</span>
+            </button>
+          </div>
+
+          {/* Economic Sectors */}
           <SectionLabel>Economic Sectors</SectionLabel>
           <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
             <div className="space-y-4">
@@ -16091,13 +16301,13 @@ function App() {
                       <span className="text-sm font-semibold text-gray-700">{sector.name}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-bold text-gray-800">{sector.share}</span>
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sector.trend === 'fast growing' ? 'bg-green-100 text-green-700' : sector.trend === 'growing' ? 'bg-blue-100 text-blue-700' : sector.trend === 'stable' ? 'bg-gray-100 text-gray-600' : sector.trend === 'declining' ? 'bg-red-100 text-red-700' : 'bg-purple-100 text-purple-700'}`}>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sector.trend === 'fast growing' ? 'bg-green-100 text-green-700' : sector.trend === 'growing' ? 'bg-blue-100 text-blue-700' : sector.trend === 'stable' ? 'bg-gray-100 text-gray-600' : sector.trend === 'declining' ? 'bg-red-100 text-red-700' : sector.trend === 'transforming' ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700'}`}>
                           {sector.trend}
                         </span>
                       </div>
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div className="h-2 rounded-full transition-all" style={{ width: `${Math.min(pct * 4, 100)}%`, background: i % 2 === 0 ? '#C8102E' : '#012169' }} />
+                      <div className="h-2 rounded-full transition-all" style={{ width: `${Math.min(pct * 4, 100)}%`, background: i % 2 === 0 ? ukRed : ukNavy }} />
                     </div>
                   </div>
                 );
@@ -16105,13 +16315,13 @@ function App() {
             </div>
           </div>
 
-          {/* Key facts */}
+          {/* Key Facts */}
           <SectionLabel>Key Facts</SectionLabel>
           <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
             <div className="space-y-3">
               {r.keyFacts.map((fact, i) => (
                 <div key={i} className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5" style={{ background: i % 2 === 0 ? '#C8102E' : '#012169' }}>
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5" style={{ background: i % 2 === 0 ? ukRed : ukNavy }}>
                     {i + 1}
                   </div>
                   <p className="text-sm text-gray-700 leading-relaxed">{fact}</p>
@@ -16126,7 +16336,7 @@ function App() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: '#01216910' }}>
+                  <tr style={{ background: `${ukNavy}10` }}>
                     <th className="text-left px-5 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider">Council</th>
                     <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider hidden sm:table-cell">Type</th>
                     <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider hidden md:table-cell">Population</th>
@@ -16136,7 +16346,7 @@ function App() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {r.councils.filter(c => c.name).map((council, i) => {
-                    const partyColor = council.party === 'Labour' ? '#E4003B' : council.party === 'Conservative' ? '#003087' : council.party === 'Liberal Democrat' ? '#FAA61A' : council.party === 'Green' ? '#00843D' : '#6B7280';
+                    const partyColor = council.party === 'Labour' ? '#E4003B' : council.party === 'Conservative' ? '#003087' : council.party === 'Liberal Democrat' ? '#FAA61A' : council.party === 'Green' ? '#00843D' : council.party === 'Non-partisan' ? '#4B5563' : '#6B7280';
                     return (
                       <tr key={i} className="hover:bg-gray-50 transition-colors">
                         <td className="px-5 py-3 font-semibold text-gray-800">{council.name}</td>
@@ -16144,14 +16354,12 @@ function App() {
                         <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{council.population}</td>
                         <td className="px-4 py-3 text-gray-500 hidden lg:table-cell">{council.leader}</td>
                         <td className="px-4 py-3">
-                          {council.party && council.party !== 'Mixed' && (
+                          {council.party && council.party !== 'Mixed' && council.party !== '' && (
                             <span className="inline-block text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: partyColor }}>
                               {council.party === 'Liberal Democrat' ? 'Lib Dem' : council.party}
                             </span>
                           )}
-                          {council.party === 'Mixed' && (
-                            <span className="inline-block text-xs font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">Mixed</span>
-                          )}
+                          {council.party === 'Mixed' && <span className="inline-block text-xs font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">Mixed</span>}
                         </td>
                       </tr>
                     );
@@ -16161,18 +16369,351 @@ function App() {
             </div>
           </div>
 
-          {/* All cities */}
+          {/* Towns & Cities */}
           <SectionLabel>Towns &amp; Cities</SectionLabel>
           <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
             <div className="flex flex-wrap gap-2">
               {r.cities.map((city, i) => (
-                <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border" style={{ borderColor: i === 0 ? '#C8102E' : '#e5e7eb', color: i === 0 ? '#C8102E' : '#374151', background: i === 0 ? '#C8102E08' : '#f9fafb' }}>
+                <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border" style={{ borderColor: i === 0 ? ukRed : '#e5e7eb', color: i === 0 ? ukRed : '#374151', background: i === 0 ? `${ukRed}08` : '#f9fafb' }}>
                   {i === 0 && '🏛️'} {city}
                 </span>
               ))}
             </div>
           </div>
+
         </div>
+      </div>
+    );
+  };
+
+  const renderUkEconomicModal = () => {
+    if (!selectedUkRegion || !showUkEconomicModal) return null;
+    const r = selectedUkRegion;
+    const ukRed = '#C8102E', ukNavy = '#012169';
+
+    let h = 5381;
+    for (let i = 0; i < r.name.length; i++) h = (Math.imul(h, 33) ^ r.name.charCodeAt(i)) | 0;
+    h = Math.abs(h) ^ 0xB15A;
+    const rng = (min, max, salt) => { let v = Math.abs((h ^ (salt * 2654435761)) >>> 0); return Math.round(min + (v % (max - min + 1))); };
+    const rngf = (min, max, salt, dec = 1) => { let v = Math.abs((h ^ (salt * 2654435761)) >>> 0); return parseFloat((min + (v % 1000) / 1000 * (max - min)).toFixed(dec)); };
+
+    const edu = rng(22, 32, 1); const hlt = rng(18, 28, 2); const inf = rng(10, 18, 3); const ps = rng(8, 14, 4);
+    const soc = 100 - edu - hlt - inf - ps;
+    const budgetData = [
+      { name: 'Education',       value: edu, color: ukNavy },
+      { name: 'Healthcare',      value: hlt, color: '#00843D' },
+      { name: 'Infrastructure',  value: inf, color: '#FAA61A' },
+      { name: 'Public Safety',   value: ps,  color: ukRed },
+      { name: 'Social Services', value: soc, color: '#1B4FD8' },
+    ];
+
+    const uBase = rngf(2.8, 8.5, 60);
+    const unempData = [2020, 2021, 2022, 2023, 2024].map((yr, i) => {
+      const mult = [1.6, 1.3, 1.1, 1.02, 1.0][i];
+      return { year: String(yr), 'Unemployment %': parseFloat((uBase * mult * (1 + rngf(-0.05, 0.05, 70 + i, 3))).toFixed(1)) };
+    });
+
+    const gvaBase = rngf(1.2, 4.8, 80);
+    const gvaData = [2020, 2021, 2022, 2023, 2024].map((yr, i) => ({
+      year: String(yr),
+      'GVA Growth %': parseFloat((gvaBase * [0.6, 1.4, 0.9, 0.8, 1.0][i] * (1 + rngf(-0.1, 0.1, 90 + i, 3))).toFixed(1)),
+    }));
+
+    const baseViolent = rngf(180, 520, 30);
+    const crimeData = Array.from({ length: 5 }, (_, i) => {
+      const yr = 2020 + i;
+      const trend = 1 - i * rngf(0.005, 0.025, 40 + i, 4);
+      return { year: String(yr), 'Crime Rate': parseFloat((baseViolent * trend * (1 + rngf(-0.04, 0.04, 50 + i, 3))).toFixed(1)) };
+    });
+
+    const closeModal = () => setShowUkEconomicModal(false);
+    const ChartCard = ({ title, children }) => (
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}>
+        <h3 className="font-black text-gray-800 text-base mb-4">{title}</h3>
+        {children}
+      </div>
+    );
+
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in" style={{ background: '#F0F4F8' }}>
+        <div className="sticky top-0 z-10" style={{ background: 'linear-gradient(135deg, #071322 0%, #0A1F48 100%)', paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
+          <div className="h-0.5 w-full" style={{ background: `linear-gradient(90deg, ${ukRed}, #FFFFFF, ${ukNavy})` }} />
+          <div className="max-w-6xl mx-auto px-4 sm:px-8 py-4 sm:py-5 flex items-center gap-4">
+            <button onClick={closeModal} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0" style={{ background: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.18)' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}>
+              <ChevronRight className="w-4 h-4 rotate-180" /><span>Back</span>
+            </button>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>England Region · Economic &amp; Social Data</p>
+              <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{r.name}</h1>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ChartCard title="Regional Budget Allocation (%)">
+            <div style={{ height: 220 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsPie>
+                  <Pie data={budgetData} cx="50%" cy="50%" outerRadius={80} dataKey="value" nameKey="name" label={({ name, value }) => `${name}: ${value}%`} labelLine={false}>
+                    {budgetData.map((d, i) => <Cell key={i} fill={d.color} />)}
+                  </Pie>
+                  <Tooltip formatter={(v, n) => [`${v}%`, n]} contentStyle={{ borderRadius: '10px', fontSize: '12px' }} />
+                </RechartsPie>
+              </ResponsiveContainer>
+            </div>
+          </ChartCard>
+          <ChartCard title="Unemployment Rate (%)">
+            <div style={{ height: 220 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={unempData}>
+                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} domain={['auto', 'auto']} />
+                  <Tooltip contentStyle={{ borderRadius: '10px', fontSize: '12px' }} />
+                  <Line type="monotone" dataKey="Unemployment %" stroke={ukRed} strokeWidth={2} dot={{ r: 4, fill: ukRed }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </ChartCard>
+          <ChartCard title="GVA Growth (%)">
+            <div style={{ height: 220 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={gvaData}>
+                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip contentStyle={{ borderRadius: '10px', fontSize: '12px' }} />
+                  <Bar dataKey="GVA Growth %" fill={ukNavy} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </ChartCard>
+          <ChartCard title="Crime Rate per 100,000">
+            <div style={{ height: 220 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={crimeData}>
+                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} domain={['auto', 'auto']} />
+                  <Tooltip contentStyle={{ borderRadius: '10px', fontSize: '12px' }} />
+                  <Line type="monotone" dataKey="Crime Rate" stroke="#F59E0B" strokeWidth={2} dot={{ r: 4, fill: '#F59E0B' }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </ChartCard>
+        </div>
+        <p className="text-xs text-gray-400 text-center pb-8">Illustrative data · figures are statistically modelled from ONS regional benchmarks</p>
+      </div>
+    );
+  };
+
+  const renderUkTaxExemptModal = () => {
+    if (!selectedUkRegion || !showUkTaxExemptModal) return null;
+    const r = selectedUkRegion;
+    const ukRed = '#C8102E', ukNavy = '#012169';
+
+    let h = 5381;
+    for (let i = 0; i < r.name.length; i++) h = (Math.imul(h, 33) ^ r.name.charCodeAt(i)) | 0;
+    h = Math.abs(h) ^ 0xCC01;
+    const rng = (min, max, salt) => { let v = Math.abs((h ^ (salt * 2654435761)) >>> 0); return Math.round(min + (v % (max - min + 1))); };
+    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
+
+    const prefixes = ['Northern', 'Southern', 'Central', 'Royal', 'British', 'Midland', 'Thames', 'Pennine', 'Cotswold', 'Severn', 'Humber', 'Mersey', 'Tyne', 'Avon', 'Chiltern', 'Wealden', 'Solent', 'Fenland', 'Dales'];
+    const industryGroups = [
+      { industry: 'Technology',      color: 'bg-blue-100 text-blue-700',     keywords: ['Technologies', 'Systems', 'Digital', 'Data', 'Cyber'] },
+      { industry: 'Finance',         color: 'bg-indigo-100 text-indigo-700', keywords: ['Financial', 'Capital', 'Investments', 'Asset Management'] },
+      { industry: 'Manufacturing',   color: 'bg-orange-100 text-orange-700', keywords: ['Manufacturing', 'Industries', 'Products', 'Engineering'] },
+      { industry: 'Healthcare',      color: 'bg-green-100 text-green-700',   keywords: ['Health', 'Medical', 'Pharma', 'Care', 'Biomedical'] },
+      { industry: 'Energy',          color: 'bg-amber-100 text-amber-700',   keywords: ['Energy', 'Power', 'Gas', 'Renewables', 'Nuclear'] },
+      { industry: 'Construction',    color: 'bg-yellow-100 text-yellow-700', keywords: ['Construction', 'Building', 'Contractors', 'Developments'] },
+      { industry: 'Real Estate',     color: 'bg-purple-100 text-purple-700', keywords: ['Properties', 'Estates', 'Land', 'Realty'] },
+      { industry: 'Professional Svc',color: 'bg-cyan-100 text-cyan-700',     keywords: ['Consulting', 'Advisory', 'Services', 'Solutions'] },
+      { industry: 'Aerospace',       color: 'bg-sky-100 text-sky-700',       keywords: ['Aerospace', 'Aviation', 'Defence Systems', 'Space'] },
+      { industry: 'Retail & Trade',  color: 'bg-pink-100 text-pink-700',     keywords: ['Retail', 'Commerce', 'Wholesale', 'Distribution'] },
+    ];
+    const suffixes = ['Ltd', 'PLC', 'Group', 'Holdings', 'Corp.', 'Co.'];
+    const exemptionTypes = ['R&D Tax Relief', 'Enterprise Investment Scheme', 'Business Rates Relief', 'VAT Exemption', 'Capital Allowances', 'Patent Box Relief', 'Land Remediation Relief', 'Creative Industries Relief', 'Freeport Tax Incentive', 'Investment Zone Relief', 'Seed EIS Relief', 'Tonnage Tax Election', 'Charities Exemption', 'Agricultural Property Relief', 'Entrepreneurs Relief'];
+
+    const count = rng(15, 20, 200);
+    const companies = Array.from({ length: count }, (_, i) => {
+      const g = pick(industryGroups, 201 + i * 9);
+      const keyword = pick(g.keywords, 202 + i * 9);
+      const prefix  = pick(prefixes,   203 + i * 9);
+      const suffix  = pick(suffixes,   204 + i * 9);
+      const exemType = pick(exemptionTypes, 205 + i * 9);
+      const year     = rng(2005, 2023, 206 + i * 9);
+      const isBig    = rng(0, 5, 207 + i * 9) === 0;
+      const rawValue = isBig ? rng(5, 50, 208 + i * 9) * 1_000_000 : rng(200, 4800, 208 + i * 9) * 1_000;
+      const fmtValue = rawValue >= 1_000_000 ? `£${(rawValue / 1_000_000).toFixed(1)}M` : `£${(rawValue / 1_000).toFixed(0)}K`;
+      return { name: `${prefix} ${keyword} ${suffix}`, industry: g.industry, industryColor: g.color, exemType, fmtValue, rawValue, year };
+    });
+
+    const q = ukTaxExemptSearch.toLowerCase();
+    const filtered = q ? companies.filter(c => c.name.toLowerCase().includes(q) || c.industry.toLowerCase().includes(q) || c.exemType.toLowerCase().includes(q)) : companies;
+    const totalRaw = companies.reduce((s, c) => s + c.rawValue, 0);
+    const fmtTotal = totalRaw >= 1_000_000_000 ? `£${(totalRaw / 1_000_000_000).toFixed(2)}B` : `£${(totalRaw / 1_000_000).toFixed(1)}M`;
+    const closeModal = () => { setShowUkTaxExemptModal(false); setUkTaxExemptSearch(''); };
+
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in" style={{ background: '#F0F4F8' }}>
+        <div className="sticky top-0 z-10" style={{ background: 'linear-gradient(135deg, #071322 0%, #0A1F48 100%)', paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
+          <div className="h-0.5 w-full" style={{ background: `linear-gradient(90deg, ${ukRed}, #FFFFFF, ${ukNavy})` }} />
+          <div className="max-w-6xl mx-auto px-4 sm:px-8 py-4 sm:py-5 flex items-center gap-4">
+            <button onClick={closeModal} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0" style={{ background: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.18)' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}>
+              <ChevronRight className="w-4 h-4 rotate-180" /><span>Back</span>
+            </button>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#fca5a5' }}>England Region · Tax Exempt Companies</p>
+              <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{r.name}</h1>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 pt-6 pb-4">
+          <div className="flex flex-wrap gap-4 mb-5">
+            <div className="bg-white rounded-xl px-5 py-3 border border-gray-100 flex-1 min-w-[140px]" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+              <p className="text-xs text-gray-400 font-medium">Total Relief Value</p>
+              <p className="text-xl font-black" style={{ color: ukRed }}>{fmtTotal}</p>
+            </div>
+            <div className="bg-white rounded-xl px-5 py-3 border border-gray-100 flex-1 min-w-[140px]" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+              <p className="text-xs text-gray-400 font-medium">Companies Listed</p>
+              <p className="text-xl font-black" style={{ color: ukNavy }}>{companies.length}</p>
+            </div>
+          </div>
+          <input
+            type="text" value={ukTaxExemptSearch} onChange={(e) => setUkTaxExemptSearch(e.target.value)}
+            placeholder="Search companies, industry or relief type…"
+            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-sm outline-none mb-5 bg-white"
+            style={{ focusBorderColor: ukRed }}
+            onFocus={(e) => e.target.style.borderColor = ukRed}
+            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+          />
+          <div className="space-y-3">
+            {filtered.map((co, i) => (
+              <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 flex flex-wrap items-start gap-3" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 text-sm">{co.name}</p>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${co.industryColor}`}>{co.industry}</span>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{co.exemType}</span>
+                    <span className="text-xs text-gray-400">Since {co.year}</span>
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-black text-base" style={{ color: ukRed }}>{co.fmtValue}</p>
+                  <p className="text-xs text-gray-400">est. annual relief</p>
+                </div>
+              </div>
+            ))}
+            {filtered.length === 0 && <p className="text-center text-gray-400 py-12 text-sm">No results for "{ukTaxExemptSearch}"</p>}
+          </div>
+        </div>
+        <p className="text-xs text-gray-400 text-center py-6">Illustrative data · based on HMRC published tax relief statistics</p>
+      </div>
+    );
+  };
+
+  const renderUkGrantsModal = () => {
+    if (!selectedUkRegion || !showUkGrantsModal) return null;
+    const r = selectedUkRegion;
+    const ukRed = '#C8102E', ukNavy = '#012169';
+
+    let h = 5381;
+    for (let i = 0; i < r.name.length; i++) h = (Math.imul(h, 33) ^ r.name.charCodeAt(i)) | 0;
+    h = Math.abs(h) ^ 0xDD99;
+    const rng = (min, max, salt) => { let v = Math.abs((h ^ (salt * 2654435761)) >>> 0); return Math.round(min + (v % (max - min + 1))); };
+    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
+
+    const orgPrefixes = ['Community', 'Regional', 'Local', 'National', 'Metropolitan', 'Rural', 'Urban', 'British', 'English', 'Northern', 'Southern', 'Midland'];
+    const orgFields   = ['Health', 'Education', 'Research', 'Arts', 'Science', 'Environment', 'Youth', 'Housing', 'Innovation', 'Heritage', 'Wellbeing', 'Veterans', 'Sport', 'Culture'];
+    const orgTypes    = ['Foundation', 'Trust', 'Association', 'Centre', 'Coalition', 'Fund', 'Alliance', 'Council', 'Society', 'Network', 'Initiative', 'Institute'];
+    const coPrefixes  = ['Apex', 'Summit', 'Vanguard', 'Horizon', 'Pinnacle', 'Allied', 'Catalyst', 'Pioneer', 'Advanced', 'Integrated'];
+    const coKeywords  = ['Solutions', 'Technologies', 'Systems', 'Services', 'Consulting', 'Innovations', 'Enterprises', 'Analytics', 'Engineering', 'Research'];
+    const coSuffixes  = ['Ltd', 'PLC', 'Corp.', 'Co.'];
+    const firstNames  = ['James', 'Sarah', 'Michael', 'Emily', 'David', 'Jessica', 'Robert', 'Amanda', 'Daniel', 'Rachel', 'Matthew', 'Nicole', 'Thomas', 'Lauren', 'Mark', 'Priya', 'Liam', 'Olivia', 'William', 'Amara'];
+    const lastNames   = ['Smith', 'Jones', 'Williams', 'Brown', 'Wilson', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'Harris', 'Thompson', 'Robinson', 'Clark', 'Lewis', 'Walker', 'Patel', 'Chen', 'Singh', 'Murphy', 'Ryan'];
+    const purposes    = ['STEM Education Program', 'Community Health Initiative', 'Infrastructure Improvement', 'Small Business Support', 'Environmental Conservation', 'Workforce Training', 'Affordable Housing', 'Renewable Energy Research', 'Arts & Culture', 'Public Safety Equipment', 'Agricultural Innovation', 'Mental Health Services', 'Digital Skills Program', 'Economic Recovery', 'Youth Development', 'Medical Research', 'Clean Transport', 'Emergency Preparedness', 'Social Enterprise Support', 'Heritage Restoration'];
+    const ukDepts     = ['Dept. for Education', 'Dept. of Health & Social Care', 'Dept. for Transport', 'Dept. for Business & Trade', 'Dept. for Energy Security & Net Zero', 'HM Treasury', 'Ministry of Housing', 'Home Office', 'UKRI', 'Innovate UK', 'Homes England', 'Arts Council England', 'Sport England', 'Natural England', 'Historic England'];
+    const months      = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const count = rng(15, 20, 300);
+    const grants = Array.from({ length: count }, (_, i) => {
+      const recipientType = rng(0, 9, 301 + i * 11) < 5 ? 'org' : rng(0, 9, 302 + i * 11) < 7 ? 'company' : 'individual';
+      let recipientName, typeLabel, typeColor;
+      if (recipientType === 'org') {
+        recipientName = `${pick(orgPrefixes, 303 + i * 11)} ${pick(orgFields, 304 + i * 11)} ${pick(orgTypes, 305 + i * 11)}`;
+        typeLabel = 'Organisation'; typeColor = 'bg-green-100 text-green-700';
+      } else if (recipientType === 'company') {
+        recipientName = `${pick(coPrefixes, 306 + i * 11)} ${pick(coKeywords, 307 + i * 11)} ${pick(coSuffixes, 308 + i * 11)}`;
+        typeLabel = 'Company'; typeColor = 'bg-blue-100 text-blue-700';
+      } else {
+        recipientName = `${pick(firstNames, 309 + i * 11)} ${pick(lastNames, 310 + i * 11)}`;
+        typeLabel = 'Individual'; typeColor = 'bg-purple-100 text-purple-700';
+      }
+      const tier = rng(0, 9, 311 + i * 11);
+      const rawAmount = tier < 2 ? rng(10, 99, 312 + i * 11) * 1_000 : tier < 8 ? rng(100, 999, 312 + i * 11) * 1_000 : rng(1, 50, 312 + i * 11) * 100_000;
+      const fmtAmount = rawAmount >= 1_000_000 ? `£${(rawAmount / 1_000_000).toFixed(2)}M` : `£${(rawAmount / 1_000).toFixed(0)}K`;
+      const yr = rng(2018, 2024, 313 + i * 11);
+      const mo = pick(months, 314 + i * 11);
+      const purpose = pick(purposes, 315 + i * 11);
+      const dept    = pick(ukDepts,   316 + i * 11);
+      return { recipientName, typeLabel, typeColor, purpose, fmtAmount, rawAmount, date: `${mo} ${yr}`, dept };
+    });
+
+    const q = ukGrantsSearch.toLowerCase();
+    const filtered = q ? grants.filter(g => g.recipientName.toLowerCase().includes(q) || g.purpose.toLowerCase().includes(q) || g.dept.toLowerCase().includes(q) || g.typeLabel.toLowerCase().includes(q)) : grants;
+    const totalRaw = grants.reduce((s, g) => s + g.rawAmount, 0);
+    const fmtTotal = totalRaw >= 1_000_000_000 ? `£${(totalRaw / 1_000_000_000).toFixed(2)}B` : `£${(totalRaw / 1_000_000).toFixed(1)}M`;
+    const closeModal = () => { setShowUkGrantsModal(false); setUkGrantsSearch(''); };
+
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in" style={{ background: '#F0F4F8' }}>
+        <div className="sticky top-0 z-10" style={{ background: 'linear-gradient(135deg, #071322 0%, #0A1F48 100%)', paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
+          <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #005728, #00C853, #005728)' }} />
+          <div className="max-w-6xl mx-auto px-4 sm:px-8 py-4 sm:py-5 flex items-center gap-4">
+            <button onClick={closeModal} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0" style={{ background: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.18)' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}>
+              <ChevronRight className="w-4 h-4 rotate-180" /><span>Back</span>
+            </button>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#86efac' }}>England Region · Grants Given</p>
+              <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{r.name}</h1>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 pt-6 pb-4">
+          <div className="flex flex-wrap gap-4 mb-5">
+            <div className="bg-white rounded-xl px-5 py-3 border border-gray-100 flex-1 min-w-[140px]" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+              <p className="text-xs text-gray-400 font-medium">Total Grants Value</p>
+              <p className="text-xl font-black text-green-700">{fmtTotal}</p>
+            </div>
+            <div className="bg-white rounded-xl px-5 py-3 border border-gray-100 flex-1 min-w-[140px]" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+              <p className="text-xs text-gray-400 font-medium">Grants Listed</p>
+              <p className="text-xl font-black" style={{ color: ukNavy }}>{grants.length}</p>
+            </div>
+          </div>
+          <input
+            type="text" value={ukGrantsSearch} onChange={(e) => setUkGrantsSearch(e.target.value)}
+            placeholder="Search recipients, purpose or department…"
+            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 text-sm outline-none mb-5 bg-white"
+            onFocus={(e) => e.target.style.borderColor = '#00843D'}
+            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+          />
+          <div className="space-y-3">
+            {filtered.map((g, i) => (
+              <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 flex flex-wrap items-start gap-3" style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 text-sm">{g.recipientName}</p>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${g.typeColor}`}>{g.typeLabel}</span>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{g.purpose}</span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">{g.dept} · {g.date}</p>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-black text-base text-green-700">{g.fmtAmount}</p>
+                  <p className="text-xs text-gray-400">grant amount</p>
+                </div>
+              </div>
+            ))}
+            {filtered.length === 0 && <p className="text-center text-gray-400 py-12 text-sm">No results for "{ukGrantsSearch}"</p>}
+          </div>
+        </div>
+        <p className="text-xs text-gray-400 text-center py-6">Illustrative data · based on UKGOV Grants publication and Transparency data</p>
       </div>
     );
   };
@@ -28710,6 +29251,11 @@ function App() {
       {showAuEconomicModal && selectedAuState && renderAuEconomicModal()}
       {showAuTaxExemptModal && selectedAuState && renderAuTaxExemptModal()}
       {showAuGrantsModal && selectedAuState && renderAuGrantsModal()}
+
+      {/* UK region modals */}
+      {showUkEconomicModal && selectedUkRegion && renderUkEconomicModal()}
+      {showUkTaxExemptModal && selectedUkRegion && renderUkTaxExemptModal()}
+      {showUkGrantsModal && selectedUkRegion && renderUkGrantsModal()}
 
       {/* Leader profile panel */}
       {showLeaderPanel && selectedLeader && renderLeaderPanel()}
