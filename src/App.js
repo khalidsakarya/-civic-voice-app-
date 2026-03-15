@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import app from './firebase';
+import app, { db } from './firebase';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell } from 'lucide-react';
 import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './App.css';
@@ -1573,6 +1574,18 @@ function App() {
   const [ukLegTab, setUkLegTab] = useState('active');
   const [ukBillVotes, setUkBillVotes] = useState({});
   const [expandedUkBills, setExpandedUkBills] = useState({});
+  const [ukLiveData, setUkLiveData] = useState(false);
+  const [ukFirestoreBills, setUkFirestoreBills] = useState([]);
+  const [ukFirestoreLoading, setUkFirestoreLoading] = useState(false);
+  const [caLiveData, setCaLiveData] = useState(false);
+  const [caFirestoreBills, setCaFirestoreBills] = useState([]);
+  const [caFirestoreLoading, setCaFirestoreLoading] = useState(false);
+  const [usLiveData, setUsLiveData] = useState(false);
+  const [usFirestoreBills, setUsFirestoreBills] = useState([]);
+  const [usFirestoreLoading, setUsFirestoreLoading] = useState(false);
+  const [auLiveData, setAuLiveData] = useState(false);
+  const [auFirestoreBills, setAuFirestoreBills] = useState([]);
+  const [auFirestoreLoading, setAuFirestoreLoading] = useState(false);
   const [ministries, setMinistries] = useState([
     {
       id: 1,
@@ -11083,6 +11096,109 @@ function App() {
     );
   };
 
+  // ── Firestore live-data helpers ──────────────────────────────────────────────
+
+  const fetchFirestoreBills = async (jurisdiction, setSetter, setLoading) => {
+    setLoading(true);
+    try {
+      const q = query(collection(db, 'bills'), where('jurisdiction', '==', jurisdiction));
+      const snap = await getDocs(q);
+      const docs = snap.docs.map(d => d.data());
+      setSetter(docs);
+    } catch (err) {
+      console.warn(`[LiveData] Firestore fetch failed for ${jurisdiction}:`, err.message);
+      setSetter([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const mapFirestoreBillToUK = (fb) => ({
+    id: fb.id || fb.sourceId,
+    number: fb.sourceId || fb.id,
+    shortTitle: fb.title || 'Untitled Bill',
+    sponsor: null,
+    dateIntroduced: fb.introducedDate ? new Date(fb.introducedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null,
+    chamber: 'House of Commons',
+    status: (() => {
+      const s = (fb.status || '').toLowerCase();
+      if (s.includes('royal assent') || s.includes('enacted') || s.includes('signed')) return 'Royal Assent';
+      if (s.includes('passed') || s.includes('third reading')) return 'Passed Commons — Lords Second Reading';
+      if (s.includes('committee')) return 'Committee Stage';
+      if (s.includes('report')) return 'Report Stage';
+      return 'Second Reading';
+    })(),
+    category: fb.tags?.[0] || 'Parliament',
+    summary: fb.plainLanguageSummary || fb.summary || '',
+    pros: fb.argumentsFor || [],
+    cons: fb.argumentsAgainst || [],
+    support: fb.citizenImpactScore ? fb.citizenImpactScore * 100 : 0,
+    oppose: fb.citizenImpactScore ? (10 - fb.citizenImpactScore) * 100 : 0,
+  });
+
+  const mapFirestoreBillToCA = (fb) => ({
+    id: fb.id || fb.sourceId,
+    billNumber: fb.sourceId?.split(':')[0] || fb.id,
+    shortTitle: fb.title || 'Untitled Bill',
+    sponsor: null,
+    status: fb.status || 'In Committee',
+    summary: fb.plainLanguageSummary || fb.summary || '',
+    supportVotes: 0,
+    opposeVotes: 0,
+    pros: fb.argumentsFor || [],
+    cons: fb.argumentsAgainst || [],
+    citizenImpactScore: fb.citizenImpactScore || null,
+    predictedOutcome: fb.predictedOutcome || null,
+    url: fb.url || null,
+  });
+
+  const mapFirestoreBillToUS = (fb) => ({
+    id: fb.id || fb.sourceId,
+    number: fb.sourceId || fb.id,
+    title: fb.title || 'Untitled Bill',
+    sponsor: null,
+    date: fb.introducedDate ? new Date(fb.introducedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : null,
+    status: (() => {
+      const s = (fb.status || '').toLowerCase();
+      if (s.includes('signed') || s.includes('enacted') || s.includes('law')) return 'Signed into Law';
+      if (s.includes('passed senate') || s.includes('senate passed')) return 'Passed Senate';
+      if (s.includes('passed house') || s.includes('house passed')) return 'Passed House';
+      return 'In Committee';
+    })(),
+    category: fb.tags?.[0] || 'Congress',
+    summary: fb.plainLanguageSummary || fb.summary || '',
+    description: fb.plainLanguageSummary || fb.summary || '',
+    pros: fb.argumentsFor || [],
+    cons: fb.argumentsAgainst || [],
+    supportVotes: fb.citizenImpactScore ? Math.round(fb.citizenImpactScore * 100) : 0,
+    opposeVotes: fb.citizenImpactScore ? Math.round((10 - fb.citizenImpactScore) * 100) : 0,
+    userVote: null,
+  });
+
+  const mapFirestoreBillToAU = (fb) => ({
+    id: fb.id || fb.sourceId,
+    number: fb.sourceId || fb.id,
+    shortTitle: fb.title || 'Untitled Bill',
+    sponsor: fb.sponsor || 'Australian Government',
+    dateIntroduced: fb.introducedDate ? new Date(fb.introducedDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : null,
+    chamber: 'House of Representatives',
+    status: (() => {
+      const s = (fb.status || '').toLowerCase();
+      if (s.includes('royal assent') || s.includes('enacted')) return 'Royal Assent';
+      if (s.includes('passed senate')) return 'Passed Senate — Royal Assent Pending';
+      if (s.includes('before senate') || s.includes('senate')) return 'Before the Senate';
+      if (s.includes('passed house') || s.includes('house passed')) return 'Passed House';
+      if (s.includes('committee')) return 'In Committee';
+      return 'Before the House';
+    })(),
+    category: fb.tags?.[0] || 'Parliament',
+    summary: fb.plainLanguageSummary || fb.summary || '',
+    pros: fb.argumentsFor || [],
+    cons: fb.argumentsAgainst || [],
+    support: fb.citizenImpactScore ? Math.round(fb.citizenImpactScore * 100) : 0,
+    oppose: fb.citizenImpactScore ? Math.round((10 - fb.citizenImpactScore) * 100) : 0,
+  });
+
   // ── UK Legislative Hub ───────────────────────────────────────────────────────
   const ukBills = [
     // Active Bills — Before the House of Commons
@@ -11202,13 +11318,17 @@ function App() {
   ];
 
   const renderUKLegislativeHub = () => {
-    const activeBills = ukBills.filter(b =>
+    const liveUKBills = ukLiveData && ukFirestoreBills.length > 0
+      ? ukFirestoreBills.map(mapFirestoreBillToUK)
+      : null;
+    const billSource = liveUKBills || ukBills;
+    const activeBills = billSource.filter(b =>
       ['Second Reading', 'Committee Stage', 'Report Stage', 'Third Reading', 'Lords Second Reading', 'Lords Committee Stage', 'Lords Report Stage'].includes(b.status)
     );
-    const recentVotes = ukBills.filter(b =>
+    const recentVotes = billSource.filter(b =>
       b.status === 'Passed Commons — Lords Second Reading' || b.voteResult
     );
-    const acts = ukBills.filter(b => b.status === 'Royal Assent');
+    const acts = billSource.filter(b => b.status === 'Royal Assent');
 
     const voteUkBill = (billId, vote) => {
       setUkBillVotes(prev => {
@@ -11331,8 +11451,23 @@ function App() {
             >
               ← Westminster
             </button>
-            <h1 className="text-xl font-bold text-gray-800">Legislative Hub</h1>
-            <div className="w-28" />
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-gray-800">Legislative Hub</h1>
+              {ukLiveData && !ukFirestoreLoading && ukFirestoreBills.length > 0 && (
+                <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">LIVE</span>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                const next = !ukLiveData;
+                setUkLiveData(next);
+                if (next && ukFirestoreBills.length === 0) fetchFirestoreBills('UK', setUkFirestoreBills, setUkFirestoreLoading);
+              }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold border-2 transition-all ${ukLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:border-green-400'}`}
+            >
+              <span className={`w-2 h-2 rounded-full ${ukLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
+              {ukFirestoreLoading ? 'Loading…' : 'Live Data'}
+            </button>
           </div>
         </div>
 
@@ -11375,10 +11510,10 @@ function App() {
                 <p className="text-gray-600 text-sm mb-4">Bills currently progressing through the House of Commons or House of Lords — at First, Second or Third Reading, or in Committee / Report Stage</p>
                 <div className="flex flex-wrap gap-3">
                   {[
-                    { label: 'Second Reading', color: 'blue', count: ukBills.filter(b => b.status === 'Second Reading').length },
-                    { label: 'Committee Stage', color: 'yellow', count: ukBills.filter(b => b.status === 'Committee Stage').length },
-                    { label: 'Report Stage', color: 'orange', count: ukBills.filter(b => b.status === 'Report Stage').length },
-                    { label: 'Lords Stages', color: 'indigo', count: ukBills.filter(b => b.status.startsWith('Lords')).length },
+                    { label: 'Second Reading', color: 'blue', count: billSource.filter(b => b.status === 'Second Reading').length },
+                    { label: 'Committee Stage', color: 'yellow', count: billSource.filter(b => b.status === 'Committee Stage').length },
+                    { label: 'Report Stage', color: 'orange', count: billSource.filter(b => b.status === 'Report Stage').length },
+                    { label: 'Lords Stages', color: 'indigo', count: billSource.filter(b => b.status.startsWith('Lords')).length },
                   ].map(s => (
                     <div key={s.label} className={`bg-white px-4 py-2 rounded-lg border-2 border-${s.color}-200 shadow-sm`}>
                       <p className="text-xs text-gray-500">{s.label}</p>
@@ -20335,10 +20470,23 @@ function App() {
             >
               ← Back to Government Levels
             </button>
-            
-            <h1 className="text-2xl font-bold text-gray-800">Legislative Hub</h1>
-            
-            <div className="w-20"></div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-800">Legislative Hub</h1>
+              {caLiveData && !caFirestoreLoading && caFirestoreBills.length > 0 && (
+                <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">LIVE</span>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                const next = !caLiveData;
+                setCaLiveData(next);
+                if (next && caFirestoreBills.length === 0) fetchFirestoreBills('CA', setCaFirestoreBills, setCaFirestoreLoading);
+              }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold border-2 transition-all ${caLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:border-green-400'}`}
+            >
+              <span className={`w-2 h-2 rounded-full ${caLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
+              {caFirestoreLoading ? 'Loading…' : 'Live Data'}
+            </button>
           </div>
         </div>
 
@@ -20552,34 +20700,51 @@ function App() {
           {/* Ongoing Parliamentary Bills Tab */}
           {legislativeTab === 'parliamentary' && (
             <div className="animate-fade-in">
+              {(() => {
+                const caBillSource = caLiveData && caFirestoreBills.length > 0
+                  ? caFirestoreBills.map(mapFirestoreBillToCA)
+                  : bills;
+                return (<>
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">🏛️ Ongoing Parliamentary Bills</h2>
+                <div className="flex items-center gap-3 mb-2">
+                  <h2 className="text-2xl font-bold text-gray-800">🏛️ Ongoing Parliamentary Bills</h2>
+                  {caLiveData && !caFirestoreLoading && caFirestoreBills.length > 0 && (
+                    <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">LIVE</span>
+                  )}
+                  {caFirestoreLoading && <span className="text-sm text-gray-400 animate-pulse">Fetching from Firestore…</span>}
+                </div>
                 <p className="text-gray-600">Bills currently moving through Parliament — being debated, reviewed, or voted on</p>
                 <div className="flex flex-wrap gap-3 mt-4">
                   <div className="bg-white px-4 py-2 rounded-lg border-2 border-blue-200 shadow-sm">
                     <p className="text-sm text-gray-600">Upcoming Bills</p>
-                    <p className="text-xl font-bold text-blue-600">{bills.filter(b => b.status === 'In Committee' || b.status === 'Passed House' || b.status === 'Passed Senate').length}</p>
+                    <p className="text-xl font-bold text-blue-600">{caBillSource.filter(b => b.status === 'In Committee' || b.status === 'Passed House' || b.status === 'Passed Senate').length}</p>
                   </div>
                   <div className="bg-white px-4 py-2 rounded-lg border-2 border-yellow-200 shadow-sm">
                     <p className="text-sm text-gray-600">Proposed Bills</p>
-                    <p className="text-xl font-bold text-yellow-600">{bills.filter(b => b.status === 'In Committee').length}</p>
+                    <p className="text-xl font-bold text-yellow-600">{caBillSource.filter(b => b.status === 'In Committee').length}</p>
                   </div>
                   <div className="bg-white px-4 py-2 rounded-lg border-2 border-green-200 shadow-sm">
                     <p className="text-sm text-gray-600">Bills Voted (12mo)</p>
-                    <p className="text-xl font-bold text-green-600">{bills.filter(b => b.status === 'Signed into Law' || b.status === 'Failed in Senate').length}</p>
+                    <p className="text-xl font-bold text-green-600">{caBillSource.filter(b => b.status === 'Signed into Law' || b.status === 'Failed in Senate').length}</p>
                   </div>
+                  {caLiveData && caFirestoreBills.length > 0 && (
+                    <div className="bg-white px-4 py-2 rounded-lg border-2 border-green-300 shadow-sm">
+                      <p className="text-sm text-gray-600">Live from Firestore</p>
+                      <p className="text-xl font-bold text-green-600">{caFirestoreBills.length}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="space-y-6">
-                {bills.length === 0 ? (
+                {caBillSource.length === 0 ? (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
                     <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">No Bills Found</h3>
                     <p className="text-gray-600">Run the bills scraper to load bill data!</p>
                   </div>
                 ) : (
-                  bills.slice(0, 5).map(bill => {
+                  caBillSource.slice(0, 5).map(bill => {
                     const isExpanded = expandedCaBills[bill.id] || false;
                     const uv = caBillVotes[bill.id] || null;
                     return (
@@ -20589,7 +20754,7 @@ function App() {
                       >
                         <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.billNumber}: ${bill.shortTitle}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
 
-                        {/* Collapsed header — click to toggle */}
+                        {/* Collapsed header */}
                         <div
                           className="p-6 pr-12 cursor-pointer select-none"
                           onClick={() => setExpandedCaBills(prev => ({ ...prev, [bill.id]: !prev[bill.id] }))}
@@ -20601,6 +20766,9 @@ function App() {
                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(bill.status)}`}>
                               {bill.status}
                             </span>
+                            {caLiveData && caFirestoreBills.length > 0 && (
+                              <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">LIVE</span>
+                            )}
                             <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                           </div>
                           <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
@@ -20611,16 +20779,33 @@ function App() {
                         {isExpanded && (
                           <div className="px-6 border-t border-gray-100">
                             <p className="text-[17px] sm:text-[15px] text-gray-600 py-4 font-bold sm:font-normal">{bill.summary}</p>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setSelectedBill(bill); setView('bill-detail'); }}
-                              className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 mb-4"
-                            >
-                              View Full Details <ChevronRight className="w-4 h-4" />
-                            </button>
+                            {bill.pros?.length > 0 && (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                  <p className="text-sm font-bold text-green-700 mb-2">✅ Arguments For</p>
+                                  <ul className="space-y-1">{bill.pros.slice(0,3).map((p,i) => <li key={i} className="text-sm text-green-800">• {p}</li>)}</ul>
+                                </div>
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                  <p className="text-sm font-bold text-red-700 mb-2">❌ Arguments Against</p>
+                                  <ul className="space-y-1">{bill.cons?.slice(0,3).map((c,i) => <li key={i} className="text-sm text-red-800">• {c}</li>)}</ul>
+                                </div>
+                              </div>
+                            )}
+                            {bill.citizenImpactScore && (
+                              <p className="text-sm text-gray-500 mb-3">Citizen Impact Score: <strong className="text-blue-700">{bill.citizenImpactScore}/10</strong></p>
+                            )}
+                            {!caLiveData && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setSelectedBill(bill); setView('bill-detail'); }}
+                                className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 mb-4"
+                              >
+                                View Full Details <ChevronRight className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
                         )}
 
-                        {/* Vote buttons — always visible */}
+                        {/* Vote buttons */}
                         <div className="px-6 pb-6 pt-4 flex gap-3">
                           <button
                             onClick={(e) => { e.stopPropagation(); requireRegion() && (setCaBillVotes(prev => ({ ...prev, [bill.id]: prev[bill.id] === 'support' ? null : 'support' })), voteBill(bill.id, 'support')); }}
@@ -20647,6 +20832,8 @@ function App() {
                   <ChevronRight className="w-6 h-6" />
                 </button>
               </div>
+              </>);
+              })()}
             </div>
           )}
 
@@ -20775,7 +20962,11 @@ function App() {
   };
 
   const renderUSLegislativeHub = () => {
-    const ongoingBills = usBills.filter(b =>
+    const liveUSBills = usLiveData && usFirestoreBills.length > 0
+      ? usFirestoreBills.map(mapFirestoreBillToUS)
+      : null;
+    const billSource = liveUSBills || usBills;
+    const ongoingBills = billSource.filter(b =>
       b.status === 'In Committee' || b.status === 'Passed House' || b.status === 'Passed Senate'
     );
 
@@ -20789,8 +20980,23 @@ function App() {
             >
               ← Back to Government Levels
             </button>
-            <h1 className="text-2xl font-bold text-gray-800">Legislative Hub</h1>
-            <div className="w-20"></div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-800">Legislative Hub</h1>
+              {usLiveData && !usFirestoreLoading && usFirestoreBills.length > 0 && (
+                <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">LIVE</span>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                const next = !usLiveData;
+                setUsLiveData(next);
+                if (next && usFirestoreBills.length === 0) fetchFirestoreBills('US', setUsFirestoreBills, setUsFirestoreLoading);
+              }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold border-2 transition-all ${usLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:border-green-400'}`}
+            >
+              <span className={`w-2 h-2 rounded-full ${usLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
+              {usFirestoreLoading ? 'Loading…' : 'Live Data'}
+            </button>
           </div>
         </div>
 
@@ -21003,15 +21209,15 @@ function App() {
                 <div className="flex flex-wrap gap-3 mt-4">
                   <div className="bg-white px-4 py-2 rounded-lg border-2 border-yellow-200 shadow-sm">
                     <p className="text-sm text-gray-600">In Committee</p>
-                    <p className="text-xl font-bold text-yellow-600">{usBills.filter(b => b.status === 'In Committee').length}</p>
+                    <p className="text-xl font-bold text-yellow-600">{billSource.filter(b => b.status === 'In Committee').length}</p>
                   </div>
                   <div className="bg-white px-4 py-2 rounded-lg border-2 border-blue-200 shadow-sm">
                     <p className="text-sm text-gray-600">Passed House</p>
-                    <p className="text-xl font-bold text-blue-600">{usBills.filter(b => b.status === 'Passed House').length}</p>
+                    <p className="text-xl font-bold text-blue-600">{billSource.filter(b => b.status === 'Passed House').length}</p>
                   </div>
                   <div className="bg-white px-4 py-2 rounded-lg border-2 border-indigo-200 shadow-sm">
                     <p className="text-sm text-gray-600">Passed Senate</p>
-                    <p className="text-xl font-bold text-indigo-600">{usBills.filter(b => b.status === 'Passed Senate').length}</p>
+                    <p className="text-xl font-bold text-indigo-600">{billSource.filter(b => b.status === 'Passed Senate').length}</p>
                   </div>
                 </div>
               </div>
@@ -21116,7 +21322,7 @@ function App() {
               {(() => {
                 const twelveMonthsAgo = new Date();
                 twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-                const recentLaws = usBills.filter(b => {
+                const recentLaws = billSource.filter(b => {
                   if (b.status !== 'Signed into Law') return false;
                   const d = new Date(b.dateSigned || b.dateVoted || b.date);
                   return d >= twelveMonthsAgo;
@@ -21239,16 +21445,20 @@ function App() {
   };
 
   const renderAuLegislativeHub = () => {
-    const activeBills = auBills.filter(b =>
+    const liveAUBills = auLiveData && auFirestoreBills.length > 0
+      ? auFirestoreBills.map(mapFirestoreBillToAU)
+      : null;
+    const auBillSource = liveAUBills || auBills;
+    const activeBills = auBillSource.filter(b =>
       b.status === 'Before the House' || b.status === 'In Committee' ||
       b.status === 'Passed House' || b.status === 'Before the Senate' ||
       b.status === 'Passed Senate — Royal Assent Pending'
     );
-    const recentVotes = auBills.filter(b =>
+    const recentVotes = auBillSource.filter(b =>
       b.status === 'Passed House' || b.status === 'Before the Senate' ||
       b.status === 'Passed Senate — Royal Assent Pending'
     );
-    const acts = auBills.filter(b => b.status === 'Royal Assent');
+    const acts = auBillSource.filter(b => b.status === 'Royal Assent');
 
     const statusBadge = (status) => {
       const map = {
@@ -21377,8 +21587,23 @@ function App() {
             >
               ← Back to Australian Federal Government
             </button>
-            <h1 className="text-2xl font-bold text-gray-800">Legislative Hub</h1>
-            <div className="w-20"></div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-gray-800">Legislative Hub</h1>
+              {auLiveData && !auFirestoreLoading && auFirestoreBills.length > 0 && (
+                <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">LIVE</span>
+              )}
+            </div>
+            <button
+              onClick={() => {
+                const next = !auLiveData;
+                setAuLiveData(next);
+                if (next && auFirestoreBills.length === 0) fetchFirestoreBills('AU', setAuFirestoreBills, setAuFirestoreLoading);
+              }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold border-2 transition-all ${auLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:border-green-400'}`}
+            >
+              <span className={`w-2 h-2 rounded-full ${auLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
+              {auFirestoreLoading ? 'Loading…' : 'Live Data'}
+            </button>
           </div>
         </div>
 
@@ -21431,19 +21656,19 @@ function App() {
                 <div className="flex flex-wrap gap-3">
                   <div className="bg-white px-4 py-2 rounded-lg border-2 border-blue-200 shadow-sm">
                     <p className="text-xs text-gray-500">Before the House</p>
-                    <p className="text-xl font-bold text-blue-600">{auBills.filter(b => b.status === 'Before the House').length}</p>
+                    <p className="text-xl font-bold text-blue-600">{auBillSource.filter(b => b.status === 'Before the House').length}</p>
                   </div>
                   <div className="bg-white px-4 py-2 rounded-lg border-2 border-yellow-200 shadow-sm">
                     <p className="text-xs text-gray-500">In Committee</p>
-                    <p className="text-xl font-bold text-yellow-600">{auBills.filter(b => b.status === 'In Committee').length}</p>
+                    <p className="text-xl font-bold text-yellow-600">{auBillSource.filter(b => b.status === 'In Committee').length}</p>
                   </div>
                   <div className="bg-white px-4 py-2 rounded-lg border-2 border-teal-200 shadow-sm">
                     <p className="text-xs text-gray-500">Passed House</p>
-                    <p className="text-xl font-bold text-teal-600">{auBills.filter(b => b.status === 'Passed House').length}</p>
+                    <p className="text-xl font-bold text-teal-600">{auBillSource.filter(b => b.status === 'Passed House').length}</p>
                   </div>
                   <div className="bg-white px-4 py-2 rounded-lg border-2 border-indigo-200 shadow-sm">
                     <p className="text-xs text-gray-500">Before the Senate</p>
-                    <p className="text-xl font-bold text-indigo-600">{auBills.filter(b => b.status === 'Before the Senate').length}</p>
+                    <p className="text-xl font-bold text-indigo-600">{auBillSource.filter(b => b.status === 'Before the Senate').length}</p>
                   </div>
                 </div>
               </div>
