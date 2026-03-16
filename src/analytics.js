@@ -14,7 +14,7 @@
  */
 
 import { collection, addDoc } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from './firebase.js';
 
 /**
  * @param {string} eventType
