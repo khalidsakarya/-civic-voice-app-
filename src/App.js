@@ -2069,7 +2069,10 @@ function App() {
       logEvent('time_on_page', { country: c, itemId: prev.view, meta: { durationMs: Date.now() - prev.start } });
     }
     _pageStartRef.current = { view, start: Date.now() };
-    if (view === 'ca-tax-calculator') logEvent('tax_calculator_used', { country: 'CA' });
+    if (view === 'ca-tax-calculator' || view === 'ca-tax-full') logEvent('tax_calculator_used', { country: 'CA' });
+    if (view === 'us-tax-full') logEvent('tax_calculator_used', { country: 'US' });
+    if (view === 'au-tax-full') logEvent('tax_calculator_used', { country: 'AU' });
+    if (view === 'uk-tax-full') logEvent('tax_calculator_used', { country: 'UK' });
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Analytics: bill detail views ────────────────────────────────────────────
@@ -2089,6 +2092,16 @@ function App() {
     if (!selectedAuMember) return;
     logEvent('view_politician', { country: 'AU', itemId: selectedAuMember.name });
   }, [selectedAuMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!selectedUkMember) return;
+    logEvent('view_politician', { country: 'UK', itemId: selectedUkMember.name });
+  }, [selectedUkMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!selectedUkLord) return;
+    logEvent('view_politician', { country: 'UK', itemId: selectedUkLord.name });
+  }, [selectedUkLord]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Analytics: search query (1-second debounce) ─────────────────────────────
   useEffect(() => {
@@ -7588,6 +7601,7 @@ function App() {
       const provNet = Math.max(0, applyBrackets(s, prov.brackets) - prov.bpa * prov.r0);
       const total = fedNet + provNet;
       setCaTaxFullResult({ salary: s, province: prov.name, fedNet, provNet, total, fedRate: (fedNet/s)*100, provRate: (provNet/s)*100, combinedRate: (total/s)*100 });
+      logEvent('tax_calculator_used', { country: 'CA', itemId: caTaxProvince });
     };
 
     const categories = [
@@ -7918,6 +7932,7 @@ function App() {
         stateRate: (stateNet / s) * 100,
         combinedRate: (total / s) * 100,
       });
+      logEvent('tax_calculator_used', { country: 'US', itemId: usTaxState });
     };
 
     const categories = [
@@ -8257,6 +8272,7 @@ function App() {
         niRate:       (ni / s) * 100,
         combinedRate: (total / s) * 100,
       });
+      logEvent('tax_calculator_used', { country: 'UK', itemId: ukTaxRegion });
     };
 
     // UK 2024-25 budget breakdown (HM Treasury)
@@ -8567,6 +8583,7 @@ function App() {
         medicareRate: (medicareLevy / s) * 100,
         combinedRate: (total / s) * 100,
       });
+      logEvent('tax_calculator_used', { country: 'AU', itemId: auTaxTerritory });
     };
 
     const categories = [
@@ -21081,7 +21098,7 @@ function App() {
               </div>
               <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2" onClick={e => e.stopPropagation()}>
                 <button
-                  onClick={(e) => { e.stopPropagation(); const next = !usLiveData; setUsLiveData(next); if (next && usFirestoreBills.length === 0) fetchFirestoreBills('US', setUsFirestoreBills, setUsFirestoreLoading); }}
+                  onClick={(e) => { e.stopPropagation(); const next = !usLiveData; setUsLiveData(next); if (next) { logEvent('live_data_toggle', { country: 'US' }); if (usFirestoreBills.length === 0) fetchFirestoreBills('US', setUsFirestoreBills, setUsFirestoreLoading); } }}
                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all ${usLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400'}`}
                 >
                   <span className={`w-1.5 h-1.5 rounded-full ${usLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
