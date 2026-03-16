@@ -16020,6 +16020,9 @@ function App() {
       return name.split(' ').filter(n => /^[A-Z]/.test(n)).map(n => n[0]).join('').slice(0, 2) || '?';
     };
 
+    const leaderColor = r.hasRegionalMayor ? (r.leaderPartyColor || ukRed) : '#6B7280';
+    const lcfg = { solid: leaderColor, light: leaderColor + '22' };
+
     const SectionLabel = ({ children }) => (
       <div className="flex items-center gap-3 mb-5 mt-8">
         <div className="w-5 h-0.5 rounded-full flex-shrink-0" style={{ background: ukRed }} />
@@ -16027,6 +16030,76 @@ function App() {
         <div className="flex-1 h-px bg-gray-200" />
       </div>
     );
+
+    const PersonCard = ({ title, name, party, since, bio, cfg, bioId }) => {
+      const isExpanded = !!expandedBios[bioId];
+      const isLong = bio && bio.length > 150;
+      return (
+        <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+          <div className="h-1.5 flex-shrink-0" style={{ background: cfg.solid }} />
+          <div className="p-5 sm:p-6 flex flex-col flex-1">
+            <div className="mb-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: cfg.solid }}>{title}</p>
+            </div>
+            <div className="flex items-start gap-4 mb-4">
+              <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-lg font-black select-none" style={{ background: cfg.light, color: cfg.solid }}>
+                {getInitials(name)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-black text-gray-900 text-base sm:text-lg leading-tight">{name}</h3>
+                {party && <span className="inline-block mt-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full text-white" style={{ background: cfg.solid }}>{party}</span>}
+                {since && <p className="text-xs text-gray-400 mt-1.5">In office since {since}</p>}
+              </div>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-gray-600 leading-relaxed" style={!isExpanded && isLong ? { overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' } : {}}>
+                {bio}
+              </p>
+              {isLong && (
+                <button
+                  onClick={() => setExpandedBios(prev => ({ ...prev, [bioId]: !isExpanded }))}
+                  className="mt-1.5 text-xs font-semibold transition-colors"
+                  style={{ color: cfg.solid }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.75'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                >
+                  {isExpanded ? '↑ Read less' : '↓ Read more'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const SubMayorsCard = ({ mayors }) => {
+      const ncfg = { solid: ukNavy, light: 'rgba(1,33,105,0.1)' };
+      return (
+        <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+          <div className="h-1.5 flex-shrink-0" style={{ background: ukNavy }} />
+          <div className="p-5 sm:p-6 flex flex-col flex-1">
+            <div className="mb-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: ukNavy }}>Sub-Regional Mayors</p>
+            </div>
+            <div className="space-y-4 flex-1">
+              {mayors.map((m, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-black text-white" style={{ background: ukRed }}>
+                    {m.name.split(' ').filter(n => /^[A-Z]/.test(n)).map(n => n[0]).join('').slice(0, 2)}
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900 text-sm leading-tight">{m.name}</p>
+                    <span className="inline-block mt-1 text-[11px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: ukRed }}>{m.party}</span>
+                    <p className="text-xs text-gray-400 mt-1">{m.title} · Since {m.since}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">📍 {m.area}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    };
 
     return (
       <div className="min-h-screen animate-fade-in" style={{ background: '#F0F4F8' }}>
@@ -16046,11 +16119,19 @@ function App() {
             >
               ← England Regions
             </button>
+            <button
+              onClick={(e) => handleShare(e, { id: 'uk-region-' + r.id, title: r.name, text: `🏴󠁧󠁢󠁥󠁮󠁧󠁿 ${r.name} — ${r.leaderTitle}: ${r.hasRegionalMayor ? r.leader : 'No Regional Mayor'} - civic-voice-app.vercel.app`, url: window.location.href })}
+              className="sm:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
+              style={{ background: copiedShareId === 'uk-region-' + r.id ? '#00843D' : 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
+              aria-label="Share"
+            >
+              {copiedShareId === 'uk-region-' + r.id ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+            </button>
           </div>
 
           <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-8 lg:px-12 pt-4 sm:pt-8 pb-8 sm:pb-14">
             <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3 sm:gap-10">
-              {/* Region coat of arms (emoji) */}
+              {/* Coat of arms (emoji) */}
               <div className="flex-shrink-0 flex flex-col items-center gap-1 sm:gap-2">
                 <div className="relative">
                   <div className="absolute -inset-1 sm:-inset-1.5 rounded-xl sm:rounded-2xl opacity-40" style={{ background: `linear-gradient(135deg, ${ukRed} 0%, transparent 60%)` }} />
@@ -16073,11 +16154,24 @@ function App() {
                     👥 <span className="ml-0.5">Pop: <strong className="text-white">{r.population}</strong></span>
                   </span>
                   {r.hasRegionalMayor && (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5 text-white" style={{ background: r.leaderPartyColor }}>
+                    <span className="inline-flex items-center gap-1 text-xs font-bold rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5 text-white" style={{ background: leaderColor }}>
                       <Crown className="w-3 h-3" /> Elected Mayor
                     </span>
                   )}
                 </div>
+              </div>
+
+              {/* Share button desktop */}
+              <div className="hidden sm:flex flex-shrink-0 self-end">
+                <button
+                  onClick={(e) => handleShare(e, { id: 'uk-region-' + r.id, title: r.name, text: `🏴󠁧󠁢󠁥󠁮󠁧󠁿 ${r.name} — ${r.leaderTitle}: ${r.hasRegionalMayor ? r.leader : 'No Regional Mayor'} - civic-voice-app.vercel.app`, url: window.location.href })}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+                  style={{ background: copiedShareId === 'uk-region-' + r.id ? '#00843D' : 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
+                  aria-label="Share"
+                >
+                  {copiedShareId === 'uk-region-' + r.id ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+                  <span>{copiedShareId === 'uk-region-' + r.id ? 'Copied!' : 'Share'}</span>
+                </button>
               </div>
             </div>
           </div>
@@ -16087,109 +16181,61 @@ function App() {
         {/* ── BODY ── */}
         <div className="max-w-5xl mx-auto px-4 sm:px-8 lg:px-12 pb-14">
 
-          {/* Stat strip */}
+          {/* Stat strip — matches AU: leader, legislature, in-power-since */}
           <div className="bg-white rounded-2xl border border-gray-100 mt-0 mb-2 px-5 py-4 flex flex-wrap gap-y-3 gap-x-6" style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.06)' }}>
-            {[
-              { icon: '👥', label: 'Population',    value: r.population },
-              { icon: '💷', label: 'GDP (total)',    value: r.gdpTotal },
-              { icon: '📊', label: 'GDP per capita', value: r.gdpPerCapita },
-              { icon: '📉', label: 'Unemployment',   value: r.unemployment },
-              { icon: '📐', label: 'Area',            value: r.area },
-              { icon: '🏙️', label: 'Major city',     value: r.cities[0] },
-            ].map(stat => (
-              <div key={stat.label} className="flex items-center gap-2 min-w-[120px]">
-                <span className="text-lg">{stat.icon}</span>
-                <div>
-                  <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">{stat.label}</p>
-                  <p className="text-sm font-bold text-gray-800">{stat.value}</p>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0" style={{ background: lcfg.light }}>👤</div>
+              <div>
+                <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">{r.leaderTitle}</p>
+                <p className="text-sm font-bold text-gray-900 leading-tight">{r.hasRegionalMayor ? r.leader : 'No Regional Mayor'}</p>
               </div>
-            ))}
-          </div>
-
-          {/* Regional Leadership */}
-          <SectionLabel>Regional Leadership</SectionLabel>
-          <div className="bg-white rounded-2xl overflow-hidden border border-gray-100" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
-            <div className="h-1.5 flex-shrink-0" style={{ background: r.hasRegionalMayor ? r.leaderPartyColor : '#6B7280' }} />
-            <div className="p-5 sm:p-6">
-              <div className="flex items-start justify-between mb-3">
-                <p className="text-[11px] font-bold uppercase tracking-[0.14em]" style={{ color: r.hasRegionalMayor ? r.leaderPartyColor : '#6B7280' }}>
-                  {r.hasRegionalMayor ? r.leaderTitle : 'No Elected Regional Mayor'}
-                </p>
-              </div>
-              <div className="flex items-start gap-4 mb-4">
-                <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-lg font-black select-none" style={{ background: (r.leaderPartyColor || '#6B7280') + '22', color: r.leaderPartyColor || '#6B7280' }}>
-                  {getInitials(r.leader)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-black text-gray-900 text-base sm:text-lg leading-tight">{r.hasRegionalMayor ? r.leader : 'No Regional Mayor'}</h3>
-                  {r.hasRegionalMayor && (
-                    <>
-                      <span className="inline-block mt-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full text-white" style={{ background: r.leaderPartyColor }}>{r.leaderParty}</span>
-                      <p className="text-xs text-gray-400 mt-1.5">In office since {r.leaderSince}</p>
-                    </>
-                  )}
-                </div>
-              </div>
-              {(() => {
-                const bioId = `uk-region-${r.id}`;
-                const isExpanded = !!expandedBios[bioId];
-                const isLong = r.leaderBio && r.leaderBio.length > 150;
-                return (
-                  <div>
-                    <p className="text-sm text-gray-600 leading-relaxed" style={!isExpanded && isLong ? { overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' } : {}}>
-                      {r.leaderBio}
-                    </p>
-                    {isLong && (
-                      <button
-                        onClick={() => setExpandedBios(prev => ({ ...prev, [bioId]: !isExpanded }))}
-                        className="mt-1.5 text-xs font-semibold transition-colors"
-                        style={{ color: r.leaderPartyColor || ukRed }}
-                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.75'}
-                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                      >
-                        {isExpanded ? '↑ Read less' : '↓ Read more'}
-                      </button>
-                    )}
-                  </div>
-                );
-              })()}
             </div>
+            <div className="w-px bg-gray-200 self-stretch hidden sm:block" />
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0" style={{ background: 'rgba(1,33,105,0.1)' }}>🏛</div>
+              <div>
+                <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">{leg.name}</p>
+                <p className="text-sm font-bold text-gray-900 leading-tight">{leg.totalSeats} seats</p>
+              </div>
+            </div>
+            {r.hasRegionalMayor && (
+              <>
+                <div className="w-px bg-gray-200 self-stretch hidden sm:block" />
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0" style={{ background: 'rgba(200,16,46,0.1)' }}>📅</div>
+                  <div>
+                    <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">In Office Since</p>
+                    <p className="text-sm font-bold text-gray-900 leading-tight">{r.leaderSince}</p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Sub-regional mayors */}
-          {r.subMayors.length > 0 && (
-            <>
-              <SectionLabel>Sub-Regional Mayors</SectionLabel>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {r.subMayors.map((m, i) => (
-                  <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
-                    <div className="h-1" style={{ background: ukRed }} />
-                    <div className="p-5 flex items-start gap-4">
-                      <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center text-sm font-black text-white" style={{ background: ukRed }}>
-                        {m.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-800 text-sm">{m.name}</h4>
-                        <p className="text-xs text-gray-500">{m.title}</p>
-                        <p className="text-xs text-gray-500">In office since {m.since}</p>
-                        <span className="inline-block mt-1.5 text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: ukRed }}>{m.party}</span>
-                        <p className="text-xs text-gray-500 mt-1">📍 {m.area}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+          {/* ── Regional Leadership ── */}
+          <SectionLabel>Regional Leadership</SectionLabel>
+          <div className={`grid grid-cols-1 ${r.subMayors && r.subMayors.length > 0 ? 'md:grid-cols-2' : ''} gap-4`}>
+            <PersonCard
+              title={r.hasRegionalMayor ? r.leaderTitle : 'Regional Governance'}
+              name={r.hasRegionalMayor ? r.leader : 'No Elected Regional Mayor'}
+              party={r.hasRegionalMayor ? r.leaderParty : ''}
+              since={r.hasRegionalMayor ? r.leaderSince : ''}
+              bio={r.leaderBio}
+              cfg={lcfg}
+              bioId={`uk-region-${r.id}`}
+            />
+            {r.subMayors && r.subMayors.length > 0 && (
+              <SubMayorsCard mayors={r.subMayors} />
+            )}
+          </div>
 
-          {/* Legislature Composition */}
+          {/* ── Legislature Composition ── */}
           <SectionLabel>Legislature Composition</SectionLabel>
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
             <div className="p-6 sm:p-8">
               <div className="flex flex-col lg:flex-row items-center gap-8">
-                {/* Mobile: compact squares */}
-                <div className="sm:hidden w-full grid grid-cols-2 gap-1.5">
+                {/* Mobile: compact party stat squares */}
+                <div className="sm:hidden w-full grid grid-cols-2 gap-1.5 mb-0">
                   {leg.parties.map(p => (
                     <div key={p.name} className="rounded-lg px-2.5 py-1.5" style={{ background: `${p.color}1a`, border: `2px solid ${p.color}40` }}>
                       <p className="text-[11px] font-semibold text-gray-600 truncate">{p.name}</p>
@@ -16240,14 +16286,14 @@ function App() {
             </div>
           </div>
 
-          {/* Transparency Data */}
+          {/* ── Transparency Data ── */}
           <SectionLabel>Transparency Data</SectionLabel>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button
               onClick={() => setShowUkEconomicModal(true)}
-              className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 text-left transition-all duration-200 hover:-translate-y-1 relative overflow-hidden"
+              className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 text-left transition-all duration-200 hover:-translate-y-1 relative overflow-hidden group"
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}
-              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 12px 36px rgba(1,33,105,0.18)'}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 12px 36px rgba(1,33,105,0.16)'}
               onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)'}
             >
               <div className="absolute top-0 left-0 right-0 h-1" style={{ background: `linear-gradient(90deg, ${ukNavy}, #1B4FD8)` }} />
@@ -16261,9 +16307,9 @@ function App() {
 
             <button
               onClick={() => { setUkTaxExemptSearch(''); setShowUkTaxExemptModal(true); }}
-              className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 text-left transition-all duration-200 hover:-translate-y-1 relative overflow-hidden"
+              className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 text-left transition-all duration-200 hover:-translate-y-1 relative overflow-hidden group"
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}
-              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 12px 36px rgba(200,16,46,0.18)'}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = `0 12px 36px rgba(200,16,46,0.18)`}
               onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)'}
             >
               <div className="absolute top-0 left-0 right-0 h-1" style={{ background: `linear-gradient(90deg, ${ukRed}, #FF4D6D)` }} />
@@ -16277,7 +16323,7 @@ function App() {
 
             <button
               onClick={() => { setUkGrantsSearch(''); setShowUkGrantsModal(true); }}
-              className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 text-left transition-all duration-200 hover:-translate-y-1 relative overflow-hidden"
+              className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 text-left transition-all duration-200 hover:-translate-y-1 relative overflow-hidden group"
               style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}
               onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 12px 36px rgba(0,87,40,0.18)'}
               onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.07)'}
@@ -16290,98 +16336,6 @@ function App() {
               <p className="text-xs text-gray-500 leading-relaxed mb-4">Government grants awarded to organisations and businesses</p>
               <span className="text-xs font-bold" style={{ color: '#005728' }}>View grants →</span>
             </button>
-          </div>
-
-          {/* Economic Sectors */}
-          <SectionLabel>Economic Sectors</SectionLabel>
-          <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
-            <div className="space-y-4">
-              {r.economicSectors.map((sector, i) => {
-                const pct = parseInt(sector.share);
-                return (
-                  <div key={i}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-semibold text-gray-700">{sector.name}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-gray-800">{sector.share}</span>
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sector.trend === 'fast growing' ? 'bg-green-100 text-green-700' : sector.trend === 'growing' ? 'bg-blue-100 text-blue-700' : sector.trend === 'stable' ? 'bg-gray-100 text-gray-600' : sector.trend === 'declining' ? 'bg-red-100 text-red-700' : sector.trend === 'transforming' ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700'}`}>
-                          {sector.trend}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div className="h-2 rounded-full transition-all" style={{ width: `${Math.min(pct * 4, 100)}%`, background: i % 2 === 0 ? ukRed : ukNavy }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Key Facts */}
-          <SectionLabel>Key Facts</SectionLabel>
-          <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
-            <div className="space-y-3">
-              {r.keyFacts.map((fact, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold mt-0.5" style={{ background: i % 2 === 0 ? ukRed : ukNavy }}>
-                    {i + 1}
-                  </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">{fact}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Councils */}
-          <SectionLabel>Major Councils</SectionLabel>
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ background: `${ukNavy}10` }}>
-                    <th className="text-left px-5 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider">Council</th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider hidden sm:table-cell">Type</th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider hidden md:table-cell">Population</th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider hidden lg:table-cell">Leader</th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider">Party</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {r.councils.filter(c => c.name).map((council, i) => {
-                    const partyColor = council.party === 'Labour' ? '#E4003B' : council.party === 'Conservative' ? '#003087' : council.party === 'Liberal Democrat' ? '#FAA61A' : council.party === 'Green' ? '#00843D' : council.party === 'Non-partisan' ? '#4B5563' : '#6B7280';
-                    return (
-                      <tr key={i} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-5 py-3 font-semibold text-gray-800">{council.name}</td>
-                        <td className="px-4 py-3 text-gray-500 hidden sm:table-cell">{council.type}</td>
-                        <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{council.population}</td>
-                        <td className="px-4 py-3 text-gray-500 hidden lg:table-cell">{council.leader}</td>
-                        <td className="px-4 py-3">
-                          {council.party && council.party !== 'Mixed' && council.party !== '' && (
-                            <span className="inline-block text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: partyColor }}>
-                              {council.party === 'Liberal Democrat' ? 'Lib Dem' : council.party}
-                            </span>
-                          )}
-                          {council.party === 'Mixed' && <span className="inline-block text-xs font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">Mixed</span>}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Towns & Cities */}
-          <SectionLabel>Towns &amp; Cities</SectionLabel>
-          <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
-            <div className="flex flex-wrap gap-2">
-              {r.cities.map((city, i) => (
-                <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border" style={{ borderColor: i === 0 ? ukRed : '#e5e7eb', color: i === 0 ? ukRed : '#374151', background: i === 0 ? `${ukRed}08` : '#f9fafb' }}>
-                  {i === 0 && '🏛️'} {city}
-                </span>
-              ))}
-            </div>
           </div>
 
         </div>
