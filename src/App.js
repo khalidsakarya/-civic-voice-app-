@@ -5224,6 +5224,7 @@ function App() {
   };
 
   const voteUkJustice = (name, vote) => {
+    logEvent('vote_politician', { country: 'UK', itemId: name });
     setUkJusticeVotes(prev => {
       const cur = prev[name] || { support: 0, oppose: 0, userVote: null };
       const newVote = cur.userVote === vote ? null : vote;
@@ -5800,6 +5801,7 @@ function App() {
       : 0;
 
     const voteDepartment = (deptId, vote) => {
+      logEvent('vote_politician', { country: 'US', itemId: String(deptId) });
       const updatedDepts = usDepartments.map(dept => {
         if (dept.id === deptId) {
           let newApprove = dept.approveVotes;
@@ -12715,6 +12717,7 @@ function App() {
     const acts = billSource.filter(b => b.status === 'Royal Assent');
 
     const voteUkBill = (billId, vote) => {
+      logEvent('vote_bill', { country: 'UK', itemId: String(billId) });
       setUkBillVotes(prev => {
         const cur = prev[billId];
         return { ...prev, [billId]: cur === vote ? null : vote };
@@ -15378,7 +15381,7 @@ function App() {
             </div>
             <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2" onClick={e => e.stopPropagation()}>
               <button
-                onClick={(e) => { e.stopPropagation(); const next = !ukLiveData; setUkLiveData(next); if (next && ukFirestoreBills.length === 0) fetchFirestoreBills('UK', setUkFirestoreBills, setUkFirestoreLoading); }}
+                onClick={(e) => { e.stopPropagation(); const next = !ukLiveData; setUkLiveData(next); if (next) { logEvent('live_data_toggle', { country: 'UK' }); fetchFirestoreBills('UK', setUkFirestoreBills, setUkFirestoreLoading); } }}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all ${ukLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400'}`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${ukLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
@@ -17973,6 +17976,7 @@ function App() {
     };
 
     const voteAuMember = (name, vote) => {
+      logEvent('vote_politician', { country: 'AU', itemId: name });
       setAuMemberVotes(prev => {
         const next = { ...prev };
         if (next[name] === vote) delete next[name]; else next[name] = vote;
@@ -18177,6 +18181,7 @@ function App() {
     const getAuVoteColor = (v) => v === 'Yea' ? 'bg-green-50 border-green-200' : v === 'Nay' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200';
     const getAuVoteIcon = (v) => v === 'Yea' ? <CheckCircle className="w-5 h-5 text-green-600" /> : v === 'Nay' ? <XCircle className="w-5 h-5 text-red-600" /> : <MinusCircle className="w-5 h-5 text-gray-600" />;
     const voteAu = (vote) => {
+      logEvent('vote_politician', { country: 'AU', itemId: member?.name });
       setAuMemberVotes(prev => {
         const next = { ...prev };
         if (next[member.name] === vote) delete next[member.name]; else next[member.name] = vote;
@@ -21092,7 +21097,7 @@ function App() {
               </div>
               <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2" onClick={e => e.stopPropagation()}>
                 <button
-                  onClick={(e) => { e.stopPropagation(); const next = !caLiveData; setCaLiveData(next); if (next && caFirestoreBills.length === 0) fetchFirestoreBills('CA', setCaFirestoreBills, setCaFirestoreLoading); }}
+                  onClick={(e) => { e.stopPropagation(); const next = !caLiveData; setCaLiveData(next); if (next) { logEvent('live_data_toggle', { country: 'CA' }); fetchFirestoreBills('CA', setCaFirestoreBills, setCaFirestoreLoading); } }}
                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all ${caLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400'}`}
                 >
                   <span className={`w-1.5 h-1.5 rounded-full ${caLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
@@ -23543,6 +23548,7 @@ function App() {
     };
 
     const voteAuBill = (billId, vote) => {
+      logEvent('vote_bill', { country: 'AU', itemId: String(billId) });
       setAuBillVotes(prev => {
         const current = prev[billId];
         if (current === vote) return { ...prev, [billId]: null };
@@ -26451,7 +26457,7 @@ function App() {
               </div>
               <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2" onClick={e => e.stopPropagation()}>
                 <button
-                  onClick={(e) => { e.stopPropagation(); const next = !auLiveData; setAuLiveData(next); if (next && auFirestoreBills.length === 0) fetchFirestoreBills('AU', setAuFirestoreBills, setAuFirestoreLoading); }}
+                  onClick={(e) => { e.stopPropagation(); const next = !auLiveData; setAuLiveData(next); if (next) { logEvent('live_data_toggle', { country: 'AU' }); fetchFirestoreBills('AU', setAuFirestoreBills, setAuFirestoreLoading); } }}
                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all ${auLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400'}`}
                 >
                   <span className={`w-1.5 h-1.5 rounded-full ${auLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
@@ -28217,6 +28223,7 @@ function App() {
     const userVote = senatorVotes[s.name] || null;
 
     const voteSenator = (name, vote) => {
+      logEvent('vote_politician', { country: 'CA', itemId: name });
       setSenatorVotes(prev => {
         const next = { ...prev };
         if (next[name] === vote) delete next[name]; else next[name] = vote;
@@ -28679,6 +28686,7 @@ function App() {
     };
 
     const voteSenator = (name, vote) => {
+      logEvent('vote_politician', { country: 'US', itemId: name });
       setSenatorVotes(prev => {
         const next = { ...prev };
         if (next[name] === vote) delete next[name]; else next[name] = vote;
