@@ -871,6 +871,7 @@ function App() {
   const [showUkGrantsModal, setShowUkGrantsModal] = useState(false);
   const [ukGrantsSearch, setUkGrantsSearch] = useState('');
   const [auExpandedChartId, setAuExpandedChartId] = useState(null);
+  const [ukExpandedChartId, setUkExpandedChartId] = useState(null);
   const [expandedBios, setExpandedBios] = useState({});
   const [selectedAuLeader, setSelectedAuLeader] = useState(null);
   const [auLeaderVotes, setAuLeaderVotes] = useState({});
@@ -16368,9 +16369,17 @@ function App() {
     let h = 5381;
     for (let i = 0; i < r.name.length; i++) h = (Math.imul(h, 33) ^ r.name.charCodeAt(i)) | 0;
     h = Math.abs(h) ^ 0xB15A;
-    const rng = (min, max, salt) => { let v = Math.abs((h ^ (salt * 2654435761)) >>> 0); return Math.round(min + (v % (max - min + 1))); };
-    const rngf = (min, max, salt, dec = 1) => { let v = Math.abs((h ^ (salt * 2654435761)) >>> 0); return parseFloat((min + (v % 1000) / 1000 * (max - min)).toFixed(dec)); };
+    const rng = (min, max, salt) => {
+      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
+      return Math.round(min + (v % (max - min + 1)));
+    };
+    const rngf = (min, max, salt, dec = 1) => {
+      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
+      const raw = min + (v % 1000) / 1000 * (max - min);
+      return parseFloat(raw.toFixed(dec));
+    };
 
+    // Chart 1: Budget Distribution
     const edu = rng(22, 32, 1); const hlt = rng(18, 28, 2); const inf = rng(10, 18, 3); const ps = rng(8, 14, 4);
     const soc = 100 - edu - hlt - inf - ps;
     const budgetData = [
@@ -16381,40 +16390,118 @@ function App() {
       { name: 'Social Services', value: soc, color: '#1B4FD8' },
     ];
 
-    const uBase = rngf(2.8, 8.5, 60);
-    const unempData = [2020, 2021, 2022, 2023, 2024].map((yr, i) => {
-      const mult = [1.6, 1.3, 1.1, 1.02, 1.0][i];
-      return { year: String(yr), 'Unemployment %': parseFloat((uBase * mult * (1 + rngf(-0.05, 0.05, 70 + i, 3))).toFixed(1)) };
+    // Chart 2: Spending vs Budget
+    const spendData = budgetData.map((cat, i) => {
+      const allocated = rng(500, 3800, 10 + i);
+      const variance  = rng(-12, 15, 20 + i);
+      return {
+        category: cat.name.split(' ')[0],
+        Allocated: allocated,
+        Actual: Math.round(allocated * (1 + variance / 100)),
+      };
     });
 
-    const gvaBase = rngf(1.2, 4.8, 80);
-    const gvaData = [2020, 2021, 2022, 2023, 2024].map((yr, i) => ({
-      year: String(yr),
-      'GVA Growth %': parseFloat((gvaBase * [0.6, 1.4, 0.9, 0.8, 1.0][i] * (1 + rngf(-0.1, 0.1, 90 + i, 3))).toFixed(1)),
-    }));
-
+    // Chart 3: Crime Rate Trends (10 years)
     const baseViolent = rngf(180, 520, 30);
-    const crimeData = Array.from({ length: 5 }, (_, i) => {
-      const yr = 2020 + i;
-      const trend = 1 - i * rngf(0.005, 0.025, 40 + i, 4);
-      return { year: String(yr), 'Crime Rate': parseFloat((baseViolent * trend * (1 + rngf(-0.04, 0.04, 50 + i, 3))).toFixed(1)) };
+    const baseProp    = rngf(1400, 3200, 31);
+    const crimeData = Array.from({ length: 10 }, (_, i) => {
+      const yr = 2015 + i;
+      const trend = 1 - (i * rngf(0.005, 0.025, 40 + i, 4));
+      const noise = (salt) => rngf(-0.06, 0.06, 50 + i + salt, 4);
+      return {
+        year: String(yr),
+        'Violent Crime':  parseFloat((baseViolent * trend * (1 + noise(0))).toFixed(1)),
+        'Property Crime': parseFloat((baseProp    * trend * (1 + noise(1))).toFixed(1)),
+      };
     });
 
-    const closeModal = () => setShowUkEconomicModal(false);
-    const ChartCard = ({ title, children }) => (
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}>
-        <h3 className="font-black text-gray-800 text-base mb-4">{title}</h3>
-        {children}
+    // Chart 4: Unemployment vs UK average
+    const uBase = rngf(2.8, 8.5, 60);
+    const unempData = [2021, 2022, 2023, 2024].map((yr, i) => {
+      const mult   = [1.4, 1.15, 1.05, 1.0][i];
+      const ukAvg  = [4.5, 3.7, 4.2, 4.4][i];
+      return {
+        year: String(yr),
+        [r.name]: parseFloat((uBase * mult + rngf(-0.3, 0.3, 70 + i, 2)).toFixed(1)),
+        'UK Average': ukAvg,
+      };
+    });
+    const unempKeys = [r.name, 'UK Average'];
+
+    // Chart 5: GVA Growth
+    const gvaBase = rngf(1.2, 4.8, 80);
+    const gvaData = Array.from({ length: 10 }, (_, i) => {
+      const yr = 2015 + i;
+      let growth;
+      if (i === 5) { growth = rngf(-8.0, -2.0, 85, 1); }
+      else if (i === 6) { growth = rngf(3.5, 7.5, 86, 1); }
+      else { growth = rngf(0.8, 4.5, 80 + i, 1); }
+      return { year: String(yr), 'GVA Growth (%)': growth };
+    });
+
+    // Chart 6: Poverty Rate
+    const povBase    = rngf(9.0, 17.0, 90, 1);
+    const povDecline = rngf(0.1, 0.4, 91, 2);
+    const povData = Array.from({ length: 10 }, (_, i) => {
+      const yr = 2015 + i;
+      const pandemicSpike = i === 5 ? rngf(1.5, 3.5, 96, 1) : 0;
+      const noise = rngf(-0.4, 0.4, 100 + i, 1);
+      return { year: String(yr), 'Poverty Rate (%)': parseFloat(Math.max(4.5, povBase - i * povDecline + pandemicSpike + noise).toFixed(1)) };
+    });
+
+    // Chart 7: Homelessness
+    const homelessBase = rng(1800, 32000, 110);
+    const homelessData = [2020, 2021, 2022, 2023, 2024].map((yr, i) => {
+      const growthFactor = 1 + i * rngf(0.015, 0.055, 120 + i, 3);
+      const total = Math.round(homelessBase * growthFactor);
+      const unshelteredRatio = rngf(0.25, 0.52, 130 + i, 3);
+      const unsheltered = Math.round(total * unshelteredRatio);
+      return { year: String(yr), Sheltered: total - unsheltered, Unsheltered: unsheltered };
+    });
+
+    const TICK   = { fontSize: 13, fill: '#4b5563' };
+    const TT     = { fontSize: '13px', borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' };
+    const LEG    = { fontSize: '13px', paddingTop: '10px' };
+    const MARGIN = { top: 5, right: 24, left: 0, bottom: 5 };
+    const crimeDataM = crimeData.slice(-6);
+    const gvaDataM   = gvaData.slice(-6);
+    const povDataM   = povData.slice(-6);
+
+    const UkCard = ({ id, title, desc, children, legend }) => (
+      <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+        <div className="h-1 w-full flex-shrink-0" style={{ background: `linear-gradient(90deg, ${ukNavy}, ${ukRed})` }} />
+        <div className="p-5 sm:p-6">
+          <h3 className="font-black text-gray-900 text-base sm:text-lg mb-0.5">{title}</h3>
+          <p className="text-xs text-gray-500 mb-5">{desc}</p>
+          {children}
+          {legend}
+          <button onClick={() => setUkExpandedChartId(id)}
+            className="mt-4 w-full py-2.5 text-sm font-semibold rounded-xl transition-all"
+            style={{ color: ukNavy, background: '#EBF0FF' }}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#D6E4FF'}
+            onMouseLeave={(e) => e.currentTarget.style.background = '#EBF0FF'}
+          >
+            📈 View Full Screen
+          </button>
+        </div>
       </div>
     );
 
     return (
+      <>
       <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in" style={{ background: '#F0F4F8' }}>
         <div className="sticky top-0 z-10" style={{ background: 'linear-gradient(135deg, #071322 0%, #0A1F48 100%)', paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
           <div className="h-0.5 w-full" style={{ background: `linear-gradient(90deg, ${ukRed}, #FFFFFF, ${ukNavy})` }} />
           <div className="max-w-6xl mx-auto px-4 sm:px-8 py-4 sm:py-5 flex items-center gap-4">
-            <button onClick={closeModal} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0" style={{ background: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.18)' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}>
-              <ChevronRight className="w-4 h-4 rotate-180" /><span>Back</span>
+            <button
+              onClick={() => setShowUkEconomicModal(false)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold flex-shrink-0 transition-colors"
+              style={{ background: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.18)' }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.22)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" />
+              <span>Back</span>
             </button>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>England Region · Economic &amp; Social Data</p>
@@ -16422,58 +16509,253 @@ function App() {
             </div>
           </div>
         </div>
-        <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ChartCard title="Regional Budget Allocation (%)">
-            <div style={{ height: 220 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsPie>
-                  <Pie data={budgetData} cx="50%" cy="50%" outerRadius={80} dataKey="value" nameKey="name" label={({ name, value }) => `${name}: ${value}%`} labelLine={false}>
-                    {budgetData.map((d, i) => <Cell key={i} fill={d.color} />)}
-                  </Pie>
-                  <Tooltip formatter={(v, n) => [`${v}%`, n]} contentStyle={{ borderRadius: '10px', fontSize: '12px' }} />
-                </RechartsPie>
-              </ResponsiveContainer>
-            </div>
-          </ChartCard>
-          <ChartCard title="Unemployment Rate (%)">
-            <div style={{ height: 220 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={unempData}>
-                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} domain={['auto', 'auto']} />
-                  <Tooltip contentStyle={{ borderRadius: '10px', fontSize: '12px' }} />
-                  <Line type="monotone" dataKey="Unemployment %" stroke={ukRed} strokeWidth={2} dot={{ r: 4, fill: ukRed }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </ChartCard>
-          <ChartCard title="GVA Growth (%)">
-            <div style={{ height: 220 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={gvaData}>
-                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ borderRadius: '10px', fontSize: '12px' }} />
-                  <Bar dataKey="GVA Growth %" fill={ukNavy} radius={[4, 4, 0, 0]} />
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <UkCard id="uk-budget" title="Regional Budget Distribution" desc="Share of total budget per spending category (%)">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="name" type="category" width={120} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 5']} />
+                  <Tooltip formatter={(v) => [`${v}%`, 'Budget Share']} contentStyle={TT} />
+                  <Bar dataKey="value" name="Budget Share" radius={[0, 4, 4, 0]} maxBarSize={28}>
+                    {budgetData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
-            </div>
-          </ChartCard>
-          <ChartCard title="Crime Rate per 100,000">
-            <div style={{ height: 220 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={crimeData}>
-                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} domain={['auto', 'auto']} />
-                  <Tooltip contentStyle={{ borderRadius: '10px', fontSize: '12px' }} />
-                  <Line type="monotone" dataKey="Crime Rate" stroke="#F59E0B" strokeWidth={2} dot={{ r: 4, fill: '#F59E0B' }} />
-                </LineChart>
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5 justify-center mt-3">
+                {budgetData.map((c) => (
+                  <span key={c.name} className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: c.color }} />
+                    {c.name}
+                  </span>
+                ))}
+              </div>
+            </UkCard>
+
+            <UkCard id="uk-spending" title="Spending vs Budget" desc="Allocated vs actual spending per category (£M)">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart layout="vertical" data={spendData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="category" type="category" width={90} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `£${(v / 1000).toFixed(1)}B`} />
+                  <Tooltip formatter={(v) => [`£${v.toLocaleString()}M`, '']} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Allocated" fill={ukNavy} radius={[0, 3, 3, 0]} maxBarSize={18} />
+                  <Bar dataKey="Actual"    fill="#00843D" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                </BarChart>
               </ResponsiveContainer>
-            </div>
-          </ChartCard>
+            </UkCard>
+
+            <UkCard id="uk-crime" title="Crime Rate Trends" desc="Incidents per 100,000 people — last 6 years">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
+                  <Tooltip formatter={(v, name) => [`${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Violent Crime"  fill={ukRed}    radius={[0, 3, 3, 0]} maxBarSize={18} />
+                  <Bar dataKey="Property Crime" fill="#FAA61A"  radius={[0, 3, 3, 0]} maxBarSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
+            </UkCard>
+
+            <UkCard id="uk-unemployment" title="Unemployment Rate" desc="Annual rate (%) vs UK national average — last 4 years">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart layout="vertical" data={unempData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 1']} />
+                  <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey={unempKeys[0]} fill={ukNavy}   radius={[0, 3, 3, 0]} maxBarSize={18} />
+                  <Bar dataKey={unempKeys[1]} fill="#9ca3af"  radius={[0, 3, 3, 0]} maxBarSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
+            </UkCard>
+
+            <UkCard id="uk-gva" title="GVA Growth Rate" desc="Annual GVA growth rate (%) — last 6 years · green = growth, red = contraction"
+              legend={
+                <div className="flex gap-4 justify-center mt-2">
+                  <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: '#00843D' }} /> Growth</span>
+                  <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: ukRed }} /> Contraction</span>
+                </div>
+              }
+            >
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart layout="vertical" data={gvaDataM} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} />
+                  <Tooltip formatter={(v) => [`${v}%`, 'GVA Growth']} contentStyle={TT} />
+                  <Bar dataKey="GVA Growth (%)" radius={[0, 4, 4, 0]} maxBarSize={28}>
+                    {gvaDataM.map((e, i) => <Cell key={i} fill={e['GVA Growth (%)'] >= 0 ? '#00843D' : ukRed} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </UkCard>
+
+            <UkCard id="uk-poverty" title="Poverty Rate Trend" desc="Population living below the poverty line (%) — last 6 years">
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart layout="vertical" data={povDataM} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 2']} />
+                  <Tooltip formatter={(v) => [`${v}%`, 'Poverty Rate']} contentStyle={TT} />
+                  <Bar dataKey="Poverty Rate (%)" fill="#FAA61A" radius={[0, 4, 4, 0]} maxBarSize={28} />
+                </BarChart>
+              </ResponsiveContainer>
+            </UkCard>
+
+            <UkCard id="uk-homeless" title="Homelessness Statistics" desc="Sheltered vs unsheltered population 2020–2024">
+              <ResponsiveContainer width="100%" height={230}>
+                <BarChart layout="vertical" data={homelessData} margin={MARGIN}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
+                  <Tooltip formatter={(v, name) => [v.toLocaleString(), name]} contentStyle={TT} />
+                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                  <Bar dataKey="Sheltered"   stackId="a" fill={ukNavy} maxBarSize={32} />
+                  <Bar dataKey="Unsheltered" stackId="a" fill={ukRed} radius={[0, 4, 4, 0]} maxBarSize={32} />
+                </BarChart>
+              </ResponsiveContainer>
+            </UkCard>
+
+          </div>
+          <p className="text-center text-xs text-gray-400 mt-8 mb-6">
+            Data is statistically modelled for illustrative purposes. Figures use deterministic generation seeded from {r.name}.
+          </p>
         </div>
-        <p className="text-xs text-gray-400 text-center pb-8">Illustrative data · figures are statistically modelled from ONS regional benchmarks</p>
       </div>
+
+      {/* Full-screen chart overlay */}
+      {ukExpandedChartId && (() => {
+        const ukChartTitles = { 'uk-budget': 'Regional Budget Distribution', 'uk-spending': 'Spending vs Budget', 'uk-crime': 'Crime Rate Trends', 'uk-unemployment': 'Unemployment Rate', 'uk-gva': 'GVA Growth Rate', 'uk-poverty': 'Poverty Rate Trend', 'uk-homeless': 'Homelessness Statistics' };
+        const chartH = 'calc(100vh - 210px)';
+        return (
+          <div className="fixed inset-0 z-[400] flex flex-col" style={{ background: '#f1f5f9' }}>
+            <div className="flex-shrink-0 shadow-lg" style={{ background: `linear-gradient(135deg, ${ukNavy} 0%, #1B4FD8 100%)`, paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
+              <div className="flex items-center gap-4 px-5 py-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-widest mb-0.5" style={{ color: '#93c5fd' }}>Full Screen · England Region</p>
+                  <span className="font-bold text-white text-base sm:text-lg leading-snug block">{ukChartTitles[ukExpandedChartId] || ''}</span>
+                </div>
+                <button
+                  onClick={() => setUkExpandedChartId(null)}
+                  className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.15)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5 text-white" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4 sm:p-6">
+                <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-4 sm:p-6">
+                  <div style={{ height: chartH, minHeight: '300px' }}>
+                    {ukExpandedChartId === 'uk-budget' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="name" type="category" width={120} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 5']} />
+                          <Tooltip formatter={(v) => [`${v}%`, 'Budget Share']} contentStyle={TT} />
+                          <Bar dataKey="value" name="Budget Share" radius={[0, 4, 4, 0]} maxBarSize={40}>
+                            {budgetData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {ukExpandedChartId === 'uk-spending' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={spendData} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="category" type="category" width={90} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `£${(v / 1000).toFixed(1)}B`} />
+                          <Tooltip formatter={(v) => [`£${v.toLocaleString()}M`, '']} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey="Allocated" fill={ukNavy} radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          <Bar dataKey="Actual"    fill="#00843D" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {ukExpandedChartId === 'uk-crime' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
+                          <Tooltip formatter={(v, name) => [`${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey="Violent Crime"  fill={ukRed}   radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          <Bar dataKey="Property Crime" fill="#FAA61A" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {ukExpandedChartId === 'uk-unemployment' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={unempData} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 1']} />
+                          <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey={unempKeys[0]} fill={ukNavy}  radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {ukExpandedChartId === 'uk-gva' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={gvaDataM} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} />
+                          <Tooltip formatter={(v) => [`${v}%`, 'GVA Growth']} contentStyle={TT} />
+                          <Bar dataKey="GVA Growth (%)" radius={[0, 4, 4, 0]} maxBarSize={40}>
+                            {gvaDataM.map((e, i) => <Cell key={i} fill={e['GVA Growth (%)'] >= 0 ? '#00843D' : ukRed} />)}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {ukExpandedChartId === 'uk-poverty' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={povDataM} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 2']} />
+                          <Tooltip formatter={(v) => [`${v}%`, 'Poverty Rate']} contentStyle={TT} />
+                          <Bar dataKey="Poverty Rate (%)" fill="#FAA61A" radius={[0, 4, 4, 0]} maxBarSize={40} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                    {ukExpandedChartId === 'uk-homeless' && (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart layout="vertical" data={homelessData} margin={MARGIN}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <XAxis type="number" tick={TICK} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
+                          <Tooltip formatter={(v, name) => [v.toLocaleString(), name]} contentStyle={TT} />
+                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          <Bar dataKey="Sheltered"   stackId="a" fill={ukNavy} maxBarSize={40} />
+                          <Bar dataKey="Unsheltered" stackId="a" fill={ukRed} radius={[0, 4, 4, 0]} maxBarSize={40} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+      </>
     );
   };
 
