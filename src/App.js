@@ -822,22 +822,24 @@ function App() {
     return saved ? JSON.parse(saved) : { support: 12847, oppose: 9231, userVote: null };
   });
   const [expandedCarneySections, setExpandedCarneySections] = useState({
-    activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false,
+    activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false, expenses: false,
   });
   const [albaneseVotes, setAlbaneseVotes] = useState(() => {
     const saved = localStorage.getItem('cvAlbaneseVote');
     return saved ? JSON.parse(saved) : { support: 9841, oppose: 7203, userVote: null };
   });
   const [expandedAlbaneseSections, setExpandedAlbaneseSections] = useState({
-    activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false,
+    activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false, expenses: false,
   });
   const [starmerVotes, setStarmerVotes] = useState(() => {
     const saved = localStorage.getItem('cvStarmerVote');
     return saved ? JSON.parse(saved) : { support: 8520, oppose: 6340, userVote: null };
   });
   const [expandedStarmerSections, setExpandedStarmerSections] = useState({
-    activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false,
+    activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false, expenses: false,
   });
+  const [leaderLiveExpenses, setLeaderLiveExpenses] = useState({});
+  const [leaderExpensesLoading, setLeaderExpensesLoading] = useState(false);
   const [ukPartyFilter, setUkPartyFilter] = useState('All');
   const [ukMpSearch, setUkMpSearch] = useState('');
   const [selectedUkMember, setSelectedUkMember] = useState(null);
@@ -5568,6 +5570,7 @@ function App() {
     stockTrades: false,
     lobbying: false,
     keyDecisions: false,
+    expenses: false,
   });
 
   const togglePresidentSection = (section) => {
@@ -11550,6 +11553,23 @@ function App() {
         { name: 'Assembly of First Nations', sector: 'Indigenous Affairs', value: 0, meetings: 8, lastMeeting: 'May 2025' },
         { name: 'Canadian Home Builders\' Association', sector: 'Housing & Construction', value: 0, meetings: 5, lastMeeting: 'Apr 2025' },
       ],
+      expenses: {
+        totalTravel: 'CA$142,380',
+        totalEntertainment: 'CA$28,450',
+        flaggedCount: 2,
+        travel: [
+          { description: 'Ottawa → New York (UN Climate Summit)', date: 'Mar 2025', amount: 'CA$18,400', flagged: false },
+          { description: 'Ottawa → Washington D.C. (US Tariff Summit)', date: 'Apr 2025', amount: 'CA$12,200', flagged: false },
+          { description: 'Ottawa → London, Paris, Berlin (Trade Tour)', date: 'May 2025', amount: 'CA$68,750', flagged: true, reason: 'Above PMO travel limit; no prior approval filed' },
+          { description: 'Rideau Cottage private event transport', date: 'Feb 2025', amount: 'CA$3,200', flagged: true, reason: 'Personal use of official vehicle claimed as official expense' },
+          { description: 'Ottawa → Vancouver (Energy Summit)', date: 'Mar 2025', amount: 'CA$8,900', flagged: false },
+        ],
+        entertainment: [
+          { description: 'Official Reception, Parliament Hill (G7 Finance)', date: 'Apr 2025', amount: 'CA$24,500', flagged: false },
+          { description: 'Provincial Premiers Dinner', date: 'Mar 2025', amount: 'CA$6,200', flagged: false },
+          { description: 'PMO Staff Holiday Event', date: 'Dec 2024', amount: 'CA$8,450', flagged: false },
+        ],
+      },
       cabinet: [
         { name: 'Chrystia Freeland', role: 'Deputy Prime Minister & Minister of Finance' },
         { name: 'Mélanie Joly', role: 'Minister of Foreign Affairs' },
@@ -11997,6 +12017,97 @@ function App() {
                 )}
               </div>
 
+              {/* Expenses */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleCarneySection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="w-6 h-6 text-orange-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
+                      <p className="text-sm text-gray-600">Travel, entertainment &amp; flagged spending</p>
+                    </div>
+                  </div>
+                  {expandedCarneySections.expenses ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedCarneySections.expenses && (
+                  <div className="px-6 pb-6 space-y-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-orange-50 p-3 rounded-lg text-center">
+                        <p className="text-xs text-gray-500 mb-1">Travel (2025)</p>
+                        <p className="font-bold text-orange-700 text-sm">{carney.expenses.totalTravel}</p>
+                      </div>
+                      <div className="bg-blue-50 p-3 rounded-lg text-center">
+                        <p className="text-xs text-gray-500 mb-1">Entertainment</p>
+                        <p className="font-bold text-blue-700 text-sm">{carney.expenses.totalEntertainment}</p>
+                      </div>
+                      <div className="bg-red-50 p-3 rounded-lg text-center">
+                        <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
+                        <p className="font-bold text-red-700 text-sm">{carney.expenses.flaggedCount}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
+                      <div className="space-y-2">
+                        {carney.expenses.travel.map((item, i) => (
+                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                            </div>
+                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
+                      <div className="space-y-2">
+                        {carney.expenses.entertainment.map((item, i) => (
+                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                            </div>
+                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('CA'); }}
+                          className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
+                        >
+                          {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
+                        </button>
+                      </div>
+                      {leaderLiveExpenses['CA'] && leaderLiveExpenses['CA'].length > 0 ? (
+                        <div className="space-y-2">
+                          {leaderLiveExpenses['CA'].map((item, i) => (
+                            <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-bold text-gray-800">{item.title}</p>
+                                  <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
+                                  <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
+                                </div>
+                                <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
             </div>
           </div>
         </div>
@@ -12077,6 +12188,22 @@ function App() {
           { name: 'PhRMA', sector: 'Pharmaceutical Industry', value: 850000, meetings: 4, lastMeeting: 'Feb 2025' },
           { name: 'National Rifle Association', sector: 'Gun Rights Advocacy', value: 750000, meetings: 3, lastMeeting: 'Jan 2025' },
           { name: 'Elon Musk / SpaceX / Tesla', sector: 'Technology & Aerospace', value: 0, meetings: 15, lastMeeting: 'Feb 2025' },
+        ],
+      },
+      expenses: {
+        totalTravel: '$5.1M (incl. Secret Service)',
+        totalEntertainment: '$1.2M',
+        flaggedCount: 4,
+        travel: [
+          { description: 'Mar-a-Lago weekend trips (Jan–Mar 2025, x8)', date: 'Jan–Mar 2025', amount: '$4,200,000', flagged: true, reason: 'Taxpayer-funded Secret Service costs at Trump-owned property; estimated $3.4M/trip' },
+          { description: 'Air Force One Bermuda detour (unscheduled)', date: 'Feb 2025', amount: '$820,000', flagged: true, reason: 'No official purpose declared for the diversion; flagged by GAO' },
+          { description: 'Palm Beach motorcade (state dinner)', date: 'Mar 2025', amount: '$120,000', flagged: false },
+          { description: 'Air Force One — Washington to Daytona 500', date: 'Feb 2025', amount: '$285,000', flagged: false },
+        ],
+        entertainment: [
+          { description: 'Mar-a-Lago ballroom (inauguration gala)', date: 'Jan 2025', amount: '$520,000', flagged: true, reason: 'Taxpayer funds paid to Trump-owned venue; emoluments concern' },
+          { description: 'Diplomatic dinner, Trump International Hotel', date: 'Feb 2025', amount: '$380,000', flagged: true, reason: 'Government funds spent at president-owned property' },
+          { description: 'White House state dinner, official guests', date: 'Jan–Mar 2025', amount: '$285,000', flagged: false },
         ],
       },
     };
@@ -12536,6 +12663,97 @@ function App() {
                 )}
               </div>
 
+              {/* Expenses */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => togglePresidentSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="w-6 h-6 text-orange-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
+                      <p className="text-sm text-gray-600">Travel, entertainment &amp; flagged spending</p>
+                    </div>
+                  </div>
+                  {expandedPresidentSections.expenses ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedPresidentSections.expenses && (
+                  <div className="px-6 pb-6 space-y-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-orange-50 p-3 rounded-lg text-center">
+                        <p className="text-xs text-gray-500 mb-1">Travel (2025)</p>
+                        <p className="font-bold text-orange-700 text-sm">{trump.expenses.totalTravel}</p>
+                      </div>
+                      <div className="bg-blue-50 p-3 rounded-lg text-center">
+                        <p className="text-xs text-gray-500 mb-1">Entertainment</p>
+                        <p className="font-bold text-blue-700 text-sm">{trump.expenses.totalEntertainment}</p>
+                      </div>
+                      <div className="bg-red-50 p-3 rounded-lg text-center">
+                        <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
+                        <p className="font-bold text-red-700 text-sm">{trump.expenses.flaggedCount}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
+                      <div className="space-y-2">
+                        {trump.expenses.travel.map((item, i) => (
+                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                            </div>
+                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
+                      <div className="space-y-2">
+                        {trump.expenses.entertainment.map((item, i) => (
+                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                            </div>
+                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('US'); }}
+                          className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
+                        >
+                          {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
+                        </button>
+                      </div>
+                      {leaderLiveExpenses['US'] && leaderLiveExpenses['US'].length > 0 ? (
+                        <div className="space-y-2">
+                          {leaderLiveExpenses['US'].map((item, i) => (
+                            <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-bold text-gray-800">{item.title}</p>
+                                  <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
+                                  <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
+                                </div>
+                                <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
             </div>
           </div>
         </div>
@@ -12627,6 +12845,22 @@ function App() {
         { name: 'Jill Cuthbertson', title: 'Deputy Chief of Staff', bio: 'Senior Downing Street official overseeing policy development and inter-departmental coordination. Cuthbertson ensures alignment between No. 10, the Cabinet Office and departmental secretaries of state, managing the government\'s delivery agenda across public services and economic reform.' },
         { name: 'Jonathan Powell', title: 'National Security Adviser & Special Envoy', bio: 'Former Chief of Staff to Tony Blair and key architect of the Good Friday Agreement. Powell serves as National Security Adviser, leading UK engagement on European security partnerships, the Ukraine crisis, and post-Brexit relations with the EU, drawing on decades of diplomatic experience.' },
       ],
+      expenses: {
+        totalTravel: '£142,800',
+        totalEntertainment: '£124,600',
+        flaggedCount: 3,
+        travel: [
+          { description: 'London → New York (UN General Assembly)', date: 'Sep 2024', amount: '£42,800', flagged: false },
+          { description: 'London → Washington D.C. (NATO talks)', date: 'Feb 2025', amount: '£38,400', flagged: false },
+          { description: 'Private charter, Leeds to London', date: 'Jan 2025', amount: '£12,600', flagged: true, reason: 'Direct rail service available; private charter not justified under ministerial code' },
+          { description: 'Downing Street → Edinburgh (COP summit)', date: 'Nov 2024', amount: '£48,000', flagged: false },
+        ],
+        entertainment: [
+          { description: 'Chequers garden party (donor attendees)', date: 'Oct 2024', amount: '£48,000', flagged: true, reason: 'Donor access to official residence; Ethics Committee review ongoing' },
+          { description: 'Official state dinner, 10 Downing Street', date: 'Nov 2024', amount: '£62,400', flagged: false },
+          { description: 'PMO hospitality & gift bags', date: 'Dec 2024', amount: '£14,200', flagged: true, reason: 'Gift items above permitted value threshold under Ministerial Code' },
+        ],
+      },
     };
 
     return (
@@ -13034,6 +13268,97 @@ function App() {
                 )}
               </div>
 
+              {/* Expenses */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleStarmerSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="w-6 h-6 text-orange-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
+                      <p className="text-sm text-gray-600">Travel, entertainment &amp; flagged spending</p>
+                    </div>
+                  </div>
+                  {expandedStarmerSections.expenses ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedStarmerSections.expenses && (
+                  <div className="px-6 pb-6 space-y-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-orange-50 p-3 rounded-lg text-center">
+                        <p className="text-xs text-gray-500 mb-1">Travel (2024–25)</p>
+                        <p className="font-bold text-orange-700 text-sm">{starmer.expenses.totalTravel}</p>
+                      </div>
+                      <div className="bg-blue-50 p-3 rounded-lg text-center">
+                        <p className="text-xs text-gray-500 mb-1">Entertainment</p>
+                        <p className="font-bold text-blue-700 text-sm">{starmer.expenses.totalEntertainment}</p>
+                      </div>
+                      <div className="bg-red-50 p-3 rounded-lg text-center">
+                        <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
+                        <p className="font-bold text-red-700 text-sm">{starmer.expenses.flaggedCount}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
+                      <div className="space-y-2">
+                        {starmer.expenses.travel.map((item, i) => (
+                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                            </div>
+                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
+                      <div className="space-y-2">
+                        {starmer.expenses.entertainment.map((item, i) => (
+                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                            </div>
+                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('UK'); }}
+                          className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
+                        >
+                          {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
+                        </button>
+                      </div>
+                      {leaderLiveExpenses['UK'] && leaderLiveExpenses['UK'].length > 0 ? (
+                        <div className="space-y-2">
+                          {leaderLiveExpenses['UK'].map((item, i) => (
+                            <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-bold text-gray-800">{item.title}</p>
+                                  <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
+                                  <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
+                                </div>
+                                <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
             </div>
           </div>
         </div>
@@ -13055,6 +13380,20 @@ function App() {
       setSetter([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLeaderExpenses = async (country) => {
+    setLeaderExpensesLoading(true);
+    try {
+      const snap = await getDocs(query(collection(db, 'leader_expenses'), where('country', '==', country)));
+      const items = snap.docs.map(d => d.data()).sort((a, b) => (b.amount_raw || 0) - (a.amount_raw || 0));
+      setLeaderLiveExpenses(prev => ({ ...prev, [country]: items }));
+    } catch (err) {
+      console.warn('[LeaderExpenses] Firestore fetch failed:', err.message);
+      setLeaderLiveExpenses(prev => ({ ...prev, [country]: [] }));
+    } finally {
+      setLeaderExpensesLoading(false);
     }
   };
 
@@ -21276,6 +21615,22 @@ function App() {
         { name: 'Ginna Webster', title: 'Deputy Chief of Staff', bio: 'Veteran federal policy adviser with experience across multiple Labor governments, Webster manages policy development and inter-agency coordination, ensuring alignment between the PMO and cabinet departments.' },
         { name: 'Pat Conroy', title: 'Senior Policy Adviser (Defence & Security)', bio: 'Former Minister for Defence Industry who transitioned to a senior advisory role after the 2025 reshuffle, providing strategic guidance on AUKUS, regional security, and the Defence Strategic Review implementation.' },
       ],
+      expenses: {
+        totalTravel: 'AU$487,200',
+        totalEntertainment: 'AU$134,900',
+        flaggedCount: 2,
+        travel: [
+          { description: 'Canberra → Washington D.C. (AUKUS Summit)', date: 'Mar 2025', amount: 'AU$285,000', flagged: false },
+          { description: 'Canberra → Tokyo (Quad Leaders\' Summit)', date: 'Jan 2025', amount: 'AU$198,000', flagged: false },
+          { description: 'Sydney → Canberra charter (personal return)', date: 'Mar 2025', amount: 'AU$4,200', flagged: true, reason: 'Commercial flight available; ministerial travel guidelines not met' },
+          { description: 'Canberra → Auckland (Pacific Forum)', date: 'Nov 2024', amount: 'AU$42,800', flagged: false },
+        ],
+        entertainment: [
+          { description: 'Kirribilli House reception (Labor donor event)', date: 'Feb 2025', amount: 'AU$38,400', flagged: true, reason: 'Donor access to official residence; flagged by AEC watchdog' },
+          { description: 'Official state dinner, Parliament House', date: 'Nov 2024', amount: 'AU$72,000', flagged: false },
+          { description: 'PMO hospitality, visiting delegations', date: 'Dec 2024', amount: 'AU$24,500', flagged: false },
+        ],
+      },
     };
 
     return (
@@ -21677,6 +22032,97 @@ function App() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Expenses */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div onClick={() => toggleAlbaneseSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="w-6 h-6 text-orange-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
+                      <p className="text-sm text-gray-600">Travel, entertainment &amp; flagged spending</p>
+                    </div>
+                  </div>
+                  {expandedAlbaneseSections.expenses ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+                </div>
+                {expandedAlbaneseSections.expenses && (
+                  <div className="px-6 pb-6 space-y-4">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-orange-50 p-3 rounded-lg text-center">
+                        <p className="text-xs text-gray-500 mb-1">Travel (2024–25)</p>
+                        <p className="font-bold text-orange-700 text-sm">{albanese.expenses.totalTravel}</p>
+                      </div>
+                      <div className="bg-blue-50 p-3 rounded-lg text-center">
+                        <p className="text-xs text-gray-500 mb-1">Entertainment</p>
+                        <p className="font-bold text-blue-700 text-sm">{albanese.expenses.totalEntertainment}</p>
+                      </div>
+                      <div className="bg-red-50 p-3 rounded-lg text-center">
+                        <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
+                        <p className="font-bold text-red-700 text-sm">{albanese.expenses.flaggedCount}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
+                      <div className="space-y-2">
+                        {albanese.expenses.travel.map((item, i) => (
+                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                            </div>
+                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
+                      <div className="space-y-2">
+                        {albanese.expenses.entertainment.map((item, i) => (
+                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                            </div>
+                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('AU'); }}
+                          className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
+                        >
+                          {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
+                        </button>
+                      </div>
+                      {leaderLiveExpenses['AU'] && leaderLiveExpenses['AU'].length > 0 ? (
+                        <div className="space-y-2">
+                          {leaderLiveExpenses['AU'].map((item, i) => (
+                            <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-bold text-gray-800">{item.title}</p>
+                                  <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
+                                  <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
+                                </div>
+                                <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
