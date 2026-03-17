@@ -1593,6 +1593,15 @@ function App() {
   const [auLiveData, setAuLiveData] = useState(false);
   const [auFirestoreBills, setAuFirestoreBills] = useState([]);
   const [auFirestoreLoading, setAuFirestoreLoading] = useState(false);
+  const [wasteExpenses, setWasteExpenses] = useState([]);
+  const [wasteReport, setWasteReport] = useState(null);
+  const [wasteLoading, setWasteLoading] = useState(false);
+  const [wasteSeverityFilter, setWasteSeverityFilter] = useState('All');
+  const [wasteCategoryFilter, setWasteCategoryFilter] = useState('All');
+  const [wasteVotes, setWasteVotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cv_waste_votes') || '{}'); }
+    catch (_) { return {}; }
+  });
   const [caTaxSalary, setCaTaxSalary] = useState('');
   const [caTaxResult, setCaTaxResult] = useState(null);
   const [caTaxFullSalary, setCaTaxFullSalary] = useState('');
@@ -2074,6 +2083,16 @@ function App() {
     if (view === 'us-tax-full') logEvent('tax_calculator_used', { country: 'US' });
     if (view === 'au-tax-full') logEvent('tax_calculator_used', { country: 'AU' });
     if (view === 'uk-tax-full') logEvent('tax_calculator_used', { country: 'UK' });
+    if (view === 'waste-tracker') {
+      const isUSA = selectedCountry?.type === 'usa';
+      const isAU  = selectedCountry?.type === 'australia';
+      const isUK  = selectedCountry?.type === 'uk';
+      const country = isUSA ? 'US' : isAU ? 'AU' : isUK ? 'UK' : 'CA';
+      logEvent('view_waste_tracker', { country });
+      setWasteSeverityFilter('All');
+      setWasteCategoryFilter('All');
+      fetchWasteData(country);
+    }
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Analytics: bill detail views ────────────────────────────────────────────
@@ -8817,6 +8836,397 @@ function App() {
     );
   };
 
+  // ── Waste Tracker ────────────────────────────────────────────────────────────
+
+  const renderWasteTracker = () => {
+    const isUSA = selectedCountry?.type === 'usa';
+    const isAU  = selectedCountry?.type === 'australia';
+    const isUK  = selectedCountry?.type === 'uk';
+    const country   = isUSA ? 'US' : isAU ? 'AU' : isUK ? 'UK' : 'CA';
+    const countryName = isUSA ? 'United States' : isAU ? 'Australia' : isUK ? 'United Kingdom' : 'Canada';
+    const flag      = isUSA ? '🇺🇸' : isAU ? '🇦🇺' : isUK ? '🇬🇧' : '🇨🇦';
+    const currencyCode = { US: 'USD', AU: 'AUD', UK: 'GBP', CA: 'CAD' }[country];
+    const locale       = { US: 'en-US', AU: 'en-AU', UK: 'en-GB', CA: 'en-CA' }[country];
+
+    const fmtAmount = (n) => {
+      if (n == null) return '—';
+      const abs = Math.abs(n);
+      const fmt = (v, suffix) => new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode, maximumFractionDigits: suffix ? 1 : 0 }).format(v) + (suffix || '');
+      if (abs >= 1e9) return fmt(n / 1e9, 'B');
+      if (abs >= 1e6) return fmt(n / 1e6, 'M');
+      if (abs >= 1e3) return fmt(n / 1e3, 'K');
+      return fmt(n);
+    };
+
+    const severityMeta = {
+      Critical: { bg: 'bg-red-600',    text: 'text-white', border: 'border-red-600',    dot: '#dc2626' },
+      High:     { bg: 'bg-orange-500', text: 'text-white', border: 'border-orange-500', dot: '#f97316' },
+      Medium:   { bg: 'bg-yellow-500', text: 'text-white', border: 'border-yellow-500', dot: '#eab308' },
+      Low:      { bg: 'bg-gray-400',   text: 'text-white', border: 'border-gray-400',   dot: '#9ca3af' },
+    };
+
+    const scoreColor = (s) => {
+      if (s >= 8) return 'text-red-600';
+      if (s >= 6) return 'text-orange-500';
+      if (s >= 4) return 'text-yellow-600';
+      return 'text-green-600';
+    };
+
+    const gradeColor = (g) => {
+      if (g === 'F') return '#dc2626';
+      if (g === 'D') return '#f97316';
+      if (g === 'C') return '#eab308';
+      if (g === 'B') return '#22c55e';
+      return '#3b82f6';
+    };
+
+    const SEVERITIES  = ['All', 'Critical', 'High', 'Medium', 'Low'];
+    const CATEGORIES  = ['All', 'Travel', 'Food & Entertainment', 'Contracts', 'Military', 'Infrastructure', 'Other'];
+
+    const filtered = wasteExpenses.filter(e => {
+      if (wasteSeverityFilter !== 'All' && e.severity !== wasteSeverityFilter) return false;
+      if (wasteCategoryFilter !== 'All' && e.category !== wasteCategoryFilter) return false;
+      return true;
+    });
+
+    const totalFlagged = wasteReport?.totalFlaggedAmount
+      ?? wasteExpenses.reduce((s, e) => s + Math.abs(e.amount || 0), 0);
+
+    const deptScores = (wasteReport?.departmentScores || []).slice(0, 7);
+
+    const chartData = deptScores.map(d => ({
+      name: d.department?.length > 28 ? d.department.slice(0, 26) + '…' : d.department,
+      score: d.wasteScore,
+      grade: d.grade,
+      fill: gradeColor(d.grade),
+    }));
+
+    const handleWasteVote = (expenseId, vote) => {
+      setWasteVotes(prev => {
+        const next = prev[expenseId] === vote ? { ...prev } : { ...prev, [expenseId]: vote };
+        if (prev[expenseId] === vote) delete next[expenseId];
+        try { localStorage.setItem('cv_waste_votes', JSON.stringify(next)); } catch (_) {}
+        return next;
+      });
+      logEvent(vote === 'support' ? 'waste_support' : 'waste_oppose', { country, itemId: expenseId });
+    };
+
+    return (
+      <div className="min-h-screen p-4 sm:p-6 animate-fade-in" style={{ background: 'linear-gradient(135deg, #1a0000 0%, #3b0000 30%, #7c1200 60%, #1a0000 100%)' }}>
+        <div className="max-w-5xl mx-auto">
+
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-6">
+            <button
+              onClick={() => setView('government-levels')}
+              className="px-4 py-2 rounded-xl text-white font-medium text-sm flex items-center gap-2"
+              style={{ background: 'rgba(255,255,255,0.15)' }}
+            >
+              ← Back
+            </button>
+          </div>
+
+          <div className="mb-6 animate-slide-in">
+            <div className="flex items-center gap-3 mb-1">
+              <span className="text-3xl">{flag}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🚨</span>
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">Waste Tracker</h1>
+              </div>
+            </div>
+            <p className="text-red-200 text-sm ml-1">{countryName} — Government spending flagged by AI analysis</p>
+            <div className="w-24 h-1 mt-3 rounded-full" style={{ background: 'linear-gradient(to right, #ef4444, #f97316)' }} />
+          </div>
+
+          {/* Headline stat */}
+          {!wasteLoading && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              <div className="rounded-2xl p-4 border border-red-500/30" style={{ background: 'rgba(220,38,38,0.2)' }}>
+                <p className="text-red-300 text-xs font-semibold uppercase tracking-wider mb-1">Total Flagged</p>
+                <p className="text-white text-xl font-bold">{fmtAmount(totalFlagged)}</p>
+              </div>
+              <div className="rounded-2xl p-4 border border-orange-500/30" style={{ background: 'rgba(249,115,22,0.2)' }}>
+                <p className="text-orange-300 text-xs font-semibold uppercase tracking-wider mb-1">Items Flagged</p>
+                <p className="text-white text-xl font-bold">{wasteExpenses.length}</p>
+              </div>
+              <div className="rounded-2xl p-4 border border-yellow-500/30" style={{ background: 'rgba(234,179,8,0.2)' }}>
+                <p className="text-yellow-300 text-xs font-semibold uppercase tracking-wider mb-1">High / Critical</p>
+                <p className="text-white text-xl font-bold">{wasteExpenses.filter(e => e.severity === 'High' || e.severity === 'Critical').length}</p>
+              </div>
+              <div className="rounded-2xl p-4 border border-red-700/30" style={{ background: 'rgba(185,28,28,0.2)' }}>
+                <p className="text-red-300 text-xs font-semibold uppercase tracking-wider mb-1">Depts Scored</p>
+                <p className="text-white text-xl font-bold">{wasteReport?.departmentScores?.length ?? '—'}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Department bar chart */}
+          {!wasteLoading && chartData.length > 0 && (
+            <div className="rounded-2xl p-5 mb-6 border border-red-800/30" style={{ background: 'rgba(0,0,0,0.4)' }}>
+              <h2 className="text-white font-bold text-base mb-1 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-orange-400" />
+                Most Wasteful Departments
+                <span className="text-xs font-normal text-red-300 ml-1">Waste score out of 100</span>
+              </h2>
+              <div className="flex gap-3 mb-3 flex-wrap">
+                {['F','D','C','B','A'].map(g => (
+                  <span key={g} className="flex items-center gap-1 text-xs text-gray-300">
+                    <span className="w-3 h-3 rounded-sm inline-block" style={{ background: gradeColor(g) }} />
+                    Grade {g}
+                  </span>
+                ))}
+              </div>
+              <ResponsiveContainer width="100%" height={Math.max(180, chartData.length * 40)}>
+                <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 40, left: 4, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" horizontal={false} />
+                  <XAxis type="number" domain={[0, 100]} tick={{ fill: '#fca5a5', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fill: '#fecaca', fontSize: 11 }} width={160} axisLine={false} tickLine={false} />
+                  <Tooltip
+                    formatter={(v, _n, p) => [`${v}/100 (Grade ${p.payload.grade})`, 'Waste Score']}
+                    contentStyle={{ background: '#1f0a0a', border: '1px solid #7f1d1d', borderRadius: 8, color: '#fecaca', fontSize: 12 }}
+                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                  />
+                  <Bar dataKey="score" radius={[0, 6, 6, 0]} label={{ position: 'right', fill: '#fca5a5', fontSize: 11, formatter: (v) => `${v}` }}>
+                    {chartData.map((entry, i) => (
+                      <Cell key={i} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* Filters */}
+          {!wasteLoading && wasteExpenses.length > 0 && (
+            <div className="rounded-2xl p-4 mb-5 border border-red-800/30" style={{ background: 'rgba(0,0,0,0.35)' }}>
+              <div className="mb-3">
+                <p className="text-red-300 text-xs font-semibold uppercase tracking-wider mb-2">Severity</p>
+                <div className="flex flex-wrap gap-2">
+                  {SEVERITIES.map(s => (
+                    <button
+                      key={s}
+                      onClick={() => setWasteSeverityFilter(s)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                        wasteSeverityFilter === s
+                          ? (s === 'All' ? 'bg-red-700 text-white border-red-600' : `${severityMeta[s]?.bg || 'bg-red-700'} text-white border-transparent`)
+                          : 'bg-transparent text-red-300 border-red-800/50 hover:border-red-600'
+                      }`}
+                    >
+                      {s}
+                      {s !== 'All' && (
+                        <span className="ml-1 opacity-75">
+                          ({wasteExpenses.filter(e => e.severity === s).length})
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-orange-300 text-xs font-semibold uppercase tracking-wider mb-2">Category</p>
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORIES.map(c => (
+                    <button
+                      key={c}
+                      onClick={() => setWasteCategoryFilter(c)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                        wasteCategoryFilter === c
+                          ? 'bg-orange-600 text-white border-transparent'
+                          : 'bg-transparent text-orange-300 border-orange-800/50 hover:border-orange-500'
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Loading */}
+          {wasteLoading && (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <div className="w-12 h-12 border-4 border-red-700 border-t-red-400 rounded-full animate-spin" />
+              <p className="text-red-300 text-sm">Loading waste data from Firestore…</p>
+            </div>
+          )}
+
+          {/* Empty */}
+          {!wasteLoading && wasteExpenses.length === 0 && (
+            <div className="rounded-2xl p-10 text-center border border-red-800/30" style={{ background: 'rgba(0,0,0,0.35)' }}>
+              <span className="text-5xl mb-4 block">🔍</span>
+              <p className="text-red-200 font-semibold mb-1">No flagged expenses found</p>
+              <p className="text-red-400 text-sm">Run the expense pipeline on the engine to populate this view.</p>
+            </div>
+          )}
+
+          {/* Expense cards */}
+          {!wasteLoading && filtered.length > 0 && (
+            <div className="space-y-4">
+              <p className="text-red-300 text-sm font-medium">
+                {filtered.length === wasteExpenses.length
+                  ? `${wasteExpenses.length} flagged items`
+                  : `${filtered.length} of ${wasteExpenses.length} items`}
+              </p>
+              {filtered.map((expense, idx) => {
+                const sev  = severityMeta[expense.severity] || severityMeta.Low;
+                const vote = wasteVotes[expense.id];
+                return (
+                  <div
+                    key={expense.id || idx}
+                    className="rounded-2xl overflow-hidden border animate-scale-in"
+                    style={{ animationDelay: `${idx * 0.04}s`, background: 'rgba(0,0,0,0.55)', borderColor: 'rgba(220,38,38,0.25)' }}
+                  >
+                    {/* Severity stripe */}
+                    <div className={`h-1 w-full ${sev.bg}`} />
+
+                    <div className="p-4 sm:p-5">
+                      <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                        <div className="flex flex-wrap gap-2 items-center">
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${sev.bg} ${sev.text}`}>
+                            {expense.severity}
+                          </span>
+                          {expense.category && (
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-900/60 text-orange-200 border border-orange-700/40">
+                              {expense.category}
+                            </span>
+                          )}
+                        </div>
+                        {/* Waste score meter */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-red-400 text-xs font-semibold uppercase">Waste</span>
+                          <div className="flex items-center gap-0.5">
+                            {[1,2,3,4,5,6,7,8,9,10].map(i => (
+                              <div
+                                key={i}
+                                className="w-2 h-4 rounded-sm"
+                                style={{
+                                  background: i <= (expense.waste_score || 0)
+                                    ? (i >= 8 ? '#dc2626' : i >= 6 ? '#f97316' : i >= 4 ? '#eab308' : '#22c55e')
+                                    : 'rgba(255,255,255,0.1)'
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <span className={`text-sm font-bold ${scoreColor(expense.waste_score || 0)}`}>
+                            {expense.waste_score ?? '—'}/10
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Title & dept */}
+                      <h3 className="text-white font-semibold text-sm sm:text-base mb-0.5 leading-snug">
+                        {expense.title || 'Untitled Expense'}
+                      </h3>
+                      {expense.department && (
+                        <p className="text-red-300 text-xs mb-2 flex items-center gap-1">
+                          <Building2 className="w-3 h-3 shrink-0" />
+                          {expense.department}
+                        </p>
+                      )}
+
+                      {/* Amount + date row */}
+                      <div className="flex flex-wrap gap-4 mb-3 mt-2">
+                        <div>
+                          <p className="text-red-400 text-xs uppercase font-semibold">Amount</p>
+                          <p className="text-white font-bold text-lg">{fmtAmount(expense.amount)}</p>
+                        </div>
+                        {expense.date && (
+                          <div>
+                            <p className="text-red-400 text-xs uppercase font-semibold">Date</p>
+                            <p className="text-red-200 text-sm font-medium">
+                              {new Date(expense.date).getFullYear() > 1970
+                                ? new Date(expense.date).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })
+                                : expense.date}
+                            </p>
+                          </div>
+                        )}
+                        {expense.recipient && (
+                          <div className="min-w-0">
+                            <p className="text-red-400 text-xs uppercase font-semibold">Recipient</p>
+                            <p className="text-red-200 text-sm font-medium truncate max-w-xs">{expense.recipient}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Plain language explanation */}
+                      {expense.plain_language_explanation && (
+                        <div className="rounded-xl p-3 mb-3" style={{ background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.25)' }}>
+                          <p className="text-red-200 text-sm leading-relaxed">
+                            <span className="font-semibold text-orange-300">⚠ Why flagged: </span>
+                            {expense.plain_language_explanation}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Source + votes row */}
+                      <div className="flex items-center justify-between flex-wrap gap-3 mt-2">
+                        {expense.source_url ? (
+                          <a
+                            href={expense.source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-400 hover:text-blue-300 underline underline-offset-2 truncate max-w-xs"
+                          >
+                            View source ↗
+                          </a>
+                        ) : <span />}
+
+                        {/* Citizen vote buttons */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-red-400 text-xs font-medium">Is this wasteful?</span>
+                          <button
+                            onClick={() => handleWasteVote(expense.id, 'support')}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                              vote === 'support'
+                                ? 'bg-red-600 text-white border-red-500 shadow-lg'
+                                : 'bg-transparent text-red-400 border-red-700/50 hover:border-red-500 hover:text-red-300'
+                            }`}
+                          >
+                            <ThumbsUp className="w-3.5 h-3.5" />
+                            Yes
+                          </button>
+                          <button
+                            onClick={() => handleWasteVote(expense.id, 'oppose')}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                              vote === 'oppose'
+                                ? 'bg-green-700 text-white border-green-600 shadow-lg'
+                                : 'bg-transparent text-green-500 border-green-800/50 hover:border-green-600 hover:text-green-400'
+                            }`}
+                          >
+                            <ThumbsDown className="w-3.5 h-3.5" />
+                            No
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* No results after filter */}
+          {!wasteLoading && wasteExpenses.length > 0 && filtered.length === 0 && (
+            <div className="rounded-2xl p-8 text-center border border-red-800/30" style={{ background: 'rgba(0,0,0,0.35)' }}>
+              <p className="text-red-300">No items match the selected filters.</p>
+              <button
+                onClick={() => { setWasteSeverityFilter('All'); setWasteCategoryFilter('All'); }}
+                className="mt-3 text-orange-400 text-sm underline"
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
+
+          <p className="text-center text-red-900 text-xs mt-8 pb-4">
+            Analysis by Claude AI · Civic Voice · Data from open government APIs · Refreshed weekly
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   const renderGovernmentLevels = () => {
     const isUSA = selectedCountry?.type === 'usa';
     const isAustralia = selectedCountry?.type === 'australia';
@@ -8899,6 +9309,23 @@ function App() {
                   <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
+
+              {/* Waste Tracker */}
+              <div
+                onClick={() => setView('waste-tracker')}
+                className="rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 animate-scale-in col-span-1 sm:col-span-2 lg:col-span-1"
+                style={{ animationDelay: '0.4s', background: 'linear-gradient(135deg, #2d0000 0%, #5c1a00 100%)', borderColor: 'rgba(220,38,38,0.4)' }}
+              >
+                <div className="mb-4 text-red-400">
+                  <AlertCircle className="w-12 h-12" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">🚨 Waste Tracker</h2>
+                <p className="text-red-200 mb-4 text-sm">AI-flagged government spending — sole-source contracts, luxury expenses, and department waste scores</p>
+                <div className="flex items-center gap-2 text-orange-400 font-semibold text-sm">
+                  <span>See Flagged Spending</span>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -8977,6 +9404,23 @@ function App() {
                 <p className="text-gray-600 mb-4 text-sm">Enter your salary and state — see your federal income tax, Medicare levy, and where every dollar goes</p>
                 <div className="flex items-center gap-2 text-amber-700 font-semibold text-sm">
                   <span>Calculate My Tax</span>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
+
+              {/* Waste Tracker */}
+              <div
+                onClick={() => setView('waste-tracker')}
+                className="rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 animate-scale-in col-span-1 sm:col-span-2 lg:col-span-1"
+                style={{ animationDelay: '0.4s', background: 'linear-gradient(135deg, #2d0000 0%, #5c1a00 100%)', borderColor: 'rgba(220,38,38,0.4)' }}
+              >
+                <div className="mb-4 text-red-400">
+                  <AlertCircle className="w-12 h-12" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">🚨 Waste Tracker</h2>
+                <p className="text-red-200 mb-4 text-sm">AI-flagged government spending — sole-source contracts, luxury expenses, and department waste scores</p>
+                <div className="flex items-center gap-2 text-orange-400 font-semibold text-sm">
+                  <span>See Flagged Spending</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
@@ -9076,6 +9520,23 @@ function App() {
                 </div>
               </div>
             )}
+
+            {/* Waste Tracker */}
+            <div
+              onClick={() => setView('waste-tracker')}
+              className="rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 animate-scale-in"
+              style={{ animationDelay: '0.4s', background: 'linear-gradient(135deg, #2d0000 0%, #5c1a00 100%)', borderColor: 'rgba(220,38,38,0.4)' }}
+            >
+              <div className="mb-4 text-red-400">
+                <AlertCircle className="w-12 h-12" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">🚨 Waste Tracker</h2>
+              <p className="text-red-200 mb-4 text-sm">AI-flagged government spending — sole-source contracts, luxury expenses, and department waste scores</p>
+              <div className="flex items-center gap-2 text-orange-400 font-semibold text-sm">
+                <span>See Flagged Spending</span>
+                <ChevronRight className="w-4 h-4" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -12514,6 +12975,26 @@ function App() {
       setSetter([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchWasteData = async (country) => {
+    setWasteLoading(true);
+    try {
+      const [expSnap, reportSnap] = await Promise.all([
+        getDocs(query(collection(db, 'flagged_expenses'), where('country', '==', country))),
+        getDocs(query(collection(db, 'waste_reports'), where('country', '==', country))),
+      ]);
+      const expenses = expSnap.docs.map(d => d.data())
+        .sort((a, b) => (b.waste_score || 0) - (a.waste_score || 0));
+      setWasteExpenses(expenses);
+      setWasteReport(reportSnap.docs[0]?.data() || null);
+    } catch (err) {
+      console.warn('[WasteTracker] Firestore fetch failed:', err.message);
+      setWasteExpenses([]);
+      setWasteReport(null);
+    } finally {
+      setWasteLoading(false);
     }
   };
 
@@ -29487,6 +29968,7 @@ function App() {
       {view === 'au-contract-detail' && selectedAuContract && renderAuContractDetail()}
       {view === 'au-departments' && renderAuDepartments()}
       {view === 'au-department-detail' && selectedAuDepartment && renderAuDepartmentDetail()}
+      {view === 'waste-tracker' && renderWasteTracker()}
       
       {/* Riding selector modal */}
       {showLocationPrompt && renderRidingSelector()}
