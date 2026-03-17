@@ -1596,6 +1596,7 @@ function App() {
   const [wasteExpenses, setWasteExpenses] = useState([]);
   const [wasteReport, setWasteReport] = useState(null);
   const [wasteLoading, setWasteLoading] = useState(false);
+  const [wasteLiveData, setWasteLiveData] = useState(false);
   const [wasteSeverityFilter, setWasteSeverityFilter] = useState('All');
   const [wasteCategoryFilter, setWasteCategoryFilter] = useState('All');
   const [wasteVotes, setWasteVotes] = useState(() => {
@@ -2091,7 +2092,9 @@ function App() {
       logEvent('view_waste_tracker', { country });
       setWasteSeverityFilter('All');
       setWasteCategoryFilter('All');
-      fetchWasteData(country);
+      setWasteLiveData(false);
+      setWasteExpenses([]);
+      setWasteReport(null);
     }
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -8911,18 +8914,46 @@ function App() {
       logEvent(vote === 'support' ? 'waste_support' : 'waste_oppose', { country, itemId: expenseId });
     };
 
+    const handleWasteLiveToggle = () => {
+      const next = !wasteLiveData;
+      setWasteLiveData(next);
+      if (next) {
+        logEvent('live_data_toggle', { country });
+        fetchWasteData(country);
+      } else {
+        setWasteExpenses([]);
+        setWasteReport(null);
+      }
+    };
+
     return (
       <div className="min-h-screen p-4 sm:p-6 animate-fade-in" style={{ background: 'linear-gradient(135deg, #1a0000 0%, #3b0000 30%, #7c1200 60%, #1a0000 100%)' }}>
         <div className="max-w-5xl mx-auto">
 
           {/* Header */}
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center justify-between gap-3 mb-6">
             <button
               onClick={() => setView('government-levels')}
               className="px-4 py-2 rounded-xl text-white font-medium text-sm flex items-center gap-2"
               style={{ background: 'rgba(255,255,255,0.15)' }}
             >
               ← Back
+            </button>
+
+            {/* Live Data toggle */}
+            <button
+              onClick={handleWasteLiveToggle}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold border-2 transition-all ${
+                wasteLiveData
+                  ? 'border-red-500 text-white'
+                  : 'border-red-800/50 text-red-400 hover:border-red-600'
+              }`}
+              style={wasteLiveData ? { background: 'rgba(220,38,38,0.25)' } : { background: 'rgba(255,255,255,0.05)' }}
+            >
+              <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                wasteLiveData ? 'bg-red-500 animate-pulse' : 'bg-red-900'
+              }`} />
+              {wasteLoading ? 'Loading…' : wasteLiveData ? 'Live: On' : 'Load Live Data'}
             </button>
           </div>
 
@@ -8932,6 +8963,13 @@ function App() {
               <div className="flex items-center gap-2">
                 <span className="text-2xl">🚨</span>
                 <h1 className="text-2xl sm:text-3xl font-bold text-white">Waste Tracker</h1>
+                {wasteLiveData && !wasteLoading && wasteExpenses.length > 0 && (
+                  <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-bold text-white"
+                    style={{ background: 'rgba(220,38,38,0.6)', border: '1px solid rgba(220,38,38,0.8)' }}>
+                    <span className="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse" />
+                    LIVE
+                  </span>
+                )}
               </div>
             </div>
             <p className="text-red-200 text-sm ml-1">{countryName} — Government spending flagged by AI analysis</p>
@@ -9051,12 +9089,30 @@ function App() {
             </div>
           )}
 
-          {/* Empty */}
+          {/* Empty / prompt to load */}
           {!wasteLoading && wasteExpenses.length === 0 && (
             <div className="rounded-2xl p-10 text-center border border-red-800/30" style={{ background: 'rgba(0,0,0,0.35)' }}>
-              <span className="text-5xl mb-4 block">🔍</span>
-              <p className="text-red-200 font-semibold mb-1">No flagged expenses found</p>
-              <p className="text-red-400 text-sm">Run the expense pipeline on the engine to populate this view.</p>
+              {wasteLiveData ? (
+                <>
+                  <span className="text-5xl mb-4 block">🔍</span>
+                  <p className="text-red-200 font-semibold mb-1">No flagged expenses found for {countryName}</p>
+                  <p className="text-red-400 text-sm">Run the expense pipeline on the engine to populate this view.</p>
+                </>
+              ) : (
+                <>
+                  <span className="text-5xl mb-4 block">📡</span>
+                  <p className="text-red-200 font-semibold mb-2">Load live waste data from Firestore</p>
+                  <p className="text-red-400 text-sm mb-5">Toggle "Load Live Data" to fetch real flagged {countryName} government expenses analysed by Claude AI.</p>
+                  <button
+                    onClick={handleWasteLiveToggle}
+                    className="px-5 py-2.5 rounded-xl text-white font-semibold text-sm flex items-center gap-2 mx-auto"
+                    style={{ background: 'linear-gradient(135deg, #dc2626, #f97316)' }}
+                  >
+                    <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                    Load Live Data
+                  </button>
+                </>
+              )}
             </div>
           )}
 
@@ -9159,19 +9215,22 @@ function App() {
                         </div>
                       )}
 
-                      {/* Source + votes row */}
-                      <div className="flex items-center justify-between flex-wrap gap-3 mt-2">
-                        {expense.source_url ? (
+                      {/* Source link */}
+                      {expense.source_url && (
+                        <div className="mb-2">
                           <a
                             href={expense.source_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-blue-400 hover:text-blue-300 underline underline-offset-2 truncate max-w-xs"
+                            className="text-xs text-blue-400 hover:text-blue-300 underline underline-offset-2"
                           >
                             View source ↗
                           </a>
-                        ) : <span />}
+                        </div>
+                      )}
 
+                      {/* Votes + Share row */}
+                      <div className="flex items-center justify-between flex-wrap gap-3 mt-2">
                         {/* Citizen vote buttons */}
                         <div className="flex items-center gap-2">
                           <span className="text-red-400 text-xs font-medium">Is this wasteful?</span>
@@ -9198,6 +9257,27 @@ function App() {
                             No
                           </button>
                         </div>
+
+                        {/* Share button */}
+                        <button
+                          onClick={(e) => handleShare(e, {
+                            id: `waste-${expense.id}`,
+                            title: `🚨 Government Waste Alert — ${countryName}`,
+                            text: `Did you know your government spent ${fmtAmount(expense.amount)} on "${expense.title || 'an undisclosed expense'}"? Waste score: ${expense.waste_score}/10. Check Civic Voice to see all flagged spending. civic-voice-app.vercel.app`,
+                            url: window.location.href,
+                          })}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                            copiedShareId === `waste-${expense.id}`
+                              ? 'border-orange-500 text-orange-300 bg-orange-900/30'
+                              : 'border-red-800/40 text-red-400 hover:border-orange-500 hover:text-orange-300'
+                          }`}
+                          style={{ background: 'rgba(0,0,0,0.3)' }}
+                        >
+                          {copiedShareId === `waste-${expense.id}`
+                            ? <><CheckCircle className="w-3.5 h-3.5" /> Copied!</>
+                            : <><Share2 className="w-3.5 h-3.5" /> Share</>
+                          }
+                        </button>
                       </div>
                     </div>
                   </div>
