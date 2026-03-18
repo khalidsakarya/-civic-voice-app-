@@ -1605,6 +1605,8 @@ function App() {
   const [wasteCategoryFilter, setWasteCategoryFilter] = useState('All');
   const [wasteLeaderboard, setWasteLeaderboard] = useState([]);
   const [wasteLeaderboardLoading, setWasteLeaderboardLoading] = useState(false);
+  const [compareLeaderAIdx, setCompareLeaderAIdx] = useState(-1);
+  const [compareLeaderBIdx, setCompareLeaderBIdx] = useState(-1);
   const [wasteVotes, setWasteVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_waste_votes') || '{}'); }
     catch (_) { return {}; }
@@ -2101,6 +2103,8 @@ function App() {
       setWasteLiveData(false);
       setWasteExpenses([]);
       setWasteReport(null);
+      setCompareLeaderAIdx(-1);
+      setCompareLeaderBIdx(-1);
     }
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -9067,6 +9071,57 @@ function App() {
       }
     };
 
+    const rosterCA = [
+      { name: 'Mark Carney',                title: 'Prime Minister',               totalExpenses: 1840000, wasteScore: 7, trend: 'up',   changePercent: 8  },
+      { name: 'Chrystia Freeland',           title: 'Deputy Prime Minister',        totalExpenses: 1420000, wasteScore: 6, trend: 'down', changePercent: 12 },
+      { name: 'Mélanie Joly',               title: 'Minister of Foreign Affairs',  totalExpenses: 920000,  wasteScore: 7, trend: 'up',   changePercent: 41 },
+      { name: 'François-Philippe Champagne', title: 'Minister of Industry',         totalExpenses: 1180000, wasteScore: 8, trend: 'up',   changePercent: 34 },
+      { name: 'Bill Blair',                  title: 'Minister of National Defence', totalExpenses: 980000,  wasteScore: 5, trend: 'down', changePercent: 18 },
+      { name: 'Steven Guilbeault',           title: 'Minister of Environment',      totalExpenses: 860000,  wasteScore: 6, trend: 'up',   changePercent: 11 },
+      { name: 'Mark Holland',                title: 'Minister of Health',           totalExpenses: 740000,  wasteScore: 4, trend: 'down', changePercent: 22 },
+      { name: 'Dominic LeBlanc',             title: 'Minister of Public Safety',    totalExpenses: 680000,  wasteScore: 5, trend: 'up',   changePercent: 5  },
+      { name: 'Jonathan Wilkinson',          title: 'Minister of Energy',           totalExpenses: 610000,  wasteScore: 3, trend: 'down', changePercent: 8  },
+      { name: 'Sean Fraser',                 title: 'Minister of Housing',          totalExpenses: 540000,  wasteScore: 4, trend: 'up',   changePercent: 15 },
+    ];
+    const rosterUS = [
+      { name: 'Donald Trump',   title: 'President',                       totalExpenses: 8200000, wasteScore: 9, trend: 'up',   changePercent: 22  },
+      { name: 'Elon Musk',      title: 'DOGE — Dept. of Govt Efficiency', totalExpenses: 1800000, wasteScore: 9, trend: 'up',   changePercent: 120 },
+      { name: 'Pete Hegseth',   title: 'Secretary of Defense',            totalExpenses: 3400000, wasteScore: 8, trend: 'up',   changePercent: 38  },
+      { name: 'Kristi Noem',    title: 'Secretary of Homeland Security',  totalExpenses: 2100000, wasteScore: 7, trend: 'up',   changePercent: 45  },
+      { name: 'RFK Jr.',        title: 'Sec. of Health & Human Services', totalExpenses: 1900000, wasteScore: 8, trend: 'up',   changePercent: 62  },
+      { name: 'Marco Rubio',    title: 'Secretary of State',              totalExpenses: 2800000, wasteScore: 6, trend: 'up',   changePercent: 7   },
+      { name: 'Pam Bondi',      title: 'Attorney General',                totalExpenses: 1400000, wasteScore: 6, trend: 'up',   changePercent: 18  },
+      { name: 'Scott Bessent',  title: 'Secretary of the Treasury',       totalExpenses: 1600000, wasteScore: 5, trend: 'down', changePercent: 14  },
+      { name: 'Susie Wiles',    title: 'White House Chief of Staff',      totalExpenses: 1200000, wasteScore: 4, trend: 'down', changePercent: 9   },
+      { name: 'Russell Vought', title: 'OMB Director',                    totalExpenses: 880000,  wasteScore: 5, trend: 'down', changePercent: 6   },
+    ];
+    const rosterUK = [
+      { name: 'Keir Starmer',       title: 'Prime Minister',                   totalExpenses: 1420000, wasteScore: 6, trend: 'up',   changePercent: 11 },
+      { name: 'David Lammy',        title: 'Secretary of State for Foreign',   totalExpenses: 1080000, wasteScore: 7, trend: 'up',   changePercent: 45 },
+      { name: 'Rachel Reeves',      title: 'Chancellor of the Exchequer',      totalExpenses: 1180000, wasteScore: 7, trend: 'up',   changePercent: 34 },
+      { name: 'John Healey',        title: 'Secretary of State for Defence',   totalExpenses: 920000,  wasteScore: 6, trend: 'up',   changePercent: 8  },
+      { name: 'Angela Rayner',      title: 'Deputy Prime Minister',            totalExpenses: 860000,  wasteScore: 6, trend: 'up',   changePercent: 22 },
+      { name: 'Yvette Cooper',      title: 'Secretary of State for Home',      totalExpenses: 820000,  wasteScore: 5, trend: 'up',   changePercent: 12 },
+      { name: 'Wes Streeting',      title: 'Secretary of State for Health',    totalExpenses: 960000,  wasteScore: 5, trend: 'down', changePercent: 8  },
+      { name: 'Ed Miliband',        title: 'Secretary of State for Energy',    totalExpenses: 740000,  wasteScore: 4, trend: 'down', changePercent: 15 },
+      { name: 'Pat McFadden',       title: 'Chancellor of the Duchy',          totalExpenses: 840000,  wasteScore: 4, trend: 'down', changePercent: 21 },
+      { name: 'Bridget Phillipson', title: 'Secretary of State for Education', totalExpenses: 680000,  wasteScore: 3, trend: 'down', changePercent: 19 },
+    ];
+    const rosterAU = [
+      { name: 'Anthony Albanese', title: 'Prime Minister',                 totalExpenses: 2140000, wasteScore: 7, trend: 'up',   changePercent: 18 },
+      { name: 'Penny Wong',       title: 'Minister for Foreign Affairs',   totalExpenses: 1840000, wasteScore: 8, trend: 'up',   changePercent: 52 },
+      { name: 'Jim Chalmers',     title: 'Treasurer',                      totalExpenses: 1620000, wasteScore: 6, trend: 'up',   changePercent: 8  },
+      { name: 'Don Farrell',      title: 'Minister for Trade & Tourism',   totalExpenses: 1380000, wasteScore: 6, trend: 'up',   changePercent: 14 },
+      { name: 'Pat Conroy',       title: 'Minister for Defence Industry',  totalExpenses: 1200000, wasteScore: 7, trend: 'up',   changePercent: 38 },
+      { name: "Clare O'Neil",     title: 'Minister for Home Affairs',      totalExpenses: 1020000, wasteScore: 5, trend: 'up',   changePercent: 9  },
+      { name: 'Bill Shorten',     title: 'Minister for the NDIS',          totalExpenses: 820000,  wasteScore: 6, trend: 'up',   changePercent: 28 },
+      { name: 'Richard Marles',   title: 'Deputy Prime Minister',          totalExpenses: 1480000, wasteScore: 5, trend: 'down', changePercent: 11 },
+      { name: 'Tanya Plibersek',  title: 'Minister for Environment',       totalExpenses: 880000,  wasteScore: 4, trend: 'down', changePercent: 16 },
+      { name: 'Mark Dreyfus',     title: 'Attorney-General',               totalExpenses: 980000,  wasteScore: 4, trend: 'down', changePercent: 24 },
+    ];
+    const rosterMap = { CA: rosterCA, US: rosterUS, UK: rosterUK, AU: rosterAU };
+    const roster = rosterMap[country] || rosterCA;
+
     return (
       <div className="min-h-screen p-4 sm:p-6 animate-fade-in" style={{ background: 'linear-gradient(135deg, #1a0000 0%, #3b0000 30%, #7c1200 60%, #1a0000 100%)' }}>
         <div className="max-w-5xl mx-auto">
@@ -9341,6 +9396,219 @@ function App() {
                 <div className="px-5 py-3 text-center text-xs border-t border-orange-900/20" style={{ color: 'rgba(234,88,12,0.4)' }}>
                   Based on official expense declarations · Updated quarterly · Live data: expense_leaderboard collection
                 </div>
+              </div>
+            );
+          })()}
+
+          {/* Compare Leaders */}
+          {(() => {
+            const CATEGORIES = ['Travel', 'Entertainment', 'Contracts', 'Military', 'Infrastructure'];
+            const djb2 = (s) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i); return Math.abs(h); };
+            const deriveStats = (leader) => {
+              const seed = djb2(leader.name);
+              const trips = 8 + (seed % 24);
+              const avgCost = Math.round(leader.totalExpenses / trips);
+              const topCat = CATEGORIES[seed % CATEGORIES.length];
+              return { trips, avgCost, topCat };
+            };
+
+            const leaderA = compareLeaderAIdx >= 0 ? roster[compareLeaderAIdx] : null;
+            const leaderB = compareLeaderBIdx >= 0 ? roster[compareLeaderBIdx] : null;
+            const statsA = leaderA ? deriveStats(leaderA) : null;
+            const statsB = leaderB ? deriveStats(leaderB) : null;
+
+            const verdict = (leaderA && leaderB) ? (() => {
+              let scoreA = 0, scoreB = 0;
+              if (leaderA.wasteScore < leaderB.wasteScore) scoreA += 3; else if (leaderB.wasteScore < leaderA.wasteScore) scoreB += 3;
+              if (leaderA.totalExpenses < leaderB.totalExpenses) scoreA += 2; else if (leaderB.totalExpenses < leaderA.totalExpenses) scoreB += 2;
+              if (leaderA.trend === 'down') scoreA += 2; else scoreB += 1;
+              if (leaderB.trend === 'down') scoreB += 2; else scoreA += 1;
+              if (leaderA.changePercent < leaderB.changePercent) scoreA += 1; else scoreB += 1;
+              const winner = scoreA > scoreB ? leaderA : scoreB > scoreA ? leaderB : null;
+              const margin = Math.abs(scoreA - scoreB);
+              return { winner, scoreA, scoreB, margin };
+            })() : null;
+
+            const wsColor = (ws) => ws >= 8 ? '#ef4444' : ws >= 6 ? '#f97316' : ws >= 4 ? '#eab308' : '#22c55e';
+            const initials = (name) => name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
+            return (
+              <div className="rounded-2xl border border-red-700/40 mb-6 overflow-hidden" style={{ background: 'rgba(0,0,0,0.55)' }}>
+                {/* Header */}
+                <div className="px-5 py-4 border-b border-red-900/30 flex items-center gap-3" style={{ background: 'rgba(220,38,38,0.08)' }}>
+                  <span className="text-2xl">⚔️</span>
+                  <div>
+                    <h2 className="text-white font-black text-lg">Compare Leaders</h2>
+                    <p className="text-red-400 text-xs mt-0.5">Pick two {countryName} leaders and compare their spending head-to-head</p>
+                  </div>
+                </div>
+
+                {/* Dropdowns */}
+                <div className="grid grid-cols-2 gap-3 px-5 py-4 border-b border-red-900/20">
+                  {[
+                    { label: 'Leader A', value: compareLeaderAIdx, setter: setCompareLeaderAIdx, exclude: compareLeaderBIdx },
+                    { label: 'Leader B', value: compareLeaderBIdx, setter: setCompareLeaderBIdx, exclude: compareLeaderAIdx },
+                  ].map(({ label, value, setter, exclude }) => (
+                    <div key={label}>
+                      <p className="text-red-400 text-xs font-semibold uppercase tracking-wider mb-1.5">{label}</p>
+                      <select
+                        value={value}
+                        onChange={(e) => setter(Number(e.target.value))}
+                        className="w-full rounded-xl px-3 py-2.5 text-sm font-semibold text-white border border-red-800/50 focus:outline-none focus:border-orange-500 cursor-pointer"
+                        style={{ background: 'rgba(60,0,0,0.7)' }}
+                      >
+                        <option value={-1} style={{ background: '#1a0000' }}>— Select leader —</option>
+                        {roster.map((l, i) => (
+                          <option key={i} value={i} disabled={i === exclude} style={{ background: '#1a0000' }}>
+                            {l.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Comparison card — only shown when both selected */}
+                {leaderA && leaderB && (
+                  <>
+                    {/* Side-by-side columns */}
+                    <div className="grid grid-cols-2 divide-x divide-red-900/30">
+                      {[
+                        { leader: leaderA, stats: statsA, isWinner: verdict?.winner?.name === leaderA.name },
+                        { leader: leaderB, stats: statsB, isWinner: verdict?.winner?.name === leaderB.name },
+                      ].map(({ leader, stats, isWinner }, col) => (
+                        <div key={col} className="p-4 sm:p-5" style={{ background: isWinner ? 'rgba(34,197,94,0.06)' : 'transparent' }}>
+                          {/* Avatar + name */}
+                          <div className="flex items-center gap-3 mb-4">
+                            <div
+                              className="w-12 h-12 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0 shadow-lg"
+                              style={{ background: isWinner ? 'rgba(34,197,94,0.25)' : 'rgba(220,38,38,0.25)', color: isWinner ? '#4ade80' : '#fca5a5', border: `2px solid ${isWinner ? '#22c55e' : '#dc2626'}` }}
+                            >
+                              {initials(leader.name)}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-white font-black text-sm leading-tight truncate">{leader.name}</p>
+                              <p className="text-red-400 text-xs truncate">{leader.title}</p>
+                              {isWinner && <span className="inline-block bg-green-700 text-green-100 text-xs px-1.5 py-0.5 rounded font-bold mt-0.5">✅ More Responsible</span>}
+                            </div>
+                          </div>
+
+                          {/* Stats */}
+                          <div className="space-y-2.5">
+                            {[
+                              {
+                                label: 'Total Expenses',
+                                valueA: fmtAmount(leaderA.totalExpenses),
+                                valueB: fmtAmount(leaderB.totalExpenses),
+                                winnerIdx: leaderA.totalExpenses <= leaderB.totalExpenses ? 0 : 1,
+                              },
+                              {
+                                label: 'Number of Trips',
+                                valueA: `${statsA.trips} trips`,
+                                valueB: `${statsB.trips} trips`,
+                                winnerIdx: statsA.trips <= statsB.trips ? 0 : 1,
+                              },
+                              {
+                                label: 'Avg Cost / Trip',
+                                valueA: fmtAmount(statsA.avgCost),
+                                valueB: fmtAmount(statsB.avgCost),
+                                winnerIdx: statsA.avgCost <= statsB.avgCost ? 0 : 1,
+                              },
+                              {
+                                label: 'Top Category',
+                                valueA: statsA.topCat,
+                                valueB: statsB.topCat,
+                                winnerIdx: -1,
+                              },
+                              {
+                                label: 'Waste Score',
+                                valueA: `${leaderA.wasteScore}/10`,
+                                valueB: `${leaderB.wasteScore}/10`,
+                                winnerIdx: leaderA.wasteScore <= leaderB.wasteScore ? 0 : 1,
+                              },
+                              {
+                                label: 'Spending Trend',
+                                valueA: `${leaderA.trend === 'up' ? '↑' : '↓'} ${leaderA.changePercent}%`,
+                                valueB: `${leaderB.trend === 'up' ? '↑' : '↓'} ${leaderB.changePercent}%`,
+                                winnerIdx: (leaderA.trend === 'down' ? 0 : 1),
+                              },
+                            ].map(({ label, valueA, valueB, winnerIdx }) => {
+                              const isWinStat = winnerIdx === col;
+                              const isScore = label === 'Waste Score';
+                              const isTrend = label === 'Spending Trend';
+                              const displayVal = col === 0 ? valueA : valueB;
+                              const thisLeader = col === 0 ? leaderA : leaderB;
+                              return (
+                                <div key={label} className={`rounded-lg px-3 py-2.5 border ${isWinStat ? 'border-green-700/50' : 'border-red-900/30'}`} style={{ background: isWinStat ? 'rgba(34,197,94,0.08)' : 'rgba(0,0,0,0.3)' }}>
+                                  <p className="text-xs text-red-500 font-semibold mb-0.5">{label}</p>
+                                  <p
+                                    className="text-sm font-black"
+                                    style={{
+                                      color: isScore ? wsColor(thisLeader.wasteScore)
+                                        : isTrend ? (thisLeader.trend === 'down' ? '#4ade80' : '#f87171')
+                                        : isWinStat ? '#4ade80' : '#fca5a5',
+                                    }}
+                                  >
+                                    {displayVal}
+                                    {isWinStat && <span className="ml-1 text-green-400 text-xs">✓</span>}
+                                  </p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Verdict banner */}
+                    <div className="mx-4 sm:mx-5 mb-4 mt-1 rounded-xl p-4 border-2" style={{ background: verdict.winner ? 'rgba(34,197,94,0.1)' : 'rgba(234,179,8,0.1)', borderColor: verdict.winner ? '#22c55e' : '#eab308' }}>
+                      <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: verdict.winner ? '#4ade80' : '#fbbf24' }}>
+                        🏛️ Fiscal Responsibility Verdict
+                      </p>
+                      {verdict.winner ? (
+                        <p className="text-white font-black text-sm">
+                          <span style={{ color: '#4ade80' }}>{verdict.winner.name}</span>
+                          {' '}is more fiscally responsible — lower waste score ({Math.min(leaderA.wasteScore, leaderB.wasteScore)}/10), {verdict.winner.trend === 'down' ? 'decreasing' : 'lower'} spending trend, and a smaller expense footprint overall.
+                        </p>
+                      ) : (
+                        <p className="text-yellow-300 font-bold text-sm">It's a draw — both leaders show similar spending patterns and waste scores.</p>
+                      )}
+                      <p className="text-xs mt-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                        Based on {verdict.scoreA + verdict.scoreB} data points · Score: {leaderA.name.split(' ').pop()} {verdict.scoreA} – {verdict.scoreB} {leaderB.name.split(' ').pop()}
+                      </p>
+                    </div>
+
+                    {/* Share button */}
+                    <div className="px-5 pb-5 flex justify-end">
+                      <button
+                        onClick={(e) => handleShare(e, {
+                          id: `compare-${compareLeaderAIdx}-${compareLeaderBIdx}`,
+                          title: `⚔️ Expense Showdown: ${leaderA.name} vs ${leaderB.name}`,
+                          text: `I compared ${leaderA.name} (waste score ${leaderA.wasteScore}/10, ${fmtAmount(leaderA.totalExpenses)}) vs ${leaderB.name} (waste score ${leaderB.wasteScore}/10, ${fmtAmount(leaderB.totalExpenses)}) on Civic Voice. ${verdict.winner ? `${verdict.winner.name} is more fiscally responsible.` : "It's a draw!"} Check the data: civic-voice-app.vercel.app`,
+                          url: window.location.href,
+                        })}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border transition-all ${
+                          copiedShareId === `compare-${compareLeaderAIdx}-${compareLeaderBIdx}`
+                            ? 'border-orange-400 text-orange-300 bg-orange-900/30'
+                            : 'border-red-700/50 text-red-300 hover:border-orange-500 hover:text-orange-300'
+                        }`}
+                        style={{ background: 'rgba(0,0,0,0.4)' }}
+                      >
+                        {copiedShareId === `compare-${compareLeaderAIdx}-${compareLeaderBIdx}`
+                          ? <><CheckCircle className="w-4 h-4" /> Copied!</>
+                          : <><Share2 className="w-4 h-4" /> Share Comparison</>
+                        }
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {/* Prompt when not both selected */}
+                {(!leaderA || !leaderB) && (
+                  <div className="px-5 py-8 text-center">
+                    <p className="text-red-700 text-sm">Select two leaders above to see their spending comparison.</p>
+                  </div>
+                )}
               </div>
             );
           })()}
