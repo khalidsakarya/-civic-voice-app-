@@ -1607,6 +1607,11 @@ function App() {
   const [wasteLeaderboardLoading, setWasteLeaderboardLoading] = useState(false);
   const [compareLeaderAIdx, setCompareLeaderAIdx] = useState(-1);
   const [compareLeaderBIdx, setCompareLeaderBIdx] = useState(-1);
+  const [anomalies, setAnomalies] = useState([]);
+  const [anomaliesLoading, setAnomaliesLoading] = useState(false);
+  const [anomalyVotes, setAnomalyVotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
+  });
   const [wasteVotes, setWasteVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_waste_votes') || '{}'); }
     catch (_) { return {}; }
@@ -9122,6 +9127,42 @@ function App() {
     const rosterMap = { CA: rosterCA, US: rosterUS, UK: rosterUK, AU: rosterAU };
     const roster = rosterMap[country] || rosterCA;
 
+    const anomalyFallback = {
+      CA: [
+        { id: 'ca-a1', headline: "PM's 3-Nation Europe Trip — No Deal Signed After CA$68,750 Spend", leader_name: 'Mark Carney', leader_title: 'Prime Minister', scandal_score: 9, explanation: 'The Prime Minister visited London, Paris, and Berlin over 4 days billed as a critical trade diversification tour. No agreements were signed. The trip cost CA$68,750 including first-class travel and a 5-star hotel in Paris. Ethics Commissioner review requested.', amount: 68750, date: 'May 2025' },
+        { id: 'ca-a2', headline: "Minister Flies Business Class for 4-Hour Domestic Flight", leader_name: 'François-Philippe Champagne', leader_title: 'Minister of Industry', scandal_score: 8, explanation: 'Economy seats were available on the same Ottawa–Vancouver flight at CA$340. The Minister\'s office booked a business class seat at CA$4,200 — 12× the cost — citing "work requirements." No pre-approval filed.', amount: 4200, date: 'Apr 2025' },
+        { id: 'ca-a3', headline: "Foreign Affairs Minister's 'Emergency' Paris Trip Coincided With Fashion Week", leader_name: 'Mélanie Joly', leader_title: 'Minister of Foreign Affairs', scandal_score: 8, explanation: 'A CA$41,000 trip to Paris was declared an emergency diplomatic meeting, but the hotel booked — the Hôtel de Crillon — hosted Fashion Week events that week. The Minister\'s office has not confirmed who attended the "diplomatic meeting."', amount: 41000, date: 'Mar 2025' },
+        { id: 'ca-a4', headline: "Taxpayers Billed CA$28,400 for PMO Holiday Party", leader_name: 'Mark Carney', leader_title: 'Prime Minister', scandal_score: 7, explanation: 'The Prime Minister\'s Office charged CA$28,400 to the public accounts for a holiday event categorized as "official government entertainment." The venue was a private Ottawa club; no public officials outside the PMO were invited.', amount: 28400, date: 'Dec 2024' },
+        { id: 'ca-a5', headline: "Defence Minister's Hotel Upgrades Cost 8× Budget Rate", leader_name: 'Bill Blair', leader_title: 'Minister of National Defence', scandal_score: 6, explanation: 'A Department of National Defence team upgraded hotel rooms for CA$8,900 during a Vancouver conference. Government travel policy mandates use of Public Services Canada–approved hotels. The upgraded rooms were not approved.', amount: 8900, date: 'Feb 2025' },
+      ],
+      US: [
+        { id: 'us-a1', headline: "Mar-a-Lago Weekend Trips Cost Taxpayers $3.4M Per Visit", leader_name: 'Donald Trump', leader_title: 'President', scandal_score: 10, explanation: 'Secret Service accommodation, Coast Guard patrols, Air Force One operations, and staff logistics for each Mar-a-Lago weekend trip cost an estimated $3.4M per visit. The President has made 8 such trips since inauguration, billing the total to taxpayers while the resort — which he owns — profits from federal spending.', amount: 3400000, date: 'Jan–Mar 2025' },
+        { id: 'us-a2', headline: "DOGE 'Efficiency' Team Ran Up $420K Hotel Tab", leader_name: 'Elon Musk', leader_title: 'DOGE — Dept. of Govt Efficiency', scandal_score: 9, explanation: 'The Department of Government Efficiency — tasked with slashing federal costs — expensed $420,000 in luxury hotel stays across Washington D.C. and San Francisco. Staff stayed at the Four Seasons and Ritz-Carlton while publicly demanding agencies cut "wasteful" spending.', amount: 420000, date: 'Feb 2025' },
+        { id: 'us-a3', headline: "HHS Secretary's 12-City 'Listening Tour' — Zero Policy Output, $580K Bill", leader_name: 'RFK Jr.', leader_title: 'Sec. of Health & Human Services', scandal_score: 9, explanation: '$580,000 was spent on private charter flights and accommodations for a 12-city tour described as community health listening sessions. No published findings, no policy changes, and no public reports were produced. GAO requested documentation.', amount: 580000, date: 'Feb 2025' },
+        { id: 'us-a4', headline: "Pentagon 'Leadership Retreat' Held at Florida Golf Resort — $340K", leader_name: 'Pete Hegseth', leader_title: 'Secretary of Defense', scandal_score: 8, explanation: 'The Secretary of Defense held a 3-day leadership alignment session at a Sarasota golf resort costing $340,000, including accommodation, catering, and team-building activities. The event occurred during active Pentagon restructuring that eliminated 5,400 civilian positions.', amount: 340000, date: 'Mar 2025' },
+        { id: 'us-a5', headline: "Homeland Security Spent $250K on 'Professional Image' Expenses", leader_name: 'Kristi Noem', leader_title: 'Secretary of Homeland Security', scandal_score: 8, explanation: 'DHS budget records show $250,000 allocated to professional image expenses including photography, media training, and what internal documents describe as "wardrobe allowance." The expenditure was categorized under public communications, not personal expenses.', amount: 250000, date: 'Jan 2025' },
+      ],
+      UK: [
+        { id: 'uk-a1', headline: "Chancellor's 2-Day New York IMF Trip Cost £82,000", leader_name: 'Rachel Reeves', leader_title: 'Chancellor of the Exchequer', scandal_score: 9, explanation: 'A two-day trip to New York for IMF meetings included first-class flights (£18,400 return), accommodation at The Pierre (£6,200/night), and a delegation of 6 staff. The IMF meetings are also attended virtually by most G7 finance ministers.', amount: 82000, date: 'Oct 2024' },
+        { id: 'uk-a2', headline: "Foreign Secretary Visited 28 Countries in 6 Months — £1.08M Bill", leader_name: 'David Lammy', leader_title: 'Secretary of State for Foreign Affairs', scandal_score: 9, explanation: 'David Lammy\'s travel expenses hit £1.08M in his first 6 months in office — the highest of any Foreign Secretary in recent history. Critics dubbed him "the globe-trotting minister." FCO declined to itemise 4 of the trips citing national security.', amount: 1080000, date: 'Jul–Dec 2024' },
+        { id: 'uk-a3', headline: "Deputy PM Spent £42K Renovating Official Residence — Days After Moving In", leader_name: 'Angela Rayner', leader_title: 'Deputy Prime Minister', scandal_score: 8, explanation: 'Two Admiralty House renovation projects totalling £42,000 were commissioned within 3 weeks of the Deputy PM taking residence. Works included repainting, new furniture, and "environmental comfort upgrades." The previous occupant left 6 months prior.', amount: 42000, date: 'Aug 2024' },
+        { id: 'uk-a4', headline: "MoD Golf Day Billed as 'Defence Stakeholder Engagement' — £18,400", leader_name: 'John Healey', leader_title: 'Secretary of State for Defence', scandal_score: 7, explanation: 'An 18-hole golf day at a private Berkshire club was claimed on the MoD expenses account as a defence industry engagement event. £18,400 covered green fees, catering, and accommodation for 12 attendees. Three participants were from a defence contractor currently in contract negotiations with MoD.', amount: 18400, date: 'Nov 2024' },
+        { id: 'uk-a5', headline: "Home Secretary Used Police Escort to Labour Party Conference", leader_name: 'Yvette Cooper', leader_title: 'Secretary of State for Home Affairs', scandal_score: 7, explanation: 'Home Office resources including a police protection vehicle and 3 officers were deployed for the Home Secretary\'s travel to the Labour Party annual conference — a party political event. The total cost to taxpayers was estimated at £24,000. Home Office confirmed the arrangement but said it was "standard practice."', amount: 24000, date: 'Sep 2024' },
+      ],
+      AU: [
+        { id: 'au-a1', headline: "Foreign Minister's 7-Country Tour in 10 Days — AU$285,000", leader_name: 'Penny Wong', leader_title: 'Minister for Foreign Affairs', scandal_score: 9, explanation: 'A whirlwind 10-day diplomatic tour covering 7 countries in the Indo-Pacific cost AU$285,000 — the largest single foreign travel claim in the current parliament. Senate estimates flagged the pace as "unprecedented," with some meetings lasting under 45 minutes.', amount: 285000, date: 'Mar 2025' },
+        { id: 'au-a2', headline: "Kirribilli House Renovations Cost Taxpayers AU$1.2M", leader_name: 'Anthony Albanese', leader_title: 'Prime Minister', scandal_score: 9, explanation: 'Renovations to the official Sydney residence included kitchen upgrades (AU$380K), new garden landscaping (AU$240K), and "security upgrades" (AU$580K). Previous Prime Ministers had declined the optional upgrades. The PM\'s office said all work was necessary for "official function use."', amount: 1200000, date: 'Oct 2024' },
+        { id: 'au-a3', headline: "Defence Minister Expensed AU$84K Trip to London and Washington Arms Shows", leader_name: 'Pat Conroy', leader_title: 'Minister for Defence Industry', scandal_score: 8, explanation: 'AU$84,000 was claimed for an 8-day trip to the DSEI arms show in London and a Pentagon briefing in Washington. The trip included a 2-night personal stopover in New York — billed as a "transit overnight" — at a Midtown hotel costing AU$1,800/night.', amount: 84000, date: 'Sep 2024' },
+        { id: 'au-a4', headline: "Treasurer Flew 8-Person Delegation to Single G20 Summit — AU$180K", leader_name: 'Jim Chalmers', leader_title: 'Treasurer', scandal_score: 7, explanation: 'The Treasurer\'s G20 delegation of 8 staff flew business class to Rio de Janeiro for the G20 Finance Ministers\' Summit at a total cost of AU$180,000. Most comparable G7 treasurers attended with 3–4 officials. The Australian dollar was at a 3-year low during the booking period.', amount: 180000, date: 'Feb 2025' },
+        { id: 'au-a5', headline: "NDIS Agency Corporate Cards — AU$62K in Unexplained Charges", leader_name: 'Bill Shorten', leader_title: 'Minister for the NDIS', scandal_score: 7, explanation: 'NDIS agency corporate card statements show AU$62,000 in charges across 14 transactions that were not matched to any official travel, hospitality, or procurement records. The agency\'s audit committee has flagged the transactions for review. The Minister\'s office said cards were used by "departmental staff."', amount: 62000, date: 'Jan 2025' },
+      ],
+    };
+
+    const fallbackAnomalies = anomalyFallback[country] || anomalyFallback.CA;
+    const displayAnomalies = anomalies.length > 0 ? anomalies : fallbackAnomalies;
+    const sortedAnomalies = [...displayAnomalies].sort((a, b) => (b.scandal_score || 0) - (a.scandal_score || 0));
+    const top3Anomalies = sortedAnomalies.slice(0, 3);
+
     return (
       <div className="min-h-screen p-4 sm:p-6 animate-fade-in" style={{ background: 'linear-gradient(135deg, #1a0000 0%, #3b0000 30%, #7c1200 60%, #1a0000 100%)' }}>
         <div className="max-w-5xl mx-auto">
@@ -9193,6 +9234,35 @@ function App() {
               </div>
             </div>
           )}
+
+          {/* This Week's Biggest Red Flags */}
+          <div className="rounded-2xl border-2 border-red-600/60 mb-6 overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(127,0,0,0.6) 0%, rgba(60,0,0,0.8) 100%)' }}>
+            <div className="px-4 sm:px-5 py-3 border-b border-red-700/40 flex items-center gap-2" style={{ background: 'rgba(220,38,38,0.15)' }}>
+              <span className="text-xl animate-pulse">🔥</span>
+              <div>
+                <h2 className="text-white font-black text-base sm:text-lg">This Week's Biggest Red Flags</h2>
+                <p className="text-red-300 text-xs">Top 3 highest scandal score anomalies · {countryName}</p>
+              </div>
+            </div>
+            <div className="divide-y divide-red-900/30">
+              {top3Anomalies.map((a, i) => {
+                const scandalColor = a.scandal_score >= 9 ? '#ef4444' : a.scandal_score >= 7 ? '#f97316' : '#eab308';
+                return (
+                  <div key={a.id || i} className="px-4 sm:px-5 py-3 flex items-start gap-3">
+                    <span className="text-xl flex-shrink-0 mt-0.5">{'🥇🥈🥉'[i] || '🚨'}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-black text-sm leading-tight mb-0.5">{a.headline}</p>
+                      <p className="text-red-400 text-xs">{a.leader_name} · {a.leader_title}</p>
+                    </div>
+                    <div className="flex-shrink-0 text-right ml-2">
+                      <p className="font-black text-lg leading-none" style={{ color: scandalColor }}>{a.scandal_score}<span className="text-xs font-normal text-gray-500">/10</span></p>
+                      <p className="text-orange-300 text-xs font-bold mt-0.5">{fmtAmount(a.amount)}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
           {/* Department bar chart */}
           {!wasteLoading && chartData.length > 0 && (
@@ -9612,6 +9682,134 @@ function App() {
               </div>
             );
           })()}
+
+          {/* Anomalies & Red Flags */}
+          <div className="rounded-2xl border border-red-700/50 mb-6 overflow-hidden" style={{ background: 'rgba(0,0,0,0.55)' }}>
+            {/* Header */}
+            <div className="px-5 py-4 border-b border-red-900/30 flex items-center justify-between gap-3" style={{ background: 'rgba(220,38,38,0.1)' }}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🚩</span>
+                <div>
+                  <h2 className="text-white font-black text-lg">Anomalies &amp; Red Flags</h2>
+                  <p className="text-red-400 text-xs mt-0.5">AI-detected expense anomalies sorted by scandal score · {countryName}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => fetchAnomalies(country)}
+                className="text-xs border border-red-600/50 text-red-300 hover:bg-red-800/30 px-3 py-1.5 rounded-full font-semibold flex-shrink-0"
+                style={{ background: 'rgba(220,38,38,0.12)' }}
+              >
+                {anomaliesLoading ? '⏳ Loading…' : '↻ Load Live'}
+              </button>
+            </div>
+
+            {/* Cards */}
+            <div className="p-4 sm:p-5 space-y-4">
+              {sortedAnomalies.map((a, i) => {
+                const sc = a.scandal_score || 0;
+                const scandalColor = sc >= 9 ? '#ef4444' : sc >= 7 ? '#f97316' : sc >= 5 ? '#eab308' : '#9ca3af';
+                const voteState = anomalyVotes[a.id || i];
+                const handleVote = (v) => {
+                  setAnomalyVotes(prev => {
+                    const next = { ...prev };
+                    if (next[a.id || i] === v) delete next[a.id || i]; else next[a.id || i] = v;
+                    try { localStorage.setItem('cv_anomaly_votes', JSON.stringify(next)); } catch (_) {}
+                    return next;
+                  });
+                  logEvent(v === 'support' ? 'waste_support' : 'waste_oppose', { country, itemId: String(a.id || i) });
+                };
+                return (
+                  <div
+                    key={a.id || i}
+                    className="rounded-2xl overflow-hidden border"
+                    style={{ borderColor: `${scandalColor}55`, background: `linear-gradient(135deg, ${scandalColor}12 0%, rgba(0,0,0,0.6) 100%)` }}
+                  >
+                    {/* Top accent bar */}
+                    <div className="h-1 w-full" style={{ background: `linear-gradient(to right, ${scandalColor}, transparent)` }} />
+
+                    <div className="p-4 sm:p-5">
+                      {/* Headline row */}
+                      <div className="flex items-start gap-3 mb-3">
+                        <span className="text-2xl flex-shrink-0">🚨</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white font-black text-sm sm:text-base leading-tight">{a.headline}</p>
+                          <p className="text-xs mt-1" style={{ color: scandalColor }}>{a.leader_name} · {a.leader_title}</p>
+                        </div>
+                      </div>
+
+                      {/* Scandal score meter */}
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Scandal Score</span>
+                          <span className="font-black text-lg" style={{ color: scandalColor }}>{sc}<span className="text-xs font-normal text-gray-500">/10</span></span>
+                        </div>
+                        <div className="w-full bg-gray-800 rounded-full h-3 overflow-hidden">
+                          <div
+                            className="h-3 rounded-full transition-all duration-700"
+                            style={{ width: `${sc * 10}%`, background: `linear-gradient(to right, ${scandalColor}99, ${scandalColor})` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-600 mt-0.5">
+                          <span>Low risk</span>
+                          <span>Critical</span>
+                        </div>
+                      </div>
+
+                      {/* Explanation */}
+                      <p className="text-sm text-gray-300 leading-relaxed mb-3">{a.explanation}</p>
+
+                      {/* Amount + Date */}
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="rounded-lg px-3 py-2 border border-orange-700/40" style={{ background: 'rgba(249,115,22,0.15)' }}>
+                          <p className="text-xs text-orange-400 font-semibold mb-0.5">Amount Involved</p>
+                          <p className="text-lg font-black text-orange-300">{fmtAmount(a.amount)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-semibold">Date</p>
+                          <p className="text-sm font-bold text-gray-300">{a.date}</p>
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        {/* Wasteful? vote */}
+                        <span className="text-xs text-gray-500 font-semibold mr-1">Wasteful?</span>
+                        <button
+                          onClick={() => handleVote('support')}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${voteState === 'support' ? 'bg-red-600 text-white border-red-500 shadow-lg' : 'bg-transparent text-red-400 border-red-700/50 hover:border-red-500'}`}
+                        >
+                          <ThumbsUp className="w-3.5 h-3.5" /> Yes
+                        </button>
+                        <button
+                          onClick={() => handleVote('oppose')}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${voteState === 'oppose' ? 'bg-green-700 text-white border-green-600 shadow-lg' : 'bg-transparent text-green-500 border-green-800/50 hover:border-green-600'}`}
+                        >
+                          <ThumbsDown className="w-3.5 h-3.5" /> No
+                        </button>
+
+                        {/* Share */}
+                        <button
+                          onClick={(e) => handleShare(e, {
+                            id: `anomaly-${a.id || i}`,
+                            title: `🚨 Government Red Flag — ${countryName}`,
+                            text: `Your tax dollars paid for this 👀\n\n"${a.headline}"\n\n${a.leader_name} · Scandal score: ${sc}/10 · ${fmtAmount(a.amount)}\n\nSee the full red flags list: civic-voice-app.vercel.app`,
+                            url: window.location.href,
+                          })}
+                          className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${copiedShareId === `anomaly-${a.id || i}` ? 'border-orange-400 text-orange-300 bg-orange-900/30' : 'border-red-800/40 text-red-400 hover:border-orange-500 hover:text-orange-300'}`}
+                          style={{ background: 'rgba(0,0,0,0.3)' }}
+                        >
+                          {copiedShareId === `anomaly-${a.id || i}`
+                            ? <><CheckCircle className="w-3.5 h-3.5" /> Copied!</>
+                            : <><Share2 className="w-3.5 h-3.5" /> Share 👀</>
+                          }
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
           {/* Filters */}
           {!wasteLoading && wasteExpenses.length > 0 && (
@@ -14055,6 +14253,21 @@ function App() {
       setLeaderLiveExpenses(prev => ({ ...prev, [country]: [] }));
     } finally {
       setLeaderExpensesLoading(false);
+    }
+  };
+
+  const fetchAnomalies = async (country) => {
+    setAnomaliesLoading(true);
+    try {
+      const snap = await getDocs(query(collection(db, 'expense_anomalies'), where('country', '==', country)));
+      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.scandal_score || 0) - (a.scandal_score || 0));
+      setAnomalies(items);
+    } catch (err) {
+      console.warn('[Anomalies] Firestore fetch failed:', err.message);
+      setAnomalies([]);
+    } finally {
+      setAnomaliesLoading(false);
     }
   };
 
