@@ -46,6 +46,7 @@ import { runForeignAidFetcher } from '../ingestion/foreignAidFetcher.js';
 import { runMilitarySpendingFetcher } from '../ingestion/militarySpendingFetcher.js';
 import { runCreditCardFetcher } from '../ingestion/creditCardFetcher.js';
 import { runTransparencyScorer } from '../scoring/transparencyScorer.js';
+import { runControversyFetcher } from '../ingestion/controversyFetcher.js';
 
 // ─── Tier definitions ─────────────────────────────────────────────────────────
 
@@ -186,6 +187,15 @@ const JOBS = [
       return runCreditCardFetcher(['CA', 'US', 'UK', 'AU']);
     },
   },
+  {
+    id: 'controversy_all',
+    tier: TIERS.WEEKLY,
+    label: 'Controversy Tracker — All Countries',
+    handler: async () => {
+      console.log('[scheduler] Running controversy fetcher (CA, US, UK, AU)');
+      return runControversyFetcher(['CA', 'US', 'UK', 'AU']);
+    },
+  },
 
   // ── DAILY jobs ─────────────────────────────────────────────────────────────
 
@@ -244,6 +254,15 @@ const JOBS = [
     handler: async () => {
       console.log('[scheduler] Running transparency scorer (CA, US, UK, AU)');
       return runTransparencyScorer(['CA', 'US', 'UK', 'AU']);
+    },
+  },
+  {
+    id: 'controversy_full_refresh',
+    tier: TIERS.MONTHLY,
+    label: 'Controversy Full Refresh — All Countries',
+    handler: async () => {
+      console.log('[scheduler] Running monthly controversy full refresh');
+      return runControversyFetcher(['CA', 'US', 'UK', 'AU']);
     },
   },
 ];
