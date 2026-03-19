@@ -1623,6 +1623,9 @@ function App() {
   });
   const [transparencyScores, setTransparencyScores] = useState({});
   const [transparencyLoading, setTransparencyLoading] = useState(false);
+  const [controversiesData, setControversiesData] = useState({});
+  const [controversiesLoading, setControversiesLoading] = useState({});
+  const [controversiesCatFilter, setControversiesCatFilter] = useState({});
   const [foreignAidData, setForeignAidData] = useState([]);
   const [foreignAidLoading, setForeignAidLoading] = useState(false);
   const [foreignAidReactions, setForeignAidReactions] = useState(() => {
@@ -14093,6 +14096,196 @@ function App() {
     );
   };
 
+  const renderControversiesSection = (leaderName, toggleFn, expandedSections, accentColor) => {
+    const FALLBACK = {
+      'Mark Carney': [
+        { id: 'ca-c1', headline: 'Brookfield Asset Management Conflict of Interest', date: '2025-03-18', category: 'Financial Conflict', severity: 'Critical', source: 'Globe and Mail', summary: 'Carney served as Chair of Brookfield Asset Management until entering politics. He retains significant equity holdings (reported $1M–$5M) while Brookfield lobbies the federal government on clean energy policy — areas Carney now directly oversees. Ethics Commissioner review was requested by three opposition MPs.', controversy_score: 9.1 },
+        { id: 'ca-c2', headline: 'Europe Trade Tour — $68,750 Spent, Zero Deals Signed', date: '2025-05-12', category: 'Expense Abuse', severity: 'High', source: 'CBC News', summary: 'The PM\'s 4-day Europe tour billed as a critical trade diversification mission cost $68,750 in first-class travel and 5-star hotel stays. No agreements were signed and no press conference confirming outcomes was held. Opposition called it a "glorified holiday on the public dime."', controversy_score: 7.8 },
+        { id: 'ca-c3', headline: 'PMO Holiday Party Charged to Public Accounts', date: '2024-12-18', category: 'Expense Abuse', severity: 'Medium', source: 'Blacklock\'s Reporter', summary: '$28,400 billed to public accounts for a PMO holiday event at a private Ottawa club with no public officials invited outside the PMO itself. Treasury Board rules require hospitality events to have a documented public purpose.', controversy_score: 7.1 },
+        { id: 'ca-c4', headline: 'Rideau Cottage Vehicle Claim — Personal Trip Expensed as Official', date: '2025-02-10', category: 'Expense Abuse', severity: 'Medium', source: 'National Post', summary: 'A $3,200 vehicle expense for transport from Rideau Cottage was claimed as an official government expense. Internal records indicate the trip was to a personal engagement. PMO said the matter is "under review."', controversy_score: 6.2 },
+        { id: 'ca-c5', headline: 'Clean Energy Fund Delays Leave Indigenous Communities Without Power', date: '2025-04-22', category: 'Policy Failure', severity: 'High', source: 'APTN News', summary: 'The $3.2B First Nations Infrastructure Fund announced in March 2025 has seen zero disbursements six weeks post-announcement. Community leaders in Manitoba and Ontario say they were told to "wait for the portal." Three communities remain without reliable electricity.', controversy_score: 7.5 },
+      ],
+      'Donald Trump': [
+        { id: 'us-c1', headline: 'Jan 6 Pardons — 1,500 Rioters Released Including Convicted Assailants', date: '2025-01-20', category: 'Legal', severity: 'Critical', source: 'Washington Post', summary: 'On his first day back in office, Trump pardoned all Jan 6 Capitol rioters — including those convicted of assaulting police officers. Federal judges and the DOJ\'s own prosecutors called the pardons "an affront to the rule of law." Families of injured officers condemned the decision.', controversy_score: 9.8 },
+        { id: 'us-c2', headline: 'Ukraine Aid Freeze — Withholding Congressionally Approved Funds', date: '2025-02-28', category: 'Foreign Policy', severity: 'Critical', source: 'New York Times', summary: 'The Trump administration froze $4B in congressionally approved military aid to Ukraine without informing lawmakers. The GAO found the freeze likely violated the Impoundment Control Act. Senate Armed Services Committee subpoenaed OMB for justification documents.', controversy_score: 9.2 },
+        { id: 'us-c3', headline: 'DOGE Mass Firings — 200,000 Federal Workers Dismissed Without Congressional Approval', date: '2025-02-14', category: 'Governance', severity: 'Critical', source: 'Reuters', summary: 'DOGE directed mass terminations of federal employees across at least 12 agencies without Congressional authorisation. Courts issued emergency injunctions in three states. OPM acknowledged it did not follow standard RIF (reduction in force) procedures.', controversy_score: 9.0 },
+        { id: 'us-c4', headline: 'Mar-a-Lago Official Business — $3.4M Per Trip to Owner\'s Resort', date: '2025-03-08', category: 'Financial Conflict', severity: 'Critical', source: 'ProPublica', summary: 'Each Mar-a-Lago presidential weekend costs taxpayers an estimated $3.4M while generating revenue for Trump\'s own resort through room bookings, membership fees, and F&B spent by the Secret Service and staff. At 8+ trips since inauguration, total costs exceed $27M.', controversy_score: 9.5 },
+        { id: 'us-c5', headline: 'Tariff War Triggers 15% Spike in Consumer Prices — No Relief Plan', date: '2025-03-15', category: 'Economic', severity: 'High', source: 'Bloomberg', summary: 'Universal 25% tariffs on Canadian and Mexican imports, plus elevated China tariffs, have driven consumer goods prices up 15% in key categories. The Fed revised growth forecasts downward. No administration plan to offset household cost increases has been announced.', controversy_score: 8.2 },
+      ],
+      'Keir Starmer': [
+        { id: 'uk-c1', headline: 'Gifts & Freebies Scandal — £100,000 in Undisclosed Benefits', date: '2024-09-22', category: 'Expense Abuse', severity: 'Critical', source: 'The Times', summary: 'Starmer accepted over £100,000 in gifts including £20,000 in clothing from a Labour donor and Taylor Swift and Oasis concert tickets. The gifts were legally declared but the scale prompted an emergency code of conduct review. Multiple Cabinet ministers were also implicated.', controversy_score: 9.2 },
+        { id: 'uk-c2', headline: 'Winter Fuel Payment Cut — 10 Million Pensioners Lose Benefit', date: '2024-10-30', category: 'Policy Failure', severity: 'Critical', source: 'BBC News', summary: 'Starmer\'s government scrapped universal winter fuel payments, removing £300/year from 10 million pensioners. The cut was announced with 6 weeks\' notice. Charities warned of preventable deaths in cold weather. Labour MPs called for a review, with 7 voting against the government.', controversy_score: 9.0 },
+        { id: 'uk-c3', headline: 'Grooming Gangs National Inquiry Refused — Then Reversed', date: '2025-01-14', category: 'Governance', severity: 'High', source: 'Guardian', summary: 'Starmer initially refused calls for a new national inquiry into grooming gangs, citing existing reviews. After sustained political pressure including from Elon Musk on social media, the government launched a new inquiry — raising questions about whether the original refusal was principled or political.', controversy_score: 8.1 },
+        { id: 'uk-c4', headline: 'Two-Child Benefit Cap Maintained Despite Manifesto Implication', date: '2024-12-05', category: 'Policy Flip', severity: 'High', source: 'Independent', summary: 'Labour campaigned on lifting child poverty. Critics point to the two-child benefit cap as contradicting that commitment. Starmer maintained the cap despite 120+ Labour MPs signing a letter calling for its removal. The decision was described by child poverty charities as "a broken promise."', controversy_score: 7.8 },
+        { id: 'uk-c5', headline: 'Rwanda Deportation U-Turn — £700M Deal Abandoned', date: '2024-07-22', category: 'Policy Flip', severity: 'Medium', source: 'Telegraph', summary: 'Labour cancelled the Rwanda deportation scheme on day one of government, writing off the £700M already paid to Rwanda and leaving no replacement deterrent policy in place. Small boat crossings reached record highs in the months following. Starmer had previously said he "understood" the Rwanda rationale.', controversy_score: 7.2 },
+      ],
+      'Anthony Albanese': [
+        { id: 'au-c1', headline: 'Kirribilli House Renovations — AU$1.2M on Official Residence', date: '2024-10-18', category: 'Expense Abuse', severity: 'Critical', source: 'Australian Financial Review', summary: 'AU$1.2M in renovations to the PM\'s Sydney official residence included AU$380K kitchen upgrades and AU$240K garden landscaping. The work was commissioned within months of Albanese choosing to live there — previous PMs had declined. Senate estimates questioned whether the works were necessary for official functions.', controversy_score: 8.8 },
+        { id: 'au-c2', headline: 'Voice to Parliament Referendum Defeat — Campaign Strategy Criticised', date: '2023-10-14', category: 'Political Failure', severity: 'High', source: 'Sydney Morning Herald', summary: 'The Voice to Parliament referendum was defeated 60/40 — a larger margin than polling suggested. Critics blamed the campaign\'s refusal to spell out the Voice\'s powers, a strategy Albanese personally endorsed. Indigenous leaders described the defeat as "a historic missed opportunity."', controversy_score: 7.9 },
+        { id: 'au-c3', headline: 'Stage 3 Tax Cuts Redesigned — Broke Pre-Election Commitment', date: '2024-01-25', category: 'Policy Flip', severity: 'High', source: 'ABC News', summary: 'Albanese redesigned the Stage 3 tax cuts months after explicitly promising not to change them — citing cost of living pressures. The U-turn benefited lower-income earners but was widely described as a broken promise. The government introduced legislation without the customary consultation process.', controversy_score: 7.5 },
+        { id: 'au-c4', headline: 'AUKUS Submarine Timeline — 2040s Delivery, AU$368B Cost', date: '2025-02-12', category: 'Governance', severity: 'High', source: 'Defence Connect', summary: 'Australia\'s AUKUS nuclear-powered submarines will not arrive until at least the 2040s under revised timelines, at an estimated cost of AU$368B. Critics question whether the current Albanese government — which will not be in office during delivery — can be held accountable for cost overruns.', controversy_score: 7.1 },
+        { id: 'au-c5', headline: 'Cost of Living Response Criticised as Insufficient — Real Wages Still Negative', date: '2024-09-30', category: 'Policy Failure', severity: 'High', source: 'The Australian', summary: 'Despite multiple cost-of-living packages, real wages remained negative for 18 months under the Albanese government. Grocery prices rose 20%+ since 2022. Opposition accused the government of recycling old spending as new measures. Consumer confidence hit a 30-year low in Q3 2024.', controversy_score: 7.6 },
+      ],
+    };
+
+    const sevMeta = {
+      Critical: { bg: 'bg-red-600',    text: 'text-white' },
+      High:     { bg: 'bg-orange-500', text: 'text-white' },
+      Medium:   { bg: 'bg-yellow-400', text: 'text-gray-900' },
+      Low:      { bg: 'bg-gray-400',   text: 'text-white' },
+    };
+
+    const catColors = {
+      'Financial Conflict': 'bg-purple-100 text-purple-800 border border-purple-200',
+      'Expense Abuse':      'bg-orange-100 text-orange-800 border border-orange-200',
+      'Governance':         'bg-blue-100 text-blue-800 border border-blue-200',
+      'Legal':              'bg-red-100 text-red-800 border border-red-200',
+      'Foreign Policy':     'bg-indigo-100 text-indigo-800 border border-indigo-200',
+      'Policy Failure':     'bg-rose-100 text-rose-800 border border-rose-200',
+      'Policy Flip':        'bg-yellow-100 text-yellow-800 border border-yellow-200',
+      'Economic':           'bg-teal-100 text-teal-800 border border-teal-200',
+      'Political Failure':  'bg-pink-100 text-pink-800 border border-pink-200',
+    };
+
+    const liveItems = controversiesData[leaderName];
+    const allItems = (liveItems && liveItems.length > 0) ? liveItems : (FALLBACK[leaderName] || []);
+
+    const activeCat = controversiesCatFilter[leaderName] || 'All';
+    const allCats = ['All', ...new Set(allItems.map(c => c.category).filter(Boolean))];
+    const filtered = activeCat === 'All' ? allItems : allItems.filter(c => c.category === activeCat);
+    const sorted = [...filtered].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+    const avgScore = allItems.length
+      ? Math.round((allItems.reduce((s, c) => s + (c.controversy_score || 0), 0) / allItems.length) * 10) / 10
+      : 0;
+    const scoreColor = avgScore >= 9 ? '#dc2626' : avgScore >= 7 ? '#f97316' : avgScore >= 5 ? '#eab308' : '#22c55e';
+    const isLoading = controversiesLoading[leaderName];
+
+    return (
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 mb-4">
+        <div
+          onClick={() => toggleFn('controversies')}
+          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">⚡</span>
+            <div>
+              <h2 className="text-lg font-bold text-gray-800">Controversies</h2>
+              <p className="text-sm text-gray-500">{allItems.length} documented · Avg controversy score: <span className="font-bold" style={{ color: scoreColor }}>{avgScore}/10</span></p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => { e.stopPropagation(); fetchControversies(leaderName); }}
+              className="text-xs border border-gray-200 text-gray-500 hover:bg-gray-100 px-2.5 py-1.5 rounded-lg font-semibold"
+            >
+              {isLoading ? '⏳' : '↻ Live'}
+            </button>
+            {expandedSections.controversies ? <ChevronDown className="w-6 h-6 text-gray-400" /> : <ChevronRight className="w-6 h-6 text-gray-400" />}
+          </div>
+        </div>
+
+        {expandedSections.controversies && (
+          <div className="px-6 pb-6 border-t border-gray-100">
+            {/* Controversy score meter */}
+            <div className="mt-5 mb-5 p-4 rounded-xl border" style={{ background: `${scoreColor}10`, borderColor: `${scoreColor}40` }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-gray-700 text-sm">Controversy Score</span>
+                <span className="font-black text-2xl" style={{ color: scoreColor }}>{avgScore}<span className="text-xs font-normal text-gray-400">/10</span></span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-4 overflow-hidden">
+                <div className="h-4 rounded-full transition-all duration-700"
+                  style={{ width: `${(avgScore / 10) * 100}%`, background: `linear-gradient(to right, ${scoreColor}88, ${scoreColor})` }} />
+              </div>
+              <div className="flex justify-between text-xs text-gray-400 mt-0.5">
+                <span>Low controversy (0)</span><span>Extreme (10)</span>
+              </div>
+            </div>
+
+            {/* Category filter */}
+            <div className="flex flex-wrap gap-2 mb-5">
+              {allCats.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setControversiesCatFilter(prev => ({ ...prev, [leaderName]: cat }))}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                    activeCat === cat
+                      ? 'text-white border-transparent'
+                      : 'bg-transparent text-gray-500 border-gray-200 hover:border-gray-400'
+                  }`}
+                  style={activeCat === cat ? { background: accentColor } : {}}
+                >
+                  {cat}
+                  {cat !== 'All' && <span className="ml-1 opacity-60">({allItems.filter(c => c.category === cat).length})</span>}
+                </button>
+              ))}
+            </div>
+
+            {/* Loading */}
+            {isLoading && (
+              <div className="flex items-center justify-center py-8 gap-2">
+                <div className="w-6 h-6 border-3 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                <p className="text-gray-400 text-sm">Loading controversies…</p>
+              </div>
+            )}
+
+            {/* Controversy cards */}
+            <div className="space-y-4">
+              {!isLoading && sorted.map((item, idx) => {
+                const sev = sevMeta[item.severity] || sevMeta.Medium;
+                const cClass = catColors[item.category] || 'bg-gray-100 text-gray-800 border border-gray-200';
+                const cs = item.controversy_score || 0;
+                const csColor = cs >= 9 ? '#dc2626' : cs >= 7 ? '#f97316' : cs >= 5 ? '#eab308' : '#22c55e';
+                return (
+                  <div key={item.id || idx} className="rounded-xl border border-gray-100 overflow-hidden bg-gray-50">
+                    <div className="h-1 w-full" style={{ background: csColor }} />
+                    <div className="p-4">
+                      {/* Badges row */}
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${sev.bg} ${sev.text}`}>{item.severity}</span>
+                        {item.category && <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${cClass}`}>{item.category}</span>}
+                      </div>
+                      {/* Headline */}
+                      <h3 className="font-bold text-gray-800 text-sm leading-snug mb-1">{item.headline}</h3>
+                      {/* Meta: date + source */}
+                      <div className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
+                        {item.date && <span>📅 {item.date}</span>}
+                        {item.source && <span>📰 {item.source}</span>}
+                      </div>
+                      {/* Plain language summary */}
+                      {item.summary && (
+                        <p className="text-sm text-gray-600 leading-relaxed mb-3 bg-white rounded-lg p-3 border border-gray-100">
+                          {item.summary}
+                        </p>
+                      )}
+                      {/* Controversy score meter */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-400 font-semibold uppercase shrink-0">Score</span>
+                        <div className="flex gap-0.5 flex-1">
+                          {[1,2,3,4,5,6,7,8,9,10].map(i => (
+                            <div key={i} className="flex-1 h-2.5 rounded-sm" style={{
+                              background: i <= Math.round(cs)
+                                ? (i >= 9 ? '#dc2626' : i >= 7 ? '#f97316' : i >= 5 ? '#eab308' : '#22c55e')
+                                : '#e5e7eb'
+                            }} />
+                          ))}
+                        </div>
+                        <span className="text-xs font-black shrink-0" style={{ color: csColor }}>{cs}/10</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {!isLoading && sorted.length === 0 && (
+                <p className="text-gray-400 text-sm text-center py-6">No controversies in this category.</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderCarneyDetail = () => {
     const partyColor = '#EF4444'; // Liberal red
 
@@ -14709,6 +14902,7 @@ function App() {
             </div>
           </div>
           {renderPromiseTrackerSection('Mark Carney', toggleCarneySection, expandedCarneySections, '#EF4444')}
+          {renderControversiesSection('Mark Carney', toggleCarneySection, expandedCarneySections, '#EF4444')}
         </div>
       </div>
     );
@@ -15356,6 +15550,7 @@ function App() {
             </div>
           </div>
           {renderPromiseTrackerSection('Donald Trump', togglePresidentSection, expandedPresidentSections, '#1d4ed8')}
+          {renderControversiesSection('Donald Trump', togglePresidentSection, expandedPresidentSections, '#1d4ed8')}
         </div>
       </div>
     );
@@ -15962,6 +16157,7 @@ function App() {
             </div>
           </div>
           {renderPromiseTrackerSection('Keir Starmer', toggleStarmerSection, expandedStarmerSections, '#E4003B')}
+          {renderControversiesSection('Keir Starmer', toggleStarmerSection, expandedStarmerSections, '#E4003B')}
         </div>
       </div>
     );
@@ -16124,6 +16320,21 @@ function App() {
       setPromiseTrackerData(prev => ({ ...prev, [leaderName]: [] }));
     } finally {
       setPromiseTrackerLoading(prev => ({ ...prev, [leaderName]: false }));
+    }
+  };
+
+  const fetchControversies = async (leaderName) => {
+    setControversiesLoading(prev => ({ ...prev, [leaderName]: true }));
+    try {
+      const snap = await getDocs(query(collection(db, 'controversies'), where('person_name', '==', leaderName)));
+      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+      setControversiesData(prev => ({ ...prev, [leaderName]: items }));
+    } catch (err) {
+      console.warn('[Controversies] Firestore fetch failed:', err.message);
+      setControversiesData(prev => ({ ...prev, [leaderName]: [] }));
+    } finally {
+      setControversiesLoading(prev => ({ ...prev, [leaderName]: false }));
     }
   };
 
@@ -25102,6 +25313,7 @@ function App() {
             </div>
           </div>
           {renderPromiseTrackerSection('Anthony Albanese', toggleAlbaneseSection, expandedAlbaneseSections, '#006833')}
+          {renderControversiesSection('Anthony Albanese', toggleAlbaneseSection, expandedAlbaneseSections, '#006833')}
         </div>
       </div>
     );
