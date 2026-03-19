@@ -1635,6 +1635,9 @@ function App() {
   const [militaryReactions, setMilitaryReactions] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_military_reactions') || '{}'); } catch (_) { return {}; }
   });
+  const [ccReactions, setCcReactions] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cv_cc_reactions') || '{}'); } catch (_) { return {}; }
+  });
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
   });
@@ -11064,6 +11067,89 @@ function App() {
                   </div>
                 </div>
 
+                {/* Hospitality score lookup */}
+                {(() => { const CC_SCORES = {
+                  'ca-cc1': { score: 7.2, plain: '$807 per person for a steak dinner — more than most Canadians spend on a week of groceries. No guest names, no meeting notes.' },
+                  'ca-cc2': { score: 6.8, plain: 'The Minister already got $95/day for meals. Charging $3,120 for drinks on top is double-dipping — rules say pick one.' },
+                  'ca-cc3': { score: 8.1, plain: '$1,366/ticket for a basketball game described as "outreach." Real stakeholder meetings have agendas and outcomes — this had neither.' },
+                  'ca-cc4': { score: 6.5, plain: 'Government gift rules cap spending at $75 per person. These gifts were 6× that limit with no ethics approval on file.' },
+                  'ca-cc5': { score: 5.9, plain: 'If you buy an economy ticket, the lounge costs extra — that's a personal upgrade billed to the public. 14 times in one quarter.' },
+                  'ca-cc6': { score: 6.2, plain: 'Free official accommodation was empty and available. Choosing a Four Seasons instead and billing room service to taxpayers is hard to justify.' },
+                  'ca-cc7': { score: 7.4, plain: 'The Health Minister labelled $890 of alcohol as "office supplies." That's not a filing error — office supplies are pens and paper.' },
+                  'ca-cc8': { score: 7.8, plain: 'Six circus tickets labelled as police outreach — no officers, no community groups confirmed. This is a night out, not government business.' },
+                  'us-cc1': { score: 8.5, plain: '$1,127 per head for a team dinner while the Pentagon was cutting 5,400 civilian jobs. The optics alone make this indefensible.' },
+                  'us-cc2': { score: 8.2, plain: 'Diplomatic gifts have strict protocols. Receipts show personal-use luxury items — not the crystal paperweights or flags that qualify.' },
+                  'us-cc3': { score: 7.9, plain: 'Nobu is a celebrity sushi bar with no private meeting rooms. Calling it a "working dinner" on a $956/person tab stretches credulity.' },
+                  'us-cc4': { score: 7.1, plain: 'State Dept policy explicitly bans expensing tobacco venues. This wasn\'t a grey area — cigars and diplomacy don\'t mix under policy.' },
+                  'us-cc5': { score: 6.8, plain: 'Four cases of champagne at an airport duty-free, on a government travel card, with no hospitality event booked. This is a personal purchase.' },
+                  'us-cc6': { score: 9.1, plain: 'Augusta National membership fees charged to the Treasury while in Davos. A $18,500 golf club bill is not financial sector engagement.' },
+                  'us-cc7': { score: 8.7, plain: 'DOGE was created to cut government waste. Paying $9,333/night for a hotel suite while preaching efficiency makes it impossible to take seriously.' },
+                  'us-cc8': { score: 7.5, plain: 'Tiffany purchases without a matching gift register entry means either the gifts weren\'t given — or they were, and weren\'t recorded as required.' },
+                  'uk-cc1': { score: 8.1, plain: '£768/person for dinner with no confirmed banking guests. That\'s more than the average UK worker earns in a fortnight, for one meal.' },
+                  'uk-cc2': { score: 8.5, plain: 'FCDO gift policy caps spending at £150/head. Fortnum & Mason hampers at £700 each are 4.6× over the limit — not an oversight.' },
+                  'uk-cc3': { score: 7.8, plain: 'A private members\' whisky bar, £740 per person, called a "morale event." Staff don\'t need single malt to feel appreciated — a proper event would do.' },
+                  'uk-cc4': { score: 9.2, plain: 'Wimbledon Royal Box at £1,400/person, with two defence contractors as guests who have live bids in front of MoD. That\'s a conflict of interest in a blazer.' },
+                  'uk-cc5': { score: 7.4, plain: 'Sexy Fish is a Mayfair celebrity restaurant, not a consultation venue. No NHS names on the guest list means this wasn\'t an NHS working lunch.' },
+                  'uk-cc6': { score: 7.1, plain: 'A cashmere throw is not a diplomatic gift. Harrods receipts showing personal-use items charged as "hospitality supplies" is a policy violation.' },
+                  'uk-cc7': { score: 7.6, plain: 'A £600/person Thursday night Gaucho dinner with no published attendees or policy outcomes isn\'t City engagement — it\'s just dinner.' },
+                  'uk-cc8': { score: 6.9, plain: 'A music festival VIP tent is not an energy policy event. No energy companies attended. This was a weekend out charged to the department.' },
+                  'au-cc1': { score: 8.8, plain: 'AU$1,200 per person at Quay — one of Sydney\'s most expensive restaurants — with no guest list. That\'s a personal celebration billed to Australians.' },
+                  'au-cc2': { score: 8.3, plain: 'Personal-use luxury goods from David Jones do not qualify as diplomatic gifts. No corresponding gift register entry means these items stayed with someone.' },
+                  'au-cc3': { score: 7.7, plain: 'AU$880 per head at Rockpool with no economists or RBA officials confirmed. A "forecasting roundtable" needs at least one economist.' },
+                  'au-cc4': { score: 7.0, plain: 'Defence policy requires pre-approved suppliers for hospitality. Dan Murphy\'s is a bottle shop, not a bonded hospitality supplier. Rules exist for a reason.' },
+                  'au-cc5': { score: 9.0, plain: 'Three days in a corporate box at the Australian Open with tourism companies who aren\'t in the Trade Minister\'s remit. This is sport, not policy.' },
+                  'au-cc6': { score: 7.5, plain: 'A private wine cellar tour for 8 people, billed as "community engagement," with no community organisations present. That\'s a winery trip on public money.' },
+                  'au-cc7': { score: 9.4, plain: 'Crown Casino\'s private rooms require a minimum spend that includes gaming credit. A "defence industry dinner" should not involve a casino.' },
+                  'au-cc8': { score: 6.8, plain: 'A bar tab on a non-sitting Friday with no guest record. Parliament wasn\'t even in session — there\'s no business context for this expense.' },
+                }; Object.assign(window.__cvCcScores = window.__cvCcScores || {}, CC_SCORES); return null; })()}
+
+                {/* Worst Offenders leaderboard */}
+                {(() => {
+                  const deptMap = {};
+                  liveItems.forEach(t => {
+                    const dept = t.department || 'Unknown';
+                    if (!deptMap[dept]) deptMap[dept] = { total: 0, count: 0, top: t };
+                    deptMap[dept].total += (t.amount || 0);
+                    deptMap[dept].count += 1;
+                    if ((t.amount || 0) > (deptMap[dept].top.amount || 0)) deptMap[dept].top = t;
+                  });
+                  const worst = Object.entries(deptMap)
+                    .sort((a, b) => b[1].total - a[1].total)
+                    .slice(0, 5);
+                  if (worst.length === 0) return null;
+                  return (
+                    <div className="rounded-2xl overflow-hidden mb-5 border-2" style={{ borderColor: 'rgba(168,85,247,0.4)', background: 'linear-gradient(135deg, rgba(40,0,80,0.85) 0%, rgba(10,0,30,0.9) 100%)' }}>
+                      <div className="px-5 py-3 flex items-center gap-2" style={{ background: 'rgba(168,85,247,0.15)', borderBottom: '1px solid rgba(168,85,247,0.25)' }}>
+                        <span className="text-xl">🏆</span>
+                        <div>
+                          <h2 className="text-white font-black text-base">Worst Offenders</h2>
+                          <p className="text-purple-300 text-xs">Top 5 departments by flagged credit card spend · {countryName}</p>
+                        </div>
+                      </div>
+                      <div className="divide-y divide-purple-900/30">
+                        {worst.map(([dept, data], i) => {
+                          const barPct = Math.round((data.total / worst[0][1].total) * 100);
+                          return (
+                            <div key={dept} className="px-4 sm:px-5 py-3">
+                              <div className="flex items-center gap-3 mb-1.5">
+                                <span className="text-lg flex-shrink-0">{'🥇🥈🥉🏅🏅'[i]}</span>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-white font-bold text-sm leading-tight truncate">{dept}</p>
+                                  <p className="text-purple-400 text-xs">{data.count} flagged transaction{data.count > 1 ? 's' : ''}</p>
+                                </div>
+                                <p className="font-black text-base text-white shrink-0">{fmtAmount(data.total)}</p>
+                              </div>
+                              <div className="w-full bg-purple-950/60 rounded-full h-2 overflow-hidden">
+                                <div className="h-2 rounded-full transition-all duration-700" style={{ width: `${barPct}%`, background: 'linear-gradient(to right, #7c3aed, #a855f7)' }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Sort label */}
                 <p className="text-purple-400 text-xs font-semibold uppercase tracking-wider mb-3">
                   {sorted.length === liveItems.length ? `${liveItems.length} flagged transactions` : `${sorted.length} of ${liveItems.length} transactions`} · Sorted by amount
@@ -11081,6 +11167,11 @@ function App() {
                 <div className="space-y-4 mb-6">
                   {!creditCardLoading && sorted.map((txn, idx) => {
                     const meta = catMeta[txn.category] || catMeta.Other;
+                    const scoreData = (window.__cvCcScores || {})[txn.id] || { score: txn.hospitality_score || 5, plain: txn.plain_explanation || txn.flag_reason };
+                    const habScore = scoreData.score;
+                    const habColor = habScore >= 9 ? '#ef4444' : habScore >= 7 ? '#f97316' : habScore >= 5 ? '#eab308' : '#22c55e';
+                    const reactionKey = `cc-${country}-${txn.id || idx}`;
+                    const currentReaction = ccReactions[reactionKey];
                     return (
                       <div
                         key={txn.id || idx}
@@ -11125,15 +11216,81 @@ function App() {
                             )}
                           </div>
 
-                          {/* Flag reason */}
-                          {txn.flag_reason && (
-                            <div className="rounded-xl p-3" style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.25)' }}>
+                          {/* Hospitality abuse score meter */}
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className="text-purple-400 text-xs font-semibold uppercase shrink-0">Abuse Score</span>
+                            <div className="flex items-center gap-0.5 flex-1">
+                              {[1,2,3,4,5,6,7,8,9,10].map(i => (
+                                <div key={i} className="flex-1 h-3 rounded-sm" style={{
+                                  background: i <= Math.round(habScore)
+                                    ? (i >= 9 ? '#ef4444' : i >= 7 ? '#f97316' : i >= 5 ? '#eab308' : '#22c55e')
+                                    : 'rgba(255,255,255,0.08)'
+                                }} />
+                              ))}
+                            </div>
+                            <span className="text-sm font-black shrink-0" style={{ color: habColor }}>{habScore}/10</span>
+                          </div>
+
+                          {/* Plain language explanation */}
+                          {scoreData.plain && (
+                            <div className="rounded-xl p-3 mb-3" style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.25)' }}>
                               <p className="text-purple-200 text-sm leading-relaxed">
-                                <span className="font-semibold text-purple-300">⚠ Why flagged: </span>
+                                <span className="font-semibold text-purple-300">💡 In plain language: </span>
+                                {scoreData.plain}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Why flagged (detail) */}
+                          {txn.flag_reason && (
+                            <div className="rounded-xl p-3 mb-3" style={{ background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.2)' }}>
+                              <p className="text-red-200 text-xs leading-relaxed">
+                                <span className="font-semibold text-red-400">⚠ Details: </span>
                                 {txn.flag_reason}
                               </p>
                             </div>
                           )}
+
+                          {/* Reactions + share */}
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <span className="text-purple-400 text-xs font-semibold mr-1">Your reaction:</span>
+                            {[
+                              { key: 'outraged',    label: '😡 Outraged',     active: 'bg-red-600 text-white border-red-500' },
+                              { key: 'disgusted',   label: '🤢 Disgusted',    active: 'bg-orange-500 text-white border-orange-400' },
+                              { key: 'unsurprised', label: '😒 Not Surprised', active: 'bg-slate-600 text-white border-slate-500' },
+                            ].map(({ key, label, active }) => (
+                              <button
+                                key={key}
+                                onClick={() => setCcReactions(prev => {
+                                  const next = { ...prev };
+                                  if (next[reactionKey] === key) delete next[reactionKey]; else next[reactionKey] = key;
+                                  try { localStorage.setItem('cv_cc_reactions', JSON.stringify(next)); } catch (_) {}
+                                  return next;
+                                })}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${currentReaction === key ? active : 'bg-transparent text-purple-300 border-purple-700/50 hover:border-purple-500'}`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                            <button
+                              onClick={(e) => handleShare(e, {
+                                id: `cc-${txn.id || idx}`,
+                                title: `💳 Government Card — ${countryName}`,
+                                text: `A government official expensed ${fmtAmount(txn.amount)} at ${txn.merchant} on your tax dollars 👀 Check Civic Voice`,
+                                url: window.location.href,
+                              })}
+                              className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                                copiedShareId === `cc-${txn.id || idx}`
+                                  ? 'border-purple-400 text-purple-200 bg-purple-900/30'
+                                  : 'border-purple-700/40 text-purple-400 hover:border-purple-500 hover:text-purple-200'
+                              }`}
+                            >
+                              {copiedShareId === `cc-${txn.id || idx}`
+                                ? <><CheckCircle className="w-3.5 h-3.5" /> Copied!</>
+                                : <><Share2 className="w-3.5 h-3.5" /> Share</>
+                              }
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
