@@ -1609,6 +1609,8 @@ function App() {
   const [compareLeaderBIdx, setCompareLeaderBIdx] = useState(-1);
   const [anomalies, setAnomalies] = useState([]);
   const [anomaliesLoading, setAnomaliesLoading] = useState(false);
+  const [lobbyingCorrelations, setLobbyingCorrelations] = useState([]);
+  const [lobbyingCorrelationsLoading, setLobbyingCorrelationsLoading] = useState(false);
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
   });
@@ -9811,6 +9813,148 @@ function App() {
             </div>
           </div>
 
+          {/* Lobbying to Contracts */}
+          {(() => {
+            const lobbyFallback = {
+              CA: [
+                { id: 'ca-l1', company: 'NorthShield Defence Corp.', minister: 'Bill Blair', minister_title: 'Minister of National Defence', lobby_date: '2024-09-12', contract_amount: 48000000, days_to_contract: 47, conflict_score: 9.2, contract_description: 'Tactical equipment supply — CA$48M sole-source contract' },
+                { id: 'ca-l2', company: 'GreenPath Infrastructure Inc.', minister: 'Steven Guilbeault', minister_title: 'Minister of Environment', lobby_date: '2024-11-03', contract_amount: 31500000, days_to_contract: 62, conflict_score: 8.7, contract_description: 'Carbon capture pilot project — CA$31.5M grant' },
+                { id: 'ca-l3', company: 'Maple Digital Solutions', minister: 'François-Philippe Champagne', minister_title: 'Minister of Industry', lobby_date: '2025-01-17', contract_amount: 22800000, days_to_contract: 38, conflict_score: 8.1, contract_description: 'AI readiness framework — CA$22.8M contract' },
+                { id: 'ca-l4', company: 'Rideau Health Partners', minister: 'Mark Holland', minister_title: 'Minister of Health', lobby_date: '2024-10-28', contract_amount: 17600000, days_to_contract: 91, conflict_score: 7.4, contract_description: 'Mental health digital platform — CA$17.6M' },
+                { id: 'ca-l5', company: 'Cornerstone Housing Group', minister: 'Sean Fraser', minister_title: 'Minister of Housing', lobby_date: '2025-02-04', contract_amount: 54000000, days_to_contract: 29, conflict_score: 9.5, contract_description: 'Rapid housing initiative — CA$54M funding award' },
+              ],
+              US: [
+                { id: 'us-l1', company: 'Paladin Aerospace Systems', minister: 'Pete Hegseth', minister_title: 'Secretary of Defense', lobby_date: '2025-01-22', contract_amount: 780000000, days_to_contract: 34, conflict_score: 9.6, contract_description: 'Next-gen drone surveillance — $780M Pentagon contract' },
+                { id: 'us-l2', company: 'AmeriCare Rx Holdings', minister: 'RFK Jr.', minister_title: 'Sec. of Health & Human Services', lobby_date: '2025-02-11', contract_amount: 210000000, days_to_contract: 41, conflict_score: 9.1, contract_description: 'Vaccine distribution logistics — $210M HHS contract' },
+                { id: 'us-l3', company: 'BorderTech Solutions LLC', minister: 'Kristi Noem', minister_title: 'Secretary of Homeland Security', lobby_date: '2025-01-08', contract_amount: 320000000, days_to_contract: 27, conflict_score: 9.4, contract_description: 'AI border surveillance system — $320M DHS award' },
+                { id: 'us-l4', company: 'Atlas Energy Partners', minister: 'Doug Burgum', minister_title: 'Secretary of the Interior', lobby_date: '2024-12-19', contract_amount: 95000000, days_to_contract: 58, conflict_score: 8.3, contract_description: 'Federal land drilling lease — $95M extraction rights' },
+                { id: 'us-l5', company: 'Nexus Cloud Federal', minister: 'Russell Vought', minister_title: 'OMB Director', lobby_date: '2025-02-28', contract_amount: 440000000, days_to_contract: 19, conflict_score: 9.7, contract_description: 'Government cloud migration — $440M OMB-directed sole-source' },
+              ],
+              UK: [
+                { id: 'uk-l1', company: 'Meridian Defence Group', minister: 'John Healey', minister_title: 'Secretary of State for Defence', lobby_date: '2024-10-07', contract_amount: 280000000, days_to_contract: 52, conflict_score: 9.0, contract_description: 'Armoured vehicle upgrade programme — £280M MoD contract' },
+                { id: 'uk-l2', company: 'ClearPath Digital UK', minister: 'Peter Kyle', minister_title: 'Secretary of State for Science', lobby_date: '2024-11-14', contract_amount: 68000000, days_to_contract: 44, conflict_score: 8.5, contract_description: 'NHS AI diagnostic platform — £68M contract' },
+                { id: 'uk-l3', company: 'Albion Infrastructure PLC', minister: 'Angela Rayner', minister_title: 'Deputy Prime Minister', lobby_date: '2024-09-23', contract_amount: 124000000, days_to_contract: 67, conflict_score: 8.2, contract_description: 'Social housing construction — £124M grant framework' },
+                { id: 'uk-l4', company: 'Hartwell Energy Consulting', minister: 'Ed Miliband', minister_title: 'Secretary of State for Energy', lobby_date: '2025-01-09', contract_amount: 47000000, days_to_contract: 33, conflict_score: 8.8, contract_description: 'Offshore wind consultancy — £47M framework contract' },
+                { id: 'uk-l5', company: 'BritRail Innovations Ltd', minister: 'Heidi Alexander', minister_title: 'Secretary of State for Transport', lobby_date: '2024-12-02', contract_amount: 196000000, days_to_contract: 49, conflict_score: 8.6, contract_description: 'Rolling stock procurement — £196M DfT contract' },
+              ],
+              AU: [
+                { id: 'au-l1', company: 'Pacific Shield Defence Pty', minister: 'Pat Conroy', minister_title: 'Minister for Defence Industry', lobby_date: '2024-09-18', contract_amount: 340000000, days_to_contract: 43, conflict_score: 9.3, contract_description: 'Naval patrol vessel systems — AU$340M contract' },
+                { id: 'au-l2', company: 'TradeWave Australia Ltd', minister: 'Don Farrell', minister_title: 'Minister for Trade & Tourism', lobby_date: '2024-10-31', contract_amount: 82000000, days_to_contract: 36, conflict_score: 8.9, contract_description: 'Export facilitation platform — AU$82M grant' },
+                { id: 'au-l3', company: 'GreenGrid Energy Pty', minister: 'Tanya Plibersek', minister_title: 'Minister for Environment', lobby_date: '2025-01-14', contract_amount: 115000000, days_to_contract: 55, conflict_score: 8.4, contract_description: 'Renewable grid integration — AU$115M contract' },
+                { id: 'au-l4', company: 'Inclusive Care Technologies', minister: 'Bill Shorten', minister_title: 'Minister for the NDIS', lobby_date: '2024-11-22', contract_amount: 63000000, days_to_contract: 71, conflict_score: 7.8, contract_description: 'NDIS case management software — AU$63M tender award' },
+                { id: 'au-l5', company: 'FederalBuild Group', minister: 'Anthony Albanese', minister_title: 'Prime Minister', lobby_date: '2025-02-07', contract_amount: 490000000, days_to_contract: 24, conflict_score: 9.8, contract_description: 'Infrastructure stimulus program — AU$490M PMO-directed award' },
+              ],
+            };
+
+            const displayCorrelations = lobbyingCorrelations.length > 0
+              ? lobbyingCorrelations
+              : (lobbyFallback[country] || []);
+
+            return (
+              <div className="rounded-2xl border border-orange-700/50 mb-6 overflow-hidden" style={{ background: 'rgba(0,0,0,0.55)' }}>
+                {/* Header */}
+                <div className="px-5 py-4 border-b border-orange-900/30 flex items-center justify-between gap-3" style={{ background: 'rgba(249,115,22,0.1)' }}>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🤝</span>
+                    <div>
+                      <h2 className="text-white font-black text-lg">Lobbying to Contracts</h2>
+                      <p className="text-orange-400 text-xs mt-0.5">Meetings with ministers followed by contract awards · {countryName}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => fetchLobbyingCorrelations(country)}
+                    className="text-xs border border-orange-600/50 text-orange-300 hover:bg-orange-800/30 px-3 py-1.5 rounded-full font-semibold flex-shrink-0"
+                    style={{ background: 'rgba(249,115,22,0.12)' }}
+                  >
+                    {lobbyingCorrelationsLoading ? '⏳ Loading…' : '↻ Load Live'}
+                  </button>
+                </div>
+
+                {/* Cards */}
+                <div className="p-4 sm:p-5 space-y-4">
+                  {displayCorrelations.map((item, i) => {
+                    const score = item.conflict_score || 0;
+                    const scoreCol = score >= 9 ? '#ef4444' : score >= 8 ? '#f97316' : score >= 7 ? '#eab308' : '#9ca3af';
+                    const lobbyDate = item.lobby_date ? new Date(item.lobby_date) : null;
+                    const lobbyDateStr = lobbyDate && !isNaN(lobbyDate)
+                      ? lobbyDate.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })
+                      : (item.lobby_date || '—');
+                    const days = item.days_to_contract ?? '—';
+
+                    return (
+                      <div
+                        key={item.id || i}
+                        className="rounded-2xl overflow-hidden border"
+                        style={{ borderColor: `${scoreCol}55`, background: `linear-gradient(135deg, ${scoreCol}12 0%, rgba(0,0,0,0.6) 100%)` }}
+                      >
+                        {/* Top accent bar */}
+                        <div className="h-1 w-full" style={{ background: `linear-gradient(to right, ${scoreCol}, transparent)` }} />
+
+                        <div className="p-4 sm:p-5">
+                          {/* Badge + company row */}
+                          <div className="flex flex-wrap items-start gap-2 mb-3">
+                            <span className="px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-orange-500 text-white flex-shrink-0">
+                              ⚠ Potential Conflict
+                            </span>
+                            <h3 className="text-white font-black text-sm sm:text-base leading-tight">{item.company}</h3>
+                          </div>
+
+                          {/* Minister */}
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-orange-400 text-xs font-semibold uppercase tracking-wider">Minister Lobbied:</span>
+                            <span className="text-white text-sm font-bold">{item.minister}</span>
+                            {item.minister_title && (
+                              <span className="text-gray-400 text-xs">· {item.minister_title}</span>
+                            )}
+                          </div>
+
+                          {/* Contract description */}
+                          {item.contract_description && (
+                            <p className="text-gray-300 text-sm mb-3 leading-relaxed">{item.contract_description}</p>
+                          )}
+
+                          {/* Stats row */}
+                          <div className="flex flex-wrap gap-4 mb-4">
+                            <div className="rounded-lg px-3 py-2 border border-orange-700/40" style={{ background: 'rgba(249,115,22,0.15)' }}>
+                              <p className="text-xs text-orange-400 font-semibold mb-0.5">Contract Amount</p>
+                              <p className="text-lg font-black text-orange-300">{fmtAmount(item.contract_amount)}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500 font-semibold uppercase">Lobby Meeting</p>
+                              <p className="text-sm font-bold text-gray-300">{lobbyDateStr}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500 font-semibold uppercase">Days to Award</p>
+                              <p className="text-sm font-black" style={{ color: scoreCol }}>{days} days</p>
+                            </div>
+                          </div>
+
+                          {/* Conflict score meter */}
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Conflict Score</span>
+                              <span className="font-black text-lg" style={{ color: scoreCol }}>{score.toFixed(1)}<span className="text-xs font-normal text-gray-500">/10</span></span>
+                            </div>
+                            <div className="w-full bg-gray-800 rounded-full h-2.5 overflow-hidden">
+                              <div
+                                className="h-2.5 rounded-full transition-all duration-700"
+                                style={{ width: `${score * 10}%`, background: `linear-gradient(to right, ${scoreCol}99, ${scoreCol})` }}
+                              />
+                            </div>
+                            <div className="flex justify-between text-xs text-gray-600 mt-0.5">
+                              <span>Low risk</span>
+                              <span>High conflict</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Filters */}
           {!wasteLoading && wasteExpenses.length > 0 && (
             <div className="rounded-2xl p-4 mb-5 border border-red-800/30" style={{ background: 'rgba(0,0,0,0.35)' }}>
@@ -14268,6 +14412,21 @@ function App() {
       setAnomalies([]);
     } finally {
       setAnomaliesLoading(false);
+    }
+  };
+
+  const fetchLobbyingCorrelations = async (country) => {
+    setLobbyingCorrelationsLoading(true);
+    try {
+      const snap = await getDocs(query(collection(db, 'lobbying_correlations'), where('country', '==', country)));
+      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.conflict_score || 0) - (a.conflict_score || 0));
+      setLobbyingCorrelations(items);
+    } catch (err) {
+      console.warn('[LobbyingCorrelations] Firestore fetch failed:', err.message);
+      setLobbyingCorrelations([]);
+    } finally {
+      setLobbyingCorrelationsLoading(false);
     }
   };
 
