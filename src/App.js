@@ -1611,6 +1611,9 @@ function App() {
   const [anomaliesLoading, setAnomaliesLoading] = useState(false);
   const [lobbyingCorrelations, setLobbyingCorrelations] = useState([]);
   const [lobbyingCorrelationsLoading, setLobbyingCorrelationsLoading] = useState(false);
+  const [lobbyingVotes, setLobbyingVotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cv_lobby_votes') || '{}'); } catch (_) { return {}; }
+  });
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
   });
@@ -9817,32 +9820,32 @@ function App() {
           {(() => {
             const lobbyFallback = {
               CA: [
-                { id: 'ca-l1', company: 'NorthShield Defence Corp.', minister: 'Bill Blair', minister_title: 'Minister of National Defence', lobby_date: '2024-09-12', contract_amount: 48000000, days_to_contract: 47, conflict_score: 9.2, contract_description: 'Tactical equipment supply — CA$48M sole-source contract' },
-                { id: 'ca-l2', company: 'GreenPath Infrastructure Inc.', minister: 'Steven Guilbeault', minister_title: 'Minister of Environment', lobby_date: '2024-11-03', contract_amount: 31500000, days_to_contract: 62, conflict_score: 8.7, contract_description: 'Carbon capture pilot project — CA$31.5M grant' },
-                { id: 'ca-l3', company: 'Maple Digital Solutions', minister: 'François-Philippe Champagne', minister_title: 'Minister of Industry', lobby_date: '2025-01-17', contract_amount: 22800000, days_to_contract: 38, conflict_score: 8.1, contract_description: 'AI readiness framework — CA$22.8M contract' },
-                { id: 'ca-l4', company: 'Rideau Health Partners', minister: 'Mark Holland', minister_title: 'Minister of Health', lobby_date: '2024-10-28', contract_amount: 17600000, days_to_contract: 91, conflict_score: 7.4, contract_description: 'Mental health digital platform — CA$17.6M' },
-                { id: 'ca-l5', company: 'Cornerstone Housing Group', minister: 'Sean Fraser', minister_title: 'Minister of Housing', lobby_date: '2025-02-04', contract_amount: 54000000, days_to_contract: 29, conflict_score: 9.5, contract_description: 'Rapid housing initiative — CA$54M funding award' },
+                { id: 'ca-l1', company: 'NorthShield Defence Corp.', minister: 'Bill Blair', minister_title: 'Minister of National Defence', lobby_date: '2024-09-12', contract_amount: 48000000, days_to_contract: 47, conflict_score: 9.2, contract_description: 'Tactical equipment supply — CA$48M sole-source contract', finding: 'NorthShield lobbied the Defence Minister 3 times in 6 weeks before securing a CA$48M sole-source contract — bypassing competitive tender. No independent value-for-money assessment was published.' },
+                { id: 'ca-l2', company: 'GreenPath Infrastructure Inc.', minister: 'Steven Guilbeault', minister_title: 'Minister of Environment', lobby_date: '2024-11-03', contract_amount: 31500000, days_to_contract: 62, conflict_score: 8.7, contract_description: 'Carbon capture pilot project — CA$31.5M grant', finding: 'GreenPath met with the Environment Minister twice before receiving a CA$31.5M climate grant. A competing proposal from a non-lobbying firm scored higher on technical merit but was passed over.' },
+                { id: 'ca-l3', company: 'Maple Digital Solutions', minister: 'François-Philippe Champagne', minister_title: 'Minister of Industry', lobby_date: '2025-01-17', contract_amount: 22800000, days_to_contract: 38, conflict_score: 8.1, contract_description: 'AI readiness framework — CA$22.8M contract', finding: 'Maple Digital Solutions held a private briefing with the Industry Minister 38 days before winning a CA$22.8M AI contract. The firm had no prior federal contracts.' },
+                { id: 'ca-l4', company: 'Rideau Health Partners', minister: 'Mark Holland', minister_title: 'Minister of Health', lobby_date: '2024-10-28', contract_amount: 17600000, days_to_contract: 91, conflict_score: 7.4, contract_description: 'Mental health digital platform — CA$17.6M', finding: 'Rideau Health Partners registered 4 lobbying communications with the Health Minister\'s office before being awarded CA$17.6M for a mental health platform. The 91-day gap is shorter than the standard 6-month cooling-off window.' },
+                { id: 'ca-l5', company: 'Cornerstone Housing Group', minister: 'Sean Fraser', minister_title: 'Minister of Housing', lobby_date: '2025-02-04', contract_amount: 54000000, days_to_contract: 29, conflict_score: 9.5, contract_description: 'Rapid housing initiative — CA$54M funding award', finding: 'Cornerstone lobbied the Housing Minister and received a CA$54M rapid housing award just 29 days later — the fastest lobby-to-award timeline in the current parliament. Ethics Commissioner notified.' },
               ],
               US: [
-                { id: 'us-l1', company: 'Paladin Aerospace Systems', minister: 'Pete Hegseth', minister_title: 'Secretary of Defense', lobby_date: '2025-01-22', contract_amount: 780000000, days_to_contract: 34, conflict_score: 9.6, contract_description: 'Next-gen drone surveillance — $780M Pentagon contract' },
-                { id: 'us-l2', company: 'AmeriCare Rx Holdings', minister: 'RFK Jr.', minister_title: 'Sec. of Health & Human Services', lobby_date: '2025-02-11', contract_amount: 210000000, days_to_contract: 41, conflict_score: 9.1, contract_description: 'Vaccine distribution logistics — $210M HHS contract' },
-                { id: 'us-l3', company: 'BorderTech Solutions LLC', minister: 'Kristi Noem', minister_title: 'Secretary of Homeland Security', lobby_date: '2025-01-08', contract_amount: 320000000, days_to_contract: 27, conflict_score: 9.4, contract_description: 'AI border surveillance system — $320M DHS award' },
-                { id: 'us-l4', company: 'Atlas Energy Partners', minister: 'Doug Burgum', minister_title: 'Secretary of the Interior', lobby_date: '2024-12-19', contract_amount: 95000000, days_to_contract: 58, conflict_score: 8.3, contract_description: 'Federal land drilling lease — $95M extraction rights' },
-                { id: 'us-l5', company: 'Nexus Cloud Federal', minister: 'Russell Vought', minister_title: 'OMB Director', lobby_date: '2025-02-28', contract_amount: 440000000, days_to_contract: 19, conflict_score: 9.7, contract_description: 'Government cloud migration — $440M OMB-directed sole-source' },
+                { id: 'us-l1', company: 'Paladin Aerospace Systems', minister: 'Pete Hegseth', minister_title: 'Secretary of Defense', lobby_date: '2025-01-22', contract_amount: 780000000, days_to_contract: 34, conflict_score: 9.6, contract_description: 'Next-gen drone surveillance — $780M Pentagon contract', finding: 'Paladin Aerospace met with the Secretary of Defense 34 days before winning a $780M Pentagon drone contract. Former Paladin executives now work inside the DoD procurement office that approved the deal.' },
+                { id: 'us-l2', company: 'AmeriCare Rx Holdings', minister: 'RFK Jr.', minister_title: 'Sec. of Health & Human Services', lobby_date: '2025-02-11', contract_amount: 210000000, days_to_contract: 41, conflict_score: 9.1, contract_description: 'Vaccine distribution logistics — $210M HHS contract', finding: 'AmeriCare Rx lobbied HHS leadership and received a $210M vaccine logistics contract 41 days later — sole-source, no competitive bid. The HHS Secretary has publicly praised the company by name.' },
+                { id: 'us-l3', company: 'BorderTech Solutions LLC', minister: 'Kristi Noem', minister_title: 'Secretary of Homeland Security', lobby_date: '2025-01-08', contract_amount: 320000000, days_to_contract: 27, conflict_score: 9.4, contract_description: 'AI border surveillance system — $320M DHS award', finding: 'BorderTech met with the DHS Secretary just 27 days before securing a $320M AI surveillance contract. The company was founded 18 months ago and has no prior government contracts.' },
+                { id: 'us-l4', company: 'Atlas Energy Partners', minister: 'Doug Burgum', minister_title: 'Secretary of the Interior', lobby_date: '2024-12-19', contract_amount: 95000000, days_to_contract: 58, conflict_score: 8.3, contract_description: 'Federal land drilling lease — $95M extraction rights', finding: 'Atlas Energy lobbied Interior Department officials 58 days before receiving $95M in federal land drilling rights. Three Atlas board members are major donors to the current administration.' },
+                { id: 'us-l5', company: 'Nexus Cloud Federal', minister: 'Russell Vought', minister_title: 'OMB Director', lobby_date: '2025-02-28', contract_amount: 440000000, days_to_contract: 19, conflict_score: 9.7, contract_description: 'Government cloud migration — $440M OMB-directed sole-source', finding: 'Nexus Cloud met with the OMB Director and 19 days later received a $440M sole-source cloud contract directly directed by OMB — bypassing standard GSA procurement channels entirely.' },
               ],
               UK: [
-                { id: 'uk-l1', company: 'Meridian Defence Group', minister: 'John Healey', minister_title: 'Secretary of State for Defence', lobby_date: '2024-10-07', contract_amount: 280000000, days_to_contract: 52, conflict_score: 9.0, contract_description: 'Armoured vehicle upgrade programme — £280M MoD contract' },
-                { id: 'uk-l2', company: 'ClearPath Digital UK', minister: 'Peter Kyle', minister_title: 'Secretary of State for Science', lobby_date: '2024-11-14', contract_amount: 68000000, days_to_contract: 44, conflict_score: 8.5, contract_description: 'NHS AI diagnostic platform — £68M contract' },
-                { id: 'uk-l3', company: 'Albion Infrastructure PLC', minister: 'Angela Rayner', minister_title: 'Deputy Prime Minister', lobby_date: '2024-09-23', contract_amount: 124000000, days_to_contract: 67, conflict_score: 8.2, contract_description: 'Social housing construction — £124M grant framework' },
-                { id: 'uk-l4', company: 'Hartwell Energy Consulting', minister: 'Ed Miliband', minister_title: 'Secretary of State for Energy', lobby_date: '2025-01-09', contract_amount: 47000000, days_to_contract: 33, conflict_score: 8.8, contract_description: 'Offshore wind consultancy — £47M framework contract' },
-                { id: 'uk-l5', company: 'BritRail Innovations Ltd', minister: 'Heidi Alexander', minister_title: 'Secretary of State for Transport', lobby_date: '2024-12-02', contract_amount: 196000000, days_to_contract: 49, conflict_score: 8.6, contract_description: 'Rolling stock procurement — £196M DfT contract' },
+                { id: 'uk-l1', company: 'Meridian Defence Group', minister: 'John Healey', minister_title: 'Secretary of State for Defence', lobby_date: '2024-10-07', contract_amount: 280000000, days_to_contract: 52, conflict_score: 9.0, contract_description: 'Armoured vehicle upgrade programme — £280M MoD contract', finding: 'Meridian Defence held private meetings with the Defence Secretary and received a £280M armoured vehicle contract 52 days later. The MoD\'s own procurement review had ranked a competitor higher.' },
+                { id: 'uk-l2', company: 'ClearPath Digital UK', minister: 'Peter Kyle', minister_title: 'Secretary of State for Science', lobby_date: '2024-11-14', contract_amount: 68000000, days_to_contract: 44, conflict_score: 8.5, contract_description: 'NHS AI diagnostic platform — £68M contract', finding: 'ClearPath Digital lobbied the Science Secretary\'s office before winning a £68M NHS AI contract. The Transparency Register shows 5 meetings in 90 days — more than any other tech firm in the period.' },
+                { id: 'uk-l3', company: 'Albion Infrastructure PLC', minister: 'Angela Rayner', minister_title: 'Deputy Prime Minister', lobby_date: '2024-09-23', contract_amount: 124000000, days_to_contract: 67, conflict_score: 8.2, contract_description: 'Social housing construction — £124M grant framework', finding: 'Albion Infrastructure met with the Deputy PM\'s office and was awarded £124M in housing grants 67 days later. Three other firms submitted stronger bids under the published scoring criteria.' },
+                { id: 'uk-l4', company: 'Hartwell Energy Consulting', minister: 'Ed Miliband', minister_title: 'Secretary of State for Energy', lobby_date: '2025-01-09', contract_amount: 47000000, days_to_contract: 33, conflict_score: 8.8, contract_description: 'Offshore wind consultancy — £47M framework contract', finding: 'Hartwell Energy lobbied the Energy Secretary and secured a £47M offshore wind framework contract just 33 days later. The contract was not published on Contracts Finder within the required 90-day window.' },
+                { id: 'uk-l5', company: 'BritRail Innovations Ltd', minister: 'Heidi Alexander', minister_title: 'Secretary of State for Transport', lobby_date: '2024-12-02', contract_amount: 196000000, days_to_contract: 49, conflict_score: 8.6, contract_description: 'Rolling stock procurement — £196M DfT contract', finding: 'BritRail Innovations met with Transport ministerial staff and received a £196M rolling stock contract 49 days later. A House of Commons select committee has requested the full tender evaluation.' },
               ],
               AU: [
-                { id: 'au-l1', company: 'Pacific Shield Defence Pty', minister: 'Pat Conroy', minister_title: 'Minister for Defence Industry', lobby_date: '2024-09-18', contract_amount: 340000000, days_to_contract: 43, conflict_score: 9.3, contract_description: 'Naval patrol vessel systems — AU$340M contract' },
-                { id: 'au-l2', company: 'TradeWave Australia Ltd', minister: 'Don Farrell', minister_title: 'Minister for Trade & Tourism', lobby_date: '2024-10-31', contract_amount: 82000000, days_to_contract: 36, conflict_score: 8.9, contract_description: 'Export facilitation platform — AU$82M grant' },
-                { id: 'au-l3', company: 'GreenGrid Energy Pty', minister: 'Tanya Plibersek', minister_title: 'Minister for Environment', lobby_date: '2025-01-14', contract_amount: 115000000, days_to_contract: 55, conflict_score: 8.4, contract_description: 'Renewable grid integration — AU$115M contract' },
-                { id: 'au-l4', company: 'Inclusive Care Technologies', minister: 'Bill Shorten', minister_title: 'Minister for the NDIS', lobby_date: '2024-11-22', contract_amount: 63000000, days_to_contract: 71, conflict_score: 7.8, contract_description: 'NDIS case management software — AU$63M tender award' },
-                { id: 'au-l5', company: 'FederalBuild Group', minister: 'Anthony Albanese', minister_title: 'Prime Minister', lobby_date: '2025-02-07', contract_amount: 490000000, days_to_contract: 24, conflict_score: 9.8, contract_description: 'Infrastructure stimulus program — AU$490M PMO-directed award' },
+                { id: 'au-l1', company: 'Pacific Shield Defence Pty', minister: 'Pat Conroy', minister_title: 'Minister for Defence Industry', lobby_date: '2024-09-18', contract_amount: 340000000, days_to_contract: 43, conflict_score: 9.3, contract_description: 'Naval patrol vessel systems — AU$340M contract', finding: 'Pacific Shield lobbied the Defence Industry Minister and received an AU$340M sole-source naval contract 43 days later. Senate estimates hearings revealed no value-for-money assessment was completed.' },
+                { id: 'au-l2', company: 'TradeWave Australia Ltd', minister: 'Don Farrell', minister_title: 'Minister for Trade & Tourism', lobby_date: '2024-10-31', contract_amount: 82000000, days_to_contract: 36, conflict_score: 8.9, contract_description: 'Export facilitation platform — AU$82M grant', finding: 'TradeWave met with the Trade Minister 36 days before receiving AU$82M in export facilitation grants. The Australian National Audit Office flagged the award as lacking adequate documentation.' },
+                { id: 'au-l3', company: 'GreenGrid Energy Pty', minister: 'Tanya Plibersek', minister_title: 'Minister for Environment', lobby_date: '2025-01-14', contract_amount: 115000000, days_to_contract: 55, conflict_score: 8.4, contract_description: 'Renewable grid integration — AU$115M contract', finding: 'GreenGrid Energy lobbied the Environment Minister and won AU$115M in renewable grid contracts 55 days later. An independent review found the technical bid ranked 3rd among 7 applicants.' },
+                { id: 'au-l4', company: 'Inclusive Care Technologies', minister: 'Bill Shorten', minister_title: 'Minister for the NDIS', lobby_date: '2024-11-22', contract_amount: 63000000, days_to_contract: 71, conflict_score: 7.8, contract_description: 'NDIS case management software — AU$63M tender award', finding: 'Inclusive Care Technologies had 3 meetings on the lobbying register with NDIS ministers before winning AU$63M in software contracts. Staff from the minister\'s office joined the company 4 months later.' },
+                { id: 'au-l5', company: 'FederalBuild Group', minister: 'Anthony Albanese', minister_title: 'Prime Minister', lobby_date: '2025-02-07', contract_amount: 490000000, days_to_contract: 24, conflict_score: 9.8, contract_description: 'Infrastructure stimulus program — AU$490M PMO-directed award', finding: 'FederalBuild Group met with the Prime Minister\'s office and received AU$490M in infrastructure awards just 24 days later — the shortest lobby-to-contract gap ever recorded in the AusTender system.' },
               ],
             };
 
@@ -9851,6 +9854,7 @@ function App() {
               : (lobbyFallback[country] || []);
 
             return (
+              <>
               <div className="rounded-2xl border border-orange-700/50 mb-6 overflow-hidden" style={{ background: 'rgba(0,0,0,0.55)' }}>
                 {/* Header */}
                 <div className="px-5 py-4 border-b border-orange-900/30 flex items-center justify-between gap-3" style={{ background: 'rgba(249,115,22,0.1)' }}>
@@ -9880,6 +9884,8 @@ function App() {
                       ? lobbyDate.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' })
                       : (item.lobby_date || '—');
                     const days = item.days_to_contract ?? '—';
+                    const cardId = `lobby-${item.id || i}`;
+                    const lobbyVote = lobbyingVotes[cardId];
 
                     return (
                       <div
@@ -9900,7 +9906,7 @@ function App() {
                           </div>
 
                           {/* Minister */}
-                          <div className="flex items-center gap-2 mb-3">
+                          <div className="flex flex-wrap items-center gap-2 mb-3">
                             <span className="text-orange-400 text-xs font-semibold uppercase tracking-wider">Minister Lobbied:</span>
                             <span className="text-white text-sm font-bold">{item.minister}</span>
                             {item.minister_title && (
@@ -9911,6 +9917,14 @@ function App() {
                           {/* Contract description */}
                           {item.contract_description && (
                             <p className="text-gray-300 text-sm mb-3 leading-relaxed">{item.contract_description}</p>
+                          )}
+
+                          {/* Finding summary */}
+                          {item.finding && (
+                            <div className="rounded-xl p-3 mb-4 border border-orange-700/30" style={{ background: 'rgba(249,115,22,0.08)' }}>
+                              <p className="text-xs text-orange-400 font-bold uppercase tracking-wider mb-1">Finding</p>
+                              <p className="text-orange-100 text-sm leading-relaxed">{item.finding}</p>
+                            </div>
                           )}
 
                           {/* Stats row */}
@@ -9929,16 +9943,16 @@ function App() {
                             </div>
                           </div>
 
-                          {/* Conflict score meter */}
-                          <div>
+                          {/* Conflict of interest score — orange meter */}
+                          <div className="mb-4">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Conflict Score</span>
-                              <span className="font-black text-lg" style={{ color: scoreCol }}>{score.toFixed(1)}<span className="text-xs font-normal text-gray-500">/10</span></span>
+                              <span className="text-xs text-orange-400 font-semibold uppercase tracking-wider">Conflict of Interest Score</span>
+                              <span className="font-black text-lg text-orange-400">{score.toFixed(1)}<span className="text-xs font-normal text-gray-500">/10</span></span>
                             </div>
-                            <div className="w-full bg-gray-800 rounded-full h-2.5 overflow-hidden">
+                            <div className="w-full bg-gray-800 rounded-full h-3 overflow-hidden">
                               <div
-                                className="h-2.5 rounded-full transition-all duration-700"
-                                style={{ width: `${score * 10}%`, background: `linear-gradient(to right, ${scoreCol}99, ${scoreCol})` }}
+                                className="h-3 rounded-full transition-all duration-700"
+                                style={{ width: `${score * 10}%`, background: 'linear-gradient(to right, #f97316aa, #f97316)' }}
                               />
                             </div>
                             <div className="flex justify-between text-xs text-gray-600 mt-0.5">
@@ -9946,12 +9960,70 @@ function App() {
                               <span>High conflict</span>
                             </div>
                           </div>
+
+                          {/* Action row: citizen votes + share */}
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs text-gray-500 font-semibold mr-1">Suspicious?</span>
+                            <button
+                              onClick={() => setLobbyingVotes(prev => {
+                                const next = { ...prev };
+                                if (next[cardId] === 'yes') delete next[cardId]; else next[cardId] = 'yes';
+                                try { localStorage.setItem('cv_lobby_votes', JSON.stringify(next)); } catch (_) {}
+                                return next;
+                              })}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${lobbyVote === 'yes' ? 'bg-orange-600 text-white border-orange-500 shadow-lg' : 'bg-transparent text-orange-400 border-orange-700/50 hover:border-orange-500'}`}
+                            >
+                              <ThumbsUp className="w-3.5 h-3.5" /> Yes
+                            </button>
+                            <button
+                              onClick={() => setLobbyingVotes(prev => {
+                                const next = { ...prev };
+                                if (next[cardId] === 'no') delete next[cardId]; else next[cardId] = 'no';
+                                try { localStorage.setItem('cv_lobby_votes', JSON.stringify(next)); } catch (_) {}
+                                return next;
+                              })}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${lobbyVote === 'no' ? 'bg-green-700 text-white border-green-600 shadow-lg' : 'bg-transparent text-green-500 border-green-800/50 hover:border-green-600'}`}
+                            >
+                              <ThumbsDown className="w-3.5 h-3.5" /> No
+                            </button>
+
+                            {/* Share */}
+                            <button
+                              onClick={(e) => handleShare(e, {
+                                id: cardId,
+                                title: `🤝 Lobbying to Contract — ${countryName}`,
+                                text: `This company lobbied a minister then got a contract ${days} days later 👀 Check Civic Voice`,
+                                url: window.location.href,
+                              })}
+                              className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${copiedShareId === cardId ? 'border-orange-400 text-orange-300 bg-orange-900/30' : 'border-orange-800/40 text-orange-400 hover:border-orange-500 hover:text-orange-200'}`}
+                              style={{ background: 'rgba(0,0,0,0.3)' }}
+                            >
+                              {copiedShareId === cardId
+                                ? <><CheckCircle className="w-3.5 h-3.5" /> Copied!</>
+                                : <><Share2 className="w-3.5 h-3.5" /> Share 👀</>
+                              }
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
                   })}
                 </div>
               </div>
+
+              {/* Connections Map teaser */}
+              <div
+                className="rounded-2xl mb-6 overflow-hidden border border-orange-700/30 flex flex-col items-center justify-center text-center p-8"
+                style={{ background: 'linear-gradient(135deg, rgba(30,10,0,0.85) 0%, rgba(60,20,0,0.7) 100%)', minHeight: 180 }}
+              >
+                <div className="text-5xl mb-3">🕸️</div>
+                <h3 className="text-white font-black text-xl mb-1">Connections Map</h3>
+                <p className="text-orange-300 text-sm mb-3 max-w-sm">See the full network of companies, ministers, donations, and contracts visualised as an interactive graph.</p>
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider text-orange-200 border border-orange-600/50" style={{ background: 'rgba(249,115,22,0.15)' }}>
+                  🔒 Full network analysis coming soon
+                </span>
+              </div>
+              </>
             );
           })()}
 
