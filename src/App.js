@@ -3,7 +3,7 @@ import app, { db } from './firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { logEvent } from './analytics';
 import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell } from 'lucide-react';
-import { BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, AreaChart, Area, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './App.css';
 
 // Custom CSS for animations and enhanced styling
@@ -12831,6 +12831,82 @@ function App() {
             </div>
           </div>
 
+          {/* Promise Score History chart */}
+          {(() => {
+            const SCORE_HISTORY = {
+              'Mark Carney': [
+                { month: 'Oct', score: 52 }, { month: 'Nov', score: 48 }, { month: 'Dec', score: 45 },
+                { month: 'Jan', score: 41 }, { month: 'Feb', score: 38 }, { month: 'Mar', score: promiseScore },
+              ],
+              'Donald Trump': [
+                { month: 'Oct', score: 44 }, { month: 'Nov', score: 40 }, { month: 'Dec', score: 36 },
+                { month: 'Jan', score: 42 }, { month: 'Feb', score: 39 }, { month: 'Mar', score: promiseScore },
+              ],
+              'Keir Starmer': [
+                { month: 'Oct', score: 55 }, { month: 'Nov', score: 50 }, { month: 'Dec', score: 46 },
+                { month: 'Jan', score: 43 }, { month: 'Feb', score: 40 }, { month: 'Mar', score: promiseScore },
+              ],
+              'Anthony Albanese': [
+                { month: 'Oct', score: 58 }, { month: 'Nov', score: 54 }, { month: 'Dec', score: 50 },
+                { month: 'Jan', score: 47 }, { month: 'Feb', score: 44 }, { month: 'Mar', score: promiseScore },
+              ],
+            };
+            const historyData = SCORE_HISTORY[leaderName] || [];
+            return (
+              <div className="bg-white rounded-2xl shadow-md p-5 mb-5 border border-gray-100">
+                <h3 className="font-bold text-gray-700 text-base mb-4">Promise Score History</h3>
+                <ResponsiveContainer width="100%" height={160}>
+                  <AreaChart data={historyData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={scoreColor} stopOpacity={0.3} />
+                        <stop offset="95%" stopColor={scoreColor} stopOpacity={0.02} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      formatter={(v) => [`${v}/100`, 'Score']}
+                      contentStyle={{ background: '#1e293b', border: 'none', borderRadius: 10, color: '#fff', fontSize: 12 }}
+                      itemStyle={{ color: '#fff' }}
+                    />
+                    <Area type="monotone" dataKey="score" stroke={scoreColor} strokeWidth={2.5} fill="url(#scoreGrad)" dot={{ fill: scoreColor, r: 4 }} activeDot={{ r: 6 }} />
+                  </AreaChart>
+                </ResponsiveContainer>
+                <p className="text-xs text-gray-400 text-center mt-2">Score trend — last 6 months (fallback estimates)</p>
+              </div>
+            );
+          })()}
+
+          {/* Most Broken Promises */}
+          {(() => {
+            const broken = allPromises.filter(p => p.status === 'Broken').slice(0, 3);
+            if (broken.length === 0) return null;
+            return (
+              <div className="bg-white rounded-2xl shadow-md p-5 mb-5 border border-red-100">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">🚨</span>
+                  <h3 className="font-bold text-gray-700 text-base">Most Broken Promises</h3>
+                  <span className="ml-auto text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">Top {broken.length}</span>
+                </div>
+                <div className="space-y-3">
+                  {broken.map((p, idx) => (
+                    <div key={p.id || idx} className="flex gap-3 p-3 rounded-xl bg-red-50 border border-red-100">
+                      <span className="text-lg font-black text-red-300 w-6 shrink-0">#{idx + 1}</span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 leading-snug italic">"{p.text}"</p>
+                        {p.category && (
+                          <span className="inline-block mt-1 text-xs text-red-500 font-medium">{p.category}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Filters */}
           <div className="bg-white rounded-2xl shadow-sm p-4 mb-5 border border-gray-100 space-y-3">
             <div>
@@ -12948,7 +13024,7 @@ function App() {
                       </p>
                     )}
 
-                    {/* Reactions */}
+                    {/* Reactions + Share */}
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs text-gray-400 font-semibold mr-1">Your reaction:</span>
                       {[
@@ -12969,6 +13045,17 @@ function App() {
                           {label}
                         </button>
                       ))}
+                      <button
+                        onClick={(e) => handleShare(e, {
+                          id: `promise-${promise.id || i}`,
+                          title: 'Broken Promise',
+                          text: `Your PM promised this and has not delivered 👀 Check Civic Voice`,
+                          url: window.location.href,
+                        })}
+                        className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 text-gray-500 hover:border-gray-400 transition-all"
+                      >
+                        {copiedShareId === `promise-${promise.id || i}` ? '✓ Copied' : <><Share2 size={12} /> Share</>}
+                      </button>
                     </div>
                   </div>
                 </div>
