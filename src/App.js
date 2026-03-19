@@ -1621,6 +1621,11 @@ function App() {
   const [promiseReactions, setPromiseReactions] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_promise_reactions') || '{}'); } catch (_) { return {}; }
   });
+  const [foreignAidData, setForeignAidData] = useState([]);
+  const [foreignAidLoading, setForeignAidLoading] = useState(false);
+  const [foreignAidReactions, setForeignAidReactions] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cv_foreign_aid_reactions') || '{}'); } catch (_) { return {}; }
+  });
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
   });
@@ -10299,6 +10304,281 @@ function App() {
             </div>
           )}
 
+          {/* ── Foreign Aid & International Spending ── */}
+          {(() => {
+            const FOREIGN_AID_FALLBACK = {
+              CA: [
+                { id: 'ca-aid-1', recipient_country: 'Ukraine', recipient_flag: '🇺🇦', amount: 500000000, purpose: 'Humanitarian & Military Support', description: 'Emergency aid package including medical supplies, generators, and defensive equipment for civilian infrastructure protection.', department: 'Global Affairs Canada', date_approved: '2024-02-15', efficiency_score: 7.2, status: 'Active', plain_explanation: 'Canada is sending $500M to help Ukraine with the ongoing war — covering hospitals, power stations, and defensive gear.' },
+                { id: 'ca-aid-2', recipient_country: 'Haiti', recipient_flag: '🇭🇹', amount: 75000000, purpose: 'Disaster Relief & Stabilisation', description: 'Post-earthquake and gang violence response — food, shelter, and police capacity building.', department: 'International Development Research Centre', date_approved: '2024-07-22', efficiency_score: 5.1, status: 'Active', plain_explanation: 'Haiti has been in crisis for years. This $75M covers food banks, temporary shelters, and training local police.' },
+                { id: 'ca-aid-3', recipient_country: 'Ethiopia', recipient_flag: '🇪🇹', amount: 45000000, purpose: 'Food Security & Nutrition', description: 'Emergency food assistance and agricultural support for drought-affected communities in the Tigray region.', department: 'Global Affairs Canada', date_approved: '2023-11-10', efficiency_score: 6.8, status: 'Completed', plain_explanation: 'Severe drought left millions without food in northern Ethiopia. This funded emergency food drops and new irrigation projects.' },
+                { id: 'ca-aid-4', recipient_country: 'Bangladesh', recipient_flag: '🇧🇩', amount: 30000000, purpose: 'Climate Adaptation Infrastructure', description: 'Flood-resilient housing, early warning systems, and mangrove restoration in coastal areas.', department: 'International Development Research Centre', date_approved: '2024-05-03', efficiency_score: 8.1, status: 'Active', plain_explanation: 'Bangladesh floods every year due to climate change. Canada is funding sea walls, better weather alerts, and coastal forests to absorb storms.' },
+                { id: 'ca-aid-5', recipient_country: 'Jordan', recipient_flag: '🇯🇴', amount: 25000000, purpose: 'Syrian Refugee Support', description: 'Education, healthcare, and economic integration programs for Syrian refugee communities hosted in Jordan.', department: 'Global Affairs Canada', date_approved: '2024-01-18', efficiency_score: 7.9, status: 'Active', plain_explanation: 'Jordan hosts over 650,000 Syrian refugees. This helps pay for their kids\' schooling, basic healthcare, and job training.' },
+              ],
+              US: [
+                { id: 'us-aid-1', recipient_country: 'Ukraine', recipient_flag: '🇺🇦', amount: 61400000000, purpose: 'Military, Economic & Humanitarian Aid', description: 'Comprehensive Ukraine Security Assistance package including HIMARS systems, artillery, air defence, and economic budget support.', department: 'Department of State / DoD', date_approved: '2024-04-24', efficiency_score: 6.5, status: 'Active', plain_explanation: 'The US has sent over $61B to Ukraine since 2022 — much of it military hardware, plus money to keep the Ukrainian government running.' },
+                { id: 'us-aid-2', recipient_country: 'Israel', recipient_flag: '🇮🇱', amount: 3800000000, purpose: 'Annual Military Assistance (FMF)', description: 'Foreign Military Financing for procurement of US defence equipment — Iron Dome, F-35 jets, and munitions.', department: 'Department of Defense', date_approved: '2024-10-01', efficiency_score: 5.3, status: 'Active', plain_explanation: 'The US sends $3.8B every year to Israel to buy American-made weapons. Critics debate whether this is foreign aid or a defence subsidy.' },
+                { id: 'us-aid-3', recipient_country: 'Egypt', recipient_flag: '🇪🇬', amount: 1300000000, purpose: 'Security Assistance & Counter-Terrorism', description: 'Military financing for border security, Sinai counter-terrorism operations, and regional stability cooperation.', department: 'Department of Defense', date_approved: '2024-10-01', efficiency_score: 4.8, status: 'Under Review', plain_explanation: 'Egypt gets $1.3B annually, mostly to buy US weapons and for regional stability. Congress has repeatedly questioned oversight and human rights conditions.' },
+                { id: 'us-aid-4', recipient_country: 'Jordan', recipient_flag: '🇯🇴', amount: 1700000000, purpose: 'Economic & Security Assistance', description: 'Budget support, refugee assistance, water infrastructure, and military cooperation with a key regional partner.', department: 'USAID / State Department', date_approved: '2024-09-15', efficiency_score: 7.4, status: 'Active', plain_explanation: 'Jordan is a critical US ally in the Middle East. The $1.7B covers everything from keeping the government solvent to hosting Palestinian and Syrian refugees.' },
+                { id: 'us-aid-5', recipient_country: 'Afghanistan', recipient_flag: '🇦🇫', amount: 800000000, purpose: 'Humanitarian Aid (Post-withdrawal)', description: 'Food, healthcare, and winter survival aid channelled through UN agencies after the Taliban takeover.', department: 'USAID', date_approved: '2024-03-20', efficiency_score: 4.2, status: 'Under Review', plain_explanation: 'Despite withdrawing in 2021, the US still sends ~$800M/year in humanitarian aid to Afghanistan, mostly through the UN to avoid funding the Taliban directly.' },
+              ],
+              UK: [
+                { id: 'uk-aid-1', recipient_country: 'Ukraine', recipient_flag: '🇺🇦', amount: 3000000000, purpose: 'Military & Humanitarian Support', description: 'Challenger 2 tanks, air defence missiles, artillery rounds, and economic budget support pledged over 2024–25.', department: 'Foreign, Commonwealth & Development Office', date_approved: '2024-01-22', efficiency_score: 7.0, status: 'Active', plain_explanation: 'The UK has committed £3B to Ukraine including tanks and missiles. This is the largest single country donor commitment outside the US.' },
+                { id: 'uk-aid-2', recipient_country: 'Yemen', recipient_flag: '🇾🇪', amount: 156000000, purpose: 'Humanitarian Crisis Response', description: 'Food, clean water, cholera treatment, and trauma care in one of the world\'s worst humanitarian emergencies.', department: 'Foreign, Commonwealth & Development Office', date_approved: '2024-04-11', efficiency_score: 6.3, status: 'Active', plain_explanation: 'Yemen has been in a brutal civil war since 2015. The UK is spending £156M on food drops, water purification, and emergency hospitals.' },
+                { id: 'uk-aid-3', recipient_country: 'Bangladesh', recipient_flag: '🇧🇩', amount: 115000000, purpose: 'Climate & Development Assistance', description: 'Flood-resilient farming, girls\' education, and garment worker rights in one of the most climate-vulnerable countries.', department: 'Foreign, Commonwealth & Development Office', date_approved: '2023-12-05', efficiency_score: 8.2, status: 'Active', plain_explanation: 'Bangladesh faces extreme flooding. The UK is funding smarter farming, keeping girls in school, and ensuring better conditions in the clothes factories that make British fashion.' },
+                { id: 'uk-aid-4', recipient_country: 'Ethiopia', recipient_flag: '🇪🇹', amount: 105000000, purpose: 'Food Security & Conflict Response', description: 'Emergency food aid and livelihood support for communities affected by conflict and drought in northern Ethiopia.', department: 'Foreign, Commonwealth & Development Office', date_approved: '2024-02-28', efficiency_score: 6.7, status: 'Completed', plain_explanation: 'Conflict and drought in Ethiopia created a hunger crisis. The UK spent £105M on food aid and helping farmers rebuild.' },
+                { id: 'uk-aid-5', recipient_country: 'Syria', recipient_flag: '🇸🇾', amount: 95000000, purpose: 'Humanitarian Aid Inside Syria', description: 'Food, shelter, healthcare, and child protection services for internally displaced Syrians.', department: 'Foreign, Commonwealth & Development Office', date_approved: '2024-06-17', efficiency_score: 5.9, status: 'Active', plain_explanation: 'Syria\'s civil war has displaced 13M people. The UK is funding emergency supplies and keeping clinics open for children caught in the conflict.' },
+              ],
+              AU: [
+                { id: 'au-aid-1', recipient_country: 'Papua New Guinea', recipient_flag: '🇵🇬', amount: 600000000, purpose: 'Development & Security Partnership', description: 'Infrastructure, health, education, and police capacity building under the Comprehensive Strategic and Economic Partnership.', department: 'Department of Foreign Affairs and Trade', date_approved: '2024-07-01', efficiency_score: 6.4, status: 'Active', plain_explanation: 'PNG is Australia\'s closest neighbour. The $600M funds roads, hospitals, schools, and police training — and keeps China\'s influence at bay.' },
+                { id: 'au-aid-2', recipient_country: 'Indonesia', recipient_flag: '🇮🇩', amount: 170000000, purpose: 'Education, Health & Governance', description: 'Scholarships, maternal health clinics, and anti-corruption programs supporting Australia\'s largest regional partner.', department: 'Department of Foreign Affairs and Trade', date_approved: '2024-04-15', efficiency_score: 7.5, status: 'Active', plain_explanation: 'Indonesia has 280M people and is Australia\'s most important neighbour. This pays for uni scholarships, rural health clinics, and anti-graft programs.' },
+                { id: 'au-aid-3', recipient_country: 'Solomon Islands', recipient_flag: '🇸🇧', amount: 130000000, purpose: 'Stability & Security Cooperation', description: 'Police deployment, infrastructure repair, and community resilience after Honiara riots and the China security deal controversy.', department: 'Department of Foreign Affairs and Trade', date_approved: '2024-03-09', efficiency_score: 5.8, status: 'Under Review', plain_explanation: 'After the Solomons signed a security deal with China, Australia ramped up aid to $130M to strengthen ties, deploy police, and rebuild trust.' },
+                { id: 'au-aid-4', recipient_country: 'Timor-Leste', recipient_flag: '🇹🇱', amount: 85000000, purpose: 'Governance & Economic Development', description: 'Public sector reform, tax administration, and agricultural diversification to reduce dependence on oil revenue.', department: 'Department of Foreign Affairs and Trade', date_approved: '2024-01-30', efficiency_score: 7.1, status: 'Active', plain_explanation: 'Timor-Leste is one of the world\'s youngest and poorest nations. Australia is helping them build a government that works and grow food beyond just drilling for oil.' },
+                { id: 'au-aid-5', recipient_country: 'Tonga', recipient_flag: '🇹🇴', amount: 40000000, purpose: 'Climate Resilience & Disaster Recovery', description: 'Post-volcanic eruption infrastructure rebuild, clean energy projects, and early warning systems for cyclones.', department: 'Department of Foreign Affairs and Trade', date_approved: '2024-05-22', efficiency_score: 8.4, status: 'Active', plain_explanation: 'Tonga was devastated by a volcano in 2022. Australia\'s $40M is rebuilding roads and telecoms, plus installing solar power to cut reliance on expensive diesel imports.' },
+              ],
+            };
+
+            const liveItems = foreignAidData.length > 0 ? foreignAidData : (FOREIGN_AID_FALLBACK[country] || []);
+            const sortedAid = [...liveItems].sort((a, b) => (b.amount || 0) - (a.amount || 0));
+
+            const aidStatusMeta = {
+              Active:         { bg: 'bg-green-600',  text: 'text-white' },
+              Completed:      { bg: 'bg-blue-600',   text: 'text-white' },
+              'Under Review': { bg: 'bg-yellow-500', text: 'text-gray-900' },
+            };
+
+            const efficiencyColor = (s) => {
+              if (s >= 8) return '#22c55e';
+              if (s >= 6) return '#eab308';
+              if (s >= 4) return '#f97316';
+              return '#ef4444';
+            };
+
+            const uniqueRecipients = [...new Set(sortedAid.map(a => `${a.recipient_flag} ${a.recipient_country}`))];
+
+            return (
+              <>
+              {/* Section header */}
+              <div className="rounded-2xl overflow-hidden mb-5" style={{ background: 'linear-gradient(135deg, rgba(0,40,80,0.9) 0%, rgba(0,70,140,0.7) 100%)', border: '1px solid rgba(59,130,246,0.3)' }}>
+                <div className="p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">🌍</span>
+                      <div>
+                        <h2 className="text-white font-black text-lg leading-tight">Foreign Aid &amp; International Spending</h2>
+                        <p className="text-blue-300 text-xs mt-0.5">{flag} {countryName} · International disbursements</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => fetchForeignAid(country)}
+                      disabled={foreignAidLoading}
+                      className="shrink-0 text-xs border border-blue-500/40 text-blue-300 hover:bg-blue-900/40 px-3 py-2 rounded-xl font-semibold transition-all"
+                    >
+                      {foreignAidLoading ? '⏳ Loading…' : '↻ Load Live Data'}
+                    </button>
+                  </div>
+
+                  {/* World map visual — recipient flags grid */}
+                  <div className="mt-4 rounded-xl p-4" style={{ background: 'rgba(0,20,50,0.6)', border: '1px solid rgba(59,130,246,0.2)' }}>
+                    <p className="text-blue-400 text-xs font-semibold uppercase tracking-wider mb-3">Recipient Countries</p>
+                    <div className="relative">
+                      {/* Globe illustration */}
+                      <div className="flex items-center justify-center mb-3">
+                        <div className="relative w-full max-w-xs">
+                          <div className="w-full h-24 rounded-2xl flex items-center justify-center relative overflow-hidden"
+                            style={{ background: 'radial-gradient(ellipse at 40% 40%, rgba(59,130,246,0.25) 0%, rgba(0,20,50,0.8) 70%)' }}>
+                            {/* Latitude lines */}
+                            {[20,50,80].map(t => (
+                              <div key={t} className="absolute left-0 right-0 border-t border-blue-800/30" style={{ top: `${t}%` }} />
+                            ))}
+                            {/* Longitude lines */}
+                            {[20,40,60,80].map(l => (
+                              <div key={l} className="absolute top-0 bottom-0 border-l border-blue-800/30" style={{ left: `${l}%` }} />
+                            ))}
+                            <span className="text-5xl relative z-10 opacity-30">🌐</span>
+                            {/* Pulsing dots for recipient countries */}
+                            {sortedAid.slice(0, 6).map((a, i) => {
+                              const positions = [
+                                { top: '25%', left: '62%' }, // Ukraine/Europe
+                                { top: '55%', left: '72%' }, // Middle East/Africa
+                                { top: '45%', left: '78%' }, // Middle East
+                                { top: '60%', left: '55%' }, // Africa
+                                { top: '35%', left: '82%' }, // South Asia
+                                { top: '70%', left: '85%' }, // Southeast Asia/Pacific
+                              ];
+                              const pos = positions[i] || { top: `${20 + i * 12}%`, left: `${30 + i * 10}%` };
+                              return (
+                                <div key={a.id || i} className="absolute z-20" style={{ top: pos.top, left: pos.left, transform: 'translate(-50%,-50%)' }}>
+                                  <div className="w-3 h-3 rounded-full animate-ping absolute" style={{ background: efficiencyColor(a.efficiency_score || 5), opacity: 0.4 }} />
+                                  <div className="w-3 h-3 rounded-full relative" style={{ background: efficiencyColor(a.efficiency_score || 5) }} />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                      {/* Flag pills */}
+                      <div className="flex flex-wrap gap-2 justify-center">
+                        {uniqueRecipients.map((r, i) => (
+                          <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-blue-100 border border-blue-600/30" style={{ background: 'rgba(59,130,246,0.15)' }}>
+                            {r}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Total amount */}
+                    <div className="mt-3 pt-3 border-t border-blue-800/30 flex items-center justify-between">
+                      <span className="text-blue-400 text-xs font-semibold">Total shown</span>
+                      <span className="text-white font-black text-base">{fmtAmount(sortedAid.reduce((s, a) => s + (a.amount || 0), 0))}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Aid cards */}
+              <div className="space-y-4 mb-6">
+                {foreignAidLoading && (
+                  <div className="flex items-center justify-center py-12 gap-3">
+                    <div className="w-8 h-8 border-4 border-blue-600 border-t-blue-300 rounded-full animate-spin" />
+                    <p className="text-blue-300 text-sm">Loading foreign aid data…</p>
+                  </div>
+                )}
+                {!foreignAidLoading && sortedAid.map((aid, idx) => {
+                  const sMeta = aidStatusMeta[aid.status] || aidStatusMeta['Under Review'];
+                  const eff = aid.efficiency_score ?? 5;
+                  const effColor = efficiencyColor(eff);
+                  const reactionKey = `${country}-${aid.id || idx}`;
+                  const currentReaction = foreignAidReactions[reactionKey];
+
+                  return (
+                    <div
+                      key={aid.id || idx}
+                      className="rounded-2xl overflow-hidden animate-scale-in"
+                      style={{ animationDelay: `${idx * 0.04}s`, background: 'rgba(0,20,50,0.7)', border: '1px solid rgba(59,130,246,0.2)' }}
+                    >
+                      {/* Blue top stripe */}
+                      <div className="h-1.5 w-full" style={{ background: `linear-gradient(to right, ${effColor}88, ${effColor})` }} />
+
+                      <div className="p-4 sm:p-5">
+                        {/* Recipient + status row */}
+                        <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-3xl leading-none">{aid.recipient_flag || '🌍'}</span>
+                            <div>
+                              <p className="text-white font-black text-base leading-tight">{aid.recipient_country}</p>
+                              {aid.purpose && <p className="text-blue-300 text-xs font-medium">{aid.purpose}</p>}
+                            </div>
+                          </div>
+                          <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-bold ${sMeta.bg} ${sMeta.text}`}>
+                            {aid.status}
+                          </span>
+                        </div>
+
+                        {/* Amount + date + dept */}
+                        <div className="flex flex-wrap gap-4 mb-3">
+                          <div>
+                            <p className="text-blue-400 text-xs uppercase font-semibold">Amount</p>
+                            <p className="text-white font-black text-xl">{fmtAmount(aid.amount)}</p>
+                          </div>
+                          {aid.date_approved && (
+                            <div>
+                              <p className="text-blue-400 text-xs uppercase font-semibold">Approved</p>
+                              <p className="text-blue-200 text-sm font-medium">{aid.date_approved}</p>
+                            </div>
+                          )}
+                          {aid.department && (
+                            <div className="min-w-0">
+                              <p className="text-blue-400 text-xs uppercase font-semibold">Department</p>
+                              <p className="text-blue-200 text-xs font-medium leading-snug max-w-[180px]">{aid.department}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Project description */}
+                        {aid.description && (
+                          <p className="text-blue-100 text-sm leading-relaxed mb-3 italic border-l-2 border-blue-600/50 pl-3">
+                            {aid.description}
+                          </p>
+                        )}
+
+                        {/* Plain language explanation */}
+                        {aid.plain_explanation && (
+                          <div className="rounded-xl p-3 mb-3" style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)' }}>
+                            <p className="text-blue-200 text-sm leading-relaxed">
+                              <span className="font-semibold text-blue-300">💡 In plain language: </span>
+                              {aid.plain_explanation}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Efficiency score meter */}
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="text-blue-400 text-xs font-semibold uppercase shrink-0">Efficiency</span>
+                          <div className="flex items-center gap-0.5 flex-1">
+                            {[1,2,3,4,5,6,7,8,9,10].map(i => (
+                              <div
+                                key={i}
+                                className="flex-1 h-3 rounded-sm"
+                                style={{
+                                  background: i <= eff
+                                    ? (i >= 8 ? '#22c55e' : i >= 6 ? '#eab308' : i >= 4 ? '#f97316' : '#ef4444')
+                                    : 'rgba(255,255,255,0.08)'
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm font-black shrink-0" style={{ color: effColor }}>{eff}/10</span>
+                        </div>
+
+                        {/* Reaction buttons + share */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-blue-400 text-xs font-semibold mr-1">Your view:</span>
+                          {[
+                            { key: 'support',      label: '👍 Support',         active: 'bg-green-600 text-white border-green-500' },
+                            { key: 'oppose',       label: '👎 Oppose',          active: 'bg-red-600 text-white border-red-500' },
+                            { key: 'more_info',    label: '🤔 Need More Info',  active: 'bg-yellow-500 text-gray-900 border-yellow-400' },
+                          ].map(({ key, label, active }) => (
+                            <button
+                              key={key}
+                              onClick={() => setForeignAidReactions(prev => {
+                                const next = { ...prev };
+                                if (next[reactionKey] === key) delete next[reactionKey]; else next[reactionKey] = key;
+                                try { localStorage.setItem('cv_foreign_aid_reactions', JSON.stringify(next)); } catch (_) {}
+                                return next;
+                              })}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${currentReaction === key ? active : 'bg-transparent text-blue-300 border-blue-700/50 hover:border-blue-500'}`}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                          <button
+                            onClick={(e) => handleShare(e, {
+                              id: `aid-${aid.id || idx}`,
+                              title: `${flag} Foreign Aid — ${aid.recipient_country}`,
+                              text: `Your government sent ${fmtAmount(aid.amount)} to ${aid.recipient_country} 👀 Check Civic Voice`,
+                              url: window.location.href,
+                            })}
+                            className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                              copiedShareId === `aid-${aid.id || idx}`
+                                ? 'border-blue-400 text-blue-200 bg-blue-900/30'
+                                : 'border-blue-700/40 text-blue-400 hover:border-blue-500 hover:text-blue-200'
+                            }`}
+                          >
+                            {copiedShareId === `aid-${aid.id || idx}`
+                              ? <><CheckCircle className="w-3.5 h-3.5" /> Copied!</>
+                              : <><Share2 className="w-3.5 h-3.5" /> Share</>
+                            }
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              </>
+            );
+          })()}
+
           <p className="text-center text-red-900 text-xs mt-8 pb-4">
             Analysis by Claude AI · Civic Voice · Data from open government APIs · Refreshed weekly
           </p>
@@ -15114,6 +15394,21 @@ function App() {
       setPromiseTrackerData(prev => ({ ...prev, [leaderName]: [] }));
     } finally {
       setPromiseTrackerLoading(prev => ({ ...prev, [leaderName]: false }));
+    }
+  };
+
+  const fetchForeignAid = async (country) => {
+    setForeignAidLoading(true);
+    try {
+      const snap = await getDocs(query(collection(db, 'foreign_aid'), where('country', '==', country)));
+      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.amount || 0) - (a.amount || 0));
+      setForeignAidData(items);
+    } catch (err) {
+      console.warn('[ForeignAid] Firestore fetch failed:', err.message);
+      setForeignAidData([]);
+    } finally {
+      setForeignAidLoading(false);
     }
   };
 
