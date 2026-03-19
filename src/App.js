@@ -1614,6 +1614,11 @@ function App() {
   const [lobbyingVotes, setLobbyingVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_lobby_votes') || '{}'); } catch (_) { return {}; }
   });
+  const [promiseTrackerData, setPromiseTrackerData] = useState({});
+  const [promiseTrackerLoading, setPromiseTrackerLoading] = useState({});
+  const [promiseReactions, setPromiseReactions] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cv_promise_reactions') || '{}'); } catch (_) { return {}; }
+  });
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
   });
@@ -12485,6 +12490,211 @@ function App() {
     );
   };
 
+  const renderPromiseTrackerSection = (leaderName, toggleFn, expandedSections, accentColor) => {
+    const fallbackPromises = {
+      'Mark Carney': [
+        { id: 'ca-p1', text: '"We will build 500,000 homes by 2030."', date_promised: 'Mar 2025', source: 'Liberal Platform 2025', category: 'Housing', status: 'In Progress', progress: 12, update: 'Housing Accelerator Fund expanded April 2025. Zoning reforms passed in 3 major cities. No construction starts yet — well behind the required pace of 100,000 homes per year.' },
+        { id: 'ca-p2', text: '"I will remove the consumer carbon tax immediately."', date_promised: 'Mar 2025', source: 'Campaign Pledge', category: 'Economy', status: 'Broken', progress: 0, update: 'Consumer carbon pricing remains in place for 2025. The rebate structure was modified but the tax was not eliminated. Government acknowledged the reversal in April 2025.' },
+        { id: 'ca-p3', text: '"We will deliver a balanced federal budget by 2028."', date_promised: 'Mar 2025', source: 'Liberal Fiscal Plan', category: 'Economy', status: 'Not Started', progress: 5, update: '2025 budget projected a $40.1B deficit. No credible fiscal path to balance presented. Parliamentary Budget Officer states the 2028 target is "not achievable" without significant spending cuts.' },
+        { id: 'ca-p4', text: '"Canada will raise defence spending to 2% of GDP for NATO."', date_promised: 'Mar 2025', source: 'NATO Commitment', category: 'Defence', status: 'In Progress', progress: 45, update: 'Defence spending reached 1.76% of GDP in 2025, up from 1.38%. C$8.1B committed over 5 years. NATO allies have acknowledged progress. Target of 2% projected by 2027.' },
+        { id: 'ca-p5', text: '"Every Canadian will have access to a family doctor by 2028."', date_promised: 'Mar 2025', source: 'Liberal Health Pledge', category: 'Healthcare', status: 'Not Started', progress: 8, update: '17% of Canadians still have no family doctor — unchanged since the pledge. No new funding framework announced. College of Family Physicians calls the 2028 target "impossible at current pace."' },
+      ],
+      'Donald Trump': [
+        { id: 'us-p1', text: '"We will seal the border and conduct the largest deportation in American history."', date_promised: 'Jan 2025', source: 'Inauguration Speech', category: 'Immigration', status: 'In Progress', progress: 58, update: '180,000+ deportations completed through Feb 2025. Record Border Patrol enforcement. Multiple executive orders challenged in federal courts. Scale falls short of "largest ever" claim but enforcement significantly elevated.' },
+        { id: 'us-p2', text: '"Prices will come down immediately — I will end inflation on day one."', date_promised: 'Oct 2024', source: 'Campaign Trail', category: 'Economy', status: 'Broken', progress: 0, update: 'Inflation rose from 3.0% to 3.4% in January 2025. Tariffs imposed in Feb–Mar 2025 are projected to add 1–2% to consumer prices. Core inflation remains elevated well above the Fed\'s 2% target.' },
+        { id: 'us-p3', text: '"I will fully declassify the JFK assassination files."', date_promised: '2024', source: 'Campaign Promise', category: 'Governance', status: 'Kept', progress: 100, update: 'Executive order signed February 2025 directing full release of remaining JFK records. Over 80,000 pages released to the public. Historians and transparency groups consider this promise fully delivered.' },
+        { id: 'us-p4', text: '"America will withdraw from the Paris Climate Agreement on day one."', date_promised: 'Campaign', source: 'Climate Policy Pledge', category: 'Environment', status: 'Kept', progress: 100, update: 'Withdrawal letter submitted to the United Nations on January 20, 2025 — Inauguration Day. The United States formally re-exited the Paris accord, as promised.' },
+        { id: 'us-p5', text: '"We will impose tariffs to bring manufacturing jobs back to America."', date_promised: 'Campaign', source: 'Trade Policy Platform', category: 'Economy', status: 'In Progress', progress: 40, update: '25% tariffs on Canada and Mexico and 10% on China announced March 2025. Some automotive reshoring signals. Economists warn of higher consumer prices. Job impact not yet measurable — likely 12–18 months lag.' },
+      ],
+      'Keir Starmer': [
+        { id: 'uk-p1', text: '"We will cut NHS waiting lists with 40,000 more appointments every week."', date_promised: 'Jul 2024', source: 'King\'s Speech', category: 'Healthcare', status: 'In Progress', progress: 22, update: 'NHS waiting lists reduced by 190,000 from the July 2024 peak. Government\'s own target requires a 2M reduction. Current pace falls well short. Elective recovery plan announced but underfunded by an estimated £1.5B.' },
+        { id: 'uk-p2', text: '"Great British Energy will deliver clean power for Britain by 2030."', date_promised: 'Jul 2024', source: 'Labour Manifesto', category: 'Environment', status: 'In Progress', progress: 18, update: 'Great British Energy Act passed January 2025. £8.3B committed. Offshore wind licences issued. Independent analysts rate the 2030 clean power target as facing "significant delivery risk" given grid upgrade timelines.' },
+        { id: 'uk-p3', text: '"We will build 1.5 million new homes in this parliament."', date_promised: 'Jul 2024', source: 'Labour Manifesto', category: 'Housing', status: 'In Progress', progress: 8, update: 'Planning & Infrastructure Bill introduced November 2024. Housebuilding up only 3% in 2024 — needs to triple. Local authority planning capacity remains a structural barrier. OBR forecasts a significant shortfall.' },
+        { id: 'uk-p4', text: '"Working people will not face higher taxes under a Labour government."', date_promised: 'Jun 2024', source: 'Pre-election Pledge', category: 'Economy', status: 'Broken', progress: 0, update: 'October 2024 Budget raised employer National Insurance by £25B and froze income tax thresholds. Workers face effective real-terms tax rises through fiscal drag. The IFS described this pledge as "clearly broken."' },
+        { id: 'uk-p5', text: '"We will halve knife crime within a decade."', date_promised: 'Jul 2024', source: 'Labour Manifesto', category: 'Crime/Safety', status: 'Not Started', progress: 4, update: 'Serious Violence Reduction Orders introduced. No measurable reduction in knife crime incidents through Q1 2025. Strategy remains in consultation. Experts say the decade target is achievable only with sustained youth intervention funding.' },
+      ],
+      'Anthony Albanese': [
+        { id: 'au-p1', text: '"We will make the cost of living more affordable for Australians."', date_promised: 'May 2022', source: 'Election Campaign', category: 'Economy', status: 'Broken', progress: 0, update: 'Inflation hit 7.8% post-election — highest in 30 years. Grocery prices rose 23% over the parliamentary term. Energy bills up 35% despite bill relief payments. Real wages fell for 18 months before a partial 2024 recovery.' },
+        { id: 'au-p2', text: '"We will get wages moving again for Australian workers."', date_promised: 'May 2022', source: 'Election Campaign', category: 'Economy', status: 'Partially Kept', progress: 55, update: 'Minimum wage increased 8.6% in 2023 and 3.75% in 2024. Real wages grew positively in 2024 for the first time since the election. High-income workers still face real wage losses. Partial delivery — low-paid workers benefited most.' },
+        { id: 'au-p3', text: '"We will build more homes in more places."', date_promised: '2023', source: 'National Housing Accord', category: 'Housing', status: 'In Progress', progress: 20, update: '1.2M home target set for 2024–29. Only 170,000 homes built in 2024 — 43% below the required pace. States are failing to deliver on planning reform commitments. The Housing Minister acknowledged a "significant shortfall."' },
+        { id: 'au-p4', text: '"We will make childcare cheaper for every Australian family."', date_promised: 'May 2022', source: 'Election Platform', category: 'Social Policy', status: 'Kept', progress: 100, update: 'Childcare subsidy raised to 90% for families earning under $80K — implemented July 2023. 1.3M families benefited immediately. Enrolments rose 12%. Delivered fully and ahead of schedule. Widely regarded as a clear win.' },
+        { id: 'au-p5', text: '"We will make the NDIS sustainable for future generations."', date_promised: '2023', source: 'NDIS Review', category: 'Social Policy', status: 'In Progress', progress: 38, update: 'NDIS costs grew 14% in 2024–25 to $43.5B, exceeding targets. NDIS Review recommendations partially implemented. Growth rate slowing but not yet at the target 8% sustainably. Reforms ongoing through 2025–26.' },
+      ],
+    };
+
+    const liveData = promiseTrackerData[leaderName];
+    const promises = (liveData && liveData.length > 0) ? liveData : (fallbackPromises[leaderName] || []);
+    const isLoading = promiseTrackerLoading[leaderName];
+
+    const statusOrder = { Broken: 0, 'In Progress': 1, 'Not Started': 2, 'Partially Kept': 3, Kept: 4 };
+    const sorted = [...promises].sort((a, b) => (statusOrder[a.status] ?? 99) - (statusOrder[b.status] ?? 99));
+
+    const scoreMap = { Kept: 100, 'Partially Kept': 60, 'In Progress': 35, 'Not Started': 10, Broken: 0 };
+    const promiseScore = promises.length > 0
+      ? Math.round(promises.reduce((s, p) => s + (scoreMap[p.status] || 0), 0) / promises.length)
+      : 0;
+    const scoreColor = promiseScore >= 70 ? '#22c55e' : promiseScore >= 45 ? '#eab308' : promiseScore >= 25 ? '#f97316' : '#ef4444';
+
+    const broken = promises.filter(p => p.status === 'Broken').length;
+    const kept = promises.filter(p => p.status === 'Kept').length;
+
+    const statusMeta = {
+      Kept:             { bg: 'bg-green-500',  text: 'text-white' },
+      Broken:           { bg: 'bg-red-500',    text: 'text-white' },
+      'In Progress':    { bg: 'bg-yellow-400', text: 'text-gray-900' },
+      'Not Started':    { bg: 'bg-gray-400',   text: 'text-white' },
+      'Partially Kept': { bg: 'bg-orange-400', text: 'text-white' },
+    };
+
+    const catColors = {
+      Economy:        'bg-blue-100 text-blue-800 border border-blue-200',
+      Housing:        'bg-purple-100 text-purple-800 border border-purple-200',
+      Healthcare:     'bg-pink-100 text-pink-800 border border-pink-200',
+      Defence:        'bg-slate-100 text-slate-800 border border-slate-200',
+      Environment:    'bg-green-100 text-green-800 border border-green-200',
+      Immigration:    'bg-orange-100 text-orange-800 border border-orange-200',
+      Governance:     'bg-indigo-100 text-indigo-800 border border-indigo-200',
+      'Social Policy':'bg-teal-100 text-teal-800 border border-teal-200',
+      'Crime/Safety': 'bg-red-100 text-red-800 border border-red-200',
+    };
+
+    return (
+      <div className="bg-white rounded-lg shadow-md mt-6">
+        <div
+          onClick={() => toggleFn('promises')}
+          className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50"
+        >
+          <div className="flex items-center gap-3">
+            <FileText className="w-6 h-6" style={{ color: accentColor }} />
+            <div>
+              <h2 className="text-xl font-bold text-gray-800">📋 Promise Tracker</h2>
+              <p className="text-sm text-gray-600">{kept} kept · {broken} broken · {promises.length} total tracked</p>
+            </div>
+          </div>
+          {expandedSections.promises ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+        </div>
+
+        {expandedSections.promises && (
+          <div className="px-6 pb-6 space-y-4">
+            {/* Promise Score + Load Live */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-semibold text-gray-700">Promise Score</span>
+                  <span className="font-black text-2xl" style={{ color: scoreColor }}>{promiseScore}<span className="text-sm font-normal text-gray-400">/100</span></span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                  <div
+                    className="h-4 rounded-full transition-all duration-700"
+                    style={{ width: `${promiseScore}%`, background: `linear-gradient(to right, ${scoreColor}88, ${scoreColor})` }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-gray-400 mt-0.5">
+                  <span>All broken</span><span>All kept</span>
+                </div>
+              </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); fetchPromiseTracker(leaderName); }}
+                className="text-xs bg-gray-100 hover:bg-gray-200 border border-gray-300 text-gray-700 px-4 py-2 rounded-full font-semibold flex-shrink-0"
+              >
+                {isLoading ? '⏳ Loading…' : '↻ Load Live'}
+              </button>
+            </div>
+
+            {/* Promise cards */}
+            {sorted.map((promise, i) => {
+              const sMeta = statusMeta[promise.status] || statusMeta['Not Started'];
+              const cClass = catColors[promise.category] || 'bg-gray-100 text-gray-800 border border-gray-200';
+              const reactionKey = `${leaderName}-${promise.id || i}`;
+              const currentReaction = promiseReactions[reactionKey];
+              const prog = promise.progress ?? 0;
+              const progColor = prog >= 80 ? '#22c55e' : prog >= 50 ? '#eab308' : prog >= 20 ? '#f97316' : '#ef4444';
+
+              return (
+                <div key={promise.id || i} className="border border-gray-200 rounded-xl overflow-hidden">
+                  {/* Status stripe */}
+                  <div className={`h-1.5 w-full ${sMeta.bg}`} />
+
+                  <div className="p-4 bg-white">
+                    {/* Badges */}
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${sMeta.bg} ${sMeta.text}`}>
+                        {promise.status}
+                      </span>
+                      {promise.category && (
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${cClass}`}>
+                          {promise.category}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Promise text */}
+                    <blockquote
+                      className="text-gray-800 font-semibold text-sm leading-relaxed mb-2 italic border-l-4 pl-3"
+                      style={{ borderColor: accentColor }}
+                    >
+                      {promise.text}
+                    </blockquote>
+
+                    {/* Date + source */}
+                    <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-3">
+                      {promise.date_promised && <span>📅 {promise.date_promised}</span>}
+                      {promise.source && <span>📌 {promise.source}</span>}
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Delivered</span>
+                        <span className="text-sm font-black" style={{ color: progColor }}>{prog}%</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                        <div
+                          className="h-2.5 rounded-full transition-all duration-700"
+                          style={{ width: `${prog}%`, backgroundColor: progColor }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Plain language update */}
+                    {promise.update && (
+                      <p className="text-sm text-gray-600 leading-relaxed mb-4 bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        {promise.update}
+                      </p>
+                    )}
+
+                    {/* Citizen reaction buttons */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs text-gray-500 font-semibold mr-1">Your reaction:</span>
+                      {[
+                        { key: 'satisfied',    label: '😊 Satisfied',    active: 'bg-green-500 text-white border-green-500' },
+                        { key: 'disappointed', label: '😤 Disappointed', active: 'bg-red-500 text-white border-red-500' },
+                        { key: 'neutral',      label: '😐 Neutral',      active: 'bg-gray-500 text-white border-gray-500' },
+                      ].map(({ key, label, active }) => (
+                        <button
+                          key={key}
+                          onClick={() => setPromiseReactions(prev => {
+                            const next = { ...prev };
+                            if (next[reactionKey] === key) delete next[reactionKey]; else next[reactionKey] = key;
+                            try { localStorage.setItem('cv_promise_reactions', JSON.stringify(next)); } catch (_) {}
+                            return next;
+                          })}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${currentReaction === key ? active : 'bg-transparent text-gray-500 border-gray-300 hover:border-gray-500'}`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderCarneyDetail = () => {
     const partyColor = '#EF4444'; // Liberal red
 
@@ -13100,6 +13310,7 @@ function App() {
 
             </div>
           </div>
+          {renderPromiseTrackerSection('Mark Carney', toggleCarneySection, expandedCarneySections, '#EF4444')}
         </div>
       </div>
     );
@@ -13746,6 +13957,7 @@ function App() {
 
             </div>
           </div>
+          {renderPromiseTrackerSection('Donald Trump', togglePresidentSection, expandedPresidentSections, '#1d4ed8')}
         </div>
       </div>
     );
@@ -14351,6 +14563,7 @@ function App() {
 
             </div>
           </div>
+          {renderPromiseTrackerSection('Keir Starmer', toggleStarmerSection, expandedStarmerSections, '#E4003B')}
         </div>
       </div>
     );
@@ -14499,6 +14712,20 @@ function App() {
       setLobbyingCorrelations([]);
     } finally {
       setLobbyingCorrelationsLoading(false);
+    }
+  };
+
+  const fetchPromiseTracker = async (leaderName) => {
+    setPromiseTrackerLoading(prev => ({ ...prev, [leaderName]: true }));
+    try {
+      const snap = await getDocs(query(collection(db, 'promise_tracker'), where('leader_name', '==', leaderName)));
+      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setPromiseTrackerData(prev => ({ ...prev, [leaderName]: items }));
+    } catch (err) {
+      console.warn('[PromiseTracker] Firestore fetch failed:', err.message);
+      setPromiseTrackerData(prev => ({ ...prev, [leaderName]: [] }));
+    } finally {
+      setPromiseTrackerLoading(prev => ({ ...prev, [leaderName]: false }));
     }
   };
 
@@ -23382,6 +23609,7 @@ function App() {
 
             </div>
           </div>
+          {renderPromiseTrackerSection('Anthony Albanese', toggleAlbaneseSection, expandedAlbaneseSections, '#006833')}
         </div>
       </div>
     );
