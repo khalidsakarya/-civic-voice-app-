@@ -44,6 +44,7 @@ import { runPromiseTracker } from './promiseTracker.js';
 import { runCorrelation } from './lobbyCorrelator.js';
 import { runForeignAidFetcher } from '../ingestion/foreignAidFetcher.js';
 import { runMilitarySpendingFetcher } from '../ingestion/militarySpendingFetcher.js';
+import { runCreditCardFetcher } from '../ingestion/creditCardFetcher.js';
 
 // ─── Tier definitions ─────────────────────────────────────────────────────────
 
@@ -175,6 +176,15 @@ const JOBS = [
       return runMilitarySpendingFetcher(['CA', 'US', 'UK', 'AU']);
     },
   },
+  {
+    id: 'credit_card_all',
+    tier: TIERS.WEEKLY,
+    label: 'Credit Card & Hospitality Tracker — All Countries',
+    handler: async () => {
+      console.log('[scheduler] Running credit card tracker (CA, US, UK, AU)');
+      return runCreditCardFetcher(['CA', 'US', 'UK', 'AU']);
+    },
+  },
 
   // ── DAILY jobs ─────────────────────────────────────────────────────────────
 
@@ -215,6 +225,15 @@ const JOBS = [
     handler: async () => {
       console.log('[scheduler] Running monthly military spending full refresh');
       return runMilitarySpendingFetcher(['CA', 'US', 'UK', 'AU']);
+    },
+  },
+  {
+    id: 'credit_card_full_refresh',
+    tier: TIERS.MONTHLY,
+    label: 'Credit Card & Hospitality Full Refresh — All Countries',
+    handler: async () => {
+      console.log('[scheduler] Running monthly credit card full refresh');
+      return runCreditCardFetcher(['CA', 'US', 'UK', 'AU']);
     },
   },
 ];
