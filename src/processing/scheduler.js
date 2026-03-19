@@ -43,6 +43,7 @@ import {
 import { runPromiseTracker } from './promiseTracker.js';
 import { runCorrelation } from './lobbyCorrelator.js';
 import { runForeignAidFetcher } from '../ingestion/foreignAidFetcher.js';
+import { runMilitarySpendingFetcher } from '../ingestion/militarySpendingFetcher.js';
 
 // ─── Tier definitions ─────────────────────────────────────────────────────────
 
@@ -165,6 +166,15 @@ const JOBS = [
       return runForeignAidFetcher(['CA', 'US', 'UK', 'AU']);
     },
   },
+  {
+    id: 'military_spending_all',
+    tier: TIERS.WEEKLY,
+    label: 'Military Spending Tracker — All Countries',
+    handler: async () => {
+      console.log('[scheduler] Running military spending tracker (CA, US, UK, AU)');
+      return runMilitarySpendingFetcher(['CA', 'US', 'UK', 'AU']);
+    },
+  },
 
   // ── DAILY jobs ─────────────────────────────────────────────────────────────
 
@@ -196,6 +206,15 @@ const JOBS = [
     handler: async () => {
       console.log('[scheduler] Running monthly foreign aid full refresh');
       return runForeignAidFetcher(['CA', 'US', 'UK', 'AU']);
+    },
+  },
+  {
+    id: 'military_spending_full_refresh',
+    tier: TIERS.MONTHLY,
+    label: 'Military Spending Full Refresh — All Countries',
+    handler: async () => {
+      console.log('[scheduler] Running monthly military spending full refresh');
+      return runMilitarySpendingFetcher(['CA', 'US', 'UK', 'AU']);
     },
   },
 ];
