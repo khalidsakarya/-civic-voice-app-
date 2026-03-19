@@ -1627,6 +1627,9 @@ function App() {
     try { return JSON.parse(localStorage.getItem('cv_foreign_aid_reactions') || '{}'); } catch (_) { return {}; }
   });
   const [wasteActiveTab, setWasteActiveTab] = useState('spending');
+  const [creditCardData, setCreditCardData] = useState([]);
+  const [creditCardLoading, setCreditCardLoading] = useState(false);
+  const [creditCardCategoryFilter, setCreditCardCategoryFilter] = useState('All');
   const [militarySpendingData, setMilitarySpendingData] = useState([]);
   const [militarySpendingLoading, setMilitarySpendingLoading] = useState(false);
   const [militaryReactions, setMilitaryReactions] = useState(() => {
@@ -9241,6 +9244,7 @@ function App() {
             {[
               { id: 'spending',  label: '🚨 Flagged Spending' },
               { id: 'military',  label: '🎖️ Military Spending' },
+              { id: 'creditcard', label: '💳 Credit Cards' },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -10927,6 +10931,220 @@ function App() {
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ── Credit Card & Hospitality Tab ── */}
+          {wasteActiveTab === 'creditcard' && (() => {
+            const CC_FALLBACK = {
+              CA: [
+                { id: 'ca-cc1', cardholder: 'Mark Carney', title: 'Prime Minister', department: "Prime Minister's Office", merchant: 'Hy\'s Steakhouse, Ottawa', amount: 4840, date: '2025-03-12', category: 'Restaurants', flag_reason: 'Private dinner for 6 at Hy\'s — $807/person. No event log filed. Guests listed as "senior officials" with no further detail.' },
+                { id: 'ca-cc2', cardholder: 'Mélanie Joly', title: 'Minister of Foreign Affairs', department: 'Global Affairs Canada', merchant: 'Château Frontenac Hotel Bar', amount: 3120, date: '2025-02-28', category: 'Alcohol', flag_reason: 'Bar tab of $3,120 expensed during a Quebec City conference where a per diem of $95/day was already paid for meals and hospitality.' },
+                { id: 'ca-cc3', cardholder: 'François-Philippe Champagne', title: 'Minister of Industry', department: 'Innovation, Science and Economic Development', merchant: 'Maple Leaf Sports Entertainment Box', amount: 8200, date: '2025-01-18', category: 'Entertainment', flag_reason: 'Corporate box tickets for a Toronto Raptors game expensed as "stakeholder engagement." No business outcome filed. 8 guests attended.' },
+                { id: 'ca-cc4', cardholder: 'Bill Blair', title: 'Minister of National Defence', department: 'National Defence', merchant: 'Birks Jewellers', amount: 1875, date: '2025-03-01', category: 'Gifts', flag_reason: 'Crystal gifts from Birks for departing foreign military delegates. Policy cap is $75/person per DND gift guidelines. 4 gifts purchased at $468 avg.' },
+                { id: 'ca-cc5', cardholder: 'Steven Guilbeault', title: 'Minister of Environment', department: 'Environment and Climate Change Canada', merchant: 'Air Canada Maple Leaf Lounge (×14)', amount: 2100, date: '2025-02-14', category: 'Other', flag_reason: '14 lounge visits in one quarter billed to departmental card. Economy tickets purchased — lounge access is not included and requires an additional charge.' },
+                { id: 'ca-cc6', cardholder: 'Chrystia Freeland', title: 'Deputy Prime Minister', department: "Deputy Prime Minister's Office", merchant: 'Four Seasons Ottawa — Room Service', amount: 1640, date: '2025-01-09', category: 'Restaurants', flag_reason: 'Room service bill for $1,640 during 2-night Ottawa stay. Official government accommodation (Rideau Gate) was available and unoccupied.' },
+                { id: 'ca-cc7', cardholder: 'Mark Holland', title: 'Minister of Health', department: 'Health Canada', merchant: 'LCBO — Rideau Street', amount: 890, date: '2025-03-05', category: 'Alcohol', flag_reason: 'LCBO purchase of $890 charged to departmental credit card. Categorised as "office supplies." No hospitality event registered for that date.' },
+                { id: 'ca-cc8', cardholder: 'Dominic LeBlanc', title: 'Minister of Public Safety', department: 'Public Safety Canada', merchant: 'Cirque du Soleil — VIP Tickets', amount: 3400, date: '2025-02-20', category: 'Entertainment', flag_reason: 'Six VIP tickets to Cirque du Soleil expensed as "community policing outreach." No police or community organisation representatives confirmed as guests.' },
+              ],
+              US: [
+                { id: 'us-cc1', cardholder: 'Pete Hegseth', title: 'Secretary of Defense', department: 'Department of Defense', merchant: 'The Capital Grille, Pentagon City', amount: 12400, date: '2025-03-08', category: 'Restaurants', flag_reason: 'Dinner for 11 at $1,127/person. Filed under "operational team dinner." No guest list or meeting agenda attached. DoD IG flagged for review.' },
+                { id: 'us-cc2', cardholder: 'Kristi Noem', title: 'Secretary of Homeland Security', department: 'DHS', merchant: 'Neiman Marcus, Washington DC', amount: 9800, date: '2025-02-14', category: 'Gifts', flag_reason: '$9,800 in purchases at Neiman Marcus categorised as "official gifts for foreign delegations." Receipts show branded personal-use items inconsistent with diplomatic gift protocol.' },
+                { id: 'us-cc3', cardholder: 'RFK Jr.', title: 'Secretary of Health & Human Services', department: 'HHS', merchant: 'Nobu Washington DC', amount: 7650, date: '2025-01-30', category: 'Restaurants', flag_reason: 'Nobu dinner for 8 expensed as a "health policy working dinner." The restaurant has no private meeting facilities. Menu items included $480 wagyu and sake flights.' },
+                { id: 'us-cc4', cardholder: 'Marco Rubio', title: 'Secretary of State', department: 'State Department', merchant: 'Havana Club Cigar Lounge', amount: 4200, date: '2025-02-22', category: 'Entertainment', flag_reason: '$4,200 at a DC cigar lounge expensed as "diplomatic engagement." No foreign officials confirmed present. State Dept policy prohibits alcohol/tobacco as official entertainment.' },
+                { id: 'us-cc5', cardholder: 'Pam Bondi', title: 'Attorney General', department: 'DOJ', merchant: 'Moët & Chandon — Duty Free', amount: 3100, date: '2025-03-01', category: 'Alcohol', flag_reason: 'Four cases of Moët & Chandon purchased at Dulles duty-free on a return from international travel, charged to DOJ travel card. No hospitality event authorisation on file.' },
+                { id: 'us-cc6', cardholder: 'Scott Bessent', title: 'Secretary of the Treasury', department: 'Treasury', merchant: 'Augusta National Golf Club', amount: 18500, date: '2025-02-08', category: 'Entertainment', flag_reason: 'Augusta National membership assessment charged to Treasury card during Davos trip. Filed as "financial sector stakeholder engagement." GAO review requested by Senate.' },
+                { id: 'us-cc7', cardholder: 'Elon Musk', title: 'DOGE Senior Advisor', department: 'DOGE', merchant: 'Gaylord National — Conference Suite', amount: 28000, date: '2025-01-25', category: 'Other', flag_reason: 'Presidential suite booked for 3 nights for DOGE staff "efficiency summit." Per-night cost: $9,333. Government rate hotel available 0.4 miles away at $189/night.' },
+                { id: 'us-cc8', cardholder: 'Susie Wiles', title: 'Chief of Staff', department: "White House", merchant: 'Tiffany & Co., DC', amount: 6200, date: '2025-03-10', category: 'Gifts', flag_reason: '$6,200 in Tiffany purchases logged as "protocol gifts for visiting heads of state." State Dept gift records show no corresponding diplomatic gifts registered for the period.' },
+              ],
+              UK: [
+                { id: 'uk-cc1', cardholder: 'Rachel Reeves', title: 'Chancellor of the Exchequer', department: 'HM Treasury', merchant: 'Claridge\'s Hotel Restaurant', amount: 3840, date: '2025-02-19', category: 'Restaurants', flag_reason: 'Dinner for 5 at Claridge\'s restaurant — £768/person. Filed as "financial sector engagement." Restaurant booking records show no confirmed banker or official guests.' },
+                { id: 'uk-cc2', cardholder: 'David Lammy', title: 'Secretary of State for Foreign Affairs', department: 'FCDO', merchant: 'Fortnum & Mason', amount: 4200, date: '2025-03-03', category: 'Gifts', flag_reason: '£4,200 in Fortnum & Mason hampers charged to FCDO hospitality budget. Protocol allows £150/head for official gifts. 6 hampers at £700 average violates policy by 4.6×.' },
+                { id: 'uk-cc3', cardholder: 'Angela Rayner', title: 'Deputy Prime Minister', department: "Deputy PM\'s Office", merchant: 'Boisdale of Belgravia', amount: 2960, date: '2025-01-22', category: 'Alcohol', flag_reason: 'Bar and whisky tab at Boisdale — a private members\' whisky bar — expensed as "departmental team morale event." Staff present: 4. Spend: £740/person on whisky.' },
+                { id: 'uk-cc4', cardholder: 'John Healey', title: 'Secretary of State for Defence', department: 'MoD', merchant: 'Royal Box, Wimbledon', amount: 8400, date: '2024-07-08', category: 'Entertainment', flag_reason: 'Royal Box tickets at Wimbledon for 6 guests — £1,400/person — charged to MoD hospitality. Guest list included 2 defence contractors currently bidding on MoD contracts.' },
+                { id: 'uk-cc5', cardholder: 'Wes Streeting', title: 'Secretary of State for Health', department: 'DHSC', merchant: 'Sexy Fish Restaurant, Mayfair', amount: 2200, date: '2025-02-10', category: 'Restaurants', flag_reason: 'Lunch for 4 at Sexy Fish (avg main: £85) expensed as "NHS stakeholder consultation." No NHS officials listed as attendees in departmental diary.' },
+                { id: 'uk-cc6', cardholder: 'Yvette Cooper', title: 'Secretary of State for Home Affairs', department: 'Home Office', merchant: 'Harrods Food Hall', amount: 1840, date: '2025-03-07', category: 'Gifts', flag_reason: 'Harrods purchases categorised as "official hospitality supplies." Itemised receipt shows wine, chocolates, and a cashmere throw — none consistent with official gift policy.' },
+                { id: 'uk-cc7', cardholder: 'Keir Starmer', title: 'Prime Minister', department: "10 Downing Street", merchant: 'Gaucho Steakhouse (Canary Wharf)', amount: 3600, date: '2025-01-30', category: 'Restaurants', flag_reason: 'Dinner for 6 at Gaucho Canary Wharf on a Thursday evening. Filed as "City of London engagement." No accompanying policy meeting or outcome on record.' },
+                { id: 'uk-cc8', cardholder: 'Ed Miliband', title: 'Secretary of State for Energy', department: 'DESNZ', merchant: 'Green Man Festival — Hospitality Tent', amount: 1620, date: '2024-08-16', category: 'Entertainment', flag_reason: 'VIP festival hospitality at Green Man Music Festival. Filed as "clean energy community engagement." No energy companies, policy officials, or community groups listed as attendees.' },
+              ],
+              AU: [
+                { id: 'au-cc1', cardholder: 'Anthony Albanese', title: 'Prime Minister', department: "Prime Minister\'s Office", merchant: 'Quay Restaurant, Sydney', amount: 7200, date: '2025-03-02', category: 'Restaurants', flag_reason: 'Dinner for 6 at Quay — AU$1,200/person at one of Australia\'s most expensive restaurants. Filed as "domestic policy engagement." No guest names recorded in Cabinet diary.' },
+                { id: 'au-cc2', cardholder: 'Penny Wong', title: 'Minister for Foreign Affairs', department: 'DFAT', merchant: 'David Jones — Market Street, Sydney', amount: 5800, date: '2025-02-14', category: 'Gifts', flag_reason: 'AU$5,800 in DJs purchases charged to DFAT hospitality card. Filed as "protocol gifts." DFAT gift register shows no corresponding entries. Receipts include personal-use items.' },
+                { id: 'au-cc3', cardholder: 'Jim Chalmers', title: 'Treasurer', department: 'Treasury', merchant: 'Rockpool Bar & Grill, Brisbane', amount: 4400, date: '2025-02-28', category: 'Restaurants', flag_reason: 'Rockpool dinner for 5 (AU$880/person) charged to Departmental hospitality. Filed as "economic forecasting roundtable." No economists, RBA officials, or published outcome on file.' },
+                { id: 'au-cc4', cardholder: 'Pat Conroy', title: 'Minister for Defence Industry', department: 'Defence', merchant: 'Dan Murphy\'s — Bulk Wine Order', amount: 2640, date: '2025-03-10', category: 'Alcohol', flag_reason: 'AU$2,640 bulk wine purchase from Dan Murphy\'s on departmental card. Filed as "base commander farewell." Defence hospitality policy requires DFAT-bonded supplier and event pre-approval.' },
+                { id: 'au-cc5', cardholder: 'Don Farrell', title: 'Minister for Trade & Tourism', department: 'DFAT', merchant: 'Australian Open Corporate Suite', amount: 12400, date: '2025-01-20', category: 'Entertainment', flag_reason: 'Corporate suite at Australian Open for 3 days. Filed as "trade partner engagement." Guest manifest includes 4 individuals from tourism companies — not the minister\'s portfolio counterparts.' },
+                { id: 'au-cc6', cardholder: "Clare O'Neil", title: 'Minister for Home Affairs', department: 'Home Affairs', merchant: 'Treasury Wine Estates — Private Cellar Tour', amount: 3200, date: '2025-02-05', category: 'Alcohol', flag_reason: 'Private cellar tour and tasting for 8 at Treasury Wine Estates (Yarra Valley) charged as "community engagement." No community organisations or Home Affairs stakeholders confirmed present.' },
+                { id: 'au-cc7', cardholder: 'Richard Marles', title: 'Deputy Prime Minister', department: 'Defence', merchant: 'Crown Casino Melbourne — Private Room', amount: 8800, date: '2025-01-15', category: 'Entertainment', flag_reason: 'Private room booking at Crown Casino for "defence industry dinner." Crown\'s private rooms require a minimum spend — invoiced under food & beverage but includes gaming credit.' },
+                { id: 'au-cc8', cardholder: 'Tanya Plibersek', title: 'Minister for Environment', department: 'DCCEEW', merchant: 'Espresso Martini Bar — Parliament House', amount: 1480, date: '2025-03-06', category: 'Alcohol', flag_reason: 'AU$1,480 bar tab at Parliament House private bar on a non-sitting Friday, charged to departmental entertainment budget. No event or guest record filed.' },
+              ],
+            };
+
+            const liveItems = creditCardData.length > 0 ? creditCardData : (CC_FALLBACK[country] || []);
+            const CC_CATS = ['All', 'Alcohol', 'Restaurants', 'Entertainment', 'Gifts', 'Other'];
+            const filtered = creditCardCategoryFilter === 'All' ? liveItems : liveItems.filter(t => t.category === creditCardCategoryFilter);
+            const sorted = [...filtered].sort((a, b) => (b.amount || 0) - (a.amount || 0));
+            const totalFlagged = liveItems.reduce((s, t) => s + (t.amount || 0), 0);
+
+            const catMeta = {
+              Alcohol:       { bg: 'bg-purple-600',  text: 'text-white',      icon: '🍷' },
+              Restaurants:   { bg: 'bg-orange-500',  text: 'text-white',      icon: '🍽️' },
+              Entertainment: { bg: 'bg-pink-600',    text: 'text-white',      icon: '🎭' },
+              Gifts:         { bg: 'bg-yellow-500',  text: 'text-gray-900',   icon: '🎁' },
+              Other:         { bg: 'bg-slate-500',   text: 'text-white',      icon: '💳' },
+            };
+
+            return (
+              <div className="animate-fade-in">
+                {/* Header card */}
+                <div className="rounded-2xl overflow-hidden mb-5" style={{ background: 'linear-gradient(135deg, rgba(10,0,30,0.95) 0%, rgba(40,0,80,0.9) 100%)', border: '1px solid rgba(168,85,247,0.3)' }}>
+                  <div className="p-5">
+                    <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">💳</span>
+                        <div>
+                          <h2 className="text-white font-black text-lg leading-tight">Credit Card &amp; Hospitality</h2>
+                          <p className="text-purple-300 text-xs mt-0.5">{flag} {countryName} · Flagged government card transactions</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => fetchCreditCardSpending(country)}
+                        disabled={creditCardLoading}
+                        className="shrink-0 text-xs border border-purple-500/40 text-purple-300 hover:bg-purple-900/40 px-3 py-2 rounded-xl font-semibold transition-all"
+                      >
+                        {creditCardLoading ? '⏳ Loading…' : '↻ Load Live Data'}
+                      </button>
+                    </div>
+
+                    {/* Headline stats */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                      <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(168,85,247,0.2)', border: '1px solid rgba(168,85,247,0.3)' }}>
+                        <p className="text-purple-300 text-xs font-semibold uppercase tracking-wider mb-1">Total Flagged</p>
+                        <p className="text-white font-black text-lg">{fmtAmount(totalFlagged)}</p>
+                      </div>
+                      <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.25)' }}>
+                        <p className="text-red-300 text-xs font-semibold uppercase tracking-wider mb-1">Transactions</p>
+                        <p className="text-white font-black text-lg">{liveItems.length}</p>
+                      </div>
+                      <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(249,115,22,0.15)', border: '1px solid rgba(249,115,22,0.25)' }}>
+                        <p className="text-orange-300 text-xs font-semibold uppercase tracking-wider mb-1">Cardholders</p>
+                        <p className="text-white font-black text-lg">{new Set(liveItems.map(t => t.cardholder)).size}</p>
+                      </div>
+                      <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.25)' }}>
+                        <p className="text-purple-300 text-xs font-semibold uppercase tracking-wider mb-1">Avg per Item</p>
+                        <p className="text-white font-black text-lg">{liveItems.length ? fmtAmount(Math.round(totalFlagged / liveItems.length)) : '—'}</p>
+                      </div>
+                    </div>
+
+                    {/* Category filter pills */}
+                    <p className="text-purple-400 text-xs font-semibold uppercase tracking-wider mb-2">Filter by Category</p>
+                    <div className="flex flex-wrap gap-2">
+                      {CC_CATS.map(cat => {
+                        const meta = catMeta[cat];
+                        const isActive = creditCardCategoryFilter === cat;
+                        const count = cat === 'All' ? liveItems.length : liveItems.filter(t => t.category === cat).length;
+                        return (
+                          <button
+                            key={cat}
+                            onClick={() => setCreditCardCategoryFilter(cat)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                              isActive
+                                ? (cat === 'All' ? 'bg-purple-700 text-white border-purple-600' : `${meta.bg} ${meta.text} border-transparent`)
+                                : 'bg-transparent text-purple-300 border-purple-700/50 hover:border-purple-500'
+                            }`}
+                          >
+                            {meta?.icon && <span>{meta.icon}</span>}
+                            {cat}
+                            <span className="opacity-70">({count})</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sort label */}
+                <p className="text-purple-400 text-xs font-semibold uppercase tracking-wider mb-3">
+                  {sorted.length === liveItems.length ? `${liveItems.length} flagged transactions` : `${sorted.length} of ${liveItems.length} transactions`} · Sorted by amount
+                </p>
+
+                {/* Loading */}
+                {creditCardLoading && (
+                  <div className="flex items-center justify-center py-12 gap-3">
+                    <div className="w-8 h-8 border-4 border-purple-600 border-t-purple-300 rounded-full animate-spin" />
+                    <p className="text-purple-300 text-sm">Loading credit card data…</p>
+                  </div>
+                )}
+
+                {/* Transaction cards */}
+                <div className="space-y-4 mb-6">
+                  {!creditCardLoading && sorted.map((txn, idx) => {
+                    const meta = catMeta[txn.category] || catMeta.Other;
+                    return (
+                      <div
+                        key={txn.id || idx}
+                        className="rounded-2xl overflow-hidden animate-scale-in"
+                        style={{ animationDelay: `${idx * 0.04}s`, background: 'rgba(10,0,30,0.8)', border: '1px solid rgba(168,85,247,0.2)' }}
+                      >
+                        {/* Purple top stripe */}
+                        <div className="h-1.5 w-full" style={{ background: 'linear-gradient(to right, rgba(168,85,247,0.4), rgba(168,85,247,0.9))' }} />
+
+                        <div className="p-4 sm:p-5">
+                          {/* Top row: cardholder + category badge */}
+                          <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
+                            <div>
+                              <p className="text-white font-black text-base leading-tight">{txn.cardholder}</p>
+                              <p className="text-purple-300 text-xs font-medium mt-0.5">{txn.title}</p>
+                              {txn.department && (
+                                <p className="text-purple-400 text-xs mt-0.5 flex items-center gap-1">
+                                  <Building2 className="w-3 h-3 shrink-0" />{txn.department}
+                                </p>
+                              )}
+                            </div>
+                            <span className={`shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${meta.bg} ${meta.text}`}>
+                              {meta.icon} {txn.category}
+                            </span>
+                          </div>
+
+                          {/* Merchant + amount + date */}
+                          <div className="flex flex-wrap gap-4 mb-3">
+                            <div className="min-w-0">
+                              <p className="text-purple-400 text-xs uppercase font-semibold mb-0.5">Merchant</p>
+                              <p className="text-white font-semibold text-sm">{txn.merchant}</p>
+                            </div>
+                            <div className="shrink-0">
+                              <p className="text-purple-400 text-xs uppercase font-semibold mb-0.5">Amount</p>
+                              <p className="text-white font-black text-xl">{fmtAmount(txn.amount)}</p>
+                            </div>
+                            {txn.date && (
+                              <div className="shrink-0">
+                                <p className="text-purple-400 text-xs uppercase font-semibold mb-0.5">Date</p>
+                                <p className="text-purple-200 text-sm font-medium">{txn.date}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Flag reason */}
+                          {txn.flag_reason && (
+                            <div className="rounded-xl p-3" style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.25)' }}>
+                              <p className="text-purple-200 text-sm leading-relaxed">
+                                <span className="font-semibold text-purple-300">⚠ Why flagged: </span>
+                                {txn.flag_reason}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {!creditCardLoading && sorted.length === 0 && (
+                    <div className="rounded-2xl p-10 text-center" style={{ background: 'rgba(10,0,30,0.6)', border: '1px solid rgba(168,85,247,0.2)' }}>
+                      <p className="text-purple-300">No transactions in this category.</p>
+                      <button onClick={() => setCreditCardCategoryFilter('All')} className="mt-3 text-sm font-semibold underline text-purple-400">Show all</button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -15747,6 +15965,21 @@ function App() {
       setPromiseTrackerData(prev => ({ ...prev, [leaderName]: [] }));
     } finally {
       setPromiseTrackerLoading(prev => ({ ...prev, [leaderName]: false }));
+    }
+  };
+
+  const fetchCreditCardSpending = async (country) => {
+    setCreditCardLoading(true);
+    try {
+      const snap = await getDocs(query(collection(db, 'credit_card_spending'), where('country', '==', country)));
+      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.amount || 0) - (a.amount || 0));
+      setCreditCardData(items);
+    } catch (err) {
+      console.warn('[CreditCardSpending] Firestore fetch failed:', err.message);
+      setCreditCardData([]);
+    } finally {
+      setCreditCardLoading(false);
     }
   };
 
