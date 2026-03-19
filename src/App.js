@@ -1615,6 +1615,8 @@ function App() {
     try { return JSON.parse(localStorage.getItem('cv_lobby_votes') || '{}'); } catch (_) { return {}; }
   });
   const [promiseTrackerData, setPromiseTrackerData] = useState({});
+  const [promisePageStatusFilter, setPromisePageStatusFilter] = useState('All');
+  const [promisePageCategoryFilter, setPromisePageCategoryFilter] = useState('All');
   const [promiseTrackerLoading, setPromiseTrackerLoading] = useState({});
   const [promiseReactions, setPromiseReactions] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_promise_reactions') || '{}'); } catch (_) { return {}; }
@@ -12490,8 +12492,7 @@ function App() {
     );
   };
 
-  const renderPromiseTrackerSection = (leaderName, toggleFn, expandedSections, accentColor) => {
-    const fallbackPromises = {
+  const PROMISE_FALLBACK_DATA = {
       'Mark Carney': [
         { id: 'ca-p1', text: '"We will build 500,000 homes by 2030."', date_promised: 'Mar 2025', source: 'Liberal Platform 2025', category: 'Housing', status: 'In Progress', progress: 12, update: 'Housing Accelerator Fund expanded April 2025. Zoning reforms passed in 3 major cities. No construction starts yet — well behind the required pace of 100,000 homes per year.' },
         { id: 'ca-p2', text: '"I will remove the consumer carbon tax immediately."', date_promised: 'Mar 2025', source: 'Campaign Pledge', category: 'Economy', status: 'Broken', progress: 0, update: 'Consumer carbon pricing remains in place for 2025. The rebate structure was modified but the tax was not eliminated. Government acknowledged the reversal in April 2025.' },
@@ -12522,8 +12523,11 @@ function App() {
       ],
     };
 
+  };
+
+  const renderPromiseTrackerSection = (leaderName, toggleFn, expandedSections, accentColor) => {
     const liveData = promiseTrackerData[leaderName];
-    const promises = (liveData && liveData.length > 0) ? liveData : (fallbackPromises[leaderName] || []);
+    const promises = (liveData && liveData.length > 0) ? liveData : (PROMISE_FALLBACK_DATA[leaderName] || []);
     const isLoading = promiseTrackerLoading[leaderName];
 
     const statusOrder = { Broken: 0, 'In Progress': 1, 'Not Started': 2, 'Partially Kept': 3, Kept: 4 };
@@ -12691,6 +12695,303 @@ function App() {
             })}
           </div>
         )}
+      </div>
+    );
+  };
+
+  const renderPromiseTrackerPage = () => {
+    const isUSA = selectedCountry?.type === 'usa';
+    const isAU  = selectedCountry?.type === 'australia';
+    const isUK  = selectedCountry?.type === 'uk';
+
+    const leaderName   = isUSA ? 'Donald Trump'    : isAU ? 'Anthony Albanese' : isUK ? 'Keir Starmer'  : 'Mark Carney';
+    const flag         = isUSA ? '🇺🇸'             : isAU ? '🇦🇺'              : isUK ? '🇬🇧'            : '🇨🇦';
+    const countryName  = isUSA ? 'United States'   : isAU ? 'Australia'        : isUK ? 'United Kingdom' : 'Canada';
+    const accentColor  = isUSA ? '#1d4ed8'         : isAU ? '#006833'          : isUK ? '#E4003B'        : '#EF4444';
+    const backView     = isUSA ? 'categories'      : isAU ? 'au-categories'    : isUK ? 'uk-national'    : 'categories';
+
+    const liveData = promiseTrackerData[leaderName];
+    const allPromises = (liveData && liveData.length > 0) ? liveData : (PROMISE_FALLBACK_DATA[leaderName] || []);
+
+    const scoreMap    = { Kept: 100, 'Partially Kept': 60, 'In Progress': 35, 'Not Started': 10, Broken: 0 };
+    const statusOrder = { Broken: 0, 'In Progress': 1, 'Not Started': 2, 'Partially Kept': 3, Kept: 4 };
+
+    const promiseScore = allPromises.length > 0
+      ? Math.round(allPromises.reduce((s, p) => s + (scoreMap[p.status] || 0), 0) / allPromises.length)
+      : 0;
+    const scoreColor = promiseScore >= 70 ? '#22c55e' : promiseScore >= 45 ? '#eab308' : promiseScore >= 25 ? '#f97316' : '#ef4444';
+
+    const stats = {
+      total:         allPromises.length,
+      kept:          allPromises.filter(p => p.status === 'Kept').length,
+      broken:        allPromises.filter(p => p.status === 'Broken').length,
+      inProgress:    allPromises.filter(p => p.status === 'In Progress').length,
+      notStarted:    allPromises.filter(p => p.status === 'Not Started').length,
+      partiallyKept: allPromises.filter(p => p.status === 'Partially Kept').length,
+    };
+
+    const filtered = allPromises.filter(p => {
+      if (promisePageStatusFilter !== 'All' && p.status !== promisePageStatusFilter) return false;
+      if (promisePageCategoryFilter !== 'All' && p.category !== promisePageCategoryFilter) return false;
+      return true;
+    });
+    const sorted = [...filtered].sort((a, b) => (statusOrder[a.status] ?? 99) - (statusOrder[b.status] ?? 99));
+
+    const allCategories = ['All', ...new Set(allPromises.map(p => p.category).filter(Boolean))];
+    const allStatuses   = ['All', 'Broken', 'In Progress', 'Not Started', 'Partially Kept', 'Kept'];
+
+    const statusMeta = {
+      Kept:             { bg: 'bg-green-500',  text: 'text-white',     ring: 'ring-green-400'  },
+      Broken:           { bg: 'bg-red-500',    text: 'text-white',     ring: 'ring-red-400'    },
+      'In Progress':    { bg: 'bg-yellow-400', text: 'text-gray-900',  ring: 'ring-yellow-300' },
+      'Not Started':    { bg: 'bg-gray-400',   text: 'text-white',     ring: 'ring-gray-300'   },
+      'Partially Kept': { bg: 'bg-orange-400', text: 'text-white',     ring: 'ring-orange-300' },
+    };
+
+    const catColors = {
+      Economy:        'bg-blue-100 text-blue-800 border border-blue-200',
+      Housing:        'bg-purple-100 text-purple-800 border border-purple-200',
+      Healthcare:     'bg-pink-100 text-pink-800 border border-pink-200',
+      Defence:        'bg-slate-100 text-slate-800 border border-slate-200',
+      Environment:    'bg-green-100 text-green-800 border border-green-200',
+      Immigration:    'bg-orange-100 text-orange-800 border border-orange-200',
+      Governance:     'bg-indigo-100 text-indigo-800 border border-indigo-200',
+      'Social Policy':'bg-teal-100 text-teal-800 border border-teal-200',
+      'Crime/Safety': 'bg-red-100 text-red-800 border border-red-200',
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 p-4 sm:p-6 animate-fade-in">
+        <div className="max-w-3xl mx-auto">
+
+          {/* Header row */}
+          <div className="flex items-center justify-between gap-3 mb-6">
+            <button
+              onClick={() => { setPromisePageStatusFilter('All'); setPromisePageCategoryFilter('All'); setView(backView); }}
+              className="px-4 py-2 rounded-xl text-white font-medium text-sm flex items-center gap-2"
+              style={{ background: accentColor }}
+            >
+              ← Back
+            </button>
+            <button
+              onClick={() => fetchPromiseTracker(leaderName)}
+              className="text-xs border text-gray-600 hover:bg-gray-100 px-3 py-2 rounded-xl font-semibold border-gray-300"
+            >
+              {promiseTrackerLoading[leaderName] ? '⏳ Loading…' : '↻ Load Live Data'}
+            </button>
+          </div>
+
+          {/* Title */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-1">
+              <span className="text-3xl">{flag}</span>
+              <span className="text-2xl">📋</span>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Promise Tracker</h1>
+            </div>
+            <p className="text-gray-500 text-sm ml-1">{leaderName} · {countryName}</p>
+            <div className="w-20 h-1 mt-3 rounded-full" style={{ background: `linear-gradient(to right, ${accentColor}, ${accentColor}88)` }} />
+          </div>
+
+          {/* Promise Score meter */}
+          <div className="bg-white rounded-2xl shadow-md p-5 mb-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-gray-700 text-base">Promise Score</span>
+              <span className="font-black text-3xl" style={{ color: scoreColor }}>
+                {promiseScore}<span className="text-sm font-normal text-gray-400">/100</span>
+              </span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-5 overflow-hidden mb-1">
+              <div
+                className="h-5 rounded-full transition-all duration-700"
+                style={{ width: `${promiseScore}%`, background: `linear-gradient(to right, ${scoreColor}88, ${scoreColor})` }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-gray-400 mt-0.5">
+              <span>All broken (0)</span><span>All kept (100)</span>
+            </div>
+          </div>
+
+          {/* Summary stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+            <div className="rounded-xl p-4 bg-gray-50 border border-gray-200 text-center">
+              <p className="text-3xl font-black text-gray-800">{stats.total}</p>
+              <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-0.5">Total</p>
+            </div>
+            <div className="rounded-xl p-4 bg-green-50 border border-green-200 text-center">
+              <p className="text-3xl font-black text-green-600">{stats.kept}</p>
+              <p className="text-xs text-green-600 font-semibold uppercase tracking-wider mt-0.5">Kept</p>
+            </div>
+            <div className="rounded-xl p-4 bg-red-50 border border-red-200 text-center">
+              <p className="text-3xl font-black text-red-600">{stats.broken}</p>
+              <p className="text-xs text-red-600 font-semibold uppercase tracking-wider mt-0.5">Broken</p>
+            </div>
+            <div className="rounded-xl p-4 bg-yellow-50 border border-yellow-200 text-center">
+              <p className="text-3xl font-black text-yellow-600">{stats.inProgress}</p>
+              <p className="text-xs text-yellow-600 font-semibold uppercase tracking-wider mt-0.5">In Progress</p>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="bg-white rounded-2xl shadow-sm p-4 mb-5 border border-gray-100 space-y-3">
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Status</p>
+              <div className="flex flex-wrap gap-2">
+                {allStatuses.map(s => {
+                  const sm = statusMeta[s];
+                  const isActive = promisePageStatusFilter === s;
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => setPromisePageStatusFilter(s)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                        isActive
+                          ? (s === 'All' ? 'bg-gray-700 text-white border-gray-700' : `${sm?.bg} ${sm?.text} border-transparent`)
+                          : 'bg-transparent text-gray-500 border-gray-200 hover:border-gray-400'
+                      }`}
+                    >
+                      {s}
+                      {s !== 'All' && (
+                        <span className="ml-1 opacity-60">({allPromises.filter(p => p.status === s).length})</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Category</p>
+              <div className="flex flex-wrap gap-2">
+                {allCategories.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setPromisePageCategoryFilter(c)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                      promisePageCategoryFilter === c
+                        ? 'bg-gray-700 text-white border-gray-700'
+                        : 'bg-transparent text-gray-500 border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Count line */}
+          <p className="text-gray-400 text-sm font-medium mb-4">
+            {sorted.length === allPromises.length
+              ? `${allPromises.length} promises tracked`
+              : `${sorted.length} of ${allPromises.length} promises`}
+          </p>
+
+          {/* Promise cards */}
+          <div className="space-y-4">
+            {sorted.map((promise, i) => {
+              const sMeta = statusMeta[promise.status] || statusMeta['Not Started'];
+              const cClass = catColors[promise.category] || 'bg-gray-100 text-gray-800 border border-gray-200';
+              const reactionKey = `${leaderName}-${promise.id || i}`;
+              const currentReaction = promiseReactions[reactionKey];
+              const prog = promise.progress ?? 0;
+              const progColor = prog >= 80 ? '#22c55e' : prog >= 50 ? '#eab308' : prog >= 20 ? '#f97316' : '#ef4444';
+
+              return (
+                <div key={promise.id || i} className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+                  {/* Status stripe */}
+                  <div className={`h-2 w-full ${sMeta.bg}`} />
+
+                  <div className="p-4 sm:p-5">
+                    {/* Badges */}
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${sMeta.bg} ${sMeta.text}`}>
+                        {promise.status}
+                      </span>
+                      {promise.category && (
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${cClass}`}>
+                          {promise.category}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Promise quote */}
+                    <blockquote
+                      className="text-gray-800 font-semibold text-sm sm:text-base leading-relaxed mb-2 italic border-l-4 pl-3"
+                      style={{ borderColor: accentColor }}
+                    >
+                      {promise.text}
+                    </blockquote>
+
+                    {/* Meta: date + source */}
+                    <div className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
+                      {promise.date_promised && <span>📅 {promise.date_promised}</span>}
+                      {promise.source && <span>📌 {promise.source}</span>}
+                    </div>
+
+                    {/* Progress bar */}
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Delivered</span>
+                        <span className="text-sm font-black" style={{ color: progColor }}>{prog}%</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                        <div
+                          className="h-3 rounded-full transition-all duration-700"
+                          style={{ width: `${prog}%`, backgroundColor: progColor }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Update */}
+                    {promise.update && (
+                      <p className="text-sm text-gray-600 leading-relaxed mb-4 bg-gray-50 rounded-xl p-3 border border-gray-100">
+                        {promise.update}
+                      </p>
+                    )}
+
+                    {/* Reactions */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs text-gray-400 font-semibold mr-1">Your reaction:</span>
+                      {[
+                        { key: 'satisfied',    label: '😊 Satisfied',    active: 'bg-green-500 text-white border-green-500' },
+                        { key: 'disappointed', label: '😤 Disappointed', active: 'bg-red-500 text-white border-red-500' },
+                        { key: 'neutral',      label: '😐 Neutral',      active: 'bg-gray-500 text-white border-gray-500' },
+                      ].map(({ key, label, active }) => (
+                        <button
+                          key={key}
+                          onClick={() => setPromiseReactions(prev => {
+                            const next = { ...prev };
+                            if (next[reactionKey] === key) delete next[reactionKey]; else next[reactionKey] = key;
+                            try { localStorage.setItem('cv_promise_reactions', JSON.stringify(next)); } catch (_) {}
+                            return next;
+                          })}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${currentReaction === key ? active : 'bg-transparent text-gray-500 border-gray-200 hover:border-gray-400'}`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {sorted.length === 0 && (
+              <div className="bg-white rounded-2xl p-10 text-center border border-gray-100">
+                <p className="text-gray-400">No promises match the selected filters.</p>
+                <button
+                  onClick={() => { setPromisePageStatusFilter('All'); setPromisePageCategoryFilter('All'); }}
+                  className="mt-3 text-sm font-semibold underline text-gray-500"
+                >
+                  Clear filters
+                </button>
+              </div>
+            )}
+          </div>
+
+          <p className="text-center text-gray-300 text-xs mt-8 pb-4">
+            Promise data sourced from official speeches, manifestos &amp; parliamentary records · Civic Voice
+          </p>
+        </div>
       </div>
     );
   };
@@ -17863,6 +18164,38 @@ function App() {
               <ChevronRight className="w-5 h-5" style={{ color: '#012169' }} />
             </div>
           </div>
+
+          {/* Promise Tracker */}
+          {(() => {
+            const lName = 'Keir Starmer';
+            const promises = (promiseTrackerData[lName] || []).length > 0 ? promiseTrackerData[lName] : (PROMISE_FALLBACK_DATA[lName] || []);
+            const sm = { Kept: 100, 'Partially Kept': 60, 'In Progress': 35, 'Not Started': 10, Broken: 0 };
+            const score = promises.length > 0 ? Math.round(promises.reduce((s, p) => s + (sm[p.status] || 0), 0) / promises.length) : 0;
+            const sc = score >= 70 ? '#22c55e' : score >= 45 ? '#eab308' : score >= 25 ? '#f97316' : '#ef4444';
+            const kept = promises.filter(p => p.status === 'Kept').length;
+            const broken = promises.filter(p => p.status === 'Broken').length;
+            return (
+              <div
+                onClick={() => setView('promise-tracker-page')}
+                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
+                onMouseEnter={e => e.currentTarget.style.borderColor = '#E4003B'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+              >
+                <div className="mb-3 sm:mb-4" style={{ color: '#E4003B' }}>
+                  <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">📋 Promise Tracker</h2>
+                <p className="text-gray-500 text-xs mb-3">PM · Keir Starmer</p>
+                <div className="w-full bg-gray-100 rounded-full h-2 mb-2 overflow-hidden">
+                  <div className="h-2 rounded-full" style={{ width: `${score}%`, backgroundColor: sc }} />
+                </div>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span className="font-semibold" style={{ color: sc }}>Score: {score}/100</span>
+                  <span>{kept} kept · {broken} broken</span>
+                </div>
+              </div>
+            );
+          })()}
 
         </div>
       </div>
@@ -23986,6 +24319,37 @@ function App() {
               </div>
             </div>
           )}
+
+          {/* Promise Tracker */}
+          {(() => {
+            const lName = isUSA ? 'Donald Trump' : 'Mark Carney';
+            const pm    = isUSA ? '47th President · Donald Trump' : '24th PM · Mark Carney';
+            const promises = (promiseTrackerData[lName] || []).length > 0 ? promiseTrackerData[lName] : (PROMISE_FALLBACK_DATA[lName] || []);
+            const sm = { Kept: 100, 'Partially Kept': 60, 'In Progress': 35, 'Not Started': 10, Broken: 0 };
+            const score = promises.length > 0 ? Math.round(promises.reduce((s, p) => s + (sm[p.status] || 0), 0) / promises.length) : 0;
+            const sc = score >= 70 ? '#22c55e' : score >= 45 ? '#eab308' : score >= 25 ? '#f97316' : '#ef4444';
+            const kept = promises.filter(p => p.status === 'Kept').length;
+            const broken = promises.filter(p => p.status === 'Broken').length;
+            return (
+              <div
+                onClick={() => setView('promise-tracker-page')}
+                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-indigo-500 active:scale-95"
+              >
+                <div className="text-indigo-600 mb-3 sm:mb-4">
+                  <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">📋 Promise Tracker</h2>
+                <p className="text-gray-500 text-xs mb-3">{pm}</p>
+                <div className="w-full bg-gray-100 rounded-full h-2 mb-2 overflow-hidden">
+                  <div className="h-2 rounded-full" style={{ width: `${score}%`, backgroundColor: sc }} />
+                </div>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span className="font-semibold" style={{ color: sc }}>Score: {score}/100</span>
+                  <span>{kept} kept · {broken} broken</span>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
     </div>
@@ -29411,6 +29775,36 @@ function App() {
               </div>
             </div>
 
+            {/* Promise Tracker */}
+            {(() => {
+              const lName = 'Anthony Albanese';
+              const promises = (promiseTrackerData[lName] || []).length > 0 ? promiseTrackerData[lName] : (PROMISE_FALLBACK_DATA[lName] || []);
+              const sm = { Kept: 100, 'Partially Kept': 60, 'In Progress': 35, 'Not Started': 10, Broken: 0 };
+              const score = promises.length > 0 ? Math.round(promises.reduce((s, p) => s + (sm[p.status] || 0), 0) / promises.length) : 0;
+              const sc = score >= 70 ? '#22c55e' : score >= 45 ? '#eab308' : score >= 25 ? '#f97316' : '#ef4444';
+              const kept = promises.filter(p => p.status === 'Kept').length;
+              const broken = promises.filter(p => p.status === 'Broken').length;
+              return (
+                <div
+                  onClick={() => setView('promise-tracker-page')}
+                  className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95"
+                >
+                  <div className="text-amber-600 mb-3 sm:mb-4">
+                    <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">📋 Promise Tracker</h2>
+                  <p className="text-gray-500 text-xs mb-3">31st PM · Anthony Albanese</p>
+                  <div className="w-full bg-gray-100 rounded-full h-2 mb-2 overflow-hidden">
+                    <div className="h-2 rounded-full" style={{ width: `${score}%`, backgroundColor: sc }} />
+                  </div>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span className="font-semibold" style={{ color: sc }}>Score: {score}/100</span>
+                    <span>{kept} kept · {broken} broken</span>
+                  </div>
+                </div>
+              );
+            })()}
+
           </div>
         </div>
       </div>
@@ -32221,6 +32615,7 @@ function App() {
       {view === 'money-uk' && renderFinancialDashboard()}
       {view === 'au-legislative-hub' && renderAuLegislativeHub()}
       {view === 'au-categories' && renderAuCategories()}
+      {view === 'promise-tracker-page' && renderPromiseTrackerPage()}
       {view === 'au-high-court' && renderAuHighCourt()}
       {view === 'uk-national' && renderUKNational()}
       {view === 'uk-pm-detail' && renderStarmerDetail()}
