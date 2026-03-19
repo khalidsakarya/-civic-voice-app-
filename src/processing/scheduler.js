@@ -42,6 +42,7 @@ import {
 } from 'firebase/firestore';
 import { runPromiseTracker } from './promiseTracker.js';
 import { runCorrelation } from './lobbyCorrelator.js';
+import { runForeignAidFetcher } from '../ingestion/foreignAidFetcher.js';
 
 // ─── Tier definitions ─────────────────────────────────────────────────────────
 
@@ -155,6 +156,15 @@ const JOBS = [
       return runCorrelation({ members, departments, contracts, country: 'UK' });
     },
   },
+  {
+    id: 'foreign_aid_all',
+    tier: TIERS.WEEKLY,
+    label: 'Foreign Aid Fetcher — All Countries',
+    handler: async () => {
+      console.log('[scheduler] Running foreign aid fetcher (CA, US, UK, AU)');
+      return runForeignAidFetcher(['CA', 'US', 'UK', 'AU']);
+    },
+  },
 
   // ── DAILY jobs ─────────────────────────────────────────────────────────────
 
@@ -177,6 +187,15 @@ const JOBS = [
     handler: async () => {
       console.log('[scheduler] Running monthly full promise refresh');
       return runPromiseTracker();
+    },
+  },
+  {
+    id: 'foreign_aid_full_refresh',
+    tier: TIERS.MONTHLY,
+    label: 'Foreign Aid Full Refresh — All Countries',
+    handler: async () => {
+      console.log('[scheduler] Running monthly foreign aid full refresh');
+      return runForeignAidFetcher(['CA', 'US', 'UK', 'AU']);
     },
   },
 ];
