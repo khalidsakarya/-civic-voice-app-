@@ -1626,6 +1626,12 @@ function App() {
   const [foreignAidReactions, setForeignAidReactions] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_foreign_aid_reactions') || '{}'); } catch (_) { return {}; }
   });
+  const [wasteActiveTab, setWasteActiveTab] = useState('spending');
+  const [militarySpendingData, setMilitarySpendingData] = useState([]);
+  const [militarySpendingLoading, setMilitarySpendingLoading] = useState(false);
+  const [militaryReactions, setMilitaryReactions] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cv_military_reactions') || '{}'); } catch (_) { return {}; }
+  });
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
   });
@@ -9230,6 +9236,27 @@ function App() {
             <div className="w-24 h-1 mt-3 rounded-full" style={{ background: 'linear-gradient(to right, #ef4444, #f97316)' }} />
           </div>
 
+          {/* Tab bar */}
+          <div className="flex gap-2 mb-6 p-1 rounded-2xl" style={{ background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(220,38,38,0.2)' }}>
+            {[
+              { id: 'spending',  label: '🚨 Flagged Spending' },
+              { id: 'military',  label: '🎖️ Military Spending' },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setWasteActiveTab(tab.id)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all"
+                style={wasteActiveTab === tab.id
+                  ? { background: 'linear-gradient(135deg, #dc2626, #991b1b)', color: '#fff', boxShadow: '0 2px 12px rgba(220,38,38,0.4)' }
+                  : { background: 'transparent', color: 'rgba(252,165,165,0.7)' }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {wasteActiveTab === 'spending' && (<>
+
           {/* Headline stat */}
           {!wasteLoading && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -10576,6 +10603,332 @@ function App() {
                 })}
               </div>
               </>
+            );
+          })()}
+
+          </>)}
+
+          {/* ── Military Spending Tab ── */}
+          {wasteActiveTab === 'military' && (() => {
+            const MIL = {
+              CA: {
+                totalBudget: 26500000000, gdpPct: 1.4, gdpTarget: 2.0,
+                allyAvg: 2.0, allyLabel: 'NATO Average',
+                categories: [
+                  { name: 'Personnel',  value: 10.2e9, color: '#1e40af' },
+                  { name: 'Equipment',  value: 6.4e9,  color: '#dc2626' },
+                  { name: 'Operations', value: 5.1e9,  color: '#7c3aed' },
+                  { name: 'R&D',        value: 2.8e9,  color: '#0891b2' },
+                  { name: 'Housing',    value: 2.0e9,  color: '#059669' },
+                ],
+                topPurchases: [
+                  { id: 'ca-m1', vendor: 'Lockheed Martin', amount: 19000000000, category: 'Equipment', flag_reason: '88 F-35 jets ordered — procurement has dragged on for over 20 years with changing specs and cost overruns', waste_score: 8.1 },
+                  { id: 'ca-m2', vendor: 'Irving Shipbuilding', amount: 2100000000, category: 'Contracts', flag_reason: 'Arctic patrol vessels delivered 3 years late with corrosion defects requiring immediate repairs post-delivery', waste_score: 7.4 },
+                  { id: 'ca-m3', vendor: 'DND Internal', amount: 15000000, category: 'Facilities', flag_reason: 'Annual maintenance of 3 military golf courses on DND bases — contested as non-essential in austerity era', waste_score: 7.8 },
+                  { id: 'ca-m4', vendor: 'DND Residences', amount: 8200000, category: 'Personnel', flag_reason: 'General officer residence renovations — marble countertops, custom cabinetry, and landscaping on public funds', waste_score: 7.2 },
+                  { id: 'ca-m5', vendor: 'Fairmont Banff Springs', amount: 3400000, category: 'Travel', flag_reason: '"Senior leadership alignment retreat" — 3 days at luxury Banff resort for 40 senior officers, 0 published outcomes', waste_score: 8.5 },
+                ],
+              },
+              US: {
+                totalBudget: 886000000000, gdpPct: 3.4, gdpTarget: 2.0,
+                allyAvg: 2.0, allyLabel: 'NATO Average',
+                categories: [
+                  { name: 'Personnel',  value: 198e9, color: '#1e40af' },
+                  { name: 'Equipment',  value: 310e9, color: '#dc2626' },
+                  { name: 'Operations', value: 224e9, color: '#7c3aed' },
+                  { name: 'R&D',        value: 145e9, color: '#0891b2' },
+                  { name: 'Housing',    value: 9e9,   color: '#059669' },
+                ],
+                topPurchases: [
+                  { id: 'us-m1', vendor: 'Lockheed Martin', amount: 640000000, category: 'Equipment', flag_reason: 'F-35 spare parts warehoused and unused — Inspector General found $640M in parts sitting in depots with no deployment plan', waste_score: 9.2 },
+                  { id: 'us-m2', vendor: 'General Dynamics', amount: 400000000, category: 'Contracts', flag_reason: 'Littoral Combat Ships decommissioned within 3 years of delivery — $400M effectively written off after persistent mechanical failures', waste_score: 9.5 },
+                  { id: 'us-m3', vendor: 'Various contractors', amount: 28000000, category: 'Personnel', flag_reason: 'Pet relocation program — taxpayers paid to move service members\' pets including horses, exotic birds, and multiple dogs per family', waste_score: 7.1 },
+                  { id: 'us-m4', vendor: 'Mad Catz / Xbox', amount: 21000000, category: 'Equipment', flag_reason: 'Xbox controllers purchased for military drone interfaces — questioned by Senate Armed Services Committee as unnecessary luxury spec', waste_score: 6.8 },
+                  { id: 'us-m5', vendor: 'Various vendors', amount: 14000000, category: 'Operations', flag_reason: '"Challenge coins" — custom commemorative coins for Pentagon officials, now an institutionalised $14M/year tradition', waste_score: 7.6 },
+                ],
+              },
+              UK: {
+                totalBudget: 59300000000, gdpPct: 2.3, gdpTarget: 2.0,
+                allyAvg: 2.0, allyLabel: 'NATO Average',
+                categories: [
+                  { name: 'Personnel',  value: 16.8e9, color: '#1e40af' },
+                  { name: 'Equipment',  value: 22.1e9, color: '#dc2626' },
+                  { name: 'Operations', value: 12.4e9, color: '#7c3aed' },
+                  { name: 'R&D',        value: 5.8e9,  color: '#0891b2' },
+                  { name: 'Housing',    value: 2.2e9,  color: '#059669' },
+                ],
+                topPurchases: [
+                  { id: 'uk-m1', vendor: 'General Dynamics UK', amount: 4900000000, category: 'Equipment', flag_reason: 'Ajax armoured vehicles — 11-year programme still not operational. Soldiers reported dizziness and hearing loss during trials. £4.9B spent, zero vehicles in service', waste_score: 9.8 },
+                  { id: 'uk-m2', vendor: 'Thales / ADS', amount: 1100000000, category: 'Equipment', flag_reason: 'Watchkeeper surveillance drones — multiple crashed during testing, programme cancelled and replaced. Entire £1.1B investment written off', waste_score: 9.3 },
+                  { id: 'uk-m3', vendor: 'BAE Systems', amount: 82000000, category: 'Contracts', flag_reason: 'HMS Queen Elizabeth propeller shaft repair — required 3 weeks after first operational deployment. Design flaw missed at £3.1B build stage', waste_score: 8.1 },
+                  { id: 'uk-m4', vendor: 'MoD Bands Budget', amount: 42000000, category: 'Personnel', flag_reason: 'Military band programme — 500+ full-time musicians on military salaries. PAC questioned value during defence budget cuts affecting frontline units', waste_score: 7.2 },
+                  { id: 'uk-m5', vendor: 'DIO', amount: 18000000, category: 'Facilities', flag_reason: 'Decommissioned HMS Illustrious sat idle for 4 years costing £18M in maintenance before scrapping — no strategic delay justification provided', waste_score: 7.5 },
+                ],
+              },
+              AU: {
+                totalBudget: 54600000000, gdpPct: 2.0, gdpTarget: 2.0,
+                allyAvg: 2.0, allyLabel: 'Five Eyes Average',
+                categories: [
+                  { name: 'Personnel',  value: 16.2e9, color: '#1e40af' },
+                  { name: 'Equipment',  value: 19.8e9, color: '#dc2626' },
+                  { name: 'Operations', value: 11.0e9, color: '#7c3aed' },
+                  { name: 'R&D',        value: 4.8e9,  color: '#0891b2' },
+                  { name: 'Housing',    value: 2.8e9,  color: '#059669' },
+                ],
+                topPurchases: [
+                  { id: 'au-m1', vendor: 'DCNS (Naval Group)', amount: 3500000000, category: 'Contracts', flag_reason: 'Attack-class submarine cancellation fee — Australia paid $3.5B to cancel the French submarine deal when switching to AUKUS nuclear subs', waste_score: 8.7 },
+                  { id: 'au-m2', vendor: 'Thales Australia', amount: 1800000000, category: 'Equipment', flag_reason: 'Hawkei protected vehicles — persistent steering, brake, and engine faults. Vehicles grounded multiple times since delivery. Remediation still ongoing', waste_score: 8.2 },
+                  { id: 'au-m3', vendor: 'Australian Defence Apparel', amount: 320000000, category: 'Equipment', flag_reason: 'Army uniform order — AU$320M of multicam uniforms ordered beyond inventory needs. Significant stock sitting in warehouses unused', waste_score: 7.4 },
+                  { id: 'au-m4', vendor: 'Sodexo Defence Services', amount: 84000000, category: 'Operations', flag_reason: 'Military catering contract — 40% cost overrun on ADF base catering. Senate estimates found invoicing inconsistencies across 14 bases', waste_score: 7.0 },
+                  { id: 'au-m5', vendor: 'DIO / Lendlease', amount: 18000000, category: 'Facilities', flag_reason: 'RAAF officers\' mess renovation — gold-taps-level fitout for senior officer dining facility at RAAF Base Williamtown questioned by ANAO', waste_score: 7.6 },
+                ],
+              },
+            };
+
+            const milData = MIL[country];
+            const liveItems = militarySpendingData.length > 0 ? militarySpendingData : milData.topPurchases;
+            const sortedMil = [...liveItems].sort((a, b) => (b.amount || 0) - (a.amount || 0));
+            const top5 = sortedMil.slice(0, 5);
+
+            const catChartData = milData.categories.map(c => ({
+              name: c.name,
+              value: c.value,
+              fill: c.color,
+            }));
+
+            const milWasteColor = (s) => s >= 9 ? '#ef4444' : s >= 7 ? '#f97316' : s >= 5 ? '#eab308' : '#22c55e';
+
+            // NATO/ally comparison bar data
+            const compData = [
+              { name: countryName, pct: milData.gdpPct, fill: '#dc2626' },
+              { name: milData.allyLabel, pct: milData.allyAvg, fill: '#1e3a5f' },
+              { name: 'USA', pct: 3.4, fill: '#1e40af' },
+              { name: 'UK',  pct: 2.3, fill: '#374151' },
+            ].filter((d, _, arr) => !(d.name === countryName && arr.slice(1).some(x => x.name === countryName)));
+
+            return (
+              <div className="animate-fade-in">
+                {/* Military headline + load live */}
+                <div className="rounded-2xl overflow-hidden mb-5" style={{ background: 'linear-gradient(135deg, rgba(0,10,30,0.95) 0%, rgba(15,23,60,0.9) 100%)', border: '1px solid rgba(99,102,241,0.3)' }}>
+                  <div className="p-5">
+                    <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">🎖️</span>
+                        <div>
+                          <h2 className="text-white font-black text-lg leading-tight">Military Spending</h2>
+                          <p className="text-indigo-300 text-xs mt-0.5">{flag} {countryName} · Annual defence budget</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => fetchMilitarySpending(country)}
+                        disabled={militarySpendingLoading}
+                        className="shrink-0 text-xs border border-indigo-500/40 text-indigo-300 hover:bg-indigo-900/40 px-3 py-2 rounded-xl font-semibold transition-all"
+                      >
+                        {militarySpendingLoading ? '⏳ Loading…' : '↻ Load Live Data'}
+                      </button>
+                    </div>
+
+                    {/* Budget headline */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+                      <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(220,38,38,0.2)', border: '1px solid rgba(220,38,38,0.3)' }}>
+                        <p className="text-red-300 text-xs font-semibold uppercase tracking-wider mb-1">Total Budget</p>
+                        <p className="text-white font-black text-lg">{fmtAmount(milData.totalBudget)}</p>
+                      </div>
+                      <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.3)' }}>
+                        <p className="text-indigo-300 text-xs font-semibold uppercase tracking-wider mb-1">% of GDP</p>
+                        <p className="text-white font-black text-lg">{milData.gdpPct}%</p>
+                      </div>
+                      <div className="rounded-xl p-3 text-center col-span-2 sm:col-span-1" style={{ background: milData.gdpPct >= milData.gdpTarget ? 'rgba(34,197,94,0.15)' : 'rgba(234,179,8,0.15)', border: `1px solid ${milData.gdpPct >= milData.gdpTarget ? 'rgba(34,197,94,0.3)' : 'rgba(234,179,8,0.3)'}` }}>
+                        <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: milData.gdpPct >= milData.gdpTarget ? '#86efac' : '#fde047' }}>NATO/Ally Target</p>
+                        <p className="text-white font-black text-lg">{milData.gdpTarget}% GDP</p>
+                        <p className="text-xs mt-0.5" style={{ color: milData.gdpPct >= milData.gdpTarget ? '#86efac' : '#fde047' }}>
+                          {milData.gdpPct >= milData.gdpTarget ? '✓ Meeting target' : `⚠ ${(milData.gdpTarget - milData.gdpPct).toFixed(1)}% below target`}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Category breakdown chart */}
+                    <h3 className="text-indigo-300 text-xs font-semibold uppercase tracking-wider mb-3">Budget Category Breakdown</h3>
+                    <ResponsiveContainer width="100%" height={160}>
+                      <BarChart data={catChartData} margin={{ top: 0, right: 10, left: -10, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                        <XAxis dataKey="name" tick={{ fill: '#a5b4fc', fontSize: 10 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: '#a5b4fc', fontSize: 10 }} axisLine={false} tickLine={false}
+                          tickFormatter={v => v >= 1e9 ? `${(v/1e9).toFixed(0)}B` : `${(v/1e6).toFixed(0)}M`} />
+                        <Tooltip
+                          formatter={(v) => [fmtAmount(v), 'Budget']}
+                          contentStyle={{ background: '#0f172a', border: '1px solid #312e81', borderRadius: 8, color: '#e0e7ff', fontSize: 12 }}
+                        />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                          {catChartData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+
+                    {/* NATO comparison bars */}
+                    <h3 className="text-indigo-300 text-xs font-semibold uppercase tracking-wider mt-4 mb-3">Military Spend vs Allies (% of GDP)</h3>
+                    <div className="space-y-2">
+                      {compData.map((d, i) => (
+                        <div key={i} className="flex items-center gap-3">
+                          <span className="text-xs text-indigo-200 w-28 shrink-0 font-semibold truncate">{d.name}</span>
+                          <div className="flex-1 bg-slate-800 rounded-full h-4 overflow-hidden">
+                            <div
+                              className="h-4 rounded-full transition-all duration-700 flex items-center justify-end pr-2"
+                              style={{ width: `${Math.min((d.pct / 4) * 100, 100)}%`, background: d.fill }}
+                            />
+                          </div>
+                          <span className="text-xs font-black text-white w-10 text-right shrink-0">{d.pct}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Most Questionable Purchases */}
+                <div className="rounded-2xl overflow-hidden mb-5 border-2" style={{ borderColor: 'rgba(220,38,38,0.5)', background: 'linear-gradient(135deg, rgba(60,0,0,0.8) 0%, rgba(20,0,30,0.9) 100%)' }}>
+                  <div className="px-5 py-3 flex items-center gap-2" style={{ background: 'rgba(220,38,38,0.15)', borderBottom: '1px solid rgba(220,38,38,0.25)' }}>
+                    <span className="text-xl animate-pulse">💸</span>
+                    <div>
+                      <h2 className="text-white font-black text-base">Most Questionable Purchases</h2>
+                      <p className="text-red-300 text-xs">Top 5 flagged military expenditures · {countryName}</p>
+                    </div>
+                  </div>
+                  <div className="divide-y divide-red-900/20">
+                    {top5.map((item, i) => {
+                      const wc = milWasteColor(item.waste_score || 0);
+                      return (
+                        <div key={item.id || i} className="px-4 sm:px-5 py-3 flex items-start gap-3">
+                          <span className="text-xl flex-shrink-0 mt-0.5">{'🥇🥈🥉🏅🏅'[i] || '🚨'}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-bold text-sm leading-snug">{item.vendor}</p>
+                            <p className="text-red-300 text-xs mt-0.5 leading-snug line-clamp-2">{item.flag_reason}</p>
+                            {item.category && (
+                              <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-semibold"
+                                style={{ background: 'rgba(99,102,241,0.25)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.3)' }}>
+                                {item.category}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-shrink-0 text-right ml-2">
+                            <p className="font-black text-sm text-white">{fmtAmount(item.amount)}</p>
+                            <p className="font-black text-lg leading-none mt-0.5" style={{ color: wc }}>{item.waste_score}<span className="text-xs font-normal text-gray-500">/10</span></p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Flagged spending cards */}
+                <p className="text-red-300 text-xs font-semibold uppercase tracking-wider mb-3">Flagged Spending Detail</p>
+                {militarySpendingLoading && (
+                  <div className="flex items-center justify-center py-12 gap-3">
+                    <div className="w-8 h-8 border-4 border-indigo-600 border-t-indigo-300 rounded-full animate-spin" />
+                    <p className="text-indigo-300 text-sm">Loading military spending data…</p>
+                  </div>
+                )}
+                <div className="space-y-4 mb-6">
+                  {!militarySpendingLoading && sortedMil.map((item, idx) => {
+                    const wc = milWasteColor(item.waste_score || 0);
+                    const reactionKey = `mil-${country}-${item.id || idx}`;
+                    const currentReaction = militaryReactions[reactionKey];
+
+                    return (
+                      <div
+                        key={item.id || idx}
+                        className="rounded-2xl overflow-hidden animate-scale-in"
+                        style={{ animationDelay: `${idx * 0.04}s`, background: 'rgba(5,10,30,0.85)', border: '1px solid rgba(99,102,241,0.25)' }}
+                      >
+                        <div className="h-1.5 w-full" style={{ background: `linear-gradient(to right, ${wc}66, ${wc})` }} />
+                        <div className="p-4 sm:p-5">
+
+                          {/* Header row */}
+                          <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl">🎖️</span>
+                              <div>
+                                <p className="text-white font-black text-base leading-tight">{item.vendor}</p>
+                                {item.category && (
+                                  <span className="inline-block mt-0.5 text-xs px-2 py-0.5 rounded-full font-semibold"
+                                    style={{ background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.25)' }}>
+                                    {item.category}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {/* Waste score */}
+                            <div className="flex items-center gap-0.5 shrink-0">
+                              {[1,2,3,4,5,6,7,8,9,10].map(i => (
+                                <div key={i} className="w-2 h-4 rounded-sm" style={{
+                                  background: i <= (item.waste_score || 0)
+                                    ? (i >= 8 ? '#ef4444' : i >= 6 ? '#f97316' : i >= 4 ? '#eab308' : '#22c55e')
+                                    : 'rgba(255,255,255,0.08)'
+                                }} />
+                              ))}
+                              <span className="ml-1 text-sm font-black" style={{ color: wc }}>{item.waste_score ?? '—'}/10</span>
+                            </div>
+                          </div>
+
+                          {/* Amount */}
+                          <p className="text-xs text-indigo-400 uppercase font-semibold mb-0.5">Amount</p>
+                          <p className="text-white font-black text-2xl mb-3">{fmtAmount(item.amount)}</p>
+
+                          {/* Flag reason */}
+                          {item.flag_reason && (
+                            <div className="rounded-xl p-3 mb-3" style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.25)' }}>
+                              <p className="text-red-200 text-sm leading-relaxed">
+                                <span className="font-semibold text-red-400">⚠ Why flagged: </span>
+                                {item.flag_reason}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Reactions + share */}
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <span className="text-indigo-400 text-xs font-semibold mr-1">Your view:</span>
+                            {[
+                              { key: 'outraged',    label: '😡 Outraged',     active: 'bg-red-600 text-white border-red-500' },
+                              { key: 'concerned',   label: '😟 Concerned',    active: 'bg-orange-500 text-white border-orange-400' },
+                              { key: 'acceptable',  label: '🤷 Acceptable',   active: 'bg-slate-600 text-white border-slate-500' },
+                            ].map(({ key, label, active }) => (
+                              <button
+                                key={key}
+                                onClick={() => setMilitaryReactions(prev => {
+                                  const next = { ...prev };
+                                  if (next[reactionKey] === key) delete next[reactionKey]; else next[reactionKey] = key;
+                                  try { localStorage.setItem('cv_military_reactions', JSON.stringify(next)); } catch (_) {}
+                                  return next;
+                                })}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${currentReaction === key ? active : 'bg-transparent text-indigo-300 border-indigo-700/50 hover:border-indigo-500'}`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                            <button
+                              onClick={(e) => handleShare(e, {
+                                id: `mil-${item.id || idx}`,
+                                title: `🎖️ Military Spending — ${countryName}`,
+                                text: `Your military spent ${fmtAmount(item.amount)} on ${item.vendor} 👀 Check Civic Voice`,
+                                url: window.location.href,
+                              })}
+                              className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                                copiedShareId === `mil-${item.id || idx}`
+                                  ? 'border-indigo-400 text-indigo-200 bg-indigo-900/30'
+                                  : 'border-indigo-700/40 text-indigo-400 hover:border-indigo-500 hover:text-indigo-200'
+                              }`}
+                            >
+                              {copiedShareId === `mil-${item.id || idx}`
+                                ? <><CheckCircle className="w-3.5 h-3.5" /> Copied!</>
+                                : <><Share2 className="w-3.5 h-3.5" /> Share</>
+                              }
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })()}
 
@@ -15394,6 +15747,21 @@ function App() {
       setPromiseTrackerData(prev => ({ ...prev, [leaderName]: [] }));
     } finally {
       setPromiseTrackerLoading(prev => ({ ...prev, [leaderName]: false }));
+    }
+  };
+
+  const fetchMilitarySpending = async (country) => {
+    setMilitarySpendingLoading(true);
+    try {
+      const snap = await getDocs(query(collection(db, 'military_spending'), where('country', '==', country)));
+      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.amount || 0) - (a.amount || 0));
+      setMilitarySpendingData(items);
+    } catch (err) {
+      console.warn('[MilitarySpending] Firestore fetch failed:', err.message);
+      setMilitarySpendingData([]);
+    } finally {
+      setMilitarySpendingLoading(false);
     }
   };
 
