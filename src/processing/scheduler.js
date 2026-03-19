@@ -45,6 +45,7 @@ import { runCorrelation } from './lobbyCorrelator.js';
 import { runForeignAidFetcher } from '../ingestion/foreignAidFetcher.js';
 import { runMilitarySpendingFetcher } from '../ingestion/militarySpendingFetcher.js';
 import { runCreditCardFetcher } from '../ingestion/creditCardFetcher.js';
+import { runTransparencyScorer } from '../scoring/transparencyScorer.js';
 
 // ─── Tier definitions ─────────────────────────────────────────────────────────
 
@@ -234,6 +235,15 @@ const JOBS = [
     handler: async () => {
       console.log('[scheduler] Running monthly credit card full refresh');
       return runCreditCardFetcher(['CA', 'US', 'UK', 'AU']);
+    },
+  },
+  {
+    id: 'transparency_scorer',
+    tier: TIERS.MONTHLY,
+    label: 'Government Transparency Scorer — All Countries',
+    handler: async () => {
+      console.log('[scheduler] Running transparency scorer (CA, US, UK, AU)');
+      return runTransparencyScorer(['CA', 'US', 'UK', 'AU']);
     },
   },
 ];
