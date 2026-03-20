@@ -1626,6 +1626,9 @@ function App() {
   const [controversiesData, setControversiesData] = useState({});
   const [controversiesLoading, setControversiesLoading] = useState({});
   const [controversiesCatFilter, setControversiesCatFilter] = useState({});
+  const [controversyReactions, setControversyReactions] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cv_controversy_reactions') || '{}'); } catch (_) { return {}; }
+  });
   const [foreignAidData, setForeignAidData] = useState([]);
   const [foreignAidLoading, setForeignAidLoading] = useState(false);
   const [foreignAidReactions, setForeignAidReactions] = useState(() => {
@@ -14229,6 +14232,43 @@ function App() {
               </div>
             )}
 
+            {/* Timeline chart */}
+            {!isLoading && allItems.length > 0 && (() => {
+              const timelineData = [...allItems]
+                .filter(c => c.date)
+                .sort((a, b) => new Date(a.date) - new Date(b.date))
+                .map(c => ({
+                  label: c.date?.slice(0, 7) || '',
+                  score: c.controversy_score || 0,
+                  name: c.headline?.slice(0, 28) + '…',
+                }));
+              return (
+                <div className="mb-5 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Controversy Timeline</p>
+                  <ResponsiveContainer width="100%" height={110}>
+                    <AreaChart data={timelineData} margin={{ top: 4, right: 8, left: -28, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id={`ctGrad-${leaderName.replace(/\s/g,'')}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.25} />
+                          <stop offset="95%" stopColor="#ef4444" stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                      <YAxis domain={[0, 10]} tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                      <Tooltip
+                        formatter={(v) => [`${v}/10`, 'Score']}
+                        labelFormatter={(l) => l}
+                        contentStyle={{ background: '#1f2937', border: 'none', borderRadius: 8, color: '#fff', fontSize: 11 }}
+                        itemStyle={{ color: '#fca5a5' }}
+                      />
+                      <Area type="monotone" dataKey="score" stroke="#ef4444" strokeWidth={2} fill={`url(#ctGrad-${leaderName.replace(/\s/g,'')})`} dot={{ fill: '#ef4444', r: 4 }} activeDot={{ r: 6 }} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              );
+            })()}
+
             {/* Controversy cards */}
             <div className="space-y-4">
               {!isLoading && sorted.map((item, idx) => {
@@ -14236,6 +14276,9 @@ function App() {
                 const cClass = catColors[item.category] || 'bg-gray-100 text-gray-800 border border-gray-200';
                 const cs = item.controversy_score || 0;
                 const csColor = cs >= 9 ? '#dc2626' : cs >= 7 ? '#f97316' : cs >= 5 ? '#eab308' : '#22c55e';
+                const reactionKey = `controversy-${leaderName}-${item.id || idx}`;
+                const currentReaction = controversyReactions[reactionKey];
+                const shareId = `controversy-${item.id || idx}`;
                 return (
                   <div key={item.id || idx} className="rounded-xl border border-gray-100 overflow-hidden bg-gray-50">
                     <div className="h-1 w-full" style={{ background: csColor }} />
@@ -14259,7 +14302,7 @@ function App() {
                         </p>
                       )}
                       {/* Controversy score meter */}
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 mb-3">
                         <span className="text-xs text-gray-400 font-semibold uppercase shrink-0">Score</span>
                         <div className="flex gap-0.5 flex-1">
                           {[1,2,3,4,5,6,7,8,9,10].map(i => (
@@ -14271,6 +14314,43 @@ function App() {
                           ))}
                         </div>
                         <span className="text-xs font-black shrink-0" style={{ color: csColor }}>{cs}/10</span>
+                      </div>
+                      {/* Reactions + share */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs text-gray-400 font-semibold mr-1">Your take:</span>
+                        {[
+                          { key: 'concerning',    label: '😡 Concerning',       active: 'bg-red-500 text-white border-red-500' },
+                          { key: 'not_concerned', label: '🤷 Not Concerned',    active: 'bg-gray-500 text-white border-gray-500' },
+                          { key: 'more_info',     label: '🤔 Need More Info',   active: 'bg-yellow-400 text-gray-900 border-yellow-400' },
+                        ].map(({ key, label, active }) => (
+                          <button
+                            key={key}
+                            onClick={() => setControversyReactions(prev => {
+                              const next = { ...prev };
+                              if (next[reactionKey] === key) delete next[reactionKey]; else next[reactionKey] = key;
+                              try { localStorage.setItem('cv_controversy_reactions', JSON.stringify(next)); } catch (_) {}
+                              return next;
+                            })}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${currentReaction === key ? active : 'bg-transparent text-gray-500 border-gray-200 hover:border-gray-400'}`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                        <button
+                          onClick={(e) => handleShare(e, {
+                            id: shareId,
+                            title: item.headline,
+                            text: `${item.headline} — controversy score ${cs}/10 👀 Check Civic Voice`,
+                            url: window.location.href,
+                          })}
+                          className={`ml-auto flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                            copiedShareId === shareId
+                              ? 'border-green-400 text-green-600 bg-green-50'
+                              : 'border-gray-200 text-gray-400 hover:border-gray-400'
+                          }`}
+                        >
+                          {copiedShareId === shareId ? <><CheckCircle className="w-3 h-3" /> Copied!</> : <><Share2 className="w-3 h-3" /> Share</>}
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -19376,7 +19456,10 @@ function App() {
             <p className="text-gray-600 mb-3 text-sm sm:text-base">The Cabinet Office, Cabinet &amp; Executive Branch</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
               <span>PM · Keir Starmer</span>
-              <ChevronRight className="w-5 h-5" style={{ color: '#C8102E' }} />
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Keir Starmer']?.length ?? 5}</span>
+                <ChevronRight className="w-5 h-5" style={{ color: '#C8102E' }} />
+              </div>
             </div>
           </div>
 
@@ -25570,7 +25653,10 @@ function App() {
               <p className="text-gray-600 mb-3 text-sm sm:text-base">The White House, Cabinet &amp; Executive Branch</p>
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <span>47th President · Donald Trump</span>
-                <ChevronRight className="w-5 h-5" />
+                <div className="flex items-center gap-2">
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Donald Trump']?.length ?? 5}</span>
+                  <ChevronRight className="w-5 h-5" />
+                </div>
               </div>
             </div>
           )}
@@ -25589,7 +25675,10 @@ function App() {
               <p className="text-gray-600 mb-3 text-sm sm:text-base">The PMO, Cabinet &amp; Executive Branch</p>
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <span>24th Prime Minister · Mark Carney</span>
-                <ChevronRight className="w-5 h-5" />
+                <div className="flex items-center gap-2">
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Mark Carney']?.length ?? 5}</span>
+                  <ChevronRight className="w-5 h-5" />
+                </div>
               </div>
             </div>
           )}
@@ -31128,7 +31217,10 @@ function App() {
               <p className="text-gray-600 mb-3 text-sm sm:text-base">The PMO, Cabinet &amp; Executive Branch</p>
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <span>31st PM · Anthony Albanese</span>
-                <ChevronRight className="w-5 h-5 text-amber-600" />
+                <div className="flex items-center gap-2">
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Anthony Albanese']?.length ?? 5}</span>
+                  <ChevronRight className="w-5 h-5 text-amber-600" />
+                </div>
               </div>
             </div>
 
