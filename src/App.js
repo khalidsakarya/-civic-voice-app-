@@ -35431,49 +35431,14 @@ function App() {
       {/* First-time onboarding overlay */}
       {showOnboarding && renderOnboarding()}
 
-      {/* Global search button — always visible */}
-      <button
-        onClick={() => { setShowGlobalSearch(true); setGlobalSearchQuery(''); setGlobalSearchHighlight(0); }}
-        aria-label="Search"
-        className="fixed top-3 left-4 z-[52] flex items-center gap-2 px-3 py-2 bg-white rounded-full shadow-md border border-gray-200 hover:bg-gray-50 active:scale-95 transition-all"
-        style={{ position: 'fixed' }}
-      >
-        <span className="text-gray-500 text-sm">🔍</span>
-        <span className="text-gray-400 text-xs font-medium hidden sm:inline">Search everything...</span>
-        <span className="text-gray-300 text-[10px] hidden sm:inline border border-gray-200 rounded px-1">⌘K</span>
-      </button>
+      {/* ── Fixed header icons — all anchored to the RIGHT so back buttons never overlap ── */}
 
-      {/* Search overlay */}
-      {showGlobalSearch && renderSearchOverlay()}
-
-      {/* Dark mode toggle — always visible */}
-      <button
-        onClick={() => {
-          const next = !darkMode;
-          setDarkMode(next);
-          localStorage.setItem('cv_dark_mode', String(next));
-        }}
-        aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-        className="fixed top-3 z-[52] w-9 h-9 rounded-full shadow-md border border-gray-200 active:scale-95 transition-all flex items-center justify-center"
-        style={{
-          right: (view === 'countries' || view === 'government-levels') ? '3.5rem' : '1rem',
-          background: darkMode ? '#1e293b' : '#ffffff',
-          borderColor: darkMode ? '#334155' : undefined,
-          position: 'fixed',
-        }}
-      >
-        <span className="dark-toggle-icon text-base leading-none" key={String(darkMode)}>
-          {darkMode ? '☀️' : '🌙'}
-        </span>
-      </button>
-
-      {/* Notification bell — only on home and top-level landing */}
+      {/* Notification bell — rightmost, home views only */}
       {(view === 'countries' || view === 'government-levels') && (
         <button
           onClick={openNotifications}
           aria-label="Notifications"
           className="fixed top-3 right-4 z-[52] w-9 h-9 bg-white rounded-full shadow-md border border-gray-200 hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center"
-          style={{ position: 'fixed' }}
         >
           <Bell className="w-4 h-4 text-gray-600" />
           {unreadCount > 0 && (
@@ -35483,6 +35448,43 @@ function App() {
           )}
         </button>
       )}
+
+      {/* Dark mode toggle — right of search, left of bell */}
+      <button
+        onClick={() => {
+          const next = !darkMode;
+          setDarkMode(next);
+          localStorage.setItem('cv_dark_mode', String(next));
+        }}
+        aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        className="fixed top-3 z-[52] w-9 h-9 rounded-full shadow-md border border-gray-200 active:scale-95 transition-all flex items-center justify-center"
+        style={{
+          right: (view === 'countries' || view === 'government-levels') ? '3.75rem' : '1rem',
+          background: darkMode ? '#1e293b' : '#ffffff',
+          borderColor: darkMode ? '#334155' : undefined,
+        }}
+      >
+        <span className="dark-toggle-icon text-base leading-none" key={String(darkMode)}>
+          {darkMode ? '☀️' : '🌙'}
+        </span>
+      </button>
+
+      {/* Global search button — leftmost of the right-side cluster, never overlaps back button */}
+      <button
+        onClick={() => { setShowGlobalSearch(true); setGlobalSearchQuery(''); setGlobalSearchHighlight(0); }}
+        aria-label="Search"
+        className="fixed top-3 z-[52] flex items-center gap-2 px-3 py-2 bg-white rounded-full shadow-md border border-gray-200 hover:bg-gray-50 active:scale-95 transition-all"
+        style={{
+          right: (view === 'countries' || view === 'government-levels') ? '6.5rem' : '3.75rem',
+        }}
+      >
+        <span className="text-gray-500 text-sm">🔍</span>
+        <span className="text-gray-400 text-xs font-medium hidden sm:inline">Search everything...</span>
+        <span className="text-gray-300 text-[10px] hidden sm:inline border border-gray-200 rounded px-1">⌘K</span>
+      </button>
+
+      {/* Search overlay */}
+      {showGlobalSearch && renderSearchOverlay()}
 
       {/* Notifications panel */}
       {showNotifications && renderNotificationsPanel()}
