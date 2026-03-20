@@ -303,6 +303,156 @@ const customStyles = `
   /* Restore intentionally tiny UI chrome (badges, chart ticks handled inline) */
   .text-\[11px\] { font-size: 11px !important; }
   .text-\[10px\] { font-size: 10px !important; }
+
+  /* ═══════════════════════════════════════════════════════
+     DARK MODE — applied via .dark on the root .App div
+     ═══════════════════════════════════════════════════════ */
+
+  /* Root */
+  .dark { background-color: #0f172a !important; color: #e2e8f0; }
+
+  /* ── Backgrounds ── */
+  .dark .bg-white            { background-color: #1e293b !important; }
+  .dark .bg-gray-50          { background-color: #0f172a !important; }
+  .dark .bg-gray-100         { background-color: #1e293b !important; }
+  .dark .bg-gray-200         { background-color: #334155 !important; }
+  .dark .bg-gray-300         { background-color: #475569 !important; }
+  .dark .bg-slate-50         { background-color: #0f172a !important; }
+  .dark .bg-slate-100        { background-color: #1e293b !important; }
+  .dark .bg-blue-50          { background-color: #0f1929 !important; }
+  .dark .bg-blue-100         { background-color: #172554 !important; }
+  .dark .bg-indigo-50        { background-color: #0f172a !important; }
+  .dark .bg-purple-50        { background-color: #0f172a !important; }
+  .dark .bg-green-50         { background-color: #0a1a0f !important; }
+  .dark .bg-green-100        { background-color: #14532d !important; }
+  .dark .bg-emerald-50       { background-color: #0a1a0f !important; }
+  .dark .bg-teal-50          { background-color: #0a1a1a !important; }
+  .dark .bg-yellow-50        { background-color: #1a1400 !important; }
+  .dark .bg-amber-50         { background-color: #1a1200 !important; }
+  .dark .bg-orange-50        { background-color: #1a0f00 !important; }
+  .dark .bg-red-50           { background-color: #1a0000 !important; }
+  .dark .bg-pink-50          { background-color: #1a0010 !important; }
+  .dark .bg-rose-50          { background-color: #1a0010 !important; }
+
+  /* Semi-transparent whites → dark equivalents */
+  .dark .bg-white\/90        { background-color: rgba(30,41,59,0.95) !important; }
+  .dark .bg-white\/95        { background-color: rgba(30,41,59,0.98) !important; }
+  .dark .bg-white\/80        { background-color: rgba(30,41,59,0.88) !important; }
+  .dark .bg-gray-50\/95      { background-color: rgba(15,23,42,0.98) !important; }
+
+  /* Kill gradient backgrounds → flat dark */
+  .dark .bg-gradient-to-br,
+  .dark .bg-gradient-to-b,
+  .dark .bg-gradient-to-r,
+  .dark .bg-gradient-to-bl  { background-image: none !important; background-color: #0f172a !important; }
+
+  /* ── Text ── */
+  .dark p                    { color: #cbd5e1 !important; }
+  .dark .text-sm             { color: #cbd5e1; }
+  .dark .text-xs             { color: #94a3b8; }
+  .dark .text-gray-900       { color: #f1f5f9 !important; }
+  .dark .text-gray-800       { color: #e2e8f0 !important; }
+  .dark .text-gray-700       { color: #cbd5e1 !important; }
+  .dark .text-gray-600       { color: #94a3b8 !important; }
+  .dark .text-gray-500       { color: #94a3b8 !important; }
+  .dark .text-gray-400       { color: #64748b !important; }
+  .dark .text-gray-300       { color: #475569 !important; }
+  .dark .text-black          { color: #f1f5f9 !important; }
+  .dark .text-slate-900      { color: #f1f5f9 !important; }
+  .dark .text-slate-800      { color: #e2e8f0 !important; }
+  .dark .text-slate-700      { color: #cbd5e1 !important; }
+  .dark .text-slate-600      { color: #94a3b8 !important; }
+  .dark .text-slate-500      { color: #94a3b8 !important; }
+  .dark .text-blue-700       { color: #93c5fd !important; }
+  .dark .text-blue-800       { color: #bfdbfe !important; }
+  .dark .text-blue-900       { color: #dbeafe !important; }
+  .dark .text-green-700      { color: #86efac !important; }
+  .dark .text-green-800      { color: #bbf7d0 !important; }
+  .dark .text-indigo-700     { color: #a5b4fc !important; }
+  .dark .text-indigo-800     { color: #c7d2fe !important; }
+  .dark .text-purple-700     { color: #c4b5fd !important; }
+  .dark .text-orange-700     { color: #fdba74 !important; }
+  .dark .text-orange-800     { color: #fed7aa !important; }
+  .dark .text-red-700        { color: #fca5a5 !important; }
+  .dark .text-red-800        { color: #fecaca !important; }
+  .dark .text-yellow-700     { color: #fde047 !important; }
+  .dark .text-amber-700      { color: #fcd34d !important; }
+
+  /* ── Borders ── */
+  .dark .border-gray-100     { border-color: #1e293b !important; }
+  .dark .border-gray-200     { border-color: #334155 !important; }
+  .dark .border-gray-300     { border-color: #475569 !important; }
+  .dark .border-gray-400     { border-color: #64748b !important; }
+  .dark .border-blue-100     { border-color: #1e3a5f !important; }
+  .dark .border-blue-200     { border-color: #1e3a5f !important; }
+  .dark .border-green-200    { border-color: #14532d !important; }
+  .dark .border-indigo-100   { border-color: #1e293b !important; }
+  .dark .border-indigo-200   { border-color: #312e81 !important; }
+
+  /* Dividers */
+  .dark .divide-gray-100 > * + * { border-color: #1e293b !important; }
+  .dark .divide-gray-200 > * + * { border-color: #334155 !important; }
+
+  /* ── Forms ── */
+  .dark input:not([type='range']),
+  .dark select,
+  .dark textarea {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+    border-color: #334155 !important;
+  }
+  .dark input::placeholder,
+  .dark textarea::placeholder { color: #475569 !important; }
+
+  /* ── Shadows ── darken to feel right on dark bg */
+  .dark .shadow,
+  .dark .shadow-sm,
+  .dark .shadow-md,
+  .dark .shadow-lg,
+  .dark .shadow-xl,
+  .dark .shadow-2xl { box-shadow: 0 4px 24px rgba(0,0,0,0.55) !important; }
+
+  /* ── Structural elements ── */
+  .dark .header-sticky { background: rgba(15,23,42,0.97) !important; border-bottom-color: #334155 !important; }
+  .dark footer         { background: #0f172a !important; border-top-color: #334155 !important; }
+  .dark .text-blue-700 { color: #93c5fd !important; }
+  .dark .panel-section-label { color: #64748b !important; }
+
+  /* Sticky headers that use bg-white directly */
+  .dark .sticky { background-color: #1e293b !important; }
+
+  /* ── Tables ── */
+  .dark table { background-color: #1e293b !important; }
+  .dark th    { background-color: #0f172a !important; color: #94a3b8 !important; border-color: #334155 !important; }
+  .dark td    { border-color: #334155 !important; color: #e2e8f0 !important; }
+  .dark tr:hover { background-color: rgba(255,255,255,0.04) !important; }
+
+  /* ── Fixed-position overlays and buttons ── */
+  .dark .fixed.bg-white    { background-color: #1e293b !important; }
+  .dark button.bg-white    { background-color: #1e293b !important; }
+  .dark .rounded-full.bg-white { background-color: #1e293b !important; }
+  .dark .border-gray-200.rounded-full { border-color: #334155 !important; }
+
+  /* Notification / install banner */
+  .dark .border-blue-200.rounded-2xl { border-color: #1e3a5f !important; }
+
+  /* Hover states */
+  .dark .hover\:bg-gray-50:hover { background-color: #1e293b !important; }
+  .dark .hover\:bg-gray-100:hover { background-color: #334155 !important; }
+
+  /* Recharts tooltip */
+  .dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+  }
+
+  /* Dark mode toggle animation */
+  @keyframes darkToggle {
+    from { transform: scale(0.7) rotate(-30deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg);     opacity: 1; }
+  }
+  .dark-toggle-icon { animation: darkToggle 0.25s ease forwards; }
 `;
 
 
@@ -1677,6 +1827,7 @@ function App() {
   const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('cv_onboarding_done'));
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [onboardingAnimKey, setOnboardingAnimKey] = useState(0);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('cv_dark_mode') === 'true');
   const [foreignAidData, setForeignAidData] = useState([]);
   const [foreignAidLoading, setForeignAidLoading] = useState(false);
   const [foreignAidReactions, setForeignAidReactions] = useState(() => {
@@ -35165,7 +35316,7 @@ function App() {
   };
 
   return (
-    <div className="App smooth-scroll pb-10">
+    <div className={`App smooth-scroll pb-10${darkMode ? ' dark' : ''}`}>
       <style>{customStyles}</style>
 
       {showInstallBanner && (
@@ -35327,6 +35478,27 @@ function App() {
 
       {/* Search overlay */}
       {showGlobalSearch && renderSearchOverlay()}
+
+      {/* Dark mode toggle — always visible */}
+      <button
+        onClick={() => {
+          const next = !darkMode;
+          setDarkMode(next);
+          localStorage.setItem('cv_dark_mode', String(next));
+        }}
+        aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        className="fixed top-3 z-[52] w-9 h-9 rounded-full shadow-md border border-gray-200 active:scale-95 transition-all flex items-center justify-center"
+        style={{
+          right: (view === 'countries' || view === 'government-levels') ? '3.5rem' : '1rem',
+          background: darkMode ? '#1e293b' : '#ffffff',
+          borderColor: darkMode ? '#334155' : undefined,
+          position: 'fixed',
+        }}
+      >
+        <span className="dark-toggle-icon text-base leading-none" key={String(darkMode)}>
+          {darkMode ? '☀️' : '🌙'}
+        </span>
+      </button>
 
       {/* Notification bell — only on home and top-level landing */}
       {(view === 'countries' || view === 'government-levels') && (
