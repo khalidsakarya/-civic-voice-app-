@@ -8024,54 +8024,125 @@ function App() {
     );
   };
 
-  const renderCountrySelection = () => (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8 animate-fade-in">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12 animate-slide-in">
-          <h1 className="text-5xl font-bold text-gray-800 mb-3 text-shadow">Civic Voice</h1>
-          <p className="text-xl text-gray-600">Full Government Transparency Platform</p>
-          <div className="w-24 h-1 bg-gradient-blue mx-auto mt-4 rounded-full"></div>
-        </div>
-        
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 text-red-700 rounded-xl flex items-center gap-3 shadow-elegant animate-scale-in">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <div>
-              <p className="font-semibold">API Connection Error</p>
-              <p className="text-sm">{error}</p>
-            </div>
+  const renderCountrySelection = () => {
+    const countryMeta = {
+      canada:    {
+        desc: 'Parliament, MPs, budgets & accountability',
+        mobileBg: 'linear-gradient(135deg, #c8102e 0%, #e8273f 50%, #ff4d63 100%)',
+        textColor: '#fff',
+        subColor: 'rgba(255,255,255,0.82)',
+        arrowColor: 'rgba(255,255,255,0.7)',
+        shimmer: 'rgba(255,255,255,0.12)',
+      },
+      usa:       {
+        desc: 'Congress, Senate, White House & spending',
+        mobileBg: 'linear-gradient(135deg, #1a3a6b 0%, #1e4fa8 50%, #3b82f6 100%)',
+        textColor: '#fff',
+        subColor: 'rgba(255,255,255,0.82)',
+        arrowColor: 'rgba(255,255,255,0.7)',
+        shimmer: 'rgba(255,255,255,0.12)',
+      },
+      australia: {
+        desc: 'Senate, House of Reps & federal spending',
+        mobileBg: 'linear-gradient(135deg, #8B6914 0%, #c9980a 50%, #f0b429 100%)',
+        textColor: '#fff',
+        subColor: 'rgba(255,255,255,0.85)',
+        arrowColor: 'rgba(255,255,255,0.7)',
+        shimmer: 'rgba(255,255,255,0.12)',
+      },
+      uk:        {
+        desc: 'Parliament, Lords, Commons & contracts',
+        mobileBg: 'linear-gradient(135deg, #00247D 0%, #CF142B 50%, #00247D 100%)',
+        textColor: '#fff',
+        subColor: 'rgba(255,255,255,0.82)',
+        arrowColor: 'rgba(255,255,255,0.7)',
+        shimmer: 'rgba(255,255,255,0.12)',
+      },
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 animate-fade-in">
+        <div className="max-w-4xl mx-auto px-4 pt-14 pb-8 sm:px-8 sm:pt-8">
+          <div className="text-center mb-8 sm:mb-12 animate-slide-in">
+            <h1 className="text-4xl sm:text-5xl font-bold text-gray-800 mb-2 sm:mb-3 text-shadow">Civic Voice</h1>
+            <p className="text-base sm:text-xl text-gray-600">Full Government Transparency Platform</p>
+            <div className="w-20 sm:w-24 h-1 bg-gradient-blue mx-auto mt-3 sm:mt-4 rounded-full" />
           </div>
-        )}
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {countries.map((country, index) => (
-            <div
-              key={country.id}
-              onClick={() => {
-                setSelectedCountry(country);
-                setView('government-levels');
-              }}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-10 cursor-pointer hover-lift interactive-card border-2 border-white/50"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="text-7xl mb-6 text-center animate-pulse-slow">{country.flag}</div>
-              <h2 className="text-3xl font-bold text-gray-800 mb-3 text-center text-shadow">{country.name}</h2>
-              <p className="text-gray-600 text-center text-lg mb-4">{country.members} elected members</p>
-              <div className="flex items-center justify-center gap-2 text-blue-600 font-semibold mt-4">
-                <span>Explore Government</span>
-                <ChevronRight className="w-5 h-5" />
+
+          {error && (
+            <div className="mb-5 p-4 bg-red-50 border-2 border-red-200 text-red-700 rounded-xl flex items-center gap-3 shadow-elegant animate-scale-in">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold">API Connection Error</p>
+                <p className="text-sm">{error}</p>
               </div>
             </div>
-          ))}
-        </div>
-        
-        <div className="mt-12 text-center text-gray-500 text-sm animate-fade-in" style={{ animationDelay: '0.4s' }}>
-          <p>Track legislation, contracts, spending, and accountability</p>
-          <p className="mt-2 text-xs text-gray-400">v{process.env.REACT_APP_VERSION || '1.0.0'}</p>
+          )}
+
+          {/* ── Mobile: vertical app-card stack ── */}
+          <div className="flex flex-col gap-4 sm:hidden">
+            {countries.map((country, index) => {
+              const meta = countryMeta[country.type] || countryMeta.canada;
+              return (
+                <button
+                  key={country.id}
+                  onClick={() => { setSelectedCountry(country); setView('government-levels'); }}
+                  className="w-full text-left rounded-3xl overflow-hidden active:scale-[0.98] transition-transform"
+                  style={{
+                    background: meta.mobileBg,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+                    animationDelay: `${index * 0.08}s`,
+                  }}
+                >
+                  {/* Shimmer strip */}
+                  <div className="h-px w-full" style={{ background: meta.shimmer }} />
+                  <div className="flex items-center gap-4 px-5 py-5">
+                    {/* Flag */}
+                    <span className="text-5xl leading-none flex-shrink-0 drop-shadow-sm">{country.flag}</span>
+                    {/* Text */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xl font-black leading-tight" style={{ color: meta.textColor }}>{country.name}</p>
+                      <p className="text-sm mt-0.5 leading-snug" style={{ color: meta.subColor }}>{meta.desc}</p>
+                      <p className="text-xs mt-1.5 font-semibold uppercase tracking-wide" style={{ color: meta.arrowColor }}>
+                        {country.members.toLocaleString()} elected members
+                      </p>
+                    </div>
+                    {/* Arrow */}
+                    <ChevronRight className="w-6 h-6 flex-shrink-0" style={{ color: meta.arrowColor }} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ── Desktop: original grid ── */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {countries.map((country, index) => (
+              <div
+                key={country.id}
+                onClick={() => { setSelectedCountry(country); setView('government-levels'); }}
+                className="card-gradient rounded-2xl shadow-elegant-lg p-10 cursor-pointer hover-lift interactive-card border-2 border-white/50"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="text-7xl mb-6 text-center animate-pulse-slow">{country.flag}</div>
+                <h2 className="text-3xl font-bold text-gray-800 mb-3 text-center text-shadow">{country.name}</h2>
+                <p className="text-gray-600 text-center text-lg mb-4">{country.members} elected members</p>
+                <div className="flex items-center justify-center gap-2 text-blue-600 font-semibold mt-4">
+                  <span>Explore Government</span>
+                  <ChevronRight className="w-5 h-5" />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 sm:mt-12 text-center text-gray-500 text-sm animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <p>Track legislation, contracts, spending, and accountability</p>
+            <p className="mt-2 text-xs text-gray-400">v{process.env.REACT_APP_VERSION || '1.0.0'}</p>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderCaTaxFull = () => {
     const fmt = (n) => new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(n);
