@@ -232,6 +232,45 @@ const customStyles = `
     margin-bottom: 0.5rem;
   }
 
+  @keyframes onboardSlideIn {
+    from { opacity: 0; transform: translateX(40px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes onboardSlideOut {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(-40px); }
+  }
+  .onboard-slide-enter {
+    animation: onboardSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  @keyframes onboardFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .onboard-fade-in {
+    animation: onboardFadeIn 0.4s ease forwards;
+  }
+  @keyframes cardFloat {
+    0%, 100% { transform: translateY(0px) rotate(-1deg); }
+    50%       { transform: translateY(-8px) rotate(1deg); }
+  }
+  .card-float {
+    animation: cardFloat 3.5s ease-in-out infinite;
+  }
+  @keyframes bellRing {
+    0%, 100% { transform: rotate(0deg); }
+    15%      { transform: rotate(15deg); }
+    30%      { transform: rotate(-12deg); }
+    45%      { transform: rotate(10deg); }
+    60%      { transform: rotate(-8deg); }
+    75%      { transform: rotate(5deg); }
+  }
+  .bell-ring {
+    animation: bellRing 2.2s ease-in-out 0.8s infinite;
+    transform-origin: top center;
+    display: inline-block;
+  }
+
   /* ── Global Readability Improvements ── */
 
   /* Darken all light gray text to near-black (#374151 minimum) */
@@ -1635,6 +1674,9 @@ function App() {
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   const [globalSearchHighlight, setGlobalSearchHighlight] = useState(0);
+  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem('cv_onboarding_done'));
+  const [onboardingStep, setOnboardingStep] = useState(0);
+  const [onboardingAnimKey, setOnboardingAnimKey] = useState(0);
   const [foreignAidData, setForeignAidData] = useState([]);
   const [foreignAidLoading, setForeignAidLoading] = useState(false);
   const [foreignAidReactions, setForeignAidReactions] = useState(() => {
@@ -25951,6 +25993,191 @@ function App() {
     );
   };
 
+  const renderOnboarding = () => {
+    const completeOnboarding = () => {
+      localStorage.setItem('cv_onboarding_done', '1');
+      setShowOnboarding(false);
+    };
+    const goNext = () => {
+      if (onboardingStep < 2) {
+        setOnboardingStep(s => s + 1);
+        setOnboardingAnimKey(k => k + 1);
+      } else {
+        completeOnboarding();
+      }
+    };
+
+    const slides = [
+      // Slide 0: Welcome
+      () => (
+        <div key={`slide-0-${onboardingAnimKey}`} className="onboard-slide-enter flex flex-col items-center justify-center h-full px-8 text-center">
+          <div className="mb-6 text-7xl select-none">🏛️</div>
+          <h1 className="text-4xl font-black text-white mb-2 tracking-tight">Civic Voice</h1>
+          <p className="text-lg font-semibold text-blue-200 mb-6 tracking-wide">Your Government. Transparent.</p>
+          <p className="text-white/80 text-base leading-relaxed max-w-xs mb-10">
+            Track politicians, bills, and government spending across Canada, the US, the UK, and Australia — all in one place. No spin. Just facts.
+          </p>
+          <div className="flex flex-col gap-3 w-full max-w-xs">
+            <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 text-left">
+              <span className="text-xl">👤</span>
+              <span className="text-white/90 text-sm">Follow politicians &amp; their promises</span>
+            </div>
+            <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 text-left">
+              <span className="text-xl">📜</span>
+              <span className="text-white/90 text-sm">Read every bill in plain English</span>
+            </div>
+            <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 text-left">
+              <span className="text-xl">💰</span>
+              <span className="text-white/90 text-sm">See how your tax dollars are spent</span>
+            </div>
+          </div>
+        </div>
+      ),
+      // Slide 1: Location
+      () => (
+        <div key={`slide-1-${onboardingAnimKey}`} className="onboard-slide-enter flex flex-col items-center justify-center h-full px-8 text-center">
+          <div className="card-float mb-8">
+            <div className="w-52 h-72 rounded-3xl shadow-2xl flex flex-col items-center justify-center gap-5"
+              style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)', border: '2px solid rgba(255,255,255,0.15)' }}>
+              <div className="w-20 h-20 bg-white/15 rounded-full flex items-center justify-center">
+                <MapPin className="w-10 h-10 text-white" />
+              </div>
+              <div className="text-white text-center px-4">
+                <p className="font-bold text-lg mb-1">Your Area</p>
+                <p className="text-white/70 text-sm">Personalized for you</p>
+              </div>
+              <div className="flex gap-2">
+                <span className="px-3 py-1 bg-green-400/30 rounded-full text-green-200 text-xs font-semibold">Local Bills</span>
+                <span className="px-3 py-1 bg-blue-400/30 rounded-full text-blue-200 text-xs font-semibold">Your MP</span>
+              </div>
+            </div>
+          </div>
+          <h2 className="text-3xl font-black text-white mb-3">Know Your Area</h2>
+          <p className="text-white/75 text-base leading-relaxed max-w-xs mb-8">
+            Share your location to see your local politicians, relevant bills, and regional voting results personalised for you.
+          </p>
+          <button
+            onClick={() => {
+              if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(() => {}, () => {});
+              }
+              goNext();
+            }}
+            className="w-full max-w-xs py-4 rounded-2xl font-bold text-lg text-white mb-3 active:scale-95 transition-all"
+            style={{ background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 8px 24px rgba(16,185,129,0.4)' }}
+          >
+            Allow Location
+          </button>
+        </div>
+      ),
+      // Slide 2: Notifications
+      () => (
+        <div key={`slide-2-${onboardingAnimKey}`} className="onboard-slide-enter flex flex-col items-center justify-center h-full px-8 text-center">
+          <div className="mb-6">
+            <div className="w-28 h-28 rounded-full flex items-center justify-center mx-auto mb-2"
+              style={{ background: 'rgba(251,191,36,0.15)', border: '2px solid rgba(251,191,36,0.3)' }}>
+              <span className="text-6xl bell-ring">🔔</span>
+            </div>
+          </div>
+          <h2 className="text-3xl font-black text-white mb-3">Stay Informed</h2>
+          <p className="text-white/75 text-base leading-relaxed max-w-xs mb-8">
+            Get notified when new laws pass in your area, when politicians break promises, or when major spending decisions are made.
+          </p>
+          <div className="flex flex-col gap-3 w-full max-w-xs mb-8">
+            {[
+              { icon: '📋', text: 'New bills affecting you' },
+              { icon: '🗳️', text: 'Election dates &amp; polling updates' },
+              { icon: '💸', text: 'Government spending alerts' },
+            ].map(({ icon, text }) => (
+              <div key={text} className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 text-left">
+                <span className="text-xl">{icon}</span>
+                <span className="text-white/90 text-sm" dangerouslySetInnerHTML={{ __html: text }} />
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => {
+              if ('Notification' in window) {
+                Notification.requestPermission().finally(completeOnboarding);
+              } else {
+                completeOnboarding();
+              }
+            }}
+            className="w-full max-w-xs py-4 rounded-2xl font-bold text-lg text-white mb-3 active:scale-95 transition-all"
+            style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', boxShadow: '0 8px 24px rgba(245,158,11,0.4)' }}
+          >
+            Allow Notifications
+          </button>
+          <button
+            onClick={completeOnboarding}
+            className="text-white/50 text-sm py-2 hover:text-white/80 transition-colors"
+          >
+            Skip for now
+          </button>
+        </div>
+      ),
+    ];
+
+    const dots = [0, 1, 2];
+
+    return (
+      <div className="onboard-fade-in fixed inset-0 z-[200] flex flex-col"
+        style={{ background: 'linear-gradient(160deg, #0f172a 0%, #1e3a5f 50%, #1d4ed8 100%)' }}>
+        {/* Skip button top-right */}
+        <div className="flex justify-end p-4 pt-safe">
+          {onboardingStep < 2 && (
+            <button
+              onClick={completeOnboarding}
+              className="text-white/50 text-sm font-medium hover:text-white/80 transition-colors px-3 py-1"
+            >
+              Skip
+            </button>
+          )}
+        </div>
+
+        {/* Slide content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {slides[onboardingStep]()}
+        </div>
+
+        {/* Bottom nav */}
+        <div className="pb-10 px-8">
+          {/* Dot indicators */}
+          <div className="flex justify-center gap-2 mb-6">
+            {dots.map(i => (
+              <div
+                key={i}
+                className="rounded-full transition-all duration-300"
+                style={{
+                  width: i === onboardingStep ? 24 : 8,
+                  height: 8,
+                  background: i === onboardingStep ? '#fff' : 'rgba(255,255,255,0.3)',
+                }}
+              />
+            ))}
+          </div>
+          {/* Next / Get Started button — only on slides 0 and 1 */}
+          {onboardingStep < 2 && (
+            <button
+              onClick={goNext}
+              className="w-full py-4 rounded-2xl font-bold text-lg active:scale-95 transition-all"
+              style={{
+                background: onboardingStep === 0
+                  ? 'linear-gradient(135deg, #3b82f6, #2563eb)'
+                  : 'rgba(255,255,255,0.12)',
+                color: '#fff',
+                border: onboardingStep === 0 ? 'none' : '1px solid rgba(255,255,255,0.2)',
+                boxShadow: onboardingStep === 0 ? '0 8px 24px rgba(59,130,246,0.4)' : 'none',
+              }}
+            >
+              {onboardingStep === 0 ? 'Get Started →' : 'Maybe Later'}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderSearchOverlay = () => {
     // Build search index from all available data
     const q = globalSearchQuery.trim().toLowerCase();
@@ -35082,6 +35309,9 @@ function App() {
 
       {/* Leader profile panel */}
       {showLeaderPanel && selectedLeader && renderLeaderPanel()}
+
+      {/* First-time onboarding overlay */}
+      {showOnboarding && renderOnboarding()}
 
       {/* Global search button — always visible */}
       <button
