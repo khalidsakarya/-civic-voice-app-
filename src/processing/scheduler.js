@@ -48,6 +48,7 @@ import { runCreditCardFetcher } from '../ingestion/creditCardFetcher.js';
 import { runTransparencyScorer } from '../scoring/transparencyScorer.js';
 import { runControversyFetcher } from '../ingestion/controversyFetcher.js';
 import { runElectionFetcher, isElectionPeriod } from '../ingestion/electionFetcher.js';
+import { runElectionProcessor } from './electionProcessor.js';
 
 // ─── Tier definitions ─────────────────────────────────────────────────────────
 
@@ -213,12 +214,36 @@ const JOBS = [
     },
   },
   {
+    id: 'election_processor_daily',
+    tier: TIERS.DAILY,
+    label: 'Election Processor — Active Countries (runs only during election periods)',
+    handler: async () => {
+      const countries = ['CA', 'US', 'UK', 'AU'];
+      const hot = countries.filter(isElectionPeriod);
+      if (!hot.length) {
+        console.log('[scheduler] No countries in election period — skipping daily processor');
+        return { skipped: true, reason: 'no election period active' };
+      }
+      console.log(`[scheduler] Election period active for: ${hot.join(', ')} — running election processor`);
+      return runElectionProcessor(hot);
+    },
+  },
+  {
     id: 'election_weekly',
     tier: TIERS.WEEKLY,
     label: 'Election Tracker — All Countries (weekly baseline)',
     handler: async () => {
       console.log('[scheduler] Running weekly election fetch (CA, US, UK, AU)');
       return runElectionFetcher(['CA', 'US', 'UK', 'AU']);
+    },
+  },
+  {
+    id: 'election_processor_weekly',
+    tier: TIERS.WEEKLY,
+    label: 'Election Processor — All Countries (weekly briefing)',
+    handler: async () => {
+      console.log('[scheduler] Running weekly election processor (CA, US, UK, AU)');
+      return runElectionProcessor(['CA', 'US', 'UK', 'AU']);
     },
   },
 
