@@ -2209,6 +2209,7 @@ function App() {
       setWasteReport(null);
       setCompareLeaderAIdx(-1);
       setCompareLeaderBIdx(-1);
+      fetchLeaderboard(country);
     }
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -9477,20 +9478,16 @@ function App() {
             return (
               <div className="rounded-2xl border border-orange-700/40 mb-6 overflow-hidden" style={{ background: 'rgba(0,0,0,0.55)' }}>
                 {/* Header */}
-                <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-orange-900/30" style={{ background: 'rgba(251,146,60,0.08)' }}>
-                  <div>
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-orange-900/30" style={{ background: 'rgba(251,146,60,0.08)' }}>
+                  <div className="flex-1">
                     <h2 className="text-white font-black text-lg flex items-center gap-2">
                       🏆 Expense Leaderboard
                     </h2>
                     <p className="text-orange-400 text-xs mt-0.5">Top 10 highest-spending leaders · {countryName}</p>
                   </div>
-                  <button
-                    onClick={() => fetchLeaderboard(country)}
-                    className="text-xs border border-orange-600/50 text-orange-300 hover:bg-orange-800/30 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5 flex-shrink-0"
-                    style={{ background: 'rgba(251,146,60,0.12)' }}
-                  >
-                    {wasteLeaderboardLoading ? '⏳ Loading…' : '↻ Refresh'}
-                  </button>
+                  {wasteLeaderboardLoading && (
+                    <span className="text-xs text-orange-400 flex items-center gap-1 flex-shrink-0">⏳ Loading…</span>
+                  )}
                 </div>
 
                 {/* Legend */}
@@ -16542,11 +16539,14 @@ function App() {
     setWasteLeaderboardLoading(true);
     try {
       const snap = await getDocs(query(collection(db, 'expense_leaderboard'), where('country', '==', country)));
-      const items = snap.docs.map(d => d.data()).sort((a, b) => (b.totalExpenses || b.total_expenses || 0) - (a.totalExpenses || a.total_expenses || 0));
-      setWasteLeaderboard(items.slice(0, 10));
+      if (!snap.empty) {
+        const items = snap.docs.map(d => d.data()).sort((a, b) => (b.totalExpenses || b.total_expenses || 0) - (a.totalExpenses || a.total_expenses || 0));
+        setWasteLeaderboard(items.slice(0, 10));
+      }
+      // If empty, wasteLeaderboard stays [] and the component falls through to fallback data
     } catch (err) {
       console.warn('[Leaderboard] Firestore fetch failed:', err.message);
-      setWasteLeaderboard([]);
+      // Leave wasteLeaderboard as [] so the component uses fallback data
     } finally {
       setWasteLeaderboardLoading(false);
     }
