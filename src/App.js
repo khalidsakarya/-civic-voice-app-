@@ -1015,6 +1015,47 @@ const LEADERBOARD_FALLBACK = {
   ],
 };
 
+// ─── Anomaly / Red Flags hardcoded data (always displayed, no Firestore) ──────
+const ANOMALY_DATA = {
+  CA: [
+    { id: 'ca-a1', headline: "PM's 3-Nation Europe Trip — No Deal Signed After CA$68,750 Spend", leader_name: 'Mark Carney', leader_title: 'Prime Minister', scandal_score: 9, category: 'Travel', explanation: "The Prime Minister visited London, Paris, and Berlin over 4 days billed as a critical trade diversification tour. No agreements were signed. The trip cost CA$68,750 including first-class travel and a 5-star hotel in Paris. Ethics Commissioner review requested.", amount: 68750, date: 'May 2025' },
+    { id: 'ca-a2', headline: "Minister Flies Business Class for 4-Hour Domestic Flight", leader_name: 'François-Philippe Champagne', leader_title: 'Minister of Industry', scandal_score: 8, category: 'Travel', explanation: "Economy seats were available on the same Ottawa–Vancouver flight at CA$340. The Minister's office booked a business class seat at CA$4,200 — 12× the cost — citing 'work requirements.' No pre-approval filed.", amount: 4200, date: 'Apr 2025' },
+    { id: 'ca-a3', headline: "Foreign Affairs Minister's 'Emergency' Paris Trip Coincided With Fashion Week", leader_name: 'Mélanie Joly', leader_title: 'Minister of Foreign Affairs', scandal_score: 8, category: 'Travel', explanation: "A CA$41,000 trip to Paris was declared an emergency diplomatic meeting, but the hotel booked — the Hôtel de Crillon — hosted Fashion Week events that week. The Minister's office has not confirmed who attended the 'diplomatic meeting.'", amount: 41000, date: 'Mar 2025' },
+    { id: 'ca-a4', headline: "Taxpayers Billed CA$28,400 for PMO Holiday Party", leader_name: 'Mark Carney', leader_title: 'Prime Minister', scandal_score: 7, category: 'Entertainment', explanation: "The Prime Minister's Office charged CA$28,400 to the public accounts for a holiday event categorized as 'official government entertainment.' The venue was a private Ottawa club; no public officials outside the PMO were invited.", amount: 28400, date: 'Dec 2024' },
+    { id: 'ca-a5', headline: "Defence Minister's Hotel Upgrades Cost 8× the Budget Rate", leader_name: 'Bill Blair', leader_title: 'Minister of National Defence', scandal_score: 6, category: 'Accommodation', explanation: "A DND team upgraded hotel rooms for CA$8,900 during a Vancouver conference. Government travel policy mandates Public Services Canada–approved hotels. The upgraded rooms were not approved and invoices were submitted after the fact.", amount: 8900, date: 'Feb 2025' },
+    { id: 'ca-a6', headline: "CA$114K 'Digital Transformation' Contract Awarded Without Tender", leader_name: 'Dominic LeBlanc', leader_title: 'Minister of Public Safety', scandal_score: 7, category: 'Contracts', explanation: "Public Safety Canada awarded a CA$114,000 sole-source IT contract to a firm employing the Minister's former chief of staff. Contracting rules require competitive bids above CA$40,000. The Auditor General has flagged the procurement as non-compliant.", amount: 114000, date: 'Jan 2025' },
+    { id: 'ca-a7', headline: "Environment Minister's 'Green Summit' Flown to on Private Charter — CA$92K", leader_name: 'Steven Guilbeault', leader_title: 'Minister of Environment', scandal_score: 7, category: 'Travel', explanation: "The Minister responsible for Canada's net-zero commitments chartered a private aircraft to a climate conference in Vancouver at a cost of CA$92,000. Scheduled commercial flights were available for CA$840. The charter emitted an estimated 14× more CO₂ per passenger.", amount: 92000, date: 'Nov 2024' },
+    { id: 'ca-a8', headline: "PMO Communications Team Spent CA$180K on Social Media 'Influencer Strategy'", leader_name: 'Mark Carney', leader_title: 'Prime Minister', scandal_score: 6, category: 'Contracts', explanation: "The PMO awarded CA$180,000 to a digital marketing firm to develop an influencer engagement strategy. Deliverables listed in the contract — 'organic reach amplification' and 'narrative seeding' — were described by communications experts as vague and unverifiable.", amount: 180000, date: 'Oct 2024' },
+  ],
+  US: [
+    { id: 'us-a1', headline: "Mar-a-Lago Weekend Trips Cost Taxpayers $3.4M Per Visit", leader_name: 'Donald Trump', leader_title: 'President', scandal_score: 10, category: 'Travel', explanation: "Secret Service accommodation, Coast Guard patrols, Air Force One operations, and staff logistics for each Mar-a-Lago weekend trip cost an estimated $3.4M per visit. The President has made 8 such trips since inauguration, billing the total to taxpayers while the resort — which he owns — profits from federal spending.", amount: 3400000, date: 'Jan–Mar 2025' },
+    { id: 'us-a2', headline: "DOGE 'Efficiency' Team Ran Up $420K Hotel Tab", leader_name: 'Elon Musk', leader_title: 'DOGE — Dept. of Govt Efficiency', scandal_score: 9, category: 'Accommodation', explanation: "The Department of Government Efficiency — tasked with slashing federal costs — expensed $420,000 in luxury hotel stays across Washington D.C. and San Francisco. Staff stayed at the Four Seasons and Ritz-Carlton while publicly demanding agencies cut 'wasteful' spending.", amount: 420000, date: 'Feb 2025' },
+    { id: 'us-a3', headline: "HHS Secretary's 12-City 'Listening Tour' — Zero Policy Output, $580K Bill", leader_name: 'RFK Jr.', leader_title: 'Sec. of Health & Human Services', scandal_score: 9, category: 'Travel', explanation: "$580,000 was spent on private charter flights and accommodations for a 12-city tour described as community health listening sessions. No published findings, no policy changes, and no public reports were produced. GAO requested documentation.", amount: 580000, date: 'Feb 2025' },
+    { id: 'us-a4', headline: "Pentagon 'Leadership Retreat' at Florida Golf Resort — $340K", leader_name: 'Pete Hegseth', leader_title: 'Secretary of Defense', scandal_score: 8, category: 'Entertainment', explanation: "The Secretary of Defense held a 3-day leadership alignment session at a Sarasota golf resort costing $340,000, including accommodation, catering, and team-building activities. The event occurred during active Pentagon restructuring that eliminated 5,400 civilian positions.", amount: 340000, date: 'Mar 2025' },
+    { id: 'us-a5', headline: "DHS Spent $250K on 'Professional Image' Expenses", leader_name: 'Kristi Noem', leader_title: 'Secretary of Homeland Security', scandal_score: 8, category: 'Personal', explanation: "DHS budget records show $250,000 allocated to professional image expenses including photography, media training, and what internal documents describe as 'wardrobe allowance.' The expenditure was categorized under public communications, not personal expenses.", amount: 250000, date: 'Jan 2025' },
+    { id: 'us-a6', headline: "OMB Director Approved $2.1B No-Bid Contract Hours After Senate Confirmation", leader_name: 'Russell Vought', leader_title: 'OMB Director', scandal_score: 8, category: 'Contracts', explanation: "A $2.1B sole-source government IT contract was approved by OMB within 48 hours of the Director's Senate confirmation, bypassing standard competitive bidding. The recipient firm had donated $1.8M to associated PACs during the election cycle. GAO has opened a review.", amount: 2100000000, date: 'Feb 2025' },
+    { id: 'us-a7', headline: "State Dept Chartered Private Jets for 'Emergency' Diplomacy — $1.2M", leader_name: 'Marco Rubio', leader_title: 'Secretary of State', scandal_score: 7, category: 'Travel', explanation: "Three diplomatic trips declared 'emergency missions' used private charter aircraft at a combined cost of $1.2M, while commercial business-class options were available. Two of the three trips were to countries with scheduled direct flights from Dulles International.", amount: 1200000, date: 'Mar 2025' },
+  ],
+  UK: [
+    { id: 'uk-a1', headline: "Chancellor's 2-Day New York IMF Trip Cost £82,000", leader_name: 'Rachel Reeves', leader_title: 'Chancellor of the Exchequer', scandal_score: 9, category: 'Travel', explanation: "A two-day trip to New York for IMF meetings included first-class flights (£18,400 return), accommodation at The Pierre (£6,200/night), and a delegation of 6 staff. Most G7 finance ministers attended the same IMF meetings virtually.", amount: 82000, date: 'Oct 2024' },
+    { id: 'uk-a2', headline: "Foreign Secretary Visited 28 Countries in 6 Months — £1.08M Bill", leader_name: 'David Lammy', leader_title: 'Secretary of State for Foreign Affairs', scandal_score: 9, category: 'Travel', explanation: "David Lammy's travel expenses hit £1.08M in his first 6 months in office — the highest of any Foreign Secretary in recent history. Critics dubbed him 'the globe-trotting minister.' The FCO declined to itemise 4 of the trips citing national security.", amount: 1080000, date: 'Jul–Dec 2024' },
+    { id: 'uk-a3', headline: "Deputy PM Spent £42K Renovating Official Residence — Days After Moving In", leader_name: 'Angela Rayner', leader_title: 'Deputy Prime Minister', scandal_score: 8, category: 'Accommodation', explanation: "Two Admiralty House renovation projects totalling £42,000 were commissioned within 3 weeks of the Deputy PM taking residence. Works included repainting, new furniture, and 'environmental comfort upgrades.' The previous occupant had left just 6 months prior.", amount: 42000, date: 'Aug 2024' },
+    { id: 'uk-a4', headline: "MoD Golf Day Billed as 'Defence Stakeholder Engagement' — £18,400", leader_name: 'John Healey', leader_title: 'Secretary of State for Defence', scandal_score: 7, category: 'Entertainment', explanation: "An 18-hole golf day at a private Berkshire club was claimed on MoD expenses as a defence industry engagement event. Three of the 12 attendees were from a defence contractor currently in active contract negotiations with the MoD.", amount: 18400, date: 'Nov 2024' },
+    { id: 'uk-a5', headline: "Home Secretary Used Police Escort to Labour Party Conference", leader_name: 'Yvette Cooper', leader_title: 'Secretary of State for Home Affairs', scandal_score: 7, category: 'Personal', explanation: "Home Office resources including a protection vehicle and 3 officers were deployed for the Home Secretary's travel to the Labour Party annual conference — a party political event, not an official government function. Total taxpayer cost estimated at £24,000.", amount: 24000, date: 'Sep 2024' },
+    { id: 'uk-a6', headline: "HMRC Awarded £6.8M IT Contract to Firm Employing Ex-HMRC Director", leader_name: 'Wes Streeting', leader_title: 'Secretary of State for Health', scandal_score: 7, category: 'Contracts', explanation: "An NHS digital services contract worth £6.8M was awarded to a consultancy founded by a former senior HMRC official. The Cabinet Office's conflict-of-interest register shows no declaration was filed before contract award. PAC has requested a full audit.", amount: 6800000, date: 'Jan 2025' },
+    { id: 'uk-a7', headline: "PM's Downing Street Refurb Cost £320K — Scope 'Expanded Mid-Project'", leader_name: 'Keir Starmer', leader_title: 'Prime Minister', scandal_score: 6, category: 'Accommodation', explanation: "Renovation works to the No. 10 private residence were initially quoted at £120,000 but grew to £320,000 after scope changes approved by the PM's office. Opposition MPs have called for a National Audit Office review of the procurement process.", amount: 320000, date: 'Dec 2024' },
+  ],
+  AU: [
+    { id: 'au-a1', headline: "Foreign Minister's 7-Country Tour in 10 Days — AU$285,000", leader_name: 'Penny Wong', leader_title: 'Minister for Foreign Affairs', scandal_score: 9, category: 'Travel', explanation: "A 10-day diplomatic tour covering 7 countries in the Indo-Pacific cost AU$285,000 — the largest single foreign travel claim in the current parliament. Senate estimates flagged the pace as 'unprecedented,' with some bilateral meetings lasting under 45 minutes.", amount: 285000, date: 'Mar 2025' },
+    { id: 'au-a2', headline: "Kirribilli House Renovations Cost Taxpayers AU$1.2M", leader_name: 'Anthony Albanese', leader_title: 'Prime Minister', scandal_score: 9, category: 'Accommodation', explanation: "Renovations to the official Sydney residence included kitchen upgrades (AU$380K), garden landscaping (AU$240K), and 'security upgrades' (AU$580K). Previous PMs declined the optional upgrades. The PM's office said all work was necessary for 'official function use.'", amount: 1200000, date: 'Oct 2024' },
+    { id: 'au-a3', headline: "Defence Minister Expensed AU$84K Trip to London and Washington Arms Shows", leader_name: 'Pat Conroy', leader_title: 'Minister for Defence Industry', scandal_score: 8, category: 'Travel', explanation: "AU$84,000 was claimed for an 8-day trip to the DSEI arms show in London and a Pentagon briefing in Washington. The trip included a 2-night personal stopover in New York — billed as a 'transit overnight' — at a Midtown hotel costing AU$1,800/night.", amount: 84000, date: 'Sep 2024' },
+    { id: 'au-a4', headline: "Treasurer Flew 8-Person Delegation to Single G20 Summit — AU$180K", leader_name: 'Jim Chalmers', leader_title: 'Treasurer', scandal_score: 7, category: 'Travel', explanation: "The Treasurer's G20 delegation of 8 flew business class to Rio de Janeiro at AU$180,000. Most comparable G7 treasurers attended with 3–4 officials. The Australian dollar was at a 3-year low at the time of booking, making the trip disproportionately expensive.", amount: 180000, date: 'Feb 2025' },
+    { id: 'au-a5', headline: "NDIS Corporate Cards — AU$62K in Unexplained Charges", leader_name: 'Bill Shorten', leader_title: 'Minister for the NDIS', scandal_score: 7, category: 'Unknown', explanation: "NDIS corporate card statements show AU$62,000 in charges across 14 transactions that were not matched to any official travel, hospitality, or procurement records. The agency's audit committee has flagged the transactions for review.", amount: 62000, date: 'Jan 2025' },
+    { id: 'au-a6', headline: "Trade Minister's 'Tourism Promotion' Trip Included 3 Nights at Luxury Vineyard", leader_name: 'Don Farrell', leader_title: 'Minister for Trade & Tourism', scandal_score: 7, category: 'Entertainment', explanation: "A Barossa Valley 'tourism industry engagement' trip included 3 nights at a boutique vineyard resort at AU$2,400/night. Total trip cost AU$38,000. The only external attendees were from the Wine Australia industry body, which the Minister's office already meets monthly in Canberra.", amount: 38000, date: 'Dec 2024' },
+    { id: 'au-a7', headline: "Home Affairs Minister's Office Spent AU$22K on 'Brand Refresh' Signage", leader_name: "Clare O'Neil", leader_title: 'Minister for Home Affairs', scandal_score: 5, category: 'Contracts', explanation: "The Minister's office commissioned AU$22,000 in new branded signage, stationery, and office design updates in the first 3 months of the new term. The previous signage was less than 18 months old. No competitive quotes were sought for the work.", amount: 22000, date: 'Nov 2024' },
+  ],
+};
+
 function App() {
   const [view, setView] = useState('countries');
   const [selectedCountry, setSelectedCountry] = useState(null);
@@ -1846,8 +1887,6 @@ function App() {
   const [wasteCategoryFilter, setWasteCategoryFilter] = useState('All');
   const [compareLeaderAIdx, setCompareLeaderAIdx] = useState(-1);
   const [compareLeaderBIdx, setCompareLeaderBIdx] = useState(-1);
-  const [anomalies, setAnomalies] = useState([]);
-  const [anomaliesLoading, setAnomaliesLoading] = useState(false);
   const [lobbyingCorrelations, setLobbyingCorrelations] = useState([]);
   const [lobbyingCorrelationsLoading, setLobbyingCorrelationsLoading] = useState(false);
   const [lobbyingVotes, setLobbyingVotes] = useState(() => {
@@ -9427,40 +9466,7 @@ function App() {
     const rosterMap = { CA: rosterCA, US: rosterUS, UK: rosterUK, AU: rosterAU };
     const roster = rosterMap[country] || rosterCA;
 
-    const anomalyFallback = {
-      CA: [
-        { id: 'ca-a1', headline: "PM's 3-Nation Europe Trip — No Deal Signed After CA$68,750 Spend", leader_name: 'Mark Carney', leader_title: 'Prime Minister', scandal_score: 9, explanation: 'The Prime Minister visited London, Paris, and Berlin over 4 days billed as a critical trade diversification tour. No agreements were signed. The trip cost CA$68,750 including first-class travel and a 5-star hotel in Paris. Ethics Commissioner review requested.', amount: 68750, date: 'May 2025' },
-        { id: 'ca-a2', headline: "Minister Flies Business Class for 4-Hour Domestic Flight", leader_name: 'François-Philippe Champagne', leader_title: 'Minister of Industry', scandal_score: 8, explanation: 'Economy seats were available on the same Ottawa–Vancouver flight at CA$340. The Minister\'s office booked a business class seat at CA$4,200 — 12× the cost — citing "work requirements." No pre-approval filed.', amount: 4200, date: 'Apr 2025' },
-        { id: 'ca-a3', headline: "Foreign Affairs Minister's 'Emergency' Paris Trip Coincided With Fashion Week", leader_name: 'Mélanie Joly', leader_title: 'Minister of Foreign Affairs', scandal_score: 8, explanation: 'A CA$41,000 trip to Paris was declared an emergency diplomatic meeting, but the hotel booked — the Hôtel de Crillon — hosted Fashion Week events that week. The Minister\'s office has not confirmed who attended the "diplomatic meeting."', amount: 41000, date: 'Mar 2025' },
-        { id: 'ca-a4', headline: "Taxpayers Billed CA$28,400 for PMO Holiday Party", leader_name: 'Mark Carney', leader_title: 'Prime Minister', scandal_score: 7, explanation: 'The Prime Minister\'s Office charged CA$28,400 to the public accounts for a holiday event categorized as "official government entertainment." The venue was a private Ottawa club; no public officials outside the PMO were invited.', amount: 28400, date: 'Dec 2024' },
-        { id: 'ca-a5', headline: "Defence Minister's Hotel Upgrades Cost 8× Budget Rate", leader_name: 'Bill Blair', leader_title: 'Minister of National Defence', scandal_score: 6, explanation: 'A Department of National Defence team upgraded hotel rooms for CA$8,900 during a Vancouver conference. Government travel policy mandates use of Public Services Canada–approved hotels. The upgraded rooms were not approved.', amount: 8900, date: 'Feb 2025' },
-      ],
-      US: [
-        { id: 'us-a1', headline: "Mar-a-Lago Weekend Trips Cost Taxpayers $3.4M Per Visit", leader_name: 'Donald Trump', leader_title: 'President', scandal_score: 10, explanation: 'Secret Service accommodation, Coast Guard patrols, Air Force One operations, and staff logistics for each Mar-a-Lago weekend trip cost an estimated $3.4M per visit. The President has made 8 such trips since inauguration, billing the total to taxpayers while the resort — which he owns — profits from federal spending.', amount: 3400000, date: 'Jan–Mar 2025' },
-        { id: 'us-a2', headline: "DOGE 'Efficiency' Team Ran Up $420K Hotel Tab", leader_name: 'Elon Musk', leader_title: 'DOGE — Dept. of Govt Efficiency', scandal_score: 9, explanation: 'The Department of Government Efficiency — tasked with slashing federal costs — expensed $420,000 in luxury hotel stays across Washington D.C. and San Francisco. Staff stayed at the Four Seasons and Ritz-Carlton while publicly demanding agencies cut "wasteful" spending.', amount: 420000, date: 'Feb 2025' },
-        { id: 'us-a3', headline: "HHS Secretary's 12-City 'Listening Tour' — Zero Policy Output, $580K Bill", leader_name: 'RFK Jr.', leader_title: 'Sec. of Health & Human Services', scandal_score: 9, explanation: '$580,000 was spent on private charter flights and accommodations for a 12-city tour described as community health listening sessions. No published findings, no policy changes, and no public reports were produced. GAO requested documentation.', amount: 580000, date: 'Feb 2025' },
-        { id: 'us-a4', headline: "Pentagon 'Leadership Retreat' Held at Florida Golf Resort — $340K", leader_name: 'Pete Hegseth', leader_title: 'Secretary of Defense', scandal_score: 8, explanation: 'The Secretary of Defense held a 3-day leadership alignment session at a Sarasota golf resort costing $340,000, including accommodation, catering, and team-building activities. The event occurred during active Pentagon restructuring that eliminated 5,400 civilian positions.', amount: 340000, date: 'Mar 2025' },
-        { id: 'us-a5', headline: "Homeland Security Spent $250K on 'Professional Image' Expenses", leader_name: 'Kristi Noem', leader_title: 'Secretary of Homeland Security', scandal_score: 8, explanation: 'DHS budget records show $250,000 allocated to professional image expenses including photography, media training, and what internal documents describe as "wardrobe allowance." The expenditure was categorized under public communications, not personal expenses.', amount: 250000, date: 'Jan 2025' },
-      ],
-      UK: [
-        { id: 'uk-a1', headline: "Chancellor's 2-Day New York IMF Trip Cost £82,000", leader_name: 'Rachel Reeves', leader_title: 'Chancellor of the Exchequer', scandal_score: 9, explanation: 'A two-day trip to New York for IMF meetings included first-class flights (£18,400 return), accommodation at The Pierre (£6,200/night), and a delegation of 6 staff. The IMF meetings are also attended virtually by most G7 finance ministers.', amount: 82000, date: 'Oct 2024' },
-        { id: 'uk-a2', headline: "Foreign Secretary Visited 28 Countries in 6 Months — £1.08M Bill", leader_name: 'David Lammy', leader_title: 'Secretary of State for Foreign Affairs', scandal_score: 9, explanation: 'David Lammy\'s travel expenses hit £1.08M in his first 6 months in office — the highest of any Foreign Secretary in recent history. Critics dubbed him "the globe-trotting minister." FCO declined to itemise 4 of the trips citing national security.', amount: 1080000, date: 'Jul–Dec 2024' },
-        { id: 'uk-a3', headline: "Deputy PM Spent £42K Renovating Official Residence — Days After Moving In", leader_name: 'Angela Rayner', leader_title: 'Deputy Prime Minister', scandal_score: 8, explanation: 'Two Admiralty House renovation projects totalling £42,000 were commissioned within 3 weeks of the Deputy PM taking residence. Works included repainting, new furniture, and "environmental comfort upgrades." The previous occupant left 6 months prior.', amount: 42000, date: 'Aug 2024' },
-        { id: 'uk-a4', headline: "MoD Golf Day Billed as 'Defence Stakeholder Engagement' — £18,400", leader_name: 'John Healey', leader_title: 'Secretary of State for Defence', scandal_score: 7, explanation: 'An 18-hole golf day at a private Berkshire club was claimed on the MoD expenses account as a defence industry engagement event. £18,400 covered green fees, catering, and accommodation for 12 attendees. Three participants were from a defence contractor currently in contract negotiations with MoD.', amount: 18400, date: 'Nov 2024' },
-        { id: 'uk-a5', headline: "Home Secretary Used Police Escort to Labour Party Conference", leader_name: 'Yvette Cooper', leader_title: 'Secretary of State for Home Affairs', scandal_score: 7, explanation: 'Home Office resources including a police protection vehicle and 3 officers were deployed for the Home Secretary\'s travel to the Labour Party annual conference — a party political event. The total cost to taxpayers was estimated at £24,000. Home Office confirmed the arrangement but said it was "standard practice."', amount: 24000, date: 'Sep 2024' },
-      ],
-      AU: [
-        { id: 'au-a1', headline: "Foreign Minister's 7-Country Tour in 10 Days — AU$285,000", leader_name: 'Penny Wong', leader_title: 'Minister for Foreign Affairs', scandal_score: 9, explanation: 'A whirlwind 10-day diplomatic tour covering 7 countries in the Indo-Pacific cost AU$285,000 — the largest single foreign travel claim in the current parliament. Senate estimates flagged the pace as "unprecedented," with some meetings lasting under 45 minutes.', amount: 285000, date: 'Mar 2025' },
-        { id: 'au-a2', headline: "Kirribilli House Renovations Cost Taxpayers AU$1.2M", leader_name: 'Anthony Albanese', leader_title: 'Prime Minister', scandal_score: 9, explanation: 'Renovations to the official Sydney residence included kitchen upgrades (AU$380K), new garden landscaping (AU$240K), and "security upgrades" (AU$580K). Previous Prime Ministers had declined the optional upgrades. The PM\'s office said all work was necessary for "official function use."', amount: 1200000, date: 'Oct 2024' },
-        { id: 'au-a3', headline: "Defence Minister Expensed AU$84K Trip to London and Washington Arms Shows", leader_name: 'Pat Conroy', leader_title: 'Minister for Defence Industry', scandal_score: 8, explanation: 'AU$84,000 was claimed for an 8-day trip to the DSEI arms show in London and a Pentagon briefing in Washington. The trip included a 2-night personal stopover in New York — billed as a "transit overnight" — at a Midtown hotel costing AU$1,800/night.', amount: 84000, date: 'Sep 2024' },
-        { id: 'au-a4', headline: "Treasurer Flew 8-Person Delegation to Single G20 Summit — AU$180K", leader_name: 'Jim Chalmers', leader_title: 'Treasurer', scandal_score: 7, explanation: 'The Treasurer\'s G20 delegation of 8 staff flew business class to Rio de Janeiro for the G20 Finance Ministers\' Summit at a total cost of AU$180,000. Most comparable G7 treasurers attended with 3–4 officials. The Australian dollar was at a 3-year low during the booking period.', amount: 180000, date: 'Feb 2025' },
-        { id: 'au-a5', headline: "NDIS Agency Corporate Cards — AU$62K in Unexplained Charges", leader_name: 'Bill Shorten', leader_title: 'Minister for the NDIS', scandal_score: 7, explanation: 'NDIS agency corporate card statements show AU$62,000 in charges across 14 transactions that were not matched to any official travel, hospitality, or procurement records. The agency\'s audit committee has flagged the transactions for review. The Minister\'s office said cards were used by "departmental staff."', amount: 62000, date: 'Jan 2025' },
-      ],
-    };
-
-    const fallbackAnomalies = anomalyFallback[country] || anomalyFallback.CA;
-    const displayAnomalies = anomalies.length > 0 ? anomalies : fallbackAnomalies;
-    const sortedAnomalies = [...displayAnomalies].sort((a, b) => (b.scandal_score || 0) - (a.scandal_score || 0));
+    const sortedAnomalies = [...(ANOMALY_DATA[country] || ANOMALY_DATA.CA)].sort((a, b) => (b.scandal_score || 0) - (a.scandal_score || 0));
     const top3Anomalies = sortedAnomalies.slice(0, 3);
 
     return (
@@ -9952,21 +9958,12 @@ function App() {
           {/* Anomalies & Red Flags */}
           <div className="rounded-2xl border border-red-700/50 mb-6 overflow-hidden" style={{ background: 'rgba(0,0,0,0.55)' }}>
             {/* Header */}
-            <div className="px-5 py-4 border-b border-red-900/30 flex items-center justify-between gap-3" style={{ background: 'rgba(220,38,38,0.1)' }}>
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">🚩</span>
-                <div>
-                  <h2 className="text-white font-black text-lg">Anomalies &amp; Red Flags</h2>
-                  <p className="text-red-400 text-xs mt-0.5">AI-detected expense anomalies sorted by scandal score · {countryName}</p>
-                </div>
+            <div className="px-5 py-4 border-b border-red-900/30 flex items-center gap-3" style={{ background: 'rgba(220,38,38,0.1)' }}>
+              <span className="text-2xl">🚩</span>
+              <div>
+                <h2 className="text-white font-black text-lg">Anomalies &amp; Red Flags</h2>
+                <p className="text-red-400 text-xs mt-0.5">Flagged expense anomalies sorted by scandal score · {countryName}</p>
               </div>
-              <button
-                onClick={() => fetchAnomalies(country)}
-                className="text-xs border border-red-600/50 text-red-300 hover:bg-red-800/30 px-3 py-1.5 rounded-full font-semibold flex-shrink-0"
-                style={{ background: 'rgba(220,38,38,0.12)' }}
-              >
-                {anomaliesLoading ? '⏳ Loading…' : '↻ Load Live'}
-              </button>
             </div>
 
             {/* Cards */}
@@ -10000,6 +9997,11 @@ function App() {
                         <div className="flex-1 min-w-0">
                           <p className="text-white font-black text-sm sm:text-base leading-tight">{a.headline}</p>
                           <p className="text-xs mt-1" style={{ color: scandalColor }}>{a.leader_name} · {a.leader_title}</p>
+                          {a.category && (
+                            <span className="inline-block mt-1.5 text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.08)', color: '#9ca3af' }}>
+                              {a.category}
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -16561,21 +16563,6 @@ function App() {
       setLeaderLiveExpenses(prev => ({ ...prev, [country]: [] }));
     } finally {
       setLeaderExpensesLoading(false);
-    }
-  };
-
-  const fetchAnomalies = async (country) => {
-    setAnomaliesLoading(true);
-    try {
-      const snap = await getDocs(query(collection(db, 'expense_anomalies'), where('country', '==', country)));
-      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-        .sort((a, b) => (b.scandal_score || 0) - (a.scandal_score || 0));
-      setAnomalies(items);
-    } catch (err) {
-      console.warn('[Anomalies] Firestore fetch failed:', err.message);
-      setAnomalies([]);
-    } finally {
-      setAnomaliesLoading(false);
     }
   };
 
