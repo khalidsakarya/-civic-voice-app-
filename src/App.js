@@ -1193,6 +1193,7 @@ function App() {
   });
   const [expandedCarneySections, setExpandedCarneySections] = useState({
     activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false, expenses: false,
+    contact: false, bio: false, policies: false, cabinet: false, advisors: false,
   });
   const [albaneseVotes, setAlbaneseVotes] = useState(() => {
     const saved = localStorage.getItem('cvAlbaneseVote');
@@ -14948,20 +14949,25 @@ function App() {
           </div>
 
           {/* Contact */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">📧 Contact Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
-                <a href={`mailto:${carney.email}`} className="text-red-600 hover:text-red-800 font-medium break-all">{carney.email}</a>
-              </div>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">PMO Phone</p>
-                <a href={`tel:${carney.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{carney.phone}</a>
-              </div>
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
-                <p className="text-gray-700 text-sm">80 Wellington Street, Ottawa, Ontario K1A 0A2</p>
+          <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
+            <div onClick={() => toggleCarneySection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+              <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
+              <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.contact ? 'rotate-0' : '-rotate-90'}`} />
+            </div>
+            <div className={`px-6 pb-6 ${expandedCarneySections.contact ? '' : 'hidden sm:block'}`}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
+                  <a href={`mailto:${carney.email}`} className="text-red-600 hover:text-red-800 font-medium break-all">{carney.email}</a>
+                </div>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-2 font-medium">PMO Phone</p>
+                  <a href={`tel:${carney.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{carney.phone}</a>
+                </div>
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
+                  <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
+                  <p className="text-gray-700 text-sm">80 Wellington Street, Ottawa, Ontario K1A 0A2</p>
+                </div>
               </div>
             </div>
           </div>
@@ -14972,20 +14978,30 @@ function App() {
             {/* Left column */}
             <div className="space-y-6">
 
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">📖 Biography</h3>
-                <p className="text-gray-700 leading-relaxed">{carney.bio}</p>
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('bio')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📖 Biography</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.bio ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedCarneySections.bio ? '' : 'hidden sm:block'}`}>
+                  <p className="text-gray-700 leading-relaxed">{carney.bio}</p>
+                </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">📋 Key Policy Areas</h3>
-                <div className="flex flex-wrap gap-2">
-                  {carney.policies.map((policy, i) => (
-                    <span key={i} className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-sm font-medium px-3 py-1.5 rounded-full">
-                      <Scale className="w-3.5 h-3.5 flex-shrink-0" />
-                      {policy}
-                    </span>
-                  ))}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.policies ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedCarneySections.policies ? '' : 'hidden sm:block'}`}>
+                  <div className="flex flex-wrap gap-2">
+                    {carney.policies.map((policy, i) => (
+                      <span key={i} className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                        <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                        {policy}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -15018,29 +15034,39 @@ function App() {
               </div>
 
               {/* Key Cabinet Ministers */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">🏛️ Key Cabinet Ministers</h3>
-                <div className="space-y-2">
-                  {carney.cabinet.map((c, i) => (
-                    <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                      <h4 className="font-bold text-gray-800">{c.name}</h4>
-                      <p className="text-sm text-red-600 font-medium">{c.role}</p>
-                    </div>
-                  ))}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('cabinet')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🏛️ Cabinet Members</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.cabinet ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedCarneySections.cabinet ? '' : 'hidden sm:block'}`}>
+                  <div className="space-y-2">
+                    {carney.cabinet.map((c, i) => (
+                      <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                        <h4 className="font-bold text-gray-800">{c.name}</h4>
+                        <p className="text-sm text-red-600 font-medium">{c.role}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               {/* Senior Advisors */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">🌟 Senior PMO Advisors</h3>
-                <div className="space-y-2">
-                  {carney.seniorAdvisors.map((advisor) => (
-                    <div key={advisor.name} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                      <h4 className="font-bold text-gray-800">{advisor.name}</h4>
-                      <p className="text-sm text-red-600 font-medium mb-1">{advisor.title}</p>
-                      <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>
-                    </div>
-                  ))}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('advisors')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🌟 Senior Advisors</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.advisors ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedCarneySections.advisors ? '' : 'hidden sm:block'}`}>
+                  <div className="space-y-2">
+                    {carney.seniorAdvisors.map((advisor) => (
+                      <div key={advisor.name} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                        <h4 className="font-bold text-gray-800">{advisor.name}</h4>
+                        <p className="text-sm text-red-600 font-medium mb-1">{advisor.title}</p>
+                        <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -15050,224 +15076,170 @@ function App() {
             <div className="space-y-6 mt-6 md:mt-0">
 
               {/* Recent Activity */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleCarneySection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <FileText className="w-6 h-6 text-red-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
-                      <p className="text-sm text-gray-600">{carney.recentActivity.length} recent actions</p>
-                    </div>
-                  </div>
-                  {expandedCarneySections.activity ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('activity')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📊 Recent Activity</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.activity ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                {expandedCarneySections.activity && (
-                  <div className="px-6 pb-6 space-y-4">
-                    {carney.recentActivity.map((item, i) => (
-                      <div key={i} className="border rounded-lg p-4 bg-red-50 border-red-200">
-                        <div className="flex items-start justify-between mb-2">
-                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-200 text-red-800">{item.type}</span>
-                          <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                            <Calendar className="w-3.5 h-3.5" />
-                            <span>{item.date}</span>
-                          </div>
+                <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.activity ? '' : 'hidden sm:block'}`}>
+                  {carney.recentActivity.map((item, i) => (
+                    <div key={i} className="border rounded-lg p-4 bg-red-50 border-red-200">
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-200 text-red-800">{item.type}</span>
+                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span>{item.date}</span>
                         </div>
-                        <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
-                        <p className="text-sm text-gray-600">{item.description}</p>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                      <p className="text-sm text-gray-600">{item.description}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Key Government Priorities */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleCarneySection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Scale className="w-6 h-6 text-red-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h2>
-                      <p className="text-sm text-gray-600">{carney.executiveActions.length} key commitments in 2025</p>
-                    </div>
-                  </div>
-                  {expandedCarneySections.keyDecisions ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('keyDecisions')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                {expandedCarneySections.keyDecisions && (
-                  <div className="px-6 pb-6 space-y-2">
-                    {carney.executiveActions.map((action, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <span className="text-sm text-gray-700 font-medium">{action}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div className={`px-6 pb-6 space-y-2 ${expandedCarneySections.keyDecisions ? '' : 'hidden sm:block'}`}>
+                  {carney.executiveActions.map((action, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <span className="text-sm text-gray-700 font-medium">{action}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Attendance Record */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleCarneySection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Award className="w-6 h-6 text-red-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
-                      <p className="text-sm text-gray-600">{carney.attendance.percentage}% Question Period attendance</p>
-                    </div>
-                  </div>
-                  {expandedCarneySections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('attendance')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📈 Attendance Record</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.attendance ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                {expandedCarneySections.attendance && (
-                  <div className="px-6 pb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-red-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
-                        <p className="text-3xl font-bold text-red-600">{carney.attendance.percentage}%</p>
-                      </div>
-                      <div className="bg-green-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
-                        <p className="text-3xl font-bold text-green-600">{carney.attendance.sessionsAttended}/{carney.attendance.totalSessions}</p>
-                      </div>
-                      <div className="bg-purple-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">National Ranking</p>
-                        <p className="text-3xl font-bold text-purple-600">#1</p>
-                      </div>
+                <div className={`px-6 pb-6 ${expandedCarneySections.attendance ? '' : 'hidden sm:block'}`}>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-red-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
+                      <p className="text-3xl font-bold text-red-600">{carney.attendance.percentage}%</p>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
+                      <p className="text-3xl font-bold text-green-600">{carney.attendance.sessionsAttended}/{carney.attendance.totalSessions}</p>
+                    </div>
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">National Ranking</p>
+                      <p className="text-3xl font-bold text-purple-600">#1</p>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Financial Disclosures */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleCarneySection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <TrendingUp className="w-6 h-6 text-purple-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
-                      <p className="text-sm text-gray-600">Net worth up {carney.financialDisclosure.percentageIncrease}% since appointment</p>
-                    </div>
-                  </div>
-                  {expandedCarneySections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('financial')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.financial ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                {expandedCarneySections.financial && (
-                  <div className="px-6 pb-6 space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div className="bg-purple-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Worth in {carney.financialDisclosure.electedYear}</p>
-                        <p className="font-bold text-purple-700 text-sm">${(carney.financialDisclosure.worthWhenElected / 1000000).toFixed(1)}M</p>
-                      </div>
-                      <div className="bg-green-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
-                        <p className="font-bold text-green-700 text-sm">${(carney.financialDisclosure.currentNetWorth / 1000000).toFixed(1)}M</p>
-                      </div>
-                      <div className="bg-blue-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Increase</p>
-                        <p className="font-bold text-blue-700 text-sm">+{carney.financialDisclosure.percentageIncrease}%</p>
-                      </div>
-                      <div className="bg-gray-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Annual Salary</p>
-                        <p className="font-bold text-gray-700 text-sm">${carney.financialDisclosure.annualSalary.toLocaleString()}</p>
-                      </div>
+                <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.financial ? '' : 'hidden sm:block'}`}>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-purple-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Worth in {carney.financialDisclosure.electedYear}</p>
+                      <p className="font-bold text-purple-700 text-sm">${(carney.financialDisclosure.worthWhenElected / 1000000).toFixed(1)}M</p>
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">Asset Breakdown</h4>
-                      <div className="space-y-2">
-                        {carney.financialDisclosure.assets.map((asset, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                            <span className="text-sm text-gray-700">{asset.type}</span>
-                            <span className="text-sm font-bold text-gray-800">${asset.value.toLocaleString()}</span>
-                          </div>
-                        ))}
-                      </div>
+                    <div className="bg-green-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
+                      <p className="font-bold text-green-700 text-sm">${(carney.financialDisclosure.currentNetWorth / 1000000).toFixed(1)}M</p>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Increase</p>
+                      <p className="font-bold text-blue-700 text-sm">+{carney.financialDisclosure.percentageIncrease}%</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Annual Salary</p>
+                      <p className="font-bold text-gray-700 text-sm">${carney.financialDisclosure.annualSalary.toLocaleString()}</p>
                     </div>
                   </div>
-                )}
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">Asset Breakdown</h4>
+                    <div className="space-y-2">
+                      {carney.financialDisclosure.assets.map((asset, i) => (
+                        <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                          <span className="text-sm text-gray-700">{asset.type}</span>
+                          <span className="text-sm font-bold text-gray-800">${asset.value.toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Stock / Asset Disclosures */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleCarneySection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <TrendingUp className="w-6 h-6 text-blue-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">📈 Asset Disclosures</h2>
-                      <p className="text-sm text-gray-600">{carney.stockTrades.length} disclosed holdings on appointment</p>
-                    </div>
-                  </div>
-                  {expandedCarneySections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+              {/* Corporate Affiliations / Asset Disclosures */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('stockTrades')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🏢 Corporate Affiliations</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                {expandedCarneySections.stockTrades && (
-                  <div className="px-6 pb-6 space-y-3">
-                    {carney.stockTrades.filter(t => t.conflict).length > 0 && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                        <p className="text-sm font-semibold text-red-700">⚠️ {carney.stockTrades.filter(t => t.conflict).length} potential conflict(s) flagged</p>
-                      </div>
-                    )}
-                    {carney.stockTrades.map((trade, i) => (
-                      <div key={i} className={`border rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <div>
-                            <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
-                            <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
-                          </div>
-                          <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
+                <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.stockTrades ? '' : 'hidden sm:block'}`}>
+                  {carney.stockTrades.filter(t => t.conflict).length > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                      <p className="text-sm font-semibold text-red-700">⚠️ {carney.stockTrades.filter(t => t.conflict).length} potential conflict(s) flagged</p>
+                    </div>
+                  )}
+                  {carney.stockTrades.map((trade, i) => (
+                    <div key={i} className={`border rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div>
+                          <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
+                          <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
                         </div>
-                        <div className="flex flex-wrap gap-1.5 mt-1">
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
-                          <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
-                        </div>
-                        {trade.conflict && <p className="text-xs text-red-600 mt-1.5 font-medium">⚠️ {trade.conflictReason}</p>}
+                        <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
                       </div>
-                    ))}
-                    <p className="text-xs text-gray-400 mt-2">Disclosures filed with the Conflict of Interest and Ethics Commissioner upon taking office.</p>
-                  </div>
-                )}
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
+                        <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
+                      </div>
+                      {trade.conflict && <p className="text-xs text-red-600 mt-1.5 font-medium">⚠️ {trade.conflictReason}</p>}
+                    </div>
+                  ))}
+                  <p className="text-xs text-gray-400 mt-2">Disclosures filed with the Conflict of Interest and Ethics Commissioner upon taking office.</p>
+                </div>
               </div>
 
               {/* Lobbying Activity */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleCarneySection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Users className="w-6 h-6 text-orange-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
-                      <p className="text-sm text-gray-600">{carney.lobbying.reduce((s, l) => s + l.meetings, 0)} meetings with registered lobbyists</p>
-                    </div>
-                  </div>
-                  {expandedCarneySections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('lobbying')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                {expandedCarneySections.lobbying && (
-                  <div className="px-6 pb-6 space-y-3">
-                    {carney.lobbying.map((org, i) => (
-                      <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h4 className="font-bold text-gray-800 text-sm">{org.name}</h4>
-                            <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
-                            <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
-                          </div>
+                <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.lobbying ? '' : 'hidden sm:block'}`}>
+                  {carney.lobbying.map((org, i) => (
+                    <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h4 className="font-bold text-gray-800 text-sm">{org.name}</h4>
+                          <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
+                          <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Expenses */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleCarneySection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <DollarSign className="w-6 h-6 text-orange-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
-                      <p className="text-sm text-gray-600">Travel, entertainment &amp; flagged spending</p>
-                    </div>
-                  </div>
-                  {expandedCarneySections.expenses ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('expenses')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🧾 Expenses</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.expenses ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                {expandedCarneySections.expenses && (
-                  <div className="px-6 pb-6 space-y-4">
+                {true && (
+                  <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.expenses ? '' : 'hidden sm:block'}`}>
                     <div className="grid grid-cols-3 gap-3">
                       <div className="bg-orange-50 p-3 rounded-lg text-center">
                         <p className="text-xs text-gray-500 mb-1">Travel (2025)</p>
