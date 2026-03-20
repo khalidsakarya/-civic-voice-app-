@@ -1,0 +1,95 @@
+{
+  "country": "CA",
+  "generatedAt": "2026-03-19T00:00:00.000Z",
+  "upcomingElections": [
+    {
+      "id": "ca_federal_next",
+      "country": "CA",
+      "type": "federal",
+      "name": "Next Canadian Federal Election",
+      "expectedDate": "2029-10-01",
+      "status": "expected",
+      "description": "Next scheduled federal election; minority parliament may trigger earlier vote.",
+      "houseSeats": 343,
+      "seatsForMajority": 172,
+      "currentGovParty": "Liberal",
+      "currentGovLeader": "Mark Carney"
+    },
+    {
+      "id": "ca_ontario_prov_2026",
+      "country": "CA",
+      "type": "provincial",
+      "name": "2026 Ontario Provincial Election",
+      "expectedDate": "2026-06-04",
+      "status": "upcoming",
+      "province": "Ontario",
+      "description": "Scheduled Ontario provincial election under Doug Ford's PCs.",
+      "currentGovParty": "Progressive Conservative",
+      "currentGovLeader": "Doug Ford"
+    },
+    {
+      "id": "ca_bc_prov_2028",
+      "country": "CA",
+      "type": "provincial",
+      "name": "2028 British Columbia Provincial Election",
+      "expectedDate": "2028-10-01",
+      "status": "expected",
+      "province": "British Columbia",
+      "description": "Next BC provincial election following 2024 NDP re-election.",
+      "currentGovParty": "NDP",
+      "currentGovLeader": "David Eby"
+    }
+  ],
+  "currentPolling": {
+    "asOf": "2026-03-01",
+    "source": "Aggregate (338Canada / Nanos / Léger)",
+    "marginOfError": 2.5,
+    "sampleSize": 1200,
+    "standings": [
+      { "party": "Liberal",        "support": 41.2, "change7d": -2.3, "leaderApproval": 48 },
+      { "party": "Conservative",   "support": 40.8, "change7d":  1.1, "leaderApproval": 38 },
+      { "party": "NDP",            "support":  8.4, "change7d":  0.6, "leaderApproval": 31 },
+      { "party": "Bloc Québécois", "support":  6.9, "change7d":  0.4, "leaderApproval": 29 },
+      { "party": "Green",          "support":  2.1, "change7d": -0.2, "leaderApproval": 22 }
+    ]
+  },
+  "recentResults": [
+    {
+      "id": "ca_federal_2025",
+      "country": "CA",
+      "type": "federal",
+      "name": "2025 Canadian Federal Election",
+      "date": "2025-04-28",
+      "winner": "Liberal Party",
+      "winnerLeader": "Mark Carney",
+      "governmentType": "minority",
+      "totalSeats": 343,
+      "seatsForMajority": 172,
+      "turnoutPct": 68.4,
+      "results": [
+        { "party": "Liberal",        "seats": 168, "votePct": 43.5, "swingPct":   8.2 },
+        { "party": "Conservative",   "seats": 144, "votePct": 41.3, "swingPct":  -1.4 },
+        { "party": "NDP",            "seats":  15, "votePct":  6.3, "swingPct": -10.7 },
+        { "party": "Bloc Québécois", "seats":  22, "votePct":  6.4, "swingPct":   1.1 },
+        { "party": "Green",          "seats":   1, "votePct":  1.2, "swingPct":  -0.7 }
+      ],
+      "keyIssues": ["US tariffs", "cost of living", "housing", "sovereignty"]
+    }
+  ],
+  "battlegrounds": [
+    { "id": "ca_bg_brampton_east",    "name": "Brampton East",        "region": "ON", "currentParty": "Liberal",      "marginPct": 1.2, "watchReason": "South Asian diaspora swing seat; ultratight in 2025" },
+    { "id": "ca_bg_kanata",           "name": "Kanata–Carleton",      "region": "ON", "currentParty": "Conservative", "marginPct": 2.8, "watchReason": "Ottawa tech-corridor suburb; flips with national mood" },
+    { "id": "ca_bg_surrey_newton",    "name": "Surrey Newton",        "region": "BC", "currentParty": "NDP",          "marginPct": 3.1, "watchReason": "Dense immigrant suburb; NDP–Liberal battleground" },
+    { "id": "ca_bg_sault_ste_marie",  "name": "Sault Ste. Marie",     "region": "ON", "currentParty": "Conservative", "marginPct": 5.4, "watchReason": "Steel-town; US tariff impact could flip blue-collar vote" },
+    { "id": "ca_bg_levis_lotbiniere", "name": "Lévis–Lotbinière",     "region": "QC", "currentParty": "Bloc",         "marginPct": 4.2, "watchReason": "Bloc–Conservative fight outside Quebec City" }
+  ],
+  "claudeAnalysis": {
+    "outcomePrediction": "Liberals hold a narrow lead over Conservatives (41.2% vs 40.8%) with the next federal election not required until 2029, but minority government dynamics could trigger an earlier vote.",
+    "confidencePct": 52,
+    "keyIssues": ["US trade tariffs", "housing affordability", "cost of living"],
+    "electionBriefing": "Canada's Liberal minority government under Mark Carney is governing in a tight political environment where the Conservatives remain within striking distance. The next mandatory federal election is in 2029, but a minority parliament means a confidence vote could trigger an earlier trip to the polls. The Ontario provincial election in June 2026 will be the next major electoral test.",
+    "momentumParty": "Conservative",
+    "riskFactors": ["US tariff escalation destabilising economy", "NDP confidence-and-supply withdrawal"],
+    "analysisSource": "seed"
+  }
+}

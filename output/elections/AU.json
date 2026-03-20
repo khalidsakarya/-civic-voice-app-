@@ -1,0 +1,105 @@
+{
+  "country": "AU",
+  "generatedAt": "2026-03-19T00:00:00.000Z",
+  "upcomingElections": [
+    {
+      "id": "au_sa_state_2026",
+      "country": "AU",
+      "type": "state",
+      "name": "2026 South Australia State Election",
+      "expectedDate": "2026-03-21",
+      "status": "upcoming",
+      "state": "South Australia",
+      "description": "South Australia state election; ALP seeks third term under Peter Malinauskas.",
+      "currentGovParty": "ALP",
+      "currentGovLeader": "Peter Malinauskas"
+    },
+    {
+      "id": "au_qld_state_2026",
+      "country": "AU",
+      "type": "state",
+      "name": "2026 Queensland State Election",
+      "expectedDate": "2026-10-31",
+      "status": "upcoming",
+      "state": "Queensland",
+      "description": "Queensland state election; LNP government faces first re-election test.",
+      "currentGovParty": "LNP",
+      "currentGovLeader": "David Crisafulli"
+    },
+    {
+      "id": "au_federal_2028",
+      "country": "AU",
+      "type": "federal",
+      "name": "2028 Australian Federal Election",
+      "expectedDate": "2028-05-06",
+      "status": "expected",
+      "description": "Next Australian Federal Election expected around May 2028.",
+      "totalSeats": 151,
+      "seatsForMajority": 76,
+      "currentGovParty": "ALP",
+      "currentGovLeader": "Anthony Albanese"
+    }
+  ],
+  "currentPolling": {
+    "asOf": "2026-03-01",
+    "source": "Aggregate (Newspoll / Essential / RedBridge)",
+    "marginOfError": 2.5,
+    "sampleSize": 1500,
+    "standings": [
+      { "party": "ALP",              "support": 35.4, "tpp": 52, "change7d":  0.7, "leaderApproval": 45 },
+      { "party": "Coalition",        "support": 34.2, "tpp": 48, "change7d": -2.1, "leaderApproval": 32 },
+      { "party": "Greens",           "support": 12.1,            "change7d": -0.3, "leaderApproval": 28 },
+      { "party": "Independent/Other","support": 18.3,            "change7d":  1.7 }
+    ]
+  },
+  "recentResults": [
+    {
+      "id": "au_federal_2025",
+      "country": "AU",
+      "type": "federal",
+      "name": "2025 Australian Federal Election",
+      "date": "2025-05-03",
+      "winner": "Australian Labor Party",
+      "winnerLeader": "Anthony Albanese",
+      "governmentType": "majority",
+      "totalSeats": 151,
+      "seatsForMajority": 76,
+      "turnoutPct": 94.2,
+      "results": [
+        { "party": "ALP",         "seats": 91, "votePct": 34.7, "tppPct": 54.3, "swingPct":  2.1 },
+        { "party": "Coalition",   "seats": 43, "votePct": 32.6, "tppPct": 45.7, "swingPct": -4.8 },
+        { "party": "Greens",      "seats":  4, "votePct": 12.4,                  "swingPct":  1.1 },
+        { "party": "Independent", "seats": 10, "votePct": 13.8,                  "swingPct":  2.9 },
+        { "party": "Other",       "seats":  3, "votePct":  6.5,                  "swingPct": -1.3 }
+      ],
+      "keyIssues": ["cost of living", "housing", "climate", "health"]
+    },
+    {
+      "id": "au_wa_state_2025",
+      "country": "AU",
+      "type": "state",
+      "name": "2025 Western Australia State Election",
+      "date": "2025-03-08",
+      "winner": "ALP",
+      "winnerLeader": "Roger Cook",
+      "governmentType": "majority",
+      "state": "Western Australia"
+    }
+  ],
+  "battlegrounds": [
+    { "id": "au_bg_dickson",  "name": "Dickson",  "state": "QLD", "currentParty": "LNP",     "marginPct": 1.7, "watchReason": "Peter Dutton's former seat; bellwether for Coalition recovery" },
+    { "id": "au_bg_boothby",  "name": "Boothby",  "state": "SA",  "currentParty": "ALP",     "marginPct": 1.4, "watchReason": "Adelaide marginal; cost-of-living barometer" },
+    { "id": "au_bg_deakin",   "name": "Deakin",   "state": "VIC", "currentParty": "Liberal", "marginPct": 2.9, "watchReason": "Melbourne outer east; teal-independent and ALP threat" },
+    { "id": "au_bg_tangney",  "name": "Tangney",  "state": "WA",  "currentParty": "ALP",     "marginPct": 3.1, "watchReason": "Perth southern suburbs; independent teal movement growing" },
+    { "id": "au_bg_chifley",  "name": "Chifley",  "state": "NSW", "currentParty": "ALP",     "marginPct": 8.2, "watchReason": "Western Sydney heartland; housing affordability pressure on Labor" }
+  ],
+  "claudeAnalysis": {
+    "outcomePrediction": "Labor holds a comfortable 52–48 two-party-preferred lead nationally, making them strong favourites for the 2028 federal election, but two state elections in 2026 will test the Albanese government's mid-term standing.",
+    "confidencePct": 61,
+    "keyIssues": ["housing affordability and rental crisis", "cost of living and grocery prices", "climate and energy transition"],
+    "electionBriefing": "Australia faces two significant state elections in 2026 before the next federal poll. South Australia votes on March 21 where Labor seeks a third term, and Queensland votes in October where the new LNP government will face its first re-election test. Federally, Albanese's Labor holds a healthy two-party lead of 52–48, but housing and cost-of-living pressures remain the key political battleground.",
+    "momentumParty": "ALP",
+    "riskFactors": ["housing crisis eroding Labor's core vote in capital cities", "Greens preference deals shifting in Coalition's favour"],
+    "analysisSource": "seed"
+  }
+}

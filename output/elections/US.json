@@ -1,0 +1,82 @@
+{
+  "country": "US",
+  "generatedAt": "2026-03-19T00:00:00.000Z",
+  "upcomingElections": [
+    {
+      "id": "us_midterms_2026",
+      "country": "US",
+      "type": "midterm",
+      "name": "2026 US Midterm Elections",
+      "expectedDate": "2026-11-03",
+      "status": "upcoming",
+      "description": "All 435 House seats, 33 Senate seats, 36 governorships.",
+      "houseSeatsUp": 435,
+      "senateSeatsUp": 33,
+      "governorshipsUp": 36,
+      "currentHouseControl": "Republican",
+      "currentSenateControl": "Republican",
+      "currentPresident": "Donald Trump",
+      "currentPresidentParty": "Republican"
+    },
+    {
+      "id": "us_presidential_2028",
+      "country": "US",
+      "type": "presidential",
+      "name": "2028 US Presidential Election",
+      "expectedDate": "2028-11-07",
+      "status": "expected",
+      "description": "Trump constitutionally ineligible for second consecutive term; open Republican primary expected."
+    }
+  ],
+  "currentPolling": {
+    "asOf": "2026-03-01",
+    "source": "Aggregate (FiveThirtyEight / RCP / Emerson)",
+    "marginOfError": 3.0,
+    "presidentApproval": { "leader": "Donald Trump", "approve": 44, "disapprove": 52 },
+    "genericBallot": [
+      { "party": "Republican", "support": 46.2, "change7d": -1.4 },
+      { "party": "Democrat",   "support": 45.8, "change7d":  1.2 }
+    ],
+    "senateRaces": [
+      { "state": "Arizona",   "demPct": 46, "repPct": 48, "lean": "R+2" },
+      { "state": "Georgia",   "demPct": 44, "repPct": 51, "lean": "R+7" },
+      { "state": "Wisconsin", "demPct": 47, "repPct": 47, "lean": "Even" },
+      { "state": "Michigan",  "demPct": 49, "repPct": 46, "lean": "D+3" },
+      { "state": "Nevada",    "demPct": 47, "repPct": 47, "lean": "Even" }
+    ]
+  },
+  "recentResults": [
+    {
+      "id": "us_presidential_2024",
+      "country": "US",
+      "type": "presidential",
+      "name": "2024 US Presidential Election",
+      "date": "2024-11-05",
+      "winner": "Republican",
+      "winnerLeader": "Donald Trump",
+      "results": [
+        { "party": "Republican", "electoralVotes": 312, "popularVotePct": 49.8, "swingPct":  1.7 },
+        { "party": "Democrat",   "electoralVotes": 226, "popularVotePct": 48.3, "swingPct": -2.5 }
+      ],
+      "keyStates": ["Pennsylvania", "Michigan", "Wisconsin", "Georgia", "Arizona"],
+      "keyIssues": ["immigration", "inflation", "crime", "democracy"]
+    }
+  ],
+  "battlegrounds": [
+    { "id": "us_bg_az_sen", "name": "Arizona Senate",          "region": "AZ", "currentParty": "Democrat",   "ratingCook": "Toss-up",         "watchReason": "Mark Kelly seat; Trump-country test for blue incumbents" },
+    { "id": "us_bg_ga_sen", "name": "Georgia Senate",          "region": "GA", "currentParty": "Democrat",   "ratingCook": "Lean Republican",  "watchReason": "Jon Ossoff faces tough red-state fundamentals in midterm" },
+    { "id": "us_bg_wi_sen", "name": "Wisconsin Senate",        "region": "WI", "currentParty": "Democrat",   "ratingCook": "Toss-up",         "watchReason": "Purple-state bellwether; open seat race" },
+    { "id": "us_bg_nv_sen", "name": "Nevada Senate",           "region": "NV", "currentParty": "Democrat",   "ratingCook": "Toss-up",         "watchReason": "Jacky Rosen seat in true swing state" },
+    { "id": "us_bg_pa_07",  "name": "PA-07 (Suburban Philly)", "region": "PA", "currentParty": "Democrat",   "ratingCook": "Toss-up",         "watchReason": "Swing suburb; Dem hold needed for House path" },
+    { "id": "us_bg_az_06",  "name": "AZ-06 (Phoenix Metro)",   "region": "AZ", "currentParty": "Republican", "ratingCook": "Toss-up",         "watchReason": "Competitive Phoenix suburb; education/abortion drivers" }
+  ],
+  "claudeAnalysis": {
+    "outcomePrediction": "Republicans are favoured to hold the Senate while the House remains highly competitive; historical midterm patterns suggest some Democratic seat gains but full House flip is uncertain.",
+    "confidencePct": 55,
+    "keyIssues": ["immigration and border policy", "economic anxiety / inflation", "presidential approval ratings"],
+    "electionBriefing": "The November 2026 midterms will put all 435 House seats and 33 Senate seats on the line — a major referendum on the Trump administration. Democrats are defending several vulnerable Senate seats in Republican-leaning states while trying to claw back the House. With generic ballot polling within 1 point, both chambers are genuinely competitive.",
+    "momentumParty": "Democrat",
+    "riskFactors": ["economic recession dampening incumbent party turnout", "high-profile Senate candidate recruitment failures"],
+    "analysisSource": "seed"
+  }
+}

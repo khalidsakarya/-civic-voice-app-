@@ -1,0 +1,85 @@
+{
+  "country": "UK",
+  "generatedAt": "2026-03-19T00:00:00.000Z",
+  "upcomingElections": [
+    {
+      "id": "uk_local_2026",
+      "country": "UK",
+      "type": "local",
+      "name": "2026 English Local Elections",
+      "expectedDate": "2026-05-07",
+      "status": "upcoming",
+      "description": "Local council elections across England — first major electoral test for the Starmer government.",
+      "currentGovParty": "Labour",
+      "currentGovLeader": "Keir Starmer"
+    },
+    {
+      "id": "uk_general_2029",
+      "country": "UK",
+      "type": "general",
+      "name": "2029 UK General Election",
+      "expectedDate": "2029-01-25",
+      "status": "expected",
+      "description": "Next UK General Election due by January 2029; PM may call earlier if polling improves.",
+      "totalSeats": 650,
+      "seatsForMajority": 326,
+      "currentGovParty": "Labour",
+      "currentGovLeader": "Keir Starmer"
+    }
+  ],
+  "liveElections": [],
+  "currentPolling": {
+    "asOf": "2026-03-01",
+    "source": "Aggregate (YouGov / Ipsos / Savanta)",
+    "marginOfError": 2.0,
+    "sampleSize": 2100,
+    "standings": [
+      { "party": "Labour",            "support": 28, "change7d":  -5.7, "leaderApproval": 22 },
+      { "party": "Conservative",      "support": 24, "change7d":   0.3, "leaderApproval": 18 },
+      { "party": "Reform UK",         "support": 27, "change7d":  12.7, "leaderApproval": 34 },
+      { "party": "Liberal Democrats", "support": 13, "change7d":   0.8, "leaderApproval": 26 },
+      { "party": "Green",             "support":  5, "change7d":  -1.8, "leaderApproval": 21 }
+    ]
+  },
+  "recentResults": [
+    {
+      "id": "uk_general_2024",
+      "country": "UK",
+      "type": "general",
+      "name": "2024 UK General Election",
+      "date": "2024-07-04",
+      "winner": "Labour",
+      "winnerLeader": "Keir Starmer",
+      "governmentType": "majority",
+      "totalSeats": 650,
+      "seatsForMajority": 326,
+      "labourMajority": 174,
+      "turnoutPct": 59.9,
+      "results": [
+        { "party": "Labour",            "seats": 412, "votePct": 33.7, "swingPct":   1.6 },
+        { "party": "Conservative",      "seats": 121, "votePct": 23.7, "swingPct": -19.9 },
+        { "party": "Reform UK",         "seats":   5, "votePct": 14.3, "swingPct":  12.3 },
+        { "party": "Liberal Democrats", "seats":  72, "votePct": 12.2, "swingPct":   0.7 },
+        { "party": "SNP",               "seats":   9, "votePct":  2.5, "swingPct":  -0.7 },
+        { "party": "Green",             "seats":   4, "votePct":  6.8, "swingPct":   4.0 }
+      ],
+      "keyIssues": ["NHS", "cost of living", "government integrity", "immigration"]
+    }
+  ],
+  "battlegrounds": [
+    { "id": "uk_bg_runcorn",  "name": "Runcorn and Helsby",    "region": "North West", "currentParty": "Labour",      "marginPct": 0.3, "watchReason": "Wafer-thin Labour hold; Reform surge could flip it" },
+    { "id": "uk_bg_clacton",  "name": "Clacton",               "region": "East",       "currentParty": "Reform UK",   "marginPct": 2.5, "watchReason": "Nigel Farage's seat; canary for Reform national expansion" },
+    { "id": "uk_bg_camborne", "name": "Camborne and Redruth",  "region": "South West", "currentParty": "Conservative","marginPct": 2.1, "watchReason": "Three-way Con/Lab/LD marginal in Cornwall" },
+    { "id": "uk_bg_alloa",    "name": "Alloa and Grangemouth", "region": "Scotland",   "currentParty": "Labour",      "marginPct": 3.8, "watchReason": "SNP fighting back in Scottish seats Labour took in 2024" },
+    { "id": "uk_bg_ashford",  "name": "Ashford",               "region": "South East", "currentParty": "Conservative","marginPct": 6.1, "watchReason": "Reform could split right vote; Labour dark horse" }
+  ],
+  "claudeAnalysis": {
+    "outcomePrediction": "Reform UK has pulled level with Labour in national polling (27% vs 28%), setting up a dramatic three-way race for the next general election; under first-past-the-post, Labour's vote efficiency could still deliver a plurality of seats.",
+    "confidencePct": 38,
+    "keyIssues": ["NHS performance and waiting lists", "cost of living and mortgage rates", "immigration and asylum"],
+    "electionBriefing": "British politics has been turned upside down since the 2024 Labour landslide. Reform UK has surged to near-parity with Labour in polls, while the Conservatives remain in third place. The 2026 English local elections in May will be the first real test of whether Reform's poll surge translates into votes — and Labour's wafer-thin majority in some seats makes every by-election significant.",
+    "momentumParty": "Reform UK",
+    "riskFactors": ["Reform vote splitting could gift Labour/Lib Dems seats under FPTP", "Labour economic recovery improving incumbent standing before 2029"],
+    "analysisSource": "seed"
+  }
+}
