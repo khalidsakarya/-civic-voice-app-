@@ -453,6 +453,94 @@ const customStyles = `
     to   { transform: scale(1) rotate(0deg);     opacity: 1; }
   }
   .dark-toggle-icon { animation: darkToggle 0.25s ease forwards; }
+
+  /* ── Mobile app-card system ────────────────────────────────────────────────
+     .mc      → outer card: 2-col grid (icon | text) on mobile
+     .mc-dark → dark-background card variant
+     No effect on sm+ (640px+) — desktop layout unchanged.
+  ──────────────────────────────────────────────────────────────────────────── */
+  @media (max-width: 639px) {
+    .mc {
+      display: grid !important;
+      grid-template-columns: 2.75rem 1fr !important;
+      grid-template-rows: auto auto auto !important;
+      column-gap: 0.875rem !important;
+      row-gap: 0 !important;
+      align-items: start !important;
+      padding: 0.9375rem 1rem !important;
+      border-radius: 16px !important;
+    }
+    /* Light cards only — don't override dark cards' inline gradient backgrounds */
+    .mc:not(.mc-dark) {
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05), 0 0 0 1px rgba(226,232,240,0.6) !important;
+    }
+    .mc:active { opacity: 0.82; transform: scale(0.985) !important; }
+    .hover-lift.mc:hover { transform: none !important; }
+
+    /* Icon — first child div spans all 3 rows in column 1 */
+    .mc > div:first-child {
+      grid-column: 1 !important;
+      grid-row: 1 / 4 !important;
+      align-self: center !important;
+      margin-bottom: 0 !important;
+      width: 2.75rem !important;
+      height: 2.75rem !important;
+      border-radius: 12px !important;
+      background: rgba(0,0,0,0.06) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0.5rem !important;
+    }
+    .mc > div:first-child svg { width: 1.5rem !important; height: 1.5rem !important; }
+
+    /* Title — column 2, row 1 */
+    .mc > h2 {
+      grid-column: 2 !important;
+      grid-row: 1 !important;
+      font-size: 0.9375rem !important;
+      font-weight: 700 !important;
+      line-height: 1.3 !important;
+      margin-bottom: 0.1rem !important;
+      color: #1e293b !important;
+      align-self: end !important;
+    }
+
+    /* Description — column 2, row 2 */
+    .mc > p {
+      grid-column: 2 !important;
+      grid-row: 2 !important;
+      font-size: 0.75rem !important;
+      line-height: 1.4 !important;
+      margin-bottom: 0.1rem !important;
+      color: #64748b !important;
+    }
+
+    /* CTA / stat row — column 2, row 3 */
+    .mc > div:last-child {
+      grid-column: 2 !important;
+      grid-row: 3 !important;
+      font-size: 0.75rem !important;
+      margin-top: 0 !important;
+    }
+
+    /* Dark card variant — preserve inline gradient; just style icon + text */
+    .mc.mc-dark > div:first-child { background: rgba(255,255,255,0.08) !important; }
+
+    /* Member / department list cards */
+    .mc-list-card {
+      padding: 0.875rem 1rem !important;
+      border-radius: 14px !important;
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.05) !important;
+    }
+
+    /* Grid gap reduction on mobile */
+    .mc-grid { gap: 0.625rem !important; }
+  }
 `;
 
 
@@ -11630,11 +11718,11 @@ function App() {
               <div className="w-24 h-1 mt-3 rounded-full" style={{ background: 'linear-gradient(to right, #C8102E, #012169)' }} />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mc-grid">
               {/* National Government (Westminster) */}
               <div
                 onClick={() => setView('uk-national')}
-                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
                 style={{ animationDelay: '0.1s' }}
               >
                 <div className="mb-4" style={{ color: '#C8102E' }}>
@@ -11653,7 +11741,7 @@ function App() {
               {/* England Regions & Counties */}
               <div
                 onClick={() => setView('uk-regions')}
-                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
                 style={{ animationDelay: '0.2s' }}
               >
                 <div className="mb-4" style={{ color: '#012169' }}>
@@ -11672,7 +11760,7 @@ function App() {
               {/* Tax Calculator */}
               <div
                 onClick={() => setView('uk-tax-full')}
-                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
                 style={{ animationDelay: '0.3s' }}
               >
                 <div className="mb-4" style={{ color: '#C8102E' }}>
@@ -11689,7 +11777,7 @@ function App() {
               {/* Waste Tracker */}
               <div
                 onClick={() => setView('waste-tracker')}
-                className="rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 animate-scale-in col-span-1 sm:col-span-2 lg:col-span-1"
+                className="rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 animate-scale-in col-span-1 sm:col-span-2 lg:col-span-1 mc mc-dark"
                 style={{ animationDelay: '0.4s', background: 'linear-gradient(135deg, #2d0000 0%, #5c1a00 100%)', borderColor: 'rgba(220,38,38,0.4)' }}
               >
                 <div className="mb-4 text-red-400">
@@ -11728,11 +11816,11 @@ function App() {
               <div className="w-24 h-1 bg-gradient-to-r from-amber-400 to-green-500 mt-3 rounded-full" />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mc-grid">
               {/* Federal Government */}
               <div
                 onClick={() => setView('au-categories')}
-                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
                 style={{ animationDelay: '0.1s' }}
               >
                 <div className="text-amber-600 mb-4">
@@ -11751,7 +11839,7 @@ function App() {
               {/* States & Territories */}
               <div
                 onClick={() => setView('au-states')}
-                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
                 style={{ animationDelay: '0.2s' }}
               >
                 <div className="text-green-600 mb-4">
@@ -11770,7 +11858,7 @@ function App() {
               {/* Tax Calculator */}
               <div
                 onClick={() => setView('au-tax-full')}
-                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
                 style={{ animationDelay: '0.3s' }}
               >
                 <div className="text-amber-700 mb-4">
@@ -11787,7 +11875,7 @@ function App() {
               {/* Waste Tracker */}
               <div
                 onClick={() => setView('waste-tracker')}
-                className="rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 animate-scale-in col-span-1 sm:col-span-2 lg:col-span-1"
+                className="rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 animate-scale-in col-span-1 sm:col-span-2 lg:col-span-1 mc mc-dark"
                 style={{ animationDelay: '0.4s', background: 'linear-gradient(135deg, #2d0000 0%, #5c1a00 100%)', borderColor: 'rgba(220,38,38,0.4)' }}
               >
                 <div className="mb-4 text-red-400">
@@ -11825,11 +11913,11 @@ function App() {
             <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mc-grid">
             {/* Federal Government */}
             <div
               onClick={() => setView('categories')}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
               style={{ animationDelay: '0.1s' }}
             >
               <div className="text-blue-600 mb-4">
@@ -11852,7 +11940,7 @@ function App() {
             {/* Provincial / State Governments */}
             <div
               onClick={() => setView('provincial')}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
               style={{ animationDelay: '0.2s' }}
             >
               <div className="text-green-600 mb-4">
@@ -11878,7 +11966,7 @@ function App() {
             {!isAustralia && !isUK && (
               <div
                 onClick={() => setView(isUSA ? 'us-tax-full' : 'ca-tax-full')}
-                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
                 style={{ animationDelay: '0.3s' }}
               >
                 <div className="text-blue-600 mb-4">
@@ -11900,7 +11988,7 @@ function App() {
             {/* Waste Tracker */}
             <div
               onClick={() => setView('waste-tracker')}
-              className="rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 animate-scale-in"
+              className="rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 animate-scale-in mc mc-dark"
               style={{ animationDelay: '0.4s', background: 'linear-gradient(135deg, #2d0000 0%, #5c1a00 100%)', borderColor: 'rgba(220,38,38,0.4)' }}
             >
               <div className="mb-4 text-red-400">
@@ -19690,12 +19778,12 @@ function App() {
 
         {renderTransparencyBanner('UK')}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mc-grid">
 
           {/* Prime Minister & Executive */}
           <div
             onClick={() => setView('uk-pm-detail')}
-            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
             style={{ animationDelay: '0.05s' }}
           >
             <div className="mb-3 sm:mb-4" style={{ color: '#C8102E' }}>
@@ -19715,7 +19803,7 @@ function App() {
           {/* House of Commons */}
           <div
             onClick={() => setView('uk-commons')}
-            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
             style={{ animationDelay: '0.1s' }}
           >
             <div className="mb-3 sm:mb-4" style={{ color: '#012169' }}>
@@ -19732,7 +19820,7 @@ function App() {
           {/* House of Lords */}
           <div
             onClick={() => setView('uk-lords')}
-            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
             style={{ animationDelay: '0.15s' }}
           >
             <div className="mb-3 sm:mb-4" style={{ color: '#6B21A8' }}>
@@ -19749,7 +19837,7 @@ function App() {
           {/* Where the Money Goes */}
           <div
             onClick={() => setView('money-uk')}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95 mc"
             onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
             onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
           >
@@ -19797,7 +19885,7 @@ function App() {
           {/* Government Departments */}
           <div
             onClick={() => setView('uk-departments')}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95 mc"
             onMouseEnter={e => e.currentTarget.style.borderColor = '#1D4ED8'}
             onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
           >
@@ -19834,7 +19922,7 @@ function App() {
           {/* Government Contracts */}
           <div
             onClick={() => setView('uk-contracts')}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95 mc"
             onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
             onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
           >
@@ -19852,7 +19940,7 @@ function App() {
           {/* Analytics Dashboard */}
           <div
             onClick={() => setView('uk-analytics')}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95 mc"
             onMouseEnter={e => e.currentTarget.style.borderColor = '#012169'}
             onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
           >
@@ -26814,13 +26902,13 @@ function App() {
 
         {renderTransparencyBanner(isUSA ? 'US' : 'CA')}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mc-grid">
 
           {/* President & Executive — USA only */}
           {isUSA && (
             <div
               onClick={() => setView('president-executive')}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
               style={{ animationDelay: '0.05s' }}
             >
               <div className="text-red-600 mb-3 sm:mb-4">
@@ -26842,7 +26930,7 @@ function App() {
           {!isUSA && (
             <div
               onClick={() => setView('canada-pm-detail')}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
               style={{ animationDelay: '0.05s' }}
             >
               <div className="text-red-600 mb-3 sm:mb-4">
@@ -26863,7 +26951,7 @@ function App() {
           {/* Legislature (Congress/Parliament) */}
           <div
             onClick={() => setView(isUSA ? 'chambers' : 'parties')}
-            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
             style={{ animationDelay: '0.1s' }}
           >
             <div className="text-blue-600 mb-3 sm:mb-4">
@@ -26881,7 +26969,7 @@ function App() {
           {!isUSA && (
             <div
               onClick={() => setView('senate')}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
               style={{ animationDelay: '0.15s' }}
             >
               <div className="text-teal-600 mb-3 sm:mb-4">
@@ -26899,7 +26987,7 @@ function App() {
           {/* Analytics Dashboard - Available for both countries */}
           <div
             onClick={() => setView(isUSA ? 'us-analytics' : 'analytics')}
-            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
             style={{ animationDelay: '0.3s' }}
           >
             <div className="text-purple-600 mb-3 sm:mb-4">
@@ -26983,7 +27071,7 @@ function App() {
           {/* Government Ministries (Canada) / Federal Departments (USA) */}
           <div
             onClick={() => setView(isUSA ? 'departments' : 'ministries')}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95 mc"
           >
             <div className="text-orange-600 mb-3 sm:mb-4">
               <Building2 className="w-10 h-10 sm:w-12 sm:h-12" />
@@ -27006,7 +27094,7 @@ function App() {
           {/* Government Contracts - Available for both countries */}
           <div
             onClick={() => setView(isUSA ? 'us-contracts' : 'contracts')}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 active:scale-95"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 active:scale-95 mc"
           >
             <div className="text-red-600 mb-3 sm:mb-4">
               <DollarSign className="w-10 h-10 sm:w-12 sm:h-12" />
@@ -27029,7 +27117,7 @@ function App() {
           {/* Where the Money Goes - Financial Transparency */}
           <div
             onClick={() => setView(isUSA ? 'money-usa' : 'money-canada')}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-emerald-500 active:scale-95"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-emerald-500 active:scale-95 mc"
           >
             <div className="text-emerald-600 mb-3 sm:mb-4">
               <PieChart className="w-10 h-10 sm:w-12 sm:h-12" />
@@ -27050,7 +27138,7 @@ function App() {
           {/* Supreme Court - Available for both countries */}
           <div
             onClick={() => setView(isUSA ? 'us-supreme-court' : 'supreme-court')}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-yellow-500 active:scale-95"
+            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-yellow-500 active:scale-95 mc"
           >
             <div className="text-yellow-600 mb-3 sm:mb-4">
               <Scale className="w-10 h-10 sm:w-12 sm:h-12" />
@@ -27072,7 +27160,7 @@ function App() {
           {!isUSA && (
             <div
               onClick={() => setView('ca-tax-calculator')}
-              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 active:scale-95"
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 active:scale-95 mc"
             >
               <div className="text-red-600 mb-3 sm:mb-4">
                 <DollarSign className="w-10 h-10 sm:w-12 sm:h-12" />
@@ -32409,12 +32497,12 @@ function App() {
 
           {renderTransparencyBanner('AU')}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mc-grid">
 
             {/* Prime Minister & Executive */}
             <div
               onClick={() => setView('albanese-detail')}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
               style={{ animationDelay: '0.05s' }}
             >
               <div className="text-amber-600 mb-3 sm:mb-4">
@@ -32434,7 +32522,7 @@ function App() {
             {/* Federal Parliament */}
             <div
               onClick={() => { setAuChamber('House'); setAuPartyFilter('All'); setAuSearch(''); setView('au-parliament'); }}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
               style={{ animationDelay: '0.1s' }}
             >
               <div className="text-green-700 mb-3 sm:mb-4">
@@ -32451,7 +32539,7 @@ function App() {
             {/* Australian Senate */}
             <div
               onClick={() => { setAuChamber('Senate'); setAuPartyFilter('All'); setAuSearch(''); setView('au-parliament'); }}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in"
+              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
               style={{ animationDelay: '0.15s' }}
             >
               <div className="text-emerald-600 mb-3 sm:mb-4">
@@ -32468,7 +32556,7 @@ function App() {
             {/* Where the Money Goes */}
             <div
               onClick={() => { setFinancialDashTab('overview'); setView('money-australia'); }}
-              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-400 active:scale-95"
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-400 active:scale-95 mc"
             >
               <div className="text-amber-500 mb-3 sm:mb-4">
                 <PieChart className="w-10 h-10 sm:w-12 sm:h-12" />
@@ -32512,7 +32600,7 @@ function App() {
             {/* Government Departments */}
             <div
               onClick={() => setView('au-departments')}
-              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95"
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95 mc"
             >
               <div className="text-amber-700 mb-3 sm:mb-4">
                 <Building2 className="w-10 h-10 sm:w-12 sm:h-12" />
@@ -32547,7 +32635,7 @@ function App() {
             {/* Government Contracts */}
             <div
               onClick={() => setView('au-contracts')}
-              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-rose-500 active:scale-95"
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-rose-500 active:scale-95 mc"
             >
               <div className="text-rose-700 mb-3 sm:mb-4">
                 <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
@@ -32563,7 +32651,7 @@ function App() {
             {/* Analytics Dashboard */}
             <div
               onClick={() => setView('au-analytics')}
-              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-teal-500 active:scale-95"
+              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-teal-500 active:scale-95 mc"
             >
               <div className="text-teal-600 mb-3 sm:mb-4">
                 <BarChart3 className="w-10 h-10 sm:w-12 sm:h-12" />
