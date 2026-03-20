@@ -14885,7 +14885,8 @@ function App() {
                     </span>
                     <span className="text-sm text-gray-600 font-medium">Canada</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1 truncate">{carney.party} · Ottawa, ON · In office since Mar 14, 2025</p>
+                  <p className="text-sm text-gray-500 mt-1">{carney.party} · Ottawa, ON</p>
+                  <p className="text-sm text-gray-500">In office since Mar 14, 2025</p>
                   <div className="hidden md:grid md:grid-cols-2 gap-4 mt-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <span className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: partyColor }}></span>
@@ -15459,7 +15460,8 @@ function App() {
                     </span>
                     <span className="text-sm text-gray-600 font-medium">United States</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1 truncate">{trump.party} · Washington, D.C. · Jan 2025–present</p>
+                  <p className="text-sm text-gray-500 mt-1">{trump.party} · Washington, D.C.</p>
+                  <p className="text-sm text-gray-500">In office since Jan 20, 2025</p>
                   {/* Desktop-only detail grid */}
                   <div className="hidden md:grid md:grid-cols-2 gap-4 mt-4">
                     <div className="flex items-center gap-2 text-gray-600">
@@ -16116,7 +16118,8 @@ function App() {
                     </span>
                     <span className="text-sm text-gray-600 font-medium">🇬🇧 United Kingdom</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1 truncate">{starmer.party} · London · In office since 5 July 2024</p>
+                  <p className="text-sm text-gray-500 mt-1">{starmer.party} · London</p>
+                  <p className="text-sm text-gray-500">In office since 5 July 2024</p>
                   <div className="hidden md:grid md:grid-cols-2 gap-4 mt-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <span className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: partyColor }}></span>
@@ -25274,7 +25277,8 @@ function App() {
                     </span>
                     <span className="text-sm text-gray-600 font-medium">Australia</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1 truncate">{albanese.party} · Canberra, ACT · In office since May 23, 2022</p>
+                  <p className="text-sm text-gray-500 mt-1">{albanese.party} · Canberra, ACT</p>
+                  <p className="text-sm text-gray-500">In office since May 23, 2022</p>
                   <div className="hidden md:grid md:grid-cols-2 gap-4 mt-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <span className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: partyColor }}></span>
