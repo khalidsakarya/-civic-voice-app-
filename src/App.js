@@ -1632,6 +1632,9 @@ function App() {
   const [electionPollVotes, setElectionPollVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_election_poll') || '{}'); } catch (_) { return {}; }
   });
+  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
+  const [globalSearchHighlight, setGlobalSearchHighlight] = useState(0);
   const [foreignAidData, setForeignAidData] = useState([]);
   const [foreignAidLoading, setForeignAidLoading] = useState(false);
   const [foreignAidReactions, setForeignAidReactions] = useState(() => {
@@ -2075,6 +2078,20 @@ function App() {
     }
   ]);
   
+  // Global keyboard shortcut: Cmd/Ctrl+K to open search
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowGlobalSearch(s => !s);
+        setGlobalSearchQuery('');
+        setGlobalSearchHighlight(0);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   useEffect(() => {
     fetchMPs();
     fetchBills();
@@ -11084,9 +11101,9 @@ function App() {
                   'ca-cc2': { score: 6.8, plain: 'The Minister already got $95/day for meals. Charging $3,120 for drinks on top is double-dipping — rules say pick one.' },
                   'ca-cc3': { score: 8.1, plain: '$1,366/ticket for a basketball game described as "outreach." Real stakeholder meetings have agendas and outcomes — this had neither.' },
                   'ca-cc4': { score: 6.5, plain: 'Government gift rules cap spending at $75 per person. These gifts were 6× that limit with no ethics approval on file.' },
-                  'ca-cc5': { score: 5.9, plain: 'If you buy an economy ticket, the lounge costs extra — that's a personal upgrade billed to the public. 14 times in one quarter.' },
+                  'ca-cc5': { score: 5.9, plain: 'If you buy an economy ticket, the lounge costs extra — that\'s a personal upgrade billed to the public. 14 times in one quarter.' },
                   'ca-cc6': { score: 6.2, plain: 'Free official accommodation was empty and available. Choosing a Four Seasons instead and billing room service to taxpayers is hard to justify.' },
-                  'ca-cc7': { score: 7.4, plain: 'The Health Minister labelled $890 of alcohol as "office supplies." That's not a filing error — office supplies are pens and paper.' },
+                  'ca-cc7': { score: 7.4, plain: 'The Health Minister labelled $890 of alcohol as "office supplies." That\'s not a filing error — office supplies are pens and paper.' },
                   'ca-cc8': { score: 7.8, plain: 'Six circus tickets labelled as police outreach — no officers, no community groups confirmed. This is a night out, not government business.' },
                   'us-cc1': { score: 8.5, plain: '$1,127 per head for a team dinner while the Pentagon was cutting 5,400 civilian jobs. The optics alone make this indefensible.' },
                   'us-cc2': { score: 8.2, plain: 'Diplomatic gifts have strict protocols. Receipts show personal-use luxury items — not the crystal paperweights or flags that qualify.' },
@@ -13541,8 +13558,6 @@ function App() {
         { id: 'au-p5', text: '"We will make the NDIS sustainable for future generations."', date_promised: '2023', source: 'NDIS Review', category: 'Social Policy', status: 'In Progress', progress: 38, update: 'NDIS costs grew 14% in 2024–25 to $43.5B, exceeding targets. NDIS Review recommendations partially implemented. Growth rate slowing but not yet at the target 8% sustainably. Reforms ongoing through 2025–26.' },
       ],
     };
-
-  };
 
   const renderPromiseTrackerSection = (leaderName, toggleFn, expandedSections, accentColor) => {
     const liveData = promiseTrackerData[leaderName];
@@ -25936,6 +25951,300 @@ function App() {
     );
   };
 
+  const renderSearchOverlay = () => {
+    // Build search index from all available data
+    const q = globalSearchQuery.trim().toLowerCase();
+
+    const COURT_CASES_FALLBACK = [
+      { id: 'ca-1', country: '🇨🇦', flag: '🇨🇦', name: 'Reference re Supreme Court Act, ss. 5 and 6', type: 'Court Case', desc: 'Constitutional reference on Supreme Court of Canada appointments', nav: () => setView('supreme-court') },
+      { id: 'ca-2', country: '🇨🇦', flag: '🇨🇦', name: 'Hislop v Canada (Attorney General)', type: 'Court Case', desc: 'Same-sex survivor benefits and equality rights under the Charter', nav: () => setView('supreme-court') },
+      { id: 'ca-3', country: '🇨🇦', flag: '🇨🇦', name: 'Carter v Canada (Attorney General)', type: 'Court Case', desc: 'Right to physician-assisted death — landmark Charter ruling', nav: () => setView('supreme-court') },
+      { id: 'us-1', country: '🇺🇸', flag: '🇺🇸', name: 'Dobbs v. Jackson Women\'s Health Organization', type: 'Court Case', desc: 'Overturned Roe v. Wade — states may regulate abortion', nav: () => setView('us-supreme-court') },
+      { id: 'us-2', country: '🇺🇸', flag: '🇺🇸', name: 'Trump v. United States', type: 'Court Case', desc: 'Presidential immunity from criminal prosecution for official acts', nav: () => setView('us-supreme-court') },
+      { id: 'us-3', country: '🇺🇸', flag: '🇺🇸', name: 'Biden v. Nebraska', type: 'Court Case', desc: 'Student loan forgiveness program ruled to exceed executive authority', nav: () => setView('us-supreme-court') },
+      { id: 'uk-1', country: '🇬🇧', flag: '🇬🇧', name: 'R (Miller) v Secretary of State for Exiting the EU', type: 'Court Case', desc: 'Parliamentary approval required before triggering Article 50', nav: () => setView('uk-supreme-court') },
+      { id: 'uk-2', country: '🇬🇧', flag: '🇬🇧', name: 'Cherry/Miller No.2 — Prorogation Case', type: 'Court Case', desc: 'Supreme Court ruled prorogation of Parliament unlawful', nav: () => setView('uk-supreme-court') },
+      { id: 'au-1', country: '🇦🇺', flag: '🇦🇺', name: 'NZYQ v Minister for Immigration', type: 'Court Case', desc: 'High Court ruled indefinite immigration detention unlawful', nav: () => setView('au-high-court') },
+      { id: 'au-2', country: '🇦🇺', flag: '🇦🇺', name: 'Commonwealth v Tasmania (Tasmanian Dam Case)', type: 'Court Case', desc: 'Landmark environmental case on Commonwealth\'s treaty power', nav: () => setView('au-high-court') },
+    ];
+
+    const AUDIT_FALLBACK = [
+      { id: 'aud-ca-1', flag: '🇨🇦', name: 'CBSA Arrive Can App Audit', type: 'Audit Finding', desc: 'Auditor General found $54M app could have been built for $80K', nav: () => setView('money-canada') },
+      { id: 'aud-ca-2', flag: '🇨🇦', name: 'Canada Emergency Wage Subsidy Fraud', type: 'Audit Finding', desc: '$27.4B in payments — $4.6B flagged as potentially ineligible', nav: () => setView('money-canada') },
+      { id: 'aud-us-1', flag: '🇺🇸', name: 'DoD Financial Statement Audit Failure', type: 'Audit Finding', desc: 'Pentagon failed its 6th consecutive financial audit in 2024', nav: () => setView('money-usa') },
+      { id: 'aud-us-2', flag: '🇺🇸', name: 'COVID EIDL Loan Fraud', type: 'Audit Finding', desc: 'SBA issued $200B+ in potentially fraudulent pandemic loans', nav: () => setView('money-usa') },
+      { id: 'aud-uk-1', flag: '🇬🇧', name: 'HS2 Cost Overrun Investigation', type: 'Audit Finding', desc: 'Rail project costs ballooned from £33B to £106B+', nav: () => setView('money-uk') },
+      { id: 'aud-uk-2', flag: '🇬🇧', name: 'PPE Procurement Scandal', type: 'Audit Finding', desc: '£12B in PPE contracts — £4B of equipment deemed unusable', nav: () => setView('money-uk') },
+      { id: 'aud-au-1', flag: '🇦🇺', name: 'Robodebt Royal Commission', type: 'Audit Finding', desc: 'Unlawful debt scheme harmed 443K Australians — $1.8B repaid', nav: () => setView('money-australia') },
+      { id: 'aud-au-2', flag: '🇦🇺', name: 'National Disability Insurance Scheme Overpayments', type: 'Audit Finding', desc: 'ANAO identified $1.7B in potential overpayments and fraud', nav: () => setView('money-australia') },
+    ];
+
+    // Compile full index
+    const allItems = [];
+
+    // Politicians — Canadian MPs
+    (mps.length > 0 ? mps : []).forEach(mp => {
+      allItems.push({
+        id: `mp-${mp.name}`, category: 'Politicians', flag: '🇨🇦',
+        name: mp.name, type: 'Canadian MP',
+        desc: `${mp.constituency || mp.riding || 'Parliament Hill'} · ${mp.party || ''}`,
+        nav: () => { setSelectedMember(mp); setView('member-detail'); },
+      });
+    });
+
+    // Politicians — US Congress
+    congressMembers.forEach(m => {
+      allItems.push({
+        id: `us-${m.name}`, category: 'Politicians', flag: '🇺🇸',
+        name: m.name, type: m.district === 'Senator' ? 'US Senator' : 'US Representative',
+        desc: `${m.state} · ${m.party}`,
+        nav: () => { setSelectedMember(m); setShowMemberPanel(true); },
+      });
+    });
+
+    // Politicians — AU (static data)
+    [...AU_SENATORS_DATA, ...AU_REPS_DATA].forEach(m => {
+      allItems.push({
+        id: `au-${m.name}`, category: 'Politicians', flag: '🇦🇺',
+        name: m.name, type: m.role || 'AU Member of Parliament',
+        desc: `${m.state || ''}${m.electorate ? ' · ' + m.electorate : ''} · ${m.party || ''}`,
+        nav: () => setView('au-parliament'),
+      });
+    });
+
+    // Leaders
+    [
+      { name: 'Mark Carney', flag: '🇨🇦', type: 'Prime Minister', desc: '24th PM of Canada · Liberal Party', nav: () => setView('canada-pm-detail') },
+      { name: 'Donald Trump', flag: '🇺🇸', type: 'President', desc: '47th President of the United States · Republican', nav: () => setView('president-detail') },
+      { name: 'Keir Starmer', flag: '🇬🇧', type: 'Prime Minister', desc: 'PM of the United Kingdom · Labour', nav: () => setView('uk-pm-detail') },
+      { name: 'Anthony Albanese', flag: '🇦🇺', type: 'Prime Minister', desc: '31st PM of Australia · Labor', nav: () => setView('albanese-detail') },
+    ].forEach(l => allItems.push({ id: `leader-${l.name}`, category: 'Politicians', ...l }));
+
+    // Bills — Canada
+    (bills.length > 0 ? bills : caFirestoreBills).forEach(b => {
+      allItems.push({
+        id: `bill-ca-${b.id || b.billNumber}`, category: 'Bills', flag: '🇨🇦',
+        name: b.title || b.billNumber || 'Canadian Bill',
+        type: 'Canadian Bill',
+        desc: b.description || b.summary || b.status || '',
+        nav: () => { setSelectedBill(b); setView('bill-detail'); },
+      });
+    });
+
+    // Bills — US
+    (usBills.length > 0 ? usBills : usFirestoreBills).forEach(b => {
+      allItems.push({
+        id: `bill-us-${b.id || b.billNumber}`, category: 'Bills', flag: '🇺🇸',
+        name: b.title || b.billNumber || 'US Bill',
+        type: 'US Bill',
+        desc: b.description || b.summary || b.status || '',
+        nav: () => { setSelectedBill(b); setView('us-bill-detail'); },
+      });
+    });
+
+    // Bills — Australia
+    auBills.forEach(b => {
+      allItems.push({
+        id: `bill-au-${b.id || b.billNumber}`, category: 'Bills', flag: '🇦🇺',
+        name: b.title || b.billNumber || 'AU Bill',
+        type: 'AU Bill',
+        desc: b.description || b.summary || b.status || '',
+        nav: () => setView('au-legislative-hub'),
+      });
+    });
+
+    // Departments — Canada (ministries)
+    ministries.forEach(m => {
+      allItems.push({
+        id: `min-ca-${m.id}`, category: 'Departments', flag: '🇨🇦',
+        name: m.name, type: 'Canadian Ministry',
+        desc: `Minister: ${m.minister || 'N/A'} · Budget: ${m.budget || 'N/A'}`,
+        nav: () => { setSelectedMinistry(m); setView('ministry-detail'); },
+      });
+    });
+
+    // Departments — UK
+    ukDepartments.forEach(d => {
+      allItems.push({
+        id: `dep-uk-${d.id || d.name}`, category: 'Departments', flag: '🇬🇧',
+        name: d.name, type: 'UK Department',
+        desc: `Secretary: ${d.secretary || d.minister || 'N/A'} · Budget: ${d.budget || 'N/A'}`,
+        nav: () => { setSelectedUkDepartment(d); setView('uk-department-detail'); },
+      });
+    });
+
+    // Departments — Australia
+    auDepartments.forEach(d => {
+      allItems.push({
+        id: `dep-au-${d.id || d.name}`, category: 'Departments', flag: '🇦🇺',
+        name: d.name, type: 'AU Department',
+        desc: `Secretary: ${d.secretary || 'N/A'} · Budget: ${d.budget || 'N/A'}`,
+        nav: () => { setSelectedAuDepartment(d); setView('au-department-detail'); },
+      });
+    });
+
+    // Court Cases — from state + fallback
+    const caCases = canadaSupremeCourt?.cases || [];
+    const usCases = usSupremeCourt?.recentCases || usSupremeCourt?.cases || [];
+    const ukCases = ukSupremeCourt?.recentDecisions || ukSupremeCourt?.cases || [];
+
+    caCases.forEach(c => {
+      allItems.push({ id: `case-ca-${c.id||c.name}`, category: 'Court Cases', flag: '🇨🇦', name: c.name || c.title, type: 'CA Supreme Court', desc: c.summary || c.description || '', nav: () => { setSelectedCase(c); setView('case-detail'); } });
+    });
+    usCases.forEach(c => {
+      allItems.push({ id: `case-us-${c.id||c.name}`, category: 'Court Cases', flag: '🇺🇸', name: c.name || c.title, type: 'US Supreme Court', desc: c.summary || c.description || '', nav: () => setView('us-supreme-court') });
+    });
+    ukCases.forEach(c => {
+      allItems.push({ id: `case-uk-${c.id||c.name}`, category: 'Court Cases', flag: '🇬🇧', name: c.name || c.title, type: 'UK Supreme Court', desc: c.summary || c.description || '', nav: () => setView('uk-supreme-court') });
+    });
+
+    // Add fallbacks for any category with 0 results after filtering
+    COURT_CASES_FALLBACK.forEach(c => allItems.push({ ...c, category: 'Court Cases' }));
+    AUDIT_FALLBACK.forEach(a => allItems.push({ ...a, category: 'Audit Findings' }));
+
+    // Filter by query
+    const filtered = q.length < 2 ? [] : allItems.filter(item =>
+      (item.name || '').toLowerCase().includes(q) ||
+      (item.desc || '').toLowerCase().includes(q) ||
+      (item.type || '').toLowerCase().includes(q)
+    );
+
+    // Deduplicate by id
+    const seen = new Set();
+    const deduped = filtered.filter(item => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+
+    // Group by category
+    const CATEGORIES = ['Politicians', 'Bills', 'Departments', 'Court Cases', 'Audit Findings'];
+    const grouped = {};
+    CATEGORIES.forEach(cat => { grouped[cat] = deduped.filter(i => i.category === cat); });
+
+    // Flat list for keyboard nav
+    const flatList = CATEGORIES.flatMap(cat => grouped[cat]);
+
+    const handleResultClick = (item) => {
+      item.nav();
+      setShowGlobalSearch(false);
+      setGlobalSearchQuery('');
+      setGlobalSearchHighlight(0);
+    };
+
+    const typeBg = {
+      'Canadian MP': '#dc2626', 'US Senator': '#1d4ed8', 'US Representative': '#1d4ed8',
+      'AU Member of Parliament': '#d97706', 'Prime Minister': '#7c3aed', 'President': '#1d4ed8',
+      'UK MP': '#E4003B', 'Canadian Bill': '#059669', 'US Bill': '#1d4ed8',
+      'AU Bill': '#d97706', 'Canadian Ministry': '#dc2626', 'UK Department': '#E4003B',
+      'AU Department': '#d97706', 'CA Supreme Court': '#7c3aed', 'US Supreme Court': '#1d4ed8',
+      'UK Supreme Court': '#7c3aed', 'Court Case': '#7c3aed', 'Audit Finding': '#ef4444',
+    };
+
+    let flatIdx = 0;
+
+    return (
+      <div
+        className="fixed inset-0 z-[300] flex flex-col"
+        style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
+        onClick={e => { if (e.target === e.currentTarget) { setShowGlobalSearch(false); setGlobalSearchQuery(''); setGlobalSearchHighlight(0); } }}
+      >
+        <div className="w-full max-w-2xl mx-auto mt-16 px-4" onClick={e => e.stopPropagation()}>
+          {/* Search input */}
+          <div className="relative flex items-center">
+            <span className="absolute left-4 text-gray-400 text-xl">🔍</span>
+            <input
+              autoFocus
+              type="text"
+              value={globalSearchQuery}
+              onChange={e => { setGlobalSearchQuery(e.target.value); setGlobalSearchHighlight(0); }}
+              onKeyDown={e => {
+                if (e.key === 'Escape') { setShowGlobalSearch(false); setGlobalSearchQuery(''); setGlobalSearchHighlight(0); }
+                else if (e.key === 'ArrowDown') { setGlobalSearchHighlight(h => Math.min(h + 1, flatList.length - 1)); e.preventDefault(); }
+                else if (e.key === 'ArrowUp') { setGlobalSearchHighlight(h => Math.max(h - 1, 0)); e.preventDefault(); }
+                else if (e.key === 'Enter' && flatList.length > 0) { handleResultClick(flatList[globalSearchHighlight] || flatList[0]); }
+              }}
+              placeholder="Search politicians, bills, departments, court cases..."
+              className="w-full pl-12 pr-12 py-4 rounded-2xl text-lg font-medium outline-none"
+              style={{ background: 'rgba(255,255,255,0.97)', color: '#111', boxShadow: '0 8px 40px rgba(0,0,0,0.5)' }}
+            />
+            <button
+              onClick={() => { setShowGlobalSearch(false); setGlobalSearchQuery(''); setGlobalSearchHighlight(0); }}
+              className="absolute right-4 text-gray-400 hover:text-gray-600 text-xl font-bold"
+            >✕</button>
+          </div>
+
+          {/* Hints when empty */}
+          {q.length < 2 && (
+            <div className="mt-6 flex flex-wrap gap-2 justify-center">
+              {['Carney', 'Trump', 'Health Canada', 'Supreme Court', 'NHS', 'Albanese'].map(hint => (
+                <button key={hint} onClick={() => setGlobalSearchQuery(hint)}
+                  className="px-3 py-1.5 rounded-full text-sm font-medium text-white"
+                  style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)' }}>
+                  {hint}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Results */}
+          {q.length >= 2 && (
+            <div className="mt-4 rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.97)', boxShadow: '0 8px 40px rgba(0,0,0,0.5)', maxHeight: '60vh', overflowY: 'auto' }}>
+              {deduped.length === 0 ? (
+                <div className="px-6 py-10 text-center text-gray-400">
+                  <div className="text-4xl mb-3">🔍</div>
+                  <p className="font-semibold text-gray-600">No results for "{globalSearchQuery}"</p>
+                  <p className="text-sm mt-1">Try searching a politician name, department, or bill number</p>
+                </div>
+              ) : (
+                CATEGORIES.map(cat => {
+                  const items = grouped[cat];
+                  if (items.length === 0) return null;
+                  return (
+                    <div key={cat}>
+                      <div className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-gray-400 bg-gray-50 border-b border-gray-100">
+                        {cat} <span className="ml-1 text-gray-300">({items.length})</span>
+                      </div>
+                      {items.slice(0, 5).map(item => {
+                        const globalIdx = flatIdx++;
+                        const isHighlighted = globalIdx === globalSearchHighlight;
+                        const bgColor = typeBg[item.type] || '#6b7280';
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => handleResultClick(item)}
+                            onMouseEnter={() => setGlobalSearchHighlight(globalIdx)}
+                            className="w-full text-left flex items-center gap-3 px-4 py-3 border-b border-gray-50 transition-colors"
+                            style={{ background: isHighlighted ? 'rgba(99,102,241,0.08)' : 'white', borderLeft: isHighlighted ? '3px solid #6366f1' : '3px solid transparent' }}
+                          >
+                            <span className="text-xl flex-shrink-0">{item.flag}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-semibold text-gray-900 text-sm truncate">{item.name}</span>
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold text-white flex-shrink-0" style={{ background: bgColor }}>{item.type}</span>
+                              </div>
+                              <p className="text-xs text-gray-500 truncate mt-0.5">{item.desc}</p>
+                            </div>
+                            <span className="text-gray-300 flex-shrink-0">→</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })
+              )}
+              {deduped.length > 0 && (
+                <div className="px-4 py-2 text-xs text-gray-400 text-center bg-gray-50">
+                  {deduped.length} result{deduped.length !== 1 ? 's' : ''} · ↑↓ to navigate · Enter to select · Esc to close
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderTransparencyBanner = (countryCode) => {
     const FALLBACK = {
       CA: {
@@ -34773,6 +35082,21 @@ function App() {
 
       {/* Leader profile panel */}
       {showLeaderPanel && selectedLeader && renderLeaderPanel()}
+
+      {/* Global search button — always visible */}
+      <button
+        onClick={() => { setShowGlobalSearch(true); setGlobalSearchQuery(''); setGlobalSearchHighlight(0); }}
+        aria-label="Search"
+        className="fixed top-3 left-4 z-[52] flex items-center gap-2 px-3 py-2 bg-white rounded-full shadow-md border border-gray-200 hover:bg-gray-50 active:scale-95 transition-all"
+        style={{ position: 'fixed' }}
+      >
+        <span className="text-gray-500 text-sm">🔍</span>
+        <span className="text-gray-400 text-xs font-medium hidden sm:inline">Search everything...</span>
+        <span className="text-gray-300 text-[10px] hidden sm:inline border border-gray-200 rounded px-1">⌘K</span>
+      </button>
+
+      {/* Search overlay */}
+      {showGlobalSearch && renderSearchOverlay()}
 
       {/* Notification bell — only on home and top-level landing */}
       {(view === 'countries' || view === 'government-levels') && (
