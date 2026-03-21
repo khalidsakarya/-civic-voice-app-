@@ -2025,6 +2025,14 @@ function App() {
   const [ccReactions, setCcReactions] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_cc_reactions') || '{}'); } catch (_) { return {}; }
   });
+  // -- Analytics & Budget Firestore state
+  const [analyticsFirestoreData, setAnalyticsFirestoreData] = useState({});
+  const [budgetFirestoreData, setBudgetFirestoreData] = useState({});
+  const [analyticsLastUpdated, setAnalyticsLastUpdated] = useState({});
+  const [budgetLastUpdated, setBudgetLastUpdated] = useState({});
+  const [analyticsLoading, setAnalyticsLoading] = useState({});
+  const [budgetLoading, setBudgetLoading] = useState({});
+
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
   });
@@ -2570,6 +2578,19 @@ function App() {
     if (!selectedUkLord) return;
     logEvent('view_politician', { country: 'UK', itemId: selectedUkLord.name });
   }, [selectedUkLord]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // -- Auto-fetch analytics & budget data on page navigation
+  useEffect(() => {
+    const analyticsViews = { analytics: 'CA', 'us-analytics': 'US', 'uk-analytics': 'UK', 'au-analytics': 'AU' };
+    const budgetViews = { 'money-canada': 'CA', 'money-usa': 'US', 'money-uk': 'UK', 'money-australia': 'AU' };
+    if (analyticsViews[view]) {
+      const cc = analyticsViews[view];
+      fetchAnalyticsData(cc);
+      fetchBudgetData(cc);
+    } else if (budgetViews[view]) {
+      fetchBudgetData(budgetViews[view]);
+    }
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Analytics: search query (1-second debounce) ─────────────────────────────
   useEffect(() => {
@@ -6669,6 +6690,23 @@ function App() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Firestore Last Updated */}
+          {analyticsLoading['US'] ? (
+            <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-4">
+              <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+              Fetching latest data...
+            </div>
+          ) : analyticsLastUpdated['US'] ? (
+            <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-4">
+              <span>✓</span>
+              Last updated: {analyticsLastUpdated['US'].toLocaleString()}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4">
+              <span>📋</span>
+              Showing sample data
+            </div>
+          )}
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">📊 Federal Budget Overview (FY 2024)</h2>
             <p className="text-gray-600">Comprehensive analysis of the $6.5 trillion US federal budget</p>
@@ -16795,6 +16833,39 @@ function App() {
     }
   };
 
+  // -- Analytics & Budget Firestore fetch functions
+  const fetchAnalyticsData = async (country) => {
+    setAnalyticsLoading(prev => ({ ...prev, [country]: true }));
+    try {
+      const snap = await getDocs(query(collection(db, 'analytics_data'), where('country', '==', country)));
+      if (!snap.empty) {
+        const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setAnalyticsFirestoreData(prev => ({ ...prev, [country]: data }));
+        setAnalyticsLastUpdated(prev => ({ ...prev, [country]: new Date() }));
+      }
+    } catch (err) {
+      console.warn('[Analytics] Firestore fetch failed:', err.message);
+    } finally {
+      setAnalyticsLoading(prev => ({ ...prev, [country]: false }));
+    }
+  };
+
+  const fetchBudgetData = async (country) => {
+    setBudgetLoading(prev => ({ ...prev, [country]: true }));
+    try {
+      const snap = await getDocs(query(collection(db, 'budget_data'), where('country', '==', country)));
+      if (!snap.empty) {
+        const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setBudgetFirestoreData(prev => ({ ...prev, [country]: data }));
+        setBudgetLastUpdated(prev => ({ ...prev, [country]: new Date() }));
+      }
+    } catch (err) {
+      console.warn('[Budget] Firestore fetch failed:', err.message);
+    } finally {
+      setBudgetLoading(prev => ({ ...prev, [country]: false }));
+    }
+  };
+
   const mapFirestoreBillToUK = (fb) => ({
     id: fb.id || fb.sourceId,
     number: fb.sourceId || fb.id,
@@ -19452,6 +19523,23 @@ function App() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-6">
+          {/* Firestore Last Updated */}
+          {analyticsLoading['UK'] ? (
+            <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-4">
+              <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+              Fetching latest data...
+            </div>
+          ) : analyticsLastUpdated['UK'] ? (
+            <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-4">
+              <span>✓</span>
+              Last updated: {analyticsLastUpdated['UK'].toLocaleString()}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4">
+              <span>📋</span>
+              Showing sample data
+            </div>
+          )}
           {/* Banner */}
           <div className="rounded-xl p-5 sm:p-6 mb-6 border-2" style={{ background: `linear-gradient(to right, ${RED}08, ${NAVY}08)`, borderColor: NAVY }}>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">📊 UK Government Analytics</h2>
@@ -21778,6 +21866,27 @@ function App() {
             <p className={`text-gray-600 ${isWide ? 'text-lg lg:text-xl' : 'text-lg'}`}>{data.countryName} — Financial Transparency Dashboard</p>
             <p className={`text-gray-400 mt-1 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>Source: {data.source}</p>
           </div>
+
+          {/* Firestore Last Updated */}
+          {(() => {
+            const budgetCC = isUSA ? 'US' : isAustralia ? 'AU' : isUK ? 'UK' : 'CA';
+            return budgetLoading[budgetCC] ? (
+              <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-6">
+                <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                Fetching latest data...
+              </div>
+            ) : budgetLastUpdated[budgetCC] ? (
+              <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-6">
+                <span>✓</span>
+                Last updated: {budgetLastUpdated[budgetCC].toLocaleString()}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-6">
+                <span>📋</span>
+                Showing sample data
+              </div>
+            );
+          })()}
 
           {/* Tab navigation — desktop only (mobile uses accordion below) */}
           <div className="hidden lg:block w-full overflow-x-auto mb-8" style={{ WebkitOverflowScrolling: 'touch' }}>
@@ -29960,6 +30069,23 @@ function App() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-6">
+          {/* Firestore Last Updated */}
+          {analyticsLoading['CA'] ? (
+            <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-4">
+              <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+              Fetching latest data...
+            </div>
+          ) : analyticsLastUpdated['CA'] ? (
+            <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-4">
+              <span>✓</span>
+              Last updated: {analyticsLastUpdated['CA'].toLocaleString()}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4">
+              <span>📋</span>
+              Showing sample data
+            </div>
+          )}
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">📊 Canadian Government Analytics</h2>
             <p className="text-gray-600">Budget, policy impact & MP performance — {mps.length} Members of Parliament</p>
@@ -32170,6 +32296,23 @@ function App() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-6">
+          {/* Firestore Last Updated */}
+          {analyticsLoading['AU'] ? (
+            <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-4">
+              <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+              Fetching latest data...
+            </div>
+          ) : analyticsLastUpdated['AU'] ? (
+            <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-4">
+              <span>✓</span>
+              Last updated: {analyticsLastUpdated['AU'].toLocaleString()}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4">
+              <span>📋</span>
+              Showing sample data
+            </div>
+          )}
           <div className="rounded-lg p-6 mb-6 border" style={{ background: 'linear-gradient(to right, #f0fdf4, #ecfdf5)', borderColor: '#6ee7b7' }}>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">📊 Australian Government Analytics</h2>
             <p className="text-gray-600">Budget, economic trends & social indicators — Federal Government FY 2024–25</p>
