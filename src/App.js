@@ -6677,8 +6677,25 @@ function App() {
   const renderGovernmentStatsPage = (d) => {
     const spendingColors = ['bg-purple-500','bg-blue-500','bg-yellow-500','bg-red-500','bg-green-500','bg-orange-500','bg-gray-500','bg-teal-500','bg-pink-500','bg-indigo-500','bg-lime-500','bg-cyan-500','bg-rose-500','bg-amber-500','bg-sky-500'];
     const fsData = govStatsData[d.cc];
-    const isLive = !!fsData;
-    const data = isLive ? { ...d, ...fsData } : d;
+    // Only treat as live if fsData has at least one valid array field; otherwise fall back to hardcoded
+    const fsHasArrays = fsData && Array.isArray(fsData.revenue) && fsData.revenue.length > 0;
+    const isLive = fsHasArrays;
+    const rawData = isLive ? { ...d, ...fsData } : d;
+    // Defensive fallback: ensure every array field always has a valid array
+    const data = {
+      ...rawData,
+      revenue:             Array.isArray(rawData.revenue)             ? rawData.revenue             : d.revenue,
+      spending:            Array.isArray(rawData.spending)            ? rawData.spending            : d.spending,
+      deficitHistory:      Array.isArray(rawData.deficitHistory)      ? rawData.deficitHistory      : d.deficitHistory,
+      debtHistory:         Array.isArray(rawData.debtHistory)         ? rawData.debtHistory         : d.debtHistory,
+      unemploymentTrends:  Array.isArray(rawData.unemploymentTrends)  ? rawData.unemploymentTrends  : d.unemploymentTrends,
+      foreignAid:          Array.isArray(rawData.foreignAid)          ? rawData.foreignAid          : d.foreignAid,
+      foreignLoans:        Array.isArray(rawData.foreignLoans)        ? rawData.foreignLoans        : d.foreignLoans,
+      grantsByDepartment:  Array.isArray(rawData.grantsByDepartment)  ? rawData.grantsByDepartment  : d.grantsByDepartment,
+      departmentTrends:    Array.isArray(rawData.departmentTrends)    ? rawData.departmentTrends    : d.departmentTrends,
+      deptHeaders:         Array.isArray(rawData.deptHeaders)         ? rawData.deptHeaders         : d.deptHeaders,
+    };
+    console.log('[GovStats] render', d.cc, { isLive, fsData, revenue: data.revenue?.length });
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
