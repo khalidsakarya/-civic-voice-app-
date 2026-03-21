@@ -1201,6 +1201,7 @@ function App() {
   });
   const [expandedAlbaneseSections, setExpandedAlbaneseSections] = useState({
     activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false, expenses: false,
+    bio: false, policies: false, cabinet: false, advisors: false, contact: false, termInfo: false,
   });
   const [starmerVotes, setStarmerVotes] = useState(() => {
     const saved = localStorage.getItem('cvStarmerVote');
@@ -1208,6 +1209,7 @@ function App() {
   });
   const [expandedStarmerSections, setExpandedStarmerSections] = useState({
     activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false, expenses: false,
+    bio: false, policies: false, cabinet: false, advisors: false, contact: false, termInfo: false,
   });
   const [leaderLiveExpenses, setLeaderLiveExpenses] = useState({});
   const [leaderExpensesLoading, setLeaderExpensesLoading] = useState(false);
@@ -6012,6 +6014,11 @@ function App() {
     lobbying: false,
     keyDecisions: false,
     expenses: false,
+    bio: false,
+    policies: false,
+    cabinet: false,
+    advisors: false,
+    contact: false,
   });
 
   const togglePresidentSection = (section) => {
@@ -14859,23 +14866,23 @@ function App() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-4 md:py-8">
 
           {/* Profile card — Congress-panel style on mobile */}
           <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
             <div
               style={{ background: 'linear-gradient(135deg, #EF444418 0%, #EF444406 100%)', borderBottom: `3px solid ${partyColor}` }}
-              className="px-4 pt-4 pb-4 md:px-8 md:pt-8 md:pb-6"
+              className="px-3 pt-3 pb-3 md:px-8 md:pt-8 md:pb-6"
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3">
                 <div
                   style={{ backgroundColor: partyColor }}
-                  className="w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center text-white text-xl md:text-3xl font-bold flex-shrink-0 shadow-lg"
+                  className="w-12 h-12 md:w-24 md:h-24 rounded-full flex items-center justify-center text-white text-sm md:text-3xl font-bold flex-shrink-0 shadow-md"
                 >
                   MC
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-xl md:text-3xl font-bold text-gray-900 leading-tight">{carney.name}</h1>
+                  <h1 className="text-lg md:text-3xl font-bold text-gray-900 leading-tight">{carney.name}</h1>
                   <div className="flex flex-wrap items-center gap-2 mt-1.5">
                     <span
                       style={{ backgroundColor: partyColor }}
@@ -14949,36 +14956,10 @@ function App() {
             </div>
           </div>
 
-          {/* Contact */}
-          <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
-            <div onClick={() => toggleCarneySection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-              <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
-              <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.contact ? 'rotate-0' : '-rotate-90'}`} />
-            </div>
-            <div className={`px-6 pb-6 ${expandedCarneySections.contact ? '' : 'hidden sm:block'}`}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
-                  <a href={`mailto:${carney.email}`} className="text-red-600 hover:text-red-800 font-medium break-all">{carney.email}</a>
-                </div>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-2 font-medium">PMO Phone</p>
-                  <a href={`tel:${carney.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{carney.phone}</a>
-                </div>
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
-                  <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
-                  <p className="text-gray-700 text-sm">80 Wellington Street, Ottawa, Ontario K1A 0A2</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Single-column section layout */}
+          <div className="space-y-4">
 
-          {/* Two-column layout */}
-          <div className="md:grid md:grid-cols-2 md:gap-6">
-
-            {/* Left column */}
-            <div className="space-y-6">
-
+              {/* Biography */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div onClick={() => toggleCarneySection('bio')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
                   <h3 className="text-xl font-bold text-gray-800">📖 Biography</h3>
@@ -14989,152 +14970,148 @@ function App() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.policies ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedCarneySections.policies ? '' : 'hidden sm:block'}`}>
-                  <div className="flex flex-wrap gap-2">
-                    {carney.policies.map((policy, i) => (
-                      <span key={i} className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-sm font-medium px-3 py-1.5 rounded-full">
-                        <Scale className="w-3.5 h-3.5 flex-shrink-0" />
-                        {policy}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              {/* Controversies */}
+              {renderControversiesSection('Mark Carney', toggleCarneySection, expandedCarneySections, '#EF4444')}
 
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">🗓️ Term Information</h3>
-                <div className="grid grid-cols-3 gap-3 mb-3">
-                  <div className="bg-red-50 p-4 rounded-lg text-center">
-                    <p className="text-sm text-gray-600 mb-1">Current Term</p>
-                    <p className="text-2xl font-bold text-red-600">2025–</p>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
-                    <p className="text-sm text-gray-600 mb-1">Prior Role</p>
-                    <p className="text-lg font-bold text-blue-600">BoE Gov</p>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg text-center">
-                    <p className="text-sm text-gray-600 mb-1">PM #</p>
-                    <p className="text-3xl font-bold text-purple-600">24</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Born</p>
-                    <p className="font-semibold text-gray-800">{carney.born}, {carney.birthplace}</p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Education</p>
-                    <p className="font-semibold text-gray-800">{carney.education}</p>
-                  </div>
-                </div>
-              </div>
+              {/* Promise Tracker */}
+              {renderPromiseTrackerSection('Mark Carney', toggleCarneySection, expandedCarneySections, '#EF4444')}
 
-              {/* Key Cabinet Ministers */}
+              {/* Expenses */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('cabinet')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🏛️ Cabinet Members</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.cabinet ? 'rotate-0' : '-rotate-90'}`} />
+                <div onClick={() => toggleCarneySection('expenses')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🧾 Expenses</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.expenses ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                <div className={`px-6 pb-6 ${expandedCarneySections.cabinet ? '' : 'hidden sm:block'}`}>
-                  <div className="space-y-2">
-                    {carney.cabinet.map((c, i) => (
-                      <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                        <h4 className="font-bold text-gray-800">{c.name}</h4>
-                        <p className="text-sm text-red-600 font-medium">{c.role}</p>
+                <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.expenses ? '' : 'hidden sm:block'}`}>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-orange-50 p-3 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Travel (2025)</p>
+                      <p className="font-bold text-orange-700 text-sm">{carney.expenses.totalTravel}</p>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Entertainment</p>
+                      <p className="font-bold text-blue-700 text-sm">{carney.expenses.totalEntertainment}</p>
+                    </div>
+                    <div className="bg-red-50 p-3 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
+                      <p className="font-bold text-red-700 text-sm">{carney.expenses.flaggedCount}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
+                    <div className="space-y-2">
+                      {carney.expenses.travel.map((item, i) => (
+                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                          </div>
+                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
+                    <div className="space-y-2">
+                      {carney.expenses.entertainment.map((item, i) => (
+                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                          </div>
+                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('CA'); }}
+                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
+                      >
+                        {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
+                      </button>
+                    </div>
+                    {leaderLiveExpenses['CA'] && leaderLiveExpenses['CA'].length > 0 ? (
+                      <div className="space-y-2">
+                        {leaderLiveExpenses['CA'].map((item, i) => (
+                          <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-gray-800">{item.title}</p>
+                                <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
+                                <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
+                              </div>
+                              <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    ) : (
+                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Senior Advisors */}
+              {/* Lobbying Activity */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('advisors')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🌟 Senior Advisors</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.advisors ? 'rotate-0' : '-rotate-90'}`} />
+                <div onClick={() => toggleCarneySection('lobbying')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                <div className={`px-6 pb-6 ${expandedCarneySections.advisors ? '' : 'hidden sm:block'}`}>
-                  <div className="space-y-2">
-                    {carney.seniorAdvisors.map((advisor) => (
-                      <div key={advisor.name} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                        <h4 className="font-bold text-gray-800">{advisor.name}</h4>
-                        <p className="text-sm text-red-600 font-medium mb-1">{advisor.title}</p>
-                        <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Right column — collapsible sections */}
-            <div className="space-y-6 mt-6 md:mt-0">
-
-              {/* Recent Activity */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('activity')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">📊 Recent Activity</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.activity ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.activity ? '' : 'hidden sm:block'}`}>
-                  {carney.recentActivity.map((item, i) => (
-                    <div key={i} className="border rounded-lg p-4 bg-red-50 border-red-200">
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-200 text-red-800">{item.type}</span>
-                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{item.date}</span>
+                <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.lobbying ? '' : 'hidden sm:block'}`}>
+                  {carney.lobbying.map((org, i) => (
+                    <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h4 className="font-bold text-gray-800 text-sm">{org.name}</h4>
+                          <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
+                          <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
                         </div>
                       </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
-                      <p className="text-sm text-gray-600">{item.description}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Key Government Priorities */}
+              {/* Corporate Affiliations */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('keyDecisions')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
+                <div onClick={() => toggleCarneySection('stockTrades')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🏢 Corporate Affiliations</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                <div className={`px-6 pb-6 space-y-2 ${expandedCarneySections.keyDecisions ? '' : 'hidden sm:block'}`}>
-                  {carney.executiveActions.map((action, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <span className="text-sm text-gray-700 font-medium">{action}</span>
+                <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.stockTrades ? '' : 'hidden sm:block'}`}>
+                  {carney.stockTrades.filter(t => t.conflict).length > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                      <p className="text-sm font-semibold text-red-700">⚠️ {carney.stockTrades.filter(t => t.conflict).length} potential conflict(s) flagged</p>
+                    </div>
+                  )}
+                  {carney.stockTrades.map((trade, i) => (
+                    <div key={i} className={`border rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div>
+                          <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
+                          <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
+                        </div>
+                        <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
+                        <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
+                      </div>
+                      {trade.conflict && <p className="text-xs text-red-600 mt-1.5 font-medium">⚠️ {trade.conflictReason}</p>}
                     </div>
                   ))}
-                </div>
-              </div>
-
-              {/* Attendance Record */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('attendance')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">📈 Attendance Record</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.attendance ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedCarneySections.attendance ? '' : 'hidden sm:block'}`}>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-red-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
-                      <p className="text-3xl font-bold text-red-600">{carney.attendance.percentage}%</p>
-                    </div>
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
-                      <p className="text-3xl font-bold text-green-600">{carney.attendance.sessionsAttended}/{carney.attendance.totalSessions}</p>
-                    </div>
-                    <div className="bg-purple-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">National Ranking</p>
-                      <p className="text-3xl font-bold text-purple-600">#1</p>
-                    </div>
-                  </div>
+                  <p className="text-xs text-gray-400 mt-2">Disclosures filed with the Conflict of Interest and Ethics Commissioner upon taking office.</p>
                 </div>
               </div>
 
@@ -15177,151 +15154,181 @@ function App() {
                 </div>
               </div>
 
-              {/* Corporate Affiliations / Asset Disclosures */}
+              {/* Attendance Record */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('stockTrades')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🏢 Corporate Affiliations</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
+                <div onClick={() => toggleCarneySection('attendance')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📈 Attendance Record</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.attendance ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.stockTrades ? '' : 'hidden sm:block'}`}>
-                  {carney.stockTrades.filter(t => t.conflict).length > 0 && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                      <p className="text-sm font-semibold text-red-700">⚠️ {carney.stockTrades.filter(t => t.conflict).length} potential conflict(s) flagged</p>
+                <div className={`px-6 pb-6 ${expandedCarneySections.attendance ? '' : 'hidden sm:block'}`}>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-red-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
+                      <p className="text-3xl font-bold text-red-600">{carney.attendance.percentage}%</p>
                     </div>
-                  )}
-                  {carney.stockTrades.map((trade, i) => (
-                    <div key={i} className={`border rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <div>
-                          <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
-                          <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
-                        </div>
-                        <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 mt-1">
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
-                        <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
-                      </div>
-                      {trade.conflict && <p className="text-xs text-red-600 mt-1.5 font-medium">⚠️ {trade.conflictReason}</p>}
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
+                      <p className="text-3xl font-bold text-green-600">{carney.attendance.sessionsAttended}/{carney.attendance.totalSessions}</p>
                     </div>
-                  ))}
-                  <p className="text-xs text-gray-400 mt-2">Disclosures filed with the Conflict of Interest and Ethics Commissioner upon taking office.</p>
-                </div>
-              </div>
-
-              {/* Lobbying Activity */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('lobbying')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.lobbying ? '' : 'hidden sm:block'}`}>
-                  {carney.lobbying.map((org, i) => (
-                    <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h4 className="font-bold text-gray-800 text-sm">{org.name}</h4>
-                          <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
-                          <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Expenses */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('expenses')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🧾 Expenses</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.expenses ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                {true && (
-                  <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.expenses ? '' : 'hidden sm:block'}`}>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="bg-orange-50 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">Travel (2025)</p>
-                        <p className="font-bold text-orange-700 text-sm">{carney.expenses.totalTravel}</p>
-                      </div>
-                      <div className="bg-blue-50 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">Entertainment</p>
-                        <p className="font-bold text-blue-700 text-sm">{carney.expenses.totalEntertainment}</p>
-                      </div>
-                      <div className="bg-red-50 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
-                        <p className="font-bold text-red-700 text-sm">{carney.expenses.flaggedCount}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
-                      <div className="space-y-2">
-                        {carney.expenses.travel.map((item, i) => (
-                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                            </div>
-                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
-                      <div className="space-y-2">
-                        {carney.expenses.entertainment.map((item, i) => (
-                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                            </div>
-                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('CA'); }}
-                          className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
-                        >
-                          {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
-                        </button>
-                      </div>
-                      {leaderLiveExpenses['CA'] && leaderLiveExpenses['CA'].length > 0 ? (
-                        <div className="space-y-2">
-                          {leaderLiveExpenses['CA'].map((item, i) => (
-                            <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                  <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
-                                  <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
-                                </div>
-                                <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
-                      )}
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">National Ranking</p>
+                      <p className="text-3xl font-bold text-purple-600">#1</p>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
 
-            </div>
+              {/* Cabinet Members */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('cabinet')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🏛️ Cabinet Members</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.cabinet ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedCarneySections.cabinet ? '' : 'hidden sm:block'}`}>
+                  <div className="space-y-2">
+                    {carney.cabinet.map((c, i) => (
+                      <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                        <h4 className="font-bold text-gray-800">{c.name}</h4>
+                        <p className="text-sm text-red-600 font-medium">{c.role}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.contact ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedCarneySections.contact ? '' : 'hidden sm:block'}`}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
+                      <a href={`mailto:${carney.email}`} className="text-red-600 hover:text-red-800 font-medium break-all">{carney.email}</a>
+                    </div>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-2 font-medium">PMO Phone</p>
+                      <a href={`tel:${carney.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{carney.phone}</a>
+                    </div>
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
+                      <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
+                      <p className="text-gray-700 text-sm">80 Wellington Street, Ottawa, Ontario K1A 0A2</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Key Policy Areas */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.policies ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedCarneySections.policies ? '' : 'hidden sm:block'}`}>
+                  <div className="flex flex-wrap gap-2">
+                    {carney.policies.map((policy, i) => (
+                      <span key={i} className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                        <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                        {policy}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Term Information */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
+                </div>
+                <div className="px-6 pb-6">
+                  <div className="grid grid-cols-3 gap-3 mb-3">
+                    <div className="bg-red-50 p-4 rounded-lg text-center">
+                      <p className="text-sm text-gray-600 mb-1">Current Term</p>
+                      <p className="text-2xl font-bold text-red-600">2025–</p>
+                    </div>
+                    <div className="bg-blue-50 p-4 rounded-lg text-center">
+                      <p className="text-sm text-gray-600 mb-1">Prior Role</p>
+                      <p className="text-lg font-bold text-blue-600">BoE Gov</p>
+                    </div>
+                    <div className="bg-purple-50 p-4 rounded-lg text-center">
+                      <p className="text-sm text-gray-600 mb-1">PM #</p>
+                      <p className="text-3xl font-bold text-purple-600">24</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Born</p>
+                      <p className="font-semibold text-gray-800">{carney.born}, {carney.birthplace}</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Education</p>
+                      <p className="font-semibold text-gray-800">{carney.education}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Activity */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('activity')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📊 Recent Activity</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.activity ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.activity ? '' : 'hidden sm:block'}`}>
+                  {carney.recentActivity.map((item, i) => (
+                    <div key={i} className="border rounded-lg p-4 bg-red-50 border-red-200">
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-200 text-red-800">{item.type}</span>
+                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span>{item.date}</span>
+                        </div>
+                      </div>
+                      <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                      <p className="text-sm text-gray-600">{item.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Senior Advisors */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('advisors')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🌟 Senior Advisors</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.advisors ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedCarneySections.advisors ? '' : 'hidden sm:block'}`}>
+                  <div className="space-y-2">
+                    {carney.seniorAdvisors.map((advisor) => (
+                      <div key={advisor.name} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                        <h4 className="font-bold text-gray-800">{advisor.name}</h4>
+                        <p className="text-sm text-red-600 font-medium mb-1">{advisor.title}</p>
+                        <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Key Government Priorities */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => toggleCarneySection('keyDecisions')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 space-y-2 ${expandedCarneySections.keyDecisions ? '' : 'hidden sm:block'}`}>
+                  {carney.executiveActions.map((action, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <span className="text-sm text-gray-700 font-medium">{action}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
           </div>
-          {renderPromiseTrackerSection('Mark Carney', toggleCarneySection, expandedCarneySections, '#EF4444')}
-          {renderControversiesSection('Mark Carney', toggleCarneySection, expandedCarneySections, '#EF4444')}
         </div>
       </div>
     );
@@ -15433,24 +15440,24 @@ function App() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-4 md:py-8">
 
           {/* Profile card */}
           <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
             {/* Header — Congress-panel style on mobile, expands on desktop */}
             <div
               style={{ background: 'linear-gradient(135deg, #ef444418 0%, #ef444406 100%)', borderBottom: '3px solid #ef4444' }}
-              className="px-4 pt-4 pb-4 md:px-8 md:pt-8 md:pb-6"
+              className="px-3 pt-3 pb-3 md:px-8 md:pt-8 md:pb-6"
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3">
                 <div
                   style={{ backgroundColor: '#ef4444' }}
-                  className="w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center text-white text-xl md:text-3xl font-bold flex-shrink-0 shadow-lg"
+                  className="w-12 h-12 md:w-24 md:h-24 rounded-full flex items-center justify-center text-white text-sm md:text-3xl font-bold flex-shrink-0 shadow-md"
                 >
                   DT
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-xl md:text-3xl font-bold text-gray-900 leading-tight">{trump.name}</h1>
+                  <h1 className="text-lg md:text-3xl font-bold text-gray-900 leading-tight">{trump.name}</h1>
                   <div className="flex flex-wrap items-center gap-2 mt-1.5">
                     <span
                       style={{ backgroundColor: '#ef4444' }}
@@ -15528,449 +15535,390 @@ function App() {
             </div>
           </div>
 
-          {/* Contact */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">📧 Contact Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
-                <a href={`mailto:${trump.email}`} className="text-blue-600 hover:text-blue-800 font-medium break-all">{trump.email}</a>
-              </div>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">White House Phone</p>
-                <a href={`tel:${trump.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{trump.phone}</a>
-              </div>
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
-                <p className="text-gray-700 text-sm">1600 Pennsylvania Avenue NW, Washington, D.C. 20500</p>
-              </div>
-            </div>
-          </div>
+          {/* Single-column section layout */}
+          <div className="space-y-4">
 
-          {/* Two-column on desktop, single column on mobile */}
-          <div className="md:grid md:grid-cols-2 md:gap-6">
-
-            {/* Left column: bio, policies, term, cabinet */}
-            <div className="space-y-6">
-
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">📖 Biography</h3>
-                <p className="text-gray-700 leading-relaxed">{trump.bio}</p>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">📋 Key Policy Areas</h3>
-                <div className="flex flex-wrap gap-2">
-                  {trump.policies.map((policy, i) => (
-                    <span key={i} className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full">
-                      <Scale className="w-3.5 h-3.5 flex-shrink-0" />
-                      {policy}
-                    </span>
-                  ))}
+              {/* Biography */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => togglePresidentSection('bio')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📖 Biography</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.bio ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedPresidentSections.bio ? '' : 'hidden sm:block'}`}>
+                  <p className="text-gray-700 leading-relaxed">{trump.bio}</p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">🗓️ Term Information</h3>
-                <div className="grid grid-cols-3 gap-3 mb-3">
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
-                    <p className="text-sm text-gray-600 mb-1">Current Term</p>
-                    <p className="text-2xl font-bold text-blue-600">2025–</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg text-center">
-                    <p className="text-sm text-gray-600 mb-1">Prior Term</p>
-                    <p className="text-2xl font-bold text-green-600">2017–21</p>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg text-center">
-                    <p className="text-sm text-gray-600 mb-1">President #</p>
-                    <p className="text-3xl font-bold text-purple-600">47</p>
-                  </div>
+              {/* Controversies */}
+              {renderControversiesSection('Donald Trump', togglePresidentSection, expandedPresidentSections, '#1d4ed8')}
+
+              {/* Promise Tracker */}
+              {renderPromiseTrackerSection('Donald Trump', togglePresidentSection, expandedPresidentSections, '#1d4ed8')}
+
+              {/* Expenses */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => togglePresidentSection('expenses')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🧾 Expenses</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.expenses ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Born</p>
-                    <p className="font-semibold text-gray-800">{trump.born}, {trump.birthplace}</p>
+                <div className={`px-6 pb-6 space-y-4 ${expandedPresidentSections.expenses ? '' : 'hidden sm:block'}`}>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-orange-50 p-3 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Travel (2025)</p>
+                      <p className="font-bold text-orange-700 text-sm">{trump.expenses.totalTravel}</p>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Entertainment</p>
+                      <p className="font-bold text-blue-700 text-sm">{trump.expenses.totalEntertainment}</p>
+                    </div>
+                    <div className="bg-red-50 p-3 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
+                      <p className="font-bold text-red-700 text-sm">{trump.expenses.flaggedCount}</p>
+                    </div>
                   </div>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Education</p>
-                    <p className="font-semibold text-gray-800">{trump.education}</p>
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
+                    <div className="space-y-2">
+                      {trump.expenses.travel.map((item, i) => (
+                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                          </div>
+                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
+                    <div className="space-y-2">
+                      {trump.expenses.entertainment.map((item, i) => (
+                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                          </div>
+                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('US'); }}
+                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
+                      >
+                        {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
+                      </button>
+                    </div>
+                    {leaderLiveExpenses['US'] && leaderLiveExpenses['US'].length > 0 ? (
+                      <div className="space-y-2">
+                        {leaderLiveExpenses['US'].map((item, i) => (
+                          <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-gray-800">{item.title}</p>
+                                <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
+                                <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
+                              </div>
+                              <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">🏛️ Key Cabinet Members</h3>
-                <div className="space-y-2">
-                  {trump.cabinet.map((c, i) => (
-                    <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                      <h4 className="font-bold text-gray-800">{c.name}</h4>
-                      <p className="text-sm text-indigo-600 font-medium">{c.role}</p>
+              {/* Lobbying Activity */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => togglePresidentSection('lobbying')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 space-y-4 ${expandedPresidentSections.lobbying ? '' : 'hidden sm:block'}`}>
+                  {trump.lobbying.organizations.map((org, idx) => (
+                    <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="font-bold text-gray-800">{org.name}</h3>
+                          <p className="text-sm text-gray-600">{org.sector}</p>
+                        </div>
+                        <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
+                          {org.value > 0 ? `$${(org.value / 1000000).toFixed(1)}M` : 'Public Record'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <span>📅 {org.meetings} meetings</span>
+                        <span>🗓️ Last: {org.lastMeeting}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">🌟 Senior Advisors</h3>
-                <div className="space-y-2">
-                  {[
-                    { name: 'JD Vance', title: 'Vice President', bio: 'Former U.S. Senator from Ohio and the 50th Vice President of the United States, serving as the President\'s second-in-command and a leading voice of the MAGA movement.' },
-                    { name: 'Susie Wiles', title: 'Chief of Staff', bio: 'The first woman to serve as White House Chief of Staff, overseeing day-to-day operations of the administration and managing the President\'s agenda.' },
-                    { name: 'Marco Rubio', title: 'Secretary of State', bio: 'Former U.S. Senator from Florida leading U.S. foreign policy, diplomacy, and international relations across the globe.' },
-                    { name: 'Pete Hegseth', title: 'Secretary of Defense', bio: 'Former Fox News host and Army National Guard veteran overseeing the U.S. military and Department of Defense.' },
-                    { name: 'Russell Vought', title: 'OMB Director', bio: 'Director of the Office of Management and Budget, overseeing the federal budget process, government spending, and regulatory review.' },
-                    { name: 'Stephen Miller', title: 'Deputy Chief of Staff for Policy', bio: 'Chief architect of the administration\'s immigration and domestic policy agenda, with extensive influence over executive orders and regulatory priorities.' },
-                    { name: 'Elon Musk', title: 'DOGE — Department of Government Efficiency', bio: 'Leading the Department of Government Efficiency initiative, spearheading a sweeping effort to cut federal spending and reduce the size of the federal bureaucracy.' },
-                    { name: 'Steve Bannon', title: 'Senior Advisor', bio: 'Former White House Chief Strategist and longtime political ally of the President, advising on populist economic and political strategy.' },
-                  ].map((advisor) => (
-                    <div key={advisor.name} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                      <h4 className="font-bold text-gray-800">{advisor.name}</h4>
-                      <p className="text-sm text-indigo-600 font-medium mb-1">{advisor.title}</p>
-                      <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>
-                    </div>
-                  ))}
+              {/* Financial Holdings & Conflicts */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => togglePresidentSection('stockTrades')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📈 Financial Holdings &amp; Conflicts</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-              </div>
-
-            </div>
-
-            {/* Right column: collapsible sections */}
-            <div className="space-y-6 mt-6 md:mt-0">
-
-              {/* Recent Activity */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => togglePresidentSection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <FileText className="w-6 h-6 text-blue-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
-                      <p className="text-sm text-gray-600">{trump.recentActivity.length} recent actions</p>
+                <div className={`px-6 pb-6 ${expandedPresidentSections.stockTrades ? '' : 'hidden sm:block'}`}>
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                      <p className="text-sm text-gray-600 mb-1">Total Interests</p>
+                      <p className="text-3xl font-bold text-blue-600">{trump.stockTrades.length}</p>
+                    </div>
+                    <div className="bg-red-50 p-4 rounded-lg border-2 border-red-300">
+                      <p className="text-sm text-gray-600 mb-1">Conflicts</p>
+                      <p className="text-3xl font-bold text-red-600">{trump.stockTrades.filter(t => t.conflict).length}</p>
                     </div>
                   </div>
-                  {expandedPresidentSections.activity ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedPresidentSections.activity && (
-                  <div className="px-6 pb-6 space-y-4">
-                    {trump.recentActivity.map((item, i) => (
-                      <div key={i} className={`border rounded-lg p-4 ${item.type === 'Executive Order' ? 'bg-red-50 border-red-200' : item.type === 'Trade Action' ? 'bg-orange-50 border-orange-200' : 'bg-blue-50 border-blue-200'}`}>
-                        <div className="flex items-start justify-between mb-2">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${item.type === 'Executive Order' ? 'bg-red-200 text-red-800' : item.type === 'Trade Action' ? 'bg-orange-200 text-orange-800' : 'bg-blue-200 text-blue-800'}`}>{item.type}</span>
-                          <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                            <Calendar className="w-3.5 h-3.5" />
-                            <span>{item.date}</span>
+                  <div className="bg-red-50 border-2 border-red-400 rounded-lg p-4 mb-6">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <h3 className="text-lg font-bold text-red-800 mb-2">⚠️ Potential Conflicts of Interest</h3>
+                        <p className="text-red-700 text-sm">Multiple financial holdings may conflict with presidential duties. These interests were not placed in a blind trust as recommended by ethics watchdogs.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    {trump.stockTrades.map((trade, i) => (
+                      <div key={i} className={`border-2 rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-400' : 'bg-gray-50 border-gray-200'}`}>
+                        {trade.conflict && (
+                          <div className="mb-3">
+                            <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold">🚨 POTENTIAL CONFLICT</span>
+                          </div>
+                        )}
+                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-lg font-bold text-gray-800">{trade.company}</h3>
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-mono">{trade.ticker}</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">{trade.type}</span>
+                              <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">{trade.assetType}</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xl font-bold text-green-600">{trade.valueRange}</p>
+                            <p className="text-sm text-gray-500 mt-1">{trade.date}</p>
                           </div>
                         </div>
-                        <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
-                        <p className="text-sm text-gray-600">{item.description}</p>
+                        {trade.conflict && trade.conflictReason && (
+                          <div className="bg-red-100 border-l-4 border-red-600 p-3 rounded">
+                            <p className="text-sm font-semibold text-red-800 mb-1">Why this is flagged:</p>
+                            <p className="text-sm text-red-700">{trade.conflictReason}</p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
-                )}
+                </div>
+              </div>
+
+              {/* Financial Disclosures */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => togglePresidentSection('financial')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.financial ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedPresidentSections.financial ? '' : 'hidden sm:block'}`}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Elected ({trump.financialDisclosure.electedYear})</p>
+                      <p className="text-2xl font-bold text-blue-600">{trump.financialDisclosure.worthWhenElected}</p>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Current Net Worth</p>
+                      <p className="text-2xl font-bold text-green-600">{trump.financialDisclosure.currentWorth}</p>
+                    </div>
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Wealth Increase</p>
+                      <p className="text-2xl font-bold text-purple-600">+{trump.financialDisclosure.percentageIncrease}%</p>
+                    </div>
+                    <div className="bg-orange-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Annual Salary</p>
+                      <p className="text-2xl font-bold text-orange-600">{trump.financialDisclosure.annualSalary}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="font-semibold text-gray-700 mb-2">Asset Breakdown:</p>
+                    {trump.financialDisclosure.assets.map((asset, idx) => (
+                      <div key={idx} className="flex justify-between p-3 bg-gray-50 rounded">
+                        <span className="text-gray-700">{asset.type}</span>
+                        <span className="font-semibold text-gray-900">{asset.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Attendance Record */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => togglePresidentSection('attendance')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📈 Attendance Record</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.attendance ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedPresidentSections.attendance ? '' : 'hidden sm:block'}`}>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Briefing Rate</p>
+                      <p className="text-3xl font-bold text-blue-600">{trump.attendance.percentage}%</p>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Briefings Attended</p>
+                      <p className="text-3xl font-bold text-green-600">{trump.attendance.briefingsAttended}/{trump.attendance.totalBriefings}</p>
+                    </div>
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">National Ranking</p>
+                      <p className="text-3xl font-bold text-purple-600">#1</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cabinet Members */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => togglePresidentSection('cabinet')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🏛️ Cabinet Members</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.cabinet ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedPresidentSections.cabinet ? '' : 'hidden sm:block'}`}>
+                  <div className="space-y-2">
+                    {trump.cabinet.map((c, i) => (
+                      <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                        <h4 className="font-bold text-gray-800">{c.name}</h4>
+                        <p className="text-sm text-indigo-600 font-medium">{c.role}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => togglePresidentSection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.contact ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedPresidentSections.contact ? '' : 'hidden sm:block'}`}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
+                      <a href={`mailto:${trump.email}`} className="text-blue-600 hover:text-blue-800 font-medium break-all">{trump.email}</a>
+                    </div>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-2 font-medium">White House Phone</p>
+                      <a href={`tel:${trump.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{trump.phone}</a>
+                    </div>
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
+                      <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
+                      <p className="text-gray-700 text-sm">1600 Pennsylvania Avenue NW, Washington, D.C. 20500</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Key Policy Areas */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => togglePresidentSection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.policies ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 ${expandedPresidentSections.policies ? '' : 'hidden sm:block'}`}>
+                  <div className="flex flex-wrap gap-2">
+                    {trump.policies.map((policy, i) => (
+                      <span key={i} className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                        <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                        {policy}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Term Information */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
+                </div>
+                <div className="px-6 pb-6">
+                  <div className="grid grid-cols-3 gap-3 mb-3">
+                    <div className="bg-blue-50 p-4 rounded-lg text-center">
+                      <p className="text-sm text-gray-600 mb-1">Current Term</p>
+                      <p className="text-2xl font-bold text-blue-600">2025–</p>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg text-center">
+                      <p className="text-sm text-gray-600 mb-1">Prior Term</p>
+                      <p className="text-2xl font-bold text-green-600">2017–21</p>
+                    </div>
+                    <div className="bg-purple-50 p-4 rounded-lg text-center">
+                      <p className="text-sm text-gray-600 mb-1">President #</p>
+                      <p className="text-3xl font-bold text-purple-600">47</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Born</p>
+                      <p className="font-semibold text-gray-800">{trump.born}, {trump.birthplace}</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Education</p>
+                      <p className="font-semibold text-gray-800">{trump.education}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Activity */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => togglePresidentSection('activity')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">📊 Recent Activity</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.activity ? 'rotate-0' : '-rotate-90'}`} />
+                </div>
+                <div className={`px-6 pb-6 space-y-4 ${expandedPresidentSections.activity ? '' : 'hidden sm:block'}`}>
+                  {trump.recentActivity.map((item, i) => (
+                    <div key={i} className={`border rounded-lg p-4 ${item.type === 'Executive Order' ? 'bg-red-50 border-red-200' : item.type === 'Trade Action' ? 'bg-orange-50 border-orange-200' : 'bg-blue-50 border-blue-200'}`}>
+                      <div className="flex items-start justify-between mb-2">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${item.type === 'Executive Order' ? 'bg-red-200 text-red-800' : item.type === 'Trade Action' ? 'bg-orange-200 text-orange-800' : 'bg-blue-200 text-blue-800'}`}>{item.type}</span>
+                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span>{item.date}</span>
+                        </div>
+                      </div>
+                      <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                      <p className="text-sm text-gray-600">{item.description}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Key Executive Actions */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => togglePresidentSection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Scale className="w-6 h-6 text-blue-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">⚖️ Key Executive Actions</h2>
-                      <p className="text-sm text-gray-600">{trump.executiveActions.length} key actions in 2025</p>
-                    </div>
-                  </div>
-                  {expandedPresidentSections.keyDecisions ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div onClick={() => togglePresidentSection('keyDecisions')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                  <h3 className="text-xl font-bold text-gray-800">⚖️ Key Executive Actions</h3>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                {expandedPresidentSections.keyDecisions && (
-                  <div className="px-6 pb-6 space-y-2">
+                <div className={`px-6 pb-6 space-y-2 ${expandedPresidentSections.keyDecisions ? '' : 'hidden sm:block'}`}>
                     {trump.executiveActions.map((action, i) => (
                       <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                         <span className="text-sm text-gray-700 font-medium">{action}</span>
                       </div>
                     ))}
                   </div>
-                )}
               </div>
-
-              {/* Attendance Record */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => togglePresidentSection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Award className="w-6 h-6 text-blue-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
-                      <p className="text-sm text-gray-600">{trump.attendance.percentage}% intelligence briefing rate</p>
-                    </div>
-                  </div>
-                  {expandedPresidentSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedPresidentSections.attendance && (
-                  <div className="px-6 pb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-blue-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">Briefing Rate</p>
-                        <p className="text-3xl font-bold text-blue-600">{trump.attendance.percentage}%</p>
-                      </div>
-                      <div className="bg-green-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">Briefings Attended</p>
-                        <p className="text-3xl font-bold text-green-600">{trump.attendance.briefingsAttended}/{trump.attendance.totalBriefings}</p>
-                      </div>
-                      <div className="bg-purple-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">National Ranking</p>
-                        <p className="text-3xl font-bold text-purple-600">#1</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Financial Disclosures */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => togglePresidentSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <TrendingUp className="w-6 h-6 text-purple-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
-                      <p className="text-sm text-gray-600">Wealth increased {trump.financialDisclosure.percentageIncrease}% since election</p>
-                    </div>
-                  </div>
-                  {expandedPresidentSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedPresidentSections.financial && (
-                  <div className="px-6 pb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div className="bg-blue-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">Elected ({trump.financialDisclosure.electedYear})</p>
-                        <p className="text-2xl font-bold text-blue-600">{trump.financialDisclosure.worthWhenElected}</p>
-                      </div>
-                      <div className="bg-green-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">Current Net Worth</p>
-                        <p className="text-2xl font-bold text-green-600">{trump.financialDisclosure.currentWorth}</p>
-                      </div>
-                      <div className="bg-purple-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">Wealth Increase</p>
-                        <p className="text-2xl font-bold text-purple-600">+{trump.financialDisclosure.percentageIncrease}%</p>
-                      </div>
-                      <div className="bg-orange-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">Annual Salary</p>
-                        <p className="text-2xl font-bold text-orange-600">{trump.financialDisclosure.annualSalary}</p>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="font-semibold text-gray-700 mb-2">Asset Breakdown:</p>
-                      {trump.financialDisclosure.assets.map((asset, idx) => (
-                        <div key={idx} className="flex justify-between p-3 bg-gray-50 rounded">
-                          <span className="text-gray-700">{asset.type}</span>
-                          <span className="font-semibold text-gray-900">{asset.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Financial Holdings & Conflicts */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => togglePresidentSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <TrendingUp className="w-6 h-6 text-green-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">📈 Financial Holdings &amp; Conflicts</h2>
-                      <p className="text-sm text-gray-600">
-                        {trump.stockTrades.length} disclosed interests
-                        <span className="ml-2 text-red-600 font-bold">• {trump.stockTrades.filter(t => t.conflict).length} potential conflicts</span>
-                      </p>
-                    </div>
-                  </div>
-                  {expandedPresidentSections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedPresidentSections.stockTrades && (
-                  <div className="px-6 pb-6">
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                      <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
-                        <p className="text-sm text-gray-600 mb-1">Total Interests</p>
-                        <p className="text-3xl font-bold text-blue-600">{trump.stockTrades.length}</p>
-                      </div>
-                      <div className="bg-red-50 p-4 rounded-lg border-2 border-red-300">
-                        <p className="text-sm text-gray-600 mb-1">Conflicts</p>
-                        <p className="text-3xl font-bold text-red-600">{trump.stockTrades.filter(t => t.conflict).length}</p>
-                      </div>
-                    </div>
-                    <div className="bg-red-50 border-2 border-red-400 rounded-lg p-4 mb-6">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <h3 className="text-lg font-bold text-red-800 mb-2">⚠️ Potential Conflicts of Interest</h3>
-                          <p className="text-red-700 text-sm">Multiple financial holdings may conflict with presidential duties. These interests were not placed in a blind trust as recommended by ethics watchdogs.</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      {trump.stockTrades.map((trade, i) => (
-                        <div key={i} className={`border-2 rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-400' : 'bg-gray-50 border-gray-200'}`}>
-                          {trade.conflict && (
-                            <div className="mb-3">
-                              <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold">🚨 POTENTIAL CONFLICT</span>
-                            </div>
-                          )}
-                          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-3">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-lg font-bold text-gray-800">{trade.company}</h3>
-                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-mono">{trade.ticker}</span>
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">{trade.type}</span>
-                                <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">{trade.assetType}</span>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xl font-bold text-green-600">{trade.valueRange}</p>
-                              <p className="text-sm text-gray-500 mt-1">{trade.date}</p>
-                            </div>
-                          </div>
-                          {trade.conflict && trade.conflictReason && (
-                            <div className="bg-red-100 border-l-4 border-red-600 p-3 rounded">
-                              <p className="text-sm font-semibold text-red-800 mb-1">Why this is flagged:</p>
-                              <p className="text-sm text-red-700">{trade.conflictReason}</p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Lobbying Activity */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => togglePresidentSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Building2 className="w-6 h-6 text-red-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
-                      <p className="text-sm text-gray-600">{trump.lobbying.totalMeetings} meetings, {trump.lobbying.totalValue} total value</p>
-                    </div>
-                  </div>
-                  {expandedPresidentSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedPresidentSections.lobbying && (
-                  <div className="px-6 pb-6 space-y-4">
-                    {trump.lobbying.organizations.map((org, idx) => (
-                      <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h3 className="font-bold text-gray-800">{org.name}</h3>
-                            <p className="text-sm text-gray-600">{org.sector}</p>
-                          </div>
-                          <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
-                            {org.value > 0 ? `$${(org.value / 1000000).toFixed(1)}M` : 'Public Record'}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span>📅 {org.meetings} meetings</span>
-                          <span>🗓️ Last: {org.lastMeeting}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Expenses */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => togglePresidentSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <DollarSign className="w-6 h-6 text-orange-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
-                      <p className="text-sm text-gray-600">Travel, entertainment &amp; flagged spending</p>
-                    </div>
-                  </div>
-                  {expandedPresidentSections.expenses ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedPresidentSections.expenses && (
-                  <div className="px-6 pb-6 space-y-4">
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="bg-orange-50 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">Travel (2025)</p>
-                        <p className="font-bold text-orange-700 text-sm">{trump.expenses.totalTravel}</p>
-                      </div>
-                      <div className="bg-blue-50 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">Entertainment</p>
-                        <p className="font-bold text-blue-700 text-sm">{trump.expenses.totalEntertainment}</p>
-                      </div>
-                      <div className="bg-red-50 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
-                        <p className="font-bold text-red-700 text-sm">{trump.expenses.flaggedCount}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
-                      <div className="space-y-2">
-                        {trump.expenses.travel.map((item, i) => (
-                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                            </div>
-                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
-                      <div className="space-y-2">
-                        {trump.expenses.entertainment.map((item, i) => (
-                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                            </div>
-                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('US'); }}
-                          className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
-                        >
-                          {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
-                        </button>
-                      </div>
-                      {leaderLiveExpenses['US'] && leaderLiveExpenses['US'].length > 0 ? (
-                        <div className="space-y-2">
-                          {leaderLiveExpenses['US'].map((item, i) => (
-                            <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                  <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
-                                  <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
-                                </div>
-                                <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-            </div>
           </div>
-          {renderPromiseTrackerSection('Donald Trump', togglePresidentSection, expandedPresidentSections, '#1d4ed8')}
-          {renderControversiesSection('Donald Trump', togglePresidentSection, expandedPresidentSections, '#1d4ed8')}
         </div>
       </div>
     );
@@ -16092,23 +16040,23 @@ function App() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-4 md:py-8">
 
           {/* Profile card */}
           <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
             <div
               style={{ background: `linear-gradient(135deg, ${partyColor}18 0%, ${'#012169'}08 100%)`, borderBottom: `3px solid ${partyColor}` }}
-              className="px-4 pt-4 pb-4 md:px-8 md:pt-8 md:pb-6"
+              className="px-3 pt-3 pb-3 md:px-8 md:pt-8 md:pb-6"
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3">
                 <div
                   style={{ background: `linear-gradient(135deg, ${partyColor}, #012169)` }}
-                  className="w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center text-white text-xl md:text-3xl font-bold flex-shrink-0 shadow-lg"
+                  className="w-12 h-12 md:w-24 md:h-24 rounded-full flex items-center justify-center text-white text-sm md:text-3xl font-bold flex-shrink-0 shadow-md"
                 >
                   {starmer.initials}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-xl md:text-3xl font-bold text-gray-900 leading-tight">{starmer.name}</h1>
+                  <h1 className="text-lg md:text-3xl font-bold text-gray-900 leading-tight">{starmer.name}</h1>
                   <div className="flex flex-wrap items-center gap-2 mt-1.5">
                     <span
                       style={{ backgroundColor: partyColor }}
@@ -16182,38 +16130,309 @@ function App() {
             </div>
           </div>
 
-          {/* Contact */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">📧 Contact Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-lg p-4" style={{ backgroundColor: '#E4003B10', border: '1px solid #E4003B40' }}>
-                <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
-                <a href={`mailto:${starmer.email}`} className="font-medium break-all hover:underline" style={{ color: partyColor }}>{starmer.email}</a>
-              </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">No. 10 Switchboard</p>
-                <a href={`tel:${starmer.phone}`} className="text-blue-700 hover:text-blue-900 font-medium text-lg">{starmer.phone}</a>
-              </div>
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 md:col-span-2">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
-                <p className="text-gray-700 text-sm">10 Downing Street, Westminster, London SW1A 2AA, United Kingdom</p>
-              </div>
-            </div>
-          </div>
+          <div className="space-y-4">
 
-          {/* Two-column layout */}
-          <div className="md:grid md:grid-cols-2 md:gap-6">
-
-            {/* Left column */}
-            <div className="space-y-6">
-
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">📖 Biography</h3>
+            {/* Biography */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleStarmerSection('bio')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <h3 className="text-xl font-bold text-gray-800">📖 Biography</h3>
+                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedStarmerSections.bio ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              <div className={`px-6 pb-6 ${expandedStarmerSections.bio ? '' : 'hidden sm:block'}`}>
                 <p className="text-gray-700 leading-relaxed">{starmer.bio}</p>
               </div>
+            </div>
 
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">📋 Key Policy Areas</h3>
+            {/* Controversies */}
+            {renderControversiesSection('Keir Starmer', toggleStarmerSection, expandedStarmerSections, '#E4003B')}
+
+            {/* Promise Tracker */}
+            {renderPromiseTrackerSection('Keir Starmer', toggleStarmerSection, expandedStarmerSections, '#E4003B')}
+
+            {/* Expenses */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleStarmerSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <DollarSign className="w-6 h-6 text-orange-600" />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
+                    <p className="text-sm text-gray-600">Travel, entertainment &amp; flagged spending</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.expenses ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedStarmerSections.expenses && (
+                <div className="px-6 pb-6 space-y-4">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-orange-50 p-3 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Travel (2024–25)</p>
+                      <p className="font-bold text-orange-700 text-sm">{starmer.expenses.totalTravel}</p>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Entertainment</p>
+                      <p className="font-bold text-blue-700 text-sm">{starmer.expenses.totalEntertainment}</p>
+                    </div>
+                    <div className="bg-red-50 p-3 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
+                      <p className="font-bold text-red-700 text-sm">{starmer.expenses.flaggedCount}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
+                    <div className="space-y-2">
+                      {starmer.expenses.travel.map((item, i) => (
+                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                          </div>
+                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
+                    <div className="space-y-2">
+                      {starmer.expenses.entertainment.map((item, i) => (
+                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                          </div>
+                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('UK'); }}
+                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
+                      >
+                        {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
+                      </button>
+                    </div>
+                    {leaderLiveExpenses['UK'] && leaderLiveExpenses['UK'].length > 0 ? (
+                      <div className="space-y-2">
+                        {leaderLiveExpenses['UK'].map((item, i) => (
+                          <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-gray-800">{item.title}</p>
+                                <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
+                                <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
+                              </div>
+                              <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Lobbying Activity */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleStarmerSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <Users className="w-6 h-6 text-orange-600" />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
+                    <p className="text-sm text-gray-600">{starmer.lobbying.reduce((s, l) => s + l.meetings, 0)} meetings with registered lobbyists</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedStarmerSections.lobbying && (
+                <div className="px-6 pb-6 space-y-3">
+                  {starmer.lobbying.map((org, i) => (
+                    <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h4 className="font-bold text-gray-800 text-sm">{org.name}</h4>
+                          <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
+                          <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Asset Disclosures */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleStarmerSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="w-6 h-6 text-blue-600" />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">📈 Asset Disclosures</h2>
+                    <p className="text-sm text-gray-600">{starmer.stockTrades.length} disclosed holdings on taking office</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedStarmerSections.stockTrades && (
+                <div className="px-6 pb-6 space-y-3">
+                  {starmer.stockTrades.map((trade, i) => (
+                    <div key={i} className={`border rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-300' : 'bg-gray-50 border-gray-200'}`}>
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div>
+                          <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
+                          <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
+                          {trade.conflict && <span className="ml-2 text-xs bg-red-100 text-red-700 font-bold px-1.5 py-0.5 rounded">⚠ Potential Conflict</span>}
+                        </div>
+                        <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
+                        <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-xs text-gray-400 mt-2">Disclosures filed with the UK Parliament’s Register of Members’ Financial Interests.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Financial Disclosures */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleStarmerSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="w-6 h-6 text-purple-600" />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                    <p className="text-sm text-gray-600">Net worth up {starmer.financialDisclosure.percentageIncrease}% since taking office</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.financial ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedStarmerSections.financial && (
+                <div className="px-6 pb-6 space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-purple-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Worth in {starmer.financialDisclosure.electedYear}</p>
+                      <p className="font-bold text-purple-700 text-sm">£{(starmer.financialDisclosure.worthWhenElected / 1000000).toFixed(1)}M</p>
+                    </div>
+                    <div className="bg-green-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
+                      <p className="font-bold text-green-700 text-sm">£{(starmer.financialDisclosure.currentNetWorth / 1000000).toFixed(1)}M</p>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Increase</p>
+                      <p className="font-bold text-blue-700 text-sm">+{starmer.financialDisclosure.percentageIncrease}%</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Annual Salary</p>
+                      <p className="font-bold text-gray-700 text-sm">£{starmer.financialDisclosure.annualSalary.toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">Asset Breakdown</h4>
+                    <div className="space-y-2">
+                      {starmer.financialDisclosure.assets.map((asset, i) => (
+                        <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                          <span className="text-sm text-gray-700">{asset.type}</span>
+                          <span className="text-sm font-bold text-gray-800">£{asset.value.toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Attendance Record */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleStarmerSection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <Award className="w-6 h-6" style={{ color: partyColor }} />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
+                    <p className="text-sm text-gray-600">{starmer.attendance.percentage}% Parliamentary Question Time attendance</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.attendance ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedStarmerSections.attendance && (
+                <div className="px-6 pb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#E4003B10' }}>
+                      <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
+                      <p className="text-3xl font-bold" style={{ color: partyColor }}>{starmer.attendance.percentage}%</p>
+                    </div>
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
+                      <p className="text-3xl font-bold text-blue-700">{starmer.attendance.sessionsAttended}/{starmer.attendance.totalSessions}</p>
+                    </div>
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#01216915' }}>
+                      <p className="text-sm text-gray-600 mb-1">National Ranking</p>
+                      <p className="text-3xl font-bold" style={{ color: '#012169' }}>#1</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Cabinet Members */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleStarmerSection('cabinet')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <h3 className="text-xl font-bold text-gray-800">🏛️ Cabinet Members</h3>
+                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedStarmerSections.cabinet ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              <div className={`px-6 pb-6 space-y-2 ${expandedStarmerSections.cabinet ? '' : 'hidden sm:block'}`}>
+                {starmer.cabinet.map((c, i) => (
+                  <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                    <h4 className="font-bold text-gray-800">{c.name}</h4>
+                    <p className="text-sm font-medium" style={{ color: partyColor }}>{c.role}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleStarmerSection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
+                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedStarmerSections.contact ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              <div className={`px-6 pb-6 ${expandedStarmerSections.contact ? '' : 'hidden sm:block'}`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="rounded-lg p-4" style={{ backgroundColor: '#E4003B10', border: '1px solid #E4003B40' }}>
+                    <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
+                    <a href={`mailto:${starmer.email}`} className="font-medium break-all hover:underline" style={{ color: partyColor }}>{starmer.email}</a>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-gray-600 mb-2 font-medium">No. 10 Switchboard</p>
+                    <a href={`tel:${starmer.phone}`} className="text-blue-700 hover:text-blue-900 font-medium text-lg">{starmer.phone}</a>
+                  </div>
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 md:col-span-2">
+                    <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
+                    <p className="text-gray-700 text-sm">10 Downing Street, Westminster, London SW1A 2AA, United Kingdom</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Key Policy Areas */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleStarmerSection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
+                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedStarmerSections.policies ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              <div className={`px-6 pb-6 ${expandedStarmerSections.policies ? '' : 'hidden sm:block'}`}>
                 <div className="flex flex-wrap gap-2">
                   {starmer.policies.map((policy, i) => (
                     <span key={i} className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full" style={{ backgroundColor: '#E4003B10', border: '1px solid #E4003B40', color: '#9B0020' }}>
@@ -16223,9 +16442,15 @@ function App() {
                   ))}
                 </div>
               </div>
+            </div>
 
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">🗓️ Term Information</h3>
+            {/* Term Information */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleStarmerSection('termInfo')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
+                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedStarmerSections.termInfo ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              <div className={`px-6 pb-6 ${expandedStarmerSections.termInfo ? '' : 'hidden sm:block'}`}>
                 <div className="grid grid-cols-3 gap-3 mb-3">
                   <div className="p-4 rounded-lg text-center" style={{ backgroundColor: '#E4003B10' }}>
                     <p className="text-sm text-gray-600 mb-1">Current Term</p>
@@ -16251,334 +16476,80 @@ function App() {
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Cabinet */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">🏛️ Key Cabinet Members</h3>
-                <div className="space-y-2">
-                  {starmer.cabinet.map((c, i) => (
-                    <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                      <h4 className="font-bold text-gray-800">{c.name}</h4>
-                      <p className="text-sm font-medium" style={{ color: partyColor }}>{c.role}</p>
+            {/* Recent Activity */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleStarmerSection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <FileText className="w-6 h-6" style={{ color: partyColor }} />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
+                    <p className="text-sm text-gray-600">{starmer.recentActivity.length} recent actions</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.activity ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedStarmerSections.activity && (
+                <div className="px-6 pb-6 space-y-4">
+                  {starmer.recentActivity.map((item, i) => (
+                    <div key={i} className="border rounded-lg p-4" style={{ backgroundColor: '#E4003B08', borderColor: '#E4003B30' }}>
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ backgroundColor: '#E4003B20', color: '#9B0020' }}>{item.type}</span>
+                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span>{item.date}</span>
+                        </div>
+                      </div>
+                      <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                      <p className="text-sm text-gray-600">{item.description}</p>
                     </div>
                   ))}
                 </div>
-              </div>
+              )}
+            </div>
 
-              {/* Senior Advisors */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">🌟 Senior No. 10 Advisors</h3>
-                <div className="space-y-2">
-                  {starmer.seniorAdvisors.map((advisor) => (
-                    <div key={advisor.name} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                      <h4 className="font-bold text-gray-800">{advisor.name}</h4>
-                      <p className="text-sm font-medium mb-1" style={{ color: partyColor }}>{advisor.title}</p>
-                      <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>
+            {/* Senior Advisors */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleStarmerSection('advisors')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <h3 className="text-xl font-bold text-gray-800">🌟 Senior No. 10 Advisors</h3>
+                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedStarmerSections.advisors ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              <div className={`px-6 pb-6 space-y-2 ${expandedStarmerSections.advisors ? '' : 'hidden sm:block'}`}>
+                {starmer.seniorAdvisors.map((advisor) => (
+                  <div key={advisor.name} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                    <h4 className="font-bold text-gray-800">{advisor.name}</h4>
+                    <p className="text-sm font-medium mb-1" style={{ color: partyColor }}>{advisor.title}</p>
+                    <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Key Government Commitments */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleStarmerSection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <Scale className="w-6 h-6" style={{ color: partyColor }} />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">⚖️ Key Government Commitments</h2>
+                    <p className="text-sm text-gray-600">{starmer.executiveActions.length} key commitments</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedStarmerSections.keyDecisions && (
+                <div className="px-6 pb-6 space-y-2">
+                  {starmer.executiveActions.map((action, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <span className="text-sm text-gray-700 font-medium">{action}</span>
                     </div>
                   ))}
                 </div>
-              </div>
-
+              )}
             </div>
 
-            {/* Right column — collapsible sections */}
-            <div className="space-y-6 mt-6 md:mt-0">
-
-              {/* Recent Activity */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleStarmerSection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <FileText className="w-6 h-6" style={{ color: partyColor }} />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
-                      <p className="text-sm text-gray-600">{starmer.recentActivity.length} recent actions</p>
-                    </div>
-                  </div>
-                  {expandedStarmerSections.activity ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedStarmerSections.activity && (
-                  <div className="px-6 pb-6 space-y-4">
-                    {starmer.recentActivity.map((item, i) => (
-                      <div key={i} className="border rounded-lg p-4" style={{ backgroundColor: '#E4003B08', borderColor: '#E4003B30' }}>
-                        <div className="flex items-start justify-between mb-2">
-                          <span className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ backgroundColor: '#E4003B20', color: '#9B0020' }}>{item.type}</span>
-                          <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                            <Calendar className="w-3.5 h-3.5" />
-                            <span>{item.date}</span>
-                          </div>
-                        </div>
-                        <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
-                        <p className="text-sm text-gray-600">{item.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Key Government Commitments */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleStarmerSection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Scale className="w-6 h-6" style={{ color: partyColor }} />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">⚖️ Key Government Commitments</h2>
-                      <p className="text-sm text-gray-600">{starmer.executiveActions.length} key commitments</p>
-                    </div>
-                  </div>
-                  {expandedStarmerSections.keyDecisions ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedStarmerSections.keyDecisions && (
-                  <div className="px-6 pb-6 space-y-2">
-                    {starmer.executiveActions.map((action, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <span className="text-sm text-gray-700 font-medium">{action}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Attendance Record */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleStarmerSection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Award className="w-6 h-6" style={{ color: partyColor }} />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
-                      <p className="text-sm text-gray-600">{starmer.attendance.percentage}% Parliamentary Question Time attendance</p>
-                    </div>
-                  </div>
-                  {expandedStarmerSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedStarmerSections.attendance && (
-                  <div className="px-6 pb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#E4003B10' }}>
-                        <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
-                        <p className="text-3xl font-bold" style={{ color: partyColor }}>{starmer.attendance.percentage}%</p>
-                      </div>
-                      <div className="bg-blue-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
-                        <p className="text-3xl font-bold text-blue-700">{starmer.attendance.sessionsAttended}/{starmer.attendance.totalSessions}</p>
-                      </div>
-                      <div className="p-4 rounded-lg" style={{ backgroundColor: '#01216915' }}>
-                        <p className="text-sm text-gray-600 mb-1">National Ranking</p>
-                        <p className="text-3xl font-bold" style={{ color: '#012169' }}>#1</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Financial Disclosures */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleStarmerSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <TrendingUp className="w-6 h-6 text-purple-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
-                      <p className="text-sm text-gray-600">Net worth up {starmer.financialDisclosure.percentageIncrease}% since taking office</p>
-                    </div>
-                  </div>
-                  {expandedStarmerSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedStarmerSections.financial && (
-                  <div className="px-6 pb-6 space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div className="bg-purple-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Worth in {starmer.financialDisclosure.electedYear}</p>
-                        <p className="font-bold text-purple-700 text-sm">£{(starmer.financialDisclosure.worthWhenElected / 1000000).toFixed(1)}M</p>
-                      </div>
-                      <div className="bg-green-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
-                        <p className="font-bold text-green-700 text-sm">£{(starmer.financialDisclosure.currentNetWorth / 1000000).toFixed(1)}M</p>
-                      </div>
-                      <div className="bg-blue-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Increase</p>
-                        <p className="font-bold text-blue-700 text-sm">+{starmer.financialDisclosure.percentageIncrease}%</p>
-                      </div>
-                      <div className="bg-gray-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Annual Salary</p>
-                        <p className="font-bold text-gray-700 text-sm">£{starmer.financialDisclosure.annualSalary.toLocaleString()}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">Asset Breakdown</h4>
-                      <div className="space-y-2">
-                        {starmer.financialDisclosure.assets.map((asset, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                            <span className="text-sm text-gray-700">{asset.type}</span>
-                            <span className="text-sm font-bold text-gray-800">£{asset.value.toLocaleString()}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Asset Disclosures */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleStarmerSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <TrendingUp className="w-6 h-6 text-blue-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">📈 Asset Disclosures</h2>
-                      <p className="text-sm text-gray-600">{starmer.stockTrades.length} disclosed holdings on taking office</p>
-                    </div>
-                  </div>
-                  {expandedStarmerSections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedStarmerSections.stockTrades && (
-                  <div className="px-6 pb-6 space-y-3">
-                    {starmer.stockTrades.map((trade, i) => (
-                      <div key={i} className={`border rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-300' : 'bg-gray-50 border-gray-200'}`}>
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <div>
-                            <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
-                            <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
-                            {trade.conflict && <span className="ml-2 text-xs bg-red-100 text-red-700 font-bold px-1.5 py-0.5 rounded">⚠ Potential Conflict</span>}
-                          </div>
-                          <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5 mt-1">
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
-                          <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
-                        </div>
-                      </div>
-                    ))}
-                    <p className="text-xs text-gray-400 mt-2">Disclosures filed with the UK Parliament's Register of Members' Financial Interests.</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Lobbying Activity */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleStarmerSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Users className="w-6 h-6 text-orange-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
-                      <p className="text-sm text-gray-600">{starmer.lobbying.reduce((s, l) => s + l.meetings, 0)} meetings with registered lobbyists</p>
-                    </div>
-                  </div>
-                  {expandedStarmerSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedStarmerSections.lobbying && (
-                  <div className="px-6 pb-6 space-y-3">
-                    {starmer.lobbying.map((org, i) => (
-                      <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h4 className="font-bold text-gray-800 text-sm">{org.name}</h4>
-                            <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
-                            <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Expenses */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleStarmerSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <DollarSign className="w-6 h-6 text-orange-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
-                      <p className="text-sm text-gray-600">Travel, entertainment &amp; flagged spending</p>
-                    </div>
-                  </div>
-                  {expandedStarmerSections.expenses ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedStarmerSections.expenses && (
-                  <div className="px-6 pb-6 space-y-4">
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="bg-orange-50 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">Travel (2024–25)</p>
-                        <p className="font-bold text-orange-700 text-sm">{starmer.expenses.totalTravel}</p>
-                      </div>
-                      <div className="bg-blue-50 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">Entertainment</p>
-                        <p className="font-bold text-blue-700 text-sm">{starmer.expenses.totalEntertainment}</p>
-                      </div>
-                      <div className="bg-red-50 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
-                        <p className="font-bold text-red-700 text-sm">{starmer.expenses.flaggedCount}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
-                      <div className="space-y-2">
-                        {starmer.expenses.travel.map((item, i) => (
-                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                            </div>
-                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
-                      <div className="space-y-2">
-                        {starmer.expenses.entertainment.map((item, i) => (
-                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                            </div>
-                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('UK'); }}
-                          className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
-                        >
-                          {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
-                        </button>
-                      </div>
-                      {leaderLiveExpenses['UK'] && leaderLiveExpenses['UK'].length > 0 ? (
-                        <div className="space-y-2">
-                          {leaderLiveExpenses['UK'].map((item, i) => (
-                            <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                  <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
-                                  <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
-                                </div>
-                                <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-            </div>
           </div>
-          {renderPromiseTrackerSection('Keir Starmer', toggleStarmerSection, expandedStarmerSections, '#E4003B')}
-          {renderControversiesSection('Keir Starmer', toggleStarmerSection, expandedStarmerSections, '#E4003B')}
         </div>
       </div>
     );
@@ -25251,23 +25222,23 @@ function App() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-4 md:py-8">
 
           {/* Profile card */}
           <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
             <div
               style={{ background: `linear-gradient(135deg, ${partyColor}18 0%, ${partyColor}06 100%)`, borderBottom: `3px solid ${partyColor}` }}
-              className="px-4 pt-4 pb-4 md:px-8 md:pt-8 md:pb-6"
+              className="px-3 pt-3 pb-3 md:px-8 md:pt-8 md:pb-6"
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3">
                 <div
                   style={{ backgroundColor: partyColor }}
-                  className="w-16 h-16 md:w-24 md:h-24 rounded-full flex items-center justify-center text-white text-xl md:text-3xl font-bold flex-shrink-0 shadow-lg"
+                  className="w-12 h-12 md:w-24 md:h-24 rounded-full flex items-center justify-center text-white text-sm md:text-3xl font-bold flex-shrink-0 shadow-md"
                 >
                   {albanese.initials}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-xl md:text-3xl font-bold text-gray-900 leading-tight">{albanese.name}</h1>
+                  <h1 className="text-lg md:text-3xl font-bold text-gray-900 leading-tight">{albanese.name}</h1>
                   <div className="flex flex-wrap items-center gap-2 mt-1.5">
                     <span
                       style={{ backgroundColor: partyColor }}
@@ -25341,38 +25312,308 @@ function App() {
             </div>
           </div>
 
-          {/* Contact */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">📧 Contact Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
-                <a href={`mailto:${albanese.email}`} className="text-red-700 hover:text-red-900 font-medium break-all">{albanese.email}</a>
-              </div>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">PMO Phone</p>
-                <a href={`tel:${albanese.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{albanese.phone}</a>
-              </div>
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
-                <p className="text-gray-700 text-sm">Parliament House, Canberra ACT 2600, Australia</p>
-              </div>
-            </div>
-          </div>
+          <div className="space-y-4">
 
-          {/* Two-column layout */}
-          <div className="md:grid md:grid-cols-2 md:gap-6">
-
-            {/* Left column */}
-            <div className="space-y-6">
-
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">📖 Biography</h3>
+            {/* Biography */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleAlbaneseSection('bio')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <h3 className="text-xl font-bold text-gray-800">📖 Biography</h3>
+                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedAlbaneseSections.bio ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              <div className={`px-6 pb-6 ${expandedAlbaneseSections.bio ? '' : 'hidden sm:block'}`}>
                 <p className="text-gray-700 leading-relaxed">{albanese.bio}</p>
               </div>
+            </div>
 
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">📋 Key Policy Areas</h3>
+            {/* Controversies */}
+            {renderControversiesSection('Anthony Albanese', toggleAlbaneseSection, expandedAlbaneseSections, '#006833')}
+
+            {/* Promise Tracker */}
+            {renderPromiseTrackerSection('Anthony Albanese', toggleAlbaneseSection, expandedAlbaneseSections, '#006833')}
+
+            {/* Expenses */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleAlbaneseSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <DollarSign className="w-6 h-6 text-orange-600" />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
+                    <p className="text-sm text-gray-600">Travel, entertainment &amp; flagged spending</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.expenses ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedAlbaneseSections.expenses && (
+                <div className="px-6 pb-6 space-y-4">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-orange-50 p-3 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Travel (2024–25)</p>
+                      <p className="font-bold text-orange-700 text-sm">{albanese.expenses.totalTravel}</p>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Entertainment</p>
+                      <p className="font-bold text-blue-700 text-sm">{albanese.expenses.totalEntertainment}</p>
+                    </div>
+                    <div className="bg-red-50 p-3 rounded-lg text-center">
+                      <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
+                      <p className="font-bold text-red-700 text-sm">{albanese.expenses.flaggedCount}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
+                    <div className="space-y-2">
+                      {albanese.expenses.travel.map((item, i) => (
+                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                          </div>
+                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
+                    <div className="space-y-2">
+                      {albanese.expenses.entertainment.map((item, i) => (
+                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
+                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
+                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
+                          </div>
+                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('AU'); }}
+                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
+                      >
+                        {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
+                      </button>
+                    </div>
+                    {leaderLiveExpenses['AU'] && leaderLiveExpenses['AU'].length > 0 ? (
+                      <div className="space-y-2">
+                        {leaderLiveExpenses['AU'].map((item, i) => (
+                          <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-gray-800">{item.title}</p>
+                                <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
+                                <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
+                              </div>
+                              <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Lobbying Activity */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleAlbaneseSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <Users className="w-6 h-6 text-orange-600" />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
+                    <p className="text-sm text-gray-600">{albanese.lobbying.reduce((s, l) => s + l.meetings, 0)} meetings with registered lobbyists</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedAlbaneseSections.lobbying && (
+                <div className="px-6 pb-6 space-y-3">
+                  {albanese.lobbying.map((org, i) => (
+                    <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h4 className="font-bold text-gray-800 text-sm">{org.name}</h4>
+                          <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
+                          <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Asset Disclosures */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleAlbaneseSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="w-6 h-6 text-blue-600" />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">📈 Asset Disclosures</h2>
+                    <p className="text-sm text-gray-600">{albanese.stockTrades.length} disclosed holdings on election</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedAlbaneseSections.stockTrades && (
+                <div className="px-6 pb-6 space-y-3">
+                  {albanese.stockTrades.map((trade, i) => (
+                    <div key={i} className="border rounded-lg p-4 bg-gray-50 border-gray-200">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div>
+                          <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
+                          <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
+                        </div>
+                        <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
+                        <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-xs text-gray-400 mt-2">Disclosures filed with the Australian Parliament’s Register of Members’ Interests.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Financial Disclosures */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleAlbaneseSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="w-6 h-6 text-purple-600" />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                    <p className="text-sm text-gray-600">Net worth up {albanese.financialDisclosure.percentageIncrease}% since election</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.financial ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedAlbaneseSections.financial && (
+                <div className="px-6 pb-6 space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-purple-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Worth in {albanese.financialDisclosure.electedYear}</p>
+                      <p className="font-bold text-purple-700 text-sm">A${(albanese.financialDisclosure.worthWhenElected / 1000000).toFixed(1)}M</p>
+                    </div>
+                    <div className="bg-green-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
+                      <p className="font-bold text-green-700 text-sm">A${(albanese.financialDisclosure.currentNetWorth / 1000000).toFixed(1)}M</p>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Increase</p>
+                      <p className="font-bold text-blue-700 text-sm">+{albanese.financialDisclosure.percentageIncrease}%</p>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Annual Salary</p>
+                      <p className="font-bold text-gray-700 text-sm">A${albanese.financialDisclosure.annualSalary.toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">Asset Breakdown</h4>
+                    <div className="space-y-2">
+                      {albanese.financialDisclosure.assets.map((asset, i) => (
+                        <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                          <span className="text-sm text-gray-700">{asset.type}</span>
+                          <span className="text-sm font-bold text-gray-800">A${asset.value.toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Attendance Record */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleAlbaneseSection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <Award className="w-6 h-6" style={{ color: partyColor }} />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
+                    <p className="text-sm text-gray-600">{albanese.attendance.percentage}% Question Time attendance</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.attendance ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedAlbaneseSections.attendance && (
+                <div className="px-6 pb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-red-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
+                      <p className="text-3xl font-bold text-red-700">{albanese.attendance.percentage}%</p>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
+                      <p className="text-3xl font-bold text-green-600">{albanese.attendance.sessionsAttended}/{albanese.attendance.totalSessions}</p>
+                    </div>
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">National Ranking</p>
+                      <p className="text-3xl font-bold text-purple-600">#1</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Cabinet Members */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleAlbaneseSection('cabinet')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <h3 className="text-xl font-bold text-gray-800">🏛️ Cabinet Members</h3>
+                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedAlbaneseSections.cabinet ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              <div className={`px-6 pb-6 space-y-2 ${expandedAlbaneseSections.cabinet ? '' : 'hidden sm:block'}`}>
+                {albanese.cabinet.map((c, i) => (
+                  <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                    <h4 className="font-bold text-gray-800">{c.name}</h4>
+                    <p className="text-sm font-medium" style={{ color: partyColor }}>{c.role}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleAlbaneseSection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
+                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedAlbaneseSections.contact ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              <div className={`px-6 pb-6 ${expandedAlbaneseSections.contact ? '' : 'hidden sm:block'}`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
+                    <a href={`mailto:${albanese.email}`} className="text-red-700 hover:text-red-900 font-medium break-all">{albanese.email}</a>
+                  </div>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-sm text-gray-600 mb-2 font-medium">PMO Phone</p>
+                    <a href={`tel:${albanese.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{albanese.phone}</a>
+                  </div>
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
+                    <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
+                    <p className="text-gray-700 text-sm">Parliament House, Canberra ACT 2600, Australia</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Key Policy Areas */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleAlbaneseSection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
+                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedAlbaneseSections.policies ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              <div className={`px-6 pb-6 ${expandedAlbaneseSections.policies ? '' : 'hidden sm:block'}`}>
                 <div className="flex flex-wrap gap-2">
                   {albanese.policies.map((policy, i) => (
                     <span key={i} className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-sm font-medium px-3 py-1.5 rounded-full">
@@ -25382,9 +25623,15 @@ function App() {
                   ))}
                 </div>
               </div>
+            </div>
 
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">🗓️ Term Information</h3>
+            {/* Term Information */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleAlbaneseSection('termInfo')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
+                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedAlbaneseSections.termInfo ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              <div className={`px-6 pb-6 ${expandedAlbaneseSections.termInfo ? '' : 'hidden sm:block'}`}>
                 <div className="grid grid-cols-3 gap-3 mb-3">
                   <div className="bg-red-50 p-4 rounded-lg text-center">
                     <p className="text-sm text-gray-600 mb-1">Current Term</p>
@@ -25410,333 +25657,80 @@ function App() {
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Cabinet */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">🏛️ Key Cabinet Ministers</h3>
-                <div className="space-y-2">
-                  {albanese.cabinet.map((c, i) => (
-                    <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                      <h4 className="font-bold text-gray-800">{c.name}</h4>
-                      <p className="text-sm font-medium" style={{ color: partyColor }}>{c.role}</p>
+            {/* Recent Activity */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleAlbaneseSection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <FileText className="w-6 h-6" style={{ color: partyColor }} />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
+                    <p className="text-sm text-gray-600">{albanese.recentActivity.length} recent actions</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.activity ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedAlbaneseSections.activity && (
+                <div className="px-6 pb-6 space-y-4">
+                  {albanese.recentActivity.map((item, i) => (
+                    <div key={i} className="border rounded-lg p-4 bg-red-50 border-red-200">
+                      <div className="flex items-start justify-between mb-2">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-200 text-red-800">{item.type}</span>
+                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span>{item.date}</span>
+                        </div>
+                      </div>
+                      <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                      <p className="text-sm text-gray-600">{item.description}</p>
                     </div>
                   ))}
                 </div>
-              </div>
+              )}
+            </div>
 
-              {/* Senior Advisors */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">🌟 Senior PMO Advisors</h3>
-                <div className="space-y-2">
-                  {albanese.seniorAdvisors.map((advisor) => (
-                    <div key={advisor.name} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                      <h4 className="font-bold text-gray-800">{advisor.name}</h4>
-                      <p className="text-sm font-medium mb-1" style={{ color: partyColor }}>{advisor.title}</p>
-                      <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>
+            {/* Senior Advisors */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleAlbaneseSection('advisors')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <h3 className="text-xl font-bold text-gray-800">🌟 Senior PMO Advisors</h3>
+                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedAlbaneseSections.advisors ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              <div className={`px-6 pb-6 space-y-2 ${expandedAlbaneseSections.advisors ? '' : 'hidden sm:block'}`}>
+                {albanese.seniorAdvisors.map((advisor) => (
+                  <div key={advisor.name} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                    <h4 className="font-bold text-gray-800">{advisor.name}</h4>
+                    <p className="text-sm font-medium mb-1" style={{ color: partyColor }}>{advisor.title}</p>
+                    <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Key Government Priorities */}
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div onClick={() => toggleAlbaneseSection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <Scale className="w-6 h-6" style={{ color: partyColor }} />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h2>
+                    <p className="text-sm text-gray-600">{albanese.executiveActions.length} key commitments</p>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
+              </div>
+              {expandedAlbaneseSections.keyDecisions && (
+                <div className="px-6 pb-6 space-y-2">
+                  {albanese.executiveActions.map((action, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <span className="text-sm text-gray-700 font-medium">{action}</span>
                     </div>
                   ))}
                 </div>
-              </div>
-
+              )}
             </div>
 
-            {/* Right column — collapsible sections */}
-            <div className="space-y-6 mt-6 md:mt-0">
-
-              {/* Recent Activity */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleAlbaneseSection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <FileText className="w-6 h-6" style={{ color: partyColor }} />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
-                      <p className="text-sm text-gray-600">{albanese.recentActivity.length} recent actions</p>
-                    </div>
-                  </div>
-                  {expandedAlbaneseSections.activity ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedAlbaneseSections.activity && (
-                  <div className="px-6 pb-6 space-y-4">
-                    {albanese.recentActivity.map((item, i) => (
-                      <div key={i} className="border rounded-lg p-4 bg-red-50 border-red-200">
-                        <div className="flex items-start justify-between mb-2">
-                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-200 text-red-800">{item.type}</span>
-                          <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                            <Calendar className="w-3.5 h-3.5" />
-                            <span>{item.date}</span>
-                          </div>
-                        </div>
-                        <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
-                        <p className="text-sm text-gray-600">{item.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Key Government Priorities */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleAlbaneseSection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Scale className="w-6 h-6" style={{ color: partyColor }} />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h2>
-                      <p className="text-sm text-gray-600">{albanese.executiveActions.length} key commitments</p>
-                    </div>
-                  </div>
-                  {expandedAlbaneseSections.keyDecisions ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedAlbaneseSections.keyDecisions && (
-                  <div className="px-6 pb-6 space-y-2">
-                    {albanese.executiveActions.map((action, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <span className="text-sm text-gray-700 font-medium">{action}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Attendance Record */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleAlbaneseSection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Award className="w-6 h-6" style={{ color: partyColor }} />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
-                      <p className="text-sm text-gray-600">{albanese.attendance.percentage}% Question Time attendance</p>
-                    </div>
-                  </div>
-                  {expandedAlbaneseSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedAlbaneseSections.attendance && (
-                  <div className="px-6 pb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-red-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
-                        <p className="text-3xl font-bold text-red-700">{albanese.attendance.percentage}%</p>
-                      </div>
-                      <div className="bg-green-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
-                        <p className="text-3xl font-bold text-green-600">{albanese.attendance.sessionsAttended}/{albanese.attendance.totalSessions}</p>
-                      </div>
-                      <div className="bg-purple-50 p-4 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-1">National Ranking</p>
-                        <p className="text-3xl font-bold text-purple-600">#1</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Financial Disclosures */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleAlbaneseSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <TrendingUp className="w-6 h-6 text-purple-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
-                      <p className="text-sm text-gray-600">Net worth up {albanese.financialDisclosure.percentageIncrease}% since election</p>
-                    </div>
-                  </div>
-                  {expandedAlbaneseSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedAlbaneseSections.financial && (
-                  <div className="px-6 pb-6 space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div className="bg-purple-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Worth in {albanese.financialDisclosure.electedYear}</p>
-                        <p className="font-bold text-purple-700 text-sm">A${(albanese.financialDisclosure.worthWhenElected / 1000000).toFixed(1)}M</p>
-                      </div>
-                      <div className="bg-green-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
-                        <p className="font-bold text-green-700 text-sm">A${(albanese.financialDisclosure.currentNetWorth / 1000000).toFixed(1)}M</p>
-                      </div>
-                      <div className="bg-blue-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Increase</p>
-                        <p className="font-bold text-blue-700 text-sm">+{albanese.financialDisclosure.percentageIncrease}%</p>
-                      </div>
-                      <div className="bg-gray-50 p-3 rounded-lg">
-                        <p className="text-xs text-gray-500 mb-1">Annual Salary</p>
-                        <p className="font-bold text-gray-700 text-sm">A${albanese.financialDisclosure.annualSalary.toLocaleString()}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">Asset Breakdown</h4>
-                      <div className="space-y-2">
-                        {albanese.financialDisclosure.assets.map((asset, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                            <span className="text-sm text-gray-700">{asset.type}</span>
-                            <span className="text-sm font-bold text-gray-800">A${asset.value.toLocaleString()}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Asset Disclosures */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleAlbaneseSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <TrendingUp className="w-6 h-6 text-blue-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">📈 Asset Disclosures</h2>
-                      <p className="text-sm text-gray-600">{albanese.stockTrades.length} disclosed holdings on election</p>
-                    </div>
-                  </div>
-                  {expandedAlbaneseSections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedAlbaneseSections.stockTrades && (
-                  <div className="px-6 pb-6 space-y-3">
-                    {albanese.stockTrades.map((trade, i) => (
-                      <div key={i} className="border rounded-lg p-4 bg-gray-50 border-gray-200">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <div>
-                            <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
-                            <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
-                          </div>
-                          <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5 mt-1">
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
-                          <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
-                        </div>
-                      </div>
-                    ))}
-                    <p className="text-xs text-gray-400 mt-2">Disclosures filed with the Australian Parliament's Register of Members' Interests.</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Lobbying Activity */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleAlbaneseSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Users className="w-6 h-6 text-orange-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
-                      <p className="text-sm text-gray-600">{albanese.lobbying.reduce((s, l) => s + l.meetings, 0)} meetings with registered lobbyists</p>
-                    </div>
-                  </div>
-                  {expandedAlbaneseSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedAlbaneseSections.lobbying && (
-                  <div className="px-6 pb-6 space-y-3">
-                    {albanese.lobbying.map((org, i) => (
-                      <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h4 className="font-bold text-gray-800 text-sm">{org.name}</h4>
-                            <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
-                            <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Expenses */}
-              <div className="bg-white rounded-lg shadow-md">
-                <div onClick={() => toggleAlbaneseSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <DollarSign className="w-6 h-6 text-orange-600" />
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
-                      <p className="text-sm text-gray-600">Travel, entertainment &amp; flagged spending</p>
-                    </div>
-                  </div>
-                  {expandedAlbaneseSections.expenses ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-                </div>
-                {expandedAlbaneseSections.expenses && (
-                  <div className="px-6 pb-6 space-y-4">
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="bg-orange-50 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">Travel (2024–25)</p>
-                        <p className="font-bold text-orange-700 text-sm">{albanese.expenses.totalTravel}</p>
-                      </div>
-                      <div className="bg-blue-50 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">Entertainment</p>
-                        <p className="font-bold text-blue-700 text-sm">{albanese.expenses.totalEntertainment}</p>
-                      </div>
-                      <div className="bg-red-50 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
-                        <p className="font-bold text-red-700 text-sm">{albanese.expenses.flaggedCount}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
-                      <div className="space-y-2">
-                        {albanese.expenses.travel.map((item, i) => (
-                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                            </div>
-                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
-                      <div className="space-y-2">
-                        {albanese.expenses.entertainment.map((item, i) => (
-                          <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                            </div>
-                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('AU'); }}
-                          className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
-                        >
-                          {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
-                        </button>
-                      </div>
-                      {leaderLiveExpenses['AU'] && leaderLiveExpenses['AU'].length > 0 ? (
-                        <div className="space-y-2">
-                          {leaderLiveExpenses['AU'].map((item, i) => (
-                            <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                  <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
-                                  <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
-                                </div>
-                                <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-            </div>
           </div>
-          {renderPromiseTrackerSection('Anthony Albanese', toggleAlbaneseSection, expandedAlbaneseSections, '#006833')}
-          {renderControversiesSection('Anthony Albanese', toggleAlbaneseSection, expandedAlbaneseSections, '#006833')}
         </div>
       </div>
     );
