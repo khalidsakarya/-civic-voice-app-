@@ -6676,39 +6676,23 @@ function App() {
   // Shared Government Stats Page Renderer
   const renderGovernmentStatsPage = (d) => {
     const spendingColors = ['bg-purple-500','bg-blue-500','bg-yellow-500','bg-red-500','bg-green-500','bg-orange-500','bg-gray-500','bg-teal-500','bg-pink-500','bg-indigo-500','bg-lime-500','bg-cyan-500','bg-rose-500','bg-amber-500','bg-sky-500'];
-    const fsData = govStatsData[d.cc];
-    // Only treat as live if fsData has at least one valid array field; otherwise fall back to hardcoded
-    const fsHasArrays = fsData && Array.isArray(fsData.revenue) && fsData.revenue.length > 0;
-    const isLive = fsHasArrays;
-    const rawData = isLive ? { ...d, ...fsData } : d;
-    // Defensive fallback: ensure every array field always has a valid array
-    const data = {
-      ...rawData,
-      revenue:             Array.isArray(rawData.revenue)             ? rawData.revenue             : d.revenue,
-      spending:            Array.isArray(rawData.spending)            ? rawData.spending            : d.spending,
-      deficitHistory:      Array.isArray(rawData.deficitHistory)      ? rawData.deficitHistory      : d.deficitHistory,
-      debtHistory:         Array.isArray(rawData.debtHistory)         ? rawData.debtHistory         : d.debtHistory,
-      unemploymentTrends:  Array.isArray(rawData.unemploymentTrends)  ? rawData.unemploymentTrends  : d.unemploymentTrends,
-      foreignAid:          Array.isArray(rawData.foreignAid)          ? rawData.foreignAid          : d.foreignAid,
-      foreignLoans:        Array.isArray(rawData.foreignLoans)        ? rawData.foreignLoans        : d.foreignLoans,
-      grantsByDepartment:  Array.isArray(rawData.grantsByDepartment)  ? rawData.grantsByDepartment  : d.grantsByDepartment,
-      departmentTrends:    Array.isArray(rawData.departmentTrends)    ? rawData.departmentTrends    : d.departmentTrends,
-      deptHeaders:         Array.isArray(rawData.deptHeaders)         ? rawData.deptHeaders         : d.deptHeaders,
-    };
-    console.log('[GovStats] render', d.cc, { isLive, fsData, revenue: data.revenue?.length });
+    // Always render with hardcoded data — Firestore state only drives the status banner
+    const isLoading = !!govStatsLoading[d.cc];
+    const isLive = !!(govStatsLastUpdated[d.cc]);
+    console.log('[GovStats] render', d.cc, { isLoading, isLive, revenueLen: d.revenue?.length });
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <button onClick={() => setView(data.backView)} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">
-              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to {data.backLabel}</span>
+            <button onClick={() => setView(d.backView)} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to {d.backLabel}</span>
             </button>
             <h1 className="text-2xl font-bold text-gray-800">Important Government Stats</h1>
             <div className="w-20"></div>
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {govStatsLoading[data.cc] ? (
+          {isLoading ? (
             <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-4">
               <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
               Fetching latest data...
@@ -6716,7 +6700,7 @@ function App() {
           ) : isLive ? (
             <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-4">
               <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">LIVE</span>
-              Last updated: {govStatsLastUpdated[data.cc]?.toLocaleString()}
+              Last updated: {govStatsLastUpdated[d.cc]?.toLocaleString()}
             </div>
           ) : (
             <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4">
@@ -6725,23 +6709,23 @@ function App() {
             </div>
           )}
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">{data.overviewTitle}</h2>
-            <p className="text-gray-600">{data.overviewSub}</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">{d.overviewTitle}</h2>
+            <p className="text-gray-600">{d.overviewSub}</p>
           </div>
 
           {/* Revenue Sources */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
               <DollarSign className="w-6 h-6 text-green-600" />
-              Revenue Sources ({data.summaryRevenue})
+              Revenue Sources ({d.summaryRevenue})
             </h3>
             <p className="text-gray-600 mb-4">Where the government gets its money</p>
             <div className="space-y-3">
-              {data.revenue.map((item, index) => (
+              {d.revenue.map((item, index) => (
                 <div key={index}>
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-700">{item.source}</span>
-                    <span className="font-bold text-gray-800">{data.currency}{item.amount}B ({item.percentage}%)</span>
+                    <span className="font-bold text-gray-800">{d.currency}{item.amount}B ({item.percentage}%)</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div className="bg-green-500 h-3 rounded-full" style={{width: `${item.percentage}%`}} />
@@ -6750,8 +6734,8 @@ function App() {
               ))}
             </div>
             <div className="mt-4 p-4 bg-red-50 border-2 border-red-300 rounded-lg">
-              <p className="text-red-800 font-bold">⚠️ Budget Deficit: {data.deficitDisplay}</p>
-              <p className="text-sm text-red-700">{data.deficitSub}</p>
+              <p className="text-red-800 font-bold">⚠️ Budget Deficit: {d.deficitDisplay}</p>
+              <p className="text-sm text-red-700">{d.deficitSub}</p>
             </div>
           </div>
 
@@ -6759,15 +6743,15 @@ function App() {
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
               <TrendingUp className="w-6 h-6 text-blue-600" />
-              Spending by Category ({data.summarySpending})
+              Spending by Category ({d.summarySpending})
             </h3>
             <p className="text-gray-600 mb-4">Where your tax dollars go</p>
             <div className="space-y-3">
-              {data.spending.map((item, index) => (
+              {d.spending.map((item, index) => (
                 <div key={index}>
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-700">{item.category}</span>
-                    <span className="font-bold text-gray-800">{data.currency}{item.amount}B ({item.percentage}%)</span>
+                    <span className="font-bold text-gray-800">{d.currency}{item.amount}B ({item.percentage}%)</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div className={`h-3 rounded-full ${spendingColors[index % spendingColors.length]}`} style={{width: `${item.percentage}%`}} />
@@ -6785,23 +6769,23 @@ function App() {
             </h3>
             <p className="text-gray-600 mb-4">Annual budget deficits over the past decade</p>
             <div className="space-y-2">
-              {data.deficitHistory.map((item, index) => (
+              {d.deficitHistory.map((item, index) => (
                 <div key={index} className="flex items-center gap-4">
                   <span className="text-gray-700 font-medium w-16">{item.year}</span>
                   <div className="flex-1">
                     <div className="w-full bg-gray-200 rounded-full h-6">
                       <div
-                        className={`h-6 rounded-full ${Math.abs(item.deficit) > data.deficitMax * 0.6 ? 'bg-red-700' : Math.abs(item.deficit) > data.deficitMax * 0.3 ? 'bg-red-500' : 'bg-red-400'}`}
-                        style={{width: `${Math.min((Math.abs(item.deficit) / data.deficitMax) * 100, 100)}%`}}
+                        className={`h-6 rounded-full ${Math.abs(item.deficit) > d.deficitMax * 0.6 ? 'bg-red-700' : Math.abs(item.deficit) > d.deficitMax * 0.3 ? 'bg-red-500' : 'bg-red-400'}`}
+                        style={{width: `${Math.min((Math.abs(item.deficit) / d.deficitMax) * 100, 100)}%`}}
                       />
                     </div>
                   </div>
-                  <span className="font-bold text-red-600 w-32 text-right">-{data.currency}{Math.abs(item.deficit)}B</span>
+                  <span className="font-bold text-red-600 w-32 text-right">-{d.currency}{Math.abs(item.deficit)}B</span>
                 </div>
               ))}
             </div>
             <div className="mt-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
-              <p className="text-sm text-yellow-800"><strong>Note:</strong> {data.deficitNote}</p>
+              <p className="text-sm text-yellow-800"><strong>Note:</strong> {d.deficitNote}</p>
             </div>
           </div>
 
@@ -6813,21 +6797,21 @@ function App() {
             </h3>
             <p className="text-gray-600 mb-4">Total accumulated government debt over time</p>
             <div className="space-y-2">
-              {data.debtHistory.map((item, index) => (
+              {d.debtHistory.map((item, index) => (
                 <div key={index} className="flex items-center gap-4">
                   <span className="text-gray-700 font-medium w-16">{item.year}</span>
                   <div className="flex-1">
                     <div className="w-full bg-gray-200 rounded-full h-6">
-                      <div className="bg-orange-500 h-6 rounded-full" style={{width: `${(item.debt / data.debtMax) * 100}%`}} />
+                      <div className="bg-orange-500 h-6 rounded-full" style={{width: `${(item.debt / d.debtMax) * 100}%`}} />
                     </div>
                   </div>
-                  <span className="font-bold text-orange-600 w-32 text-right">{data.currency}{item.debt}T</span>
+                  <span className="font-bold text-orange-600 w-32 text-right">{d.currency}{item.debt}T</span>
                 </div>
               ))}
             </div>
             <div className="mt-4 p-4 bg-orange-50 border-2 border-orange-400 rounded-lg">
-              <p className="text-orange-800 font-bold">{data.debtNote}</p>
-              <p className="text-sm text-orange-700 mt-1">{data.debtNoteSub}</p>
+              <p className="text-orange-800 font-bold">{d.debtNote}</p>
+              <p className="text-sm text-orange-700 mt-1">{d.debtNoteSub}</p>
             </div>
           </div>
 
@@ -6839,7 +6823,7 @@ function App() {
             </h3>
             <p className="text-gray-600 mb-4">National unemployment rate over the past 5 years</p>
             <div className="space-y-3">
-              {data.unemploymentTrends.map((item, index) => (
+              {d.unemploymentTrends.map((item, index) => (
                 <div key={index} className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
                     <div>
@@ -6864,20 +6848,20 @@ function App() {
             </h3>
             <p className="text-gray-600 mb-4">International development assistance and humanitarian aid</p>
             <div className="space-y-3">
-              {data.foreignAid.map((item, index) => (
+              {d.foreignAid.map((item, index) => (
                 <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
                   <div className="flex justify-between items-start mb-1">
                     <div className="flex-1">
                       <span className="text-gray-800 font-bold">{index + 1}. {item.country}</span>
                       <p className="text-sm text-gray-600">{item.purpose}</p>
                     </div>
-                    <span className="font-bold text-blue-600 ml-4">{data.currency}{item.amount}B</span>
+                    <span className="font-bold text-blue-600 ml-4">{d.currency}{item.amount}B</span>
                   </div>
                 </div>
               ))}
             </div>
             <div className="mt-4 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
-              <p className="text-blue-800 font-bold">Total Foreign Aid: {data.aidTotal}</p>
+              <p className="text-blue-800 font-bold">Total Foreign Aid: {d.aidTotal}</p>
             </div>
           </div>
 
@@ -6889,7 +6873,7 @@ function App() {
             </h3>
             <p className="text-gray-600 mb-4">Loans extended to foreign nations (expected to be repaid)</p>
             <div className="space-y-3">
-              {data.foreignLoans.map((item, index) => (
+              {d.foreignLoans.map((item, index) => (
                 <div key={index} className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1">
@@ -6897,7 +6881,7 @@ function App() {
                       <p className="text-sm text-gray-600 mt-1">{item.purpose}</p>
                       <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded mt-1 inline-block">{item.status}</span>
                     </div>
-                    <span className="font-bold text-green-600 text-xl ml-4">{data.currency}{item.amount}B</span>
+                    <span className="font-bold text-green-600 text-xl ml-4">{d.currency}{item.amount}B</span>
                   </div>
                 </div>
               ))}
@@ -6912,11 +6896,11 @@ function App() {
             </h3>
             <p className="text-gray-600 mb-4">How much each department distributes in grants</p>
             <div className="space-y-3">
-              {data.grantsByDepartment.map((item, index) => (
+              {d.grantsByDepartment.map((item, index) => (
                 <div key={index}>
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-700">{item.department}</span>
-                    <span className="font-bold text-gray-800">{data.currency}{item.grants}B ({item.percentage}%)</span>
+                    <span className="font-bold text-gray-800">{d.currency}{item.grants}B ({item.percentage}%)</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div className="bg-purple-500 h-3 rounded-full" style={{width: `${item.percentage}%`}} />
@@ -6937,21 +6921,21 @@ function App() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b-2 border-gray-300">
-                    <th className="text-left py-2 px-2 text-gray-700">{data.deptHeaders[0]}</th>
-                    <th className="text-right py-2 px-2 text-red-700">{data.deptHeaders[1]}</th>
-                    <th className="text-right py-2 px-2 text-blue-700">{data.deptHeaders[2]}</th>
-                    <th className="text-right py-2 px-2 text-green-700">{data.deptHeaders[3]}</th>
-                    <th className="text-right py-2 px-2 text-purple-700">{data.deptHeaders[4]}</th>
+                    <th className="text-left py-2 px-2 text-gray-700">{d.deptHeaders[0]}</th>
+                    <th className="text-right py-2 px-2 text-red-700">{d.deptHeaders[1]}</th>
+                    <th className="text-right py-2 px-2 text-blue-700">{d.deptHeaders[2]}</th>
+                    <th className="text-right py-2 px-2 text-green-700">{d.deptHeaders[3]}</th>
+                    <th className="text-right py-2 px-2 text-purple-700">{d.deptHeaders[4]}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.departmentTrends.map((item, index) => (
+                  {d.departmentTrends.map((item, index) => (
                     <tr key={index} className="border-b border-gray-200">
                       <td className="py-2 px-2 font-medium text-gray-800">{item.year}</td>
-                      <td className="text-right py-2 px-2 text-red-600">{data.currency}{item.col1}B</td>
-                      <td className="text-right py-2 px-2 text-blue-600">{data.currency}{item.col2}B</td>
-                      <td className="text-right py-2 px-2 text-green-600">{data.currency}{item.col3}B</td>
-                      <td className="text-right py-2 px-2 text-purple-600">{data.currency}{item.col4}B</td>
+                      <td className="text-right py-2 px-2 text-red-600">{d.currency}{item.col1}B</td>
+                      <td className="text-right py-2 px-2 text-blue-600">{d.currency}{item.col2}B</td>
+                      <td className="text-right py-2 px-2 text-green-600">{d.currency}{item.col3}B</td>
+                      <td className="text-right py-2 px-2 text-purple-600">{d.currency}{item.col4}B</td>
                     </tr>
                   ))}
                 </tbody>
@@ -6963,17 +6947,17 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-400 rounded-lg p-6 text-center">
               <p className="text-sm text-gray-700 mb-2">Total Revenue</p>
-              <p className="text-4xl font-bold text-green-700">{data.summaryRevenue}</p>
+              <p className="text-4xl font-bold text-green-700">{d.summaryRevenue}</p>
               <p className="text-xs text-gray-600 mt-2">FY 2024–25</p>
             </div>
             <div className="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-400 rounded-lg p-6 text-center">
               <p className="text-sm text-gray-700 mb-2">Total Spending</p>
-              <p className="text-4xl font-bold text-red-700">{data.summarySpending}</p>
+              <p className="text-4xl font-bold text-red-700">{d.summarySpending}</p>
               <p className="text-xs text-gray-600 mt-2">FY 2024–25</p>
             </div>
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-400 rounded-lg p-6 text-center">
               <p className="text-sm text-gray-700 mb-2">National Debt</p>
-              <p className="text-4xl font-bold text-orange-700">{data.summaryDebt}</p>
+              <p className="text-4xl font-bold text-orange-700">{d.summaryDebt}</p>
               <p className="text-xs text-gray-600 mt-2">As of 2024</p>
             </div>
           </div>
