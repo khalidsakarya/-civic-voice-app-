@@ -6676,7 +6676,8 @@ function App() {
   // Shared Government Stats Page Renderer
   const renderGovernmentStatsPage = (d) => {
     const isLoading = !!govStatsLoading[d.cc];
-    const isLive = !!(govStatsLastUpdated[d.cc]);
+    const liveStats = govStatsData[d.cc] || {};
+    const isLive = Object.keys(liveStats).length > 0;
     const sectionDefs = [
       { key: 'economic',  label: 'Economic',  Icon: TrendingUp,  color: 'blue'   },
       { key: 'safety',    label: 'Safety',    Icon: AlertCircle, color: 'red'    },
@@ -6757,28 +6758,42 @@ function App() {
                   {isOpen && (
                     <div className={`border-t ${c.border} px-5 py-4`}>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {stats.map((stat, i) => (
-                          <div key={i} className={`${c.card} border rounded-lg p-3`}>
-                            <div className="flex items-start justify-between mb-1">
-                              <p className="text-xs text-gray-500 uppercase tracking-wide font-medium leading-tight">{stat.label}</p>
-                              {stat.updated && <span className="text-xs text-gray-400 whitespace-nowrap ml-1 flex-shrink-0">{stat.updated}</span>}
+                        {stats.map((stat, i) => {
+                          const live = liveStats[stat.label];
+                          const displayValue   = live?.value   ?? stat.value;
+                          const displaySource  = live?.source  ?? stat.source;
+                          const displayUpdated = live?.updated ?? stat.updated;
+                          const displayTrend   = (live?.trend && Array.isArray(live.trend)) ? live.trend : stat.trend;
+                          const sourceUrl      = live?.sourceUrl ?? null;
+                          return (
+                            <div key={i} className={`${c.card} border rounded-lg p-3`}>
+                              <div className="flex items-start justify-between mb-1">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <p className="text-xs text-gray-500 uppercase tracking-wide font-medium leading-tight">{stat.label}</p>
+                                  {live && <span className="bg-green-500 text-white text-xs font-bold px-1.5 py-0.5 rounded flex-shrink-0">LIVE</span>}
+                                </div>
+                                {displayUpdated && <span className="text-xs text-gray-400 whitespace-nowrap ml-1 flex-shrink-0">{displayUpdated}</span>}
+                              </div>
+                              <p className="text-xl font-bold text-gray-900 mb-0.5">{displayValue}</p>
+                              {stat.sub && <p className="text-xs text-gray-500">{stat.sub}</p>}
+                              {displayTrend && (
+                                <div className="mt-2">
+                                  {sparkline(displayTrend, c.stroke)}
+                                  {stat.period && <p className="text-xs text-gray-400 mt-0.5">{stat.period}</p>}
+                                </div>
+                              )}
+                              {displaySource && (
+                                <div className="flex items-start gap-1 mt-2 pt-2 border-t border-gray-200">
+                                  <span className="text-xs font-semibold text-gray-500 flex-shrink-0">Source:</span>
+                                  {sourceUrl
+                                    ? <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline leading-tight break-all">{displaySource}</a>
+                                    : <span className="text-xs text-gray-400 leading-tight">{displaySource}</span>
+                                  }
+                                </div>
+                              )}
                             </div>
-                            <p className="text-xl font-bold text-gray-900 mb-0.5">{stat.value}</p>
-                            {stat.sub && <p className="text-xs text-gray-500">{stat.sub}</p>}
-                            {stat.trend && (
-                              <div className="mt-2">
-                                {sparkline(stat.trend, c.stroke)}
-                                {stat.period && <p className="text-xs text-gray-400 mt-0.5">{stat.period}</p>}
-                              </div>
-                            )}
-                            {stat.source && (
-                              <div className="flex items-start gap-1 mt-2 pt-2 border-t border-gray-200">
-                                <span className="text-xs font-semibold text-gray-500 flex-shrink-0">Source:</span>
-                                <span className="text-xs text-gray-400 leading-tight">{stat.source}</span>
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -16606,10 +16621,15 @@ function App() {
   const fetchGovStatsData = async (country) => {
     setGovStatsLoading(prev => ({ ...prev, [country]: true }));
     try {
-      const snap = await getDocs(query(collection(db, 'government_stats'), where('country', '==', country)));
+      const snap = await getDocs(query(collection(db, 'social_stats'), where('country', '==', country)));
       if (!snap.empty) {
-        const merged = Object.assign({}, ...snap.docs.map(d => d.data()));
-        setGovStatsData(prev => ({ ...prev, [country]: merged }));
+        // Build a map keyed by statName for O(1) lookup per stat card
+        const byName = {};
+        snap.docs.forEach(doc => {
+          const data = doc.data();
+          if (data.statName) byName[data.statName] = data;
+        });
+        setGovStatsData(prev => ({ ...prev, [country]: byName }));
         setGovStatsLastUpdated(prev => ({ ...prev, [country]: new Date() }));
       }
     } catch (err) {
