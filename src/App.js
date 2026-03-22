@@ -6675,415 +6675,157 @@ function App() {
 
   // Shared Government Stats Page Renderer
   const renderGovernmentStatsPage = (d) => {
-    const spendingColors = ['bg-purple-500','bg-blue-500','bg-yellow-500','bg-red-500','bg-green-500','bg-orange-500','bg-gray-500','bg-teal-500','bg-pink-500','bg-indigo-500','bg-lime-500','bg-cyan-500','bg-rose-500','bg-amber-500','bg-sky-500'];
-    // Always render with hardcoded data — Firestore state only drives the status banner
     const isLoading = !!govStatsLoading[d.cc];
     const isLive = !!(govStatsLastUpdated[d.cc]);
-    console.log('[GovStats] render', d.cc, { isLoading, isLive, revenueLen: d.revenue?.length });
+    const sectionDefs = [
+      { key: 'economic',  label: 'Economic',  Icon: TrendingUp,  color: 'blue'   },
+      { key: 'safety',    label: 'Safety',    Icon: AlertCircle, color: 'red'    },
+      { key: 'health',    label: 'Health',    Icon: CheckCircle, color: 'green'  },
+      { key: 'housing',   label: 'Housing',   Icon: Building2,   color: 'purple' },
+      { key: 'education', label: 'Education', Icon: FileText,    color: 'yellow' },
+      { key: 'social',    label: 'Social',    Icon: Users,       color: 'orange' },
+    ];
+    const colorMap = {
+      blue:   { bg: 'bg-blue-50',   border: 'border-blue-200',   icon: 'text-blue-600',   badge: 'bg-blue-100 text-blue-700',   card: 'bg-blue-50 border-blue-100'   },
+      red:    { bg: 'bg-red-50',    border: 'border-red-200',    icon: 'text-red-600',    badge: 'bg-red-100 text-red-700',     card: 'bg-red-50 border-red-100'     },
+      green:  { bg: 'bg-green-50',  border: 'border-green-200',  icon: 'text-green-600',  badge: 'bg-green-100 text-green-700', card: 'bg-green-50 border-green-100' },
+      purple: { bg: 'bg-purple-50', border: 'border-purple-200', icon: 'text-purple-600', badge: 'bg-purple-100 text-purple-700', card: 'bg-purple-50 border-purple-100' },
+      yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', icon: 'text-yellow-600', badge: 'bg-yellow-100 text-yellow-700', card: 'bg-yellow-50 border-yellow-100' },
+      orange: { bg: 'bg-orange-50', border: 'border-orange-200', icon: 'text-orange-600', badge: 'bg-orange-100 text-orange-700', card: 'bg-orange-50 border-orange-100' },
+    };
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
             <button onClick={() => setView(d.backView)} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">
               <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to {d.backLabel}</span>
             </button>
-            <h1 className="text-2xl font-bold text-gray-800">Important Government Stats</h1>
-            <div className="w-20"></div>
+            <h1 className="text-xl font-bold text-gray-800">Important Government Stats</h1>
+            <div className="w-20" />
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {isLoading ? (
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          {isLoading && (
             <div className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-4">
               <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
               Fetching latest data...
             </div>
-          ) : isLive ? (
+          )}
+          {isLive && !isLoading && (
             <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-4">
               <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">LIVE</span>
               Last updated: {govStatsLastUpdated[d.cc]?.toLocaleString()}
             </div>
-          ) : (
-            <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4">
-              <span>📋</span>
-              Showing sample data
-            </div>
           )}
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">{d.overviewTitle}</h2>
-            <p className="text-gray-600">{d.overviewSub}</p>
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-6 mb-6 text-white">
+            <h2 className="text-2xl font-bold mb-1">{d.subtitle}</h2>
+            <p className="text-blue-100 text-sm">{sectionDefs.length} categories · {sectionDefs.reduce((n, s) => n + (d[s.key] || []).length, 0)} indicators</p>
           </div>
-
-          {/* Revenue Sources */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <DollarSign className="w-6 h-6 text-green-600" />
-              Revenue Sources ({d.summaryRevenue})
-            </h3>
-            <p className="text-gray-600 mb-4">Where the government gets its money</p>
-            <div className="space-y-3">
-              {d.revenue.map((item, index) => (
-                <div key={index}>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-700">{item.source}</span>
-                    <span className="font-bold text-gray-800">{d.currency}{item.amount}B ({item.percentage}%)</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div className="bg-green-500 h-3 rounded-full" style={{width: `${item.percentage}%`}} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 p-4 bg-red-50 border-2 border-red-300 rounded-lg">
-              <p className="text-red-800 font-bold">⚠️ Budget Deficit: {d.deficitDisplay}</p>
-              <p className="text-sm text-red-700">{d.deficitSub}</p>
-            </div>
-          </div>
-
-          {/* Spending by Category */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-blue-600" />
-              Spending by Category ({d.summarySpending})
-            </h3>
-            <p className="text-gray-600 mb-4">Where your tax dollars go</p>
-            <div className="space-y-3">
-              {d.spending.map((item, index) => (
-                <div key={index}>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-700">{item.category}</span>
-                    <span className="font-bold text-gray-800">{d.currency}{item.amount}B ({item.percentage}%)</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div className={`h-3 rounded-full ${spendingColors[index % spendingColors.length]}`} style={{width: `${item.percentage}%`}} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Deficit History */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <AlertCircle className="w-6 h-6 text-red-600" />
-              Budget Deficit History (2014–2024)
-            </h3>
-            <p className="text-gray-600 mb-4">Annual budget deficits over the past decade</p>
-            <div className="space-y-2">
-              {d.deficitHistory.map((item, index) => (
-                <div key={index} className="flex items-center gap-4">
-                  <span className="text-gray-700 font-medium w-16">{item.year}</span>
-                  <div className="flex-1">
-                    <div className="w-full bg-gray-200 rounded-full h-6">
-                      <div
-                        className={`h-6 rounded-full ${Math.abs(item.deficit) > d.deficitMax * 0.6 ? 'bg-red-700' : Math.abs(item.deficit) > d.deficitMax * 0.3 ? 'bg-red-500' : 'bg-red-400'}`}
-                        style={{width: `${Math.min((Math.abs(item.deficit) / d.deficitMax) * 100, 100)}%`}}
-                      />
+          <div className="space-y-3">
+            {sectionDefs.map(({ key, label, Icon, color }) => {
+              const isOpen = !!expandedSections[`gs_${key}`];
+              const stats = d[key] || [];
+              const c = colorMap[color];
+              return (
+                <div key={key} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                  <button
+                    onClick={() => toggleSection(`gs_${key}`)}
+                    className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${c.bg}`}>
+                        <Icon className={`w-5 h-5 ${c.icon}`} />
+                      </div>
+                      <span className="text-base font-semibold text-gray-800">{label}</span>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${c.badge}`}>{stats.length} indicators</span>
                     </div>
-                  </div>
-                  <span className="font-bold text-red-600 w-32 text-right">-{d.currency}{Math.abs(item.deficit)}B</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 p-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
-              <p className="text-sm text-yellow-800"><strong>Note:</strong> {d.deficitNote}</p>
-            </div>
-          </div>
-
-          {/* National Debt History */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <AlertCircle className="w-6 h-6 text-orange-600" />
-              National Debt Growth (2014–2024)
-            </h3>
-            <p className="text-gray-600 mb-4">Total accumulated government debt over time</p>
-            <div className="space-y-2">
-              {d.debtHistory.map((item, index) => (
-                <div key={index} className="flex items-center gap-4">
-                  <span className="text-gray-700 font-medium w-16">{item.year}</span>
-                  <div className="flex-1">
-                    <div className="w-full bg-gray-200 rounded-full h-6">
-                      <div className="bg-orange-500 h-6 rounded-full" style={{width: `${(item.debt / d.debtMax) * 100}%`}} />
+                    {isOpen
+                      ? <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                      : <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />}
+                  </button>
+                  {isOpen && (
+                    <div className={`border-t ${c.border} px-5 py-4`}>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {stats.map((stat, i) => (
+                          <div key={i} className={`${c.card} border rounded-lg p-4`}>
+                            <p className="text-xs text-gray-500 mb-1 uppercase tracking-wide">{stat.label}</p>
+                            <p className="text-xl font-bold text-gray-900">{stat.value}</p>
+                            {stat.sub && <p className="text-xs text-gray-500 mt-1">{stat.sub}</p>}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <span className="font-bold text-orange-600 w-32 text-right">{d.currency}{item.debt}T</span>
+                  )}
                 </div>
-              ))}
-            </div>
-            <div className="mt-4 p-4 bg-orange-50 border-2 border-orange-400 rounded-lg">
-              <p className="text-orange-800 font-bold">{d.debtNote}</p>
-              <p className="text-sm text-orange-700 mt-1">{d.debtNoteSub}</p>
-            </div>
-          </div>
-
-          {/* Unemployment Trends */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Users className="w-6 h-6 text-purple-600" />
-              Unemployment Rate Trends (2020–2024)
-            </h3>
-            <p className="text-gray-600 mb-4">National unemployment rate over the past 5 years</p>
-            <div className="space-y-3">
-              {d.unemploymentTrends.map((item, index) => (
-                <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex justify-between items-center mb-2">
-                    <div>
-                      <span className="text-gray-800 font-bold text-lg">{item.year}</span>
-                      <span className="text-gray-600 text-sm ml-3">{item.context}</span>
-                    </div>
-                    <span className={`text-2xl font-bold ${item.rate < 4 ? 'text-green-600' : item.rate < 6 ? 'text-yellow-600' : 'text-red-600'}`}>{item.rate}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-4">
-                    <div className={`h-4 rounded-full ${item.rate < 4 ? 'bg-green-500' : item.rate < 6 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{width: `${(item.rate / 10) * 100}%`}} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Foreign Aid by Country */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Globe className="w-6 h-6 text-blue-600" />
-              Foreign Aid by Country (Top Recipients)
-            </h3>
-            <p className="text-gray-600 mb-4">International development assistance and humanitarian aid</p>
-            <div className="space-y-3">
-              {d.foreignAid.map((item, index) => (
-                <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
-                  <div className="flex justify-between items-start mb-1">
-                    <div className="flex-1">
-                      <span className="text-gray-800 font-bold">{index + 1}. {item.country}</span>
-                      <p className="text-sm text-gray-600">{item.purpose}</p>
-                    </div>
-                    <span className="font-bold text-blue-600 ml-4">{d.currency}{item.amount}B</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
-              <p className="text-blue-800 font-bold">Total Foreign Aid: {d.aidTotal}</p>
-            </div>
-          </div>
-
-          {/* Active Loans to Foreign Governments */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <DollarSign className="w-6 h-6 text-green-600" />
-              Active Loans to Foreign Governments
-            </h3>
-            <p className="text-gray-600 mb-4">Loans extended to foreign nations (expected to be repaid)</p>
-            <div className="space-y-3">
-              {d.foreignLoans.map((item, index) => (
-                <div key={index} className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex-1">
-                      <span className="text-gray-800 font-bold text-lg">{item.country}</span>
-                      <p className="text-sm text-gray-600 mt-1">{item.purpose}</p>
-                      <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded mt-1 inline-block">{item.status}</span>
-                    </div>
-                    <span className="font-bold text-green-600 text-xl ml-4">{d.currency}{item.amount}B</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Grant Spending by Department */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Building2 className="w-6 h-6 text-purple-600" />
-              Grant Spending by Department
-            </h3>
-            <p className="text-gray-600 mb-4">How much each department distributes in grants</p>
-            <div className="space-y-3">
-              {d.grantsByDepartment.map((item, index) => (
-                <div key={index}>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-gray-700">{item.department}</span>
-                    <span className="font-bold text-gray-800">{d.currency}{item.grants}B ({item.percentage}%)</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div className="bg-purple-500 h-3 rounded-full" style={{width: `${item.percentage}%`}} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Department Spending Trends */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-blue-600" />
-              Department Spending Trends (2020–2024)
-            </h3>
-            <p className="text-gray-600 mb-4">How spending has changed in major departments</p>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b-2 border-gray-300">
-                    <th className="text-left py-2 px-2 text-gray-700">{d.deptHeaders[0]}</th>
-                    <th className="text-right py-2 px-2 text-red-700">{d.deptHeaders[1]}</th>
-                    <th className="text-right py-2 px-2 text-blue-700">{d.deptHeaders[2]}</th>
-                    <th className="text-right py-2 px-2 text-green-700">{d.deptHeaders[3]}</th>
-                    <th className="text-right py-2 px-2 text-purple-700">{d.deptHeaders[4]}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {d.departmentTrends.map((item, index) => (
-                    <tr key={index} className="border-b border-gray-200">
-                      <td className="py-2 px-2 font-medium text-gray-800">{item.year}</td>
-                      <td className="text-right py-2 px-2 text-red-600">{d.currency}{item.col1}B</td>
-                      <td className="text-right py-2 px-2 text-blue-600">{d.currency}{item.col2}B</td>
-                      <td className="text-right py-2 px-2 text-green-600">{d.currency}{item.col3}B</td>
-                      <td className="text-right py-2 px-2 text-purple-600">{d.currency}{item.col4}B</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Summary Statistics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-400 rounded-lg p-6 text-center">
-              <p className="text-sm text-gray-700 mb-2">Total Revenue</p>
-              <p className="text-4xl font-bold text-green-700">{d.summaryRevenue}</p>
-              <p className="text-xs text-gray-600 mt-2">FY 2024–25</p>
-            </div>
-            <div className="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-400 rounded-lg p-6 text-center">
-              <p className="text-sm text-gray-700 mb-2">Total Spending</p>
-              <p className="text-4xl font-bold text-red-700">{d.summarySpending}</p>
-              <p className="text-xs text-gray-600 mt-2">FY 2024–25</p>
-            </div>
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-400 rounded-lg p-6 text-center">
-              <p className="text-sm text-gray-700 mb-2">National Debt</p>
-              <p className="text-4xl font-bold text-orange-700">{d.summaryDebt}</p>
-              <p className="text-xs text-gray-600 mt-2">As of 2024</p>
-            </div>
+              );
+            })}
           </div>
         </div>
       </div>
     );
   };
 
-  // US Budget Analytics Render Function
-  const renderUSAnalytics = () => {
-    return renderGovernmentStatsPage({
-      cc: 'US',
-      backView: 'categories',
-      backLabel: 'Government Levels',
-      currency: '$',
-      overviewTitle: '📊 Federal Budget Overview (FY 2024)',
-      overviewSub: 'Comprehensive analysis of the $6.5 trillion US federal budget',
-      revenue: [
-        { source: 'Individual Income Tax', amount: 2400, percentage: 49 },
-        { source: 'Payroll Taxes (SS/Medicare)', amount: 1700, percentage: 35 },
-        { source: 'Corporate Income Tax', amount: 530, percentage: 11 },
-        { source: 'Customs & Excise Taxes', amount: 155, percentage: 3 },
-        { source: 'Estate & Gift Taxes', amount: 45, percentage: 1 },
-        { source: 'Other Revenue', amount: 70, percentage: 1 },
-      ],
-      deficitDisplay: '$1.7 Trillion',
-      deficitSub: 'Government spends $1.7T more than it collects (borrowed money)',
-      spending: [
-        { category: 'Social Security', amount: 1350, percentage: 21 },
-        { category: 'Medicare', amount: 839, percentage: 13 },
-        { category: 'Defense (DOD)', amount: 842, percentage: 13 },
-        { category: 'Interest on National Debt', amount: 658, percentage: 10 },
-        { category: 'Medicaid', amount: 616, percentage: 9 },
-        { category: 'Income Security (SNAP, Unemployment)', amount: 505, percentage: 8 },
-        { category: 'Veterans Benefits', amount: 301, percentage: 5 },
-        { category: 'Education & Training', amount: 305, percentage: 5 },
-        { category: 'Transportation', amount: 108, percentage: 2 },
-        { category: 'Agriculture', amount: 151, percentage: 2 },
-        { category: 'Other Spending', amount: 825, percentage: 12 },
-      ],
-      deficitHistory: [
-        { year: 2014, deficit: -485 },
-        { year: 2015, deficit: -438 },
-        { year: 2016, deficit: -585 },
-        { year: 2017, deficit: -665 },
-        { year: 2018, deficit: -779 },
-        { year: 2019, deficit: -984 },
-        { year: 2020, deficit: -3132 },
-        { year: 2021, deficit: -2772 },
-        { year: 2022, deficit: -1375 },
-        { year: 2023, deficit: -1695 },
-        { year: 2024, deficit: -1700 },
-      ],
-      deficitMax: 3200,
-      deficitNote: '2020-2021 saw historic deficits due to COVID-19 pandemic response spending.',
-      debtHistory: [
-        { year: 2014, debt: 17.8 },
-        { year: 2015, debt: 18.2 },
-        { year: 2016, debt: 19.6 },
-        { year: 2017, debt: 20.2 },
-        { year: 2018, debt: 21.5 },
-        { year: 2019, debt: 22.7 },
-        { year: 2020, debt: 27.7 },
-        { year: 2021, debt: 28.4 },
-        { year: 2022, debt: 30.9 },
-        { year: 2023, debt: 33.2 },
-        { year: 2024, debt: 34.5 },
-      ],
-      debtMax: 35,
-      debtNote: '📈 Current National Debt: $34.5 Trillion',
-      debtNoteSub: 'Interest payments: $658 billion per year (10% of budget)',
-      unemploymentTrends: [
-        { year: 2020, rate: 8.1, context: 'COVID-19 Pandemic' },
-        { year: 2021, rate: 5.4, context: 'Economic Recovery' },
-        { year: 2022, rate: 3.6, context: 'Strong Job Market' },
-        { year: 2023, rate: 3.7, context: 'Stable Employment' },
-        { year: 2024, rate: 4.1, context: 'Current Rate' },
-      ],
-      foreignAid: [
-        { country: 'Ukraine', amount: 44.2, purpose: 'Military and humanitarian aid' },
-        { country: 'Israel', amount: 3.8, purpose: 'Military assistance' },
-        { country: 'Afghanistan', amount: 3.3, purpose: 'Humanitarian assistance' },
-        { country: 'Jordan', amount: 1.7, purpose: 'Economic and military aid' },
-        { country: 'Syria', amount: 1.9, purpose: 'Humanitarian assistance' },
-        { country: 'Egypt', amount: 1.4, purpose: 'Military and economic support' },
-        { country: 'Ethiopia', amount: 1.4, purpose: 'Humanitarian and development' },
-        { country: 'Nigeria', amount: 1.2, purpose: 'Security and health programs' },
-        { country: 'South Sudan', amount: 1.1, purpose: 'Humanitarian relief' },
-        { country: 'Kenya', amount: 1.1, purpose: 'Security and development' },
-      ],
-      aidTotal: '~$61 Billion (1% of budget)',
-      foreignLoans: [
-        { country: 'Ukraine', amount: 61.4, purpose: 'Economic stabilization and reconstruction', status: 'Active' },
-        { country: 'Pakistan', amount: 6.8, purpose: 'Economic development', status: 'Active' },
-        { country: 'Iraq', amount: 4.5, purpose: 'Infrastructure reconstruction', status: 'Active' },
-        { country: 'Colombia', amount: 3.2, purpose: 'Counter-narcotics and security', status: 'Active' },
-        { country: 'Jordan', amount: 2.6, purpose: 'Budget support and development', status: 'Active' },
-        { country: 'Philippines', amount: 2.1, purpose: 'Infrastructure development', status: 'Active' },
-        { country: 'Tunisia', amount: 1.8, purpose: 'Economic reform support', status: 'Active' },
-        { country: 'Lebanon', amount: 1.5, purpose: 'Economic assistance', status: 'Active' },
-      ],
-      grantsByDepartment: [
-        { department: 'Health & Human Services', grants: 1200, percentage: 45 },
-        { department: 'Treasury', grants: 890, percentage: 33 },
-        { department: 'Defense', grants: 420, percentage: 16 },
-        { department: 'Veterans Affairs', grants: 125, percentage: 5 },
-        { department: 'Agriculture', grants: 124, percentage: 5 },
-        { department: 'Transportation', grants: 78, percentage: 3 },
-        { department: 'Education', grants: 68, percentage: 3 },
-        { department: 'Housing & Urban Development', grants: 59, percentage: 2 },
-        { department: 'State Department', grants: 42, percentage: 2 },
-        { department: 'Energy', grants: 28, percentage: 1 },
-      ],
-      departmentTrends: [
-        { year: 2020, col1: 714, col2: 1495, col3: 102, col4: 220 },
-        { year: 2021, col1: 753, col2: 1622, col3: 238, col4: 240 },
-        { year: 2022, col1: 766, col2: 1639, col3: 79,  col4: 273 },
-        { year: 2023, col1: 816, col2: 1686, col3: 90,  col4: 296 },
-        { year: 2024, col1: 842, col2: 1700, col3: 79,  col4: 301 },
-      ],
-      deptHeaders: ['Year', 'Defense', 'Health & Human Services', 'Education', 'Veterans Affairs'],
-      summaryRevenue: '$4.9T',
-      summarySpending: '$6.5T',
-      summaryDebt: '$34.5T',
-    });
-  };
+  const renderUSAnalytics = () => renderGovernmentStatsPage({
+    cc: 'US',
+    backView: 'categories',
+    backLabel: 'Government Levels',
+    subtitle: '🇺🇸 United States Federal Government · FY 2024',
+    economic: [
+      { label: 'GDP (2024)',                value: '$28.8T',       sub: '+2.8% annual growth'                     },
+      { label: 'National Debt',             value: '$34.5T',       sub: '122% of GDP'                             },
+      { label: 'Budget Deficit (FY2024)',   value: '−$1.7T',       sub: 'Revenue $4.9T vs Spending $6.5T'         },
+      { label: 'Unemployment Rate',         value: '4.1%',         sub: 'April 2024'                              },
+      { label: 'Inflation (CPI)',           value: '3.4%',         sub: '12-month change'                         },
+      { label: 'Federal Funds Rate',        value: '5.25–5.5%',    sub: 'Federal Reserve target'                  },
+      { label: 'Federal Min Wage',          value: '$7.25/hr',     sub: 'Unchanged since 2009'                    },
+      { label: 'GDP per Capita',            value: '$85,400',      sub: '2024 estimate'                           },
+    ],
+    safety: [
+      { label: 'Violent Crime Rate',        value: '380.7 / 100K', sub: '2022 FBI data'                           },
+      { label: 'Property Crime Rate',       value: '1,954 / 100K', sub: '2022 FBI data'                           },
+      { label: 'Incarceration Rate',        value: '531 / 100K',   sub: 'Highest in developed world'              },
+      { label: 'Police Spending',           value: '$115B/yr',     sub: 'Federal, state & local'                  },
+      { label: 'Gun Violence Deaths',       value: '~45,000/yr',   sub: 'Incl. suicides (CDC 2022)'               },
+      { label: 'Drug Overdose Deaths',      value: '~107,000/yr',  sub: 'Opioid crisis (CDC 2022)'                },
+      { label: 'Homicide Rate',             value: '6.3 / 100K',   sub: '2022 estimate'                           },
+    ],
+    health: [
+      { label: 'Life Expectancy',           value: '76.4 years',   sub: '2022 (declined post-COVID)'              },
+      { label: 'Healthcare Spending',       value: '$4.5T/yr',     sub: '~17% of GDP'                             },
+      { label: 'Uninsured Rate',            value: '7.7%',         sub: '~25.6M Americans'                        },
+      { label: 'Obesity Rate',              value: '41.9%',        sub: 'CDC 2022'                                },
+      { label: 'Infant Mortality',          value: '5.4 / 1K',     sub: 'Per 1,000 live births (2022)'            },
+      { label: 'Mental Health Spending',    value: '$280B/yr',     sub: 'Federal + state'                         },
+      { label: 'Drug Overdose Deaths',      value: '~80,000/yr',   sub: 'Opioid-related (CDC 2022)'               },
+    ],
+    housing: [
+      { label: 'Median Home Price',         value: '$420,000',     sub: 'Q1 2024 national median'                 },
+      { label: 'Median Monthly Rent',       value: '$1,987',       sub: 'National average'                        },
+      { label: 'Homeownership Rate',        value: '65.6%',        sub: 'Q1 2024'                                 },
+      { label: 'Housing Starts',            value: '1.4M/yr',      sub: '2023 annual rate'                        },
+      { label: 'Homelessness',              value: '650,000',      sub: 'Jan 2023 point-in-time count'            },
+      { label: 'Rent-to-Income Ratio',      value: '~31%',         sub: 'Median renter household'                 },
+      { label: 'Affordable Housing Deficit',value: '7.3M units',   sub: 'Low-income households'                   },
+    ],
+    education: [
+      { label: 'High School Graduation',    value: '87%',          sub: '2021–22 NCES'                            },
+      { label: 'University Enrollment',     value: '15.9M',        sub: '4-year institutions (2022)'              },
+      { label: 'Spending per Pupil (K-12)', value: '$15,400/yr',   sub: 'Public schools'                          },
+      { label: 'Total Student Loan Debt',   value: '$1.77T',       sub: 'National total'                          },
+      { label: 'Adult Literacy Rate',       value: '99%',          sub: 'Estimate'                                },
+      { label: 'PISA Math Score',           value: '478',          sub: 'Below OECD average (489)'                },
+      { label: 'Public Univ Tuition (avg)', value: '$10,900/yr',   sub: 'In-state, 4-year'                        },
+    ],
+    social: [
+      { label: 'Poverty Rate',              value: '11.5%',        sub: '2022 official measure'                   },
+      { label: 'Child Poverty Rate',        value: '12.4%',        sub: 'Under 18 (2022)'                         },
+      { label: 'Income Inequality (Gini)',  value: '0.494',        sub: 'High vs. developed world avg'            },
+      { label: 'Social Security Recipients',value: '70M+',         sub: 'Monthly benefits'                        },
+      { label: 'SNAP Recipients',           value: '42M',          sub: 'Food stamps (FY2024)'                    },
+      { label: 'Foreign Aid Budget',        value: '~$61B',        sub: 'FY2024'                                  },
+      { label: 'Federal Social Spending',   value: '~$3.6T/yr',    sub: 'All federal social programs'             },
+    ],
+  });
 
   // Supreme Court Render Functions
   const renderCanadaSupremeCourt = () => {
@@ -19556,105 +19298,57 @@ function App() {
     cc: 'UK',
     backView: 'uk-national',
     backLabel: 'Westminster',
-    currency: '£',
-    overviewTitle: '📊 UK Government Budget Overview (FY 2024–25)',
-    overviewSub: 'Comprehensive analysis of the £1.19 trillion UK public sector budget',
-    revenue: [
-      { source: 'Income Tax', amount: 273, percentage: 29 },
-      { source: 'National Insurance', amount: 175, percentage: 19 },
-      { source: 'VAT', amount: 169, percentage: 18 },
-      { source: 'Corporation Tax', amount: 103, percentage: 11 },
-      { source: 'Fuel & Excise Duty', amount: 48, percentage: 5 },
-      { source: 'Other Taxes & Revenue', amount: 159, percentage: 17 },
+    subtitle: '🇬🇧 United Kingdom Government · FY 2024–25',
+    economic: [
+      { label: 'GDP (2024)',                value: '£2.19T',       sub: '+0.1% annual growth'                     },
+      { label: 'National Debt',             value: '£2.68T',       sub: '98% of GDP'                              },
+      { label: 'Budget Deficit (FY24)',     value: '−£122B',       sub: 'Revenue £927B vs Spending £1.19T'        },
+      { label: 'Unemployment Rate',         value: '4.2%',         sub: 'Q1 2024'                                 },
+      { label: 'Inflation (CPI)',           value: '2.3%',         sub: 'May 2024'                                },
+      { label: 'Bank of England Rate',      value: '5.25%',        sub: 'Base rate'                               },
+      { label: 'National Living Wage',      value: '£11.44/hr',    sub: 'April 2024'                              },
+      { label: 'GDP per Capita',            value: '£32,000',      sub: '2024 estimate'                           },
     ],
-    deficitDisplay: '£122 Billion',
-    deficitSub: 'Government spends £122B more than it collects (borrowed money)',
-    spending: [
-      { category: 'Social Protection (DWP)', amount: 280, percentage: 24 },
-      { category: 'Health (NHS England)', amount: 225, percentage: 19 },
-      { category: 'Education', amount: 109, percentage: 9 },
-      { category: 'Debt Interest', amount: 96, percentage: 8 },
-      { category: 'Housing & Local Government', amount: 81, percentage: 7 },
-      { category: 'Defence', amount: 52, percentage: 4 },
-      { category: 'Transport', amount: 35, percentage: 3 },
-      { category: 'Other Departments', amount: 315, percentage: 26 },
+    safety: [
+      { label: 'Crime Severity Score',      value: '57.3',         sub: '2023 ONS'                                },
+      { label: 'Homicide Rate',             value: '1.1 / 100K',   sub: '2022/23 England & Wales'                 },
+      { label: 'Knife Crime Offences',      value: '~50,000/yr',   sub: '2022/23 England & Wales'                 },
+      { label: 'Police Spending',           value: '£18B/yr',      sub: 'England & Wales'                         },
+      { label: 'Drug-Related Deaths',       value: '~4,900/yr',    sub: '2022 ONS'                                },
+      { label: 'Incarceration Rate',        value: '131 / 100K',   sub: '2023'                                    },
     ],
-    deficitHistory: [
-      { year: 2014, deficit: -97 },
-      { year: 2015, deficit: -76 },
-      { year: 2016, deficit: -58 },
-      { year: 2017, deficit: -46 },
-      { year: 2018, deficit: -42 },
-      { year: 2019, deficit: -55 },
-      { year: 2020, deficit: -322 },
-      { year: 2021, deficit: -318 },
-      { year: 2022, deficit: -134 },
-      { year: 2023, deficit: -128 },
-      { year: 2024, deficit: -122 },
+    health: [
+      { label: 'Life Expectancy',           value: '80.7 years',   sub: '2022'                                    },
+      { label: 'NHS Spending',              value: '£180B/yr',     sub: 'England only'                            },
+      { label: 'Universal Coverage',        value: '100%',         sub: 'NHS free at point of use'                },
+      { label: 'Obesity Rate',              value: '25.9%',        sub: '2022 NHS Digital'                        },
+      { label: 'Infant Mortality',          value: '3.7 / 1K',     sub: 'Per 1,000 live births (2022)'            },
+      { label: 'NHS Waiting List',          value: '7.5M patients',sub: 'England backlog (2024)'                  },
     ],
-    deficitMax: 325,
-    deficitNote: '2020-2021 saw record deficits due to COVID-19 pandemic response and the furlough scheme.',
-    debtHistory: [
-      { year: 2014, debt: 1.48 },
-      { year: 2015, debt: 1.55 },
-      { year: 2016, debt: 1.62 },
-      { year: 2017, debt: 1.68 },
-      { year: 2018, debt: 1.73 },
-      { year: 2019, debt: 1.80 },
-      { year: 2020, debt: 2.14 },
-      { year: 2021, debt: 2.22 },
-      { year: 2022, debt: 2.31 },
-      { year: 2023, debt: 2.53 },
-      { year: 2024, debt: 2.68 },
+    housing: [
+      { label: 'Median House Price',        value: '£285,000',     sub: 'March 2024 England'                      },
+      { label: 'Median Monthly Rent',       value: '£1,280',       sub: 'England average'                         },
+      { label: 'Homeownership Rate',        value: '63.0%',        sub: '2022 ONS'                                },
+      { label: 'Homelessness',              value: '309,000',      sub: 'Households (2023)'                       },
+      { label: 'Housing Completions',       value: '234,000/yr',   sub: '2022/23 England'                         },
+      { label: 'Social Housing Waiting',    value: '1.3M',         sub: 'On waiting lists (2023)'                 },
     ],
-    debtMax: 2.8,
-    debtNote: '📈 Current National Debt: £2.68 Trillion',
-    debtNoteSub: 'Debt interest payments: £96 billion per year (8% of budget)',
-    unemploymentTrends: [
-      { year: 2020, rate: 4.9, context: 'COVID-19 impact' },
-      { year: 2021, rate: 4.5, context: 'Furlough scheme end' },
-      { year: 2022, rate: 3.7, context: 'Post-Brexit recovery' },
-      { year: 2023, rate: 4.2, context: 'Cost of living crisis' },
-      { year: 2024, rate: 4.2, context: 'Current rate' },
+    education: [
+      { label: 'GCSE Pass Rate (4+)',       value: '66.5%',        sub: '2023 Ofqual England'                     },
+      { label: 'University Enrollment',     value: '2.9M',         sub: '2022/23'                                 },
+      { label: 'Spending per Pupil',        value: '£7,700/yr',    sub: '2022/23 England'                         },
+      { label: 'Student Loan Balance',      value: '£236B',        sub: 'Total outstanding'                       },
+      { label: 'Adult Literacy Rate',       value: '99%',          sub: 'Estimate'                                },
+      { label: 'PISA Math Score',           value: '489',          sub: 'At OECD average (2022)'                  },
     ],
-    foreignAid: [
-      { country: 'Ukraine', amount: 4.2, purpose: 'Military and humanitarian support' },
-      { country: 'Yemen', amount: 0.19, purpose: 'Humanitarian assistance' },
-      { country: 'Syria', amount: 0.17, purpose: 'Conflict relief and recovery' },
-      { country: 'South Sudan', amount: 0.14, purpose: 'Emergency food and health aid' },
-      { country: 'Somalia', amount: 0.12, purpose: 'Humanitarian and development aid' },
-      { country: 'Ethiopia', amount: 0.11, purpose: 'Emergency food security' },
-      { country: 'Bangladesh', amount: 0.10, purpose: 'Climate adaptation and development' },
-      { country: 'Pakistan', amount: 0.09, purpose: 'Flood recovery and development' },
+    social: [
+      { label: 'Poverty Rate',              value: '18%',          sub: 'Before housing costs (2022/23)'          },
+      { label: 'Child Poverty Rate',        value: '29%',          sub: 'After housing costs'                     },
+      { label: 'Income Inequality (Gini)',  value: '0.36',         sub: '2022/23'                                 },
+      { label: 'Benefits Recipients',       value: '22M+',         sub: 'Working-age benefits'                    },
+      { label: 'Foreign Aid',              value: '~£7.4B',        sub: 'FY2024'                                  },
+      { label: 'Social Spending',           value: '~£500B/yr',    sub: 'All social protection'                   },
     ],
-    aidTotal: '~£7.4 Billion (0.6% of budget)',
-    foreignLoans: [
-      { country: 'Ukraine', amount: 3.0, purpose: 'Economic stabilization and reconstruction', status: 'Active' },
-      { country: 'Pakistan', amount: 0.45, purpose: 'Economic reform and development', status: 'Active' },
-      { country: 'Kenya', amount: 0.22, purpose: 'Infrastructure and climate investment', status: 'Active' },
-      { country: 'Ghana', amount: 0.18, purpose: 'Development finance', status: 'Active' },
-    ],
-    grantsByDepartment: [
-      { department: 'Health & Social Care', grants: 225, percentage: 45 },
-      { department: 'Work & Pensions (DWP)', grants: 125, percentage: 25 },
-      { department: 'Education', grants: 60, percentage: 12 },
-      { department: 'Housing & Communities', grants: 35, percentage: 7 },
-      { department: 'Transport', grants: 20, percentage: 4 },
-      { department: 'Home Office', grants: 15, percentage: 3 },
-      { department: 'Defence', grants: 12, percentage: 2 },
-      { department: 'Foreign, Commonwealth & Dev', grants: 9, percentage: 2 },
-    ],
-    departmentTrends: [
-      { year: 2020, col1: 42, col2: 1205, col3: 95,  col4: 280 },
-      { year: 2021, col1: 45, col2: 1320, col3: 102, col4: 295 },
-      { year: 2022, col1: 47, col2: 1380, col3: 107, col4: 310 },
-      { year: 2023, col1: 50, col2: 1410, col3: 109, col4: 320 },
-      { year: 2024, col1: 52, col2: 1450, col3: 109, col4: 330 },
-    ],
-    deptHeaders: ['Year', 'Defence', 'NHS England', 'Education', 'Social Protection'],
-    summaryRevenue: '£927B',
-    summarySpending: '£1.19T',
-    summaryDebt: '£2.68T',
   });
 
   const renderUKNational = () => (
@@ -29917,106 +29611,57 @@ function App() {
     cc: 'CA',
     backView: 'categories',
     backLabel: 'Government Levels',
-    currency: 'C$',
-    overviewTitle: '📊 Canadian Federal Budget Overview (FY 2024–25)',
-    overviewSub: 'Comprehensive analysis of the C$521 billion Canadian federal budget',
-    revenue: [
-      { source: 'Personal Income Tax', amount: 217, percentage: 45 },
-      { source: 'Corporate Income Tax', amount: 76, percentage: 16 },
-      { source: 'GST / Sales Tax', amount: 53, percentage: 11 },
-      { source: 'EI Premiums', amount: 28, percentage: 6 },
-      { source: 'Excise & Customs', amount: 40, percentage: 8 },
-      { source: 'Other Revenue', amount: 67, percentage: 14 },
+    subtitle: '🇨🇦 Canadian Federal Government · FY 2024–25',
+    economic: [
+      { label: 'GDP (2024)',                value: 'C$2.96T',      sub: '+1.5% annual growth'                     },
+      { label: 'Federal Net Debt',          value: 'C$1.26T',      sub: '~42% of GDP'                             },
+      { label: 'Budget Deficit (FY24)',     value: '−C$40.1B',     sub: 'Revenue C$481B vs Spending C$521B'       },
+      { label: 'Unemployment Rate',         value: '6.3%',         sub: 'June 2024'                               },
+      { label: 'Inflation (CPI)',           value: '2.7%',         sub: 'May 2024'                                },
+      { label: 'Bank of Canada Rate',       value: '4.75%',        sub: 'June 2024'                               },
+      { label: 'Federal Min Wage',          value: 'C$17.30/hr',   sub: '2024 rate'                               },
+      { label: 'GDP per Capita',            value: 'C$75,700',     sub: '2024 estimate'                           },
     ],
-    deficitDisplay: 'C$40 Billion',
-    deficitSub: 'Government spends C$40B more than it collects (borrowed money)',
-    spending: [
-      { category: 'Elderly Benefits (OAS/GIS)', amount: 72, percentage: 14 },
-      { category: 'Health Transfers to Provinces', amount: 54, percentage: 10 },
-      { category: 'Employment Insurance', amount: 26, percentage: 5 },
-      { category: 'National Defence', amount: 40, percentage: 8 },
-      { category: "Children's Benefits (CCB)", amount: 27, percentage: 5 },
-      { category: 'Debt Servicing', amount: 47, percentage: 9 },
-      { category: 'Indigenous Services', amount: 23, percentage: 4 },
-      { category: 'Other Programs', amount: 232, percentage: 45 },
+    safety: [
+      { label: 'Violent Crime Severity',    value: '81.9 index',   sub: '2022 Statistics Canada'                  },
+      { label: 'Homicide Rate',             value: '2.25 / 100K',  sub: '2022'                                    },
+      { label: 'Property Crime Rate',       value: '3,248 / 100K', sub: '2022'                                    },
+      { label: 'Police Spending',           value: 'C$19B/yr',     sub: 'Federal + provincial'                    },
+      { label: 'Drug Overdose Deaths',      value: '~8,000/yr',    sub: '2022 estimate'                           },
+      { label: 'Incarceration Rate',        value: '104 / 100K',   sub: '2022'                                    },
     ],
-    deficitHistory: [
-      { year: 2014, deficit: -5.5 },
-      { year: 2015, deficit: -3 },
-      { year: 2016, deficit: -17.8 },
-      { year: 2017, deficit: -19.9 },
-      { year: 2018, deficit: -14.1 },
-      { year: 2019, deficit: -14.1 },
-      { year: 2020, deficit: -327.7 },
-      { year: 2021, deficit: -113.8 },
-      { year: 2022, deficit: -43.0 },
-      { year: 2023, deficit: -35.3 },
-      { year: 2024, deficit: -40.1 },
+    health: [
+      { label: 'Life Expectancy',           value: '82.3 years',   sub: '2022'                                    },
+      { label: 'Healthcare Spending',       value: 'C$344B/yr',    sub: '~11% of GDP'                             },
+      { label: 'Universal Coverage',        value: '100%',         sub: 'All residents covered'                   },
+      { label: 'Obesity Rate',              value: '26.8%',        sub: '2022 PHAC'                               },
+      { label: 'Infant Mortality',          value: '4.4 / 1K',     sub: 'Per 1,000 live births (2022)'            },
+      { label: 'Physician Rate',            value: '2.7 / 1K',     sub: 'Per 1,000 people (2022)'                 },
     ],
-    deficitMax: 330,
-    deficitNote: '2020-2021 saw historic deficits due to COVID-19 pandemic emergency response spending.',
-    debtHistory: [
-      { year: 2014, debt: 0.61 },
-      { year: 2015, debt: 0.62 },
-      { year: 2016, debt: 0.63 },
-      { year: 2017, debt: 0.65 },
-      { year: 2018, debt: 0.67 },
-      { year: 2019, debt: 0.68 },
-      { year: 2020, debt: 1.04 },
-      { year: 2021, debt: 1.14 },
-      { year: 2022, debt: 1.17 },
-      { year: 2023, debt: 1.22 },
-      { year: 2024, debt: 1.26 },
+    housing: [
+      { label: 'Median Home Price',         value: 'C$716,000',    sub: 'May 2024 national average'               },
+      { label: 'Median Monthly Rent',       value: 'C$2,185',      sub: '1-BR national average'                   },
+      { label: 'Homeownership Rate',        value: '66.5%',        sub: '2021 Census'                             },
+      { label: 'Homelessness',              value: '~235,000',     sub: 'Annual shelter users'                    },
+      { label: 'Housing Starts',            value: '240,000/yr',   sub: '2023'                                    },
+      { label: 'Rent-to-Income Ratio',      value: '~36%',         sub: 'Toronto/Vancouver higher'                },
     ],
-    debtMax: 1.3,
-    debtNote: '📈 Current Federal Net Debt: C$1.26 Trillion',
-    debtNoteSub: 'Debt servicing costs: C$47 billion per year (9% of budget)',
-    unemploymentTrends: [
-      { year: 2020, rate: 9.5, context: 'COVID-19 Pandemic' },
-      { year: 2021, rate: 7.5, context: 'Economic Recovery' },
-      { year: 2022, rate: 5.3, context: 'Strong Job Market' },
-      { year: 2023, rate: 5.7, context: 'Rate Rising' },
-      { year: 2024, rate: 6.3, context: 'Current Rate' },
+    education: [
+      { label: 'High School Graduation',    value: '91%',          sub: '2021'                                    },
+      { label: 'University Enrollment',     value: '1.1M',         sub: '2022'                                    },
+      { label: 'Spending per Pupil (K-12)', value: 'C$14,200/yr',  sub: 'Public schools'                          },
+      { label: 'Avg Student Debt',          value: 'C$28,000',     sub: 'Per graduate'                            },
+      { label: 'Adult Literacy Rate',       value: '99%',          sub: 'Estimate'                                },
+      { label: 'PISA Math Score',           value: '497',          sub: 'Above OECD average (489)'                },
     ],
-    foreignAid: [
-      { country: 'Ukraine', amount: 3.8, purpose: 'Military and humanitarian support' },
-      { country: 'Ethiopia', amount: 0.23, purpose: 'Food security and development' },
-      { country: 'Haiti', amount: 0.15, purpose: 'Humanitarian assistance' },
-      { country: 'Bangladesh', amount: 0.12, purpose: 'Climate resilience and development' },
-      { country: 'Jordan', amount: 0.11, purpose: 'Refugee support and stabilization' },
-      { country: 'Nigeria', amount: 0.10, purpose: 'Health systems and governance' },
-      { country: 'Ghana', amount: 0.09, purpose: 'Economic growth programs' },
-      { country: 'Pakistan', amount: 0.08, purpose: 'Flood relief and recovery' },
+    social: [
+      { label: 'Poverty Rate',              value: '7.4%',         sub: '2021 official measure'                   },
+      { label: 'Child Poverty Rate',        value: '6.4%',         sub: 'Under 18 (2021)'                         },
+      { label: 'Income Inequality (Gini)',  value: '0.31',         sub: 'Post-tax income (2021)'                  },
+      { label: 'CPP/OAS Recipients',        value: '7.8M+',        sub: 'Pension recipients'                      },
+      { label: 'Foreign Aid',              value: '~C$7.7B',       sub: 'FY2024'                                  },
+      { label: 'Federal Social Spending',   value: '~C$220B/yr',   sub: 'All federal social programs'             },
     ],
-    aidTotal: '~C$7.7 Billion (1.5% of budget)',
-    foreignLoans: [
-      { country: 'Ukraine', amount: 2.4, purpose: 'Reconstruction and economic stabilization', status: 'Active' },
-      { country: 'Jamaica', amount: 0.18, purpose: 'Infrastructure development', status: 'Active' },
-      { country: 'Colombia', amount: 0.14, purpose: 'Security and development programs', status: 'Active' },
-      { country: 'Indonesia', amount: 0.12, purpose: 'Climate adaptation projects', status: 'Active' },
-    ],
-    grantsByDepartment: [
-      { department: 'Employment & Social Dev', grants: 87, percentage: 38 },
-      { department: 'Health Canada', grants: 62, percentage: 27 },
-      { department: 'Indigenous Services Canada', grants: 28, percentage: 12 },
-      { department: 'Infrastructure Canada', grants: 14, percentage: 6 },
-      { department: 'Natural Resources Canada', grants: 12, percentage: 5 },
-      { department: 'Agriculture Canada', grants: 9, percentage: 4 },
-      { department: 'Innovation, Science & Industry', grants: 8, percentage: 3 },
-      { department: 'Environment & Climate Change', grants: 6, percentage: 3 },
-      { department: 'Transport Canada', grants: 4, percentage: 2 },
-    ],
-    departmentTrends: [
-      { year: 2020, col1: 24, col2: 110, col3: 18, col4: 22 },
-      { year: 2021, col1: 25, col2: 122, col3: 20, col4: 25 },
-      { year: 2022, col1: 28, col2: 105, col3: 22, col4: 23 },
-      { year: 2023, col1: 35, col2: 108, col3: 24, col4: 23 },
-      { year: 2024, col1: 40, col2: 112, col3: 26, col4: 23 },
-    ],
-    deptHeaders: ['Year', 'National Defence', 'Employment & Social Dev', 'Health Canada', 'Indigenous Services'],
-    summaryRevenue: 'C$481B',
-    summarySpending: 'C$521B',
-    summaryDebt: 'C$1.26T',
   });
 
   const renderContracts = () => (
@@ -31740,104 +31385,57 @@ function App() {
     cc: 'AU',
     backView: 'au-categories',
     backLabel: 'Australian Federal Government',
-    currency: 'A$',
-    overviewTitle: '📊 Australian Federal Budget Overview (FY 2024–25)',
-    overviewSub: 'Comprehensive analysis of the A$682 billion Australian federal budget',
-    revenue: [
-      { source: 'Personal Income Tax', amount: 284, percentage: 42 },
-      { source: 'Corporate Income Tax', amount: 128, percentage: 19 },
-      { source: 'GST', amount: 87, percentage: 13 },
-      { source: 'Excise & Customs', amount: 40, percentage: 6 },
-      { source: 'Other Taxes', amount: 53, percentage: 8 },
-      { source: 'Non-Tax Revenue', amount: 83, percentage: 12 },
+    subtitle: '🇦🇺 Australian Federal Government · FY 2024–25',
+    economic: [
+      { label: 'GDP (2024)',                value: 'A$2.4T',       sub: '+1.5% annual growth'                     },
+      { label: 'National Debt',             value: 'A$942B',       sub: '~37% of GDP'                             },
+      { label: 'Budget Deficit (FY24)',     value: '−A$7.2B',      sub: 'Revenue A$675B vs Spending A$682B'       },
+      { label: 'Unemployment Rate',         value: '4.0%',         sub: 'April 2024'                              },
+      { label: 'Inflation (CPI)',           value: '3.6%',         sub: 'Q1 2024'                                 },
+      { label: 'RBA Cash Rate',             value: '4.35%',        sub: 'May 2024'                                },
+      { label: 'National Min Wage',         value: 'A$23.23/hr',   sub: 'FY2024'                                  },
+      { label: 'GDP per Capita',            value: 'A$88,700',     sub: '2024 estimate'                           },
     ],
-    deficitDisplay: 'A$20 Billion',
-    deficitSub: 'Government spends A$20B more than it collects (borrowed money)',
-    spending: [
-      { category: 'Social Security & Welfare', amount: 225, percentage: 33 },
-      { category: 'Health', amount: 109, percentage: 16 },
-      { category: 'Defence', amount: 55, percentage: 8 },
-      { category: 'Education', amount: 41, percentage: 6 },
-      { category: 'Transport & Infrastructure', amount: 27, percentage: 4 },
-      { category: 'Debt Servicing', amount: 24, percentage: 4 },
-      { category: 'Housing & Community Services', amount: 20, percentage: 3 },
-      { category: 'Other Programs', amount: 181, percentage: 27 },
+    safety: [
+      { label: 'Crime Severity Index',      value: '72',           sub: 'ABS 2022'                                },
+      { label: 'Homicide Rate',             value: '0.87 / 100K',  sub: '2022 ABS'                                },
+      { label: 'Property Crime Rate',       value: '3,100 / 100K', sub: '2022'                                    },
+      { label: 'Police Spending',           value: 'A$12B/yr',     sub: 'State & federal combined'                },
+      { label: 'Drug-Related Deaths',       value: '~2,200/yr',    sub: '2022 AIHW'                               },
+      { label: 'Incarceration Rate',        value: '219 / 100K',   sub: '2023'                                    },
     ],
-    deficitHistory: [
-      { year: 2014, deficit: -48 },
-      { year: 2015, deficit: -37 },
-      { year: 2016, deficit: -39 },
-      { year: 2017, deficit: -33 },
-      { year: 2018, deficit: -10 },
-      { year: 2019, deficit: -4 },
-      { year: 2020, deficit: -134 },
-      { year: 2021, deficit: -99 },
-      { year: 2022, deficit: -32 },
-      { year: 2023, deficit: -14 },
-      { year: 2024, deficit: -20 },
+    health: [
+      { label: 'Life Expectancy',           value: '83.2 years',   sub: '2022 (among world\'s highest)'           },
+      { label: 'Healthcare Spending',       value: 'A$220B/yr',    sub: '~9% of GDP'                              },
+      { label: 'Universal Coverage',        value: '100%',         sub: 'Medicare'                                },
+      { label: 'Obesity Rate',              value: '31.3%',        sub: '2022 AIHW'                               },
+      { label: 'Infant Mortality',          value: '3.3 / 1K',     sub: 'Per 1,000 live births (2022)'            },
+      { label: 'Physician Rate',            value: '3.9 / 1K',     sub: 'Per 1,000 people (2022)'                 },
     ],
-    deficitMax: 140,
-    deficitNote: '2020-2021 saw record deficits due to COVID-19 pandemic stimulus and JobKeeper payments.',
-    debtHistory: [
-      { year: 2014, debt: 0.37 },
-      { year: 2015, debt: 0.44 },
-      { year: 2016, debt: 0.49 },
-      { year: 2017, debt: 0.55 },
-      { year: 2018, debt: 0.58 },
-      { year: 2019, debt: 0.59 },
-      { year: 2020, debt: 0.72 },
-      { year: 2021, debt: 0.83 },
-      { year: 2022, debt: 0.88 },
-      { year: 2023, debt: 0.91 },
-      { year: 2024, debt: 0.94 },
+    housing: [
+      { label: 'Median House Price',        value: 'A$745,000',    sub: 'Q1 2024 (8 capitals avg)'                },
+      { label: 'Median Monthly Rent',       value: 'A$2,225',      sub: 'Capital cities average'                  },
+      { label: 'Homeownership Rate',        value: '67.0%',        sub: '2021 Census'                             },
+      { label: 'Homelessness',              value: '~122,000',     sub: '2021 Census'                             },
+      { label: 'Housing Completions',       value: '175,000/yr',   sub: '2022/23'                                 },
+      { label: 'Rent-to-Income Ratio',      value: '~34%',         sub: 'Capital cities average'                  },
     ],
-    debtMax: 1.0,
-    debtNote: '📈 Current Gross Debt: A$942 Billion',
-    debtNoteSub: 'Debt servicing cost: A$24 billion per year (4% of budget)',
-    unemploymentTrends: [
-      { year: 2020, rate: 6.4, context: 'COVID-19 Pandemic' },
-      { year: 2021, rate: 5.1, context: 'Recovery Underway' },
-      { year: 2022, rate: 3.5, context: 'Labour Market Tight' },
-      { year: 2023, rate: 3.7, context: 'Stable Employment' },
-      { year: 2024, rate: 3.9, context: 'Current Rate' },
+    education: [
+      { label: 'Year 12 Completion',        value: '89.3%',        sub: '2022 ACARA'                              },
+      { label: 'University Enrollment',     value: '1.1M',         sub: '2022'                                    },
+      { label: 'Spending per Student',      value: 'A$16,000/yr',  sub: 'K-12 public schools'                     },
+      { label: 'HECS Debt (total)',         value: 'A$87B',         sub: 'Total outstanding'                       },
+      { label: 'Adult Literacy Rate',       value: '99%',          sub: 'Estimate'                                },
+      { label: 'PISA Math Score',           value: '487',          sub: 'Near OECD average (2022)'                },
     ],
-    foreignAid: [
-      { country: 'Papua New Guinea', amount: 0.48, purpose: 'Bilateral development — health, education & governance' },
-      { country: 'Indonesia', amount: 0.37, purpose: 'Economic growth, disaster resilience & education' },
-      { country: 'Solomon Islands', amount: 0.28, purpose: 'Security partnership & infrastructure' },
-      { country: 'Timor-Leste', amount: 0.21, purpose: 'Economic development & financial reform' },
-      { country: 'Vanuatu', amount: 0.16, purpose: 'Infrastructure & climate resilience' },
-      { country: 'Philippines', amount: 0.14, purpose: 'Inclusive economic growth & human development' },
-      { country: 'Cambodia', amount: 0.10, purpose: 'Rule of law & land rights' },
-      { country: 'Myanmar', amount: 0.09, purpose: 'Humanitarian assistance & civil society' },
+    social: [
+      { label: 'Poverty Rate',              value: '13.4%',        sub: 'Below 50% median income'                 },
+      { label: 'Child Poverty Rate',        value: '16.6%',        sub: 'Under 15'                                },
+      { label: 'Income Inequality (Gini)',  value: '0.325',        sub: '2022'                                    },
+      { label: 'Age Pension Recipients',    value: '2.7M+',        sub: '2024'                                    },
+      { label: 'Foreign Aid',              value: '~A$4.5B',       sub: 'FY2024'                                  },
+      { label: 'Federal Social Spending',   value: '~A$260B/yr',   sub: 'All federal social programs'             },
     ],
-    aidTotal: '~A$4.9 Billion (0.7% of budget)',
-    foreignLoans: [
-      { country: 'Papua New Guinea', amount: 0.38, purpose: 'Infrastructure development & economic growth', status: 'Active' },
-      { country: 'Indonesia', amount: 0.24, purpose: 'Climate projects and energy transition', status: 'Active' },
-      { country: 'Timor-Leste', amount: 0.12, purpose: 'Infrastructure and governance reform', status: 'Active' },
-      { country: 'Fiji', amount: 0.08, purpose: 'Climate resilience infrastructure', status: 'Active' },
-    ],
-    grantsByDepartment: [
-      { department: 'Health & Aged Care', grants: 109, percentage: 42 },
-      { department: 'Social Services (DSS)', grants: 85, percentage: 33 },
-      { department: 'Education', grants: 28, percentage: 11 },
-      { department: 'Infrastructure & Transport', grants: 16, percentage: 6 },
-      { department: 'Housing Australia', grants: 10, percentage: 4 },
-      { department: 'Agriculture, Water & Environment', grants: 6, percentage: 2 },
-      { department: 'Industry, Science & Resources', grants: 4, percentage: 2 },
-    ],
-    departmentTrends: [
-      { year: 2020, col1: 39, col2: 90,  col3: 35, col4: 210 },
-      { year: 2021, col1: 43, col2: 97,  col3: 38, col4: 225 },
-      { year: 2022, col1: 49, col2: 101, col3: 39, col4: 235 },
-      { year: 2023, col1: 52, col2: 105, col3: 40, col4: 242 },
-      { year: 2024, col1: 55, col2: 109, col3: 41, col4: 250 },
-    ],
-    deptHeaders: ['Year', 'Defence', 'Health & Aged Care', 'Education', 'Social Security & Welfare'],
-    summaryRevenue: 'A$675B',
-    summarySpending: 'A$682B',
-    summaryDebt: 'A$942B',
   });
 
   const renderAuCategories = () => {
