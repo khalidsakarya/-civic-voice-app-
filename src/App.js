@@ -6759,7 +6759,7 @@ function App() {
                     <div className={`border-t ${c.border} px-5 py-4`}>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {stats.map((stat, i) => {
-                          const live = liveStats[stat.label];
+                          const live = stat.firestoreKey ? liveStats[stat.firestoreKey] : liveStats[stat.label];
                           const displayValue   = live?.value   ?? stat.value;
                           const displaySource  = live?.source  ?? stat.source;
                           const displayUpdated = live?.updated ?? stat.updated;
@@ -6812,16 +6812,16 @@ function App() {
     backLabel: 'Government Levels',
     subtitle: '🇺🇸 United States Federal Government · FY 2024',
     economic: [
-      { label: 'Unemployment',      value: '4.1%',          sub: 'Seasonally adjusted',         trend: [3.9,3.7,3.7,3.8,3.8,4.1],          period: 'Nov 23 – Apr 24',   source: 'U.S. Bureau of Labor Statistics (BLS)',            updated: 'Apr 2024' },
-      { label: 'Inflation (CPI)',   value: '3.4%',          sub: '12-month change',             trend: [3.2,3.1,3.4,3.2,3.5,3.4],          period: 'Oct 23 – Mar 24',   source: 'U.S. Bureau of Labor Statistics (BLS)',            updated: 'Mar 2024' },
-      { label: 'Median Home Price', value: '$420,000',      sub: 'National median',             trend: [387000,399000,406000,412000,418000,420000], period: 'Oct 23 – Mar 24', source: 'National Association of Realtors (NAR)',          updated: 'Mar 2024' },
-      { label: 'Cost of Living',    value: 'Index 71',      sub: 'vs world average of 55',      trend: [67,69,71],                          period: '2022 – 2024',       source: 'Numbeo Cost of Living Index',                     updated: '2024'     },
+      { label: 'Unemployment',      firestoreKey: 'unemploymentRate',       value: '4.1%',          sub: 'Seasonally adjusted',         trend: [3.9,3.7,3.7,3.8,3.8,4.1],          period: 'Nov 23 – Apr 24',   source: 'U.S. Bureau of Labor Statistics (BLS)',            updated: 'Apr 2024' },
+      { label: 'Inflation (CPI)',   firestoreKey: 'cpiInflation',          value: '3.4%',          sub: '12-month change',             trend: [3.2,3.1,3.4,3.2,3.5,3.4],          period: 'Oct 23 – Mar 24',   source: 'U.S. Bureau of Labor Statistics (BLS)',            updated: 'Mar 2024' },
+      { label: 'Median Home Price', firestoreKey: 'medianHomeValue',       value: '$420,000',      sub: 'National median',             trend: [387000,399000,406000,412000,418000,420000], period: 'Oct 23 – Mar 24', source: 'National Association of Realtors (NAR)',          updated: 'Mar 2024' },
+      { label: 'Cost of Living',    firestoreKey: 'bankRate',              value: 'Index 71',      sub: 'vs world average of 55',      trend: [67,69,71],                          period: '2022 – 2024',       source: 'Numbeo Cost of Living Index',                     updated: '2024'     },
       { label: 'Min Wage Gap',      value: '$7.25 → $17',   sub: 'Federal floor vs avg state',  trend: [7.25,7.25,7.25],                    period: '2022 – 2024',       source: 'U.S. Dept of Labor',                              updated: '2024'     },
       { label: 'Gini Coefficient',  value: '0.494',         sub: 'High inequality',             trend: [0.488,0.491,0.494],                 period: '2022 – 2024',       source: 'U.S. Census Bureau',                              updated: '2023'     },
     ],
     safety: [
       { label: 'Crime Rate',        value: '2,228 / 100K',  sub: 'All offences',                trend: [2489,2363,2228],                    period: '2020 – 2022',       source: 'FBI Uniform Crime Report',                        updated: '2022'     },
-      { label: 'Drug Overdoses',    value: '~107,000/yr',   sub: 'Opioid crisis',               trend: [91799,107622,107000],               period: '2020 – 2022',       source: 'CDC National Center for Health Statistics',       updated: '2022'     },
+      { label: 'Drug Overdoses',    firestoreKey: 'drugOverdoseDeaths',    value: '~107,000/yr',   sub: 'Opioid crisis',               trend: [91799,107622,107000],               period: '2020 – 2022',       source: 'CDC National Center for Health Statistics',       updated: '2022'     },
       { label: 'Road Fatalities',   value: '42,795/yr',     sub: '2022',                        trend: [38824,42939,42795],                 period: '2020 – 2022',       source: 'NHTSA Fatality Analysis Reporting System',        updated: '2022'     },
       { label: 'Homicide Rate',     value: '6.3 / 100K',    sub: '2022 estimate',               trend: [7.5,7.3,6.3],                      period: '2020 – 2022',       source: 'FBI Uniform Crime Report',                        updated: '2022'     },
     ],
@@ -6833,7 +6833,7 @@ function App() {
       { label: 'Drug Addiction',       value: '~48M people',   sub: 'Substance use disorder',   trend: [40.3,46.3,48.0],                   period: '2020 – 2022',       source: 'SAMHSA National Survey on Drug Use & Health',     updated: '2022'     },
     ],
     housing: [
-      { label: 'Rent vs Income',    value: '~31%',          sub: 'Median renter household',     trend: [28,29,30,31],                      period: 'Q1 – Q4 2023',      source: 'Harvard Joint Center for Housing Studies',        updated: 'Q4 2023'  },
+      { label: 'Rent vs Income',    firestoreKey: 'medianGrossRent',       value: '~31%',          sub: 'Median renter household',     trend: [28,29,30,31],                      period: 'Q1 – Q4 2023',      source: 'Harvard Joint Center for Housing Studies',        updated: 'Q4 2023'  },
       { label: 'Homelessness',      value: '650,000',       sub: 'Point-in-time count',         trend: [580000,600000,650000],              period: '2021 – 2023',       source: 'HUD Annual Homeless Assessment Report',           updated: 'Jan 2023' },
       { label: 'New Builds',        value: '1.4M/yr',       sub: 'Housing starts 2023',         trend: [1.38,1.55,1.40],                   period: '2021 – 2023',       source: 'U.S. Census Bureau / HUD',                        updated: '2023'     },
       { label: 'Evictions',         value: '~3.6M/yr',      sub: 'Annual estimate',             trend: [3.2,3.4,3.6],                      period: '2020 – 2022',       source: 'Princeton Eviction Lab',                          updated: '2022'     },
@@ -6841,11 +6841,11 @@ function App() {
     education: [
       { label: 'Graduation Rate',   value: '87%',           sub: 'High school completion',      trend: [85,86,87],                         period: '2020 – 2022',       source: 'National Center for Education Statistics (NCES)', updated: '2022'     },
       { label: 'Student Debt',      value: '$1.77T',        sub: 'Total national debt',         trend: [1.57,1.64,1.77],                   period: '2022 – 2024',       source: 'Federal Reserve / Dept of Education',             updated: '2024'     },
-      { label: 'School Funding',    value: '$15,400/pupil', sub: 'Per year, public K-12',       trend: [13700,14600,15400],                 period: '2020 – 2022',       source: 'National Center for Education Statistics (NCES)', updated: '2022'     },
+      { label: 'School Funding',    firestoreKey: 'federalAgencySpending', value: '$15,400/pupil', sub: 'Per year, public K-12',       trend: [13700,14600,15400],                 period: '2020 – 2022',       source: 'National Center for Education Statistics (NCES)', updated: '2022'     },
       { label: 'Literacy',          value: '79% proficient',sub: 'Adult reading proficiency',    trend: [79,79,79],                         period: '2020 – 2022',       source: 'National Assessment of Adult Literacy (NAAL)',    updated: '2022'     },
     ],
     social: [
-      { label: 'Poverty Rate',      value: '11.5%',         sub: '2022 official measure',       trend: [11.4,12.8,11.5],                   period: '2020 – 2022',       source: 'U.S. Census Bureau',                              updated: '2022'     },
+      { label: 'Poverty Rate',      firestoreKey: 'povertyRate',           value: '11.5%',         sub: '2022 official measure',       trend: [11.4,12.8,11.5],                   period: '2020 – 2022',       source: 'U.S. Census Bureau',                              updated: '2022'     },
       { label: 'Food Banks',        value: '60M+ served/yr',sub: 'Feeding America',             trend: [54,56,58,59,60,60],                period: 'Oct 23 – Mar 24',   source: 'Feeding America Annual Report',                   updated: 'Mar 2024' },
       { label: 'Child Poverty',     value: '12.4%',         sub: 'Under 18 (2022)',             trend: [14.4,17.0,12.4],                   period: '2020 – 2022',       source: 'U.S. Census Bureau',                              updated: '2022'     },
       { label: 'Immigration',       value: '~1M/yr',        sub: 'Legal permanent residents',   trend: [707362,1031765,1016000],            period: '2020 – 2022',       source: 'Dept of Homeland Security (DHS)',                  updated: '2022'     },
@@ -19330,16 +19330,16 @@ function App() {
     backLabel: 'Westminster',
     subtitle: '🇬🇧 United Kingdom Government · FY 2024–25',
     economic: [
-      { label: 'Unemployment',      value: '4.2%',           sub: 'Seasonally adjusted',        trend: [4.3,4.2,4.2,4.3,4.2,4.2],          period: 'Oct 23 – Mar 24',   source: 'Office for National Statistics (ONS)',             updated: 'Mar 2024' },
-      { label: 'Inflation (CPI)',   value: '2.3%',           sub: '12-month change',            trend: [4.6,4.0,3.4,3.2,3.2,2.3],          period: 'Dec 23 – May 24',   source: 'Office for National Statistics (ONS)',             updated: 'May 2024' },
-      { label: 'Median Home Price', value: '£285,000',       sub: 'England March 2024',         trend: [278000,279000,281000,283000,284000,285000], period: 'Oct 23 – Mar 24', source: 'HM Land Registry UK House Price Index',         updated: 'Mar 2024' },
-      { label: 'Cost of Living',    value: 'Index 67',       sub: 'vs world average of 55',     trend: [64,65,67],                          period: '2022 – 2024',       source: 'Numbeo Cost of Living Index',                     updated: '2024'     },
+      { label: 'Unemployment',      firestoreKey: 'unemploymentRate',       value: '4.2%',           sub: 'Seasonally adjusted',        trend: [4.3,4.2,4.2,4.3,4.2,4.2],          period: 'Oct 23 – Mar 24',   source: 'Office for National Statistics (ONS)',             updated: 'Mar 2024' },
+      { label: 'Inflation (CPI)',   firestoreKey: 'cpiInflation',          value: '2.3%',           sub: '12-month change',            trend: [4.6,4.0,3.4,3.2,3.2,2.3],          period: 'Dec 23 – May 24',   source: 'Office for National Statistics (ONS)',             updated: 'May 2024' },
+      { label: 'Median Home Price', firestoreKey: 'medianHomeValue',       value: '£285,000',       sub: 'England March 2024',         trend: [278000,279000,281000,283000,284000,285000], period: 'Oct 23 – Mar 24', source: 'HM Land Registry UK House Price Index',         updated: 'Mar 2024' },
+      { label: 'Cost of Living',    firestoreKey: 'bankRate',              value: 'Index 67',       sub: 'vs world average of 55',     trend: [64,65,67],                          period: '2022 – 2024',       source: 'Numbeo Cost of Living Index',                     updated: '2024'     },
       { label: 'Min Wage Gap',      value: '£11.44 → £13',   sub: 'NLW vs avg earnings',        trend: [9.50,10.42,11.44],                  period: '2022 – 2024',       source: 'Low Pay Commission / ONS',                        updated: 'Apr 2024' },
       { label: 'Gini Coefficient',  value: '0.36',           sub: 'Moderate-high inequality',   trend: [0.35,0.36,0.36],                    period: '2022 – 2024',       source: 'Office for National Statistics (ONS)',             updated: '2023'     },
     ],
     safety: [
       { label: 'Crime Rate',        value: '8,700 / 100K',   sub: 'England & Wales',            trend: [8456,9013,8700],                    period: '2020 – 2022',       source: 'ONS Crime Survey for England and Wales',          updated: '2023'     },
-      { label: 'Drug Overdoses',    value: '~4,900/yr',      sub: '2022 ONS',                   trend: [4561,4859,4907],                    period: '2020 – 2022',       source: 'Office for National Statistics (ONS)',             updated: '2022'     },
+      { label: 'Drug Overdoses',    firestoreKey: 'drugOverdoseDeaths',    value: '~4,900/yr',      sub: '2022 ONS',                   trend: [4561,4859,4907],                    period: '2020 – 2022',       source: 'Office for National Statistics (ONS)',             updated: '2022'     },
       { label: 'Road Fatalities',   value: '~1,695/yr',      sub: '2023 England & Wales',       trend: [1460,1558,1695],                    period: '2021 – 2023',       source: 'Dept for Transport Road Casualties Report',       updated: '2023'     },
       { label: 'Homicide Rate',     value: '1.1 / 100K',     sub: 'England & Wales 2022/23',    trend: [1.11,1.03,1.10],                    period: '2020 – 2022',       source: 'Office for National Statistics (ONS)',             updated: '2023'     },
     ],
@@ -19351,7 +19351,7 @@ function App() {
       { label: 'Drug Addiction',       value: '~300,000',      sub: 'Opiate users',             trend: [260000,285000,300000],              period: '2020 – 2022',       source: 'Office for National Statistics (ONS)',             updated: '2022'     },
     ],
     housing: [
-      { label: 'Rent vs Income',    value: '~35%',           sub: 'Average renter England',     trend: [31,32,34,35],                      period: 'Q1 – Q4 2023',      source: 'Valuation Office Agency / ONS',                   updated: 'Q4 2023'  },
+      { label: 'Rent vs Income',    firestoreKey: 'medianGrossRent',       value: '~35%',           sub: 'Average renter England',     trend: [31,32,34,35],                      period: 'Q1 – Q4 2023',      source: 'Valuation Office Agency / ONS',                   updated: 'Q4 2023'  },
       { label: 'Homelessness',      value: '309,000',        sub: 'Households 2023',            trend: [231000,274000,309000],              period: '2021 – 2023',       source: 'Dept for Levelling Up, Housing & Communities',    updated: '2023'     },
       { label: 'New Builds',        value: '234,000/yr',     sub: 'Completions 2022/23',        trend: [213000,219000,234000],              period: '2021 – 2023',       source: 'Dept for Levelling Up, Housing & Communities',    updated: '2023'     },
       { label: 'Evictions',         value: '~24,000/yr',     sub: 'England — rising',           trend: [8000,19000,24000],                  period: '2021 – 2023',       source: 'Ministry of Justice Court Statistics',            updated: '2023'     },
@@ -19359,11 +19359,11 @@ function App() {
     education: [
       { label: 'Graduation Rate',   value: '66.5%',          sub: 'GCSE grade 4+ 2023',         trend: [61.6,67.3,66.5],                   period: '2020 – 2022',       source: 'Ofqual / Dept for Education',                     updated: '2023'     },
       { label: 'Student Debt',      value: '£236B total',    sub: 'Outstanding loans',          trend: [160000,200000,236000],              period: '2022 – 2024',       source: 'Student Loans Company / Dept for Education',      updated: '2024'     },
-      { label: 'School Funding',    value: '£7,700/pupil',   sub: 'Per year 2022/23',           trend: [6900,7200,7700],                    period: '2020 – 2022',       source: 'Dept for Education School Revenue Accounts',      updated: '2023'     },
+      { label: 'School Funding',    firestoreKey: 'federalAgencySpending', value: '£7,700/pupil',   sub: 'Per year 2022/23',           trend: [6900,7200,7700],                    period: '2020 – 2022',       source: 'Dept for Education School Revenue Accounts',      updated: '2023'     },
       { label: 'Literacy',          value: '99%',            sub: 'Adult literacy rate',         trend: [99,99,99],                         period: '2020 – 2022',       source: 'Office for National Statistics (ONS)',             updated: '2022'     },
     ],
     social: [
-      { label: 'Poverty Rate',      value: '18%',            sub: 'Before housing costs',        trend: [17,17,18],                         period: '2020 – 2022',       source: 'Dept for Work and Pensions (DWP)',                 updated: '2023'     },
+      { label: 'Poverty Rate',      firestoreKey: 'povertyRate',           value: '18%',            sub: 'Before housing costs',        trend: [17,17,18],                         period: '2020 – 2022',       source: 'Dept for Work and Pensions (DWP)',                 updated: '2023'     },
       { label: 'Food Banks',        value: '3.1M parcels/yr',sub: 'Trussell Trust 2023',         trend: [2200000,2500000,2800000,3000000,3100000,3100000], period: 'Oct 23 – Mar 24', source: 'The Trussell Trust',                     updated: 'Mar 2024' },
       { label: 'Child Poverty',     value: '29%',            sub: 'After housing costs',         trend: [27,28,29],                         period: '2020 – 2022',       source: 'Dept for Work and Pensions (DWP)',                 updated: '2023'     },
       { label: 'Immigration',       value: '685,000 net',    sub: 'Net migration 2023',          trend: [268000,606000,685000],              period: '2021 – 2023',       source: 'Office for National Statistics (ONS)',             updated: '2023'     },
@@ -29632,16 +29632,16 @@ function App() {
     backLabel: 'Government Levels',
     subtitle: '🇨🇦 Canadian Federal Government · FY 2024–25',
     economic: [
-      { label: 'Unemployment',      value: '6.3%',           sub: 'Seasonally adjusted',        trend: [5.8,5.8,5.9,6.1,6.2,6.3],          period: 'Jan – Jun 2024',    source: 'Statistics Canada Labour Force Survey',            updated: 'Jun 2024' },
-      { label: 'Inflation (CPI)',   value: '2.7%',           sub: '12-month change',            trend: [3.4,3.1,2.9,2.8,2.9,2.7],          period: 'Dec 23 – May 24',   source: 'Statistics Canada CPI Report',                     updated: 'May 2024' },
-      { label: 'Median Home Price', value: 'C$716,000',      sub: 'National average',           trend: [695000,699000,705000,708000,712000,716000], period: 'Dec 23 – May 24', source: 'Canadian Real Estate Association (CREA)',         updated: 'May 2024' },
-      { label: 'Cost of Living',    value: 'Index 64',       sub: 'vs world average of 55',     trend: [60,62,64],                          period: '2022 – 2024',       source: 'Numbeo Cost of Living Index',                     updated: '2024'     },
+      { label: 'Unemployment',      firestoreKey: 'unemploymentRate',       value: '6.3%',           sub: 'Seasonally adjusted',        trend: [5.8,5.8,5.9,6.1,6.2,6.3],          period: 'Jan – Jun 2024',    source: 'Statistics Canada Labour Force Survey',            updated: 'Jun 2024' },
+      { label: 'Inflation (CPI)',   firestoreKey: 'cpiInflation',          value: '2.7%',           sub: '12-month change',            trend: [3.4,3.1,2.9,2.8,2.9,2.7],          period: 'Dec 23 – May 24',   source: 'Statistics Canada CPI Report',                     updated: 'May 2024' },
+      { label: 'Median Home Price', firestoreKey: 'medianHomeValue',       value: 'C$716,000',      sub: 'National average',           trend: [695000,699000,705000,708000,712000,716000], period: 'Dec 23 – May 24', source: 'Canadian Real Estate Association (CREA)',         updated: 'May 2024' },
+      { label: 'Cost of Living',    firestoreKey: 'bankRate',              value: 'Index 64',       sub: 'vs world average of 55',     trend: [60,62,64],                          period: '2022 – 2024',       source: 'Numbeo Cost of Living Index',                     updated: '2024'     },
       { label: 'Min Wage Gap',      value: 'C$17.30 → C$19', sub: 'Federal floor vs avg prov.', trend: [15.55,16.65,17.30],                 period: '2022 – 2024',       source: 'Employment and Social Development Canada',        updated: '2024'     },
       { label: 'Gini Coefficient',  value: '0.31',           sub: 'Moderate inequality',        trend: [0.307,0.308,0.310],                 period: '2022 – 2024',       source: 'Statistics Canada',                               updated: '2023'     },
     ],
     safety: [
       { label: 'Crime Rate',        value: '5,320 / 100K',   sub: 'All offences',               trend: [5648,5416,5320],                    period: '2020 – 2022',       source: 'Statistics Canada Uniform Crime Reporting Survey', updated: '2022'     },
-      { label: 'Drug Overdoses',    value: '~8,000/yr',      sub: 'Opioid crisis',              trend: [6306,7560,8000],                    period: '2020 – 2022',       source: 'Public Health Agency of Canada',                  updated: '2022'     },
+      { label: 'Drug Overdoses',    firestoreKey: 'drugOverdoseDeaths',    value: '~8,000/yr',      sub: 'Opioid crisis',              trend: [6306,7560,8000],                    period: '2020 – 2022',       source: 'Public Health Agency of Canada',                  updated: '2022'     },
       { label: 'Road Fatalities',   value: '~1,900/yr',      sub: '2022',                       trend: [1745,1768,1900],                    period: '2020 – 2022',       source: 'Transport Canada National Collision Database',     updated: '2022'     },
       { label: 'Homicide Rate',     value: '2.25 / 100K',    sub: '2022',                       trend: [2.07,2.56,2.25],                    period: '2020 – 2022',       source: 'Statistics Canada Homicide Survey',               updated: '2022'     },
     ],
@@ -29653,7 +29653,7 @@ function App() {
       { label: 'Drug Addiction',       value: '~400,000',      sub: 'Opioid users',             trend: [280000,340000,400000],              period: '2020 – 2022',       source: 'Public Health Agency of Canada',                  updated: '2022'     },
     ],
     housing: [
-      { label: 'Rent vs Income',    value: '~36%',           sub: 'National avg',               trend: [32,33,35,36],                      period: 'Q1 – Q4 2023',      source: 'Canada Mortgage and Housing Corp (CMHC)',          updated: 'Q4 2023'  },
+      { label: 'Rent vs Income',    firestoreKey: 'medianGrossRent',       value: '~36%',           sub: 'National avg',               trend: [32,33,35,36],                      period: 'Q1 – Q4 2023',      source: 'Canada Mortgage and Housing Corp (CMHC)',          updated: 'Q4 2023'  },
       { label: 'Homelessness',      value: '~235,000',       sub: 'Annual shelter users',       trend: [195000,220000,235000],              period: '2021 – 2023',       source: 'Employment & Social Development Canada',          updated: '2023'     },
       { label: 'New Builds',        value: '240,000/yr',     sub: 'Housing starts 2023',        trend: [220000,262000,240000],              period: '2021 – 2023',       source: 'Canada Mortgage and Housing Corp (CMHC)',          updated: '2023'     },
       { label: 'Evictions',         value: '~50,000/yr',     sub: 'Rising trend',               trend: [35000,42000,50000],                 period: '2020 – 2022',       source: 'CMHC / Provincial Housing Authorities',           updated: '2022'     },
@@ -29661,11 +29661,11 @@ function App() {
     education: [
       { label: 'Graduation Rate',   value: '91%',            sub: 'High school (2021)',          trend: [88,90,91],                         period: '2020 – 2022',       source: 'Statistics Canada Education Indicators',          updated: '2022'     },
       { label: 'Student Debt',      value: 'C$28,000',       sub: 'Average per graduate',        trend: [24000,26000,28000],                 period: '2020 – 2022',       source: 'Statistics Canada Student Debt Survey',           updated: '2022'     },
-      { label: 'School Funding',    value: 'C$14,200/pupil', sub: 'Per year, public K-12',       trend: [13100,13700,14200],                 period: '2020 – 2022',       source: 'Statistics Canada Education Finance',             updated: '2022'     },
+      { label: 'School Funding',    firestoreKey: 'federalAgencySpending', value: 'C$14,200/pupil', sub: 'Per year, public K-12',       trend: [13100,13700,14200],                 period: '2020 – 2022',       source: 'Statistics Canada Education Finance',             updated: '2022'     },
       { label: 'Literacy',          value: '99%',            sub: 'Adult literacy rate',          trend: [99,99,99],                         period: '2020 – 2022',       source: 'Statistics Canada',                               updated: '2022'     },
     ],
     social: [
-      { label: 'Poverty Rate',      value: '7.4%',           sub: '2021 official measure',       trend: [8.1,7.4,7.4],                      period: '2020 – 2022',       source: 'Statistics Canada (Market Basket Measure)',        updated: '2022'     },
+      { label: 'Poverty Rate',      firestoreKey: 'povertyRate',           value: '7.4%',           sub: '2021 official measure',       trend: [8.1,7.4,7.4],                      period: '2020 – 2022',       source: 'Statistics Canada (Market Basket Measure)',        updated: '2022'     },
       { label: 'Food Banks',        value: '1.9M visits/mo', sub: 'Food Banks Canada 2023',      trend: [1.3,1.5,1.65,1.75,1.85,1.9],       period: 'Oct 23 – Mar 24',   source: 'Food Banks Canada',                               updated: 'Mar 2024' },
       { label: 'Child Poverty',     value: '6.4%',           sub: 'Under 18 (2021)',             trend: [8.9,6.4,6.4],                      period: '2020 – 2022',       source: 'Statistics Canada',                               updated: '2022'     },
       { label: 'Immigration',       value: '465,000/yr',     sub: 'Permanent residents (2023)',   trend: [186000,405000,465000],              period: '2021 – 2023',       source: 'Immigration, Refugees and Citizenship Canada',     updated: '2023'     },
@@ -31395,16 +31395,16 @@ function App() {
     backLabel: 'Australian Government',
     subtitle: '🇦🇺 Australian Federal Government · FY 2024–25',
     economic: [
-      { label: 'Unemployment',      value: '4.0%',           sub: 'Seasonally adjusted',        trend: [4.1,4.1,3.9,3.8,3.8,4.0],          period: 'Nov 23 – Apr 24',   source: 'Australian Bureau of Statistics (ABS)',            updated: 'Apr 2024' },
-      { label: 'Inflation (CPI)',   value: '3.6%',           sub: 'Q1 2024',                    trend: [6.0,5.4,4.1,3.6],                  period: 'Q2 23 – Q1 24',     source: 'Australian Bureau of Statistics (ABS)',            updated: 'Q1 2024'  },
-      { label: 'Median Home Price', value: 'A$745,000',      sub: '8 capitals avg Q1 2024',     trend: [710000,718000,728000,745000],       period: 'Q2 23 – Q1 24',     source: 'CoreLogic Residential Property Index',             updated: 'Q1 2024'  },
-      { label: 'Cost of Living',    value: 'Index 68',       sub: 'vs world average of 55',     trend: [63,65,68],                          period: '2022 – 2024',       source: 'Numbeo Cost of Living Index',                     updated: '2024'     },
+      { label: 'Unemployment',      firestoreKey: 'unemploymentRate',       value: '4.0%',           sub: 'Seasonally adjusted',        trend: [4.1,4.1,3.9,3.8,3.8,4.0],          period: 'Nov 23 – Apr 24',   source: 'Australian Bureau of Statistics (ABS)',            updated: 'Apr 2024' },
+      { label: 'Inflation (CPI)',   firestoreKey: 'cpiInflation',          value: '3.6%',           sub: 'Q1 2024',                    trend: [6.0,5.4,4.1,3.6],                  period: 'Q2 23 – Q1 24',     source: 'Australian Bureau of Statistics (ABS)',            updated: 'Q1 2024'  },
+      { label: 'Median Home Price', firestoreKey: 'medianHomeValue',       value: 'A$745,000',      sub: '8 capitals avg Q1 2024',     trend: [710000,718000,728000,745000],       period: 'Q2 23 – Q1 24',     source: 'CoreLogic Residential Property Index',             updated: 'Q1 2024'  },
+      { label: 'Cost of Living',    firestoreKey: 'bankRate',              value: 'Index 68',       sub: 'vs world average of 55',     trend: [63,65,68],                          period: '2022 – 2024',       source: 'Numbeo Cost of Living Index',                     updated: '2024'     },
       { label: 'Min Wage Gap',      value: 'A$23.23 → A$29', sub: 'National min vs avg earnings',trend: [20.33,21.38,23.23],                period: '2022 – 2024',       source: 'Fair Work Commission',                            updated: '2024'     },
       { label: 'Gini Coefficient',  value: '0.325',          sub: 'Low-moderate inequality',    trend: [0.318,0.321,0.325],                 period: '2020 – 2022',       source: 'Australian Bureau of Statistics (ABS)',            updated: '2022'     },
     ],
     safety: [
       { label: 'Crime Rate',        value: '4,500 / 100K',   sub: '2022 ABS',                   trend: [4720,4620,4500],                    period: '2020 – 2022',       source: 'Australian Bureau of Statistics (ABS)',            updated: '2022'     },
-      { label: 'Drug Overdoses',    value: '~2,200/yr',      sub: '2022 AIHW',                  trend: [1894,2230,2200],                    period: '2020 – 2022',       source: 'Australian Institute of Health and Welfare (AIHW)',updated: '2022'     },
+      { label: 'Drug Overdoses',    firestoreKey: 'drugOverdoseDeaths',    value: '~2,200/yr',      sub: '2022 AIHW',                  trend: [1894,2230,2200],                    period: '2020 – 2022',       source: 'Australian Institute of Health and Welfare (AIHW)',updated: '2022'     },
       { label: 'Road Fatalities',   value: '~1,265/yr',      sub: '2022 BITRE',                 trend: [1097,1123,1265],                    period: '2020 – 2022',       source: 'Bureau of Infrastructure & Transport Research',   updated: '2022'     },
       { label: 'Homicide Rate',     value: '0.87 / 100K',    sub: '2022 ABS',                   trend: [0.90,0.88,0.87],                    period: '2020 – 2022',       source: 'Australian Bureau of Statistics (ABS)',            updated: '2022'     },
     ],
@@ -31416,7 +31416,7 @@ function App() {
       { label: 'Drug Addiction',       value: '~200,000',      sub: 'Opioid users 2022',        trend: [150000,175000,200000],              period: '2020 – 2022',       source: 'Australian Institute of Health and Welfare (AIHW)',updated: '2022'     },
     ],
     housing: [
-      { label: 'Rent vs Income',    value: '~34%',           sub: 'Capital cities average',     trend: [29,31,32,34],                      period: 'Q1 – Q4 2023',      source: 'National Housing Finance & Investment Corp',      updated: 'Q4 2023'  },
+      { label: 'Rent vs Income',    firestoreKey: 'medianGrossRent',       value: '~34%',           sub: 'Capital cities average',     trend: [29,31,32,34],                      period: 'Q1 – Q4 2023',      source: 'National Housing Finance & Investment Corp',      updated: 'Q4 2023'  },
       { label: 'Homelessness',      value: '~122,000',       sub: '2021 Census',                trend: [116000,120000,122000],              period: '2019 – 2021',       source: 'Australian Bureau of Statistics (ABS)',            updated: '2021'     },
       { label: 'New Builds',        value: '175,000/yr',     sub: 'Completions 2022/23',        trend: [187000,178000,175000],              period: '2021 – 2023',       source: 'Australian Bureau of Statistics (ABS)',            updated: '2023'     },
       { label: 'Evictions',         value: '~40,000/yr',     sub: 'Rising with rents',          trend: [28000,34000,40000],                 period: '2020 – 2022',       source: 'State Tenancy Authorities (compiled)',             updated: '2022'     },
@@ -31424,11 +31424,11 @@ function App() {
     education: [
       { label: 'Graduation Rate',   value: '89.3%',          sub: 'Year 12 completion (2022)',   trend: [87.1,88.4,89.3],                   period: '2020 – 2022',       source: 'Australian Curriculum, Assessment & Reporting',   updated: '2022'     },
       { label: 'Student Debt',      value: 'A$87B total',    sub: 'HECS-HELP outstanding',       trend: [65000,74000,87000],                 period: '2022 – 2024',       source: 'Dept of Education / Australian Taxation Office',  updated: '2024'     },
-      { label: 'School Funding',    value: 'A$16,000/pupil', sub: 'Per year K-12',               trend: [13800,14900,16000],                 period: '2020 – 2022',       source: 'Australian Institute of Health and Welfare (AIHW)',updated: '2022'     },
+      { label: 'School Funding',    firestoreKey: 'federalAgencySpending', value: 'A$16,000/pupil', sub: 'Per year K-12',               trend: [13800,14900,16000],                 period: '2020 – 2022',       source: 'Australian Institute of Health and Welfare (AIHW)',updated: '2022'     },
       { label: 'Literacy',          value: '99%',            sub: 'Adult literacy rate',          trend: [99,99,99],                         period: '2020 – 2022',       source: 'Australian Bureau of Statistics (ABS)',            updated: '2022'     },
     ],
     social: [
-      { label: 'Poverty Rate',      value: '13.4%',          sub: 'Below 50% median income',     trend: [12.8,13.1,13.4],                   period: '2020 – 2022',       source: 'Australian Council of Social Service (ACOSS)',    updated: '2022'     },
+      { label: 'Poverty Rate',      firestoreKey: 'povertyRate',           value: '13.4%',          sub: 'Below 50% median income',     trend: [12.8,13.1,13.4],                   period: '2020 – 2022',       source: 'Australian Council of Social Service (ACOSS)',    updated: '2022'     },
       { label: 'Food Banks',        value: '3.4M meals/mo',  sub: 'Foodbank Australia 2023',     trend: [2.4,2.7,3.0,3.2,3.3,3.4],          period: 'Oct 23 – Mar 24',   source: 'Foodbank Australia Hunger Report',                 updated: 'Mar 2024' },
       { label: 'Child Poverty',     value: '16.6%',          sub: 'Under 15',                    trend: [15.4,16.0,16.6],                   period: '2020 – 2022',       source: 'Australian Council of Social Service (ACOSS)',    updated: '2022'     },
       { label: 'Immigration',       value: '737,000 net',    sub: 'Net migration FY2022–23',     trend: [196000,454000,737000],              period: '2021 – 2023',       source: 'Australian Bureau of Statistics (ABS)',            updated: '2023'     },
