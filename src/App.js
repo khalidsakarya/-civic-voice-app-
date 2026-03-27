@@ -29636,8 +29636,8 @@ function App() {
       { label: 'Inflation (CPI)',   firestoreKey: 'cpiInflation',          value: '2.7%',           sub: '12-month change',            trend: [3.4,3.1,2.9,2.8,2.9,2.7],          period: 'Dec 23 – May 24',   source: 'Statistics Canada CPI Report',                     updated: 'May 2024' },
       { label: 'Median Home Price', firestoreKey: 'medianHomeValue',       value: 'C$716,000',      sub: 'National average',           trend: [695000,699000,705000,708000,712000,716000], period: 'Dec 23 – May 24', source: 'Canadian Real Estate Association (CREA)',         updated: 'May 2024' },
       { label: 'Cost of Living',    firestoreKey: 'bankRate',              value: 'Index 64',       sub: 'vs world average of 55',     trend: [60,62,64],                          period: '2022 – 2024',       source: 'Numbeo Cost of Living Index',                     updated: '2024'     },
-      { label: 'Min Wage Gap',      value: 'C$17.30 → C$19', sub: 'Federal floor vs avg prov.', trend: [15.55,16.65,17.30],                 period: '2022 – 2024',       source: 'Employment and Social Development Canada',        updated: '2024'     },
-      { label: 'Gini Coefficient',  value: '0.31',           sub: 'Moderate inequality',        trend: [0.307,0.308,0.310],                 period: '2022 – 2024',       source: 'Statistics Canada',                               updated: '2023'     },
+      { label: 'Min Wage Gap',      firestoreKey: 'minWageGap',            value: 'C$17.30 → C$19', sub: 'Federal floor vs avg prov.', trend: [15.55,16.65,17.30],                 period: '2022 – 2024',       source: 'Employment and Social Development Canada',        updated: '2024'     },
+      { label: 'Gini Coefficient',  firestoreKey: 'giniCoefficient',       value: '0.31',           sub: 'Moderate inequality',        trend: [0.307,0.308,0.310],                 period: '2022 – 2024',       source: 'Statistics Canada',                               updated: '2023'     },
     ],
     safety: [
       { label: 'Crime Rate',        firestoreKey: 'crimeRate',             value: '5,320 / 100K',   sub: 'All offences',               trend: [5648,5416,5320],                    period: '2020 – 2022',       source: 'Statistics Canada Uniform Crime Reporting Survey', updated: '2022'     },
@@ -29654,21 +29654,21 @@ function App() {
     ],
     housing: [
       { label: 'Rent vs Income',    firestoreKey: 'medianGrossRent',       value: '~36%',           sub: 'National avg',               trend: [32,33,35,36],                      period: 'Q1 – Q4 2023',      source: 'Canada Mortgage and Housing Corp (CMHC)',          updated: 'Q4 2023'  },
-      { label: 'Homelessness',      value: '~235,000',       sub: 'Annual shelter users',       trend: [195000,220000,235000],              period: '2021 – 2023',       source: 'Employment & Social Development Canada',          updated: '2023'     },
-      { label: 'New Builds',        value: '240,000/yr',     sub: 'Housing starts 2023',        trend: [220000,262000,240000],              period: '2021 – 2023',       source: 'Canada Mortgage and Housing Corp (CMHC)',          updated: '2023'     },
+      { label: 'Homelessness',      firestoreKey: 'homelessness',          value: '~235,000',       sub: 'Annual shelter users',       trend: [195000,220000,235000],              period: '2021 – 2023',       source: 'Employment & Social Development Canada',          updated: '2023'     },
+      { label: 'New Builds',        firestoreKey: 'newBuilds',             value: '240,000/yr',     sub: 'Housing starts 2023',        trend: [220000,262000,240000],              period: '2021 – 2023',       source: 'Canada Mortgage and Housing Corp (CMHC)',          updated: '2023'     },
       { label: 'Evictions',         value: '~50,000/yr',     sub: 'Rising trend',               trend: [35000,42000,50000],                 period: '2020 – 2022',       source: 'CMHC / Provincial Housing Authorities',           updated: '2022'     },
     ],
     education: [
-      { label: 'Graduation Rate',   value: '91%',            sub: 'High school (2021)',          trend: [88,90,91],                         period: '2020 – 2022',       source: 'Statistics Canada Education Indicators',          updated: '2022'     },
-      { label: 'Student Debt',      value: 'C$28,000',       sub: 'Average per graduate',        trend: [24000,26000,28000],                 period: '2020 – 2022',       source: 'Statistics Canada Student Debt Survey',           updated: '2022'     },
+      { label: 'Graduation Rate',   firestoreKey: 'graduationRate',        value: '91%',            sub: 'High school (2021)',          trend: [88,90,91],                         period: '2020 – 2022',       source: 'Statistics Canada Education Indicators',          updated: '2022'     },
+      { label: 'Student Debt',      firestoreKey: 'studentDebt',           value: 'C$28,000',       sub: 'Average per graduate',        trend: [24000,26000,28000],                 period: '2020 – 2022',       source: 'Statistics Canada Student Debt Survey',           updated: '2022'     },
       { label: 'School Funding',    firestoreKey: 'federalAgencySpending', value: 'C$14,200/pupil', sub: 'Per year, public K-12',       trend: [13100,13700,14200],                 period: '2020 – 2022',       source: 'Statistics Canada Education Finance',             updated: '2022'     },
       { label: 'Literacy',          value: '99%',            sub: 'Adult literacy rate',          trend: [99,99,99],                         period: '2020 – 2022',       source: 'Statistics Canada',                               updated: '2022'     },
     ],
     social: [
-      { label: 'Poverty Rate',      firestoreKey: 'povertyRate',           value: '7.4%',           sub: '2021 official measure',       trend: [8.1,7.4,7.4],                      period: '2020 – 2022',       source: 'Statistics Canada (Market Basket Measure)',        updated: '2022'     },
-      { label: 'Food Banks',        value: '1.9M visits/mo', sub: 'Food Banks Canada 2023',      trend: [1.3,1.5,1.65,1.75,1.85,1.9],       period: 'Oct 23 – Mar 24',   source: 'Food Banks Canada',                               updated: 'Mar 2024' },
-      { label: 'Child Poverty',     value: '6.4%',           sub: 'Under 18 (2021)',             trend: [8.9,6.4,6.4],                      period: '2020 – 2022',       source: 'Statistics Canada',                               updated: '2022'     },
-      { label: 'Immigration',       value: '465,000/yr',     sub: 'Permanent residents (2023)',   trend: [186000,405000,465000],              period: '2021 – 2023',       source: 'Immigration, Refugees and Citizenship Canada',     updated: '2023'     },
+      { label: 'Poverty Rate',      firestoreKey: 'povertyRate',           value: '7.4%',           sub: '2021 official measure',       trend: [8.1,7.4,7.4],                      period: '2020 – 2022',                                                                          updated: '2022'     },
+      { label: 'Food Banks',        value: '1.9M visits/mo', sub: 'Food Banks Canada 2023',      trend: [1.3,1.5,1.65,1.75,1.85,1.9],       period: 'Oct 23 – Mar 24',                                                                      updated: 'Mar 2024' },
+      { label: 'Child Poverty',     firestoreKey: 'childPoverty',          value: '6.4%',           sub: 'Under 18 (2021)',             trend: [8.9,6.4,6.4],                      period: '2020 – 2022',       source: 'Statistics Canada',                               updated: '2022'     },
+      { label: 'Immigration',       firestoreKey: 'immigration',           value: '465,000/yr',     sub: 'Permanent residents (2023)',   trend: [186000,405000,465000],              period: '2021 – 2023',       source: 'Immigration, Refugees and Citizenship Canada',     updated: '2023'     },
     ],
   });
 
