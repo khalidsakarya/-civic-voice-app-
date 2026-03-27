@@ -6762,7 +6762,7 @@ function App() {
                           const live = stat.firestoreKey ? liveStats[stat.firestoreKey] : liveStats[stat.label];
                           const displayValue   = live?.value   ?? stat.value;
                           const displaySource  = live?.source  ?? stat.source;
-                          const displayUpdated = live?.updated ?? stat.updated;
+                          const displayUpdated = live?.updated ?? live?.date ?? stat.updated;
                           const displayTrend   = (live?.trend && Array.isArray(live.trend)) ? live.trend : stat.trend;
                           const sourceUrl      = live?.sourceUrl ?? null;
                           return (
