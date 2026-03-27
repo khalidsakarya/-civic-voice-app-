@@ -29640,16 +29640,16 @@ function App() {
       { label: 'Gini Coefficient',  value: '0.31',           sub: 'Moderate inequality',        trend: [0.307,0.308,0.310],                 period: '2022 – 2024',       source: 'Statistics Canada',                               updated: '2023'     },
     ],
     safety: [
-      { label: 'Crime Rate',        value: '5,320 / 100K',   sub: 'All offences',               trend: [5648,5416,5320],                    period: '2020 – 2022',       source: 'Statistics Canada Uniform Crime Reporting Survey', updated: '2022'     },
+      { label: 'Crime Rate',        firestoreKey: 'crimeRate',             value: '5,320 / 100K',   sub: 'All offences',               trend: [5648,5416,5320],                    period: '2020 – 2022',       source: 'Statistics Canada Uniform Crime Reporting Survey', updated: '2022'     },
       { label: 'Drug Overdoses',    firestoreKey: 'drugOverdoses',         value: '~8,000/yr',      sub: 'Opioid crisis',              trend: [6306,7560,8000],                    period: '2020 – 2022',       source: 'Public Health Agency of Canada',                  updated: '2022'     },
-      { label: 'Road Fatalities',   value: '~1,900/yr',      sub: '2022',                       trend: [1745,1768,1900],                    period: '2020 – 2022',       source: 'Transport Canada National Collision Database',     updated: '2022'     },
-      { label: 'Homicide Rate',     value: '2.25 / 100K',    sub: '2022',                       trend: [2.07,2.56,2.25],                    period: '2020 – 2022',       source: 'Statistics Canada Homicide Survey',               updated: '2022'     },
+      { label: 'Road Fatalities',   firestoreKey: 'roadFatalities',        value: '~1,900/yr',      sub: '2022',                       trend: [1745,1768,1900],                    period: '2020 – 2022',       source: 'Transport Canada National Collision Database',     updated: '2022'     },
+      { label: 'Homicide Rate',     firestoreKey: 'homicideRate',          value: '2.25 / 100K',    sub: '2022',                       trend: [2.07,2.56,2.25],                    period: '2020 – 2022',       source: 'Statistics Canada Homicide Survey',               updated: '2022'     },
     ],
     health: [
       { label: 'Hospital Wait Times',  value: '27.7 weeks',    sub: 'Median specialist wait',   trend: [25.6,26.8,27.7,27.7],              period: 'Q1 – Q4 2023',      source: 'Canadian Institute for Health Information (CIHI)', updated: 'Q4 2023'  },
-      { label: 'Life Expectancy',      value: '82.3 years',    sub: '2022',                     trend: [82.3,81.7,82.3],                   period: '2020 – 2022',       source: 'Statistics Canada',                               updated: '2022'     },
+      { label: 'Life Expectancy',      firestoreKey: 'lifeExpectancy',     value: '82.3 years',    sub: '2022',                     trend: [82.3,81.7,82.3],                   period: '2020 – 2022',       source: 'Statistics Canada',                               updated: '2022'     },
       { label: 'Mental Health Access', value: '40% unmet',     sub: 'Of those needing care',    trend: [36,38,40],                         period: '2020 – 2022',       source: 'Canadian Mental Health Association',               updated: '2022'     },
-      { label: 'Obesity Rate',         value: '26.8%',         sub: '2022 PHAC',                trend: [26.2,26.5,26.8],                   period: '2020 – 2022',       source: 'Public Health Agency of Canada (PHAC)',            updated: '2022'     },
+      { label: 'Obesity Rate',         firestoreKey: 'obesityRate',        value: '26.8%',         sub: '2022 PHAC',                trend: [26.2,26.5,26.8],                   period: '2020 – 2022',       source: 'Public Health Agency of Canada (PHAC)',            updated: '2022'     },
       { label: 'Drug Addiction',       value: '~400,000',      sub: 'Opioid users',             trend: [280000,340000,400000],              period: '2020 – 2022',       source: 'Public Health Agency of Canada',                  updated: '2022'     },
     ],
     housing: [
