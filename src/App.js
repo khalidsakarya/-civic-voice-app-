@@ -6770,7 +6770,7 @@ function App() {
                               <div className="flex items-start justify-between mb-1">
                                 <div className="flex items-center gap-1.5 min-w-0">
                                   <p className="text-xs text-gray-500 uppercase tracking-wide font-medium leading-tight">{stat.label}</p>
-                                  {live && <span className="bg-green-500 text-white text-xs font-bold px-1.5 py-0.5 rounded flex-shrink-0">LIVE</span>}
+                                  {live?.value != null && <span className="bg-green-500 text-white text-xs font-bold px-1.5 py-0.5 rounded flex-shrink-0">LIVE</span>}
                                 </div>
                                 {displayUpdated && <span className="text-xs text-gray-400 whitespace-nowrap ml-1 flex-shrink-0">{displayUpdated}</span>}
                               </div>
@@ -29641,7 +29641,7 @@ function App() {
     ],
     safety: [
       { label: 'Crime Rate',        value: '5,320 / 100K',   sub: 'All offences',               trend: [5648,5416,5320],                    period: '2020 – 2022',       source: 'Statistics Canada Uniform Crime Reporting Survey', updated: '2022'     },
-      { label: 'Drug Overdoses',    firestoreKey: 'drugOverdoseDeaths',    value: '~8,000/yr',      sub: 'Opioid crisis',              trend: [6306,7560,8000],                    period: '2020 – 2022',       source: 'Public Health Agency of Canada',                  updated: '2022'     },
+      { label: 'Drug Overdoses',    firestoreKey: 'drugOverdoses',         value: '~8,000/yr',      sub: 'Opioid crisis',              trend: [6306,7560,8000],                    period: '2020 – 2022',       source: 'Public Health Agency of Canada',                  updated: '2022'     },
       { label: 'Road Fatalities',   value: '~1,900/yr',      sub: '2022',                       trend: [1745,1768,1900],                    period: '2020 – 2022',       source: 'Transport Canada National Collision Database',     updated: '2022'     },
       { label: 'Homicide Rate',     value: '2.25 / 100K',    sub: '2022',                       trend: [2.07,2.56,2.25],                    period: '2020 – 2022',       source: 'Statistics Canada Homicide Survey',               updated: '2022'     },
     ],
