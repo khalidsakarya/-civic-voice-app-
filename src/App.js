@@ -6757,7 +6757,64 @@ function App() {
                   </button>
                   {isOpen && (
                     <div className={`border-t ${c.border} px-5 py-4`}>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                      {/* ── MOBILE: clean horizontal cards, no charts ── */}
+                      <div className="sm:hidden space-y-2">
+                        {stats.map((stat, i) => {
+                          const live = stat.firestoreKey ? liveStats[stat.firestoreKey] : liveStats[stat.label];
+                          const displayValue   = live?.value   ?? stat.value;
+                          const displaySource  = live?.source  ?? stat.source;
+                          const displayUpdated = live?.updated ?? live?.date ?? stat.updated;
+                          const displayTrend   = (live?.trend && Array.isArray(live.trend)) ? live.trend : stat.trend;
+                          const sourceUrl      = live?.sourceUrl ?? null;
+                          const tArr = displayTrend || [];
+                          const tMax = tArr.length ? Math.max(...tArr) : 1;
+                          const tMin = tArr.length ? Math.min(...tArr) : 0;
+                          const tLast = tArr.length ? tArr[tArr.length - 1] : null;
+                          const fillPct = (tLast != null && tMax > tMin)
+                            ? Math.max(8, Math.min(96, Math.round(((tLast - tMin) / (tMax - tMin)) * 100)))
+                            : 55;
+                          return (
+                            <div key={i} className="bg-white border border-gray-100 rounded-xl shadow-sm relative" style={{ borderLeftWidth: 4, borderLeftColor: c.stroke }}>
+                              <div className="flex items-start gap-3 px-3 pt-3">
+                                {/* label + LIVE badge */}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-bold text-gray-800 leading-snug">{stat.label}</p>
+                                  {live?.value != null && (
+                                    <span className="inline-block bg-green-500 text-white text-xs font-bold px-1.5 py-0.5 rounded mt-1">LIVE</span>
+                                  )}
+                                </div>
+                                {/* value + year + ⓘ */}
+                                <div className="flex items-start gap-2 flex-shrink-0">
+                                  <div className="text-right">
+                                    <p className="text-xl font-black text-gray-900 leading-tight">{displayValue}</p>
+                                    {displayUpdated && <p className="text-xs text-gray-400 mt-0.5">{displayUpdated}</p>}
+                                  </div>
+                                  {(displaySource || sourceUrl) && (
+                                    <details className="relative flex-shrink-0">
+                                      <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer select-none flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs font-bold mt-0.5">ⓘ</summary>
+                                      <div className="absolute right-0 top-6 z-30 w-64 bg-white border border-blue-200 rounded-xl shadow-xl p-3 text-left">
+                                        {displaySource && <p className="text-xs font-semibold text-gray-800 mb-1">{displaySource}</p>}
+                                        {sourceUrl
+                                          ? <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 break-all leading-tight hover:underline">{sourceUrl}</a>
+                                          : displaySource && <p className="text-xs text-gray-500">{displaySource}</p>
+                                        }
+                                      </div>
+                                    </details>
+                                  )}
+                                </div>
+                              </div>
+                              {stat.sub && <p className="px-3 pt-1 pb-2 text-xs text-gray-500 leading-snug">{stat.sub}</p>}
+                              <div className="mx-3 mb-3 h-1 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full" style={{ width: `${fillPct}%`, backgroundColor: c.stroke }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* ── DESKTOP: unchanged 2-col grid with sparklines ── */}
+                      <div className="hidden sm:grid sm:grid-cols-2 gap-3">
                         {stats.map((stat, i) => {
                           const live = stat.firestoreKey ? liveStats[stat.firestoreKey] : liveStats[stat.label];
                           const displayValue   = live?.value   ?? stat.value;
@@ -6795,6 +6852,7 @@ function App() {
                           );
                         })}
                       </div>
+
                     </div>
                   )}
                 </div>
