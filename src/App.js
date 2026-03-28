@@ -31582,23 +31582,6 @@ function App() {
               </div>
             </div>
 
-            {/* Australian Senate */}
-            <div
-              onClick={() => { setAuChamber('Senate'); setAuPartyFilter('All'); setAuSearch(''); setView('au-parliament'); }}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
-              style={{ animationDelay: '0.15s' }}
-            >
-              <div className="text-emerald-600 mb-3 sm:mb-4">
-                <Award className="w-10 h-10 sm:w-12 sm:h-12" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Australian Senate</h2>
-              <p className="text-gray-600 mb-3 text-sm sm:text-base">76 senators representing all states and territories — upper chamber</p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>76 Senators · Upper Chamber</span>
-                <ChevronRight className="w-5 h-5 text-emerald-600" />
-              </div>
-            </div>
-
             {/* Where the Money Goes */}
             <div
               onClick={() => { setFinancialDashTab('overview'); setView('money-australia'); }}
