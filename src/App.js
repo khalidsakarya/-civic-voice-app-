@@ -1261,6 +1261,12 @@ function App() {
   const [senatorVotes, setSenatorVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cvSenatorVotes') || '{}'); } catch { return {}; }
   });
+  const [caChamber, setCaChamber] = useState('Senate');
+  const [caPartyFilter, setCaPartyFilter] = useState('All');
+  const [caSearch, setCaSearch] = useState('');
+  const [caMemberVotes, setCaMemberVotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cvCaMemberVotes') || '{}'); } catch { return {}; }
+  });
 
   const handleShare = async (e, { id, title, text, url }) => {
     e.stopPropagation();
@@ -27067,58 +27073,214 @@ function App() {
     );
   };
 
-  const renderCaParliament = () => (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 p-4 sm:p-8 animate-fade-in">
-      <div className="max-w-6xl mx-auto">
-        <button
-          onClick={() => setView('categories')}
-          className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
-        >
-          ← Back
-        </button>
-        <div className="mb-6 animate-slide-in">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-4xl">🏛️</span>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Federal Parliament</h1>
-          </div>
-          <p className="text-gray-600 text-base sm:text-lg">Senate (105 senators) · House of Commons (338 MPs)</p>
-          <div className="w-24 h-1 bg-gradient-to-r from-yellow-500 to-amber-500 mt-3 rounded-full" />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div
-            onClick={() => setView('parties')}
-            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
-            style={{ animationDelay: '0.1s' }}
+  const renderCaParliament = () => {
+    const caHash = (str) => {
+      let h = 5381;
+      for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0x7fffffff;
+      return h;
+    };
+
+    const voteCaMember = (name, vote) => {
+      logEvent('vote_politician', { country: 'CA', itemId: name });
+      setCaMemberVotes(prev => {
+        const next = { ...prev };
+        if (next[name] === vote) delete next[name]; else next[name] = vote;
+        try { localStorage.setItem('cvCaMemberVotes', JSON.stringify(next)); } catch (_) {}
+        return next;
+      });
+    };
+
+    const CA_SENATE_PARTIES = ['ISG', 'Conservative', 'CSG', 'PSG', 'Non-affiliated'];
+
+    const sourceData = caChamber === 'Senate' ? SENATORS_DATA : [];
+
+    let filtered = sourceData;
+    if (caPartyFilter !== 'All') {
+      filtered = filtered.filter(m => m.party === caPartyFilter);
+    }
+    if (caSearch.trim()) {
+      const q = caSearch.toLowerCase();
+      filtered = filtered.filter(m =>
+        m.name.toLowerCase().includes(q) ||
+        m.province.toLowerCase().includes(q) ||
+        m.party.toLowerCase().includes(q)
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-red-50 p-4 sm:p-8 animate-fade-in">
+        <div className="max-w-6xl mx-auto">
+          <button
+            onClick={() => { setCaSearch(''); setCaPartyFilter('All'); setView('categories'); }}
+            className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
           >
-            <div className="text-blue-600 mb-3 sm:mb-4">
-              <Users className="w-10 h-10 sm:w-12 sm:h-12" />
+            ← Back
+          </button>
+
+          {/* Header */}
+          <div className="mb-6 animate-slide-in">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">🏛️</span>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Federal Parliament</h1>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">House of Commons</h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">Explore all MPs across every party — lower chamber</p>
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>338 MPs · Lower House</span>
-              <ChevronRight className="w-5 h-5 text-blue-600" />
-            </div>
+            <p className="text-gray-600 text-base sm:text-lg">Senate (105 senators) · House of Commons (338 MPs)</p>
+            <div className="w-24 h-1 bg-gradient-to-r from-red-500 to-rose-500 mt-3 rounded-full" />
           </div>
-          <div
-            onClick={() => setView('senate')}
-            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
-            style={{ animationDelay: '0.15s' }}
-          >
-            <div className="text-teal-600 mb-3 sm:mb-4">
-              <Award className="w-10 h-10 sm:w-12 sm:h-12" />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Senate</h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">105 appointed senators representing all provinces and territories — upper chamber</p>
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>105 Senators · Upper Chamber</span>
-              <ChevronRight className="w-5 h-5 text-teal-600" />
-            </div>
+
+          {/* Chamber tab switcher */}
+          <div className="flex gap-3 mb-6">
+            <button
+              onClick={() => { setCaChamber('Senate'); setCaPartyFilter('All'); setCaSearch(''); }}
+              className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${caChamber === 'Senate' ? 'bg-red-600 text-white border-red-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-red-400'}`}
+            >
+              Senate (105)
+            </button>
+            <button
+              onClick={() => { setCaChamber('House'); setCaPartyFilter('All'); setCaSearch(''); }}
+              className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${caChamber === 'House' ? 'bg-red-600 text-white border-red-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-red-400'}`}
+            >
+              House of Commons (338)
+            </button>
           </div>
+
+          {caChamber === 'House' ? (
+            <div className="text-center py-20">
+              <span className="text-5xl mb-4 block">🍁</span>
+              <p className="text-xl font-bold text-gray-800 mb-2">House of Commons</p>
+              <p className="text-gray-500 mb-6 text-sm max-w-sm mx-auto">Browse all 338 MPs organized by party and riding</p>
+              <button
+                onClick={() => setView('parties')}
+                className="button-primary text-white px-6 py-3 rounded-xl font-semibold shadow-elegant"
+              >
+                Browse MPs by Party →
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Party filter pills */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                <button
+                  onClick={() => setCaPartyFilter('All')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${caPartyFilter === 'All' ? 'bg-gray-700 text-white border-gray-700 shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+                >
+                  All
+                </button>
+                {CA_SENATE_PARTIES.map(party => (
+                  <button
+                    key={party}
+                    onClick={() => setCaPartyFilter(caPartyFilter === party ? 'All' : party)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${caPartyFilter === party ? 'text-white shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+                    style={caPartyFilter === party ? { backgroundColor: getPartyColor(party), borderColor: getPartyColor(party) } : {}}
+                  >
+                    <span style={{ color: caPartyFilter === party ? 'white' : getPartyColor(party) }} className="w-2 h-2 rounded-full inline-block" />
+                    {party}
+                  </button>
+                ))}
+              </div>
+
+              {/* Search */}
+              <div className="relative mb-6">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={caSearch}
+                  onChange={e => setCaSearch(e.target.value)}
+                  placeholder="Search senators by name, province, or group..."
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-300 text-sm"
+                />
+              </div>
+
+              {/* Results count */}
+              <p className="text-sm text-gray-500 mb-4">
+                Showing {filtered.length} of {sourceData.length} senators
+                {caPartyFilter !== 'All' && <span> · <span className="font-semibold" style={{ color: getPartyColor(caPartyFilter) }}>{caPartyFilter}</span></span>}
+              </p>
+
+              {/* Member cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filtered.map((member, i) => {
+                  const h = caHash(member.name);
+                  const support = (h % 6000) + 2000;
+                  const oppose = ((h >> 4) % 4000) + 1000;
+                  const userVote = caMemberVotes[member.name] || null;
+                  const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                  const color = getPartyColor(member.party);
+                  const yearsInOffice = new Date().getFullYear() - new Date(member.dateAppointed).getFullYear();
+                  return (
+                    <div key={i} className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-red-400 hover:shadow-xl transition-all cursor-pointer"
+                      onClick={() => { setSelectedSenator(member); setView('senator-detail'); }}
+                    >
+                      {/* Avatar */}
+                      <div style={{ backgroundColor: color }} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4">
+                        {initials}
+                      </div>
+
+                      <h3 className="text-xl font-bold text-gray-800 mb-1">{member.name}</h3>
+
+                      {/* Party badge */}
+                      <div className="mb-3">
+                        <span style={{ backgroundColor: color }} className="text-white text-xs px-2.5 py-1 rounded-full font-semibold">
+                          {member.party}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Globe className="w-4 h-4 flex-shrink-0" />
+                          <span>{member.province}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <MapPin className="w-4 h-4 flex-shrink-0" />
+                          <span>Senator</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Calendar className="w-4 h-4 flex-shrink-0" />
+                          <span>{yearsInOffice} {yearsInOffice === 1 ? 'year' : 'years'} in office</span>
+                        </div>
+                      </div>
+
+                      {/* View profile link */}
+                      <div className="mt-3 pt-3 border-t border-gray-100">
+                        <span className="text-red-600 text-sm font-medium">View Profile →</span>
+                      </div>
+
+                      {/* Vote buttons */}
+                      <div className="flex items-center gap-2 mt-3" onClick={e => e.stopPropagation()}>
+                        <button
+                          onClick={() => voteCaMember(member.name, 'support')}
+                          className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
+                        >
+                          <ThumbsUp className="w-3 h-3" />
+                          <span>{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</span>
+                        </button>
+                        <button
+                          onClick={() => voteCaMember(member.name, 'oppose')}
+                          className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'oppose' ? 'bg-red-100 text-red-700 ring-1 ring-red-400' : 'text-red-600 hover:bg-red-50'}`}
+                        >
+                          <ThumbsDown className="w-3 h-3" />
+                          <span>{(oppose + (userVote === 'oppose' ? 1 : 0)).toLocaleString()}</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {filtered.length === 0 && (
+                <div className="text-center py-16 text-gray-400">
+                  <span className="text-5xl mb-4 block">🏛️</span>
+                  <p className="font-semibold">No senators found</p>
+                  <p className="text-sm mt-1">Try adjusting your search or filter</p>
+                </div>
+              )}
+
+              <p className="text-center text-xs text-gray-400 mt-10 pb-4">Illustrative data · senator profiles are statistically modelled</p>
+            </>
+          )}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderParties = () => {
     const parties = getParties();
