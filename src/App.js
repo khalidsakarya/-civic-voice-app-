@@ -26663,7 +26663,7 @@ function App() {
 
           {/* Legislature (Congress/Parliament) */}
           <div
-            onClick={() => setView(isUSA ? 'chambers' : 'parties')}
+            onClick={() => setView(isUSA ? 'chambers' : 'ca-parliament')}
             className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
             style={{ animationDelay: '0.1s' }}
           >
@@ -26671,31 +26671,14 @@ function App() {
               <Users className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">{legislatureName}</h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">Explore {memberCount} {memberTitle} across all parties</p>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">
+              {isUSA ? `Explore ${memberCount} ${memberTitle} across all parties` : 'House of Commons and Senate — Canada\'s bicameral Parliament'}
+            </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{memberCount} {isUSA ? 'Members' : 'MPs'}</span>
+              <span>{isUSA ? `${memberCount} Members` : '338 MPs · 105 Senators'}</span>
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
-
-          {/* Canadian Senate — Canada only */}
-          {!isUSA && (
-            <div
-              onClick={() => setView('senate')}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
-              style={{ animationDelay: '0.15s' }}
-            >
-              <div className="text-teal-600 mb-3 sm:mb-4">
-                <Award className="w-10 h-10 sm:w-12 sm:h-12" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Canadian Senate</h2>
-              <p className="text-gray-600 mb-3 text-sm sm:text-base">105 appointed senators representing all provinces and territories</p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>105 Senators · Upper Chamber</span>
-                <ChevronRight className="w-5 h-5" />
-              </div>
-            </div>
-          )}
 
           {/* Analytics Dashboard - Available for both countries */}
           <div
@@ -27083,6 +27066,54 @@ function App() {
       </div>
     );
   };
+
+  const renderCaParliament = () => (
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <button onClick={() => setView('categories')} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
+          </button>
+        </div>
+      </div>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">🏛️ Federal Parliament</h1>
+        <p className="text-gray-500 mb-8">Canada's bicameral Parliament — select a chamber to explore</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div
+            onClick={() => setView('parties')}
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
+            style={{ animationDelay: '0.1s' }}
+          >
+            <div className="text-blue-600 mb-3 sm:mb-4">
+              <Users className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">House of Commons</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Explore all MPs across every party — lower chamber</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>338 MPs · Lower House</span>
+              <ChevronRight className="w-5 h-5 text-blue-600" />
+            </div>
+          </div>
+          <div
+            onClick={() => setView('senate')}
+            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
+            style={{ animationDelay: '0.15s' }}
+          >
+            <div className="text-teal-600 mb-3 sm:mb-4">
+              <Award className="w-10 h-10 sm:w-12 sm:h-12" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Senate</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">105 appointed senators representing all provinces and territories — upper chamber</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>105 Senators · Upper Chamber</span>
+              <ChevronRight className="w-5 h-5 text-teal-600" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   const renderParties = () => {
     const parties = getParties();
@@ -34495,6 +34526,7 @@ function App() {
         {view === 'province-detail' && selectedProvince && renderProvinceDetail()}
         {view === 'categories' && renderCategories()}
         {view === 'chambers' && renderChambers()}
+        {view === 'ca-parliament' && renderCaParliament()}
         {view === 'parties' && renderParties()}
         {view === 'members' && renderMembers()}
         {view === 'member-detail' && selectedMember && renderMemberDetail()}
