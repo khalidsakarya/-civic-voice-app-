@@ -6729,10 +6729,7 @@ function App() {
               Last updated: {govStatsLastUpdated[d.cc]?.toLocaleString()}
             </div>
           )}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-6 mb-6 text-white">
-            <h2 className="text-2xl font-bold mb-1">{d.subtitle}</h2>
-            <p className="text-blue-100 text-sm">{sectionDefs.length} categories · {sectionDefs.reduce((n, s) => n + (d[s.key] || []).length, 0)} indicators</p>
-          </div>
+
           <div className="space-y-3">
             {sectionDefs.map(({ key, label, Icon, color }) => {
               const isOpen = !!expandedSections[`gs_${key}`];
