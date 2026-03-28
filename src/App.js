@@ -27068,17 +27068,22 @@ function App() {
   };
 
   const renderCaParliament = () => (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <button onClick={() => setView('categories')} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">
-            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
-          </button>
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 p-4 sm:p-8 animate-fade-in">
+      <div className="max-w-6xl mx-auto">
+        <button
+          onClick={() => setView('categories')}
+          className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
+        >
+          ← Back
+        </button>
+        <div className="mb-6 animate-slide-in">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-4xl">🏛️</span>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Federal Parliament</h1>
+          </div>
+          <p className="text-gray-600 text-base sm:text-lg">Senate (105 senators) · House of Commons (338 MPs)</p>
+          <div className="w-24 h-1 bg-gradient-to-r from-yellow-500 to-amber-500 mt-3 rounded-full" />
         </div>
-      </div>
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">🏛️ Federal Parliament</h1>
-        <p className="text-gray-500 mb-8">Canada's bicameral Parliament — select a chamber to explore</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div
             onClick={() => setView('parties')}
