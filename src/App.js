@@ -29646,11 +29646,11 @@ function App() {
       { label: 'Homicide Rate',     firestoreKey: 'homicideRate',          value: '2.25 / 100K',    sub: '2022',                       trend: [2.07,2.56,2.25],                    period: '2020 – 2022',       source: 'Statistics Canada Homicide Survey',               updated: '2022'     },
     ],
     health: [
-      { label: 'Hospital Wait Times',  value: '27.7 weeks',    sub: 'Median specialist wait',   trend: [25.6,26.8,27.7,27.7],              period: 'Q1 – Q4 2023',      source: 'Canadian Institute for Health Information (CIHI)', updated: 'Q4 2023'  },
+      { label: 'Hospital Wait Times',  firestoreKey: 'hospitalWaitTimes',  value: '27.7 weeks',    sub: 'Median specialist wait',   trend: [25.6,26.8,27.7,27.7],              period: 'Q1 – Q4 2023',      source: 'Canadian Institute for Health Information (CIHI)', updated: 'Q4 2023'  },
       { label: 'Life Expectancy',      firestoreKey: 'lifeExpectancy',     value: '82.3 years',    sub: '2022',                     trend: [82.3,81.7,82.3],                   period: '2020 – 2022',       source: 'Statistics Canada',                               updated: '2022'     },
-      { label: 'Mental Health Access', value: '40% unmet',     sub: 'Of those needing care',    trend: [36,38,40],                         period: '2020 – 2022',       source: 'Canadian Mental Health Association',               updated: '2022'     },
+      { label: 'Mental Health Access', firestoreKey: 'mentalHealthAccess', value: '40% unmet',     sub: 'Of those needing care',    trend: [36,38,40],                         period: '2020 – 2022',       source: 'Canadian Mental Health Association',               updated: '2022'     },
       { label: 'Obesity Rate',         firestoreKey: 'obesityRate',        value: '26.8%',         sub: '2022 PHAC',                trend: [26.2,26.5,26.8],                   period: '2020 – 2022',       source: 'Public Health Agency of Canada (PHAC)',            updated: '2022'     },
-      { label: 'Drug Addiction',       value: '~400,000',      sub: 'Opioid users',             trend: [280000,340000,400000],              period: '2020 – 2022',       source: 'Public Health Agency of Canada',                  updated: '2022'     },
+      { label: 'Drug Addiction',       firestoreKey: 'drugAddiction',      value: '~400,000',      sub: 'Opioid users',             trend: [280000,340000,400000],              period: '2020 – 2022',       source: 'Public Health Agency of Canada',                  updated: '2022'     },
     ],
     housing: [
       { label: 'Rent vs Income',    firestoreKey: 'medianGrossRent',       value: '~36%',           sub: 'National avg',               trend: [32,33,35,36],                      period: 'Q1 – Q4 2023',      source: 'Canada Mortgage and Housing Corp (CMHC)',          updated: 'Q4 2023'  },
@@ -29661,8 +29661,8 @@ function App() {
     education: [
       { label: 'Graduation Rate',   firestoreKey: 'graduationRate',        value: '91%',            sub: 'High school (2021)',          trend: [88,90,91],                         period: '2020 – 2022',       source: 'Statistics Canada Education Indicators',          updated: '2022'     },
       { label: 'Student Debt',      firestoreKey: 'studentDebt',           value: 'C$28,000',       sub: 'Average per graduate',        trend: [24000,26000,28000],                 period: '2020 – 2022',       source: 'Statistics Canada Student Debt Survey',           updated: '2022'     },
-      { label: 'School Funding',    firestoreKey: 'federalAgencySpending', value: 'C$14,200/pupil', sub: 'Per year, public K-12',       trend: [13100,13700,14200],                 period: '2020 – 2022',       source: 'Statistics Canada Education Finance',             updated: '2022'     },
-      { label: 'Literacy',          value: '99%',            sub: 'Adult literacy rate',          trend: [99,99,99],                         period: '2020 – 2022',       source: 'Statistics Canada',                               updated: '2022'     },
+      { label: 'School Funding',    firestoreKey: 'schoolFunding',         value: 'C$14,200/pupil', sub: 'Per year, public K-12',       trend: [13100,13700,14200],                 period: '2020 – 2022',       source: 'Statistics Canada Education Finance',             updated: '2022'     },
+      { label: 'Literacy',          firestoreKey: 'literacy',              value: '99%',            sub: 'Adult literacy rate',          trend: [99,99,99],                         period: '2020 – 2022',       source: 'Statistics Canada',                               updated: '2022'     },
     ],
     social: [
       { label: 'Poverty Rate',      firestoreKey: 'povertyRate',           value: '7.4%',           sub: '2021 official measure',       trend: [8.1,7.4,7.4],                      period: '2020 – 2022',                                                                          updated: '2022'     },
