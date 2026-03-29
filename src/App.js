@@ -27091,8 +27091,11 @@ function App() {
     };
 
     const CA_SENATE_PARTIES = ['ISG', 'Conservative', 'CSG', 'PSG', 'Non-affiliated'];
+    const CA_MP_PARTIES = [...new Set(mps.map(m => m.party))].sort();
 
-    const sourceData = caChamber === 'Senate' ? SENATORS_DATA : [];
+    const isSenate = caChamber === 'Senate';
+    const sourceData = isSenate ? SENATORS_DATA : mps;
+    const partyOptions = isSenate ? CA_SENATE_PARTIES : CA_MP_PARTIES;
 
     let filtered = sourceData;
     if (caPartyFilter !== 'All') {
@@ -27100,11 +27103,20 @@ function App() {
     }
     if (caSearch.trim()) {
       const q = caSearch.toLowerCase();
-      filtered = filtered.filter(m =>
-        m.name.toLowerCase().includes(q) ||
-        m.province.toLowerCase().includes(q) ||
-        m.party.toLowerCase().includes(q)
-      );
+      if (isSenate) {
+        filtered = filtered.filter(m =>
+          m.name.toLowerCase().includes(q) ||
+          m.province.toLowerCase().includes(q) ||
+          m.party.toLowerCase().includes(q)
+        );
+      } else {
+        filtered = filtered.filter(m =>
+          m.name.toLowerCase().includes(q) ||
+          (m.riding || '').toLowerCase().includes(q) ||
+          (m.province || '').toLowerCase().includes(q) ||
+          m.party.toLowerCase().includes(q)
+        );
+      }
     }
 
     return (
@@ -27139,64 +27151,66 @@ function App() {
               onClick={() => { setCaChamber('House'); setCaPartyFilter('All'); setCaSearch(''); }}
               className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${caChamber === 'House' ? 'bg-red-600 text-white border-red-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-red-400'}`}
             >
-              House of Commons (338)
+              House of Commons ({mps.length || 338})
             </button>
           </div>
 
-          {caChamber === 'House' ? (
-            <div className="text-center py-20">
-              <span className="text-5xl mb-4 block">🍁</span>
-              <p className="text-xl font-bold text-gray-800 mb-2">House of Commons</p>
-              <p className="text-gray-500 mb-6 text-sm max-w-sm mx-auto">Browse all 338 MPs organized by party and riding</p>
-              <button
-                onClick={() => setView('parties')}
-                className="button-primary text-white px-6 py-3 rounded-xl font-semibold shadow-elegant"
-              >
-                Browse MPs by Party →
-              </button>
+          {/* Loading state for HoC */}
+          {!isSenate && loading && (
+            <div className="text-center py-16">
+              <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-red-600 mb-4" />
+              <p className="text-gray-500 text-sm">Loading MPs...</p>
             </div>
-          ) : (
-            <>
-              {/* Party filter pills */}
-              <div className="flex flex-wrap gap-2 mb-6">
+          )}
+
+          {/* Party filter pills */}
+          {(!(!isSenate && loading)) && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              <button
+                onClick={() => setCaPartyFilter('All')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${caPartyFilter === 'All' ? 'bg-gray-700 text-white border-gray-700 shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+              >
+                All
+              </button>
+              {partyOptions.map(party => (
                 <button
-                  onClick={() => setCaPartyFilter('All')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${caPartyFilter === 'All' ? 'bg-gray-700 text-white border-gray-700 shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+                  key={party}
+                  onClick={() => setCaPartyFilter(caPartyFilter === party ? 'All' : party)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${caPartyFilter === party ? 'text-white shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+                  style={caPartyFilter === party ? { backgroundColor: getPartyColor(party), borderColor: getPartyColor(party) } : {}}
                 >
-                  All
+                  <span style={{ color: caPartyFilter === party ? 'white' : getPartyColor(party) }} className="w-2 h-2 rounded-full inline-block" />
+                  {party}
                 </button>
-                {CA_SENATE_PARTIES.map(party => (
-                  <button
-                    key={party}
-                    onClick={() => setCaPartyFilter(caPartyFilter === party ? 'All' : party)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${caPartyFilter === party ? 'text-white shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
-                    style={caPartyFilter === party ? { backgroundColor: getPartyColor(party), borderColor: getPartyColor(party) } : {}}
-                  >
-                    <span style={{ color: caPartyFilter === party ? 'white' : getPartyColor(party) }} className="w-2 h-2 rounded-full inline-block" />
-                    {party}
-                  </button>
-                ))}
-              </div>
+              ))}
+            </div>
+          )}
 
-              {/* Search */}
-              <div className="relative mb-6">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={caSearch}
-                  onChange={e => setCaSearch(e.target.value)}
-                  placeholder="Search senators by name, province, or group..."
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-300 text-sm"
-                />
-              </div>
+          {/* Search */}
+          {(!(!isSenate && loading)) && (
+            <div className="relative mb-6">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={caSearch}
+                onChange={e => setCaSearch(e.target.value)}
+                placeholder={isSenate ? 'Search senators by name, province, or group...' : 'Search MPs by name, riding, province, or party...'}
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-300 text-sm"
+              />
+            </div>
+          )}
 
-              {/* Results count */}
-              <p className="text-sm text-gray-500 mb-4">
-                Showing {filtered.length} of {sourceData.length} senators
-                {caPartyFilter !== 'All' && <span> · <span className="font-semibold" style={{ color: getPartyColor(caPartyFilter) }}>{caPartyFilter}</span></span>}
-              </p>
+          {/* Results count */}
+          {(!(!isSenate && loading)) && (
+            <p className="text-sm text-gray-500 mb-4">
+              Showing {filtered.length} of {sourceData.length} {isSenate ? 'senators' : 'MPs'}
+              {caPartyFilter !== 'All' && <span> · <span className="font-semibold" style={{ color: getPartyColor(caPartyFilter) }}>{caPartyFilter}</span></span>}
+            </p>
+          )}
 
-              {/* Member cards */}
+          {/* Member cards */}
+          {(!(!isSenate && loading)) && (
+            <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtered.map((member, i) => {
                   const h = caHash(member.name);
@@ -27205,10 +27219,16 @@ function App() {
                   const userVote = caMemberVotes[member.name] || null;
                   const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                   const color = getPartyColor(member.party);
-                  const yearsInOffice = new Date().getFullYear() - new Date(member.dateAppointed).getFullYear();
+                  const yearsInOffice = isSenate
+                    ? new Date().getFullYear() - new Date(member.dateAppointed).getFullYear()
+                    : (member.yearsInOffice || 0);
+                  const roleBadge = !isSenate ? getRoleBadge(member) : null;
                   return (
                     <div key={i} className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-red-400 hover:shadow-xl transition-all cursor-pointer"
-                      onClick={() => { setSelectedSenator(member); setView('senator-detail'); }}
+                      onClick={() => {
+                        if (isSenate) { setSelectedSenator(member); setView('senator-detail'); }
+                        else { setSelectedMember(member); setView('member-detail'); }
+                      }}
                     >
                       {/* Avatar */}
                       <div style={{ backgroundColor: color }} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4">
@@ -27217,12 +27237,19 @@ function App() {
 
                       <h3 className="text-xl font-bold text-gray-800 mb-1">{member.name}</h3>
 
+                      {/* Role badge for MPs */}
+                      {roleBadge && <div className="mb-2">{roleBadge}</div>}
+
                       {/* Party badge */}
                       <div className="mb-3">
                         <span style={{ backgroundColor: color }} className="text-white text-xs px-2.5 py-1 rounded-full font-semibold">
                           {member.party}
                         </span>
                       </div>
+
+                      {!isSenate && member.portfolio && (
+                        <p className="text-xs text-gray-500 italic mb-2 truncate">{member.portfolio}</p>
+                      )}
 
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2 text-gray-600">
@@ -27231,7 +27258,7 @@ function App() {
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <MapPin className="w-4 h-4 flex-shrink-0" />
-                          <span>Senator</span>
+                          <span>{isSenate ? 'Senator' : (member.riding || 'MP')}</span>
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <Calendar className="w-4 h-4 flex-shrink-0" />
@@ -27266,15 +27293,15 @@ function App() {
                 })}
               </div>
 
-              {filtered.length === 0 && (
+              {filtered.length === 0 && !loading && (
                 <div className="text-center py-16 text-gray-400">
                   <span className="text-5xl mb-4 block">🏛️</span>
-                  <p className="font-semibold">No senators found</p>
+                  <p className="font-semibold">No {isSenate ? 'senators' : 'MPs'} found</p>
                   <p className="text-sm mt-1">Try adjusting your search or filter</p>
                 </div>
               )}
 
-              <p className="text-center text-xs text-gray-400 mt-10 pb-4">Illustrative data · senator profiles are statistically modelled</p>
+              <p className="text-center text-xs text-gray-400 mt-10 pb-4">Illustrative data · member profiles are statistically modelled</p>
             </>
           )}
         </div>
