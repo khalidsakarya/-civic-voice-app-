@@ -19400,7 +19400,7 @@ function App() {
     ],
     safety: [
       { label: 'Crime Rate',        firestoreKey: 'crimeRate',         value: '8,700 / 100K',   sub: 'England & Wales',            trend: [8456,9013,8700],                    period: '2020 – 2022',       source: 'ONS Crime Survey for England and Wales',          updated: '2023'     },
-      { label: 'Drug Overdoses',    firestoreKey: 'drugOverdoseDeaths', value: '~4,900/yr',     sub: '2022 ONS',                   trend: [4561,4859,4907],                    period: '2020 – 2022',       source: 'Office for National Statistics (ONS)',             updated: '2022'     },
+      { label: 'Drug Overdoses',    firestoreKey: 'drugOverdoses',      value: '~4,900/yr',     sub: '2022 ONS',                   trend: [4561,4859,4907],                    period: '2020 – 2022',       source: 'Office for National Statistics (ONS)',             updated: '2022'     },
       { label: 'Road Fatalities',   firestoreKey: 'roadFatalities',    value: '~1,695/yr',      sub: '2023 England & Wales',       trend: [1460,1558,1695],                    period: '2021 – 2023',       source: 'Dept for Transport Road Casualties Report',       updated: '2023'     },
       { label: 'Homicide Rate',     firestoreKey: 'homicideRate',      value: '1.1 / 100K',     sub: 'England & Wales 2022/23',    trend: [1.11,1.03,1.10],                    period: '2020 – 2022',       source: 'Office for National Statistics (ONS)',             updated: '2023'     },
     ],
@@ -19420,7 +19420,7 @@ function App() {
     education: [
       { label: 'Graduation Rate',   firestoreKey: 'graduationRate',    value: '66.5%',          sub: 'GCSE grade 4+ 2023',         trend: [61.6,67.3,66.5],                   period: '2020 – 2022',       source: 'Ofqual / Dept for Education',                     updated: '2023'     },
       { label: 'Student Debt',      firestoreKey: 'studentDebt',       value: '£236B total',    sub: 'Outstanding loans',          trend: [160000,200000,236000],              period: '2022 – 2024',       source: 'Student Loans Company / Dept for Education',      updated: '2024'     },
-      { label: 'School Funding',    firestoreKey: 'schoolFunding',     value: '£7,700/pupil',   sub: 'Per year 2022/23',           trend: [6900,7200,7700],                    period: '2020 – 2022',       source: 'Dept for Education School Revenue Accounts',      updated: '2023'     },
+      { label: 'School Funding',    firestoreKey: 'federalAgencySpending', value: '£7,700/pupil',sub: 'Per year 2022/23',           trend: [6900,7200,7700],                    period: '2020 – 2022',       source: 'Dept for Education School Revenue Accounts',      updated: '2023'     },
       { label: 'Literacy',          firestoreKey: 'literacy',          value: '99%',            sub: 'Adult literacy rate',         trend: [99,99,99],                         period: '2020 – 2022',       source: 'Office for National Statistics (ONS)',             updated: '2022'     },
     ],
     social: [
