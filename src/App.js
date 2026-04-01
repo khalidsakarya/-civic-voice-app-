@@ -1145,6 +1145,23 @@ const ANOMALY_DATA = {
 };
 
 function App() {
+  // ── VOTE DATA VERSION GATE ────────────────────────────────────────────────
+  // Bump CV_VOTES_VERSION whenever vote counts are reset so every user gets
+  // a clean slate on next load, regardless of their cached localStorage data.
+  const CV_VOTES_VERSION = '2';
+  if (localStorage.getItem('cv_votes_version') !== CV_VOTES_VERSION) {
+    const VOTE_KEYS = [
+      'cvPresidentVote', 'cvPresidentBillVotes', 'cvEOVotes',
+      'cvPMVote', 'cvAlbaneseVote', 'cvStarmerVote',
+      'cvUkMpVotes', 'cvUkLordVotes', 'cvUkJusticeVotes',
+      'cvCaMemberVotes', 'cvSenatorVotes', 'cvAuMemberVotes',
+      'cvCongressVotes', 'cv_concerned_votes',
+      'cv_waste_votes', 'cv_anomaly_votes', 'cv_lobby_votes',
+    ];
+    VOTE_KEYS.forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('cv_votes_version', CV_VOTES_VERSION);
+  }
+
   const [view, setView] = useState('countries');
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedParty, setSelectedParty] = useState(null);
