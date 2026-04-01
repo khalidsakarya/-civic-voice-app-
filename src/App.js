@@ -15143,7 +15143,8 @@ function App() {
               {/* Approval bar */}
               {(() => {
                 const total = (pmVotes.support || 0) + (pmVotes.oppose || 0);
-                const pct = total > 0 ? Math.round((pmVotes.support / total) * 100) : 50;
+                if (total === 0) return null;
+                const pct = Math.round((pmVotes.support / total) * 100);
                 return (
                   <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 mt-4">
                     <div className="flex items-center gap-1.5">
@@ -15725,7 +15726,8 @@ function App() {
               {/* Approval bar */}
               {(() => {
                 const total = (presidentVotes.support || 0) + (presidentVotes.oppose || 0);
-                const pct = total > 0 ? Math.round((presidentVotes.support / total) * 100) : 50;
+                if (total === 0) return null;
+                const pct = Math.round((presidentVotes.support / total) * 100);
                 return (
                   <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 mt-4">
                     <div className="flex items-center gap-1.5">
@@ -16329,7 +16331,8 @@ function App() {
               {/* Approval bar */}
               {(() => {
                 const total = (starmerVotes.support || 0) + (starmerVotes.oppose || 0);
-                const pct = total > 0 ? Math.round((starmerVotes.support / total) * 100) : 50;
+                if (total === 0) return null;
+                const pct = Math.round((starmerVotes.support / total) * 100);
                 return (
                   <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 mt-4">
                     <div className="flex items-center gap-1.5">
@@ -17336,7 +17339,7 @@ function App() {
       const isExpanded = expandedUkBills[bill.id] || false;
       const uv = ukBillVotes[bill.id] || null;
       const total = bill.support + bill.oppose;
-      const supportPct = total > 0 ? Math.round((bill.support / total) * 100) : 50;
+      const supportPct = total > 0 ? Math.round((bill.support / total) * 100) : null;
       return (
         <div className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-red-300 transition-all">
           <div
@@ -17373,19 +17376,21 @@ function App() {
                 )}
               </div>
               <p className="text-sm text-gray-600 mb-4 leading-relaxed">{bill.summary}</p>
-              <div className="mb-4">
-                <div className="flex justify-between text-xs text-gray-500 mb-1">
-                  <span className="text-green-600 font-semibold">Public Support {supportPct}%</span>
-                  <span className="text-red-500 font-semibold">Oppose {100 - supportPct}%</span>
+              {supportPct !== null && (
+                <div className="mb-4">
+                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                    <span className="text-green-600 font-semibold">Public Support {supportPct}%</span>
+                    <span className="text-red-500 font-semibold">Oppose {100 - supportPct}%</span>
+                  </div>
+                  <div className="h-2 bg-red-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${supportPct}%` }} />
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1">
+                    <span>{bill.support.toLocaleString()} support</span>
+                    <span>{bill.oppose.toLocaleString()} oppose</span>
+                  </div>
                 </div>
-                <div className="h-2 bg-red-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${supportPct}%` }} />
-                </div>
-                <div className="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>{bill.support.toLocaleString()} support</span>
-                  <span>{bill.oppose.toLocaleString()} oppose</span>
-                </div>
-              </div>
+              )}
               {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
@@ -17532,7 +17537,7 @@ function App() {
                   const isExpanded = expandedUkBills[bill.id] || false;
                   const uv = ukBillVotes[bill.id] || null;
                   const total = bill.support + bill.oppose;
-                  const pct = total > 0 ? Math.round((bill.support / total) * 100) : 50;
+                  const pct = total > 0 ? Math.round((bill.support / total) * 100) : null;
                   return (
                     <div key={bill.id} className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-green-400 transition-all">
                       <div
@@ -17559,15 +17564,17 @@ function App() {
                             <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
                           </div>
                           <p className="text-sm text-gray-600 mb-4 leading-relaxed">{bill.summary}</p>
-                          <div className="mb-4">
-                            <div className="flex justify-between text-xs text-gray-500 mb-1">
-                              <span className="text-green-600 font-semibold">Support {pct}%</span>
-                              <span className="text-red-500 font-semibold">Oppose {100 - pct}%</span>
+                          {pct !== null && (
+                            <div className="mb-4">
+                              <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                <span className="text-green-600 font-semibold">Support {pct}%</span>
+                                <span className="text-red-500 font-semibold">Oppose {100 - pct}%</span>
+                              </div>
+                              <div className="h-2 bg-red-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-green-500 rounded-full" style={{ width: `${pct}%` }} />
+                              </div>
                             </div>
-                            <div className="h-2 bg-red-100 rounded-full overflow-hidden">
-                              <div className="h-full bg-green-500 rounded-full" style={{ width: `${pct}%` }} />
-                            </div>
-                          </div>
+                          )}
                           {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                               <div className="bg-green-50 border border-green-200 rounded-lg p-3">
@@ -18057,7 +18064,7 @@ function App() {
     const initials = mp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     const votes = ukMpVotes[mp.name] || { support: mp.supportVotes, oppose: mp.opposeVotes, userVote: mp.userVote };
     const totalVotes = (votes.support || 0) + (votes.oppose || 0);
-    const supportPct = totalVotes > 0 ? Math.round((votes.support / totalVotes) * 100) : 50;
+    const supportPct = totalVotes > 0 ? Math.round((votes.support / totalVotes) * 100) : null;
     const formatGBP = (n) => n >= 1000000 ? `£${(n / 1000000).toFixed(2)}M` : n >= 1000 ? `£${(n / 1000).toFixed(0)}k` : `£${n}`;
 
     const SectionHeader = ({ id, icon, title }) => (
@@ -18102,14 +18109,18 @@ function App() {
 
             {/* Vote bar */}
             <div className="mt-5 p-4 rounded-2xl" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-              <div className="flex justify-between text-xs mb-1.5" style={{ color: `${textColor}cc` }}>
-                <span>Support {votes.support.toLocaleString()}</span>
-                <span>{supportPct}% approve</span>
-                <span>Oppose {votes.oppose.toLocaleString()}</span>
-              </div>
-              <div className="h-2 rounded-full bg-white bg-opacity-30 overflow-hidden mb-3">
-                <div className="h-full rounded-full bg-white" style={{ width: `${supportPct}%` }} />
-              </div>
+              {supportPct !== null && (
+                <>
+                  <div className="flex justify-between text-xs mb-1.5" style={{ color: `${textColor}cc` }}>
+                    <span>Support {votes.support.toLocaleString()}</span>
+                    <span>{supportPct}% approve</span>
+                    <span>Oppose {votes.oppose.toLocaleString()}</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-white bg-opacity-30 overflow-hidden mb-3">
+                    <div className="h-full rounded-full bg-white" style={{ width: `${supportPct}%` }} />
+                  </div>
+                </>
+              )}
               <div className="flex gap-2">
                 <button onClick={() => voteUkMp(mp.name, 'support')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`} style={votes.userVote !== 'support' ? { color: textColor } : {}}>
                   <ThumbsUp className="w-3.5 h-3.5" /> Support
@@ -18620,7 +18631,7 @@ function App() {
     const initials = lord.name.replace(/^(Lord|Baroness|Earl|Viscount|Archbishop|Bishop|Most Rev\.|Rt Rev\.)\s+/i, '').split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
     const votes = ukLordVotes[lord.name] || { support: lord.supportVotes, oppose: lord.opposeVotes, userVote: null };
     const totalVotes = (votes.support || 0) + (votes.oppose || 0);
-    const supportPct = totalVotes > 0 ? Math.round((votes.support / totalVotes) * 100) : 50;
+    const supportPct = totalVotes > 0 ? Math.round((votes.support / totalVotes) * 100) : null;
     const formatGBP = (n) => n >= 1000000 ? `£${(n / 1000000).toFixed(2)}M` : n >= 1000 ? `£${(n / 1000).toFixed(0)}k` : `£${n}`;
     const appointedYear = parseInt((lord.appointed || '2000-01-01').split('-')[0]);
     const yearsInService = new Date().getFullYear() - appointedYear;
@@ -18671,14 +18682,18 @@ function App() {
 
             {/* Vote bar */}
             <div className="mt-5 p-4 rounded-2xl" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
-              <div className="flex justify-between text-xs mb-1.5" style={{ color: `${textColor}cc` }}>
-                <span>Support {votes.support.toLocaleString()}</span>
-                <span>{supportPct}% approve</span>
-                <span>Oppose {votes.oppose.toLocaleString()}</span>
-              </div>
-              <div className="h-2 rounded-full bg-white bg-opacity-30 overflow-hidden mb-3">
-                <div className="h-full rounded-full bg-white" style={{ width: `${supportPct}%` }} />
-              </div>
+              {supportPct !== null && (
+                <>
+                  <div className="flex justify-between text-xs mb-1.5" style={{ color: `${textColor}cc` }}>
+                    <span>Support {votes.support.toLocaleString()}</span>
+                    <span>{supportPct}% approve</span>
+                    <span>Oppose {votes.oppose.toLocaleString()}</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-white bg-opacity-30 overflow-hidden mb-3">
+                    <div className="h-full rounded-full bg-white" style={{ width: `${supportPct}%` }} />
+                  </div>
+                </>
+              )}
               <div className="flex gap-2">
                 <button onClick={() => voteUkLord(lord.name, 'support')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`} style={votes.userVote !== 'support' ? { color: textColor } : {}}>
                   <ThumbsUp className="w-3.5 h-3.5" /> Support
@@ -18901,7 +18916,7 @@ function App() {
               {ukSupremeCourt.justices.map((justice, i) => {
                 const jv = ukJusticeVotes[justice.name] || { support: justice.supportVotes, oppose: justice.opposeVotes, userVote: null };
                 const total = jv.support + jv.oppose;
-                const supportPct = total > 0 ? Math.round((jv.support / total) * 100) : 0;
+                const supportPct = total > 0 ? Math.round((jv.support / total) * 100) : null;
                 return (
                   <div
                     key={i}
@@ -18945,15 +18960,17 @@ function App() {
                     </div>
 
                     {/* Approval bar */}
-                    <div className="mt-auto">
-                      <div className="flex justify-between text-xs text-gray-500 mb-1">
-                        <span>Public support</span>
-                        <span className="font-semibold" style={{ color: supportPct >= 60 ? '#16a34a' : supportPct >= 40 ? '#ca8a04' : '#dc2626' }}>{supportPct}%</span>
+                    {supportPct !== null && (
+                      <div className="mt-auto">
+                        <div className="flex justify-between text-xs text-gray-500 mb-1">
+                          <span>Public support</span>
+                          <span className="font-semibold" style={{ color: supportPct >= 60 ? '#16a34a' : supportPct >= 40 ? '#ca8a04' : '#dc2626' }}>{supportPct}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div className="h-1.5 rounded-full transition-all" style={{ width: `${supportPct}%`, backgroundColor: supportPct >= 60 ? '#16a34a' : supportPct >= 40 ? '#ca8a04' : '#C8102E' }} />
+                        </div>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${supportPct}%`, backgroundColor: supportPct >= 60 ? '#16a34a' : supportPct >= 40 ? '#ca8a04' : '#C8102E' }} />
-                      </div>
-                    </div>
+                    )}
 
                     {/* Support/Oppose buttons */}
                     <div className="flex gap-2 pt-1">
@@ -22855,8 +22872,8 @@ function App() {
             {filtered.map((member, i) => {
               const h = auHash(member.name);
               const support = 0;
-              const oppose = ((h >> 4) % 4000) + 1000;
-              const concerned = ((h >> 8) % 2000) + 300;
+              const oppose = 0;
+              const concerned = 0;
               const userVote = auMemberVotes[member.name] || null;
               const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
               const color = getPartyColor(member.party);
@@ -22954,10 +22971,13 @@ function App() {
     const auHash = (str) => { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0x7fffffff; return h; };
     const h = auHash(member.name);
     const support = 0;
-    const oppose = ((h >> 4) % 4000) + 1000;
-    const concerned = ((h >> 8) % 2000) + 300;
+    const oppose = 0;
+    const concerned = 0;
     const userVote = auMemberVotes[member.name] || null;
-    const approvalPct = Math.round((support / (support + oppose)) * 100);
+    const displaySupport = support + (userVote === 'support' ? 1 : 0);
+    const displayOppose = oppose + (userVote === 'oppose' ? 1 : 0);
+    const displayTotal = displaySupport + displayOppose;
+    const approvalPct = displayTotal > 0 ? Math.round((displaySupport / displayTotal) * 100) : null;
     const lobbyingList = member.lobbying?.organizations || [];
     const electedYear = member.financialDisclosure?.electedYear;
     const formatAUD = (n) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(n);
@@ -23009,26 +23029,28 @@ function App() {
             </div>
 
             {/* Approval bar */}
-            <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-1.5">
-                <ThumbsUp className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-semibold text-gray-700">{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</span>
-                <span className="text-xs text-gray-500">support</span>
+            {approvalPct !== null && (
+              <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <ThumbsUp className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-semibold text-gray-700">{displaySupport.toLocaleString()}</span>
+                  <span className="text-xs text-gray-500">support</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 text-orange-500" />
+                  <span className="text-sm font-semibold text-gray-700">{(concerned + (userVote === 'concerned' ? 1 : 0)).toLocaleString()}</span>
+                  <span className="text-xs text-gray-500">concerned</span>
+                </div>
+                <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[80px]">
+                  <div className="h-2 rounded-full transition-all" style={{ width: `${approvalPct}%`, backgroundColor: approvalPct >= 50 ? '#22c55e' : '#ef4444' }} />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-500">oppose</span>
+                  <span className="text-sm font-semibold text-gray-700">{displayOppose.toLocaleString()}</span>
+                  <ThumbsDown className="w-4 h-4 text-red-500" />
+                </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <AlertCircle className="w-4 h-4 text-orange-500" />
-                <span className="text-sm font-semibold text-gray-700">{(concerned + (userVote === 'concerned' ? 1 : 0)).toLocaleString()}</span>
-                <span className="text-xs text-gray-500">concerned</span>
-              </div>
-              <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[80px]">
-                <div className="h-2 rounded-full transition-all" style={{ width: `${approvalPct}%`, backgroundColor: approvalPct >= 50 ? '#22c55e' : '#ef4444' }} />
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-gray-500">oppose</span>
-                <span className="text-sm font-semibold text-gray-700">{(oppose + (userVote === 'oppose' ? 1 : 0)).toLocaleString()}</span>
-                <ThumbsDown className="w-4 h-4 text-red-500" />
-              </div>
-            </div>
+            )}
 
             {/* Vote buttons */}
             <div className="flex gap-2 mt-2">
@@ -25343,7 +25365,8 @@ function App() {
               {/* Approval bar */}
               {(() => {
                 const total = (albaneseVotes.support || 0) + (albaneseVotes.oppose || 0);
-                const pct = total > 0 ? Math.round((albaneseVotes.support / total) * 100) : 50;
+                if (total === 0) return null;
+                const pct = Math.round((albaneseVotes.support / total) * 100);
                 return (
                   <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 mt-4">
                     <div className="flex items-center gap-1.5">
@@ -27495,8 +27518,8 @@ function App() {
                 {filtered.map((member, i) => {
                   const h = caHash(member.name);
                   const support = 0;
-                  const oppose = ((h >> 4) % 4000) + 1000;
-                  const concerned = ((h >> 8) % 2000) + 300;
+                  const oppose = 0;
+                  const concerned = 0;
                   const userVote = caMemberVotes[member.name] || null;
                   const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                   const color = getPartyColor(member.party);
@@ -28248,12 +28271,14 @@ function App() {
                 </div>
                 <h3 className="text-sm font-bold text-gray-800 mb-2 leading-snug">{eo.title}</h3>
                 <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{eo.description}</p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-gray-100 rounded-full h-1.5">
-                    <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                {total > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                      <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                    </div>
+                    <span className="text-xs text-gray-400">{pct}% support</span>
                   </div>
-                  <span className="text-xs text-gray-400">{pct}% support</span>
-                </div>
+                )}
                 <a
                   href={eo.sourceUrl} target="_blank" rel="noopener noreferrer"
                   onClick={e => e.stopPropagation()}
@@ -28468,12 +28493,14 @@ function App() {
                 <h3 className="text-sm font-bold text-gray-800 mb-1.5 leading-snug">{bill.title}</h3>
                 <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full border mb-2 ${sc.badge}`}>{bill.status}</span>
                 <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{bill.description}</p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-gray-100 rounded-full h-1.5">
-                    <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                {total > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                      <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                    </div>
+                    <span className="text-xs text-gray-400">{pct}% support</span>
                   </div>
-                  <span className="text-xs text-gray-400">{pct}% support</span>
-                </div>
+                )}
                 <a
                   href={bill.sourceUrl} target="_blank" rel="noopener noreferrer"
                   onClick={e => e.stopPropagation()}
@@ -30008,7 +30035,7 @@ function App() {
       const isExpanded = expandedAuBills[bill.id] || false;
       const uv = auBillVotes[bill.id] || null;
       const total = bill.support + bill.oppose;
-      const supportPct = total > 0 ? Math.round((bill.support / total) * 100) : 50;
+      const supportPct = total > 0 ? Math.round((bill.support / total) * 100) : null;
       return (
         <div className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-green-400 transition-all">
           {/* Collapsed header — click to toggle */}
@@ -30038,19 +30065,21 @@ function App() {
                 <span className="text-xs text-gray-400 flex items-center gap-1"><Globe className="w-3 h-3" />{bill.chamber}</span>
               </div>
               <p className="text-[17px] sm:text-[15px] text-gray-600 mb-4 leading-relaxed font-bold sm:font-normal">{bill.summary}</p>
-              <div className="mb-4">
-                <div className="flex justify-between text-xs text-gray-500 mb-1">
-                  <span className="text-green-600 font-semibold">Support {supportPct}%</span>
-                  <span className="text-red-500 font-semibold">Oppose {100 - supportPct}%</span>
+              {supportPct !== null && (
+                <div className="mb-4">
+                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                    <span className="text-green-600 font-semibold">Support {supportPct}%</span>
+                    <span className="text-red-500 font-semibold">Oppose {100 - supportPct}%</span>
+                  </div>
+                  <div className="h-2 bg-red-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${supportPct}%` }} />
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-1">
+                    <span>{bill.support.toLocaleString()} support</span>
+                    <span>{bill.oppose.toLocaleString()} oppose</span>
+                  </div>
                 </div>
-                <div className="h-2 bg-red-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${supportPct}%` }} />
-                </div>
-                <div className="flex justify-between text-xs text-gray-400 mt-1">
-                  <span>{bill.support.toLocaleString()} support</span>
-                  <span>{bill.oppose.toLocaleString()} oppose</span>
-                </div>
-              </div>
+              )}
               {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
@@ -30227,7 +30256,7 @@ function App() {
                     const isExpanded = expandedAuBills[bill.id] || false;
                     const uv = auBillVotes[bill.id] || null;
                     const total = bill.support + bill.oppose;
-                    const pct = total > 0 ? Math.round((bill.support / total) * 100) : 50;
+                    const pct = total > 0 ? Math.round((bill.support / total) * 100) : null;
                     return (
                       <div key={bill.id} className="bg-white rounded-xl shadow-md border-2 border-transparent hover:border-green-400 transition-all">
                         {/* Collapsed header */}
@@ -30251,19 +30280,21 @@ function App() {
                               <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs">{bill.category}</span>
                             </div>
                             <p className="text-[17px] sm:text-[15px] text-gray-600 mb-4 font-bold sm:font-normal">{bill.summary}</p>
-                            <div className="mb-4">
-                              <div className="flex justify-between text-xs text-gray-500 mb-1">
-                                <span className="text-green-600 font-semibold">Support {pct}%</span>
-                                <span className="text-red-500 font-semibold">Oppose {100 - pct}%</span>
+                            {pct !== null && (
+                              <div className="mb-4">
+                                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                  <span className="text-green-600 font-semibold">Support {pct}%</span>
+                                  <span className="text-red-500 font-semibold">Oppose {100 - pct}%</span>
+                                </div>
+                                <div className="h-2 bg-red-100 rounded-full overflow-hidden">
+                                  <div className="h-full bg-green-500 rounded-full" style={{ width: `${pct}%` }} />
+                                </div>
+                                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                                  <span className="text-green-600">{bill.support.toLocaleString()} support</span>
+                                  <span className="text-red-500">{bill.oppose.toLocaleString()} oppose</span>
+                                </div>
                               </div>
-                              <div className="h-2 bg-red-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-green-500 rounded-full" style={{ width: `${pct}%` }} />
-                              </div>
-                              <div className="flex justify-between text-xs text-gray-400 mt-1">
-                                <span className="text-green-600">{bill.support.toLocaleString()} support</span>
-                                <span className="text-red-500">{bill.oppose.toLocaleString()} oppose</span>
-                              </div>
-                            </div>
+                            )}
                             {(bill.pros?.length > 0 || bill.cons?.length > 0) && (
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                                 <div className="bg-green-50 border border-green-200 rounded-lg p-3">
@@ -31899,7 +31930,7 @@ function App() {
               {highCourt.justices.map((justice, index) => {
                 const votes = auHighCourtVotes[justice.name] || { support: 0, oppose: 0, userVote: null };
                 const total = votes.support + votes.oppose;
-                const pct = total > 0 ? Math.round((votes.support / total) * 100) : 50;
+                const pct = total > 0 ? Math.round((votes.support / total) * 100) : null;
                 return (
                   <div key={index} className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
@@ -31910,13 +31941,15 @@ function App() {
                     <p className="text-sm text-gray-500 mt-1">Appointed by: {justice.appointedBy} ({justice.year})</p>
                     <p className="text-sm text-gray-500">State: {justice.state}</p>
                     {/* Approval bar */}
-                    <div className="flex items-center gap-2 mt-3">
-                      <ThumbsUp className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
-                      <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                    {pct !== null && (
+                      <div className="flex items-center gap-2 mt-3">
+                        <ThumbsUp className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+                        <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                          <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                        </div>
+                        <ThumbsDown className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
                       </div>
-                      <ThumbsDown className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
-                    </div>
+                    )}
                     <div className="flex gap-1.5 mt-2">
                       <button
                         onClick={() => castVote(justice.name, 'support')}
@@ -34258,8 +34291,8 @@ function App() {
 
     // Citizen votes
     const support = 0;
-    const oppose = ((h >> 4) % 4000) + 1000;
-    const concerned = ((h >> 8) % 2000) + 300;
+    const oppose = 0;
+    const concerned = 0;
     const userVote = senatorVotes[s.name] || null;
 
     const voteSenator = (name, vote) => {
@@ -34823,8 +34856,8 @@ function App() {
             {filtered.map((senator, i) => {
               const h = senHash(senator.name);
               const support = 0;
-              const oppose = ((h >> 4) % 4000) + 1000;
-              const concerned = ((h >> 8) % 2000) + 300;
+              const oppose = 0;
+              const concerned = 0;
               const userVote = senatorVotes[senator.name] || null;
               const initials = senator.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
               const color = getPartyColor(senator.party);
