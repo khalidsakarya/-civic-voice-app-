@@ -19629,38 +19629,6 @@ function App() {
             </div>
           </div>
 
-          {/* Promise Tracker */}
-          {(() => {
-            const lName = 'Keir Starmer';
-            const promises = (promiseTrackerData[lName] || []).length > 0 ? promiseTrackerData[lName] : (PROMISE_FALLBACK_DATA[lName] || []);
-            const sm = { Kept: 100, 'Partially Kept': 60, 'In Progress': 35, 'Not Started': 10, Broken: 0 };
-            const score = promises.length > 0 ? Math.round(promises.reduce((s, p) => s + (sm[p.status] || 0), 0) / promises.length) : 0;
-            const sc = score >= 70 ? '#22c55e' : score >= 45 ? '#eab308' : score >= 25 ? '#f97316' : '#ef4444';
-            const kept = promises.filter(p => p.status === 'Kept').length;
-            const broken = promises.filter(p => p.status === 'Broken').length;
-            return (
-              <div
-                onClick={() => setView('promise-tracker-page')}
-                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#E4003B'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
-              >
-                <div className="mb-3 sm:mb-4" style={{ color: '#E4003B' }}>
-                  <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">📋 Promise Tracker</h2>
-                <p className="text-gray-500 text-xs mb-3">PM · Keir Starmer</p>
-                <div className="w-full bg-gray-100 rounded-full h-2 mb-2 overflow-hidden">
-                  <div className="h-2 rounded-full" style={{ width: `${score}%`, backgroundColor: sc }} />
-                </div>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span className="font-semibold" style={{ color: sc }}>Score: {score}/100</span>
-                  <span>{kept} kept · {broken} broken</span>
-                </div>
-              </div>
-            );
-          })()}
-
           {/* Election Tracker */}
           <div
             onClick={() => setView('election-tracker')}
@@ -26855,55 +26823,6 @@ function App() {
             </div>
           </div>
 
-          {/* Tax Calculator — Canada only */}
-          {!isUSA && (
-            <div
-              onClick={() => setView('ca-tax-calculator')}
-              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 active:scale-95 mc"
-            >
-              <div className="text-red-600 mb-3 sm:mb-4">
-                <DollarSign className="w-10 h-10 sm:w-12 sm:h-12" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Your Tax Calculator</h2>
-              <p className="text-gray-600 mb-3 text-sm sm:text-base">Enter your salary and see your federal tax — plus exactly where every dollar goes</p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span className="font-medium">2024 Federal Brackets</span>
-                <ChevronRight className="w-5 h-5 text-red-500" />
-              </div>
-            </div>
-          )}
-
-          {/* Promise Tracker */}
-          {(() => {
-            const lName = isUSA ? 'Donald Trump' : 'Mark Carney';
-            const pm    = isUSA ? '47th President · Donald Trump' : '24th PM · Mark Carney';
-            const promises = (promiseTrackerData[lName] || []).length > 0 ? promiseTrackerData[lName] : (PROMISE_FALLBACK_DATA[lName] || []);
-            const sm = { Kept: 100, 'Partially Kept': 60, 'In Progress': 35, 'Not Started': 10, Broken: 0 };
-            const score = promises.length > 0 ? Math.round(promises.reduce((s, p) => s + (sm[p.status] || 0), 0) / promises.length) : 0;
-            const sc = score >= 70 ? '#22c55e' : score >= 45 ? '#eab308' : score >= 25 ? '#f97316' : '#ef4444';
-            const kept = promises.filter(p => p.status === 'Kept').length;
-            const broken = promises.filter(p => p.status === 'Broken').length;
-            return (
-              <div
-                onClick={() => setView('promise-tracker-page')}
-                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-indigo-500 active:scale-95"
-              >
-                <div className="text-indigo-600 mb-3 sm:mb-4">
-                  <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">📋 Promise Tracker</h2>
-                <p className="text-gray-500 text-xs mb-3">{pm}</p>
-                <div className="w-full bg-gray-100 rounded-full h-2 mb-2 overflow-hidden">
-                  <div className="h-2 rounded-full" style={{ width: `${score}%`, backgroundColor: sc }} />
-                </div>
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span className="font-semibold" style={{ color: sc }}>Score: {score}/100</span>
-                  <span>{kept} kept · {broken} broken</span>
-                </div>
-              </div>
-            );
-          })()}
-
           {/* Election Tracker */}
           {(() => {
             const isUsa = isUSA;
@@ -31886,36 +31805,6 @@ function App() {
                 <ChevronRight className="w-5 h-5 text-teal-600" />
               </div>
             </div>
-
-            {/* Promise Tracker */}
-            {(() => {
-              const lName = 'Anthony Albanese';
-              const promises = (promiseTrackerData[lName] || []).length > 0 ? promiseTrackerData[lName] : (PROMISE_FALLBACK_DATA[lName] || []);
-              const sm = { Kept: 100, 'Partially Kept': 60, 'In Progress': 35, 'Not Started': 10, Broken: 0 };
-              const score = promises.length > 0 ? Math.round(promises.reduce((s, p) => s + (sm[p.status] || 0), 0) / promises.length) : 0;
-              const sc = score >= 70 ? '#22c55e' : score >= 45 ? '#eab308' : score >= 25 ? '#f97316' : '#ef4444';
-              const kept = promises.filter(p => p.status === 'Kept').length;
-              const broken = promises.filter(p => p.status === 'Broken').length;
-              return (
-                <div
-                  onClick={() => setView('promise-tracker-page')}
-                  className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95"
-                >
-                  <div className="text-amber-600 mb-3 sm:mb-4">
-                    <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">📋 Promise Tracker</h2>
-                  <p className="text-gray-500 text-xs mb-3">31st PM · Anthony Albanese</p>
-                  <div className="w-full bg-gray-100 rounded-full h-2 mb-2 overflow-hidden">
-                    <div className="h-2 rounded-full" style={{ width: `${score}%`, backgroundColor: sc }} />
-                  </div>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span className="font-semibold" style={{ color: sc }}>Score: {score}/100</span>
-                    <span>{kept} kept · {broken} broken</span>
-                  </div>
-                </div>
-              );
-            })()}
 
             {/* Election Tracker */}
             {(() => {
