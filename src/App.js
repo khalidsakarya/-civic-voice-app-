@@ -8541,6 +8541,10 @@ function App() {
       return tax;
     };
 
+    const SS_RATE = 0.062;
+    const SS_WAGE_BASE = 168600;
+    const MEDICARE_RATE = 0.0145;
+
     const calcTax = () => {
       const s = parseFloat(String(usTaxSalary).replace(/[^0-9.]/g, ''));
       if (!s || s <= 0) return;
@@ -8548,16 +8552,22 @@ function App() {
       if (!st) return;
       const fedNet = applyBrackets(Math.max(0, s - FED_STD_DED), fedBrackets);
       const stateNet = st.brackets.length === 0 ? 0 : applyBrackets(Math.max(0, s - st.stdDed), st.brackets);
-      const total = fedNet + stateNet;
+      const ss = Math.min(s, SS_WAGE_BASE) * SS_RATE;
+      const medicare = s * MEDICARE_RATE;
+      const total = fedNet + stateNet + ss + medicare;
       setUsTaxResult({
         salary: s,
         stateName: st.name,
         noStateTax: st.brackets.length === 0,
         fedNet,
         stateNet,
+        ss,
+        medicare,
         total,
         fedRate: (fedNet / s) * 100,
         stateRate: (stateNet / s) * 100,
+        ssRate: (ss / s) * 100,
+        medicareRate: (medicare / s) * 100,
         combinedRate: (total / s) * 100,
       });
       logEvent('tax_calculator_used', { country: 'US', itemId: usTaxState });
@@ -8699,7 +8709,7 @@ function App() {
                   </button>
                 </div>
 
-                <p className="text-xs text-gray-400 mt-4 leading-relaxed">Single filer with standard deduction ($14,600 federal). Based on 2024 IRS tax brackets.</p>
+                <p className="text-xs text-gray-400 mt-4 leading-relaxed">Single filer with standard deduction ($14,600 federal). Based on 2024 IRS tax brackets. Includes FICA: Social Security 6.2% (up to $168,600) + Medicare 1.45%.</p>
               </div>
 
               {/* Tax summary — shown after calculation */}
@@ -8721,8 +8731,18 @@ function App() {
                       </>
                     )}
                   </div>
+                  <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Social Security (FICA)</p>
+                    <p className="text-3xl font-bold text-gray-800">{fmt(usTaxResult.ss)}</p>
+                    <p className="text-sm text-gray-400 mt-1">{usTaxResult.ssRate.toFixed(2)}% · 6.2% on first $168,600</p>
+                  </div>
+                  <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Medicare (FICA)</p>
+                    <p className="text-3xl font-bold text-gray-800">{fmt(usTaxResult.medicare)}</p>
+                    <p className="text-sm text-gray-400 mt-1">{usTaxResult.medicareRate.toFixed(2)}% · 1.45% on all earnings</p>
+                  </div>
                   <div className="bg-blue-700 rounded-2xl p-6 shadow-md">
-                    <p className="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-1">Total Tax Owed</p>
+                    <p className="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-1">Total Deductions</p>
                     <p className="text-4xl font-bold text-white">{fmt(usTaxResult.total)}</p>
                     <p className="text-sm text-blue-200 mt-1">{usTaxResult.combinedRate.toFixed(1)}% combined effective rate</p>
                     <div className="mt-3 pt-3 border-t border-blue-600">
