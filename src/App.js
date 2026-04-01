@@ -1157,7 +1157,7 @@ function App() {
   const [showEconomicModal, setShowEconomicModal] = useState(false);
   const [presidentVotes, setPresidentVotes] = useState(() => {
     const saved = localStorage.getItem('cvPresidentVote');
-    return saved ? JSON.parse(saved) : { support: 18423, oppose: 24156, userVote: null };
+    return saved ? JSON.parse(saved) : { support: 18423, oppose: 24156, concerned: 5891, userVote: null };
   });
   const [selectedEO, setSelectedEO] = useState(null);
   const [selectedPresidentBill, setSelectedPresidentBill] = useState(null);
@@ -1189,7 +1189,7 @@ function App() {
   const pendingVoteRef = useRef(null);
   const [pmVotes, setPmVotes] = useState(() => {
     const saved = localStorage.getItem('cvPMVote');
-    return saved ? JSON.parse(saved) : { support: 12847, oppose: 9231, userVote: null };
+    return saved ? JSON.parse(saved) : { support: 12847, oppose: 9231, concerned: 4102, userVote: null };
   });
   const [expandedCarneySections, setExpandedCarneySections] = useState({
     activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false, expenses: false,
@@ -1197,7 +1197,7 @@ function App() {
   });
   const [albaneseVotes, setAlbaneseVotes] = useState(() => {
     const saved = localStorage.getItem('cvAlbaneseVote');
-    return saved ? JSON.parse(saved) : { support: 9841, oppose: 7203, userVote: null };
+    return saved ? JSON.parse(saved) : { support: 9841, oppose: 7203, concerned: 3456, userVote: null };
   });
   const [expandedAlbaneseSections, setExpandedAlbaneseSections] = useState({
     activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false, expenses: false,
@@ -1205,7 +1205,7 @@ function App() {
   });
   const [starmerVotes, setStarmerVotes] = useState(() => {
     const saved = localStorage.getItem('cvStarmerVote');
-    return saved ? JSON.parse(saved) : { support: 8520, oppose: 6340, userVote: null };
+    return saved ? JSON.parse(saved) : { support: 8520, oppose: 6340, concerned: 3210, userVote: null };
   });
   const [expandedStarmerSections, setExpandedStarmerSections] = useState({
     activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false, expenses: false,
@@ -1218,12 +1218,12 @@ function App() {
   const [ukPartyFilter, setUkPartyFilter] = useState('All');
   const [ukMpSearch, setUkMpSearch] = useState('');
   const [selectedUkMember, setSelectedUkMember] = useState(null);
-  const [ukMpVotes, setUkMpVotes] = useState({});
+  const [ukMpVotes, setUkMpVotes] = useState(() => { try { return JSON.parse(localStorage.getItem('cvUkMpVotes') || '{}'); } catch { return {}; } });
   const [expandedUkSections, setExpandedUkSections] = useState({});
   const [ukLordFilter, setUkLordFilter] = useState('All');
   const [ukLordSearch, setUkLordSearch] = useState('');
   const [selectedUkLord, setSelectedUkLord] = useState(null);
-  const [ukLordVotes, setUkLordVotes] = useState({});
+  const [ukLordVotes, setUkLordVotes] = useState(() => { try { return JSON.parse(localStorage.getItem('cvUkLordVotes') || '{}'); } catch { return {}; } });
   const [expandedLordSections, setExpandedLordSections] = useState({});
   const [selectedUkDepartment, setSelectedUkDepartment] = useState(null);
   const [ukDeptGrantsExpanded, setUkDeptGrantsExpanded] = useState(false);
@@ -1231,7 +1231,7 @@ function App() {
   const [auChamber, setAuChamber] = useState('Senate');
   const [auPartyFilter, setAuPartyFilter] = useState('All');
   const [auSearch, setAuSearch] = useState('');
-  const [auMemberVotes, setAuMemberVotes] = useState({});
+  const [auMemberVotes, setAuMemberVotes] = useState(() => { try { return JSON.parse(localStorage.getItem('cvAuMemberVotes') || '{}'); } catch { return {}; } });
   const [expandedAuBills, setExpandedAuBills] = useState({});
   const [expandedCaBills, setExpandedCaBills] = useState({});
   const [expandedUsBills, setExpandedUsBills] = useState({});
@@ -5525,14 +5525,16 @@ function App() {
     setUsBills(prev => prev.map(b => {
       if (b.id !== billId) return b;
       const current = b.userVote;
-      let { supportVotes, opposeVotes } = b;
+      let { supportVotes, opposeVotes, concernedVotes = 0 } = b;
       if (current === 'support') supportVotes -= 1;
       if (current === 'oppose') opposeVotes -= 1;
-      if (vote !== current) {
-        if (vote === 'support') supportVotes += 1;
-        if (vote === 'oppose') opposeVotes += 1;
-      }
-      return { ...b, supportVotes, opposeVotes, userVote: vote === current ? null : vote };
+      if (current === 'concerned') concernedVotes -= 1;
+      const newVote = vote === current ? null : vote;
+      if (newVote === 'support') supportVotes += 1;
+      if (newVote === 'oppose') opposeVotes += 1;
+      if (newVote === 'concerned') concernedVotes += 1;
+      if (newVote === 'concerned') storeConcernedRegion('us-bill', billId);
+      return { ...b, supportVotes, opposeVotes, concernedVotes, userVote: newVote };
     }));
   };
 
@@ -5575,13 +5577,16 @@ function App() {
 
     let support = member.supportVotes ?? 0;
     let oppose  = member.opposeVotes  ?? 0;
+    let concerned = member.concernedVotes ?? 0;
 
     if (currentVote === 'support') support = Math.max(0, support - 1);
     if (currentVote === 'oppose')  oppose  = Math.max(0, oppose  - 1);
+    if (currentVote === 'concerned') concerned = Math.max(0, concerned - 1);
     if (newVote === 'support') support++;
     if (newVote === 'oppose')  oppose++;
+    if (newVote === 'concerned') concerned++;
 
-    const patch = { supportVotes: support, opposeVotes: oppose, userVote: newVote };
+    const patch = { supportVotes: support, opposeVotes: oppose, concernedVotes: concerned, userVote: newVote };
 
     setCongressMembers(prev => prev.map(m => m.name === memberName ? { ...m, ...patch } : m));
     setSelectedMember(cur => cur?.name === memberName ? { ...cur, ...patch } : cur);
@@ -5589,21 +5594,26 @@ function App() {
     const saved = JSON.parse(localStorage.getItem('cvCongressVotes') || '{}');
     saved[memberName] = patch;
     localStorage.setItem('cvCongressVotes', JSON.stringify(saved));
+    if (newVote === 'concerned') storeConcernedRegion('congress', memberName);
   };
 
   const votePresidentBill = (billId, vote) => {
     logEvent('vote_bill', { country: 'US', itemId: String(billId) });
     setPresidentBillVotes(prev => {
-      const current = prev[billId] || { support: 0, oppose: 0, userVote: null };
+      const current = prev[billId] || { support: 0, oppose: 0, concerned: 0, userVote: null };
       const newVote = current.userVote === vote ? null : vote;
       let support = current.support;
       let oppose  = current.oppose;
+      let concerned = current.concerned || 0;
       if (current.userVote === 'support') support = Math.max(0, support - 1);
       if (current.userVote === 'oppose')  oppose  = Math.max(0, oppose  - 1);
+      if (current.userVote === 'concerned') concerned = Math.max(0, concerned - 1);
       if (newVote === 'support') support++;
       if (newVote === 'oppose')  oppose++;
-      const next = { ...prev, [billId]: { support, oppose, userVote: newVote } };
+      if (newVote === 'concerned') concerned++;
+      const next = { ...prev, [billId]: { support, oppose, concerned, userVote: newVote } };
       localStorage.setItem('cvPresidentBillVotes', JSON.stringify(next));
+      if (newVote === 'concerned') storeConcernedRegion('us-president-bill', billId);
       return next;
     });
   };
@@ -5611,16 +5621,20 @@ function App() {
   const voteEO = (orderNum, vote) => {
     logEvent('vote_executive_order', { country: 'US', itemId: String(orderNum) });
     setEoVotes(prev => {
-      const current = prev[orderNum] || { support: 0, oppose: 0, userVote: null };
+      const current = prev[orderNum] || { support: 0, oppose: 0, concerned: 0, userVote: null };
       const newVote = current.userVote === vote ? null : vote;
       let support = current.support;
       let oppose  = current.oppose;
+      let concerned = current.concerned || 0;
       if (current.userVote === 'support') support = Math.max(0, support - 1);
       if (current.userVote === 'oppose')  oppose  = Math.max(0, oppose  - 1);
+      if (current.userVote === 'concerned') concerned = Math.max(0, concerned - 1);
       if (newVote === 'support') support++;
       if (newVote === 'oppose')  oppose++;
-      const next = { ...prev, [orderNum]: { support, oppose, userVote: newVote } };
+      if (newVote === 'concerned') concerned++;
+      const next = { ...prev, [orderNum]: { support, oppose, concerned, userVote: newVote } };
       localStorage.setItem('cvEOVotes', JSON.stringify(next));
+      if (newVote === 'concerned') storeConcernedRegion('us-eo', orderNum);
       return next;
     });
   };
@@ -5629,12 +5643,18 @@ function App() {
     logEvent('vote_politician', { country: 'US', itemId: 'president' });
     setPresidentVotes(prev => {
       const newVote = prev.userVote === vote ? null : vote;
-      let support = 18423;
-      let oppose  = 24156;
+      let support = prev.support || 18423;
+      let oppose  = prev.oppose  || 24156;
+      let concerned = prev.concerned || 5891;
+      if (prev.userVote === 'support') support = Math.max(0, support - 1);
+      if (prev.userVote === 'oppose') oppose = Math.max(0, oppose - 1);
+      if (prev.userVote === 'concerned') concerned = Math.max(0, concerned - 1);
       if (newVote === 'support') support++;
-      if (newVote === 'oppose')  oppose++;
-      const next = { support, oppose, userVote: newVote };
+      else if (newVote === 'oppose') oppose++;
+      else if (newVote === 'concerned') concerned++;
+      const next = { support, oppose, concerned, userVote: newVote };
       localStorage.setItem('cvPresidentVote', JSON.stringify(next));
+      if (newVote === 'concerned') storeConcernedRegion('us-president', 'president');
       return next;
     });
   };
@@ -5643,12 +5663,18 @@ function App() {
     logEvent('vote_politician', { country: 'CA', itemId: 'prime_minister' });
     setPmVotes(prev => {
       const newVote = prev.userVote === vote ? null : vote;
-      let support = 12847;
-      let oppose  = 9231;
+      let support = prev.support || 12847;
+      let oppose  = prev.oppose  || 9231;
+      let concerned = prev.concerned || 4102;
+      if (prev.userVote === 'support') support = Math.max(0, support - 1);
+      if (prev.userVote === 'oppose') oppose = Math.max(0, oppose - 1);
+      if (prev.userVote === 'concerned') concerned = Math.max(0, concerned - 1);
       if (newVote === 'support') support++;
-      if (newVote === 'oppose')  oppose++;
-      const next = { support, oppose, userVote: newVote };
+      else if (newVote === 'oppose') oppose++;
+      else if (newVote === 'concerned') concerned++;
+      const next = { support, oppose, concerned, userVote: newVote };
       localStorage.setItem('cvPMVote', JSON.stringify(next));
+      if (newVote === 'concerned') storeConcernedRegion('ca-pm', 'prime_minister');
       return next;
     });
   };
@@ -5661,12 +5687,18 @@ function App() {
     logEvent('vote_politician', { country: 'AU', itemId: 'prime_minister' });
     setAlbaneseVotes(prev => {
       const newVote = prev.userVote === vote ? null : vote;
-      let support = 9841;
-      let oppose  = 7203;
+      let support = prev.support || 9841;
+      let oppose  = prev.oppose  || 7203;
+      let concerned = prev.concerned || 3456;
+      if (prev.userVote === 'support') support = Math.max(0, support - 1);
+      if (prev.userVote === 'oppose') oppose = Math.max(0, oppose - 1);
+      if (prev.userVote === 'concerned') concerned = Math.max(0, concerned - 1);
       if (newVote === 'support') support++;
       else if (newVote === 'oppose') oppose++;
-      const next = { support, oppose, userVote: newVote };
+      else if (newVote === 'concerned') concerned++;
+      const next = { support, oppose, concerned, userVote: newVote };
       localStorage.setItem('cvAlbaneseVote', JSON.stringify(next));
+      if (newVote === 'concerned') storeConcernedRegion('au-pm', 'albanese');
       return next;
     });
   };
@@ -5679,12 +5711,18 @@ function App() {
     logEvent('vote_politician', { country: 'UK', itemId: 'prime_minister' });
     setStarmerVotes(prev => {
       const newVote = prev.userVote === vote ? null : vote;
-      let support = 8520;
-      let oppose  = 6340;
+      let support = prev.support || 8520;
+      let oppose  = prev.oppose  || 6340;
+      let concerned = prev.concerned || 3210;
+      if (prev.userVote === 'support') support = Math.max(0, support - 1);
+      if (prev.userVote === 'oppose') oppose = Math.max(0, oppose - 1);
+      if (prev.userVote === 'concerned') concerned = Math.max(0, concerned - 1);
       if (newVote === 'support') support++;
       else if (newVote === 'oppose') oppose++;
-      const next = { support, oppose, userVote: newVote };
+      else if (newVote === 'concerned') concerned++;
+      const next = { support, oppose, concerned, userVote: newVote };
       localStorage.setItem('cvStarmerVote', JSON.stringify(next));
+      if (newVote === 'concerned') storeConcernedRegion('uk-pm', 'starmer');
       return next;
     });
   };
@@ -5696,9 +5734,19 @@ function App() {
   const voteUkMp = (name, vote) => {
     logEvent('vote_politician', { country: 'UK', itemId: name });
     setUkMpVotes(prev => {
-      const cur = prev[name] || { support: 0, oppose: 0, userVote: null };
+      const cur = prev[name] || { support: 0, oppose: 0, concerned: 0, userVote: null };
       const newVote = cur.userVote === vote ? null : vote;
-      return { ...prev, [name]: { support: cur.support, oppose: cur.oppose, userVote: newVote } };
+      let support = cur.support, oppose = cur.oppose, concerned = cur.concerned || 0;
+      if (cur.userVote === 'support') support = Math.max(0, support - 1);
+      if (cur.userVote === 'oppose') oppose = Math.max(0, oppose - 1);
+      if (cur.userVote === 'concerned') concerned = Math.max(0, concerned - 1);
+      if (newVote === 'support') support++;
+      if (newVote === 'oppose') oppose++;
+      if (newVote === 'concerned') concerned++;
+      const next = { ...prev, [name]: { support, oppose, concerned, userVote: newVote } };
+      try { localStorage.setItem('cvUkMpVotes', JSON.stringify(next)); } catch (_) {}
+      if (newVote === 'concerned') storeConcernedRegion('uk-mp', name);
+      return next;
     });
   };
 
@@ -5709,9 +5757,19 @@ function App() {
   const voteUkLord = (name, vote) => {
     logEvent('vote_politician', { country: 'UK', itemId: name });
     setUkLordVotes(prev => {
-      const cur = prev[name] || { support: 0, oppose: 0, userVote: null };
+      const cur = prev[name] || { support: 0, oppose: 0, concerned: 0, userVote: null };
       const newVote = cur.userVote === vote ? null : vote;
-      return { ...prev, [name]: { support: cur.support, oppose: cur.oppose, userVote: newVote } };
+      let support = cur.support, oppose = cur.oppose, concerned = cur.concerned || 0;
+      if (cur.userVote === 'support') support = Math.max(0, support - 1);
+      if (cur.userVote === 'oppose') oppose = Math.max(0, oppose - 1);
+      if (cur.userVote === 'concerned') concerned = Math.max(0, concerned - 1);
+      if (newVote === 'support') support++;
+      if (newVote === 'oppose') oppose++;
+      if (newVote === 'concerned') concerned++;
+      const next = { ...prev, [name]: { support, oppose, concerned, userVote: newVote } };
+      try { localStorage.setItem('cvUkLordVotes', JSON.stringify(next)); } catch (_) {}
+      if (newVote === 'concerned') storeConcernedRegion('uk-lord', name);
+      return next;
     });
   };
 
@@ -5839,6 +5897,15 @@ function App() {
     if (homeRegion) { fn(); return; }
     pendingVoteRef.current = fn;
     setShowLocationGate(true);
+  };
+
+  // Tag a concerned vote in localStorage with the user's home region
+  const storeConcernedRegion = (category, id) => {
+    try {
+      const cv = JSON.parse(localStorage.getItem('cv_concerned_votes') || '{}');
+      cv[`${category}:${id}`] = { region: homeRegion || null, ts: Date.now() };
+      localStorage.setItem('cv_concerned_votes', JSON.stringify(cv));
+    } catch (_) {}
   };
 
   const handleRegionDetect = () => {
@@ -15088,6 +15155,12 @@ function App() {
                   <ThumbsUp className="w-4 h-4" /> Support
                 </button>
                 <button
+                  onClick={() => requireRegion(() => votePM('concerned'))}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${pmVotes.userVote === 'concerned' ? 'bg-orange-500 text-white' : 'bg-white bg-opacity-60 text-orange-700 hover:bg-orange-100'}`}
+                >
+                  <AlertCircle className="w-4 h-4" /> Concerned
+                </button>
+                <button
                   onClick={() => requireRegion(() => votePM('oppose'))}
                   className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${pmVotes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
                 >
@@ -15665,6 +15738,12 @@ function App() {
                   className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${presidentVotes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
                 >
                   <ThumbsUp className="w-4 h-4" /> Support
+                </button>
+                <button
+                  onClick={() => requireRegion(() => votePresident('concerned'))}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${presidentVotes.userVote === 'concerned' ? 'bg-orange-500 text-white' : 'bg-white bg-opacity-60 text-orange-700 hover:bg-orange-100'}`}
+                >
+                  <AlertCircle className="w-4 h-4" /> Concerned
                 </button>
                 <button
                   onClick={() => requireRegion(() => votePresident('oppose'))}
@@ -16260,6 +16339,12 @@ function App() {
                   className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${starmerVotes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
                 >
                   <ThumbsUp className="w-4 h-4" /> Support
+                </button>
+                <button
+                  onClick={() => voteStarmer('concerned')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${starmerVotes.userVote === 'concerned' ? 'bg-orange-500 text-white' : 'bg-white bg-opacity-60 text-orange-700 hover:bg-orange-100'}`}
+                >
+                  <AlertCircle className="w-4 h-4" /> Concerned
                 </button>
                 <button
                   onClick={() => voteStarmer('oppose')}
@@ -17311,6 +17396,12 @@ function App() {
               <ThumbsUp className="w-4 h-4" /> Aye
             </button>
             <button
+              onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'concerned'); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'concerned' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-700 border-orange-300 hover:border-orange-500 hover:bg-orange-50'}`}
+            >
+              <AlertCircle className="w-4 h-4" /> Concerned
+            </button>
+            <button
               onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'oppose'); }}
               className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
             >
@@ -17483,6 +17574,9 @@ function App() {
                         <button onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'support'); }} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:bg-green-50'}`}>
                           <ThumbsUp className="w-4 h-4" /> Aye
                         </button>
+                        <button onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'concerned'); }} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'concerned' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-700 border-orange-300 hover:bg-orange-50'}`}>
+                          <AlertCircle className="w-4 h-4" /> Concerned
+                        </button>
                         <button onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'oppose'); }} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:bg-red-50'}`}>
                           <ThumbsDown className="w-4 h-4" /> No
                         </button>
@@ -17562,6 +17656,9 @@ function App() {
                       <div className="px-6 pb-6 pt-4 flex gap-3">
                         <button onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'support'); }} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${ukBillVotes[bill.id] === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:bg-green-50'}`}>
                           <ThumbsUp className="w-4 h-4" /> Support
+                        </button>
+                        <button onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'concerned'); }} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${ukBillVotes[bill.id] === 'concerned' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-700 border-orange-300 hover:bg-orange-50'}`}>
+                          <AlertCircle className="w-4 h-4" /> Concerned
                         </button>
                         <button onClick={e => { e.stopPropagation(); voteUkBill(bill.id, 'oppose'); }} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${ukBillVotes[bill.id] === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:bg-red-50'}`}>
                           <ThumbsDown className="w-4 h-4" /> Oppose
@@ -17893,6 +17990,12 @@ function App() {
                         <ThumbsUp className="w-3.5 h-3.5" /> {votes.support.toLocaleString()}
                       </button>
                       <button
+                        onClick={() => voteUkMp(mp.name, 'concerned')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'concerned' ? 'bg-orange-500 text-white' : 'bg-gray-50 text-orange-700 hover:bg-orange-50'}`}
+                      >
+                        <AlertCircle className="w-3.5 h-3.5" /> {(votes.concerned || 0).toLocaleString()}
+                      </button>
+                      <button
                         onClick={() => voteUkMp(mp.name, 'oppose')}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-gray-50 text-red-700 hover:bg-red-50'}`}
                       >
@@ -17993,6 +18096,9 @@ function App() {
               <div className="flex gap-2">
                 <button onClick={() => voteUkMp(mp.name, 'support')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`} style={votes.userVote !== 'support' ? { color: textColor } : {}}>
                   <ThumbsUp className="w-3.5 h-3.5" /> Support
+                </button>
+                <button onClick={() => voteUkMp(mp.name, 'concerned')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'concerned' ? 'bg-orange-500 text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`} style={votes.userVote !== 'concerned' ? { color: textColor } : {}}>
+                  <AlertCircle className="w-3.5 h-3.5" /> Concerned
                 </button>
                 <button onClick={() => voteUkMp(mp.name, 'oppose')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`} style={votes.userVote !== 'oppose' ? { color: textColor } : {}}>
                   <ThumbsDown className="w-3.5 h-3.5" /> Oppose
@@ -18445,6 +18551,12 @@ function App() {
                         <ThumbsUp className="w-3.5 h-3.5" /> {votes.support.toLocaleString()}
                       </button>
                       <button
+                        onClick={() => voteUkLord(lord.name, 'concerned')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'concerned' ? 'bg-orange-500 text-white' : 'bg-gray-50 text-orange-700 hover:bg-orange-50'}`}
+                      >
+                        <AlertCircle className="w-3.5 h-3.5" /> {(votes.concerned || 0).toLocaleString()}
+                      </button>
+                      <button
                         onClick={() => voteUkLord(lord.name, 'oppose')}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-gray-50 text-red-700 hover:bg-red-50'}`}
                       >
@@ -18553,6 +18665,9 @@ function App() {
               <div className="flex gap-2">
                 <button onClick={() => voteUkLord(lord.name, 'support')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`} style={votes.userVote !== 'support' ? { color: textColor } : {}}>
                   <ThumbsUp className="w-3.5 h-3.5" /> Support
+                </button>
+                <button onClick={() => voteUkLord(lord.name, 'concerned')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'concerned' ? 'bg-orange-500 text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`} style={votes.userVote !== 'concerned' ? { color: textColor } : {}}>
+                  <AlertCircle className="w-3.5 h-3.5" /> Concerned
                 </button>
                 <button onClick={() => voteUkLord(lord.name, 'oppose')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors ${votes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`} style={votes.userVote !== 'oppose' ? { color: textColor } : {}}>
                   <ThumbsDown className="w-3.5 h-3.5" /> Oppose
@@ -22617,7 +22732,11 @@ function App() {
       logEvent('vote_politician', { country: 'AU', itemId: name });
       setAuMemberVotes(prev => {
         const next = { ...prev };
-        if (next[name] === vote) delete next[name]; else next[name] = vote;
+        if (next[name] === vote) { delete next[name]; } else {
+          next[name] = vote;
+          if (vote === 'concerned') storeConcernedRegion('au-member', name);
+        }
+        try { localStorage.setItem('cvAuMemberVotes', JSON.stringify(next)); } catch (_) {}
         return next;
       });
     };
@@ -22720,6 +22839,7 @@ function App() {
               const h = auHash(member.name);
               const support = (h % 6000) + 2000;
               const oppose = ((h >> 4) % 4000) + 1000;
+              const concerned = ((h >> 8) % 2000) + 300;
               const userVote = auMemberVotes[member.name] || null;
               const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
               const color = getPartyColor(member.party);
@@ -22766,13 +22886,20 @@ function App() {
                   </div>
 
                   {/* Vote buttons */}
-                  <div className="flex items-center gap-2 mt-3" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center gap-2 mt-3 flex-wrap" onClick={e => e.stopPropagation()}>
                     <button
                       onClick={() => voteAuMember(member.name, 'support')}
                       className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
                     >
                       <ThumbsUp className="w-3 h-3" />
                       <span>{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</span>
+                    </button>
+                    <button
+                      onClick={() => voteAuMember(member.name, 'concerned')}
+                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'concerned' ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400' : 'text-orange-600 hover:bg-orange-50'}`}
+                    >
+                      <AlertCircle className="w-3 h-3" />
+                      <span>{(concerned + (userVote === 'concerned' ? 1 : 0)).toLocaleString()}</span>
                     </button>
                     <button
                       onClick={() => voteAuMember(member.name, 'oppose')}
@@ -22811,6 +22938,7 @@ function App() {
     const h = auHash(member.name);
     const support = (h % 6000) + 2000;
     const oppose = ((h >> 4) % 4000) + 1000;
+    const concerned = ((h >> 8) % 2000) + 300;
     const userVote = auMemberVotes[member.name] || null;
     const approvalPct = Math.round((support / (support + oppose)) * 100);
     const lobbyingList = member.lobbying?.organizations || [];
@@ -22822,7 +22950,11 @@ function App() {
       logEvent('vote_politician', { country: 'AU', itemId: member?.name });
       setAuMemberVotes(prev => {
         const next = { ...prev };
-        if (next[member.name] === vote) delete next[member.name]; else next[member.name] = vote;
+        if (next[member.name] === vote) { delete next[member.name]; } else {
+          next[member.name] = vote;
+          if (vote === 'concerned') storeConcernedRegion('au-member', member.name);
+        }
+        try { localStorage.setItem('cvAuMemberVotes', JSON.stringify(next)); } catch (_) {}
         return next;
       });
     };
@@ -22866,6 +22998,11 @@ function App() {
                 <span className="text-sm font-semibold text-gray-700">{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</span>
                 <span className="text-xs text-gray-500">support</span>
               </div>
+              <div className="flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 text-orange-500" />
+                <span className="text-sm font-semibold text-gray-700">{(concerned + (userVote === 'concerned' ? 1 : 0)).toLocaleString()}</span>
+                <span className="text-xs text-gray-500">concerned</span>
+              </div>
               <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[80px]">
                 <div className="h-2 rounded-full transition-all" style={{ width: `${approvalPct}%`, backgroundColor: approvalPct >= 50 ? '#22c55e' : '#ef4444' }} />
               </div>
@@ -22883,6 +23020,12 @@ function App() {
                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
               >
                 <ThumbsUp className="w-4 h-4" /> Support
+              </button>
+              <button
+                onClick={() => voteAu('concerned')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${userVote === 'concerned' ? 'bg-orange-500 text-white' : 'bg-white bg-opacity-60 text-orange-700 hover:bg-orange-100'}`}
+              >
+                <AlertCircle className="w-4 h-4" /> Concerned
               </button>
               <button
                 onClick={() => voteAu('oppose')}
@@ -25212,6 +25355,12 @@ function App() {
                   <ThumbsUp className="w-4 h-4" /> Support
                 </button>
                 <button
+                  onClick={() => voteAlbanese('concerned')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${albaneseVotes.userVote === 'concerned' ? 'bg-orange-500 text-white' : 'bg-white bg-opacity-60 text-orange-700 hover:bg-orange-100'}`}
+                >
+                  <AlertCircle className="w-4 h-4" /> Concerned
+                </button>
+                <button
                   onClick={() => voteAlbanese('oppose')}
                   className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${albaneseVotes.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
                 >
@@ -27195,7 +27344,10 @@ function App() {
       logEvent('vote_politician', { country: 'CA', itemId: name });
       setCaMemberVotes(prev => {
         const next = { ...prev };
-        if (next[name] === vote) delete next[name]; else next[name] = vote;
+        if (next[name] === vote) { delete next[name]; } else {
+          next[name] = vote;
+          if (vote === 'concerned') storeConcernedRegion('ca-member', name);
+        }
         try { localStorage.setItem('cvCaMemberVotes', JSON.stringify(next)); } catch (_) {}
         return next;
       });
@@ -27327,6 +27479,7 @@ function App() {
                   const h = caHash(member.name);
                   const support = (h % 6000) + 2000;
                   const oppose = ((h >> 4) % 4000) + 1000;
+                  const concerned = ((h >> 8) % 2000) + 300;
                   const userVote = caMemberVotes[member.name] || null;
                   const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                   const color = getPartyColor(member.party);
@@ -27383,13 +27536,20 @@ function App() {
                       </div>
 
                       {/* Vote buttons */}
-                      <div className="flex items-center gap-2 mt-3" onClick={e => e.stopPropagation()}>
+                      <div className="flex items-center gap-2 mt-3 flex-wrap" onClick={e => e.stopPropagation()}>
                         <button
                           onClick={() => voteCaMember(member.name, 'support')}
                           className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
                         >
                           <ThumbsUp className="w-3 h-3" />
                           <span>{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</span>
+                        </button>
+                        <button
+                          onClick={() => voteCaMember(member.name, 'concerned')}
+                          className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'concerned' ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400' : 'text-orange-600 hover:bg-orange-50'}`}
+                        >
+                          <AlertCircle className="w-3 h-3" />
+                          <span>{(concerned + (userVote === 'concerned' ? 1 : 0)).toLocaleString()}</span>
                         </button>
                         <button
                           onClick={() => voteCaMember(member.name, 'oppose')}
@@ -27650,13 +27810,20 @@ function App() {
                       )}
 
                       {mp.supportVotes !== undefined && (
-                        <div className="flex items-center gap-2 pt-2 border-t" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-2 pt-2 border-t flex-wrap" onClick={e => e.stopPropagation()}>
                           <button
                             onClick={() => requireRegion(() => voteCongressMember(mp.name, 'support'))}
                             className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${mp.userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
                           >
                             <ThumbsUp className="w-3 h-3" />
                             <span>{mp.supportVotes.toLocaleString()}</span>
+                          </button>
+                          <button
+                            onClick={() => requireRegion(() => voteCongressMember(mp.name, 'concerned'))}
+                            className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${mp.userVote === 'concerned' ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400' : 'text-orange-600 hover:bg-orange-50'}`}
+                          >
+                            <AlertCircle className="w-3 h-3" />
+                            <span>{(mp.concernedVotes ?? 0).toLocaleString()}</span>
                           </button>
                           <button
                             onClick={() => requireRegion(() => voteCongressMember(mp.name, 'oppose'))}
@@ -27788,6 +27955,17 @@ function App() {
                         >
                           <ThumbsUp className="w-4 h-4" />
                           <span>{bill.userVote === 'support' ? 'Supporting' : 'Support'}</span>
+                        </button>
+                        <button
+                          onClick={() => requireRegion(() => voteBill(bill.id, bill.userVote === 'concerned' ? 'remove' : 'concerned'))}
+                          className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+                            bill.userVote === 'concerned'
+                              ? 'bg-orange-600 text-white'
+                              : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
+                          }`}
+                        >
+                          <AlertCircle className="w-4 h-4" />
+                          <span>{bill.userVote === 'concerned' ? 'Concerned' : 'Concerned'}</span>
                         </button>
                         <button
                           onClick={() => requireRegion(() => voteBill(bill.id, bill.userVote === 'oppose' ? 'remove' : 'oppose'))}
@@ -27950,6 +28128,17 @@ function App() {
                 >
                   <ThumbsUp className="w-5 h-5" />
                   <span className="text-sm sm:text-base">{selectedBill.userVote === 'support' ? 'Supporting' : 'Support This Bill'}</span>
+                </button>
+                <button
+                  onClick={() => requireRegion(() => voteBill(selectedBill.id, selectedBill.userVote === 'concerned' ? 'remove' : 'concerned'))}
+                  className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
+                    selectedBill.userVote === 'concerned'
+                      ? 'bg-orange-600 text-white'
+                      : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
+                  }`}
+                >
+                  <AlertCircle className="w-5 h-5" />
+                  <span className="text-sm sm:text-base">{selectedBill.userVote === 'concerned' ? 'Concerned' : 'Concerned'}</span>
                 </button>
                 <button
                   onClick={() => requireRegion(() => voteBill(selectedBill.id, selectedBill.userVote === 'oppose' ? 'remove' : 'oppose'))}
@@ -28148,6 +28337,17 @@ function App() {
                       >
                         <ThumbsUp className="w-5 h-5" />
                         <span className="text-sm sm:text-base">{votes.userVote === 'support' ? 'Supporting' : 'Support This Order'}</span>
+                      </button>
+                      <button
+                        onClick={() => requireRegion(() => voteEO(selectedEO.number, 'concerned'))}
+                        className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
+                          votes.userVote === 'concerned'
+                            ? 'bg-orange-600 text-white'
+                            : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
+                        }`}
+                      >
+                        <AlertCircle className="w-5 h-5" />
+                        <span className="text-sm sm:text-base">{votes.userVote === 'concerned' ? 'Concerned' : 'Concerned'}</span>
                       </button>
                       <button
                         onClick={() => requireRegion(() => voteEO(selectedEO.number, 'oppose'))}
@@ -28359,6 +28559,13 @@ function App() {
                       >
                         <ThumbsUp className="w-5 h-5" />
                         <span>{votes.userVote === 'support' ? 'Supporting' : 'Support This Bill'}</span>
+                      </button>
+                      <button
+                        onClick={() => requireRegion(() => votePresidentBill(selectedPresidentBill.id, 'concerned'))}
+                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'concerned' ? 'bg-orange-600 text-white' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'}`}
+                      >
+                        <AlertCircle className="w-5 h-5" />
+                        <span>{votes.userVote === 'concerned' ? 'Concerned' : 'Concerned'}</span>
                       </button>
                       <button
                         onClick={() => requireRegion(() => votePresidentBill(selectedPresidentBill.id, 'oppose'))}
@@ -29086,6 +29293,12 @@ function App() {
                             <ThumbsUp className="w-4 h-4" /> Support {bill.supportVotes > 0 && <span className="text-xs opacity-75">({bill.supportVotes})</span>}
                           </button>
                           <button
+                            onClick={(e) => { e.stopPropagation(); requireRegion() && (setCaBillVotes(prev => ({ ...prev, [bill.id]: prev[bill.id] === 'concerned' ? null : 'concerned' })), voteBill(bill.id, 'concerned')); }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'concerned' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-700 border-orange-300 hover:border-orange-500 hover:bg-orange-50'}`}
+                          >
+                            <AlertCircle className="w-4 h-4" /> Concerned
+                          </button>
+                          <button
                             onClick={(e) => { e.stopPropagation(); requireRegion() && (setCaBillVotes(prev => ({ ...prev, [bill.id]: prev[bill.id] === 'oppose' ? null : 'oppose' })), voteBill(bill.id, 'oppose')); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
                           >
@@ -29553,6 +29766,12 @@ function App() {
                             <ThumbsUp className="w-4 h-4" /> Support {bill.supportVotes > 0 && <span className="text-xs opacity-75">({bill.supportVotes})</span>}
                           </button>
                           <button
+                            onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'concerned'); }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'concerned' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-700 border-orange-300 hover:border-orange-500 hover:bg-orange-50'}`}
+                          >
+                            <AlertCircle className="w-4 h-4" /> Concerned {(bill.concernedVotes ?? 0) > 0 && <span className="text-xs opacity-75">({bill.concernedVotes})</span>}
+                          </button>
+                          <button
                             onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'oppose'); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
                           >
@@ -29680,6 +29899,12 @@ function App() {
                                 <ThumbsUp className="w-4 h-4" /> Support {bill.supportVotes > 0 && <span className="text-xs opacity-75">({bill.supportVotes})</span>}
                               </button>
                               <button
+                                onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'concerned'); }}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'concerned' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-700 border-orange-300 hover:border-orange-500 hover:bg-orange-50'}`}
+                              >
+                                <AlertCircle className="w-4 h-4" /> Concerned {(bill.concernedVotes ?? 0) > 0 && <span className="text-xs opacity-75">({bill.concernedVotes})</span>}
+                              </button>
+                              <button
                                 onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'oppose'); }}
                                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
                               >
@@ -29742,20 +29967,23 @@ function App() {
       logEvent('vote_bill', { country: 'AU', itemId: String(billId) });
       setAuBillVotes(prev => {
         const current = prev[billId];
-        if (current === vote) return { ...prev, [billId]: null };
-        return { ...prev, [billId]: vote };
+        const newVote = current === vote ? null : vote;
+        if (newVote === 'concerned') storeConcernedRegion('au-bill', billId);
+        return { ...prev, [billId]: newVote };
       });
       setAuBills(prev => prev.map(b => {
         if (b.id !== billId) return b;
         const current = auBillVotes[billId];
-        let { support, oppose } = b;
+        let { support, oppose, concerned = 0 } = b;
         if (current === 'support') support -= 1;
         if (current === 'oppose') oppose -= 1;
+        if (current === 'concerned') concerned -= 1;
         if (vote !== current) {
           if (vote === 'support') support += 1;
           if (vote === 'oppose') oppose += 1;
+          if (vote === 'concerned') concerned += 1;
         }
-        return { ...b, support, oppose };
+        return { ...b, support, oppose, concerned };
       }));
     };
 
@@ -29836,6 +30064,12 @@ function App() {
               className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
             >
               <ThumbsUp className="w-4 h-4" /> Support
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'concerned'); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'concerned' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-700 border-orange-300 hover:border-orange-500 hover:bg-orange-50'}`}
+            >
+              <AlertCircle className="w-4 h-4" /> Concerned
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'oppose'); }}
@@ -30043,6 +30277,12 @@ function App() {
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
                           >
                             <ThumbsUp className="w-4 h-4" /> Support
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'concerned'); }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'concerned' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-700 border-orange-300 hover:border-orange-500 hover:bg-orange-50'}`}
+                          >
+                            <AlertCircle className="w-4 h-4" /> Concerned
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'oppose'); }}
@@ -33004,6 +33244,12 @@ function App() {
                 <ThumbsUp className="w-4 h-4" /> Support
               </button>
               <button
+                onClick={() => requireRegion(() => voteCongressMember(member.name, 'concerned'))}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${member.userVote === 'concerned' ? 'bg-orange-500 text-white' : 'bg-white bg-opacity-60 text-orange-700 hover:bg-orange-100'}`}
+              >
+                <AlertCircle className="w-4 h-4" /> Concerned
+              </button>
+              <button
                 onClick={() => requireRegion(() => voteCongressMember(member.name, 'oppose'))}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${member.userVote === 'oppose' ? 'bg-red-500 text-white' : 'bg-white bg-opacity-60 text-red-700 hover:bg-red-100'}`}
               >
@@ -33996,13 +34242,17 @@ function App() {
     // Citizen votes
     const support = (h % 6000) + 2000;
     const oppose = ((h >> 4) % 4000) + 1000;
+    const concerned = ((h >> 8) % 2000) + 300;
     const userVote = senatorVotes[s.name] || null;
 
     const voteSenator = (name, vote) => {
       logEvent('vote_politician', { country: 'CA', itemId: name });
       setSenatorVotes(prev => {
         const next = { ...prev };
-        if (next[name] === vote) delete next[name]; else next[name] = vote;
+        if (next[name] === vote) { delete next[name]; } else {
+          next[name] = vote;
+          if (vote === 'concerned') storeConcernedRegion('ca-senator', name);
+        }
         localStorage.setItem('cvSenatorVotes', JSON.stringify(next));
         return next;
       });
@@ -34176,6 +34426,13 @@ function App() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
+                    <AlertCircle className="w-6 h-6 text-orange-500" />
+                    <div>
+                      <div className="text-2xl font-bold text-gray-800">{(concerned + (userVote === 'concerned' ? 1 : 0)).toLocaleString()}</div>
+                      <div className="text-sm text-gray-600">Concerned</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
                     <ThumbsDown className="w-6 h-6 text-red-600" />
                     <div>
                       <div className="text-2xl font-bold text-gray-800">{(oppose + (userVote === 'oppose' ? 1 : 0)).toLocaleString()}</div>
@@ -34185,14 +34442,21 @@ function App() {
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
-                    onClick={() => requireRegion(() => voteSenator(s.name, userVote === 'support' ? 'remove' : 'support'))}
+                    onClick={() => requireRegion(() => voteSenator(s.name, 'support'))}
                     className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${userVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
                   >
                     <ThumbsUp className="w-5 h-5" />
                     <span className="text-sm sm:text-base">{userVote === 'support' ? 'Supporting' : 'Support This Senator'}</span>
                   </button>
                   <button
-                    onClick={() => requireRegion(() => voteSenator(s.name, userVote === 'oppose' ? 'remove' : 'oppose'))}
+                    onClick={() => requireRegion(() => voteSenator(s.name, 'concerned'))}
+                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${userVote === 'concerned' ? 'bg-orange-600 text-white' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'}`}
+                  >
+                    <AlertCircle className="w-5 h-5" />
+                    <span className="text-sm sm:text-base">{userVote === 'concerned' ? 'Concerned' : 'Concerned About This Senator'}</span>
+                  </button>
+                  <button
+                    onClick={() => requireRegion(() => voteSenator(s.name, 'oppose'))}
                     className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${userVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
                   >
                     <ThumbsDown className="w-5 h-5" />
@@ -34543,6 +34807,7 @@ function App() {
               const h = senHash(senator.name);
               const support = (h % 6000) + 2000;
               const oppose = ((h >> 4) % 4000) + 1000;
+              const concerned = ((h >> 8) % 2000) + 300;
               const userVote = senatorVotes[senator.name] || null;
               const initials = senator.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
               const color = getPartyColor(senator.party);
@@ -34590,13 +34855,20 @@ function App() {
                   </div>
 
                   {/* Vote buttons */}
-                  <div className="flex items-center gap-2 mt-3" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center gap-2 mt-3 flex-wrap" onClick={e => e.stopPropagation()}>
                     <button
                       onClick={() => requireRegion(() => voteSenator(senator.name, 'support'))}
                       className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
                     >
                       <ThumbsUp className="w-3 h-3" />
                       <span>{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</span>
+                    </button>
+                    <button
+                      onClick={() => requireRegion(() => voteSenator(senator.name, 'concerned'))}
+                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'concerned' ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400' : 'text-orange-600 hover:bg-orange-50'}`}
+                    >
+                      <AlertCircle className="w-3 h-3" />
+                      <span>{(concerned + (userVote === 'concerned' ? 1 : 0)).toLocaleString()}</span>
                     </button>
                     <button
                       onClick={() => requireRegion(() => voteSenator(senator.name, 'oppose'))}
