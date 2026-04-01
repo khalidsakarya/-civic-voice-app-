@@ -8967,6 +8967,7 @@ function App() {
         incomeTax,
         ni,
         total,
+        takeHome:     s - total,
         itRate:       (incomeTax / s) * 100,
         niRate:       (ni / s) * 100,
         combinedRate: (total / s) * 100,
@@ -9087,7 +9088,7 @@ function App() {
                   <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">National Insurance (Class 1)</p>
                     <p className="text-3xl font-bold text-gray-800">{fmt(ukTaxResult.ni)}</p>
-                    <p className="text-sm text-gray-400 mt-1">{ukTaxResult.niRate.toFixed(1)}% effective rate</p>
+                    <p className="text-sm text-gray-400 mt-1">{ukTaxResult.niRate.toFixed(1)}% effective rate · 8% up to £50,270 · 2% above</p>
                   </div>
                   <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
                     <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: ukNavy }}>{ukTaxResult.region} — Regional Tax</p>
@@ -9103,6 +9104,11 @@ function App() {
                         That's <strong>{fmt(ukTaxResult.total / 12)}/month</strong> or <strong>{fmt(ukTaxResult.total / 52)}/week</strong>
                       </p>
                     </div>
+                  </div>
+                  <div className="bg-gray-800 rounded-2xl p-6 shadow-md">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Take-Home Pay</p>
+                    <p className="text-4xl font-bold text-white">{fmt(ukTaxResult.takeHome)}</p>
+                    <p className="text-sm text-gray-400 mt-1">After income tax &amp; National Insurance</p>
                   </div>
 
                   {/* Brackets legend */}
