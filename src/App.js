@@ -8975,26 +8975,38 @@ function App() {
       logEvent('tax_calculator_used', { country: 'UK', itemId: ukTaxRegion });
     };
 
-    // UK 2024-25 budget breakdown (HM Treasury)
-    const categories = [
-      { emoji: '🤝', name: 'Social Protection & Pensions', pct: 28.0, rating: 72, note: 'State pension, UC, housing benefit' },
-      { emoji: '🏥', name: 'NHS & Health',                 pct: 20.5, rating: 65, note: 'NHS England, health agencies' },
-      { emoji: '🏫', name: 'Education',                    pct: 10.0, rating: 68, note: 'Schools, colleges & student finance' },
-      { emoji: '💳', name: 'Debt Interest',                pct:  9.0, rating: 28, note: 'Servicing £2.7 trillion national debt' },
-      { emoji: '🛡️', name: 'Defence',                     pct:  5.0, rating: 60, note: 'Armed Forces & NATO commitments' },
-      { emoji: '🏘️', name: 'Local Government Grants',     pct:  4.0, rating: 55, note: 'Block grants to councils' },
-      { emoji: '⚖️', name: 'Law & Order',                  pct:  3.5, rating: 62, note: 'Police, courts & prisons' },
-      { emoji: '🚂', name: 'Transport',                    pct:  4.0, rating: 52, note: 'Rail, roads & active travel' },
-      { emoji: '🏠', name: 'Housing & Planning',           pct:  2.5, rating: 38, note: 'Worst housing crisis in decades' },
-      { emoji: '💼', name: 'Employment & Industry',        pct:  3.0, rating: 58, note: 'DWP, DfT, business support' },
-      { emoji: '🌿', name: 'Environment & Net Zero',       pct:  2.0, rating: 62, note: 'DESNZ, clean energy transition' },
-      { emoji: '🌐', name: 'Foreign Aid & International',  pct:  1.5, rating: 65, note: 'FCDO & development spending' },
-      { emoji: '🔬', name: 'Science & Research',           pct:  1.5, rating: 78, note: 'UKRI, Horizon, R&D investment' },
-      { emoji: '🏦', name: 'Other Programs',               pct:  5.5, rating: 50, note: 'Agriculture, culture, devolved grants' },
+    const GOV_LEVELS = [
+      {
+        label: 'Central Government', flag: '🇬🇧', pct: 75,
+        colorBg: ukRed, colorBar: '#a00d25', colorBorder: 'border-red-200',
+        source: 'HM Treasury Public Spending Statistics 2024–25',
+        categories: [
+          { emoji: '🤝', name: 'Social Protection',  pct: 35, source: 'HM Treasury / DWP',                    confidence: 'High',   updated: 2024 },
+          { emoji: '🏥', name: 'Health (NHS)',        pct: 19, source: 'HM Treasury / DHSC',                   confidence: 'High',   updated: 2024 },
+          { emoji: '🏛️', name: 'Other Central',      pct: 20, source: 'HM Treasury PESA 2024',                confidence: 'Medium', updated: 2024 },
+          { emoji: '🏫', name: 'Education',           pct: 10, source: 'HM Treasury / DfE',                    confidence: 'High',   updated: 2024 },
+          { emoji: '💳', name: 'Debt Interest',       pct:  8, source: 'HM Treasury / OBR Fiscal Outlook',     confidence: 'High',   updated: 2024 },
+          { emoji: '🛡️', name: 'Defence',            pct:  5, source: 'HM Treasury / MOD',                    confidence: 'High',   updated: 2024 },
+          { emoji: '🚂', name: 'Transport',           pct:  3, source: 'HM Treasury / DfT',                    confidence: 'High',   updated: 2024 },
+        ],
+      },
+      {
+        label: 'Local Government', flag: '🏘️', pct: 25,
+        colorBg: '#012169', colorBar: '#01317a', colorBorder: 'border-blue-200',
+        source: 'ONS Local Government Finance Statistics / MHCLG',
+        categories: [
+          { emoji: '🏫', name: 'Education',           pct: 30, source: 'ONS / DfE Local Authority Schools',   confidence: 'High',   updated: 2023 },
+          { emoji: '🤝', name: 'Social Care',         pct: 25, source: 'ONS / DHSC Adult Social Care Stats',  confidence: 'High',   updated: 2023 },
+          { emoji: '🏛️', name: 'Other Local',        pct: 12, source: 'ONS Local Government Finance',        confidence: 'Medium', updated: 2023 },
+          { emoji: '🏠', name: 'Housing',             pct: 10, source: 'ONS / MHCLG Housing Statistics',     confidence: 'High',   updated: 2023 },
+          { emoji: '🌿', name: 'Waste & Environment', pct:  8, source: 'ONS / DEFRA Waste Statistics',        confidence: 'High',   updated: 2023 },
+          { emoji: '🚗', name: 'Transport',           pct:  8, source: 'ONS / DfT Local Transport Stats',     confidence: 'High',   updated: 2023 },
+          { emoji: '⚖️', name: 'Police',             pct:  7, source: 'ONS / Home Office Police Funding',    confidence: 'High',   updated: 2023 },
+        ],
+      },
     ];
 
-    const ratingBadge = (r) => r >= 80 ? 'bg-green-100 text-green-700 border-green-200' : r >= 60 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : 'bg-red-100 text-red-700 border-red-200';
-    const ratingBar   = (r) => r >= 80 ? 'bg-green-500' : r >= 60 ? 'bg-yellow-500' : 'bg-red-500';
+    const confBadge = { High: 'text-green-700 bg-green-50', Medium: 'text-amber-700 bg-amber-50', Low: 'text-red-600 bg-red-50' };
 
     const ukRed  = '#C8102E';
     const ukNavy = '#012169';
@@ -9168,57 +9180,93 @@ function App() {
               )}
             </div>
 
-            {/* ── RIGHT COLUMN: Breakdown grid ── */}
+            {/* ── RIGHT COLUMN: Two-level breakdown ── */}
             <div className="flex-1 min-w-0">
               {!ukTaxResult ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center">
                   <span className="text-7xl mb-4">🇬🇧</span>
                   <h3 className="text-2xl font-bold text-gray-400 mb-2">Enter your salary to see the breakdown</h3>
-                  <p className="text-gray-400 max-w-sm">We'll show you exactly where every pound of your tax goes across 14 spending categories — with efficiency scores for each.</p>
+                  <p className="text-gray-400 max-w-sm">We'll show you exactly where every pound of your tax goes across central and local government spending — with HM Treasury and ONS sources.</p>
                 </div>
               ) : (
                 <div className="animate-fade-in">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8 pb-6 border-b border-gray-200">
-                    <div>
-                      <h2 className="text-3xl sm:text-4xl font-bold text-gray-800">Where Your Tax Goes</h2>
-                      <p className="text-gray-500 mt-2 text-base">How {fmt(ukTaxResult.total)} in combined deductions funds UK public spending</p>
+                  <div className="mb-6 pb-6 border-b border-gray-200">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-1">Where Your Tax Goes</h2>
+                    <p className="text-gray-500 text-base">How {fmt(ukTaxResult.total)} in total deductions is distributed across UK public spending</p>
+                  </div>
+
+                  {/* Split bar */}
+                  <div className="mb-8">
+                    <div className="flex rounded-xl overflow-hidden h-8 mb-2">
+                      <div className="flex items-center justify-center text-white text-xs font-bold" style={{ width: '75%', backgroundColor: ukRed }}>Central 75%</div>
+                      <div className="flex items-center justify-center text-white text-xs font-bold" style={{ width: '25%', backgroundColor: ukNavy }}>Local 25%</div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:ml-4 sm:mt-1">
-                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 text-green-700 font-bold text-sm"><span className="w-3 h-3 bg-green-500 rounded-full" />80+ Excellent</span>
-                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-700 font-bold text-sm"><span className="w-3 h-3 bg-yellow-500 rounded-full" />60–79 Average</span>
-                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 text-red-700 font-bold text-sm"><span className="w-3 h-3 bg-red-500 rounded-full" />Below 60 Poor</span>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>{fmt(ukTaxResult.total * 0.75)} central pool</span>
+                      <span>{fmt(ukTaxResult.total * 0.25)} local pool</span>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4">
-                    {categories.map((cat) => {
-                      const amount = (ukTaxResult.total * cat.pct) / 100;
-                      return (
-                        <div key={cat.name} className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <span className="text-3xl">{cat.emoji}</span>
-                              <div>
-                                <p className="font-bold text-gray-800 text-base leading-tight">{cat.name}</p>
-                                <p className="text-base font-semibold text-gray-600 mt-1">{cat.note}</p>
-                              </div>
+                  {/* Level sections */}
+                  {GOV_LEVELS.map((level) => {
+                    const levelAmt = ukTaxResult.total * (level.pct / 100);
+                    return (
+                      <div key={level.label} className="mb-8">
+                        <div className="flex items-center justify-between px-5 py-4 rounded-t-2xl text-white" style={{ backgroundColor: level.colorBg }}>
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">{level.flag}</span>
+                            <div>
+                              <p className="font-bold text-lg">{level.label}</p>
+                              <p className="text-sm opacity-80">{level.pct}% of total deductions · {fmt(levelAmt)}</p>
                             </div>
-                            <span className={`text-base font-bold px-2.5 py-1 rounded-lg border ${ratingBadge(cat.rating)}`}>{cat.rating}/100</span>
                           </div>
-                          <p className="text-2xl font-bold text-gray-900 mb-1">{fmt(amount)}</p>
-                          <p className="text-sm text-gray-400 mb-4">{cat.pct}% of public spending</p>
-                          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all ${ratingBar(cat.rating)}`}
-                              style={{ width: `${Math.min(cat.pct * 3, 100)}%` }}
-                            />
-                          </div>
+                          <span className="text-2xl font-bold opacity-90">{level.pct}%</span>
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div className={`border-x border-b ${level.colorBorder} rounded-b-2xl overflow-hidden divide-y divide-gray-100`}>
+                          {level.categories.map((cat) => {
+                            const catAmt = levelAmt * (cat.pct / 100);
+                            return (
+                              <div key={cat.name} className="bg-white px-5 py-4 hover:bg-gray-50 transition-colors">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xl">{cat.emoji}</span>
+                                    <span className="font-semibold text-gray-800 text-sm">{cat.name}</span>
+                                  </div>
+                                  <span className="font-bold text-gray-900 text-sm">{fmt(catAmt)}</span>
+                                </div>
+                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-2">
+                                  <div className="h-full rounded-full" style={{ width: `${Math.min(cat.pct * 2.5, 100)}%`, backgroundColor: level.colorBar }} />
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-xs text-gray-400">{cat.pct}% of {level.label.toLowerCase()} spending</span>
+                                  <span className="text-xs text-gray-300">·</span>
+                                  <span className="text-xs text-gray-500">{cat.source}</span>
+                                  <span className="text-xs text-gray-300">·</span>
+                                  <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${confBadge[cat.confidence]}`}>{cat.confidence}</span>
+                                  <span className="text-xs text-gray-400">{cat.updated}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
 
-                  <p className="text-xs text-gray-400 mt-6 leading-relaxed">Income tax + National Insurance only. Excludes employer NI (13.8%), VAT, council tax &amp; stamp duty. Breakdown based on HM Treasury 2024–25 spending plans. Efficiency ratings based on NAO and OBR performance data.</p>
+                  {/* Reality disclaimer */}
+                  <div className="rounded-2xl overflow-hidden border border-amber-200 mt-2">
+                    <div className="px-6 py-4 bg-amber-50 border-b border-amber-100">
+                      <p className="text-xs text-amber-800 font-semibold mb-1">⚠️ How taxes actually work</p>
+                      <p className="text-xs text-amber-700 leading-relaxed">
+                        Taxes are pooled into the Consolidated Fund — your pounds are not individually assigned to specific programmes. The 75/25 central/local split and category percentages are based on average national budget allocations and will vary by year and council area. This is an approximation for illustration only.
+                      </p>
+                    </div>
+                    <div className="px-6 py-3 bg-white">
+                      <p className="text-xs text-gray-400 leading-relaxed">
+                        Sources: HM Treasury Public Spending Statistics, ONS Local Government Finance Statistics, OBR Fiscal Outlook 2024–25. Confidence: <span className="text-green-700 font-semibold">High</span> = official agency data · <span className="text-amber-700 font-semibold">Medium</span> = derived from multiple sources.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
