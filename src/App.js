@@ -8573,25 +8573,38 @@ function App() {
       logEvent('tax_calculator_used', { country: 'US', itemId: usTaxState });
     };
 
-    const categories = [
-      { emoji: '👴', name: 'Social Security',              pct: 21.0, rating: 75, note: 'Retirement & disability benefits' },
-      { emoji: '🏥', name: 'Medicare',                     pct: 13.5, rating: 62, note: 'Health coverage for seniors' },
-      { emoji: '🛡️', name: 'National Defense',            pct: 13.0, rating: 65, note: 'Military & defense spending' },
-      { emoji: '💳', name: 'Interest on National Debt',    pct: 13.0, rating: 28, note: 'Fastest-growing budget item' },
-      { emoji: '🤝', name: 'Medicaid & CHIP',              pct:  8.0, rating: 58, note: 'Low-income health coverage' },
-      { emoji: '💼', name: 'Income Security',              pct:  7.5, rating: 55, note: 'SNAP, housing, unemployment' },
-      { emoji: '🏅', name: 'Veterans Benefits',            pct:  4.5, rating: 72, note: 'VA health care & compensation' },
-      { emoji: '🏫', name: 'Education',                    pct:  2.0, rating: 52, note: 'Federal education programs' },
-      { emoji: '🚂', name: 'Transportation',               pct:  2.5, rating: 48, note: 'Roads, rail & transit' },
-      { emoji: '🔬', name: 'Science & Research',           pct:  1.0, rating: 80, note: 'NIH, NASA, basic research' },
-      { emoji: '🌿', name: 'Environment & Energy',         pct:  1.0, rating: 55, note: 'EPA, clean energy initiatives' },
-      { emoji: '🌐', name: 'International Affairs',        pct:  1.0, rating: 60, note: 'Foreign aid & diplomacy' },
-      { emoji: '🏠', name: 'Housing & Urban Development',  pct:  1.5, rating: 42, note: 'Affordable housing crisis' },
-      { emoji: '🏛️', name: 'Other Programs',              pct:  9.5, rating: 50, note: 'Agriculture, justice & more' },
+    const GOV_LEVELS = [
+      {
+        label: 'Federal', flag: '🇺🇸', pct: 60,
+        colorBg: 'bg-blue-700', colorText: 'text-blue-700', colorBar: 'bg-blue-600', colorLight: 'bg-blue-50', colorBorder: 'border-blue-200',
+        source: 'USASpending.gov / OMB FY2024',
+        categories: [
+          { emoji: '🏥', name: 'Medicare & Medicaid', pct: 27, source: 'CMS / OMB Budget',               confidence: 'High',   updated: 2024 },
+          { emoji: '👴', name: 'Social Security',     pct: 25, source: 'Social Security Administration', confidence: 'High',   updated: 2024 },
+          { emoji: '🛡️', name: 'National Defense',   pct: 13, source: 'Dept of Defense / OMB',          confidence: 'High',   updated: 2024 },
+          { emoji: '💳', name: 'Debt Interest',       pct: 10, source: 'US Treasury / OMB',              confidence: 'High',   updated: 2024 },
+          { emoji: '🏛️', name: 'Other Federal',      pct: 18, source: 'OMB Budget FY2024',              confidence: 'Medium', updated: 2024 },
+          { emoji: '🏅', name: 'Veterans Benefits',   pct:  5, source: 'Dept of Veterans Affairs',       confidence: 'High',   updated: 2024 },
+          { emoji: '🏫', name: 'Education',           pct:  2, source: 'Dept of Education / OMB',        confidence: 'High',   updated: 2024 },
+        ],
+      },
+      {
+        label: 'State', flag: '🏛️', pct: 40,
+        colorBg: 'bg-red-700', colorText: 'text-red-700', colorBar: 'bg-red-500', colorLight: 'bg-red-50', colorBorder: 'border-red-200',
+        source: 'NASBO State Expenditure Report 2023',
+        categories: [
+          { emoji: '🏫', name: 'Education',           pct: 35, source: 'NASBO / Census Bureau',                confidence: 'High',   updated: 2023 },
+          { emoji: '🏥', name: 'Healthcare/Medicaid', pct: 20, source: 'NASBO / Kaiser Family Foundation',     confidence: 'High',   updated: 2023 },
+          { emoji: '🤝', name: 'Social Services',     pct: 10, source: 'NASBO State Expenditure Report',       confidence: 'Medium', updated: 2023 },
+          { emoji: '🚗', name: 'Transportation',      pct:  8, source: 'FHWA / AASHTO',                       confidence: 'High',   updated: 2023 },
+          { emoji: '⚖️', name: 'Corrections',        pct:  7, source: 'Bureau of Justice Statistics',         confidence: 'High',   updated: 2023 },
+          { emoji: '💳', name: 'Debt Service',        pct:  5, source: 'NASBO / Moody\'s Analytics',          confidence: 'Medium', updated: 2023 },
+          { emoji: '🏛️', name: 'Other State',        pct: 15, source: 'NASBO State Expenditure Report',       confidence: 'Medium', updated: 2023 },
+        ],
+      },
     ];
 
-    const ratingBadge = (r) => r >= 80 ? 'bg-green-100 text-green-700 border-green-200' : r >= 60 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : 'bg-red-100 text-red-700 border-red-200';
-    const ratingBar   = (r) => r >= 80 ? 'bg-green-500' : r >= 60 ? 'bg-yellow-500' : 'bg-red-500';
+    const confBadge = { High: 'text-green-700 bg-green-50', Medium: 'text-amber-700 bg-amber-50', Low: 'text-red-600 bg-red-50' };
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50 animate-fade-in">
@@ -8799,58 +8812,96 @@ function App() {
               )}
             </div>
 
-            {/* ── RIGHT COLUMN: Breakdown grid ── */}
+            {/* ── RIGHT COLUMN: Two-level breakdown ── */}
             <div className="flex-1 min-w-0">
               {!usTaxResult ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center">
                   <span className="text-7xl mb-4">🇺🇸</span>
                   <h3 className="text-2xl font-bold text-gray-400 mb-2">Enter your salary to see the breakdown</h3>
-                  <p className="text-gray-400 max-w-sm">We'll show you exactly where every dollar of your federal tax goes across 14 spending categories — with efficiency scores for each.</p>
+                  <p className="text-gray-400 max-w-sm">We'll show you exactly where your total deductions go across federal and state spending — with official government sources for each category.</p>
                 </div>
               ) : (
                 <div className="animate-fade-in">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8 pb-6 border-b border-gray-200">
-                    <div>
-                      <h2 className="text-3xl sm:text-4xl font-bold text-gray-800">Where Your Federal Tax Goes</h2>
-                      <p className="text-gray-500 mt-2 text-base">How {fmt(usTaxResult.fedNet)} in federal tax is allocated across US government spending</p>
+                  <div className="mb-6 pb-6 border-b border-gray-200">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-1">Where Your Tax Goes</h2>
+                    <p className="text-gray-500 text-base">How {fmt(usTaxResult.total)} in total deductions is distributed across government spending</p>
+                  </div>
+
+                  {/* Split bar */}
+                  <div className="mb-8">
+                    <div className="flex rounded-xl overflow-hidden h-8 mb-2">
+                      <div className="bg-blue-700 flex items-center justify-center text-white text-xs font-bold" style={{ width: '60%' }}>Federal 60%</div>
+                      <div className="bg-red-600 flex items-center justify-center text-white text-xs font-bold" style={{ width: '40%' }}>State 40%</div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:ml-4 sm:mt-1">
-                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 text-green-700 font-bold text-sm"><span className="w-3 h-3 bg-green-500 rounded-full" />80+ Excellent</span>
-                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-700 font-bold text-sm"><span className="w-3 h-3 bg-yellow-500 rounded-full" />60–79 Average</span>
-                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 text-red-700 font-bold text-sm"><span className="w-3 h-3 bg-red-500 rounded-full" />Below 60 Poor</span>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>{fmt(usTaxResult.total * 0.60)} federal pool</span>
+                      <span>{fmt(usTaxResult.total * 0.40)} state pool</span>
                     </div>
                   </div>
 
-                  {/* Category cards grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4">
-                    {categories.map((cat) => {
-                      const amount = (usTaxResult.fedNet * cat.pct) / 100;
-                      return (
-                        <div key={cat.name} className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <span className="text-3xl">{cat.emoji}</span>
-                              <div>
-                                <p className="font-bold text-gray-800 text-base leading-tight">{cat.name}</p>
-                                <p className="text-base font-semibold text-gray-600 mt-1">{cat.note}</p>
-                              </div>
+                  {/* Level sections */}
+                  {GOV_LEVELS.map((level) => {
+                    const levelAmt = usTaxResult.total * (level.pct / 100);
+                    return (
+                      <div key={level.label} className="mb-8">
+                        {/* Level header */}
+                        <div className={`flex items-center justify-between px-5 py-4 rounded-t-2xl ${level.colorBg} text-white`}>
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">{level.flag}</span>
+                            <div>
+                              <p className="font-bold text-lg">{level.label} Government</p>
+                              <p className="text-sm opacity-80">{level.pct}% of total deductions · {fmt(levelAmt)}</p>
                             </div>
-                            <span className={`text-base font-bold px-2.5 py-1 rounded-lg border ${ratingBadge(cat.rating)}`}>{cat.rating}/100</span>
                           </div>
-                          <p className="text-2xl font-bold text-gray-900 mb-1">{fmt(amount)}</p>
-                          <p className="text-sm text-gray-400 mb-4">{cat.pct}% of federal budget</p>
-                          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all ${ratingBar(cat.rating)}`}
-                              style={{ width: `${Math.min(cat.pct * 3, 100)}%` }}
-                            />
-                          </div>
+                          <span className="text-2xl font-bold opacity-90">{level.pct}%</span>
                         </div>
-                      );
-                    })}
-                  </div>
 
-                  <p className="text-xs text-gray-400 mt-6 leading-relaxed">Federal income tax only. Excludes FICA (Social Security + Medicare payroll taxes), state income tax, sales tax &amp; property tax. Breakdown based on FY2024 federal budget allocations. Efficiency ratings based on CBO and GAO performance data.</p>
+                        {/* Category rows */}
+                        <div className={`border-x border-b ${level.colorBorder} rounded-b-2xl overflow-hidden divide-y divide-gray-100`}>
+                          {level.categories.map((cat) => {
+                            const catAmt = levelAmt * (cat.pct / 100);
+                            return (
+                              <div key={cat.name} className="bg-white px-5 py-4 hover:bg-gray-50 transition-colors">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xl">{cat.emoji}</span>
+                                    <span className="font-semibold text-gray-800 text-sm">{cat.name}</span>
+                                  </div>
+                                  <span className="font-bold text-gray-900 text-sm">{fmt(catAmt)}</span>
+                                </div>
+                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-2">
+                                  <div className={`h-full rounded-full ${level.colorBar}`} style={{ width: `${Math.min(cat.pct * 2.5, 100)}%` }} />
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-xs text-gray-400">{cat.pct}% of {level.label.toLowerCase()} spending</span>
+                                  <span className="text-xs text-gray-300">·</span>
+                                  <span className="text-xs text-gray-500">{cat.source}</span>
+                                  <span className="text-xs text-gray-300">·</span>
+                                  <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${confBadge[cat.confidence]}`}>{cat.confidence}</span>
+                                  <span className="text-xs text-gray-400">{cat.updated}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Reality disclaimer */}
+                  <div className="rounded-2xl overflow-hidden border border-amber-200 mt-2">
+                    <div className="px-6 py-4 bg-amber-50 border-b border-amber-100">
+                      <p className="text-xs text-amber-800 font-semibold mb-1">⚠️ How taxes actually work</p>
+                      <p className="text-xs text-amber-700 leading-relaxed">
+                        Taxes are pooled into general revenue — your dollars are not individually assigned to specific programs. The 60/40 federal/state split and category percentages are based on average national budget allocations and will vary by state and year. This is an approximation for illustration only.
+                      </p>
+                    </div>
+                    <div className="px-6 py-3 bg-white">
+                      <p className="text-xs text-gray-400 leading-relaxed">
+                        Sources: OMB FY2024 Budget, USASpending.gov, NASBO State Expenditure Report 2023. Confidence: <span className="text-green-700 font-semibold">High</span> = official agency data · <span className="text-amber-700 font-semibold">Medium</span> = derived from multiple sources.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
