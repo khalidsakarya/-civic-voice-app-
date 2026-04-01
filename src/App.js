@@ -9272,15 +9272,19 @@ function App() {
       // Medicare levy: 2% with low-income reduction threshold
       const medicareLevy = s > 26000 ? s * 0.02 : 0;
       const total = fedNet + medicareLevy;
+      const superContrib = s * 0.115;
       setAuTaxResult({
         salary: s,
         territory: territories[auTaxTerritory] || auTaxTerritory,
         fedNet,
         medicareLevy,
+        superContrib,
         total,
         fedRate:      (fedNet / s) * 100,
         medicareRate: (medicareLevy / s) * 100,
+        superRate:    11.5,
         combinedRate: (total / s) * 100,
+        takeHome:     s - total,
       });
       logEvent('tax_calculator_used', { country: 'AU', itemId: auTaxTerritory });
     };
@@ -9379,7 +9383,7 @@ function App() {
                   </button>
                 </div>
 
-                <p className="text-xs text-gray-400 mt-4 leading-relaxed">Includes Low Income Tax Offset (LITO) &amp; 2% Medicare levy. Based on 2024–25 ATO brackets (Stage 3 tax cuts).</p>
+                <p className="text-xs text-gray-400 mt-4 leading-relaxed">Includes Low Income Tax Offset (LITO), 2% Medicare levy, and 11.5% employer Superannuation Guarantee. Based on 2024–25 ATO brackets (Stage 3 tax cuts).</p>
               </div>
 
               {/* Tax summary */}
@@ -9401,7 +9405,7 @@ function App() {
                     <p className="text-sm text-gray-400 mt-1">States funded via federal GST grants</p>
                   </div>
                   <div className="bg-amber-600 rounded-2xl p-6 shadow-md">
-                    <p className="text-xs font-semibold text-amber-200 uppercase tracking-wider mb-1">Total Tax Owed</p>
+                    <p className="text-xs font-semibold text-amber-200 uppercase tracking-wider mb-1">Total Deductions</p>
                     <p className="text-4xl font-bold text-white">{fmt(auTaxResult.total)}</p>
                     <p className="text-sm text-amber-200 mt-1">{auTaxResult.combinedRate.toFixed(1)}% combined effective rate</p>
                     <div className="mt-3 pt-3 border-t border-amber-500">
@@ -9409,6 +9413,20 @@ function App() {
                         That's <strong className="text-white">{fmt(auTaxResult.total / 12)}/month</strong> or <strong className="text-white">{fmt(auTaxResult.total / 52)}/week</strong>
                       </p>
                     </div>
+                  </div>
+                  <div className="bg-white rounded-2xl p-6 shadow-md border-2 border-teal-200">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs font-semibold text-teal-700 uppercase tracking-wider">Your Super Contribution</p>
+                      <span className="text-xs font-bold bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">Employer Paid</span>
+                    </div>
+                    <p className="text-3xl font-bold text-teal-700">{fmt(auTaxResult.superContrib)}</p>
+                    <p className="text-sm text-gray-500 mt-1">{auTaxResult.superRate}% Superannuation Guarantee (2024–25)</p>
+                    <p className="text-xs text-gray-400 mt-2 leading-relaxed">Paid by your employer on top of your salary — not deducted from your take-home pay. Held in your super fund until retirement.</p>
+                  </div>
+                  <div className="bg-gray-800 rounded-2xl p-6 shadow-md">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Take-Home Pay</p>
+                    <p className="text-4xl font-bold text-white">{fmt(auTaxResult.takeHome)}</p>
+                    <p className="text-sm text-gray-400 mt-1">After income tax &amp; Medicare levy</p>
                   </div>
 
                   {/* Federal brackets legend */}
@@ -9460,7 +9478,7 @@ function App() {
                 <div className="flex flex-col items-center justify-center py-24 text-center">
                   <span className="text-7xl mb-4">🇦🇺</span>
                   <h3 className="text-2xl font-bold text-gray-400 mb-2">Enter your salary to see the breakdown</h3>
-                  <p className="text-gray-400 max-w-sm">We'll show you exactly where every dollar of your tax goes across 14 spending categories — with efficiency scores for each.</p>
+                  <p className="text-gray-400 max-w-sm">We'll show you exactly where every dollar of your tax goes across 14 spending categories — plus your employer superannuation contribution.</p>
                 </div>
               ) : (
                 <div className="animate-fade-in">
@@ -9504,7 +9522,7 @@ function App() {
                     })}
                   </div>
 
-                  <p className="text-xs text-gray-400 mt-6 leading-relaxed">Federal income tax + Medicare levy only. Excludes superannuation (11.5% employer SG), GST, stamp duty &amp; payroll tax. Efficiency ratings based on ANAO and Productivity Commission data.</p>
+                  <p className="text-xs text-gray-400 mt-6 leading-relaxed">Federal income tax + Medicare levy only. Superannuation (11.5% employer SG) shown separately above as it is paid by your employer, not deducted from your salary. Excludes GST, stamp duty &amp; payroll tax. Efficiency ratings based on ANAO and Productivity Commission data.</p>
                 </div>
               )}
             </div>
