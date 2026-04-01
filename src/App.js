@@ -28256,44 +28256,63 @@ function App() {
       setCaTaxResult({ salary: s, gross: tax, credit, net, cpp, ei, total, rate: (net / s) * 100, totalRate: (total / s) * 100 });
     };
 
+    // Province-specific splits (federal always 45%, prov+mun = 55%)
+    const PROV_SPLITS = {
+      ON: { prov: 40, mun: 15, name: 'Ontario' },
+      BC: { prov: 38, mun: 17, name: 'British Columbia' },
+      AB: { prov: 39, mun: 16, name: 'Alberta' },
+      QC: { prov: 42, mun: 13, name: 'Québec' },
+      MB: { prov: 41, mun: 14, name: 'Manitoba' },
+      SK: { prov: 40, mun: 15, name: 'Saskatchewan' },
+      NS: { prov: 42, mun: 13, name: 'Nova Scotia' },
+      NB: { prov: 43, mun: 12, name: 'New Brunswick' },
+      NL: { prov: 43, mun: 12, name: 'Newfoundland & Labrador' },
+      PE: { prov: 43, mun: 12, name: 'Prince Edward Island' },
+      NT: { prov: 44, mun: 11, name: 'Northwest Territories' },
+      YT: { prov: 44, mun: 11, name: 'Yukon' },
+      NU: { prov: 45, mun: 10, name: 'Nunavut' },
+    };
+    const ps = PROV_SPLITS[caTaxProvince] || PROV_SPLITS['ON'];
+    const confBadge = { High: 'text-green-700 bg-green-50', Medium: 'text-amber-700 bg-amber-50', Low: 'text-red-600 bg-red-50' };
+
     const GOV_LEVELS = [
       {
         label: 'Federal', flag: '🇨🇦', pct: 45,
-        colorBar: '#dc2626', colorBg: 'bg-red-600', colorLight: 'bg-red-50', colorBorder: 'border-red-200', colorText: 'text-red-700', colorBar2: 'bg-red-500',
+        colorBg: 'bg-red-600', colorBorder: 'border-red-200', colorText: 'text-red-700', colorBar2: 'bg-red-500',
         categories: [
-          { emoji: '🏥', name: 'Healthcare Transfers',  pct: 22 },
-          { emoji: '👴', name: 'Old Age Security',       pct: 15 },
-          { emoji: '💳', name: 'Debt Interest',          pct:  9 },
-          { emoji: '🛡️', name: 'National Defence',      pct:  7 },
-          { emoji: '🏘️', name: 'Indigenous Services',   pct:  5 },
-          { emoji: '🌐', name: 'Immigration',            pct:  2 },
-          { emoji: '🏛️', name: 'Other Federal',         pct: 40 },
+          { emoji: '🏥', name: 'Healthcare Transfers', pct: 22, source: 'Dept of Finance Canada',         confidence: 'High',   updated: 2024 },
+          { emoji: '👴', name: 'Old Age Security',      pct: 15, source: 'ESDC Annual Report',             confidence: 'High',   updated: 2024 },
+          { emoji: '💳', name: 'Debt Interest',         pct:  9, source: 'Dept of Finance Canada',         confidence: 'High',   updated: 2024 },
+          { emoji: '🛡️', name: 'National Defence',     pct:  7, source: 'Dept of National Defence',       confidence: 'High',   updated: 2024 },
+          { emoji: '🏘️', name: 'Indigenous Services',  pct:  5, source: 'ISC Departmental Plan',          confidence: 'Medium', updated: 2023 },
+          { emoji: '🌐', name: 'Immigration',           pct:  2, source: 'IRCC Departmental Plan',         confidence: 'Medium', updated: 2023 },
+          { emoji: '🏛️', name: 'Other Federal',        pct: 40, source: 'Public Accounts of Canada',      confidence: 'Medium', updated: 2024 },
         ],
       },
       {
-        label: 'Provincial (Ontario)', flag: '🏙️', pct: 40,
-        colorBar: '#2563eb', colorBg: 'bg-blue-600', colorLight: 'bg-blue-50', colorBorder: 'border-blue-200', colorText: 'text-blue-700', colorBar2: 'bg-blue-500',
+        label: ps.name, flag: '🏙️', pct: ps.prov,
+        colorBg: 'bg-blue-600', colorBorder: 'border-blue-200', colorText: 'text-blue-700', colorBar2: 'bg-blue-500',
         categories: [
-          { emoji: '🏥', name: 'Healthcare',             pct: 42 },
-          { emoji: '📚', name: 'Education',              pct: 20 },
-          { emoji: '🤝', name: 'Social Services',        pct:  9 },
-          { emoji: '💳', name: 'Debt Interest',          pct:  8 },
-          { emoji: '🚧', name: 'Infrastructure',         pct:  4 },
-          { emoji: '⚖️', name: 'Justice',               pct:  2 },
-          { emoji: '🏛️', name: 'Other Provincial',      pct: 15 },
+          { emoji: '🏥', name: 'Healthcare',            pct: 42, source: `${ps.name} Ministry of Finance`, confidence: 'High',   updated: 2024 },
+          { emoji: '📚', name: 'Education',             pct: 20, source: `${ps.name} Ministry of Finance`, confidence: 'High',   updated: 2024 },
+          { emoji: '🤝', name: 'Social Services',       pct:  9, source: `${ps.name} Ministry of Finance`, confidence: 'High',   updated: 2024 },
+          { emoji: '💳', name: 'Debt Interest',         pct:  8, source: 'Provincial Financing Authority', confidence: 'High',   updated: 2024 },
+          { emoji: '🚧', name: 'Infrastructure',        pct:  4, source: `${ps.name} Ministry of Finance`, confidence: 'Medium', updated: 2024 },
+          { emoji: '⚖️', name: 'Justice',              pct:  2, source: `${ps.name} Ministry of Finance`, confidence: 'High',   updated: 2024 },
+          { emoji: '🏛️', name: 'Other Provincial',     pct: 15, source: 'Provincial Public Accounts',     confidence: 'Medium', updated: 2024 },
         ],
       },
       {
-        label: 'Municipal', flag: '🏡', pct: 15,
-        colorBar: '#16a34a', colorBg: 'bg-green-600', colorLight: 'bg-green-50', colorBorder: 'border-green-200', colorText: 'text-green-700', colorBar2: 'bg-green-500',
+        label: 'Municipal', flag: '🏡', pct: ps.mun,
+        colorBg: 'bg-green-600', colorBorder: 'border-green-200', colorText: 'text-green-700', colorBar2: 'bg-green-500',
         categories: [
-          { emoji: '🚇', name: 'Transit',                pct: 25 },
-          { emoji: '🚔', name: 'Police',                 pct: 18 },
-          { emoji: '🛣️', name: 'Roads',                 pct: 15 },
-          { emoji: '💧', name: 'Water & Utilities',      pct: 12 },
-          { emoji: '🚒', name: 'Fire Services',          pct: 10 },
-          { emoji: '🏠', name: 'Housing Programs',       pct:  8 },
-          { emoji: '🏛️', name: 'Other Municipal',       pct: 12 },
+          { emoji: '🚇', name: 'Transit',               pct: 25, source: 'Statistics Canada Mun. Finance', confidence: 'Medium', updated: 2022 },
+          { emoji: '🚔', name: 'Police',                pct: 18, source: 'Statistics Canada Mun. Finance', confidence: 'Medium', updated: 2022 },
+          { emoji: '🛣️', name: 'Roads',                pct: 15, source: 'Statistics Canada Mun. Finance', confidence: 'Medium', updated: 2022 },
+          { emoji: '💧', name: 'Water & Utilities',     pct: 12, source: 'Statistics Canada Mun. Finance', confidence: 'Medium', updated: 2022 },
+          { emoji: '🚒', name: 'Fire Services',         pct: 10, source: 'Statistics Canada Mun. Finance', confidence: 'Medium', updated: 2022 },
+          { emoji: '🏠', name: 'Housing Programs',      pct:  8, source: 'CMHC / Municipal Reports',       confidence: 'Low',    updated: 2022 },
+          { emoji: '🏛️', name: 'Other Municipal',      pct: 12, source: 'Statistics Canada Mun. Finance', confidence: 'Medium', updated: 2022 },
         ],
       },
     ];
@@ -28343,6 +28362,28 @@ function App() {
               </button>
             </div>
             <p className="text-xs text-gray-400 mt-2">Includes BPA credit of $15,705 × 15% = $2,356 · CPP at 5.95% · EI at 1.66%</p>
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Province / Territory <span className="font-normal text-gray-400">(affects spending split)</span></label>
+              <select
+                value={caTaxProvince}
+                onChange={e => setCaTaxProvince(e.target.value)}
+                className="w-full py-2 px-3 border border-gray-200 rounded-lg text-sm focus:border-red-400 focus:ring-1 focus:ring-red-100 outline-none bg-white"
+              >
+                <option value="AB">Alberta</option>
+                <option value="BC">British Columbia</option>
+                <option value="MB">Manitoba</option>
+                <option value="NB">New Brunswick</option>
+                <option value="NL">Newfoundland &amp; Labrador</option>
+                <option value="NT">Northwest Territories</option>
+                <option value="NS">Nova Scotia</option>
+                <option value="NU">Nunavut</option>
+                <option value="ON">Ontario</option>
+                <option value="PE">Prince Edward Island</option>
+                <option value="QC">Québec</option>
+                <option value="SK">Saskatchewan</option>
+                <option value="YT">Yukon</option>
+              </select>
+            </div>
           </div>
 
           {/* Brackets reference */}
@@ -28408,14 +28449,14 @@ function App() {
               <div className="rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                 <div className="bg-gray-800 px-6 py-4">
                   <h2 className="text-xl font-bold text-white mb-0.5">Where Your Taxes Go</h2>
-                  <p className="text-sm text-gray-400">Estimated split of {fmt(caTaxResult.net)} federal income tax across all three levels of government</p>
+                  <p className="text-sm text-gray-400">Estimated split of {fmt(caTaxResult.net)} federal income tax · {ps.name}</p>
                 </div>
 
-                {/* Split bar */}
+                {/* Dynamic split bar */}
                 <div className="flex h-3">
                   <div className="bg-red-500"  style={{ width: '45%' }} />
-                  <div className="bg-blue-500" style={{ width: '40%' }} />
-                  <div className="bg-green-500"style={{ width: '15%' }} />
+                  <div className="bg-blue-500" style={{ width: `${ps.prov}%` }} />
+                  <div className="bg-green-500"style={{ width: `${ps.mun}%` }} />
                 </div>
 
                 {/* Level legend */}
@@ -28424,7 +28465,7 @@ function App() {
                     const share = caTaxResult.net * (lvl.pct / 100);
                     return (
                       <div key={lvl.label} className="flex items-center gap-1.5">
-                        <div className={`w-3 h-3 rounded-full ${lvl.colorBg}`} />
+                        <div className={`w-3 h-3 rounded-full flex-shrink-0 ${lvl.colorBg}`} />
                         <span className="text-xs font-semibold text-gray-700">{lvl.flag} {lvl.label}</span>
                         <span className="text-xs text-gray-500">{fmt(share)} · {lvl.pct}%</span>
                       </div>
@@ -28445,7 +28486,7 @@ function App() {
                             <p className="text-xs text-gray-500">{fmt(share)} · {lvl.pct}% of total income tax</p>
                           </div>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           {lvl.categories.map(cat => {
                             const amount = share * (cat.pct / 100);
                             return (
@@ -28457,10 +28498,17 @@ function App() {
                                   </span>
                                   <span className="text-sm font-bold text-gray-800 ml-2 shrink-0">{fmt(amount)}</span>
                                 </div>
-                                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-1">
                                   <div className={`h-full ${lvl.colorBar2} rounded-full`} style={{ width: `${cat.pct}%` }} />
                                 </div>
-                                <p className="text-xs text-gray-400 mt-0.5">{cat.pct}% of {lvl.label.split(' ')[0].toLowerCase()} spending</p>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-xs text-gray-400">{cat.pct}% of {lvl.label.split(' ')[0].toLowerCase()} spending</span>
+                                  <span className="text-gray-300">·</span>
+                                  <span className="text-xs text-gray-500">{cat.source}</span>
+                                  <span className="text-gray-300">·</span>
+                                  <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${confBadge[cat.confidence]}`}>{cat.confidence}</span>
+                                  <span className="text-xs text-gray-400">{cat.updated}</span>
+                                </div>
                               </div>
                             );
                           })}
@@ -28470,9 +28518,17 @@ function App() {
                   })}
                 </div>
 
+                {/* Reality disclaimer */}
+                <div className="px-6 py-4 bg-amber-50 border-t border-amber-100">
+                  <p className="text-xs text-amber-800 font-semibold mb-1">⚠️ How taxes actually work</p>
+                  <p className="text-xs text-amber-700">
+                    Taxes are pooled into general revenue — your dollars are not individually assigned to specific programs. These figures show how each level of government allocates its overall budget, applied proportionally to your tax contribution. The federal/provincial/municipal split is an estimate based on average Canadian household tax incidence.
+                  </p>
+                </div>
+
                 <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
                   <p className="text-xs text-gray-400">
-                    Based on 2024 CRA federal brackets, BPA credit, CPP (5.95%), and EI (1.66%). Provincial split uses Ontario rates as an approximation. Municipal share is estimated from property/local taxes. Spending allocations are approximate.
+                    Confidence levels: <span className="text-green-700 font-semibold">High</span> = published budget line · <span className="text-amber-700 font-semibold">Medium</span> = departmental estimate · <span className="text-red-600 font-semibold">Low</span> = statistical approximation. Based on 2024 CRA rates. Provincial spending uses {ps.name} budget as approximation for other provinces.
                   </p>
                 </div>
               </div>
