@@ -9289,25 +9289,38 @@ function App() {
       logEvent('tax_calculator_used', { country: 'AU', itemId: auTaxTerritory });
     };
 
-    const categories = [
-      { emoji: '🤝', name: 'Social Security & Welfare',   pct: 35.5, rating: 70, note: 'Age pension, disability, family payments' },
-      { emoji: '🏥', name: 'Health & Medicare',           pct: 16.5, rating: 68, note: 'Universal Medicare, hospitals & PBS' },
-      { emoji: '🏫', name: 'Education',                   pct:  7.5, rating: 72, note: 'Schools, universities & vocational training' },
-      { emoji: '🛡️', name: 'Defence',                    pct:  6.5, rating: 62, note: 'ADF capability & procurement' },
-      { emoji: '💳', name: 'Interest on Public Debt',     pct:  6.0, rating: 30, note: 'Fastest-growing budget item' },
-      { emoji: '🏛️', name: 'General Government Services', pct:  4.5, rating: 55, note: 'ATO, public administration' },
-      { emoji: '🚂', name: 'Transport & Infrastructure',  pct:  3.5, rating: 52, note: 'Roads, rail and freight networks' },
-      { emoji: '🏠', name: 'Housing & Community',         pct:  2.5, rating: 40, note: 'Persistent housing affordability crisis' },
-      { emoji: '🌿', name: 'Environment & Climate',       pct:  1.5, rating: 58, note: 'Clean energy transition underway' },
-      { emoji: '🌾', name: 'Agriculture & Resources',     pct:  1.5, rating: 65, note: 'Supporting rural & export industries' },
-      { emoji: '🔬', name: 'Science & Innovation',        pct:  1.5, rating: 75, note: 'CSIRO, research & STEM investment' },
-      { emoji: '🌐', name: 'International Affairs & Aid', pct:  1.0, rating: 62, note: 'Pacific focus, DFAT, AusAID' },
-      { emoji: '🤝', name: 'Community Development',       pct:  2.0, rating: 60, note: 'Indigenous & regional programs' },
-      { emoji: '🏦', name: 'Other Programs',              pct: 10.0, rating: 50, note: 'Industry, justice & other agencies' },
+    const GOV_LEVELS = [
+      {
+        label: 'Federal', flag: '🇦🇺', pct: 55,
+        colorBg: 'bg-amber-600', colorText: 'text-amber-700', colorBar: 'bg-amber-500', colorLight: 'bg-amber-50', colorBorder: 'border-amber-200',
+        source: 'Budget.gov.au / MYEFO 2024–25',
+        categories: [
+          { emoji: '🤝', name: 'Social Security & Welfare', pct: 35, source: 'Dept of Social Services / budget.gov.au',  confidence: 'High',   updated: 2024 },
+          { emoji: '🏥', name: 'Health',                    pct: 16, source: 'Dept of Health / budget.gov.au',           confidence: 'High',   updated: 2024 },
+          { emoji: '🏛️', name: 'Other Federal',            pct: 27, source: 'Budget.gov.au / MYEFO 2024–25',           confidence: 'Medium', updated: 2024 },
+          { emoji: '🏫', name: 'Education',                 pct:  7, source: 'Dept of Education / budget.gov.au',        confidence: 'High',   updated: 2024 },
+          { emoji: '🛡️', name: 'Defence',                  pct:  6, source: 'Dept of Defence / budget.gov.au',          confidence: 'High',   updated: 2024 },
+          { emoji: '💳', name: 'Debt Interest',             pct:  5, source: 'Australian Office of Financial Management', confidence: 'High',   updated: 2024 },
+          { emoji: '🚂', name: 'Infrastructure',            pct:  4, source: 'Infrastructure Australia / budget.gov.au', confidence: 'High',   updated: 2024 },
+        ],
+      },
+      {
+        label: 'State & Territory', flag: '🏙️', pct: 45,
+        colorBg: 'bg-green-700', colorText: 'text-green-700', colorBar: 'bg-green-600', colorLight: 'bg-green-50', colorBorder: 'border-green-200',
+        source: 'ABS Government Finance Statistics / abs.gov.au',
+        categories: [
+          { emoji: '🏥', name: 'Healthcare',        pct: 28, source: 'ABS 5512.0 Government Finance Statistics',        confidence: 'High',   updated: 2023 },
+          { emoji: '🏫', name: 'Education',         pct: 25, source: 'ABS 5512.0 / ACARA National Report on Schooling', confidence: 'High',   updated: 2023 },
+          { emoji: '🏛️', name: 'Other State',      pct: 16, source: 'ABS Government Finance Statistics',               confidence: 'Medium', updated: 2023 },
+          { emoji: '🚗', name: 'Transport',         pct: 12, source: 'Infrastructure Australia / state budgets',         confidence: 'High',   updated: 2023 },
+          { emoji: '⚖️', name: 'Police & Justice', pct:  8, source: 'ABS 5512.0 / state police budgets',               confidence: 'High',   updated: 2023 },
+          { emoji: '💳', name: 'Debt Service',      pct:  6, source: 'State Treasury / ABS 5512.0',                    confidence: 'Medium', updated: 2023 },
+          { emoji: '🏠', name: 'Social Housing',    pct:  5, source: 'AIHW Housing Assistance in Australia',            confidence: 'High',   updated: 2023 },
+        ],
+      },
     ];
 
-    const ratingBadge = (r) => r >= 80 ? 'bg-green-100 text-green-700 border-green-200' : r >= 60 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : 'bg-red-100 text-red-700 border-red-200';
-    const ratingBar   = (r) => r >= 80 ? 'bg-green-500' : r >= 60 ? 'bg-yellow-500' : 'bg-red-500';
+    const confBadge = { High: 'text-green-700 bg-green-50', Medium: 'text-amber-700 bg-amber-50', Low: 'text-red-600 bg-red-50' };
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-green-50 animate-fade-in">
@@ -9472,57 +9485,93 @@ function App() {
               )}
             </div>
 
-            {/* ── RIGHT COLUMN: Breakdown grid ── */}
+            {/* ── RIGHT COLUMN: Two-level breakdown ── */}
             <div className="flex-1 min-w-0">
               {!auTaxResult ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center">
                   <span className="text-7xl mb-4">🇦🇺</span>
                   <h3 className="text-2xl font-bold text-gray-400 mb-2">Enter your salary to see the breakdown</h3>
-                  <p className="text-gray-400 max-w-sm">We'll show you exactly where every dollar of your tax goes across 14 spending categories — plus your employer superannuation contribution.</p>
+                  <p className="text-gray-400 max-w-sm">We'll show you exactly where every dollar of your tax goes across federal and state spending — with official Australian government sources.</p>
                 </div>
               ) : (
                 <div className="animate-fade-in">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8 pb-6 border-b border-gray-200">
-                    <div>
-                      <h2 className="text-3xl sm:text-4xl font-bold text-gray-800">Where Your Tax Goes</h2>
-                      <p className="text-gray-500 mt-2 text-base">How {fmt(auTaxResult.total)} in combined tax is allocated across Australia's 2024–25 federal budget</p>
+                  <div className="mb-6 pb-6 border-b border-gray-200">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-1">Where Your Tax Goes</h2>
+                    <p className="text-gray-500 text-base">How {fmt(auTaxResult.total)} in total deductions is distributed across government spending</p>
+                  </div>
+
+                  {/* Split bar */}
+                  <div className="mb-8">
+                    <div className="flex rounded-xl overflow-hidden h-8 mb-2">
+                      <div className="bg-amber-600 flex items-center justify-center text-white text-xs font-bold" style={{ width: '55%' }}>Federal 55%</div>
+                      <div className="bg-green-700 flex items-center justify-center text-white text-xs font-bold" style={{ width: '45%' }}>State 45%</div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:ml-4 sm:mt-1">
-                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 text-green-700 font-bold text-sm"><span className="w-3 h-3 bg-green-500 rounded-full" />80+ Excellent</span>
-                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-700 font-bold text-sm"><span className="w-3 h-3 bg-yellow-500 rounded-full" />60–79 Average</span>
-                      <span className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 text-red-700 font-bold text-sm"><span className="w-3 h-3 bg-red-500 rounded-full" />Below 60 Poor</span>
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>{fmt(auTaxResult.total * 0.55)} federal pool</span>
+                      <span>{fmt(auTaxResult.total * 0.45)} state pool</span>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4">
-                    {categories.map((cat) => {
-                      const amount = (auTaxResult.total * cat.pct) / 100;
-                      return (
-                        <div key={cat.name} className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <span className="text-3xl">{cat.emoji}</span>
-                              <div>
-                                <p className="font-bold text-gray-800 text-base leading-tight">{cat.name}</p>
-                                <p className="text-base font-semibold text-gray-600 mt-1">{cat.note}</p>
-                              </div>
+                  {/* Level sections */}
+                  {GOV_LEVELS.map((level) => {
+                    const levelAmt = auTaxResult.total * (level.pct / 100);
+                    return (
+                      <div key={level.label} className="mb-8">
+                        <div className={`flex items-center justify-between px-5 py-4 rounded-t-2xl ${level.colorBg} text-white`}>
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">{level.flag}</span>
+                            <div>
+                              <p className="font-bold text-lg">{level.label} Government</p>
+                              <p className="text-sm opacity-80">{level.pct}% of total deductions · {fmt(levelAmt)}</p>
                             </div>
-                            <span className={`text-base font-bold px-2.5 py-1 rounded-lg border ${ratingBadge(cat.rating)}`}>{cat.rating}/100</span>
                           </div>
-                          <p className="text-2xl font-bold text-gray-900 mb-1">{fmt(amount)}</p>
-                          <p className="text-sm text-gray-400 mb-4">{cat.pct}% of federal budget</p>
-                          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all ${ratingBar(cat.rating)}`}
-                              style={{ width: `${Math.min(cat.pct * 2.5, 100)}%` }}
-                            />
-                          </div>
+                          <span className="text-2xl font-bold opacity-90">{level.pct}%</span>
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div className={`border-x border-b ${level.colorBorder} rounded-b-2xl overflow-hidden divide-y divide-gray-100`}>
+                          {level.categories.map((cat) => {
+                            const catAmt = levelAmt * (cat.pct / 100);
+                            return (
+                              <div key={cat.name} className="bg-white px-5 py-4 hover:bg-gray-50 transition-colors">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xl">{cat.emoji}</span>
+                                    <span className="font-semibold text-gray-800 text-sm">{cat.name}</span>
+                                  </div>
+                                  <span className="font-bold text-gray-900 text-sm">{fmt(catAmt)}</span>
+                                </div>
+                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-2">
+                                  <div className={`h-full rounded-full ${level.colorBar}`} style={{ width: `${Math.min(cat.pct * 2.5, 100)}%` }} />
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-xs text-gray-400">{cat.pct}% of {level.label.toLowerCase()} spending</span>
+                                  <span className="text-xs text-gray-300">·</span>
+                                  <span className="text-xs text-gray-500">{cat.source}</span>
+                                  <span className="text-xs text-gray-300">·</span>
+                                  <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${confBadge[cat.confidence]}`}>{cat.confidence}</span>
+                                  <span className="text-xs text-gray-400">{cat.updated}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
 
-                  <p className="text-xs text-gray-400 mt-6 leading-relaxed">Federal income tax + Medicare levy only. Superannuation (11.5% employer SG) shown separately above as it is paid by your employer, not deducted from your salary. Excludes GST, stamp duty &amp; payroll tax. Efficiency ratings based on ANAO and Productivity Commission data.</p>
+                  {/* Reality disclaimer */}
+                  <div className="rounded-2xl overflow-hidden border border-amber-200 mt-2">
+                    <div className="px-6 py-4 bg-amber-50 border-b border-amber-100">
+                      <p className="text-xs text-amber-800 font-semibold mb-1">⚠️ How taxes actually work</p>
+                      <p className="text-xs text-amber-700 leading-relaxed">
+                        Taxes are pooled into Consolidated Revenue — your dollars are not individually assigned to specific programs. The 55/45 federal/state split and category percentages are based on average national budget allocations and will vary by state and year. This is an approximation for illustration only.
+                      </p>
+                    </div>
+                    <div className="px-6 py-3 bg-white">
+                      <p className="text-xs text-gray-400 leading-relaxed">
+                        Sources: budget.gov.au, ABS Government Finance Statistics (abs.gov.au cat. 5512.0), AIHW, Infrastructure Australia. Confidence: <span className="text-green-700 font-semibold">High</span> = official agency data · <span className="text-amber-700 font-semibold">Medium</span> = derived from multiple sources.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
