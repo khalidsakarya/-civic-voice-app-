@@ -28256,20 +28256,46 @@ function App() {
       setCaTaxResult({ salary: s, gross: tax, credit, net, cpp, ei, total, rate: (net / s) * 100, totalRate: (total / s) * 100 });
     };
 
-    const budgetCategories = [
-      { emoji: '👴', name: 'Old Age Security & Pensions',   pct: 14.7 },
-      { emoji: '💳', name: 'Public Debt Charges',            pct: 10.1 },
-      { emoji: '🏥', name: 'Canada Health Transfer',         pct:  9.2 },
-      { emoji: '👶', name: "Children's Benefits (CCB)",      pct:  5.0 },
-      { emoji: '🛡️', name: 'National Defence',              pct:  5.0 },
-      { emoji: '💼', name: 'Employment Insurance',           pct:  4.7 },
-      { emoji: '🏘️', name: 'Indigenous Services',           pct:  4.0 },
-      { emoji: '🤝', name: 'Canada Social Transfer',         pct:  3.1 },
-      { emoji: '🚂', name: 'Infrastructure & Transport',     pct:  2.2 },
-      { emoji: '🏠', name: 'Housing Programs',               pct:  1.5 },
-      { emoji: '🌿', name: 'Environment & Climate',          pct:  1.2 },
-      { emoji: '🌐', name: 'Immigration & Citizenship',      pct:  1.0 },
-      { emoji: '🏛️', name: 'Other Federal Programs',        pct: 38.3 },
+    const GOV_LEVELS = [
+      {
+        label: 'Federal', flag: '🇨🇦', pct: 45,
+        colorBar: '#dc2626', colorBg: 'bg-red-600', colorLight: 'bg-red-50', colorBorder: 'border-red-200', colorText: 'text-red-700', colorBar2: 'bg-red-500',
+        categories: [
+          { emoji: '🏥', name: 'Healthcare Transfers',  pct: 22 },
+          { emoji: '👴', name: 'Old Age Security',       pct: 15 },
+          { emoji: '💳', name: 'Debt Interest',          pct:  9 },
+          { emoji: '🛡️', name: 'National Defence',      pct:  7 },
+          { emoji: '🏘️', name: 'Indigenous Services',   pct:  5 },
+          { emoji: '🌐', name: 'Immigration',            pct:  2 },
+          { emoji: '🏛️', name: 'Other Federal',         pct: 40 },
+        ],
+      },
+      {
+        label: 'Provincial (Ontario)', flag: '🏙️', pct: 40,
+        colorBar: '#2563eb', colorBg: 'bg-blue-600', colorLight: 'bg-blue-50', colorBorder: 'border-blue-200', colorText: 'text-blue-700', colorBar2: 'bg-blue-500',
+        categories: [
+          { emoji: '🏥', name: 'Healthcare',             pct: 42 },
+          { emoji: '📚', name: 'Education',              pct: 20 },
+          { emoji: '🤝', name: 'Social Services',        pct:  9 },
+          { emoji: '💳', name: 'Debt Interest',          pct:  8 },
+          { emoji: '🚧', name: 'Infrastructure',         pct:  4 },
+          { emoji: '⚖️', name: 'Justice',               pct:  2 },
+          { emoji: '🏛️', name: 'Other Provincial',      pct: 15 },
+        ],
+      },
+      {
+        label: 'Municipal', flag: '🏡', pct: 15,
+        colorBar: '#16a34a', colorBg: 'bg-green-600', colorLight: 'bg-green-50', colorBorder: 'border-green-200', colorText: 'text-green-700', colorBar2: 'bg-green-500',
+        categories: [
+          { emoji: '🚇', name: 'Transit',                pct: 25 },
+          { emoji: '🚔', name: 'Police',                 pct: 18 },
+          { emoji: '🛣️', name: 'Roads',                 pct: 15 },
+          { emoji: '💧', name: 'Water & Utilities',      pct: 12 },
+          { emoji: '🚒', name: 'Fire Services',          pct: 10 },
+          { emoji: '🏠', name: 'Housing Programs',       pct:  8 },
+          { emoji: '🏛️', name: 'Other Municipal',       pct: 12 },
+        ],
+      },
     ];
 
     return (
@@ -28379,32 +28405,76 @@ function App() {
               </div>
 
               {/* Breakdown */}
-              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                <h2 className="text-xl font-bold text-gray-800 mb-1">Where Your Tax Goes</h2>
-                <p className="text-sm text-gray-500 mb-5">How your {fmt(caTaxResult.net)} in federal tax is allocated across Canada's 2024–25 budget</p>
-                <div className="space-y-4">
-                  {budgetCategories.map((cat) => {
-                    const amount = (caTaxResult.net * cat.pct) / 100;
+              <div className="rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                <div className="bg-gray-800 px-6 py-4">
+                  <h2 className="text-xl font-bold text-white mb-0.5">Where Your Taxes Go</h2>
+                  <p className="text-sm text-gray-400">Estimated split of {fmt(caTaxResult.net)} federal income tax across all three levels of government</p>
+                </div>
+
+                {/* Split bar */}
+                <div className="flex h-3">
+                  <div className="bg-red-500"  style={{ width: '45%' }} />
+                  <div className="bg-blue-500" style={{ width: '40%' }} />
+                  <div className="bg-green-500"style={{ width: '15%' }} />
+                </div>
+
+                {/* Level legend */}
+                <div className="flex gap-4 px-6 py-3 bg-gray-50 border-b border-gray-100 flex-wrap">
+                  {GOV_LEVELS.map(lvl => {
+                    const share = caTaxResult.net * (lvl.pct / 100);
                     return (
-                      <div key={cat.name}>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                            <span className="text-base w-6 text-center">{cat.emoji}</span>
-                            {cat.name}
-                          </span>
-                          <span className="text-sm font-bold text-gray-800 ml-3 shrink-0">{fmt(amount)}</span>
-                        </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-red-500 rounded-full" style={{ width: `${cat.pct}%` }} />
-                        </div>
-                        <p className="text-xs text-gray-400 mt-0.5">{cat.pct}% of federal budget</p>
+                      <div key={lvl.label} className="flex items-center gap-1.5">
+                        <div className={`w-3 h-3 rounded-full ${lvl.colorBg}`} />
+                        <span className="text-xs font-semibold text-gray-700">{lvl.flag} {lvl.label}</span>
+                        <span className="text-xs text-gray-500">{fmt(share)} · {lvl.pct}%</span>
                       </div>
                     );
                   })}
                 </div>
-                <p className="text-xs text-gray-400 mt-5 pt-4 border-t border-gray-100">
-                  Federal income tax (after BPA credit), CPP contributions (5.95% on $3,500–$68,500), and EI premiums (1.66% up to $63,200). Does not include provincial/territorial tax. Based on 2024 CRA rates and Canada's 2024–25 federal budget.
-                </p>
+
+                {/* Per-level spending */}
+                <div className="divide-y divide-gray-100">
+                  {GOV_LEVELS.map(lvl => {
+                    const share = caTaxResult.net * (lvl.pct / 100);
+                    return (
+                      <div key={lvl.label} className="p-6">
+                        <div className={`flex items-center gap-2 mb-4 pb-3 border-b ${lvl.colorBorder}`}>
+                          <span className="text-xl">{lvl.flag}</span>
+                          <div className="flex-1">
+                            <h3 className={`font-bold text-base ${lvl.colorText}`}>{lvl.label}</h3>
+                            <p className="text-xs text-gray-500">{fmt(share)} · {lvl.pct}% of total income tax</p>
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          {lvl.categories.map(cat => {
+                            const amount = share * (cat.pct / 100);
+                            return (
+                              <div key={cat.name}>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-sm text-gray-700 flex items-center gap-1.5">
+                                    <span className="w-5 text-center text-sm">{cat.emoji}</span>
+                                    {cat.name}
+                                  </span>
+                                  <span className="text-sm font-bold text-gray-800 ml-2 shrink-0">{fmt(amount)}</span>
+                                </div>
+                                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                  <div className={`h-full ${lvl.colorBar2} rounded-full`} style={{ width: `${cat.pct}%` }} />
+                                </div>
+                                <p className="text-xs text-gray-400 mt-0.5">{cat.pct}% of {lvl.label.split(' ')[0].toLowerCase()} spending</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                  <p className="text-xs text-gray-400">
+                    Based on 2024 CRA federal brackets, BPA credit, CPP (5.95%), and EI (1.66%). Provincial split uses Ontario rates as an approximation. Municipal share is estimated from property/local taxes. Spending allocations are approximate.
+                  </p>
+                </div>
               </div>
             </div>
           )}
