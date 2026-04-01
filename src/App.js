@@ -28226,6 +28226,7 @@ function App() {
     const calcTax = () => {
       const s = parseFloat(String(caTaxSalary).replace(/[^0-9.]/g, ''));
       if (!s || s <= 0) return;
+      // Federal income tax
       const brackets = [
         { max: 55867,    rate: 0.15 },
         { max: 111733,   rate: 0.205 },
@@ -28241,7 +28242,18 @@ function App() {
       }
       const credit = 15705 * 0.15;
       const net = Math.max(0, tax - credit);
-      setCaTaxResult({ salary: s, gross: tax, credit, net, rate: (net / s) * 100 });
+      // CPP: 5.95% on earnings between $3,500 basic exemption and $68,500 max pensionable earnings
+      const CPP_RATE = 0.0595;
+      const CPP_EXEMPTION = 3500;
+      const CPP_MAX_PENSIONABLE = 68500;
+      const cppEarnings = Math.max(0, Math.min(s, CPP_MAX_PENSIONABLE) - CPP_EXEMPTION);
+      const cpp = cppEarnings * CPP_RATE;
+      // EI: 1.66% on earnings up to $63,200 max insurable earnings
+      const EI_RATE = 0.0166;
+      const EI_MAX_INSURABLE = 63200;
+      const ei = Math.min(s, EI_MAX_INSURABLE) * EI_RATE;
+      const total = net + cpp + ei;
+      setCaTaxResult({ salary: s, gross: tax, credit, net, cpp, ei, total, rate: (net / s) * 100, totalRate: (total / s) * 100 });
     };
 
     const budgetCategories = [
@@ -28304,7 +28316,7 @@ function App() {
                 Calculate
               </button>
             </div>
-            <p className="text-xs text-gray-400 mt-2">Includes basic personal amount credit of $15,705 × 15% = $2,356.</p>
+            <p className="text-xs text-gray-400 mt-2">Includes BPA credit of $15,705 × 15% = $2,356 · CPP at 5.95% · EI at 1.66%</p>
           </div>
 
           {/* Brackets reference */}
@@ -28339,12 +28351,30 @@ function App() {
                   <p className="text-xs text-gray-500 mb-1">BPA Tax Credit</p>
                   <p className="text-xl font-bold text-green-600">−{fmt(caTaxResult.credit)}</p>
                 </div>
-                <div className="bg-red-600 rounded-xl p-4 shadow-sm col-span-2">
-                  <p className="text-xs text-red-200 mb-1">Net Federal Tax Owed</p>
-                  <div className="flex items-end justify-between">
-                    <p className="text-3xl font-bold text-white">{fmt(caTaxResult.net)}</p>
-                    <p className="text-red-200 text-sm font-semibold">{caTaxResult.rate.toFixed(1)}% effective rate</p>
-                  </div>
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                  <p className="text-xs text-gray-500 mb-1">Net Federal Tax</p>
+                  <p className="text-xl font-bold text-gray-800">{fmt(caTaxResult.net)}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{caTaxResult.rate.toFixed(1)}% effective rate</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                  <p className="text-xs text-gray-500 mb-1">CPP Contributions</p>
+                  <p className="text-xl font-bold text-gray-800">{fmt(caTaxResult.cpp)}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">5.95% · max $68,500 earnings</p>
+                </div>
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                  <p className="text-xs text-gray-500 mb-1">EI Premiums</p>
+                  <p className="text-xl font-bold text-gray-800">{fmt(caTaxResult.ei)}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">1.66% · max $63,200 insurable</p>
+                </div>
+                <div className="bg-red-600 rounded-xl p-4 shadow-sm">
+                  <p className="text-xs text-red-200 mb-1">Total Deductions</p>
+                  <p className="text-2xl font-bold text-white">{fmt(caTaxResult.total)}</p>
+                  <p className="text-red-200 text-xs mt-0.5">Tax + CPP + EI</p>
+                </div>
+                <div className="bg-gray-800 rounded-xl p-4 shadow-sm">
+                  <p className="text-xs text-gray-400 mb-1">Take-Home Pay</p>
+                  <p className="text-2xl font-bold text-white">{fmt(caTaxResult.salary - caTaxResult.total)}</p>
+                  <p className="text-gray-400 text-xs mt-0.5">{(100 - caTaxResult.totalRate).toFixed(1)}% of gross</p>
                 </div>
               </div>
 
@@ -28373,7 +28403,7 @@ function App() {
                   })}
                 </div>
                 <p className="text-xs text-gray-400 mt-5 pt-4 border-t border-gray-100">
-                  Federal income tax only. Does not include CPP contributions, EI premiums, or provincial/territorial tax. Based on 2024 CRA federal brackets and Canada's 2024–25 federal budget.
+                  Federal income tax (after BPA credit), CPP contributions (5.95% on $3,500–$68,500), and EI premiums (1.66% up to $63,200). Does not include provincial/territorial tax. Based on 2024 CRA rates and Canada's 2024–25 federal budget.
                 </p>
               </div>
             </div>
