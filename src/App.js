@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import app, { db } from './firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, addDoc, setDoc, doc, increment, serverTimestamp } from 'firebase/firestore';
 import { logEvent } from './analytics';
 import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell } from 'lucide-react';
 import { BarChart, Bar, AreaChart, Area, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -1284,6 +1284,7 @@ function App() {
   const [caMemberVotes, setCaMemberVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cvCaMemberVotes') || '{}'); } catch { return {}; }
   });
+  const [firestoreVoteCounts, setFirestoreVoteCounts] = useState({});
 
   const handleShare = async (e, { id, title, text, url }) => {
     e.stopPropagation();
@@ -2527,7 +2528,21 @@ function App() {
     initializeAuBills();
     initializeCanadaLaws();
   }, []);
-  
+
+  // Load Firestore vote counts on mount
+  useEffect(() => {
+    const loadVoteCounts = async () => {
+      try {
+        const snap = await getDocs(collection(db, 'vote_counts'));
+        if (snap.empty) return;
+        const counts = {};
+        snap.forEach(d => { counts[d.id] = d.data(); });
+        setFirestoreVoteCounts(counts);
+      } catch (_) {}
+    };
+    loadVoteCounts();
+  }, []);
+
   // Load user's saved MP from localStorage
   useEffect(() => {
     const savedMP = localStorage.getItem('userMP');
@@ -5652,6 +5667,7 @@ function App() {
 
   const voteBill = async (billId, vote) => {
     logEvent('vote_bill', { country: 'CA', itemId: String(billId) });
+    submitVote(toVoteId('ca-bill', billId), 'CA', null, vote);
     try {
       const response = await fetch(`https://civic-voice-backend-e3sz.onrender.com/api/bills/${billId}/vote`, {
         method: 'POST',
@@ -5676,6 +5692,10 @@ function App() {
 
   const voteUsBill = (billId, vote) => {
     logEvent('vote_bill', { country: 'US', itemId: String(billId) });
+    const bill = usBills.find(b => b.id === billId);
+    const prevVote = bill?.userVote ?? null;
+    const newVote = prevVote === vote ? null : vote;
+    submitVote(toVoteId('us-bill', billId), 'US', prevVote, newVote);
     setUsBills(prev => prev.map(b => {
       if (b.id !== billId) return b;
       const current = b.userVote;
@@ -5683,12 +5703,12 @@ function App() {
       if (current === 'support') supportVotes -= 1;
       if (current === 'oppose') opposeVotes -= 1;
       if (current === 'concerned') concernedVotes -= 1;
-      const newVote = vote === current ? null : vote;
-      if (newVote === 'support') supportVotes += 1;
-      if (newVote === 'oppose') opposeVotes += 1;
-      if (newVote === 'concerned') concernedVotes += 1;
-      if (newVote === 'concerned') storeConcernedRegion('us-bill', billId);
-      return { ...b, supportVotes, opposeVotes, concernedVotes, userVote: newVote };
+      const nv = vote === current ? null : vote;
+      if (nv === 'support') supportVotes += 1;
+      if (nv === 'oppose') opposeVotes += 1;
+      if (nv === 'concerned') concernedVotes += 1;
+      if (nv === 'concerned') storeConcernedRegion('us-bill', billId);
+      return { ...b, supportVotes, opposeVotes, concernedVotes, userVote: nv };
     }));
   };
 
@@ -5742,6 +5762,7 @@ function App() {
 
     const patch = { supportVotes: support, opposeVotes: oppose, concernedVotes: concerned, userVote: newVote };
 
+    submitVote(toVoteId('congress', memberName), 'US', currentVote, newVote);
     setCongressMembers(prev => prev.map(m => m.name === memberName ? { ...m, ...patch } : m));
     setSelectedMember(cur => cur?.name === memberName ? { ...cur, ...patch } : cur);
 
@@ -5753,6 +5774,8 @@ function App() {
 
   const votePresidentBill = (billId, vote) => {
     logEvent('vote_bill', { country: 'US', itemId: String(billId) });
+    const pbCur = presidentBillVotes[billId] || { support: 0, oppose: 0, concerned: 0, userVote: null };
+    submitVote(toVoteId('us-president-bill', billId), 'US', pbCur.userVote, pbCur.userVote === vote ? null : vote);
     setPresidentBillVotes(prev => {
       const current = prev[billId] || { support: 0, oppose: 0, concerned: 0, userVote: null };
       const newVote = current.userVote === vote ? null : vote;
@@ -5774,6 +5797,8 @@ function App() {
 
   const voteEO = (orderNum, vote) => {
     logEvent('vote_executive_order', { country: 'US', itemId: String(orderNum) });
+    const eoCur = eoVotes[orderNum] || { support: 0, oppose: 0, concerned: 0, userVote: null };
+    submitVote(toVoteId('us-eo', orderNum), 'US', eoCur.userVote, eoCur.userVote === vote ? null : vote);
     setEoVotes(prev => {
       const current = prev[orderNum] || { support: 0, oppose: 0, concerned: 0, userVote: null };
       const newVote = current.userVote === vote ? null : vote;
@@ -5795,6 +5820,7 @@ function App() {
 
   const votePresident = (vote) => {
     logEvent('vote_politician', { country: 'US', itemId: 'president' });
+    submitVote('president', 'US', presidentVotes.userVote, presidentVotes.userVote === vote ? null : vote);
     setPresidentVotes(prev => {
       const newVote = prev.userVote === vote ? null : vote;
       let support = prev.support || 0;
@@ -5815,6 +5841,7 @@ function App() {
 
   const votePM = (vote) => {
     logEvent('vote_politician', { country: 'CA', itemId: 'prime_minister' });
+    submitVote('ca-pm', 'CA', pmVotes.userVote, pmVotes.userVote === vote ? null : vote);
     setPmVotes(prev => {
       const newVote = prev.userVote === vote ? null : vote;
       let support = prev.support || 0;
@@ -5839,6 +5866,7 @@ function App() {
 
   const voteAlbanese = (vote) => {
     logEvent('vote_politician', { country: 'AU', itemId: 'prime_minister' });
+    submitVote('au-pm', 'AU', albaneseVotes.userVote, albaneseVotes.userVote === vote ? null : vote);
     setAlbaneseVotes(prev => {
       const newVote = prev.userVote === vote ? null : vote;
       let support = prev.support || 0;
@@ -5863,6 +5891,7 @@ function App() {
 
   const voteStarmer = (vote) => {
     logEvent('vote_politician', { country: 'UK', itemId: 'prime_minister' });
+    submitVote('uk-pm', 'UK', starmerVotes.userVote, starmerVotes.userVote === vote ? null : vote);
     setStarmerVotes(prev => {
       const newVote = prev.userVote === vote ? null : vote;
       let support = prev.support || 0;
@@ -5887,6 +5916,8 @@ function App() {
 
   const voteUkMp = (name, vote) => {
     logEvent('vote_politician', { country: 'UK', itemId: name });
+    const ukMpCur = ukMpVotes[name] || { support: 0, oppose: 0, concerned: 0, userVote: null };
+    submitVote(toVoteId('uk-mp', name), 'UK', ukMpCur.userVote, ukMpCur.userVote === vote ? null : vote);
     setUkMpVotes(prev => {
       const cur = prev[name] || { support: 0, oppose: 0, concerned: 0, userVote: null };
       const newVote = cur.userVote === vote ? null : vote;
@@ -5910,6 +5941,8 @@ function App() {
 
   const voteUkLord = (name, vote) => {
     logEvent('vote_politician', { country: 'UK', itemId: name });
+    const ukLordCur = ukLordVotes[name] || { support: 0, oppose: 0, concerned: 0, userVote: null };
+    submitVote(toVoteId('uk-lord', name), 'UK', ukLordCur.userVote, ukLordCur.userVote === vote ? null : vote);
     setUkLordVotes(prev => {
       const cur = prev[name] || { support: 0, oppose: 0, concerned: 0, userVote: null };
       const newVote = cur.userVote === vote ? null : vote;
@@ -5955,6 +5988,43 @@ function App() {
       const newVote = cur.userVote === vote ? null : vote;
       return { ...prev, [name]: { support: cur.support, oppose: cur.oppose, userVote: newVote } };
     });
+  };
+
+  // ── FIRESTORE VOTE HELPERS ──────────────────────────────────────────────────
+  const toVoteId = (type, name) =>
+    `${type}:${String(name).toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')}`;
+
+  const getVC = (id, type) => (firestoreVoteCounts[id] || {})[type] || 0;
+
+  const submitVote = async (politicianId, country, prevVote, newVote) => {
+    // Optimistic local update
+    setFirestoreVoteCounts(prev => {
+      const cur = prev[politicianId] || { support: 0, oppose: 0, concerned: 0 };
+      const next = { ...cur };
+      if (prevVote) next[prevVote] = Math.max(0, (next[prevVote] || 0) - 1);
+      if (newVote) next[newVote] = (next[newVote] || 0) + 1;
+      return { ...prev, [politicianId]: next };
+    });
+    // Persist to Firestore
+    try {
+      const updates = {};
+      if (prevVote) updates[prevVote] = increment(-1);
+      if (newVote) updates[newVote] = increment(1);
+      if (Object.keys(updates).length > 0) {
+        await setDoc(doc(db, 'vote_counts', politicianId), updates, { merge: true });
+      }
+      if (newVote) {
+        await addDoc(collection(db, 'citizen_votes'), {
+          politicianId,
+          voteType: newVote,
+          userRegion: homeRegion || 'unknown',
+          country,
+          timestamp: serverTimestamp(),
+        });
+      }
+    } catch (err) {
+      console.error('Firestore vote error:', err);
+    }
   };
 
   // ── HOME REGION (locked once set, used to gate votes) ────────────────────────
@@ -15279,14 +15349,15 @@ function App() {
 
               {/* Approval bar */}
               {(() => {
-                const total = (pmVotes.support || 0) + (pmVotes.oppose || 0);
+                const s = getVC('ca-pm', 'support'); const o = getVC('ca-pm', 'oppose');
+                const total = s + o;
                 if (total === 0) return null;
-                const pct = Math.round((pmVotes.support / total) * 100);
+                const pct = Math.round((s / total) * 100);
                 return (
                   <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 mt-4">
                     <div className="flex items-center gap-1.5">
                       <ThumbsUp className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-semibold text-gray-700">{pmVotes.support.toLocaleString()}</span>
+                      <span className="text-sm font-semibold text-gray-700">{s.toLocaleString()}</span>
                       <span className="text-xs text-gray-500">support</span>
                     </div>
                     <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[60px]">
@@ -15294,7 +15365,7 @@ function App() {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs text-gray-500">oppose</span>
-                      <span className="text-sm font-semibold text-gray-700">{pmVotes.oppose.toLocaleString()}</span>
+                      <span className="text-sm font-semibold text-gray-700">{o.toLocaleString()}</span>
                       <ThumbsDown className="w-4 h-4 text-red-500" />
                     </div>
                   </div>
@@ -15862,14 +15933,15 @@ function App() {
 
               {/* Approval bar */}
               {(() => {
-                const total = (presidentVotes.support || 0) + (presidentVotes.oppose || 0);
+                const s = getVC('president', 'support'); const o = getVC('president', 'oppose');
+                const total = s + o;
                 if (total === 0) return null;
-                const pct = Math.round((presidentVotes.support / total) * 100);
+                const pct = Math.round((s / total) * 100);
                 return (
                   <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 mt-4">
                     <div className="flex items-center gap-1.5">
                       <ThumbsUp className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-semibold text-gray-700">{presidentVotes.support.toLocaleString()}</span>
+                      <span className="text-sm font-semibold text-gray-700">{s.toLocaleString()}</span>
                       <span className="text-xs text-gray-500">support</span>
                     </div>
                     <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[60px]">
@@ -15880,7 +15952,7 @@ function App() {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs text-gray-500">oppose</span>
-                      <span className="text-sm font-semibold text-gray-700">{presidentVotes.oppose.toLocaleString()}</span>
+                      <span className="text-sm font-semibold text-gray-700">{o.toLocaleString()}</span>
                       <ThumbsDown className="w-4 h-4 text-red-500" />
                     </div>
                   </div>
@@ -16467,14 +16539,15 @@ function App() {
 
               {/* Approval bar */}
               {(() => {
-                const total = (starmerVotes.support || 0) + (starmerVotes.oppose || 0);
+                const s = getVC('uk-pm', 'support'); const o = getVC('uk-pm', 'oppose');
+                const total = s + o;
                 if (total === 0) return null;
-                const pct = Math.round((starmerVotes.support / total) * 100);
+                const pct = Math.round((s / total) * 100);
                 return (
                   <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 mt-4">
                     <div className="flex items-center gap-1.5">
                       <ThumbsUp className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-semibold text-gray-700">{starmerVotes.support.toLocaleString()}</span>
+                      <span className="text-sm font-semibold text-gray-700">{s.toLocaleString()}</span>
                       <span className="text-xs text-gray-500">support</span>
                     </div>
                     <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[60px]">
@@ -16482,7 +16555,7 @@ function App() {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs text-gray-500">oppose</span>
-                      <span className="text-sm font-semibold text-gray-700">{starmerVotes.oppose.toLocaleString()}</span>
+                      <span className="text-sm font-semibold text-gray-700">{o.toLocaleString()}</span>
                       <ThumbsDown className="w-4 h-4 text-red-500" />
                     </div>
                   </div>
@@ -17451,6 +17524,9 @@ function App() {
 
     const voteUkBill = (billId, vote) => {
       logEvent('vote_bill', { country: 'UK', itemId: String(billId) });
+      const ukBillPrev = ukBillVotes[billId] || null;
+      const ukBillNew = ukBillPrev === vote ? null : vote;
+      submitVote(toVoteId('uk-bill', billId), 'UK', ukBillPrev, ukBillNew);
       setUkBillVotes(prev => {
         const cur = prev[billId];
         return { ...prev, [billId]: cur === vote ? null : vote };
@@ -18115,7 +18191,9 @@ function App() {
           {/* MP grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map(mp => {
-              const votes = ukMpVotes[mp.name] || { support: mp.supportVotes, oppose: mp.opposeVotes, userVote: mp.userVote };
+              const _localMpVotes = ukMpVotes[mp.name] || { support: 0, oppose: 0, concerned: 0, userVote: null };
+              const _mpVcId = toVoteId('uk-mp', mp.name);
+              const votes = { userVote: _localMpVotes.userVote, support: getVC(_mpVcId, 'support'), oppose: getVC(_mpVcId, 'oppose'), concerned: getVC(_mpVcId, 'concerned') };
               const partyColor = getUkPartyColor(mp.party);
               const initials = mp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
               const textColor = ['Liberal Democrats', 'SNP', 'Green'].includes(mp.party) ? '#1a1a1a' : 'white';
@@ -18717,7 +18795,9 @@ function App() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map(lord => {
-              const votes = ukLordVotes[lord.name] || { support: lord.supportVotes, oppose: lord.opposeVotes, userVote: null };
+              const _localLordVotes = ukLordVotes[lord.name] || { support: 0, oppose: 0, concerned: 0, userVote: null };
+              const _lordVcId = toVoteId('uk-lord', lord.name);
+              const votes = { userVote: _localLordVotes.userVote, support: getVC(_lordVcId, 'support'), oppose: getVC(_lordVcId, 'oppose'), concerned: getVC(_lordVcId, 'concerned') };
               const affilColor = getAffilColor(lord.affiliation);
               const typeColor = typeColors[lord.type] || '#6B7280';
               const lightAfil = ['Liberal Democrats'].includes(lord.affiliation);
@@ -23029,6 +23109,8 @@ function App() {
 
     const voteAuMember = (name, vote) => {
       logEvent('vote_politician', { country: 'AU', itemId: name });
+      const auPrev = auMemberVotes[name] || null;
+      submitVote(toVoteId('au-member', name), 'AU', auPrev, auPrev === vote ? null : vote);
       setAuMemberVotes(prev => {
         const next = { ...prev };
         if (next[name] === vote) { delete next[name]; } else {
@@ -23135,9 +23217,10 @@ function App() {
           {/* Member cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((member, i) => {
-              const support = 0;
-              const oppose = 0;
-              const concerned = 0;
+              const _auVcId = toVoteId('au-member', member.name);
+              const support = getVC(_auVcId, 'support');
+              const oppose = getVC(_auVcId, 'oppose');
+              const concerned = getVC(_auVcId, 'concerned');
               const userVote = auMemberVotes[member.name] || null;
               const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
               const color = getPartyColor(member.party);
@@ -23232,9 +23315,10 @@ function App() {
     const isSen = member.role === 'Senator' || (member.role && member.role.toLowerCase().includes('senator'));
     const partyColor = getPartyColor(member.party);
     const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2);
-    const support = 0;
-    const oppose = 0;
-    const concerned = 0;
+    const _auPanelVcId = toVoteId('au-member', member.name);
+    const support = getVC(_auPanelVcId, 'support');
+    const oppose = getVC(_auPanelVcId, 'oppose');
+    const concerned = getVC(_auPanelVcId, 'concerned');
     const userVote = auMemberVotes[member.name] || null;
     const displayTotal = support + oppose;
     const approvalPct = displayTotal > 0 ? Math.round((support / displayTotal) * 100) : null;
@@ -23245,6 +23329,8 @@ function App() {
     const getAuVoteIcon = (v) => v === 'Yea' ? <CheckCircle className="w-5 h-5 text-green-600" /> : v === 'Nay' ? <XCircle className="w-5 h-5 text-red-600" /> : <MinusCircle className="w-5 h-5 text-gray-600" />;
     const voteAu = (vote) => {
       logEvent('vote_politician', { country: 'AU', itemId: member?.name });
+      const auPanelPrev = auMemberVotes[member.name] || null;
+      submitVote(_auPanelVcId, 'AU', auPanelPrev, auPanelPrev === vote ? null : vote);
       setAuMemberVotes(prev => {
         const next = { ...prev };
         if (next[member.name] === vote) { delete next[member.name]; } else {
@@ -25620,14 +25706,15 @@ function App() {
 
               {/* Approval bar */}
               {(() => {
-                const total = (albaneseVotes.support || 0) + (albaneseVotes.oppose || 0);
+                const s = getVC('au-pm', 'support'); const o = getVC('au-pm', 'oppose');
+                const total = s + o;
                 if (total === 0) return null;
-                const pct = Math.round((albaneseVotes.support / total) * 100);
+                const pct = Math.round((s / total) * 100);
                 return (
                   <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 mt-4">
                     <div className="flex items-center gap-1.5">
                       <ThumbsUp className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-semibold text-gray-700">{albaneseVotes.support.toLocaleString()}</span>
+                      <span className="text-sm font-semibold text-gray-700">{s.toLocaleString()}</span>
                       <span className="text-xs text-gray-500">support</span>
                     </div>
                     <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[60px]">
@@ -25635,7 +25722,7 @@ function App() {
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs text-gray-500">oppose</span>
-                      <span className="text-sm font-semibold text-gray-700">{albaneseVotes.oppose.toLocaleString()}</span>
+                      <span className="text-sm font-semibold text-gray-700">{o.toLocaleString()}</span>
                       <ThumbsDown className="w-4 h-4 text-red-500" />
                     </div>
                   </div>
@@ -27631,6 +27718,8 @@ function App() {
 
   const voteCaMember = (name, vote) => {
     logEvent('vote_politician', { country: 'CA', itemId: name });
+    const caMpPrev = caMemberVotes[name] || null;
+    submitVote(toVoteId('ca-mp', name), 'CA', caMpPrev, caMpPrev === vote ? null : vote);
     setCaMemberVotes(prev => {
       const next = { ...prev };
       if (next[name] === vote) { delete next[name]; } else {
@@ -27772,9 +27861,10 @@ function App() {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtered.map((member, i) => {
-                  const support = 0;
-                  const oppose = 0;
-                  const concerned = 0;
+                  const _caVcId = toVoteId('ca-mp', member.name);
+                  const support = getVC(_caVcId, 'support');
+                  const oppose = getVC(_caVcId, 'oppose');
+                  const concerned = getVC(_caVcId, 'concerned');
                   const userVote = caMemberVotes[member.name] || null;
                   const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                   const color = getPartyColor(member.party);
@@ -30278,6 +30368,8 @@ function App() {
 
     const voteAuBill = (billId, vote) => {
       logEvent('vote_bill', { country: 'AU', itemId: String(billId) });
+      const auBillPrev = auBillVotes[billId] || null;
+      submitVote(toVoteId('au-bill', billId), 'AU', auBillPrev, auBillPrev === vote ? null : vote);
       setAuBillVotes(prev => {
         const current = prev[billId];
         const newVote = current === vote ? null : vote;
@@ -33532,8 +33624,11 @@ function App() {
     const isSenator = member.district === 'Senator';
     const partyColor = getPartyColor(member.party);
     const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2);
-    const totalVotes = (member.supportVotes || 0) + (member.opposeVotes || 0);
-    const approvalPct = totalVotes > 0 ? Math.round((member.supportVotes / totalVotes) * 100) : null;
+    const _congressVcId = toVoteId('congress', member.name);
+    const _cSupport = getVC(_congressVcId, 'support');
+    const _cOppose = getVC(_congressVcId, 'oppose');
+    const totalVotes = _cSupport + _cOppose;
+    const approvalPct = totalVotes > 0 ? Math.round((_cSupport / totalVotes) * 100) : null;
     const conflictTrades = member.stockTrades?.filter(t => t.conflict) || [];
     const worthWhenElected = member.financialDisclosure?.worthWhenElected ?? member.financialDisclosure?.initialWorth;
     const lobbyingList = member.lobbying?.organizations || member.lobbying?.meetings || [];
@@ -33605,7 +33700,7 @@ function App() {
               <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-1.5">
                   <ThumbsUp className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-semibold text-gray-700">{member.supportVotes?.toLocaleString()}</span>
+                  <span className="text-sm font-semibold text-gray-700">{_cSupport.toLocaleString()}</span>
                   <span className="text-xs text-gray-500">support</span>
                 </div>
                 <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[80px]">
@@ -33616,7 +33711,7 @@ function App() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-gray-500">oppose</span>
-                  <span className="text-sm font-semibold text-gray-700">{member.opposeVotes?.toLocaleString()}</span>
+                  <span className="text-sm font-semibold text-gray-700">{_cOppose.toLocaleString()}</span>
                   <ThumbsDown className="w-4 h-4 text-red-500" />
                 </div>
               </div>
@@ -34671,13 +34766,16 @@ function App() {
     const yearsInSenate = new Date().getFullYear() - appointedYear;
 
     // Citizen votes
-    const support = 0;
-    const oppose = 0;
-    const concerned = 0;
+    const _senVcId = toVoteId('ca-senator', s.name);
+    const support = getVC(_senVcId, 'support');
+    const oppose = getVC(_senVcId, 'oppose');
+    const concerned = getVC(_senVcId, 'concerned');
     const userVote = senatorVotes[s.name] || null;
 
     const voteSenator = (name, vote) => {
       logEvent('vote_politician', { country: 'CA', itemId: name });
+      const senPrev = senatorVotes[name] || null;
+      submitVote(_senVcId, 'CA', senPrev, senPrev === vote ? null : vote);
       setSenatorVotes(prev => {
         const next = { ...prev };
         if (next[name] === vote) { delete next[name]; } else {
@@ -35158,6 +35256,8 @@ function App() {
 
     const voteSenator = (name, vote) => {
       logEvent('vote_politician', { country: 'US', itemId: name });
+      const usSenPrev = senatorVotes[name] || null;
+      submitVote(toVoteId('us-senator', name), 'US', usSenPrev, usSenPrev === vote ? null : vote);
       setSenatorVotes(prev => {
         const next = { ...prev };
         if (next[name] === vote) delete next[name]; else next[name] = vote;
