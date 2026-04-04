@@ -1148,7 +1148,7 @@ function App() {
   // ── VOTE DATA VERSION GATE ────────────────────────────────────────────────
   // Bump CV_VOTES_VERSION whenever vote counts are reset so every user gets
   // a clean slate on next load, regardless of their cached localStorage data.
-  const CV_VOTES_VERSION = '2';
+  const CV_VOTES_VERSION = '3';
   if (localStorage.getItem('cv_votes_version') !== CV_VOTES_VERSION) {
     const VOTE_KEYS = [
       'cvPresidentVote', 'cvPresidentBillVotes', 'cvEOVotes',
@@ -27781,7 +27781,6 @@ function App() {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtered.map((member, i) => {
-                  const h = caHash(member.name);
                   const support = 0;
                   const oppose = 0;
                   const concerned = 0;
@@ -27847,21 +27846,21 @@ function App() {
                           className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
                         >
                           <ThumbsUp className="w-3 h-3" />
-                          <span>{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</span>
+                          <span>{support.toLocaleString()}</span>
                         </button>
                         <button
                           onClick={() => voteCaMember(member.name, 'concerned')}
-                          className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'concerned' ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400' : 'text-orange-600 hover:bg-orange-50'}`}
+                          className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'concerned' ? 'bg-amber-100 text-amber-600 ring-1 ring-amber-400' : 'text-amber-500 hover:bg-amber-50'}`}
                         >
                           <AlertCircle className="w-3 h-3" />
-                          <span>{(concerned + (userVote === 'concerned' ? 1 : 0)).toLocaleString()}</span>
+                          <span>{concerned.toLocaleString()}</span>
                         </button>
                         <button
                           onClick={() => voteCaMember(member.name, 'oppose')}
                           className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'oppose' ? 'bg-red-100 text-red-700 ring-1 ring-red-400' : 'text-red-600 hover:bg-red-50'}`}
                         >
                           <ThumbsDown className="w-3 h-3" />
-                          <span>{(oppose + (userVote === 'oppose' ? 1 : 0)).toLocaleString()}</span>
+                          <span>{oppose.toLocaleString()}</span>
                         </button>
                       </div>
                     </div>
