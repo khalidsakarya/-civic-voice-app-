@@ -17251,8 +17251,8 @@ function App() {
     summary: fb.plainLanguageSummary || fb.summary || '',
     pros: fb.argumentsFor || [],
     cons: fb.argumentsAgainst || [],
-    support: fb.citizenImpactScore ? fb.citizenImpactScore * 100 : 0,
-    oppose: fb.citizenImpactScore ? (10 - fb.citizenImpactScore) * 100 : 0,
+    support: 0,
+    oppose: 0,
   });
 
   const mapFirestoreBillToCA = (fb) => ({
@@ -17289,8 +17289,8 @@ function App() {
     description: fb.plainLanguageSummary || fb.summary || '',
     pros: fb.argumentsFor || [],
     cons: fb.argumentsAgainst || [],
-    supportVotes: fb.citizenImpactScore ? Math.round(fb.citizenImpactScore * 100) : 0,
-    opposeVotes: fb.citizenImpactScore ? Math.round((10 - fb.citizenImpactScore) * 100) : 0,
+    supportVotes: 0,
+    opposeVotes: 0,
     userVote: null,
   });
 
@@ -17314,8 +17314,8 @@ function App() {
     summary: fb.plainLanguageSummary || fb.summary || '',
     pros: fb.argumentsFor || [],
     cons: fb.argumentsAgainst || [],
-    support: fb.citizenImpactScore ? Math.round(fb.citizenImpactScore * 100) : 0,
-    oppose: fb.citizenImpactScore ? Math.round((10 - fb.citizenImpactScore) * 100) : 0,
+    support: 0,
+    oppose: 0,
   });
 
   // ── UK Legislative Hub ───────────────────────────────────────────────────────
@@ -23135,7 +23135,6 @@ function App() {
           {/* Member cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((member, i) => {
-              const h = auHash(member.name);
               const support = 0;
               const oppose = 0;
               const concerned = 0;
@@ -23191,21 +23190,21 @@ function App() {
                       className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
                     >
                       <ThumbsUp className="w-3 h-3" />
-                      <span>{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</span>
+                      <span>{support.toLocaleString()}</span>
                     </button>
                     <button
                       onClick={() => voteAuMember(member.name, 'concerned')}
-                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'concerned' ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400' : 'text-orange-600 hover:bg-orange-50'}`}
+                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'concerned' ? 'bg-amber-100 text-amber-600 ring-1 ring-amber-400' : 'text-amber-500 hover:bg-amber-50'}`}
                     >
                       <AlertCircle className="w-3 h-3" />
-                      <span>{(concerned + (userVote === 'concerned' ? 1 : 0)).toLocaleString()}</span>
+                      <span>{concerned.toLocaleString()}</span>
                     </button>
                     <button
                       onClick={() => voteAuMember(member.name, 'oppose')}
                       className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'oppose' ? 'bg-red-100 text-red-700 ring-1 ring-red-400' : 'text-red-600 hover:bg-red-50'}`}
                     >
                       <ThumbsDown className="w-3 h-3" />
-                      <span>{(oppose + (userVote === 'oppose' ? 1 : 0)).toLocaleString()}</span>
+                      <span>{oppose.toLocaleString()}</span>
                     </button>
                   </div>
                 </div>
@@ -23233,16 +23232,12 @@ function App() {
     const isSen = member.role === 'Senator' || (member.role && member.role.toLowerCase().includes('senator'));
     const partyColor = getPartyColor(member.party);
     const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2);
-    const auHash = (str) => { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0x7fffffff; return h; };
-    const h = auHash(member.name);
     const support = 0;
     const oppose = 0;
     const concerned = 0;
     const userVote = auMemberVotes[member.name] || null;
-    const displaySupport = support + (userVote === 'support' ? 1 : 0);
-    const displayOppose = oppose + (userVote === 'oppose' ? 1 : 0);
-    const displayTotal = displaySupport + displayOppose;
-    const approvalPct = displayTotal > 0 ? Math.round((displaySupport / displayTotal) * 100) : null;
+    const displayTotal = support + oppose;
+    const approvalPct = displayTotal > 0 ? Math.round((support / displayTotal) * 100) : null;
     const lobbyingList = member.lobbying?.organizations || [];
     const electedYear = member.financialDisclosure?.electedYear;
     const formatAUD = (n) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(n);
@@ -23298,12 +23293,12 @@ function App() {
               <div className="bg-white bg-opacity-60 rounded-lg p-3 flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-1.5">
                   <ThumbsUp className="w-4 h-4 text-green-600" />
-                  <span className="text-sm font-semibold text-gray-700">{displaySupport.toLocaleString()}</span>
+                  <span className="text-sm font-semibold text-gray-700">{support.toLocaleString()}</span>
                   <span className="text-xs text-gray-500">support</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <AlertCircle className="w-4 h-4 text-orange-500" />
-                  <span className="text-sm font-semibold text-gray-700">{(concerned + (userVote === 'concerned' ? 1 : 0)).toLocaleString()}</span>
+                  <span className="text-sm font-semibold text-gray-700">{concerned.toLocaleString()}</span>
                   <span className="text-xs text-gray-500">concerned</span>
                 </div>
                 <div className="flex-1 bg-gray-200 rounded-full h-2 min-w-[80px]">
@@ -23311,7 +23306,7 @@ function App() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-gray-500">oppose</span>
-                  <span className="text-sm font-semibold text-gray-700">{displayOppose.toLocaleString()}</span>
+                  <span className="text-sm font-semibold text-gray-700">{oppose.toLocaleString()}</span>
                   <ThumbsDown className="w-4 h-4 text-red-500" />
                 </div>
               </div>
@@ -25088,11 +25083,7 @@ function App() {
     const totalMeetings = lobbying.reduce((s, l) => s + l.meetings, 0);
 
     const voteKey = leaderName;
-    const initVotes = (() => {
-      const base = rng(200, 2500, 200);
-      const oppBase = rng(100, 2000, 201);
-      return { support: base, oppose: oppBase, userVote: null };
-    })();
+    const initVotes = { support: 0, oppose: 0, concerned: 0, userVote: null };
     const currentVotes = auLeaderVotes[voteKey] || initVotes;
 
     const castVote = (type) => {
@@ -34837,21 +34828,21 @@ function App() {
                   <div className="flex items-center gap-3">
                     <ThumbsUp className="w-6 h-6 text-green-600" />
                     <div>
-                      <div className="text-2xl font-bold text-gray-800">{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</div>
+                      <div className="text-2xl font-bold text-gray-800">{support.toLocaleString()}</div>
                       <div className="text-sm text-gray-600">Support</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <AlertCircle className="w-6 h-6 text-orange-500" />
                     <div>
-                      <div className="text-2xl font-bold text-gray-800">{(concerned + (userVote === 'concerned' ? 1 : 0)).toLocaleString()}</div>
+                      <div className="text-2xl font-bold text-gray-800">{concerned.toLocaleString()}</div>
                       <div className="text-sm text-gray-600">Concerned</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <ThumbsDown className="w-6 h-6 text-red-600" />
                     <div>
-                      <div className="text-2xl font-bold text-gray-800">{(oppose + (userVote === 'oppose' ? 1 : 0)).toLocaleString()}</div>
+                      <div className="text-2xl font-bold text-gray-800">{oppose.toLocaleString()}</div>
                       <div className="text-sm text-gray-600">Oppose</div>
                     </div>
                   </div>
@@ -35277,21 +35268,21 @@ function App() {
                       className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
                     >
                       <ThumbsUp className="w-3 h-3" />
-                      <span>{(support + (userVote === 'support' ? 1 : 0)).toLocaleString()}</span>
+                      <span>{support.toLocaleString()}</span>
                     </button>
                     <button
                       onClick={() => requireRegion(() => voteSenator(senator.name, 'concerned'))}
-                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'concerned' ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400' : 'text-orange-600 hover:bg-orange-50'}`}
+                      className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'concerned' ? 'bg-amber-100 text-amber-600 ring-1 ring-amber-400' : 'text-amber-500 hover:bg-amber-50'}`}
                     >
                       <AlertCircle className="w-3 h-3" />
-                      <span>{(concerned + (userVote === 'concerned' ? 1 : 0)).toLocaleString()}</span>
+                      <span>{concerned.toLocaleString()}</span>
                     </button>
                     <button
                       onClick={() => requireRegion(() => voteSenator(senator.name, 'oppose'))}
                       className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'oppose' ? 'bg-red-100 text-red-700 ring-1 ring-red-400' : 'text-red-600 hover:bg-red-50'}`}
                     >
                       <ThumbsDown className="w-3 h-3" />
-                      <span>{(oppose + (userVote === 'oppose' ? 1 : 0)).toLocaleString()}</span>
+                      <span>{oppose.toLocaleString()}</span>
                     </button>
                   </div>
                 </div>
