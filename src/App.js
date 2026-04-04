@@ -31084,11 +31084,11 @@ function App() {
           <button
             onClick={() => {
               setSelectedMember(null);
-              setView('members');
+              setView('ca-parliament');
             }}
             className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
           >
-            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to {selectedParty?.name} Members</span>
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to MPs</span>
           </button>
         </div>
       </div>
