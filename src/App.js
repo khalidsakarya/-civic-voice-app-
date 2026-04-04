@@ -2064,6 +2064,8 @@ function App() {
   const [memberDisclosureLoading, setMemberDisclosureLoading] = useState({});
   const [memberLobbyingData, setMemberLobbyingData] = useState({});
   const [memberLobbyingLoading, setMemberLobbyingLoading] = useState({});
+  const [memberVotesData, setMemberVotesData] = useState({});
+  const [memberVotesLoading, setMemberVotesLoading] = useState({});
 
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
@@ -2671,6 +2673,50 @@ function App() {
       }
     })();
   }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Shared helper: fetch member_votes for a given member; tries bioguide_id first, then memberName
+  const fetchMemberVotes = async (member) => {
+    const key = member.name;
+    if (memberVotesData[key] !== undefined || memberVotesLoading[key]) return;
+    setMemberVotesLoading(prev => ({ ...prev, [key]: true }));
+    try {
+      let docs = [];
+      if (member.bioguide_id) {
+        const q = query(collection(db, 'member_votes'), where('bioguide_id', '==', member.bioguide_id));
+        const snap = await getDocs(q);
+        docs = snap.docs.map(d => d.data());
+      }
+      if (docs.length === 0) {
+        const q = query(collection(db, 'member_votes'), where('memberName', '==', key));
+        const snap = await getDocs(q);
+        docs = snap.docs.map(d => d.data());
+      }
+      setMemberVotesData(prev => ({ ...prev, [key]: docs }));
+    } catch (err) {
+      console.warn('[LiveData] member_votes fetch failed:', err.message);
+      setMemberVotesData(prev => ({ ...prev, [key]: [] }));
+    } finally {
+      setMemberVotesLoading(prev => ({ ...prev, [key]: false }));
+    }
+  };
+
+  // Fetch voting records when US Congress member panel opens
+  useEffect(() => {
+    if (!showMemberPanel || !selectedMember?.name) return;
+    fetchMemberVotes(selectedMember);
+  }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch voting records when Canadian MP detail opens
+  useEffect(() => {
+    if (view !== 'member-detail' || !selectedMember?.name) return;
+    fetchMemberVotes(selectedMember);
+  }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch voting records when UK MP detail opens
+  useEffect(() => {
+    if (view !== 'uk-member-detail' || !selectedUkMember?.name) return;
+    fetchMemberVotes(selectedUkMember);
+  }, [view, selectedUkMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const initializeUSCongress = () => {
     // Expanded US Congress members with full transparency features
@@ -18112,14 +18158,17 @@ function App() {
     const supportPct = totalVotes > 0 ? Math.round((votes.support / totalVotes) * 100) : null;
     const formatGBP = (n) => n >= 1000000 ? `£${(n / 1000000).toFixed(2)}M` : n >= 1000 ? `£${(n / 1000).toFixed(0)}k` : `£${n}`;
 
-    const SectionHeader = ({ id, icon, title }) => (
+    const SectionHeader = ({ id, icon, title, badge }) => (
       <button
         onClick={() => toggleUkSection(id)}
         className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors"
       >
         <div className="flex items-center gap-3">
           <span className="text-xl">{icon}</span>
-          <h3 className="text-base font-bold text-gray-800">{title}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-bold text-gray-800">{title}</h3>
+            {badge}
+          </div>
         </div>
         {expandedUkSections[id] ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
       </button>
@@ -18127,6 +18176,17 @@ function App() {
 
     const getVoteColor = (vote) => ({ Aye: '#16a34a', No: '#dc2626', Abstain: '#9ca3af' }[vote] || '#9ca3af');
     const getVoteIcon = (vote) => ({ Aye: '✓', No: '✗', Abstain: '—' }[vote] || '—');
+    const ukLiveDocs = memberVotesData[mp.name];
+    const ukIsLiveVotes = ukLiveDocs && ukLiveDocs.length > 0;
+    const ukIsLoadingVotes = !!memberVotesLoading[mp.name];
+    const ukDisplayVotes = ukIsLiveVotes
+      ? ukLiveDocs.map(d => ({ bill: d.bill, title: d.title, vote: d.vote, date: d.date, description: d.description }))
+      : (mp.votingHistory || []);
+    const ukVotingBadge = ukIsLoadingVotes
+      ? <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>
+      : ukIsLiveVotes
+        ? <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+        : null;
 
     return (
       <div className="min-h-screen bg-gray-50 animate-fade-in">
@@ -18212,19 +18272,22 @@ function App() {
 
           {/* Voting record */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-            <SectionHeader id="voting" icon="🗳️" title="Voting Record" />
+            <SectionHeader id="voting" icon="🗳️" title="Voting Record" badge={ukVotingBadge} />
             {expandedUkSections.voting && (
               <div className="px-5 pb-5 space-y-3">
-                {(mp.votingHistory || []).map((v, i) => (
+                {ukDisplayVotes.map((v, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 text-white" style={{ backgroundColor: getVoteColor(v.vote) }}>{getVoteIcon(v.vote)}</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-800 leading-snug">{v.title}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{v.date} · {v.bill}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{v.date}{v.bill ? ` · ${v.bill}` : ''}</p>
                       <p className="text-xs text-gray-600 mt-1">{v.description}</p>
                     </div>
                   </div>
                 ))}
+                {ukDisplayVotes.length === 0 && !ukIsLoadingVotes && (
+                  <p className="text-sm text-gray-400 text-center py-4">No voting records available.</p>
+                )}
               </div>
             )}
           </div>
@@ -31093,44 +31156,57 @@ function App() {
           </div>
         )}
 
-        {selectedMember.votingHistory && selectedMember.votingHistory.length > 0 && (
-          <div className="bg-white rounded-lg shadow-md mb-6">
-            <div
-              onClick={() => toggleSection('voting')}
-              className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50"
-            >
-              <div className="flex items-center gap-3">
-                <FileText className="w-6 h-6 text-blue-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">📊 Voting History</h2>
-                  <p className="text-sm text-gray-600">{selectedMember.votingHistory.length} recent votes</p>
-                </div>
-              </div>
-              {expandedSections.voting ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-            </div>
-
-            {expandedSections.voting && (
-              <div className="px-6 pb-6 space-y-4">
-                {selectedMember.votingHistory.map((vote, index) => (
-                  <div key={index} className={`border rounded-lg p-4 ${getVoteColor(vote.vote)}`}>
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        {getVoteIcon(vote.vote)}
-                        <span className="font-bold text-gray-800">{vote.vote}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="w-4 h-4" />
-                        <span>{vote.date}</span>
-                      </div>
+        {(() => {
+          const liveDocs = memberVotesData[selectedMember.name];
+          const isLiveVotes = liveDocs && liveDocs.length > 0;
+          const isLoadingVotes = !!memberVotesLoading[selectedMember.name];
+          const displayVotes = isLiveVotes
+            ? liveDocs.map(d => ({ bill: d.bill, title: d.title, vote: d.vote, date: d.date, description: d.description }))
+            : (selectedMember.votingHistory || []);
+          if (!displayVotes.length && !isLoadingVotes) return null;
+          return (
+            <div className="bg-white rounded-lg shadow-md mb-6">
+              <div
+                onClick={() => toggleSection('voting')}
+                className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50"
+              >
+                <div className="flex items-center gap-3">
+                  <FileText className="w-6 h-6 text-blue-600" />
+                  <div>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <h2 className="text-xl font-bold text-gray-800">📊 Voting History</h2>
+                      {isLoadingVotes && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {isLiveVotes && !isLoadingVotes && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                     </div>
-                    <h3 className="font-semibold text-gray-800 mb-1">{vote.bill}: {vote.title}</h3>
-                    <p className="text-sm text-gray-600">{vote.description}</p>
+                    <p className="text-sm text-gray-600">{displayVotes.length} recent votes</p>
                   </div>
-                ))}
+                </div>
+                {expandedSections.voting ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
               </div>
-            )}
-          </div>
-        )}
+
+              {expandedSections.voting && (
+                <div className="px-6 pb-6 space-y-4">
+                  {displayVotes.map((vote, index) => (
+                    <div key={index} className={`border rounded-lg p-4 ${getVoteColor(vote.vote)}`}>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          {getVoteIcon(vote.vote)}
+                          <span className="font-bold text-gray-800">{vote.vote}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Calendar className="w-4 h-4" />
+                          <span>{vote.date}</span>
+                        </div>
+                      </div>
+                      <h3 className="font-semibold text-gray-800 mb-1">{vote.bill ? `${vote.bill}: ` : ''}{vote.title}</h3>
+                      <p className="text-sm text-gray-600">{vote.description}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {selectedMember.attendance && (
           <div className="bg-white rounded-lg shadow-md mb-6">
@@ -33630,32 +33706,45 @@ function App() {
               )}
 
               {/* VOTING RECORD */}
-              {member.votingHistory && member.votingHistory.length > 0 && (
-                <section>
-                  <p className="panel-section-label">
-                    Voting Record &mdash; {member.votingHistory.length} recent vote{member.votingHistory.length !== 1 ? 's' : ''}
-                  </p>
-                  <div className="space-y-2">
-                    {member.votingHistory.map((vote, i) => (
-                      <div key={i} className={`rounded-xl p-3.5 border ${getVoteColor(vote.vote)}`}>
-                        <div className="flex items-center justify-between gap-2 mb-1.5">
-                          <div className="flex items-center gap-2">
-                            {getVoteIcon(vote.vote)}
-                            <span className="font-bold text-sm text-gray-800">{vote.vote}</span>
-                            <span className="text-xs bg-white bg-opacity-80 text-gray-600 px-2 py-0.5 rounded font-mono border">{vote.bill}</span>
+              {(() => {
+                const liveDocs = memberVotesData[member.name];
+                const isLiveVotes = liveDocs && liveDocs.length > 0;
+                const isLoadingVotes = !!memberVotesLoading[member.name];
+                const displayVotes = isLiveVotes
+                  ? liveDocs.map(d => ({ bill: d.bill, title: d.title, vote: d.vote, date: d.date, description: d.description }))
+                  : (member.votingHistory || []);
+                if (!displayVotes.length && !isLoadingVotes) return null;
+                return (
+                  <section>
+                    <div className="flex items-center gap-2 mb-2">
+                      <p className="panel-section-label" style={{ marginBottom: 0 }}>
+                        Voting Record &mdash; {displayVotes.length} recent vote{displayVotes.length !== 1 ? 's' : ''}
+                      </p>
+                      {isLoadingVotes && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {isLiveVotes && !isLoadingVotes && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </div>
+                    <div className="space-y-2">
+                      {displayVotes.map((vote, i) => (
+                        <div key={i} className={`rounded-xl p-3.5 border ${getVoteColor(vote.vote)}`}>
+                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <div className="flex items-center gap-2">
+                              {getVoteIcon(vote.vote)}
+                              <span className="font-bold text-sm text-gray-800">{vote.vote}</span>
+                              {vote.bill && <span className="text-xs bg-white bg-opacity-80 text-gray-600 px-2 py-0.5 rounded font-mono border">{vote.bill}</span>}
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
+                              <Calendar className="w-3.5 h-3.5" />
+                              {vote.date}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
-                            <Calendar className="w-3.5 h-3.5" />
-                            {vote.date}
-                          </div>
+                          <p className="text-sm font-semibold text-gray-800">{vote.title}</p>
+                          <p className="text-xs text-gray-600 mt-0.5 leading-relaxed">{vote.description}</p>
                         </div>
-                        <p className="text-sm font-semibold text-gray-800">{vote.title}</p>
-                        <p className="text-xs text-gray-600 mt-0.5 leading-relaxed">{vote.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
+                      ))}
+                    </div>
+                  </section>
+                );
+              })()}
 
               {/* STOCK TRADES */}
               {member.stockTrades !== undefined && (
