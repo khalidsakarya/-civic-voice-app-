@@ -27990,6 +27990,13 @@ function App() {
   };
 
   const renderMembers = () => {
+    const isUSA = selectedCountry?.type === 'usa';
+    // Canada without a party selected → go straight to the self-contained ca-parliament view
+    if (!isUSA && !selectedParty) {
+      setCaChamber('House');
+      setView('ca-parliament');
+      return null;
+    }
     const partyMPs = getPartyMPs();
 
     return (
@@ -27998,12 +28005,19 @@ function App() {
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <button
               onClick={() => {
-                setSelectedParty(null);
-                setView('parties');
+                if (isUSA) {
+                  setSelectedParty(null);
+                  setView('parties');
+                } else {
+                  setSelectedParty(null);
+                  setCaChamber('House');
+                  setView('ca-parliament');
+                }
               }}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Parties</span>
+              <span className="sm:hidden">← Back</span>
+              <span className="hidden sm:inline">{isUSA ? '← Back to Parties' : '← Back to MPs'}</span>
             </button>
             
             <h1 className="text-2xl font-bold text-gray-800">{selectedParty?.name}</h1>
@@ -31074,6 +31088,7 @@ function App() {
           <button
             onClick={() => {
               setSelectedMember(null);
+              setCaChamber('House');
               setView('ca-parliament');
             }}
             className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
