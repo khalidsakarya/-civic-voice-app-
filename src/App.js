@@ -2059,6 +2059,11 @@ function App() {
   const [govStatsData, setGovStatsData] = useState({});
   const [govStatsLastUpdated, setGovStatsLastUpdated] = useState({});
   const [govStatsLoading, setGovStatsLoading] = useState({});
+  // -- Member profile live data from Firestore
+  const [memberDisclosureData, setMemberDisclosureData] = useState({});
+  const [memberDisclosureLoading, setMemberDisclosureLoading] = useState({});
+  const [memberLobbyingData, setMemberLobbyingData] = useState({});
+  const [memberLobbyingLoading, setMemberLobbyingLoading] = useState({});
 
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
@@ -2626,6 +2631,46 @@ function App() {
     const t = setTimeout(() => logEvent('search', { itemId: searchQuery.slice(0, 100) }), 1000);
     return () => clearTimeout(t);
   }, [searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch US Congress financial disclosures from Firestore when panel opens
+  useEffect(() => {
+    if (!showMemberPanel || !selectedMember?.name) return;
+    const name = selectedMember.name;
+    if (memberDisclosureData[name] !== undefined || memberDisclosureLoading[name]) return;
+    setMemberDisclosureLoading(prev => ({ ...prev, [name]: true }));
+    (async () => {
+      try {
+        const q = query(collection(db, 'member_disclosures'), where('memberName', '==', name));
+        const snap = await getDocs(q);
+        setMemberDisclosureData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
+      } catch (err) {
+        console.warn('[LiveData] member_disclosures fetch failed:', err.message);
+        setMemberDisclosureData(prev => ({ ...prev, [name]: [] }));
+      } finally {
+        setMemberDisclosureLoading(prev => ({ ...prev, [name]: false }));
+      }
+    })();
+  }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch Canadian MP lobbying records from Firestore when member-detail opens
+  useEffect(() => {
+    if (view !== 'member-detail' || !selectedMember?.name) return;
+    const name = selectedMember.name;
+    if (memberLobbyingData[name] !== undefined || memberLobbyingLoading[name]) return;
+    setMemberLobbyingLoading(prev => ({ ...prev, [name]: true }));
+    (async () => {
+      try {
+        const q = query(collection(db, 'member_lobbying'), where('memberName', '==', name));
+        const snap = await getDocs(q);
+        setMemberLobbyingData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
+      } catch (err) {
+        console.warn('[LiveData] member_lobbying fetch failed:', err.message);
+        setMemberLobbyingData(prev => ({ ...prev, [name]: [] }));
+      } finally {
+        setMemberLobbyingLoading(prev => ({ ...prev, [name]: false }));
+      }
+    })();
+  }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const initializeUSCongress = () => {
     // Expanded US Congress members with full transparency features
@@ -31222,47 +31267,75 @@ function App() {
           </div>
         )}
 
-        {selectedMember.lobbying && (
-          <div className="bg-white rounded-lg shadow-md mb-6">
-            <div
-              onClick={() => toggleSection('lobbying')}
-              className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50"
-            >
-              <div className="flex items-center gap-3">
-                <Building2 className="w-6 h-6 text-red-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
-                  <p className="text-sm text-gray-600">
-                    {selectedMember.lobbying.totalMeetings} meetings, {formatCurrency(selectedMember.lobbying.totalValue)} total value
-                  </p>
-                </div>
-              </div>
-              {expandedSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-            </div>
-
-            {expandedSections.lobbying && (
-              <div className="px-6 pb-6 space-y-4">
-                {selectedMember.lobbying.organizations.map((org, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-bold text-gray-800">{org.name}</h3>
-                        <p className="text-sm text-gray-600">{org.sector}</p>
-                      </div>
-                      <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
-                        {formatCurrency(org.value)}
-                      </span>
+        {selectedMember.lobbying && (() => {
+          const liveLobbyDocs = memberLobbyingData[selectedMember.name];
+          const isLiveLobby = liveLobbyDocs && liveLobbyDocs.length > 0;
+          const isLoadingLobby = !!memberLobbyingLoading[selectedMember.name];
+          const lobbyOrgs = isLiveLobby
+            ? liveLobbyDocs.map(d => ({
+                name:        d.organization ?? d.name,
+                sector:      d.sector,
+                value:       d.value,
+                meetings:    d.meetings,
+                lastMeeting: d.lastMeeting,
+                topic:       d.topic,
+              }))
+            : selectedMember.lobbying.organizations;
+          const totalMeetings = isLiveLobby
+            ? liveLobbyDocs.reduce((s, d) => s + (d.meetings || 0), 0)
+            : selectedMember.lobbying.totalMeetings;
+          const totalValue = isLiveLobby
+            ? liveLobbyDocs.reduce((s, d) => s + (d.value || 0), 0)
+            : selectedMember.lobbying.totalValue;
+          return (
+            <div className="bg-white rounded-lg shadow-md mb-6">
+              <div
+                onClick={() => toggleSection('lobbying')}
+                className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50"
+              >
+                <div className="flex items-center gap-3">
+                  <Building2 className="w-6 h-6 text-red-600" />
+                  <div>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
+                      {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {isLiveLobby && !isLoadingLobby && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span>📅 {org.meetings} meetings</span>
-                      <span>🗓️ Last: {org.lastMeeting}</span>
-                    </div>
+                    <p className="text-sm text-gray-600">
+                      {totalMeetings} meetings, {formatCurrency(totalValue)} total value
+                    </p>
                   </div>
-                ))}
+                </div>
+                {expandedSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
               </div>
-            )}
-          </div>
-        )}
+
+              {expandedSections.lobbying && (
+                <div className="px-6 pb-6 space-y-4">
+                  {lobbyOrgs.map((org, idx) => (
+                    <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="font-bold text-gray-800">{org.name}</h3>
+                          <p className="text-sm text-gray-600">{org.sector}</p>
+                          {org.topic && <p className="text-xs text-blue-600 mt-0.5 font-medium">{org.topic}</p>}
+                        </div>
+                        {org.value ? (
+                          <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
+                            {formatCurrency(org.value)}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        {org.meetings && <span>📅 {org.meetings} meetings</span>}
+                        {org.lastMeeting && <span>🗓️ Last: {org.lastMeeting}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {selectedMember.corporateConnections && selectedMember.corporateConnections.length > 0 && (
           <div className="bg-white rounded-lg shadow-md mb-6">
@@ -33685,46 +33758,64 @@ function App() {
               )}
 
               {/* FINANCIAL DISCLOSURE */}
-              {member.financialDisclosure && (
-                <section>
-                  <p className="panel-section-label">Financial Disclosure</p>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 mb-0.5">Worth When Elected{electedYear ? ` (${electedYear})` : ''}</p>
-                      <p className="text-lg font-bold text-blue-700">{formatCurrency(worthWhenElected)}</p>
+              {member.financialDisclosure && (() => {
+                const liveDiscDocs = memberDisclosureData[member.name];
+                const liveDisc = liveDiscDocs && liveDiscDocs.length > 0 ? liveDiscDocs[0] : null;
+                const isLiveDisc = !!liveDisc;
+                const isLoadingDisc = !!memberDisclosureLoading[member.name];
+                const disc = isLiveDisc ? {
+                  electedYear:        liveDisc.electedYear        ?? member.financialDisclosure.electedYear,
+                  worthWhenElected:   liveDisc.worthWhenElected   ?? liveDisc.initialWorth ?? worthWhenElected,
+                  currentWorth:       liveDisc.currentWorth       ?? member.financialDisclosure.currentWorth,
+                  percentageIncrease: liveDisc.percentageIncrease ?? member.financialDisclosure.percentageIncrease,
+                  annualSalary:       liveDisc.annualSalary       ?? member.financialDisclosure.annualSalary,
+                  assets:             liveDisc.assets             ?? member.financialDisclosure.assets,
+                } : member.financialDisclosure;
+                return (
+                  <section>
+                    <div className="flex items-center gap-2 mb-2">
+                      <p className="panel-section-label" style={{ marginBottom: 0 }}>Financial Disclosure</p>
+                      {isLoadingDisc && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {isLiveDisc && !isLoadingDisc && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                     </div>
-                    <div className="bg-green-50 border border-green-200 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 mb-0.5">Current Net Worth</p>
-                      <p className="text-lg font-bold text-green-700">{formatCurrency(member.financialDisclosure.currentWorth)}</p>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                        <p className="text-xs text-gray-500 mb-0.5">Worth When Elected{disc.electedYear ? ` (${disc.electedYear})` : ''}</p>
+                        <p className="text-lg font-bold text-blue-700">{formatCurrency(disc.worthWhenElected)}</p>
+                      </div>
+                      <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+                        <p className="text-xs text-gray-500 mb-0.5">Current Net Worth</p>
+                        <p className="text-lg font-bold text-green-700">{formatCurrency(disc.currentWorth)}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 mb-0.5">Wealth Increase</p>
-                      <p className="text-lg font-bold text-purple-700">+{member.financialDisclosure.percentageIncrease}%</p>
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div className="bg-purple-50 border border-purple-200 rounded-xl p-3">
+                        <p className="text-xs text-gray-500 mb-0.5">Wealth Increase</p>
+                        <p className="text-lg font-bold text-purple-700">+{disc.percentageIncrease}%</p>
+                      </div>
+                      {disc.annualSalary && (
+                        <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
+                          <p className="text-xs text-gray-500 mb-0.5">Annual Salary</p>
+                          <p className="text-lg font-bold text-orange-700">{formatCurrency(disc.annualSalary)}</p>
+                        </div>
+                      )}
                     </div>
-                    {member.financialDisclosure.annualSalary && (
-                      <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
-                        <p className="text-xs text-gray-500 mb-0.5">Annual Salary</p>
-                        <p className="text-lg font-bold text-orange-700">{formatCurrency(member.financialDisclosure.annualSalary)}</p>
+                    {disc.assets && disc.assets.length > 0 && (
+                      <div className="space-y-1.5">
+                        <p className="text-xs font-semibold text-gray-600 mb-2">Asset Breakdown</p>
+                        {disc.assets.map((asset, i) => (
+                          <div key={i} className="flex justify-between items-center p-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                            <span className="text-sm text-gray-700">{asset.type}</span>
+                            <span className={`text-sm font-bold ${asset.value < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                              {asset.value < 0 ? `−${formatCurrency(Math.abs(asset.value))}` : formatCurrency(asset.value)}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     )}
-                  </div>
-                  {member.financialDisclosure.assets && member.financialDisclosure.assets.length > 0 && (
-                    <div className="space-y-1.5">
-                      <p className="text-xs font-semibold text-gray-600 mb-2">Asset Breakdown</p>
-                      {member.financialDisclosure.assets.map((asset, i) => (
-                        <div key={i} className="flex justify-between items-center p-2.5 bg-gray-50 rounded-lg border border-gray-200">
-                          <span className="text-sm text-gray-700">{asset.type}</span>
-                          <span className={`text-sm font-bold ${asset.value < 0 ? 'text-red-600' : 'text-gray-900'}`}>
-                            {asset.value < 0 ? `−${formatCurrency(Math.abs(asset.value))}` : formatCurrency(asset.value)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </section>
-              )}
+                  </section>
+                );
+              })()}
 
               {/* LOBBYING */}
               {member.lobbying && (
