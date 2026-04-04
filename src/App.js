@@ -2066,6 +2066,8 @@ function App() {
   const [memberLobbyingLoading, setMemberLobbyingLoading] = useState({});
   const [memberVotesData, setMemberVotesData] = useState({});
   const [memberVotesLoading, setMemberVotesLoading] = useState({});
+  const [memberAttendanceData, setMemberAttendanceData] = useState({});
+  const [memberAttendanceLoading, setMemberAttendanceLoading] = useState({});
 
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
@@ -2716,6 +2718,50 @@ function App() {
   useEffect(() => {
     if (view !== 'uk-member-detail' || !selectedUkMember?.name) return;
     fetchMemberVotes(selectedUkMember);
+  }, [view, selectedUkMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Shared helper: fetch member_attendance by memberName (or bioguide_id if present)
+  const fetchMemberAttendance = async (member) => {
+    const key = member.name;
+    if (memberAttendanceData[key] !== undefined || memberAttendanceLoading[key]) return;
+    setMemberAttendanceLoading(prev => ({ ...prev, [key]: true }));
+    try {
+      let docs = [];
+      if (member.bioguide_id) {
+        const q = query(collection(db, 'member_attendance'), where('bioguide_id', '==', member.bioguide_id));
+        const snap = await getDocs(q);
+        docs = snap.docs.map(d => d.data());
+      }
+      if (docs.length === 0) {
+        const q = query(collection(db, 'member_attendance'), where('memberName', '==', key));
+        const snap = await getDocs(q);
+        docs = snap.docs.map(d => d.data());
+      }
+      setMemberAttendanceData(prev => ({ ...prev, [key]: docs }));
+    } catch (err) {
+      console.warn('[LiveData] member_attendance fetch failed:', err.message);
+      setMemberAttendanceData(prev => ({ ...prev, [key]: [] }));
+    } finally {
+      setMemberAttendanceLoading(prev => ({ ...prev, [key]: false }));
+    }
+  };
+
+  // Fetch attendance when US Congress member panel opens
+  useEffect(() => {
+    if (!showMemberPanel || !selectedMember?.name) return;
+    fetchMemberAttendance(selectedMember);
+  }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch attendance when Canadian MP detail opens
+  useEffect(() => {
+    if (view !== 'member-detail' || !selectedMember?.name) return;
+    fetchMemberAttendance(selectedMember);
+  }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch attendance when UK MP detail opens
+  useEffect(() => {
+    if (view !== 'uk-member-detail' || !selectedUkMember?.name) return;
+    fetchMemberAttendance(selectedUkMember);
   }, [view, selectedUkMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const initializeUSCongress = () => {
@@ -18188,6 +18234,22 @@ function App() {
         ? <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
         : null;
 
+    const ukAttLiveDocs  = memberAttendanceData[mp.name];
+    const ukAttLiveDoc   = ukAttLiveDocs && ukAttLiveDocs.length > 0 ? ukAttLiveDocs[0] : null;
+    const ukIsLiveAtt    = !!ukAttLiveDoc;
+    const ukIsLoadingAtt = !!memberAttendanceLoading[mp.name];
+    const ukAttPct       = ukIsLiveAtt ? (ukAttLiveDoc.percentage ?? ukAttLiveDoc.attendanceRate ?? mp.attendance?.percentage ?? 0) : (mp.attendance?.percentage ?? 0);
+    const ukAttended     = ukIsLiveAtt ? (ukAttLiveDoc.votesParticipated ?? ukAttLiveDoc.sessionsAttended ?? mp.attendance?.sessionsAttended ?? 0) : (mp.attendance?.sessionsAttended ?? 0);
+    const ukAttTotal     = ukIsLiveAtt ? (ukAttLiveDoc.totalVotes ?? ukAttLiveDoc.totalSessions ?? mp.attendance?.totalSessions ?? 0) : (mp.attendance?.totalSessions ?? 0);
+    const ukAttRanking   = ukIsLiveAtt ? (ukAttLiveDoc.ranking ?? mp.attendance?.ranking) : mp.attendance?.ranking;
+    const ukAttBarColor  = ukAttPct >= 80 ? '#22c55e' : ukAttPct >= 60 ? '#eab308' : '#ef4444';
+    const ukAttPctColor  = ukAttPct >= 80 ? 'text-green-600' : ukAttPct >= 60 ? 'text-yellow-600' : 'text-red-600';
+    const ukAttBadge     = ukIsLoadingAtt
+      ? <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>
+      : ukIsLiveAtt
+        ? <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+        : null;
+
     return (
       <div className="min-h-screen bg-gray-50 animate-fade-in">
         {/* Header banner */}
@@ -18294,14 +18356,14 @@ function App() {
 
           {/* Attendance */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-            <SectionHeader id="attendance" icon="📅" title="Attendance" />
-            {expandedUkSections.attendance && mp.attendance && (
+            <SectionHeader id="attendance" icon="📅" title="Attendance" badge={ukAttBadge} />
+            {expandedUkSections.attendance && (
               <div className="px-5 pb-5">
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   {[
-                    { label: 'Attendance Rate', value: `${mp.attendance.percentage}%`, color: mp.attendance.percentage >= 90 ? 'text-green-600' : mp.attendance.percentage >= 75 ? 'text-yellow-600' : 'text-red-600' },
-                    { label: 'Sessions Attended', value: mp.attendance.sessionsAttended, color: 'text-gray-800' },
-                    { label: 'Parliament Ranking', value: `#${mp.attendance.ranking}`, color: 'text-gray-800' },
+                    { label: 'Attendance Rate', value: `${ukAttPct}%`, color: ukAttPctColor },
+                    { label: 'Votes Participated', value: ukAttended, color: 'text-gray-800' },
+                    { label: ukAttTotal ? 'Total Votes Held' : 'Parliament Ranking', value: ukAttTotal ? ukAttTotal : (ukAttRanking ? `#${ukAttRanking}` : '—'), color: 'text-gray-800' },
                   ].map(s => (
                     <div key={s.label} className="bg-gray-50 rounded-xl p-3 text-center">
                       <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
@@ -18309,8 +18371,12 @@ function App() {
                     </div>
                   ))}
                 </div>
-                <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-                  <div className="h-full rounded-full bg-green-500" style={{ width: `${mp.attendance.percentage}%` }} />
+                <div className="flex justify-between text-xs text-gray-400 mb-1">
+                  <span>Votes participated</span>
+                  <span>{ukAttended}{ukAttTotal ? ` / ${ukAttTotal}` : ''}</span>
+                </div>
+                <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(ukAttPct, 100)}%`, backgroundColor: ukAttBarColor }} />
                 </div>
               </div>
             )}
@@ -31208,44 +31274,61 @@ function App() {
           );
         })()}
 
-        {selectedMember.attendance && (
-          <div className="bg-white rounded-lg shadow-md mb-6">
-            <div
-              onClick={() => toggleSection('attendance')}
-              className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50"
-            >
-              <div className="flex items-center gap-3">
-                <Award className="w-6 h-6 text-blue-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
-                  <p className="text-sm text-gray-600">{selectedMember.attendance.percentage}% attendance rate</p>
+        {(selectedMember.attendance || memberAttendanceData[selectedMember.name]?.length > 0 || memberAttendanceLoading[selectedMember.name]) && (() => {
+          const liveDocs  = memberAttendanceData[selectedMember.name];
+          const liveDoc   = liveDocs && liveDocs.length > 0 ? liveDocs[0] : null;
+          const isLive    = !!liveDoc;
+          const isLoading = !!memberAttendanceLoading[selectedMember.name];
+          const pct       = isLive ? (liveDoc.percentage ?? liveDoc.attendanceRate ?? selectedMember.attendance?.percentage ?? 0) : (selectedMember.attendance?.percentage ?? 0);
+          const attended  = isLive ? (liveDoc.votesParticipated ?? liveDoc.sessionsAttended ?? selectedMember.attendance?.sessionsAttended ?? 0) : (selectedMember.attendance?.sessionsAttended ?? 0);
+          const total     = isLive ? (liveDoc.totalVotes ?? liveDoc.totalSessions ?? selectedMember.attendance?.totalSessions ?? 0) : (selectedMember.attendance?.totalSessions ?? 0);
+          const ranking   = isLive ? (liveDoc.ranking ?? selectedMember.attendance?.ranking) : selectedMember.attendance?.ranking;
+          const barColor  = pct >= 80 ? '#22c55e' : pct >= 60 ? '#eab308' : '#ef4444';
+          const pctColor  = pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-yellow-600' : 'text-red-600';
+          return (
+            <div className="bg-white rounded-lg shadow-md mb-6">
+              <div onClick={() => toggleSection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <Award className="w-6 h-6 text-blue-600" />
+                  <div>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
+                      {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {isLive && !isLoading && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </div>
+                    <p className={`text-sm font-semibold ${pctColor}`}>{pct}% attendance rate</p>
+                  </div>
                 </div>
+                {expandedSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
               </div>
-              {expandedSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+              {expandedSections.attendance && (
+                <div className="px-6 pb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
+                      <p className={`text-3xl font-bold ${pctColor}`}>{pct}%</p>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <p className="text-sm text-gray-600 mb-1">Votes Participated</p>
+                      <p className="text-3xl font-bold text-gray-800">{attended}{total ? `/${total}` : ''}</p>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <p className="text-sm text-gray-600 mb-1">{total ? 'Total Votes Held' : 'National Ranking'}</p>
+                      <p className="text-3xl font-bold text-purple-600">{total ? total : (ranking ? `#${ranking}` : '—')}</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                    <span>Votes participated</span>
+                    <span>{attended}{total ? ` / ${total}` : ''}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div className="h-3 rounded-full transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: barColor }} />
+                  </div>
+                </div>
+              )}
             </div>
-
-            {expandedSections.attendance && (
-              <div className="px-6 pb-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
-                    <p className="text-3xl font-bold text-blue-600">{selectedMember.attendance.percentage}%</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
-                    <p className="text-3xl font-bold text-green-600">
-                      {selectedMember.attendance.sessionsAttended}/{selectedMember.attendance.totalSessions}
-                    </p>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">National Ranking</p>
-                    <p className="text-3xl font-bold text-purple-600">#{selectedMember.attendance.ranking}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+          );
+        })()}
 
         {selectedMember.expenses && (
           <div className="bg-white rounded-lg shadow-md mb-6">
@@ -33654,37 +33737,50 @@ function App() {
               )}
 
               {/* ATTENDANCE */}
-              {member.attendance && (
-                <section>
-                  <p className="panel-section-label">Attendance Record</p>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
-                      <p className="text-2xl font-bold text-blue-700">{member.attendance.percentage}%</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Attendance</p>
+              {(member.attendance || memberAttendanceData[member.name]?.length > 0 || memberAttendanceLoading[member.name]) && (() => {
+                const liveDocs = memberAttendanceData[member.name];
+                const liveDoc  = liveDocs && liveDocs.length > 0 ? liveDocs[0] : null;
+                const isLive   = !!liveDoc;
+                const isLoading = !!memberAttendanceLoading[member.name];
+                const pct      = isLive ? (liveDoc.percentage ?? liveDoc.attendanceRate ?? member.attendance?.percentage ?? 0) : (member.attendance?.percentage ?? 0);
+                const attended = isLive ? (liveDoc.votesParticipated ?? liveDoc.sessionsAttended ?? member.attendance?.sessionsAttended ?? 0) : (member.attendance?.sessionsAttended ?? 0);
+                const total    = isLive ? (liveDoc.totalVotes ?? liveDoc.totalSessions ?? member.attendance?.totalSessions ?? 0) : (member.attendance?.totalSessions ?? 0);
+                const ranking  = isLive ? (liveDoc.ranking ?? member.attendance?.ranking) : member.attendance?.ranking;
+                const barColor = pct >= 80 ? '#22c55e' : pct >= 60 ? '#eab308' : '#ef4444';
+                const pctColor = pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-yellow-600' : 'text-red-600';
+                return (
+                  <section>
+                    <div className="flex items-center gap-2 mb-2">
+                      <p className="panel-section-label" style={{ marginBottom: 0 }}>Attendance Record</p>
+                      {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {isLive && !isLoading && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                     </div>
-                    <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
-                      <p className="text-2xl font-bold text-green-700">{member.attendance.sessionsAttended}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Sessions</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
+                        <p className={`text-2xl font-bold ${pctColor}`}>{pct}%</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Attendance Rate</p>
+                      </div>
+                      <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
+                        <p className="text-2xl font-bold text-gray-800">{attended}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Votes Participated</p>
+                      </div>
+                      <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
+                        <p className="text-2xl font-bold text-gray-800">{total || (ranking ? `#${ranking}` : '—')}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{total ? 'Total Votes Held' : 'Ranking'}</p>
+                      </div>
                     </div>
-                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center">
-                      <p className="text-2xl font-bold text-purple-700">#{member.attendance.ranking}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Ranking</p>
+                    <div className="mt-2">
+                      <div className="flex justify-between text-xs text-gray-500 mb-1">
+                        <span>Votes participated</span>
+                        <span>{attended}{total ? ` / ${total}` : ''}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div className="h-2.5 rounded-full transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: barColor }} />
+                      </div>
                     </div>
-                  </div>
-                  <div className="mt-2">
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
-                      <span>Sessions attended</span>
-                      <span>{member.attendance.sessionsAttended} / {member.attendance.totalSessions}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="h-2 rounded-full bg-blue-500"
-                        style={{ width: `${member.attendance.percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                </section>
-              )}
+                  </section>
+                );
+              })()}
 
               {/* OFFICE EXPENSES */}
               {member.expenses && (
