@@ -27629,24 +27629,24 @@ function App() {
     );
   };
 
+  const voteCaMember = (name, vote) => {
+    logEvent('vote_politician', { country: 'CA', itemId: name });
+    setCaMemberVotes(prev => {
+      const next = { ...prev };
+      if (next[name] === vote) { delete next[name]; } else {
+        next[name] = vote;
+        if (vote === 'concerned') storeConcernedRegion('ca-member', name);
+      }
+      try { localStorage.setItem('cvCaMemberVotes', JSON.stringify(next)); } catch (_) {}
+      return next;
+    });
+  };
+
   const renderCaParliament = () => {
     const caHash = (str) => {
       let h = 5381;
       for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0x7fffffff;
       return h;
-    };
-
-    const voteCaMember = (name, vote) => {
-      logEvent('vote_politician', { country: 'CA', itemId: name });
-      setCaMemberVotes(prev => {
-        const next = { ...prev };
-        if (next[name] === vote) { delete next[name]; } else {
-          next[name] = vote;
-          if (vote === 'concerned') storeConcernedRegion('ca-member', name);
-        }
-        try { localStorage.setItem('cvCaMemberVotes', JSON.stringify(next)); } catch (_) {}
-        return next;
-      });
     };
 
     const CA_SENATE_PARTIES = ['ISG', 'Conservative', 'CSG', 'PSG', 'Non-affiliated'];
@@ -31138,60 +31138,69 @@ function App() {
           </div>
 
           {/* MP Voting Section */}
-          {selectedMember.supportVotes !== undefined && (
-            <div className="border-t pt-6 mt-6">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Citizen Opinion</h3>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex gap-6 sm:gap-8">
-                  <div className="flex items-center gap-3">
-                    <ThumbsUp className="w-6 h-6 text-green-600" />
-                    <div>
-                      <div className="text-2xl font-bold text-gray-800">{selectedMember.supportVotes?.toLocaleString()}</div>
-                      <div className="text-sm text-gray-600">Support</div>
+          {(() => {
+            const mpUserVote = caMemberVotes[selectedMember.name] || null;
+            return (
+              <div className="border-t pt-6 mt-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4">Citizen Opinion</h3>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex gap-6 sm:gap-8">
+                    <div className="flex items-center gap-3">
+                      <ThumbsUp className="w-6 h-6 text-green-600" />
+                      <div>
+                        <div className="text-2xl font-bold text-gray-800">0</div>
+                        <div className="text-sm text-gray-600">Support</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <AlertCircle className="w-6 h-6 text-amber-500" />
+                      <div>
+                        <div className="text-2xl font-bold text-gray-800">0</div>
+                        <div className="text-sm text-gray-600">Concerned</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <ThumbsDown className="w-6 h-6 text-red-600" />
+                      <div>
+                        <div className="text-2xl font-bold text-gray-800">0</div>
+                        <div className="text-sm text-gray-600">Oppose</div>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <ThumbsDown className="w-6 h-6 text-red-600" />
-                    <div>
-                      <div className="text-2xl font-bold text-gray-800">{selectedMember.opposeVotes?.toLocaleString()}</div>
-                      <div className="text-sm text-gray-600">Oppose</div>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={() => requireRegion(() => {
-                      const mpIndex = mps.findIndex(m => m.name === selectedMember.name);
-                      voteMP(mpIndex, selectedMember.userVote === 'support' ? 'remove' : 'support');
-                    })}
-                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
-                      selectedMember.userVote === 'support'
-                        ? 'bg-green-600 text-white'
-                        : 'bg-green-50 text-green-700 hover:bg-green-100'
-                    }`}
-                  >
-                    <ThumbsUp className="w-5 h-5" />
-                    <span className="text-sm sm:text-base">{selectedMember.userVote === 'support' ? 'Supporting' : 'Support This MP'}</span>
-                  </button>
-                  <button
-                    onClick={() => requireRegion(() => {
-                      const mpIndex = mps.findIndex(m => m.name === selectedMember.name);
-                      voteMP(mpIndex, selectedMember.userVote === 'oppose' ? 'remove' : 'oppose');
-                    })}
-                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
-                      selectedMember.userVote === 'oppose'
-                        ? 'bg-red-600 text-white'
-                        : 'bg-red-50 text-red-700 hover:bg-red-100'
-                    }`}
-                  >
-                    <ThumbsDown className="w-5 h-5" />
-                    <span className="text-sm sm:text-base">{selectedMember.userVote === 'oppose' ? 'Opposing' : 'Oppose This MP'}</span>
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => voteCaMember(selectedMember.name, 'support')}
+                      className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
+                        mpUserVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'
+                      }`}
+                    >
+                      <ThumbsUp className="w-5 h-5" />
+                      <span className="text-sm sm:text-base">{mpUserVote === 'support' ? 'Supporting' : 'Support'}</span>
+                    </button>
+                    <button
+                      onClick={() => voteCaMember(selectedMember.name, 'concerned')}
+                      className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
+                        mpUserVote === 'concerned' ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                      }`}
+                    >
+                      <AlertCircle className="w-5 h-5" />
+                      <span className="text-sm sm:text-base">{mpUserVote === 'concerned' ? 'Concerned' : 'Concerned'}</span>
+                    </button>
+                    <button
+                      onClick={() => voteCaMember(selectedMember.name, 'oppose')}
+                      className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
+                        mpUserVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'
+                      }`}
+                    >
+                      <ThumbsDown className="w-5 h-5" />
+                      <span className="text-sm sm:text-base">{mpUserVote === 'oppose' ? 'Opposing' : 'Oppose'}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* MP CONTACT INFORMATION */}
