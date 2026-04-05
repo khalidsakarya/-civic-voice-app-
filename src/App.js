@@ -15588,50 +15588,7 @@ function App() {
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.expenses ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.expenses ? '' : 'hidden sm:block'}`}>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-orange-50 p-3 rounded-lg text-center">
-                      <p className="text-xs text-gray-500 mb-1">Travel (2025)</p>
-                      <p className="font-bold text-orange-700 text-sm">{carney.expenses.totalTravel}</p>
-                    </div>
-                    <div className="bg-blue-50 p-3 rounded-lg text-center">
-                      <p className="text-xs text-gray-500 mb-1">Entertainment</p>
-                      <p className="font-bold text-blue-700 text-sm">{carney.expenses.totalEntertainment}</p>
-                    </div>
-                    <div className="bg-red-50 p-3 rounded-lg text-center">
-                      <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
-                      <p className="font-bold text-red-700 text-sm">{carney.expenses.flaggedCount}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
-                    <div className="space-y-2">
-                      {carney.expenses.travel.map((item, i) => (
-                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                          </div>
-                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
-                    <div className="space-y-2">
-                      {carney.expenses.entertainment.map((item, i) => (
-                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                          </div>
-                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
@@ -15671,20 +15628,7 @@ function App() {
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.lobbying ? '' : 'hidden sm:block'}`}>
-                  {carney.lobbying.map((org, i) => (
-                    <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h4 className="font-bold text-gray-800 text-sm">{org.name}</h4>
-                          <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
-                          <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               </div>
 
@@ -15695,28 +15639,7 @@ function App() {
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.stockTrades ? '' : 'hidden sm:block'}`}>
-                  {carney.stockTrades.filter(t => t.conflict).length > 0 && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                      <p className="text-sm font-semibold text-red-700">⚠️ {carney.stockTrades.filter(t => t.conflict).length} potential conflict(s) flagged</p>
-                    </div>
-                  )}
-                  {carney.stockTrades.map((trade, i) => (
-                    <div key={i} className={`border rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <div>
-                          <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
-                          <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
-                        </div>
-                        <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 mt-1">
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
-                        <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
-                      </div>
-                      {trade.conflict && <p className="text-xs text-red-600 mt-1.5 font-medium">⚠️ {trade.conflictReason}</p>}
-                    </div>
-                  ))}
-                  <p className="text-xs text-gray-400 mt-2">Disclosures filed with the Conflict of Interest and Ethics Commissioner upon taking office.</p>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               </div>
 
@@ -15727,35 +15650,7 @@ function App() {
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.financial ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.financial ? '' : 'hidden sm:block'}`}>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="bg-purple-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Worth in {carney.financialDisclosure.electedYear}</p>
-                      <p className="font-bold text-purple-700 text-sm">${(carney.financialDisclosure.worthWhenElected / 1000000).toFixed(1)}M</p>
-                    </div>
-                    <div className="bg-green-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
-                      <p className="font-bold text-green-700 text-sm">${(carney.financialDisclosure.currentNetWorth / 1000000).toFixed(1)}M</p>
-                    </div>
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Increase</p>
-                      <p className="font-bold text-blue-700 text-sm">+{carney.financialDisclosure.percentageIncrease}%</p>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Annual Salary</p>
-                      <p className="font-bold text-gray-700 text-sm">${carney.financialDisclosure.annualSalary.toLocaleString()}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">Asset Breakdown</h4>
-                    <div className="space-y-2">
-                      {carney.financialDisclosure.assets.map((asset, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                          <span className="text-sm text-gray-700">{asset.type}</span>
-                          <span className="text-sm font-bold text-gray-800">${asset.value.toLocaleString()}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               </div>
 
@@ -15766,20 +15661,7 @@ function App() {
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.attendance ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 ${expandedCarneySections.attendance ? '' : 'hidden sm:block'}`}>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-red-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
-                      <p className="text-3xl font-bold text-red-600">{carney.attendance.percentage}%</p>
-                    </div>
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
-                      <p className="text-3xl font-bold text-green-600">{carney.attendance.sessionsAttended}/{carney.attendance.totalSessions}</p>
-                    </div>
-                    <div className="bg-purple-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">National Ranking</p>
-                      <p className="text-3xl font-bold text-purple-600">#1</p>
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               </div>
 
@@ -16175,50 +16057,7 @@ function App() {
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.expenses ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 space-y-4 ${expandedPresidentSections.expenses ? '' : 'hidden sm:block'}`}>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-orange-50 p-3 rounded-lg text-center">
-                      <p className="text-xs text-gray-500 mb-1">Travel (2025)</p>
-                      <p className="font-bold text-orange-700 text-sm">{trump.expenses.totalTravel}</p>
-                    </div>
-                    <div className="bg-blue-50 p-3 rounded-lg text-center">
-                      <p className="text-xs text-gray-500 mb-1">Entertainment</p>
-                      <p className="font-bold text-blue-700 text-sm">{trump.expenses.totalEntertainment}</p>
-                    </div>
-                    <div className="bg-red-50 p-3 rounded-lg text-center">
-                      <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
-                      <p className="font-bold text-red-700 text-sm">{trump.expenses.flaggedCount}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
-                    <div className="space-y-2">
-                      {trump.expenses.travel.map((item, i) => (
-                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                          </div>
-                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
-                    <div className="space-y-2">
-                      {trump.expenses.entertainment.map((item, i) => (
-                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                          </div>
-                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
@@ -16258,23 +16097,7 @@ function App() {
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 space-y-4 ${expandedPresidentSections.lobbying ? '' : 'hidden sm:block'}`}>
-                  {trump.lobbying.organizations.map((org, idx) => (
-                    <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="font-bold text-gray-800">{org.name}</h3>
-                          <p className="text-sm text-gray-600">{org.sector}</p>
-                        </div>
-                        <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
-                          {org.value > 0 ? `$${(org.value / 1000000).toFixed(1)}M` : 'Public Record'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
-                        <span>📅 {org.meetings} meetings</span>
-                        <span>🗓️ Last: {org.lastMeeting}</span>
-                      </div>
-                    </div>
-                  ))}
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               </div>
 
@@ -16285,58 +16108,7 @@ function App() {
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 ${expandedPresidentSections.stockTrades ? '' : 'hidden sm:block'}`}>
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
-                      <p className="text-sm text-gray-600 mb-1">Total Interests</p>
-                      <p className="text-3xl font-bold text-blue-600">{trump.stockTrades.length}</p>
-                    </div>
-                    <div className="bg-red-50 p-4 rounded-lg border-2 border-red-300">
-                      <p className="text-sm text-gray-600 mb-1">Conflicts</p>
-                      <p className="text-3xl font-bold text-red-600">{trump.stockTrades.filter(t => t.conflict).length}</p>
-                    </div>
-                  </div>
-                  <div className="bg-red-50 border-2 border-red-400 rounded-lg p-4 mb-6">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <h3 className="text-lg font-bold text-red-800 mb-2">⚠️ Potential Conflicts of Interest</h3>
-                        <p className="text-red-700 text-sm">Multiple financial holdings may conflict with presidential duties. These interests were not placed in a blind trust as recommended by ethics watchdogs.</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    {trump.stockTrades.map((trade, i) => (
-                      <div key={i} className={`border-2 rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-400' : 'bg-gray-50 border-gray-200'}`}>
-                        {trade.conflict && (
-                          <div className="mb-3">
-                            <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold">🚨 POTENTIAL CONFLICT</span>
-                          </div>
-                        )}
-                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="text-lg font-bold text-gray-800">{trade.company}</h3>
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-mono">{trade.ticker}</span>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">{trade.type}</span>
-                              <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">{trade.assetType}</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xl font-bold text-green-600">{trade.valueRange}</p>
-                            <p className="text-sm text-gray-500 mt-1">{trade.date}</p>
-                          </div>
-                        </div>
-                        {trade.conflict && trade.conflictReason && (
-                          <div className="bg-red-100 border-l-4 border-red-600 p-3 rounded">
-                            <p className="text-sm font-semibold text-red-800 mb-1">Why this is flagged:</p>
-                            <p className="text-sm text-red-700">{trade.conflictReason}</p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               </div>
 
@@ -16347,33 +16119,7 @@ function App() {
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.financial ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 ${expandedPresidentSections.financial ? '' : 'hidden sm:block'}`}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Elected ({trump.financialDisclosure.electedYear})</p>
-                      <p className="text-2xl font-bold text-blue-600">{trump.financialDisclosure.worthWhenElected}</p>
-                    </div>
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Current Net Worth</p>
-                      <p className="text-2xl font-bold text-green-600">{trump.financialDisclosure.currentWorth}</p>
-                    </div>
-                    <div className="bg-purple-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Wealth Increase</p>
-                      <p className="text-2xl font-bold text-purple-600">+{trump.financialDisclosure.percentageIncrease}%</p>
-                    </div>
-                    <div className="bg-orange-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Annual Salary</p>
-                      <p className="text-2xl font-bold text-orange-600">{trump.financialDisclosure.annualSalary}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="font-semibold text-gray-700 mb-2">Asset Breakdown:</p>
-                    {trump.financialDisclosure.assets.map((asset, idx) => (
-                      <div key={idx} className="flex justify-between p-3 bg-gray-50 rounded">
-                        <span className="text-gray-700">{asset.type}</span>
-                        <span className="font-semibold text-gray-900">{asset.value}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               </div>
 
@@ -16384,20 +16130,7 @@ function App() {
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.attendance ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 ${expandedPresidentSections.attendance ? '' : 'hidden sm:block'}`}>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Briefing Rate</p>
-                      <p className="text-3xl font-bold text-blue-600">{trump.attendance.percentage}%</p>
-                    </div>
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Briefings Attended</p>
-                      <p className="text-3xl font-bold text-green-600">{trump.attendance.briefingsAttended}/{trump.attendance.totalBriefings}</p>
-                    </div>
-                    <div className="bg-purple-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">National Ranking</p>
-                      <p className="text-3xl font-bold text-purple-600">#1</p>
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               </div>
 
@@ -16784,50 +16517,7 @@ function App() {
               </div>
               {expandedStarmerSections.expenses && (
                 <div className="px-6 pb-6 space-y-4">
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-orange-50 p-3 rounded-lg text-center">
-                      <p className="text-xs text-gray-500 mb-1">Travel (2024–25)</p>
-                      <p className="font-bold text-orange-700 text-sm">{starmer.expenses.totalTravel}</p>
-                    </div>
-                    <div className="bg-blue-50 p-3 rounded-lg text-center">
-                      <p className="text-xs text-gray-500 mb-1">Entertainment</p>
-                      <p className="font-bold text-blue-700 text-sm">{starmer.expenses.totalEntertainment}</p>
-                    </div>
-                    <div className="bg-red-50 p-3 rounded-lg text-center">
-                      <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
-                      <p className="font-bold text-red-700 text-sm">{starmer.expenses.flaggedCount}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
-                    <div className="space-y-2">
-                      {starmer.expenses.travel.map((item, i) => (
-                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                          </div>
-                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
-                    <div className="space-y-2">
-                      {starmer.expenses.entertainment.map((item, i) => (
-                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                          </div>
-                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
@@ -16868,27 +16558,14 @@ function App() {
                   <Users className="w-6 h-6 text-orange-600" />
                   <div>
                     <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
-                    <p className="text-sm text-gray-600">{starmer.lobbying.reduce((s, l) => s + l.meetings, 0)} meetings with registered lobbyists</p>
+                    <p className="text-sm text-gray-600">Lobbying meetings register</p>
                   </div>
                 </div>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
               </div>
               {expandedStarmerSections.lobbying && (
                 <div className="px-6 pb-6 space-y-3">
-                  {starmer.lobbying.map((org, i) => (
-                    <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h4 className="font-bold text-gray-800 text-sm">{org.name}</h4>
-                          <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
-                          <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               )}
             </div>
@@ -16900,30 +16577,14 @@ function App() {
                   <TrendingUp className="w-6 h-6 text-blue-600" />
                   <div>
                     <h2 className="text-xl font-bold text-gray-800">📈 Asset Disclosures</h2>
-                    <p className="text-sm text-gray-600">{starmer.stockTrades.length} disclosed holdings on taking office</p>
+                    <p className="text-sm text-gray-600">Declared asset holdings</p>
                   </div>
                 </div>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
               </div>
               {expandedStarmerSections.stockTrades && (
                 <div className="px-6 pb-6 space-y-3">
-                  {starmer.stockTrades.map((trade, i) => (
-                    <div key={i} className={`border rounded-lg p-4 ${trade.conflict ? 'bg-red-50 border-red-300' : 'bg-gray-50 border-gray-200'}`}>
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <div>
-                          <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
-                          <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
-                          {trade.conflict && <span className="ml-2 text-xs bg-red-100 text-red-700 font-bold px-1.5 py-0.5 rounded">⚠ Potential Conflict</span>}
-                        </div>
-                        <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 mt-1">
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
-                        <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
-                      </div>
-                    </div>
-                  ))}
-                  <p className="text-xs text-gray-400 mt-2">Disclosures filed with the UK Parliament’s Register of Members’ Financial Interests.</p>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               )}
             </div>
@@ -16935,42 +16596,14 @@ function App() {
                   <TrendingUp className="w-6 h-6 text-purple-600" />
                   <div>
                     <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
-                    <p className="text-sm text-gray-600">Net worth up {starmer.financialDisclosure.percentageIncrease}% since taking office</p>
+                    <p className="text-sm text-gray-600">Financial disclosures</p>
                   </div>
                 </div>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.financial ? 'rotate-0' : '-rotate-90'}`} />
               </div>
               {expandedStarmerSections.financial && (
                 <div className="px-6 pb-6 space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="bg-purple-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Worth in {starmer.financialDisclosure.electedYear}</p>
-                      <p className="font-bold text-purple-700 text-sm">£{(starmer.financialDisclosure.worthWhenElected / 1000000).toFixed(1)}M</p>
-                    </div>
-                    <div className="bg-green-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
-                      <p className="font-bold text-green-700 text-sm">£{(starmer.financialDisclosure.currentNetWorth / 1000000).toFixed(1)}M</p>
-                    </div>
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Increase</p>
-                      <p className="font-bold text-blue-700 text-sm">+{starmer.financialDisclosure.percentageIncrease}%</p>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Annual Salary</p>
-                      <p className="font-bold text-gray-700 text-sm">£{starmer.financialDisclosure.annualSalary.toLocaleString()}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">Asset Breakdown</h4>
-                    <div className="space-y-2">
-                      {starmer.financialDisclosure.assets.map((asset, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                          <span className="text-sm text-gray-700">{asset.type}</span>
-                          <span className="text-sm font-bold text-gray-800">£{asset.value.toLocaleString()}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               )}
             </div>
@@ -16982,27 +16615,14 @@ function App() {
                   <Award className="w-6 h-6" style={{ color: partyColor }} />
                   <div>
                     <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
-                    <p className="text-sm text-gray-600">{starmer.attendance.percentage}% Parliamentary Question Time attendance</p>
+                    <p className="text-sm text-gray-600">Parliamentary attendance record</p>
                   </div>
                 </div>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.attendance ? 'rotate-0' : '-rotate-90'}`} />
               </div>
               {expandedStarmerSections.attendance && (
                 <div className="px-6 pb-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#E4003B10' }}>
-                      <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
-                      <p className="text-3xl font-bold" style={{ color: partyColor }}>{starmer.attendance.percentage}%</p>
-                    </div>
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
-                      <p className="text-3xl font-bold text-blue-700">{starmer.attendance.sessionsAttended}/{starmer.attendance.totalSessions}</p>
-                    </div>
-                    <div className="p-4 rounded-lg" style={{ backgroundColor: '#01216915' }}>
-                      <p className="text-sm text-gray-600 mb-1">National Ranking</p>
-                      <p className="text-3xl font-bold" style={{ color: '#012169' }}>#1</p>
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               )}
             </div>
@@ -19217,23 +18837,9 @@ function App() {
           {/* Attendance */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
             <SectionHeader id="attendance" icon="📅" title="Attendance" />
-            {expandedLordSections.attendance && lord.attendance && (
+            {expandedLordSections.attendance && (
               <div className="px-5 pb-5">
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  {[
-                    { label: 'Attendance Rate', value: `${lord.attendance.percentage}%`, color: lord.attendance.percentage >= 80 ? 'text-green-600' : lord.attendance.percentage >= 60 ? 'text-yellow-600' : 'text-red-600' },
-                    { label: 'Days Attended', value: lord.attendance.sessionsAttended, color: 'text-gray-800' },
-                    { label: 'Total Sittings', value: lord.attendance.totalSessions, color: 'text-gray-800' },
-                  ].map(s => (
-                    <div key={s.label} className="bg-gray-50 rounded-xl p-3 text-center">
-                      <p className={`text-2xl font-black ${s.color}`}>{s.value}</p>
-                      <p className="text-xs text-gray-500 mt-1">{s.label}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-                  <div className="h-full rounded-full bg-green-500" style={{ width: `${lord.attendance.percentage}%` }} />
-                </div>
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
               </div>
             )}
           </div>
@@ -19241,36 +18847,9 @@ function App() {
           {/* Financial disclosure */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
             <SectionHeader id="financial" icon="📊" title="Financial Disclosure" />
-            {expandedLordSections.financial && lord.financialDisclosure && (
+            {expandedLordSections.financial && (
               <div className="px-5 pb-5">
-                <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 mb-4 text-sm text-blue-800">
-                  <p className="font-semibold mb-0.5">Lords receive a daily attendance allowance — not a salary</p>
-                  <p className="text-xs text-blue-600">£{lord.financialDisclosure.dailyAllowance}/day · {lord.financialDisclosure.daysAttended} days = <span className="font-bold">{formatGBP(lord.financialDisclosure.annualAllowance)}</span> claimed in 2024</p>
-                </div>
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  {[
-                    { label: 'Allowance Claimed (2024)', value: formatGBP(lord.financialDisclosure.annualAllowance) },
-                    { label: 'Est. Net Worth', value: formatGBP(lord.financialDisclosure.currentNetWorth) },
-                    { label: 'Year Appointed', value: lord.financialDisclosure.appointedYear },
-                    { label: 'Years in Service', value: yearsInService, isHighlight: false },
-                  ].map(s => (
-                    <div key={s.label} className="p-3 rounded-xl bg-gray-50">
-                      <p className="text-lg font-black text-gray-800">{s.value}</p>
-                      <p className="text-xs text-gray-500">{s.label}</p>
-                    </div>
-                  ))}
-                </div>
-                {lord.financialDisclosure.assets?.length > 0 && (
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Declared Assets</p>
-                    {lord.financialDisclosure.assets.map((a, i) => (
-                      <div key={i} className="flex justify-between py-1.5 border-b border-gray-50 text-sm">
-                        <span className="text-gray-600">{a.description}</span>
-                        <span className="font-semibold text-gray-800">{a.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
               </div>
             )}
           </div>
@@ -19278,46 +18857,22 @@ function App() {
           {/* Lobbying */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
             <SectionHeader id="lobbying" icon="🤝" title="Lobbying & Meetings" />
-            {expandedLordSections.lobbying && lord.lobbying?.meetings && (
+            {expandedLordSections.lobbying && (
               <div className="px-5 pb-5">
-                <p className="text-xs text-gray-500 mb-3">{lord.lobbying.meetings.length} meetings logged in 2024</p>
-                <div className="space-y-2">
-                  {lord.lobbying.meetings.map((mtg, i) => (
-                    <div key={i} className="p-3 rounded-xl bg-gray-50 flex items-start gap-3">
-                      <Briefcase className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-800">{mtg.organization}</p>
-                        <p className="text-xs text-gray-500">{mtg.date} · {mtg.topic} · {mtg.count} meeting{mtg.count > 1 ? 's' : ''}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
               </div>
             )}
           </div>
 
           {/* Corporate connections */}
-          {lord.corporateConnections?.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-              <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" />
-              {expandedLordSections.corporate && (
-                <div className="px-5 pb-5 space-y-2">
-                  {lord.corporateConnections.map((c, i) => (
-                    <div key={i} className={`p-3 rounded-xl flex items-center gap-3 ${c.declared ? 'bg-gray-50' : 'bg-red-50 border border-red-100'}`}>
-                      <Building2 className={`w-4 h-4 flex-shrink-0 ${c.declared ? 'text-gray-400' : 'text-red-500'}`} />
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-gray-800">{c.company}</p>
-                        <p className="text-xs text-gray-500">{c.relationship}</p>
-                      </div>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${c.declared ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                        {c.declared ? 'Declared' : '⚠ Undisclosed'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+            <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" />
+            {expandedLordSections.corporate && (
+              <div className="px-5 pb-5 space-y-2">
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -23771,34 +23326,10 @@ function App() {
               )}
 
               {/* ATTENDANCE */}
-              {member.attendance && (
-                <section>
-                  <p className="panel-section-label">Attendance Record</p>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
-                      <p className="text-2xl font-bold text-blue-700">{member.attendance.percentage}%</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Attendance</p>
-                    </div>
-                    <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
-                      <p className="text-2xl font-bold text-green-700">{member.attendance.sessionsAttended}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Sessions</p>
-                    </div>
-                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center">
-                      <p className="text-2xl font-bold text-purple-700">#{member.attendance.ranking}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Ranking</p>
-                    </div>
-                  </div>
-                  <div className="mt-2">
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
-                      <span>Sessions attended</span>
-                      <span>{member.attendance.sessionsAttended} / {member.attendance.totalSessions}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="h-2 rounded-full bg-blue-500" style={{ width: `${member.attendance.percentage}%` }} />
-                    </div>
-                  </div>
-                </section>
-              )}
+              <section>
+                <p className="panel-section-label">Attendance Record</p>
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+              </section>
 
               {/* OFFICE EXPENSES */}
               {(() => {
@@ -23832,20 +23363,9 @@ function App() {
                           </div>
                         ))}
                       </div>
-                    ) : fallbackExp ? (
-                      <div className="space-y-2">
-                        {Object.entries(fallbackExp.breakdown).map(([category, amount]) => (
-                          <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                            <span className="text-sm text-gray-700 font-medium">{category}</span>
-                            <span className="text-sm font-bold text-gray-900">{formatAUD(amount)}</span>
-                          </div>
-                        ))}
-                        <div className="flex items-center justify-between p-3.5 bg-green-50 rounded-xl border-2 border-green-300 mt-1">
-                          <span className="font-bold text-gray-800 text-sm">TOTAL ANNUAL EXPENSES</span>
-                          <span className="font-bold text-green-700 text-base">{formatAUD(fallbackExp.total)}</span>
-                        </div>
-                      </div>
-                    ) : null}
+                    ) : (
+                      <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                    )}
                   </section>
                 );
               })()}
@@ -25993,50 +25513,7 @@ function App() {
               </div>
               {expandedAlbaneseSections.expenses && (
                 <div className="px-6 pb-6 space-y-4">
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="bg-orange-50 p-3 rounded-lg text-center">
-                      <p className="text-xs text-gray-500 mb-1">Travel (2024–25)</p>
-                      <p className="font-bold text-orange-700 text-sm">{albanese.expenses.totalTravel}</p>
-                    </div>
-                    <div className="bg-blue-50 p-3 rounded-lg text-center">
-                      <p className="text-xs text-gray-500 mb-1">Entertainment</p>
-                      <p className="font-bold text-blue-700 text-sm">{albanese.expenses.totalEntertainment}</p>
-                    </div>
-                    <div className="bg-red-50 p-3 rounded-lg text-center">
-                      <p className="text-xs text-gray-500 mb-1">Flagged Items</p>
-                      <p className="font-bold text-red-700 text-sm">{albanese.expenses.flaggedCount}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">✈️ Travel Expenses</h4>
-                    <div className="space-y-2">
-                      {albanese.expenses.travel.map((item, i) => (
-                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                          </div>
-                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">🎭 Entertainment &amp; Hospitality</h4>
-                    <div className="space-y-2">
-                      {albanese.expenses.entertainment.map((item, i) => (
-                        <div key={i} className={`flex items-start justify-between p-3 rounded-lg border gap-2 ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                            <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 text-red-600 font-bold">⚠️ Flagged</span>}</p>
-                            {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                          </div>
-                          <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
@@ -26077,27 +25554,14 @@ function App() {
                   <Users className="w-6 h-6 text-orange-600" />
                   <div>
                     <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
-                    <p className="text-sm text-gray-600">{albanese.lobbying.reduce((s, l) => s + l.meetings, 0)} meetings with registered lobbyists</p>
+                    <p className="text-sm text-gray-600">Lobbying meetings register</p>
                   </div>
                 </div>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
               </div>
               {expandedAlbaneseSections.lobbying && (
                 <div className="px-6 pb-6 space-y-3">
-                  {albanese.lobbying.map((org, i) => (
-                    <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h4 className="font-bold text-gray-800 text-sm">{org.name}</h4>
-                          <p className="text-xs text-orange-600 font-medium">{org.sector}</p>
-                        </div>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-sm font-bold text-gray-700">{org.meetings} meetings</p>
-                          <p className="text-xs text-gray-500">Last: {org.lastMeeting}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               )}
             </div>
@@ -26109,29 +25573,14 @@ function App() {
                   <TrendingUp className="w-6 h-6 text-blue-600" />
                   <div>
                     <h2 className="text-xl font-bold text-gray-800">📈 Asset Disclosures</h2>
-                    <p className="text-sm text-gray-600">{albanese.stockTrades.length} disclosed holdings on election</p>
+                    <p className="text-sm text-gray-600">Declared asset holdings</p>
                   </div>
                 </div>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
               </div>
               {expandedAlbaneseSections.stockTrades && (
                 <div className="px-6 pb-6 space-y-3">
-                  {albanese.stockTrades.map((trade, i) => (
-                    <div key={i} className="border rounded-lg p-4 bg-gray-50 border-gray-200">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <div>
-                          <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
-                          <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
-                        </div>
-                        <span className="text-xs text-gray-500 flex-shrink-0">{trade.date}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 mt-1">
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{trade.type}</span>
-                        <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{trade.value}</span>
-                      </div>
-                    </div>
-                  ))}
-                  <p className="text-xs text-gray-400 mt-2">Disclosures filed with the Australian Parliament’s Register of Members’ Interests.</p>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               )}
             </div>
@@ -26143,42 +25592,14 @@ function App() {
                   <TrendingUp className="w-6 h-6 text-purple-600" />
                   <div>
                     <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
-                    <p className="text-sm text-gray-600">Net worth up {albanese.financialDisclosure.percentageIncrease}% since election</p>
+                    <p className="text-sm text-gray-600">Financial disclosures</p>
                   </div>
                 </div>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.financial ? 'rotate-0' : '-rotate-90'}`} />
               </div>
               {expandedAlbaneseSections.financial && (
                 <div className="px-6 pb-6 space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="bg-purple-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Worth in {albanese.financialDisclosure.electedYear}</p>
-                      <p className="font-bold text-purple-700 text-sm">A${(albanese.financialDisclosure.worthWhenElected / 1000000).toFixed(1)}M</p>
-                    </div>
-                    <div className="bg-green-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
-                      <p className="font-bold text-green-700 text-sm">A${(albanese.financialDisclosure.currentNetWorth / 1000000).toFixed(1)}M</p>
-                    </div>
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Increase</p>
-                      <p className="font-bold text-blue-700 text-sm">+{albanese.financialDisclosure.percentageIncrease}%</p>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Annual Salary</p>
-                      <p className="font-bold text-gray-700 text-sm">A${albanese.financialDisclosure.annualSalary.toLocaleString()}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-700 mb-2 text-sm">Asset Breakdown</h4>
-                    <div className="space-y-2">
-                      {albanese.financialDisclosure.assets.map((asset, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                          <span className="text-sm text-gray-700">{asset.type}</span>
-                          <span className="text-sm font-bold text-gray-800">A${asset.value.toLocaleString()}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               )}
             </div>
@@ -26190,27 +25611,14 @@ function App() {
                   <Award className="w-6 h-6" style={{ color: partyColor }} />
                   <div>
                     <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
-                    <p className="text-sm text-gray-600">{albanese.attendance.percentage}% Question Time attendance</p>
+                    <p className="text-sm text-gray-600">Parliamentary attendance record</p>
                   </div>
                 </div>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.attendance ? 'rotate-0' : '-rotate-90'}`} />
               </div>
               {expandedAlbaneseSections.attendance && (
                 <div className="px-6 pb-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-red-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
-                      <p className="text-3xl font-bold text-red-700">{albanese.attendance.percentage}%</p>
-                    </div>
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
-                      <p className="text-3xl font-bold text-green-600">{albanese.attendance.sessionsAttended}/{albanese.attendance.totalSessions}</p>
-                    </div>
-                    <div className="bg-purple-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">National Ranking</p>
-                      <p className="text-3xl font-bold text-purple-600">#1</p>
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </div>
               )}
             </div>
@@ -35068,29 +34476,14 @@ function App() {
                 <FileText className="w-6 h-6 text-blue-600" />
                 <div>
                   <h2 className="text-xl font-bold text-gray-800">📊 Voting History</h2>
-                  <p className="text-sm text-gray-600">{votingHistory.length} recent Senate votes</p>
+                  <p className="text-sm text-gray-600">Senate voting record</p>
                 </div>
               </div>
               {expandedSections.voting ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
             </div>
             {expandedSections.voting && (
-              <div className="px-6 pb-6 space-y-4">
-                {votingHistory.map((vote, index) => (
-                  <div key={index} className={`border rounded-lg p-4 ${getVoteColor(vote.vote)}`}>
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        {getVoteIcon(vote.vote)}
-                        <span className="font-bold text-gray-800">{vote.vote}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="w-4 h-4" />
-                        <span>{vote.date}</span>
-                      </div>
-                    </div>
-                    <h3 className="font-semibold text-gray-800 mb-1">{vote.bill}: {vote.title}</h3>
-                    <p className="text-sm text-gray-600">{vote.description}</p>
-                  </div>
-                ))}
+              <div className="px-6 pb-6">
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
               </div>
             )}
           </div>
@@ -35102,27 +34495,14 @@ function App() {
                 <Award className="w-6 h-6 text-blue-600" />
                 <div>
                   <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
-                  <p className="text-sm text-gray-600">{attendance.percentage}% attendance rate</p>
+                  <p className="text-sm text-gray-600">Attendance record</p>
                 </div>
               </div>
               {expandedSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
             </div>
             {expandedSections.attendance && (
               <div className="px-6 pb-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
-                    <p className="text-3xl font-bold text-blue-600">{attendance.percentage}%</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Sessions Attended</p>
-                    <p className="text-3xl font-bold text-green-600">{attendance.sessionsAttended}/{attendance.totalSessions}</p>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Senate Ranking</p>
-                    <p className="text-3xl font-bold text-purple-600">#{attendance.ranking}</p>
-                  </div>
-                </div>
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
               </div>
             )}
           </div>
@@ -35144,7 +34524,7 @@ function App() {
                         {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1 font-normal"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                         {hasLiveExp && !isLoadingExp && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                       </h2>
-                      {hasLiveExp ? <p className="text-sm text-gray-600">{liveExp.length} records from official disclosure</p> : <p className="text-sm text-gray-600">{formatCurrency(expenses.total)} total ({expenses.year})</p>}
+                      {hasLiveExp ? <p className="text-sm text-gray-600">{liveExp.length} records from official disclosure</p> : <p className="text-sm text-gray-600">Office expense reports</p>}
                     </div>
                   </div>
                   {expandedSections.expenses ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
@@ -35169,18 +34549,7 @@ function App() {
                         ))}
                       </div>
                     ) : (
-                      <div className="space-y-3">
-                        {Object.entries(expenses.breakdown).map(([category, amount]) => (
-                          <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <span className="text-gray-700 font-medium">{category}</span>
-                            <span className="text-gray-900 font-bold">{formatCurrency(amount)}</span>
-                          </div>
-                        ))}
-                        <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border-2 border-green-200 mt-4">
-                          <span className="text-gray-800 font-bold">TOTAL EXPENSES</span>
-                          <span className="text-green-700 font-bold text-xl">{formatCurrency(expenses.total)}</span>
-                        </div>
-                      </div>
+                      <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                     )}
                   </div>
                 )}
