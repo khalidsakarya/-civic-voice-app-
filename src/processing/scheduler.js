@@ -49,6 +49,7 @@ import { runTransparencyScorer } from '../scoring/transparencyScorer.js';
 import { runControversyFetcher } from '../ingestion/controversyFetcher.js';
 import { runElectionFetcher, isElectionPeriod } from '../ingestion/electionFetcher.js';
 import { runElectionProcessor } from './electionProcessor.js';
+import { runMemberExpensesFetcher } from '../ingestion/memberExpensesFetcher.js';
 
 // ─── Tier definitions ─────────────────────────────────────────────────────────
 
@@ -61,15 +62,17 @@ const MS = {
 };
 
 export const TIERS = {
-  DAILY:   'daily',
-  WEEKLY:  'weekly',
-  MONTHLY: 'monthly',
+  DAILY:      'daily',
+  WEEKLY:     'weekly',
+  BIMONTHLY:  'bimonthly',
+  MONTHLY:    'monthly',
 };
 
 const TIER_INTERVALS = {
-  [TIERS.DAILY]:   MS.DAY,
-  [TIERS.WEEKLY]:  MS.WEEK,
-  [TIERS.MONTHLY]: MS.MONTH,
+  [TIERS.DAILY]:     MS.DAY,
+  [TIERS.WEEKLY]:    MS.WEEK,
+  [TIERS.BIMONTHLY]: 14 * MS.DAY,
+  [TIERS.MONTHLY]:   MS.MONTH,
 };
 
 // Heartbeat: how often the scheduler re-checks for due jobs (while tab is open)
@@ -198,6 +201,19 @@ const JOBS = [
       return runControversyFetcher(['CA', 'US', 'UK', 'AU']);
     },
   },
+
+  // ── BIMONTHLY jobs (every 14 days) ─────────────────────────────────────────
+
+  {
+    id: 'member_expenses_all',
+    tier: TIERS.BIMONTHLY,
+    label: 'Member Expenses Fetcher — All Countries',
+    handler: async () => {
+      console.log('[scheduler] Running member expenses fetcher (CA, US, UK, AU)');
+      return runMemberExpensesFetcher(['CA', 'US', 'UK', 'AU']);
+    },
+  },
+
   {
     id: 'election_period_check',
     tier: TIERS.DAILY,
