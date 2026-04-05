@@ -2073,6 +2073,8 @@ function App() {
   const [memberBioLoading, setMemberBioLoading] = useState({});
   const [memberCommitteeData, setMemberCommitteeData] = useState({});
   const [memberCommitteeLoading, setMemberCommitteeLoading] = useState({});
+  const [memberExpenseData, setMemberExpenseData] = useState({});
+  const [memberExpenseLoading, setMemberExpenseLoading] = useState({});
 
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
@@ -2893,6 +2895,53 @@ function App() {
   useEffect(() => {
     if (view !== 'senator-detail' || !selectedSenator?.name) return;
     fetchMemberCommittees(selectedSenator);
+  }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchMemberExpenses = async (member) => {
+    const key = member.name;
+    if (memberExpenseData[key] !== undefined || memberExpenseLoading[key]) return;
+    setMemberExpenseLoading(prev => ({ ...prev, [key]: true }));
+    try {
+      const q = query(collection(db, 'member_expenses'), where('memberName', '==', key), where('docType', '==', 'expense'));
+      const snap = await getDocs(q);
+      const docs = snap.empty ? null : snap.docs.map(d => d.data());
+      setMemberExpenseData(prev => ({ ...prev, [key]: docs }));
+    } catch (err) {
+      console.warn('[LiveData] member_expenses fetch failed:', err.message);
+      setMemberExpenseData(prev => ({ ...prev, [key]: null }));
+    } finally {
+      setMemberExpenseLoading(prev => ({ ...prev, [key]: false }));
+    }
+  };
+
+  // Fetch expenses when US Congress member panel opens
+  useEffect(() => {
+    if (!showMemberPanel || !selectedMember?.name) return;
+    fetchMemberExpenses(selectedMember);
+  }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch expenses when Canadian MP detail opens
+  useEffect(() => {
+    if (view !== 'member-detail' || !selectedMember?.name) return;
+    fetchMemberExpenses(selectedMember);
+  }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch expenses when UK member detail opens
+  useEffect(() => {
+    if (view !== 'uk-member-detail' || !selectedUkMember?.name) return;
+    fetchMemberExpenses(selectedUkMember);
+  }, [view, selectedUkMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch expenses when Australian member panel opens
+  useEffect(() => {
+    if (!showAuMemberPanel || !selectedAuMember?.name) return;
+    fetchMemberExpenses(selectedAuMember);
+  }, [showAuMemberPanel, selectedAuMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch expenses when Canadian senator detail opens
+  useEffect(() => {
+    if (view !== 'senator-detail' || !selectedSenator?.name) return;
+    fetchMemberExpenses(selectedSenator);
   }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const initializeUSCongress = () => {
@@ -18630,25 +18679,56 @@ function App() {
           </div>
 
           {/* Office expenses */}
-          <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-            <SectionHeader id="expenses" icon="💰" title="Office Expenses" />
-            {expandedUkSections.expenses && mp.expenses && (
-              <div className="px-5 pb-5">
-                <div className="flex justify-between items-center mb-3 p-3 bg-gray-50 rounded-xl">
-                  <span className="text-sm font-semibold text-gray-700">Total {mp.expenses.year}</span>
-                  <span className="text-lg font-black text-gray-900">{formatGBP(mp.expenses.total)}</span>
-                </div>
-                <div className="space-y-2">
-                  {Object.entries(mp.expenses.breakdown || {}).map(([label, amount]) => (
-                    <div key={label} className="flex justify-between items-center py-1.5 border-b border-gray-50">
-                      <span className="text-sm text-gray-600">{label}</span>
-                      <span className="text-sm font-semibold text-gray-800">{formatGBP(amount)}</span>
-                    </div>
-                  ))}
-                </div>
+          {(() => {
+            const liveExp = memberExpenseData[mp.name];
+            const isLoadingExp = !!memberExpenseLoading[mp.name];
+            const hasLiveExp = liveExp && liveExp.length > 0;
+            const fallbackExp = mp.expenses;
+            const fmtExp = (r) => { const sym = { CAD: 'CA$', USD: '$', GBP: '£', AUD: 'A$' }; return `${sym[r.currency] || r.currency}${Number(r.amountLocal || 0).toLocaleString()}`; };
+            return (
+              <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
+                <SectionHeader id="expenses" icon="💰" title="Office Expenses" badge={hasLiveExp && !isLoadingExp ? <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span> : null} />
+                {expandedUkSections.expenses && (
+                  <div className="px-5 pb-5">
+                    {isLoadingExp && <p className="text-xs text-blue-500 flex items-center gap-1 mb-3"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching live data…</p>}
+                    {hasLiveExp ? (
+                      <div className="space-y-2">
+                        {liveExp.map((r, i) => (
+                          <div key={i} className={`p-3 rounded-xl border ${r.wasteFlags?.length ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-100'}`}>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <span className="text-sm font-semibold text-gray-800">{r.category}</span>
+                                {r.wasteFlags?.length > 0 && <span className="ml-2 text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">⚠ {r.wasteFlags.join(', ')}</span>}
+                                {r.description && <p className="text-xs text-gray-500 mt-0.5 truncate">{r.description}</p>}
+                                {r.startDate && <p className="text-xs text-gray-400 mt-0.5">{r.startDate}</p>}
+                                {r.flagRationale && <p className="text-xs text-red-600 mt-1">{r.flagRationale}</p>}
+                              </div>
+                              <span className={`text-sm font-bold flex-shrink-0 ${r.wasteFlags?.length ? 'text-red-700' : 'text-gray-800'}`}>{fmtExp(r)}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : fallbackExp ? (
+                      <>
+                        <div className="flex justify-between items-center mb-3 p-3 bg-gray-50 rounded-xl">
+                          <span className="text-sm font-semibold text-gray-700">Total {fallbackExp.year}</span>
+                          <span className="text-lg font-black text-gray-900">{formatGBP(fallbackExp.total)}</span>
+                        </div>
+                        <div className="space-y-2">
+                          {Object.entries(fallbackExp.breakdown || {}).map(([label, amount]) => (
+                            <div key={label} className="flex justify-between items-center py-1.5 border-b border-gray-50">
+                              <span className="text-sm text-gray-600">{label}</span>
+                              <span className="text-sm font-semibold text-gray-800">{formatGBP(amount)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : null}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            );
+          })()}
 
           {/* Financial disclosure */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
@@ -23766,23 +23846,54 @@ function App() {
               )}
 
               {/* OFFICE EXPENSES */}
-              {member.expenses && (
-                <section>
-                  <p className="panel-section-label">Office Expense Report — {member.expenses.year}</p>
-                  <div className="space-y-2">
-                    {Object.entries(member.expenses.breakdown).map(([category, amount]) => (
-                      <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <span className="text-sm text-gray-700 font-medium">{category}</span>
-                        <span className="text-sm font-bold text-gray-900">{formatAUD(amount)}</span>
+              {(() => {
+                const liveExp = memberExpenseData[member.name];
+                const isLoadingExp = !!memberExpenseLoading[member.name];
+                const hasLiveExp = liveExp && liveExp.length > 0;
+                const fallbackExp = member.expenses;
+                if (!hasLiveExp && !isLoadingExp && !fallbackExp) return null;
+                const fmtExp = (r) => { const sym = { CAD: 'CA$', USD: '$', GBP: '£', AUD: 'A$' }; return `${sym[r.currency] || r.currency}${Number(r.amountLocal || 0).toLocaleString()}`; };
+                return (
+                  <section>
+                    <p className="panel-section-label flex items-center gap-2">
+                      Office Expense Reports
+                      {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {hasLiveExp && !isLoadingExp && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </p>
+                    {hasLiveExp ? (
+                      <div className="space-y-2">
+                        {liveExp.map((r, i) => (
+                          <div key={i} className={`p-3 rounded-lg border ${r.wasteFlags?.length ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <span className="text-sm font-semibold text-gray-800">{r.category}</span>
+                                {r.wasteFlags?.length > 0 && <span className="ml-2 text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">⚠ {r.wasteFlags.join(', ')}</span>}
+                                {r.description && <p className="text-xs text-gray-500 mt-0.5 truncate">{r.description}</p>}
+                                {r.startDate && <p className="text-xs text-gray-400 mt-0.5">{r.startDate}</p>}
+                                {r.flagRationale && <p className="text-xs text-red-600 mt-1">{r.flagRationale}</p>}
+                              </div>
+                              <span className={`text-sm font-bold flex-shrink-0 ${r.wasteFlags?.length ? 'text-red-700' : 'text-gray-900'}`}>{fmtExp(r)}</span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                    <div className="flex items-center justify-between p-3.5 bg-green-50 rounded-xl border-2 border-green-300 mt-1">
-                      <span className="font-bold text-gray-800 text-sm">TOTAL ANNUAL EXPENSES</span>
-                      <span className="font-bold text-green-700 text-base">{formatAUD(member.expenses.total)}</span>
-                    </div>
-                  </div>
-                </section>
-              )}
+                    ) : fallbackExp ? (
+                      <div className="space-y-2">
+                        {Object.entries(fallbackExp.breakdown).map(([category, amount]) => (
+                          <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <span className="text-sm text-gray-700 font-medium">{category}</span>
+                            <span className="text-sm font-bold text-gray-900">{formatAUD(amount)}</span>
+                          </div>
+                        ))}
+                        <div className="flex items-center justify-between p-3.5 bg-green-50 rounded-xl border-2 border-green-300 mt-1">
+                          <span className="font-bold text-gray-800 text-sm">TOTAL ANNUAL EXPENSES</span>
+                          <span className="font-bold text-green-700 text-base">{formatAUD(fallbackExp.total)}</span>
+                        </div>
+                      </div>
+                    ) : null}
+                  </section>
+                );
+              })()}
 
               {/* VOTING RECORD */}
               {member.votingHistory && member.votingHistory.length > 0 && (
@@ -31722,40 +31833,70 @@ function App() {
           );
         })()}
 
-        {selectedMember.expenses && (
-          <div className="bg-white rounded-lg shadow-md mb-6">
-            <div
-              onClick={() => toggleSection('expenses')}
-              className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50"
-            >
-              <div className="flex items-center gap-3">
-                <DollarSign className="w-6 h-6 text-green-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">💸 Office Expense Reports</h2>
-                  <p className="text-sm text-gray-600">{formatCurrency(selectedMember.expenses.total)} total ({selectedMember.expenses.year})</p>
-                </div>
-              </div>
-              {expandedSections.expenses ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-            </div>
-
-            {expandedSections.expenses && (
-              <div className="px-6 pb-6">
-                <div className="space-y-3">
-                  {Object.entries(selectedMember.expenses.breakdown).map(([category, amount]) => (
-                    <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-gray-700 font-medium">{category}</span>
-                      <span className="text-gray-900 font-bold">{formatCurrency(amount)}</span>
-                    </div>
-                  ))}
-                  <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border-2 border-green-200 mt-4">
-                    <span className="text-gray-800 font-bold">TOTAL EXPENSES</span>
-                    <span className="text-green-700 font-bold text-xl">{formatCurrency(selectedMember.expenses.total)}</span>
+        {(() => {
+          const liveExp = memberExpenseData[selectedMember.name];
+          const isLoadingExp = !!memberExpenseLoading[selectedMember.name];
+          const hasLiveExp = liveExp && liveExp.length > 0;
+          const fallbackExp = selectedMember.expenses;
+          if (!hasLiveExp && !isLoadingExp && !fallbackExp) return null;
+          const fmtExp = (r) => { const sym = { CAD: 'CA$', USD: '$', GBP: '£', AUD: 'A$' }; return `${sym[r.currency] || r.currency}${Number(r.amountLocal || 0).toLocaleString()}`; };
+          return (
+            <div className="bg-white rounded-lg shadow-md mb-6">
+              <div onClick={() => toggleSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <DollarSign className="w-6 h-6 text-green-600" />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                      💸 Office Expense Reports
+                      {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1 font-normal"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {hasLiveExp && !isLoadingExp && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </h2>
+                    {!hasLiveExp && fallbackExp && <p className="text-sm text-gray-600">{formatCurrency(fallbackExp.total)} total ({fallbackExp.year})</p>}
+                    {hasLiveExp && <p className="text-sm text-gray-600">{liveExp.length} records from official disclosure</p>}
                   </div>
                 </div>
+                {expandedSections.expenses ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
               </div>
-            )}
-          </div>
-        )}
+              {expandedSections.expenses && (
+                <div className="px-6 pb-6">
+                  {hasLiveExp ? (
+                    <div className="space-y-3">
+                      {liveExp.map((r, i) => (
+                        <div key={i} className={`p-3 rounded-lg border ${r.wasteFlags?.length ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <span className="text-gray-800 font-semibold text-sm">{r.category}</span>
+                              {r.wasteFlags?.length > 0 && (
+                                <span className="ml-2 text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">⚠ {r.wasteFlags.join(', ')}</span>
+                              )}
+                              {r.description && <p className="text-xs text-gray-500 mt-0.5 truncate">{r.description}</p>}
+                              {r.startDate && <p className="text-xs text-gray-400 mt-0.5">{r.startDate}</p>}
+                              {r.flagRationale && <p className="text-xs text-red-600 mt-1">{r.flagRationale}</p>}
+                            </div>
+                            <span className={`text-sm font-bold flex-shrink-0 ${r.wasteFlags?.length ? 'text-red-700' : 'text-gray-900'}`}>{fmtExp(r)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : fallbackExp ? (
+                    <div className="space-y-3">
+                      {Object.entries(fallbackExp.breakdown).map(([category, amount]) => (
+                        <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-gray-700 font-medium">{category}</span>
+                          <span className="text-gray-900 font-bold">{formatCurrency(amount)}</span>
+                        </div>
+                      ))}
+                      <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border-2 border-green-200 mt-4">
+                        <span className="text-gray-800 font-bold">TOTAL EXPENSES</span>
+                        <span className="text-green-700 font-bold text-xl">{formatCurrency(fallbackExp.total)}</span>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {selectedMember.financialDisclosure && (
           <div className="bg-white rounded-lg shadow-md mb-6">
@@ -34227,23 +34368,54 @@ function App() {
               })()}
 
               {/* OFFICE EXPENSES */}
-              {member.expenses && (
-                <section>
-                  <p className="panel-section-label">Office Expense Report — {member.expenses.year}</p>
-                  <div className="space-y-2">
-                    {Object.entries(member.expenses.breakdown).map(([category, amount]) => (
-                      <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <span className="text-sm text-gray-700 font-medium">{category}</span>
-                        <span className="text-sm font-bold text-gray-900">{formatCurrency(amount)}</span>
+              {(() => {
+                const liveExp = memberExpenseData[member.name];
+                const isLoadingExp = !!memberExpenseLoading[member.name];
+                const hasLiveExp = liveExp && liveExp.length > 0;
+                const fallbackExp = member.expenses;
+                if (!hasLiveExp && !isLoadingExp && !fallbackExp) return null;
+                const fmtExp = (r) => { const sym = { CAD: 'CA$', USD: '$', GBP: '£', AUD: 'A$' }; return `${sym[r.currency] || r.currency}${Number(r.amountLocal || 0).toLocaleString()}`; };
+                return (
+                  <section>
+                    <p className="panel-section-label flex items-center gap-2">
+                      Office Expense Reports
+                      {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {hasLiveExp && !isLoadingExp && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </p>
+                    {hasLiveExp ? (
+                      <div className="space-y-2">
+                        {liveExp.map((r, i) => (
+                          <div key={i} className={`p-3 rounded-lg border ${r.wasteFlags?.length ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <span className="text-sm font-semibold text-gray-800">{r.category}</span>
+                                {r.wasteFlags?.length > 0 && <span className="ml-2 text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">⚠ {r.wasteFlags.join(', ')}</span>}
+                                {r.description && <p className="text-xs text-gray-500 mt-0.5 truncate">{r.description}</p>}
+                                {r.startDate && <p className="text-xs text-gray-400 mt-0.5">{r.startDate}</p>}
+                                {r.flagRationale && <p className="text-xs text-red-600 mt-1">{r.flagRationale}</p>}
+                              </div>
+                              <span className={`text-sm font-bold flex-shrink-0 ${r.wasteFlags?.length ? 'text-red-700' : 'text-gray-900'}`}>{fmtExp(r)}</span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                    <div className="flex items-center justify-between p-3.5 bg-green-50 rounded-xl border-2 border-green-300 mt-1">
-                      <span className="font-bold text-gray-800 text-sm">TOTAL ANNUAL EXPENSES</span>
-                      <span className="font-bold text-green-700 text-base">{formatCurrency(member.expenses.total)}</span>
-                    </div>
-                  </div>
-                </section>
-              )}
+                    ) : fallbackExp ? (
+                      <div className="space-y-2">
+                        {Object.entries(fallbackExp.breakdown).map(([category, amount]) => (
+                          <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <span className="text-sm text-gray-700 font-medium">{category}</span>
+                            <span className="text-sm font-bold text-gray-900">{formatCurrency(amount)}</span>
+                          </div>
+                        ))}
+                        <div className="flex items-center justify-between p-3.5 bg-green-50 rounded-xl border-2 border-green-300 mt-1">
+                          <span className="font-bold text-gray-800 text-sm">TOTAL ANNUAL EXPENSES</span>
+                          <span className="font-bold text-green-700 text-base">{formatCurrency(fallbackExp.total)}</span>
+                        </div>
+                      </div>
+                    ) : null}
+                  </section>
+                );
+              })()}
 
               {/* VOTING RECORD */}
               {(() => {
@@ -35464,34 +35636,65 @@ function App() {
           </div>
 
           {/* Office Expense Reports */}
-          <div className="bg-white rounded-lg shadow-md mb-6">
-            <div onClick={() => toggleSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <DollarSign className="w-6 h-6 text-green-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">💸 Office Expense Reports</h2>
-                  <p className="text-sm text-gray-600">{formatCurrency(expenses.total)} total ({expenses.year})</p>
-                </div>
-              </div>
-              {expandedSections.expenses ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-            </div>
-            {expandedSections.expenses && (
-              <div className="px-6 pb-6">
-                <div className="space-y-3">
-                  {Object.entries(expenses.breakdown).map(([category, amount]) => (
-                    <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-gray-700 font-medium">{category}</span>
-                      <span className="text-gray-900 font-bold">{formatCurrency(amount)}</span>
+          {(() => {
+            const liveExp = memberExpenseData[selectedSenator.name];
+            const isLoadingExp = !!memberExpenseLoading[selectedSenator.name];
+            const hasLiveExp = liveExp && liveExp.length > 0;
+            const fmtExp = (r) => { const sym = { CAD: 'CA$', USD: '$', GBP: '£', AUD: 'A$' }; return `${sym[r.currency] || r.currency}${Number(r.amountLocal || 0).toLocaleString()}`; };
+            return (
+              <div className="bg-white rounded-lg shadow-md mb-6">
+                <div onClick={() => toggleSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="w-6 h-6 text-green-600" />
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        💸 Office Expense Reports
+                        {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1 font-normal"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {hasLiveExp && !isLoadingExp && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      </h2>
+                      {hasLiveExp ? <p className="text-sm text-gray-600">{liveExp.length} records from official disclosure</p> : <p className="text-sm text-gray-600">{formatCurrency(expenses.total)} total ({expenses.year})</p>}
                     </div>
-                  ))}
-                  <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border-2 border-green-200 mt-4">
-                    <span className="text-gray-800 font-bold">TOTAL EXPENSES</span>
-                    <span className="text-green-700 font-bold text-xl">{formatCurrency(expenses.total)}</span>
                   </div>
+                  {expandedSections.expenses ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
                 </div>
+                {expandedSections.expenses && (
+                  <div className="px-6 pb-6">
+                    {hasLiveExp ? (
+                      <div className="space-y-3">
+                        {liveExp.map((r, i) => (
+                          <div key={i} className={`p-3 rounded-lg border ${r.wasteFlags?.length ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <span className="text-gray-800 font-semibold text-sm">{r.category}</span>
+                                {r.wasteFlags?.length > 0 && <span className="ml-2 text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">⚠ {r.wasteFlags.join(', ')}</span>}
+                                {r.description && <p className="text-xs text-gray-500 mt-0.5 truncate">{r.description}</p>}
+                                {r.startDate && <p className="text-xs text-gray-400 mt-0.5">{r.startDate}</p>}
+                                {r.flagRationale && <p className="text-xs text-red-600 mt-1">{r.flagRationale}</p>}
+                              </div>
+                              <span className={`text-sm font-bold flex-shrink-0 ${r.wasteFlags?.length ? 'text-red-700' : 'text-gray-900'}`}>{fmtExp(r)}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {Object.entries(expenses.breakdown).map(([category, amount]) => (
+                          <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span className="text-gray-700 font-medium">{category}</span>
+                            <span className="text-gray-900 font-bold">{formatCurrency(amount)}</span>
+                          </div>
+                        ))}
+                        <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border-2 border-green-200 mt-4">
+                          <span className="text-gray-800 font-bold">TOTAL EXPENSES</span>
+                          <span className="text-green-700 font-bold text-xl">{formatCurrency(expenses.total)}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            );
+          })()}
 
           {/* Financial Disclosures */}
           <div className="bg-white rounded-lg shadow-md mb-6">
