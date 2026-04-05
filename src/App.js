@@ -2069,6 +2069,8 @@ function App() {
   const [memberVotesLoading, setMemberVotesLoading] = useState({});
   const [memberAttendanceData, setMemberAttendanceData] = useState({});
   const [memberAttendanceLoading, setMemberAttendanceLoading] = useState({});
+  const [memberBioData, setMemberBioData] = useState({});
+  const [memberBioLoading, setMemberBioLoading] = useState({});
 
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
@@ -2778,6 +2780,62 @@ function App() {
     if (view !== 'uk-member-detail' || !selectedUkMember?.name) return;
     fetchMemberAttendance(selectedUkMember);
   }, [view, selectedUkMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Shared helper: fetch member_bios for a given member; tries bioguide_id first, then memberName
+  const fetchMemberBio = async (member) => {
+    const key = member.name;
+    if (memberBioData[key] !== undefined || memberBioLoading[key]) return;
+    setMemberBioLoading(prev => ({ ...prev, [key]: true }));
+    try {
+      let bioDoc = null;
+      if (member.bioguide_id) {
+        const q = query(collection(db, 'member_bios'), where('bioguide_id', '==', member.bioguide_id));
+        const snap = await getDocs(q);
+        if (!snap.empty) bioDoc = snap.docs[0].data();
+      }
+      if (!bioDoc) {
+        const q = query(collection(db, 'member_bios'), where('memberName', '==', key));
+        const snap = await getDocs(q);
+        if (!snap.empty) bioDoc = snap.docs[0].data();
+      }
+      setMemberBioData(prev => ({ ...prev, [key]: bioDoc || null }));
+    } catch (err) {
+      console.warn('[LiveData] member_bios fetch failed:', err.message);
+      setMemberBioData(prev => ({ ...prev, [key]: null }));
+    } finally {
+      setMemberBioLoading(prev => ({ ...prev, [key]: false }));
+    }
+  };
+
+  // Fetch bio when US Congress member panel opens
+  useEffect(() => {
+    if (!showMemberPanel || !selectedMember?.name) return;
+    fetchMemberBio(selectedMember);
+  }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch bio when Canadian MP detail opens
+  useEffect(() => {
+    if (view !== 'member-detail' || !selectedMember?.name) return;
+    fetchMemberBio(selectedMember);
+  }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch bio when UK MP detail opens
+  useEffect(() => {
+    if (view !== 'uk-member-detail' || !selectedUkMember?.name) return;
+    fetchMemberBio(selectedUkMember);
+  }, [view, selectedUkMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch bio when Australian member panel opens
+  useEffect(() => {
+    if (!showAuMemberPanel || !selectedAuMember?.name) return;
+    fetchMemberBio(selectedAuMember);
+  }, [showAuMemberPanel, selectedAuMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch bio when Canadian senator detail opens
+  useEffect(() => {
+    if (view !== 'senator-detail' || !selectedSenator?.name) return;
+    fetchMemberBio(selectedSenator);
+  }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const initializeUSCongress = () => {
     // Expanded US Congress members with full transparency features
@@ -18397,18 +18455,40 @@ function App() {
           </div>
 
           {/* Biography */}
-          <div className="bg-white rounded-2xl shadow-elegant-lg p-5">
-            <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2"><Users className="w-5 h-5 text-blue-600" /> Biography</h3>
-            <p className="text-sm text-gray-700 leading-relaxed">{mp.bio}</p>
-            {mp.committees?.length > 0 && (
-              <div className="mt-4">
-                <p className="text-xs text-gray-500 mb-2 font-semibold uppercase tracking-wide">Committee Memberships</p>
-                <div className="flex flex-wrap gap-2">
-                  {mp.committees.map(c => <span key={c} className="px-3 py-1.5 rounded-xl text-xs font-medium bg-blue-50 text-blue-800">{c}</span>)}
-                </div>
+          {(() => {
+            const liveBio = memberBioData[mp.name];
+            const isLoadingBio = !!memberBioLoading[mp.name];
+            const bioText = liveBio?.bio || liveBio?.biography || mp.bio;
+            return (
+              <div className="bg-white rounded-2xl shadow-elegant-lg p-5">
+                <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                  <Users className="w-5 h-5 text-blue-600" /> Biography
+                  {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1 ml-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                  {liveBio && !isLoadingBio && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-1">LIVE</span>}
+                </h3>
+                {bioText && <p className="text-sm text-gray-700 leading-relaxed">{bioText}</p>}
+                {liveBio && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 text-xs border-t border-gray-100 pt-3">
+                    {liveBio.party && <div><span className="text-gray-500 font-medium">Party: </span><span className="text-gray-700">{liveBio.party}</span></div>}
+                    {liveBio.constituency && <div><span className="text-gray-500 font-medium">Constituency: </span><span className="text-gray-700">{liveBio.constituency}</span></div>}
+                    {liveBio.education && <div className="col-span-2"><span className="text-gray-500 font-medium">Education: </span><span className="text-gray-700">{liveBio.education}</span></div>}
+                    {liveBio.career && <div className="col-span-2"><span className="text-gray-500 font-medium">Career: </span><span className="text-gray-700">{Array.isArray(liveBio.career) ? liveBio.career.join(' · ') : liveBio.career}</span></div>}
+                    {liveBio.email && <div><span className="text-gray-500 font-medium">Email: </span><a href={`mailto:${liveBio.email}`} className="text-blue-600 hover:underline">{liveBio.email}</a></div>}
+                    {liveBio.phone && <div><span className="text-gray-500 font-medium">Phone: </span><span className="text-gray-700">{liveBio.phone}</span></div>}
+                    {liveBio.url && <div className="col-span-2"><span className="text-gray-500 font-medium">Official: </span><a href={liveBio.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{liveBio.url}</a></div>}
+                  </div>
+                )}
+                {mp.committees?.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-xs text-gray-500 mb-2 font-semibold uppercase tracking-wide">Committee Memberships</p>
+                    <div className="flex flex-wrap gap-2">
+                      {mp.committees.map(c => <span key={c} className="px-3 py-1.5 rounded-xl text-xs font-medium bg-blue-50 text-blue-800">{c}</span>)}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            );
+          })()}
 
           {/* Voting record */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
@@ -23426,14 +23506,35 @@ function App() {
             <div className="p-6 space-y-7">
 
               {/* BIO */}
-              {member.bio && (
-                <section>
-                  <p className="panel-section-label">Biography</p>
-                  <div className="bg-gradient-to-br from-gray-50 to-amber-50 border border-gray-200 rounded-xl p-4">
-                    <p className="text-gray-700 text-sm leading-relaxed">{member.bio}</p>
-                  </div>
-                </section>
-              )}
+              {(() => {
+                const liveBio = memberBioData[member.name];
+                const isLoadingBio = !!memberBioLoading[member.name];
+                const bioText = liveBio?.bio || liveBio?.biography || member.bio;
+                if (!bioText && !isLoadingBio) return null;
+                return (
+                  <section>
+                    <p className="panel-section-label flex items-center gap-2">
+                      Biography
+                      {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {liveBio && !isLoadingBio && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </p>
+                    <div className="bg-gradient-to-br from-gray-50 to-amber-50 border border-gray-200 rounded-xl p-4">
+                      {bioText && <p className="text-gray-700 text-sm leading-relaxed">{bioText}</p>}
+                      {liveBio && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 text-xs border-t border-gray-200 pt-3">
+                          {liveBio.party && <div><span className="text-gray-500 font-medium">Party: </span><span className="text-gray-700">{liveBio.party}</span></div>}
+                          {(liveBio.electorate || liveBio.constituency || liveBio.state) && <div><span className="text-gray-500 font-medium">Electorate: </span><span className="text-gray-700">{liveBio.electorate || liveBio.constituency || liveBio.state}</span></div>}
+                          {liveBio.education && <div className="col-span-2"><span className="text-gray-500 font-medium">Education: </span><span className="text-gray-700">{liveBio.education}</span></div>}
+                          {liveBio.career && <div className="col-span-2"><span className="text-gray-500 font-medium">Career: </span><span className="text-gray-700">{Array.isArray(liveBio.career) ? liveBio.career.join(' · ') : liveBio.career}</span></div>}
+                          {liveBio.email && <div><span className="text-gray-500 font-medium">Email: </span><a href={`mailto:${liveBio.email}`} className="text-blue-600 hover:underline">{liveBio.email}</a></div>}
+                          {liveBio.phone && <div><span className="text-gray-500 font-medium">Phone: </span><span className="text-gray-700">{liveBio.phone}</span></div>}
+                          {liveBio.url && <div className="col-span-2"><span className="text-gray-500 font-medium">Official: </span><a href={liveBio.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{liveBio.url}</a></div>}
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                );
+              })()}
 
               {/* COMMITTEES */}
               {member.committees && member.committees.length > 0 && (
@@ -31295,6 +31396,36 @@ function App() {
           })()}
         </div>
 
+        {/* MP BIOGRAPHY */}
+        {(() => {
+          const liveBio = memberBioData[selectedMember.name];
+          const isLoadingBio = !!memberBioLoading[selectedMember.name];
+          const bioText = liveBio?.bio || liveBio?.biography || selectedMember.bio;
+          if (!bioText && !isLoadingBio) return null;
+          return (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                📖 Biography
+                {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                {liveBio && !isLoadingBio && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+              </h3>
+              {bioText && <p className="text-gray-700 leading-relaxed mb-4">{bioText}</p>}
+              {liveBio && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm border-t border-gray-100 pt-4">
+                  {liveBio.party && <div className="bg-gray-50 rounded-lg p-3"><p className="text-xs text-gray-500 font-medium mb-1">Party</p><p className="text-gray-800 font-medium">{liveBio.party}</p></div>}
+                  {(liveBio.constituency || liveBio.riding) && <div className="bg-gray-50 rounded-lg p-3"><p className="text-xs text-gray-500 font-medium mb-1">Riding / Constituency</p><p className="text-gray-800 font-medium">{liveBio.constituency || liveBio.riding}</p></div>}
+                  {(liveBio.province || liveBio.state) && <div className="bg-gray-50 rounded-lg p-3"><p className="text-xs text-gray-500 font-medium mb-1">Province</p><p className="text-gray-800 font-medium">{liveBio.province || liveBio.state}</p></div>}
+                  {liveBio.education && <div className="bg-blue-50 rounded-lg p-3 md:col-span-2"><p className="text-xs text-gray-500 font-medium mb-1">Education</p><p className="text-gray-800">{liveBio.education}</p></div>}
+                  {liveBio.career && <div className="bg-blue-50 rounded-lg p-3 md:col-span-2"><p className="text-xs text-gray-500 font-medium mb-1">Career</p><p className="text-gray-800">{Array.isArray(liveBio.career) ? liveBio.career.join(' · ') : liveBio.career}</p></div>}
+                  {liveBio.email && <div className="bg-green-50 rounded-lg p-3"><p className="text-xs text-gray-500 font-medium mb-1">Email</p><a href={`mailto:${liveBio.email}`} className="text-blue-600 hover:underline break-all">{liveBio.email}</a></div>}
+                  {liveBio.phone && <div className="bg-green-50 rounded-lg p-3"><p className="text-xs text-gray-500 font-medium mb-1">Phone</p><a href={`tel:${liveBio.phone}`} className="text-green-700 font-medium">{liveBio.phone}</a></div>}
+                  {liveBio.url && <div className="bg-purple-50 rounded-lg p-3 md:col-span-2"><p className="text-xs text-gray-500 font-medium mb-1">Official Page</p><a href={liveBio.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{liveBio.url}</a></div>}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* MP CONTACT INFORMATION */}
         {selectedMember.email && (
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -33745,14 +33876,35 @@ function App() {
             <div className="p-6 space-y-7">
 
               {/* BIO */}
-              {member.bio && (
-                <section>
-                  <p className="panel-section-label">Biography</p>
-                  <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
-                    <p className="text-gray-700 text-sm leading-relaxed">{member.bio}</p>
-                  </div>
-                </section>
-              )}
+              {(() => {
+                const liveBio = memberBioData[member.name];
+                const isLoadingBio = !!memberBioLoading[member.name];
+                const bioText = liveBio?.bio || liveBio?.biography || member.bio;
+                if (!bioText && !isLoadingBio) return null;
+                return (
+                  <section>
+                    <p className="panel-section-label flex items-center gap-2">
+                      Biography
+                      {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {liveBio && !isLoadingBio && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </p>
+                    <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
+                      {bioText && <p className="text-gray-700 text-sm leading-relaxed">{bioText}</p>}
+                      {liveBio && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 text-xs border-t border-gray-200 pt-3">
+                          {liveBio.party && <div><span className="text-gray-500 font-medium">Party: </span><span className="text-gray-700">{liveBio.party}</span></div>}
+                          {(liveBio.state || liveBio.constituency) && <div><span className="text-gray-500 font-medium">State: </span><span className="text-gray-700">{liveBio.state || liveBio.constituency}</span></div>}
+                          {liveBio.education && <div className="col-span-2"><span className="text-gray-500 font-medium">Education: </span><span className="text-gray-700">{liveBio.education}</span></div>}
+                          {liveBio.career && <div className="col-span-2"><span className="text-gray-500 font-medium">Career: </span><span className="text-gray-700">{Array.isArray(liveBio.career) ? liveBio.career.join(' · ') : liveBio.career}</span></div>}
+                          {liveBio.email && <div><span className="text-gray-500 font-medium">Email: </span><a href={`mailto:${liveBio.email}`} className="text-blue-600 hover:underline">{liveBio.email}</a></div>}
+                          {liveBio.phone && <div><span className="text-gray-500 font-medium">Phone: </span><span className="text-gray-700">{liveBio.phone}</span></div>}
+                          {liveBio.url && <div className="col-span-2"><span className="text-gray-500 font-medium">Official: </span><a href={liveBio.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{liveBio.url}</a></div>}
+                        </div>
+                      )}
+                    </div>
+                  </section>
+                );
+              })()}
 
               {/* COMMITTEES */}
               {member.committees && member.committees.length > 0 && (
@@ -35021,8 +35173,23 @@ function App() {
 
           {/* Biography & Committees */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">📖 Biography</h3>
-            <p className="text-gray-700 leading-relaxed mb-6">{s.bio}</p>
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              📖 Biography
+              {memberBioLoading[s.name] && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+              {memberBioData[s.name] && !memberBioLoading[s.name] && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+            </h3>
+            <p className="text-gray-700 leading-relaxed mb-4">{memberBioData[s.name]?.bio || memberBioData[s.name]?.biography || s.bio}</p>
+            {memberBioData[s.name] && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mb-6 border-t border-gray-100 pt-4">
+                {memberBioData[s.name].party && <div className="bg-gray-50 rounded-lg p-3"><p className="text-xs text-gray-500 font-medium mb-1">Party / Group</p><p className="text-gray-800 font-medium">{memberBioData[s.name].party}</p></div>}
+                {(memberBioData[s.name].province || memberBioData[s.name].state) && <div className="bg-gray-50 rounded-lg p-3"><p className="text-xs text-gray-500 font-medium mb-1">Province</p><p className="text-gray-800 font-medium">{memberBioData[s.name].province || memberBioData[s.name].state}</p></div>}
+                {memberBioData[s.name].education && <div className="bg-blue-50 rounded-lg p-3 md:col-span-2"><p className="text-xs text-gray-500 font-medium mb-1">Education</p><p className="text-gray-800">{memberBioData[s.name].education}</p></div>}
+                {memberBioData[s.name].career && <div className="bg-blue-50 rounded-lg p-3 md:col-span-2"><p className="text-xs text-gray-500 font-medium mb-1">Career</p><p className="text-gray-800">{Array.isArray(memberBioData[s.name].career) ? memberBioData[s.name].career.join(' · ') : memberBioData[s.name].career}</p></div>}
+                {memberBioData[s.name].email && <div className="bg-green-50 rounded-lg p-3"><p className="text-xs text-gray-500 font-medium mb-1">Email</p><a href={`mailto:${memberBioData[s.name].email}`} className="text-blue-600 hover:underline break-all">{memberBioData[s.name].email}</a></div>}
+                {memberBioData[s.name].phone && <div className="bg-green-50 rounded-lg p-3"><p className="text-xs text-gray-500 font-medium mb-1">Phone</p><a href={`tel:${memberBioData[s.name].phone}`} className="text-green-700 font-medium">{memberBioData[s.name].phone}</a></div>}
+                {memberBioData[s.name].url && <div className="bg-purple-50 rounded-lg p-3 md:col-span-2"><p className="text-xs text-gray-500 font-medium mb-1">Official Page</p><a href={memberBioData[s.name].url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{memberBioData[s.name].url}</a></div>}
+              </div>
+            )}
             <h4 className="font-bold text-gray-700 mb-3">Senate Committees</h4>
             <div className="space-y-2">
               {committees.map((c, i) => (
