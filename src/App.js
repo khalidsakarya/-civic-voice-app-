@@ -18733,32 +18733,9 @@ function App() {
           {/* Financial disclosure */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
             <SectionHeader id="financial" icon="📊" title="Financial Disclosure" />
-            {expandedUkSections.financial && mp.financialDisclosure && (
+            {expandedUkSections.financial && (
               <div className="px-5 pb-5">
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  {[
-                    { label: 'Annual Salary', value: formatGBP(mp.financialDisclosure.annualSalary) },
-                    { label: 'Net Worth (elected)', value: formatGBP(mp.financialDisclosure.worthWhenElected) },
-                    { label: 'Net Worth (current)', value: formatGBP(mp.financialDisclosure.currentNetWorth) },
-                    { label: 'Increase Since Election', value: `+${mp.financialDisclosure.percentageIncrease}%`, isHighlight: true },
-                  ].map(s => (
-                    <div key={s.label} className={`p-3 rounded-xl ${s.isHighlight ? 'bg-amber-50 border border-amber-100' : 'bg-gray-50'}`}>
-                      <p className={`text-lg font-black ${s.isHighlight ? 'text-amber-700' : 'text-gray-800'}`}>{s.value}</p>
-                      <p className="text-xs text-gray-500">{s.label}</p>
-                    </div>
-                  ))}
-                </div>
-                {mp.financialDisclosure.assets?.length > 0 && (
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Declared Assets</p>
-                    {mp.financialDisclosure.assets.map((a, i) => (
-                      <div key={i} className="flex justify-between py-1.5 border-b border-gray-50 text-sm">
-                        <span className="text-gray-600">{a.description}</span>
-                        <span className="font-semibold text-gray-800">{a.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">This information is not publicly disclosed by official government sources.</p>
               </div>
             )}
           </div>
@@ -18766,20 +18743,9 @@ function App() {
           {/* Lobbying */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
             <SectionHeader id="lobbying" icon="🤝" title="Lobbying Activity" />
-            {expandedUkSections.lobbying && mp.lobbying?.meetings && (
+            {expandedUkSections.lobbying && (
               <div className="px-5 pb-5">
-                <p className="text-xs text-gray-500 mb-3">{mp.lobbying.meetings.length} meetings logged in 2024</p>
-                <div className="space-y-2">
-                  {mp.lobbying.meetings.map((mtg, i) => (
-                    <div key={i} className="p-3 rounded-xl bg-gray-50 flex items-start gap-3">
-                      <Briefcase className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-800">{mtg.organization}</p>
-                        <p className="text-xs text-gray-500">{mtg.date} · {mtg.topic} · {mtg.count} meeting{mtg.count > 1 ? 's' : ''}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">This information is not publicly disclosed by official government sources.</p>
               </div>
             )}
           </div>
@@ -18787,20 +18753,9 @@ function App() {
           {/* Corporate connections */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
             <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" />
-            {expandedUkSections.corporate && mp.corporateConnections && (
-              <div className="px-5 pb-5 space-y-2">
-                {mp.corporateConnections.map((c, i) => (
-                  <div key={i} className={`p-3 rounded-xl flex items-center gap-3 ${c.declared ? 'bg-gray-50' : 'bg-red-50 border border-red-100'}`}>
-                    <Building2 className={`w-4 h-4 flex-shrink-0 ${c.declared ? 'text-gray-400' : 'text-red-500'}`} />
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-gray-800">{c.company}</p>
-                      <p className="text-xs text-gray-500">{c.relationship}</p>
-                    </div>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${c.declared ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                      {c.declared ? 'Declared' : '⚠ Undisclosed'}
-                    </span>
-                  </div>
-                ))}
+            {expandedUkSections.corporate && (
+              <div className="px-5 pb-5">
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">This information is not publicly disclosed by official government sources.</p>
               </div>
             )}
           </div>
@@ -23922,102 +23877,22 @@ function App() {
               )}
 
               {/* FINANCIAL DISCLOSURE */}
-              {member.financialDisclosure && (
-                <section>
-                  <p className="panel-section-label">Financial Disclosure</p>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 mb-0.5">Worth When Elected{electedYear ? ` (${electedYear})` : ''}</p>
-                      <p className="text-lg font-bold text-blue-700">{formatAUD(member.financialDisclosure.worthWhenElected)}</p>
-                    </div>
-                    <div className="bg-green-50 border border-green-200 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 mb-0.5">Current Net Worth</p>
-                      <p className="text-lg font-bold text-green-700">{formatAUD(member.financialDisclosure.currentWorth)}</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3">
-                      <p className="text-xs text-gray-500 mb-0.5">Wealth Increase</p>
-                      <p className="text-lg font-bold text-purple-700">+{member.financialDisclosure.percentageIncrease}%</p>
-                    </div>
-                    {member.financialDisclosure.annualSalary && (
-                      <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
-                        <p className="text-xs text-gray-500 mb-0.5">Annual Salary (AUD)</p>
-                        <p className="text-lg font-bold text-orange-700">{formatAUD(member.financialDisclosure.annualSalary)}</p>
-                      </div>
-                    )}
-                  </div>
-                  {member.financialDisclosure.assets && member.financialDisclosure.assets.length > 0 && (
-                    <div className="space-y-1.5">
-                      <p className="text-xs font-semibold text-gray-600 mb-2">Declared Assets</p>
-                      {member.financialDisclosure.assets.map((asset, i) => (
-                        <div key={i} className="flex justify-between items-center p-2.5 bg-gray-50 rounded-lg border border-gray-200">
-                          <span className="text-sm text-gray-700">{asset.type}</span>
-                          <span className="text-sm font-bold text-gray-900">{formatAUD(asset.value)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </section>
-              )}
+              <section>
+                <p className="panel-section-label">Financial Disclosure</p>
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+              </section>
 
               {/* LOBBYING */}
-              {member.lobbying && (
-                <section>
-                  <p className="panel-section-label">Lobbying Activity</p>
-                  <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-3 flex items-center gap-3">
-                    <Building2 className="w-5 h-5 text-red-600 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">{member.lobbying.totalMeetings} lobbying meetings</p>
-                      <p className="text-xs text-gray-600">Total disclosed value: <span className="font-bold text-red-700">{formatAUD(member.lobbying.totalValue)}</span></p>
-                    </div>
-                  </div>
-                  {lobbyingList.length > 0 && (
-                    <div className="space-y-2">
-                      {lobbyingList.map((item, i) => (
-                        <div key={i} className="border border-gray-200 rounded-xl p-3.5 hover:bg-gray-50 transition-colors">
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            <div className="min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{item.name}</p>
-                              {item.sector && <p className="text-xs text-gray-500">{item.sector}</p>}
-                            </div>
-                            {item.value && (
-                              <span className="text-xs bg-red-100 text-red-800 px-2.5 py-1 rounded-full font-bold flex-shrink-0">
-                                {formatAUD(item.value)}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-                            {item.meetings && <span>{item.meetings} meetings</span>}
-                            {item.lastMeeting && <span>Last: {item.lastMeeting}</span>}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </section>
-              )}
+              <section>
+                <p className="panel-section-label">Lobbying Activity</p>
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+              </section>
 
               {/* CORPORATE AFFILIATIONS */}
-              {member.corporateConnections && member.corporateConnections.length > 0 && (
-                <section>
-                  <p className="panel-section-label">Corporate Affiliations — {member.corporateConnections.length} disclosed</p>
-                  <div className="space-y-2">
-                    {member.corporateConnections.map((conn, i) => (
-                      <div key={i} className="border border-gray-200 rounded-xl p-3.5 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-start justify-between gap-3 mb-1.5">
-                          <div className="min-w-0">
-                            <p className="font-bold text-gray-800 text-sm">{conn.company}</p>
-                            <p className="text-xs font-medium text-indigo-600">{conn.role}</p>
-                          </div>
-                          <span className="text-xs text-gray-500 flex-shrink-0 bg-gray-100 px-2 py-0.5 rounded-full">{conn.period}</span>
-                        </div>
-                        <p className="text-xs text-gray-600 leading-relaxed">{conn.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
+              <section>
+                <p className="panel-section-label">Corporate Affiliations</p>
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+              </section>
 
             </div>
           </div>
@@ -31898,323 +31773,96 @@ function App() {
           );
         })()}
 
-        {selectedMember.financialDisclosure && (
-          <div className="bg-white rounded-lg shadow-md mb-6">
-            <div
-              onClick={() => toggleSection('financial')}
-              className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50"
-            >
-              <div className="flex items-center gap-3">
-                <TrendingUp className="w-6 h-6 text-purple-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
-                  <p className="text-sm text-gray-600">
-                    Wealth increased {selectedMember.financialDisclosure.percentageIncrease}% since election
-                  </p>
-                </div>
-              </div>
-              {expandedSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+        <div className="bg-white rounded-lg shadow-md mb-6">
+          <div onClick={() => toggleSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+            <div className="flex items-center gap-3">
+              <TrendingUp className="w-6 h-6 text-purple-600" />
+              <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
             </div>
-
-            {expandedSections.financial && (
-              <div className="px-6 pb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Elected ({selectedMember.financialDisclosure.electedYear})</p>
-                    <p className="text-2xl font-bold text-blue-600">
-                      {formatCurrency(selectedMember.financialDisclosure.worthWhenElected)}
-                    </p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Current Net Worth</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {formatCurrency(selectedMember.financialDisclosure.currentWorth)}
-                    </p>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Wealth Increase</p>
-                    <p className="text-2xl font-bold text-purple-600">
-                      +{selectedMember.financialDisclosure.percentageIncrease}%
-                    </p>
-                  </div>
-                  <div className="bg-orange-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Annual MP Salary</p>
-                    <p className="text-2xl font-bold text-orange-600">
-                      {formatCurrency(selectedMember.financialDisclosure.annualSalary)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="font-semibold text-gray-700 mb-2">Asset Breakdown:</p>
-                  {selectedMember.financialDisclosure.assets.map((asset, idx) => (
-                    <div key={idx} className="flex justify-between p-3 bg-gray-50 rounded">
-                      <span className="text-gray-700">{asset.type}</span>
-                      <span className="font-semibold text-gray-900">{formatCurrency(asset.value)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {expandedSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
           </div>
-        )}
+          {expandedSections.financial && (
+            <div className="px-6 pb-6">
+              <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+            </div>
+          )}
+        </div>
 
-        {selectedMember.lobbying && (() => {
+        {(() => {
           const liveLobbyDocs = memberLobbyingData[selectedMember.name];
           const isLiveLobby = liveLobbyDocs && liveLobbyDocs.length > 0;
           const isLoadingLobby = !!memberLobbyingLoading[selectedMember.name];
-          const lobbyOrgs = isLiveLobby
-            ? liveLobbyDocs.map(d => ({
-                name:        d.organization ?? d.name,
-                sector:      d.sector,
-                value:       d.value,
-                meetings:    d.meetings,
-                lastMeeting: d.lastMeeting,
-                topic:       d.topic,
-              }))
-            : selectedMember.lobbying.organizations;
-          const totalMeetings = isLiveLobby
-            ? liveLobbyDocs.reduce((s, d) => s + (d.meetings || 0), 0)
-            : selectedMember.lobbying.totalMeetings;
-          const totalValue = isLiveLobby
-            ? liveLobbyDocs.reduce((s, d) => s + (d.value || 0), 0)
-            : selectedMember.lobbying.totalValue;
           return (
             <div className="bg-white rounded-lg shadow-md mb-6">
-              <div
-                onClick={() => toggleSection('lobbying')}
-                className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50"
-              >
+              <div onClick={() => toggleSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
                 <div className="flex items-center gap-3">
                   <Building2 className="w-6 h-6 text-red-600" />
-                  <div>
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
-                      {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {isLiveLobby && !isLoadingLobby && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      {totalMeetings} meetings, {formatCurrency(totalValue)} total value
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
+                    {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                    {isLiveLobby && !isLoadingLobby && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                   </div>
                 </div>
                 {expandedSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
               </div>
-
               {expandedSections.lobbying && (
-                <div className="px-6 pb-6 space-y-4">
-                  {lobbyOrgs.map((org, idx) => (
-                    <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="font-bold text-gray-800">{org.name}</h3>
-                          <p className="text-sm text-gray-600">{org.sector}</p>
-                          {org.topic && <p className="text-xs text-blue-600 mt-0.5 font-medium">{org.topic}</p>}
+                <div className="px-6 pb-6">
+                  {isLiveLobby ? (
+                    <div className="space-y-4">
+                      {liveLobbyDocs.map((org, idx) => (
+                        <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h3 className="font-bold text-gray-800">{org.organization ?? org.name}</h3>
+                              {org.sector && <p className="text-sm text-gray-600">{org.sector}</p>}
+                              {org.topic && <p className="text-xs text-blue-600 mt-0.5 font-medium">{org.topic}</p>}
+                            </div>
+                            {org.value ? <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">{formatCurrency(org.value)}</span> : null}
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                            {org.meetings && <span>📅 {org.meetings} meetings</span>}
+                            {org.lastMeeting && <span>🗓️ Last: {org.lastMeeting}</span>}
+                          </div>
                         </div>
-                        {org.value ? (
-                          <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
-                            {formatCurrency(org.value)}
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
-                        {org.meetings && <span>📅 {org.meetings} meetings</span>}
-                        {org.lastMeeting && <span>🗓️ Last: {org.lastMeeting}</span>}
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  ) : (
+                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                  )}
                 </div>
               )}
             </div>
           );
         })()}
 
-        {selectedMember.corporateConnections && selectedMember.corporateConnections.length > 0 && (
-          <div className="bg-white rounded-lg shadow-md mb-6">
-            <div
-              onClick={() => toggleSection('corporate')}
-              className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50"
-            >
-              <div className="flex items-center gap-3">
-                <Briefcase className="w-6 h-6 text-indigo-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">💼 Corporate Connections</h2>
-                  <p className="text-sm text-gray-600">{selectedMember.corporateConnections.length} disclosed affiliations</p>
-                </div>
-              </div>
-              {expandedSections.corporate ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
+        <div className="bg-white rounded-lg shadow-md mb-6">
+          <div onClick={() => toggleSection('corporate')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+            <div className="flex items-center gap-3">
+              <Briefcase className="w-6 h-6 text-indigo-600" />
+              <h2 className="text-xl font-bold text-gray-800">💼 Corporate Connections</h2>
             </div>
-
-            {expandedSections.corporate && (
-              <div className="px-6 pb-6 space-y-3">
-                {selectedMember.corporateConnections.map((conn, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-bold text-gray-800">{conn.company}</h3>
-                        <p className="text-sm text-gray-600">{conn.role}</p>
-                      </div>
-                      <span className="text-sm text-gray-500">{conn.period}</span>
-                    </div>
-                    <p className="text-sm text-gray-600">{conn.description}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+            {expandedSections.corporate ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
           </div>
-        )}
+          {expandedSections.corporate && (
+            <div className="px-6 pb-6">
+              <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+            </div>
+          )}
+        </div>
 
         {/* Stock Trading Activity - USA ONLY */}
-        {selectedMember.stockTrades !== undefined && selectedCountry?.type === 'usa' && (
+        {selectedCountry?.type === 'usa' && (
           <div className="bg-white rounded-lg shadow-md mb-6">
-            <div
-              onClick={() => toggleSection('stockTrades')}
-              className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50"
-            >
+            <div onClick={() => toggleSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-6 h-6 text-green-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">📈 Stock Trading Activity</h2>
-                  <p className="text-sm text-gray-600">
-                    {selectedMember.stockTrades.length} trades in last 90 days
-                    {selectedMember.stockTrades.filter(t => t.conflict).length > 0 && (
-                      <span className="ml-2 text-red-600 font-bold">
-                        • {selectedMember.stockTrades.filter(t => t.conflict).length} potential conflicts
-                      </span>
-                    )}
-                  </p>
-                </div>
+                <h2 className="text-xl font-bold text-gray-800">📈 Stock Trading Activity</h2>
               </div>
               {expandedSections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
             </div>
-
             {expandedSections.stockTrades && (
               <div className="px-6 pb-6">
-                {selectedMember.stockTrades.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-600">No stock trades reported in the last 90 days</p>
-                    <p className="text-sm text-gray-500 mt-2">This member either did not trade stocks or has not filed required disclosures</p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Summary Stats */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                      <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
-                        <p className="text-sm text-gray-600 mb-1">Total Trades</p>
-                        <p className="text-3xl font-bold text-blue-600">{selectedMember.stockTrades.length}</p>
-                      </div>
-                      <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
-                        <p className="text-sm text-gray-600 mb-1">Purchases</p>
-                        <p className="text-3xl font-bold text-green-600">
-                          {selectedMember.stockTrades.filter(t => t.type === 'Purchase').length}
-                        </p>
-                      </div>
-                      <div className="bg-orange-50 p-4 rounded-lg border-2 border-orange-200">
-                        <p className="text-sm text-gray-600 mb-1">Sales</p>
-                        <p className="text-3xl font-bold text-orange-600">
-                          {selectedMember.stockTrades.filter(t => t.type === 'Sale').length}
-                        </p>
-                      </div>
-                      <div className={`p-4 rounded-lg border-2 ${
-                        selectedMember.stockTrades.filter(t => t.conflict).length > 0 
-                          ? 'bg-red-50 border-red-300' 
-                          : 'bg-gray-50 border-gray-200'
-                      }`}>
-                        <p className="text-sm text-gray-600 mb-1">Conflicts</p>
-                        <p className={`text-3xl font-bold ${
-                          selectedMember.stockTrades.filter(t => t.conflict).length > 0 
-                            ? 'text-red-600' 
-                            : 'text-gray-600'
-                        }`}>
-                          {selectedMember.stockTrades.filter(t => t.conflict).length}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Conflict Warning */}
-                    {selectedMember.stockTrades.filter(t => t.conflict).length > 0 && (
-                      <div className="bg-red-50 border-2 border-red-400 rounded-lg p-4 mb-6">
-                        <div className="flex items-start gap-3">
-                          <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-                          <div>
-                            <h3 className="text-lg font-bold text-red-800 mb-2">⚠️ Potential Conflicts of Interest Detected</h3>
-                            <p className="text-red-700 text-sm">
-                              This member has made stock trades that may conflict with their committee assignments or legislative responsibilities. 
-                              Review the flagged trades below for details.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Trade List */}
-                    <div className="space-y-3">
-                      {selectedMember.stockTrades.map((trade, index) => (
-                        <div 
-                          key={index} 
-                          className={`border-2 rounded-lg p-4 ${
-                            trade.conflict 
-                              ? 'bg-red-50 border-red-400' 
-                              : 'bg-gray-50 border-gray-200'
-                          }`}
-                        >
-                          {/* Conflict Badge */}
-                          {trade.conflict && (
-                            <div className="mb-3 flex items-center gap-2">
-                              <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                                🚨 POTENTIAL CONFLICT
-                              </span>
-                            </div>
-                          )}
-
-                          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-3">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h3 className="text-xl font-bold text-gray-800">{trade.company}</h3>
-                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-mono">
-                                  {trade.ticker}
-                                </span>
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                  trade.type === 'Purchase' 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : 'bg-orange-100 text-orange-800'
-                                }`}>
-                                  {trade.type}
-                                </span>
-                                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                                  {trade.assetType}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-2xl font-bold text-green-600">{trade.valueRange}</p>
-                              <p className="text-sm text-gray-500 mt-1">{trade.date}</p>
-                            </div>
-                          </div>
-
-                          {/* Conflict Explanation */}
-                          {trade.conflict && trade.conflictReason && (
-                            <div className="bg-red-100 border-l-4 border-red-600 p-3 rounded">
-                              <p className="text-sm font-semibold text-red-800 mb-1">Why this is flagged:</p>
-                              <p className="text-sm text-red-700">{trade.conflictReason}</p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Disclaimer */}
-                    <div className="mt-6 bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
-                      <p className="text-sm text-blue-800">
-                        <strong>Note:</strong> Stock trades are reported by members of Congress as required by the STOCK Act. 
-                        Trade values are reported in ranges, not exact amounts. Conflict flags are automatically generated 
-                        based on committee assignments and may not represent actual violations.
-                      </p>
-                    </div>
-                  </>
-                )}
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
               </div>
             )}
           </div>
@@ -34461,117 +34109,18 @@ function App() {
               {/* STOCK TRADES */}
               {member.stockTrades !== undefined && (
                 <section>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="panel-section-label mb-0">
-                      Stock Trades &mdash; {member.stockTrades.length} in last 90 days
-                    </p>
-                    {conflictTrades.length > 0 && (
-                      <span className="text-xs bg-red-100 text-red-700 font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" />
-                        {conflictTrades.length} conflict{conflictTrades.length !== 1 ? 's' : ''}
-                      </span>
-                    )}
-                  </div>
+                  <p className="panel-section-label">Stock Trading Activity</p>
 
-                  {member.stockTrades.length === 0 ? (
-                    <div className="text-center py-8 bg-green-50 rounded-xl border border-green-200">
-                      <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-2" />
-                      <p className="text-sm font-semibold text-gray-700">No trades reported (last 90 days)</p>
-                      <p className="text-xs text-gray-500 mt-1">Compliant with STOCK Act requirements</p>
-                    </div>
-                  ) : (
-                    <>
-                      {/* Summary row */}
-                      <div className="grid grid-cols-4 gap-2 mb-3">
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2.5 text-center">
-                          <p className="text-lg font-bold text-blue-700">{member.stockTrades.length}</p>
-                          <p className="text-xs text-gray-500">Total</p>
-                        </div>
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-2.5 text-center">
-                          <p className="text-lg font-bold text-green-700">{member.stockTrades.filter(t => t.type === 'Purchase').length}</p>
-                          <p className="text-xs text-gray-500">Buys</p>
-                        </div>
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-2.5 text-center">
-                          <p className="text-lg font-bold text-orange-700">{member.stockTrades.filter(t => t.type === 'Sale').length}</p>
-                          <p className="text-xs text-gray-500">Sells</p>
-                        </div>
-                        <div className={`rounded-lg p-2.5 text-center border ${conflictTrades.length > 0 ? 'bg-red-50 border-red-300' : 'bg-gray-50 border-gray-200'}`}>
-                          <p className={`text-lg font-bold ${conflictTrades.length > 0 ? 'text-red-700' : 'text-gray-500'}`}>{conflictTrades.length}</p>
-                          <p className="text-xs text-gray-500">Conflicts</p>
-                        </div>
-                      </div>
-
-                      {conflictTrades.length > 0 && (
-                        <div className="bg-red-50 border border-red-300 rounded-xl p-3 mb-3 flex items-start gap-2">
-                          <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                          <p className="text-xs text-red-700 font-medium leading-relaxed">
-                            Potential conflicts of interest detected. This member made trades that may overlap with their committee responsibilities.
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="space-y-3">
-                        {member.stockTrades.map((trade, i) => (
-                          <div
-                            key={i}
-                            className={`rounded-xl p-4 border-2 ${trade.conflict ? 'bg-red-50 border-red-300' : 'bg-gray-50 border-gray-200'}`}
-                          >
-                            {trade.conflict && (
-                              <span className="inline-flex items-center gap-1 bg-red-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full mb-2">
-                                <AlertCircle className="w-3 h-3" /> POTENTIAL CONFLICT
-                              </span>
-                            )}
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                                  <span className="font-bold text-gray-800 text-sm">{trade.company}</span>
-                                  <span className="text-xs bg-white border border-gray-300 text-gray-600 px-1.5 py-0.5 rounded font-mono">{trade.ticker}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${trade.type === 'Purchase' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
-                                    {trade.type}
-                                  </span>
-                                  <span className="text-xs bg-purple-100 text-purple-800 px-2.5 py-0.5 rounded-full font-semibold">{trade.assetType}</span>
-                                </div>
-                              </div>
-                              <div className="text-right flex-shrink-0">
-                                <p className="font-bold text-green-700 text-sm">{trade.valueRange}</p>
-                                <p className="text-xs text-gray-500 mt-0.5">{trade.date}</p>
-                              </div>
-                            </div>
-                            {trade.conflict && trade.conflictReason && (
-                              <div className="mt-3 bg-red-100 border-l-4 border-red-500 p-2.5 rounded-r-lg">
-                                <p className="text-xs text-red-700 font-medium">{trade.conflictReason}</p>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="mt-3 bg-blue-50 border border-blue-200 rounded-xl p-3">
-                        <p className="text-xs text-blue-700 leading-relaxed">
-                          <strong>STOCK Act:</strong> Trades are self-reported as required by law. Values are ranges, not exact amounts. Conflict flags are auto-generated based on committee assignments and may not represent actual violations.
-                        </p>
-                      </div>
-                    </>
-                  )}
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                 </section>
               )}
 
               {/* FINANCIAL DISCLOSURE */}
-              {member.financialDisclosure && (() => {
+              {(() => {
                 const liveDiscDocs = memberDisclosureData[member.name];
                 const liveDisc = liveDiscDocs && liveDiscDocs.length > 0 ? liveDiscDocs[0] : null;
                 const isLiveDisc = !!liveDisc;
                 const isLoadingDisc = !!memberDisclosureLoading[member.name];
-                const disc = isLiveDisc ? {
-                  electedYear:        liveDisc.electedYear        ?? member.financialDisclosure.electedYear,
-                  worthWhenElected:   liveDisc.worthWhenElected   ?? liveDisc.initialWorth ?? worthWhenElected,
-                  currentWorth:       liveDisc.currentWorth       ?? member.financialDisclosure.currentWorth,
-                  percentageIncrease: liveDisc.percentageIncrease ?? member.financialDisclosure.percentageIncrease,
-                  annualSalary:       liveDisc.annualSalary       ?? member.financialDisclosure.annualSalary,
-                  assets:             liveDisc.assets             ?? member.financialDisclosure.assets,
-                } : member.financialDisclosure;
                 return (
                   <section>
                     <div className="flex items-center gap-2 mb-2">
@@ -34579,111 +34128,54 @@ function App() {
                       {isLoadingDisc && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {isLiveDisc && !isLoadingDisc && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                     </div>
-                    <div className="grid grid-cols-2 gap-3 mb-3">
-                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
-                        <p className="text-xs text-gray-500 mb-0.5">Worth When Elected{disc.electedYear ? ` (${disc.electedYear})` : ''}</p>
-                        <p className="text-lg font-bold text-blue-700">{formatCurrency(disc.worthWhenElected)}</p>
-                      </div>
-                      <div className="bg-green-50 border border-green-200 rounded-xl p-3">
-                        <p className="text-xs text-gray-500 mb-0.5">Current Net Worth</p>
-                        <p className="text-lg font-bold text-green-700">{formatCurrency(disc.currentWorth)}</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 mb-3">
-                      <div className="bg-purple-50 border border-purple-200 rounded-xl p-3">
-                        <p className="text-xs text-gray-500 mb-0.5">Wealth Increase</p>
-                        <p className="text-lg font-bold text-purple-700">+{disc.percentageIncrease}%</p>
-                      </div>
-                      {disc.annualSalary && (
-                        <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
-                          <p className="text-xs text-gray-500 mb-0.5">Annual Salary</p>
-                          <p className="text-lg font-bold text-orange-700">{formatCurrency(disc.annualSalary)}</p>
-                        </div>
-                      )}
-                    </div>
-                    {disc.assets && disc.assets.length > 0 && (
-                      <div className="space-y-1.5">
-                        <p className="text-xs font-semibold text-gray-600 mb-2">Asset Breakdown</p>
-                        {disc.assets.map((asset, i) => (
-                          <div key={i} className="flex justify-between items-center p-2.5 bg-gray-50 rounded-lg border border-gray-200">
-                            <span className="text-sm text-gray-700">{asset.type}</span>
-                            <span className={`text-sm font-bold ${asset.value < 0 ? 'text-red-600' : 'text-gray-900'}`}>
-                              {asset.value < 0 ? `−${formatCurrency(Math.abs(asset.value))}` : formatCurrency(asset.value)}
-                            </span>
+                    {isLiveDisc ? (
+                      <>
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                            <p className="text-xs text-gray-500 mb-0.5">Worth When Elected{liveDisc.electedYear ? ` (${liveDisc.electedYear})` : ''}</p>
+                            <p className="text-lg font-bold text-blue-700">{formatCurrency(liveDisc.worthWhenElected ?? liveDisc.initialWorth ?? 0)}</p>
                           </div>
-                        ))}
-                      </div>
+                          <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+                            <p className="text-xs text-gray-500 mb-0.5">Current Net Worth</p>
+                            <p className="text-lg font-bold text-green-700">{formatCurrency(liveDisc.currentWorth ?? 0)}</p>
+                          </div>
+                        </div>
+                        {liveDisc.percentageIncrease != null && (
+                          <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3">
+                            <p className="text-xs text-gray-500 mb-0.5">Wealth Increase</p>
+                            <p className="text-lg font-bold text-purple-700">+{liveDisc.percentageIncrease}%</p>
+                          </div>
+                        )}
+                        {liveDisc.assets && liveDisc.assets.length > 0 && (
+                          <div className="space-y-1.5">
+                            <p className="text-xs font-semibold text-gray-600 mb-2">Asset Breakdown</p>
+                            {liveDisc.assets.map((asset, i) => (
+                              <div key={i} className="flex justify-between items-center p-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                                <span className="text-sm text-gray-700">{asset.type}</span>
+                                <span className="text-sm font-bold text-gray-900">{formatCurrency(asset.value)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
                     )}
                   </section>
                 );
               })()}
 
               {/* LOBBYING */}
-              {member.lobbying && (
-                <section>
-                  <p className="panel-section-label">Lobbying Activity</p>
-                  <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-3 flex items-center gap-3">
-                    <Building2 className="w-5 h-5 text-red-600 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">{member.lobbying.totalMeetings} lobbying meetings</p>
-                      <p className="text-xs text-gray-600">Total disclosed value: <span className="font-bold text-red-700">{formatCurrency(member.lobbying.totalValue)}</span></p>
-                    </div>
-                  </div>
-                  {lobbyingList.length > 0 && (
-                    <div className="space-y-2">
-                      {lobbyingList.map((item, i) => {
-                        const orgName = item.name || item.organization;
-                        const orgValue = item.value;
-                        const orgMeetings = item.meetings;
-                        const orgLast = item.lastMeeting;
-                        const orgTopic = item.topic;
-                        const orgSector = item.sector;
-                        return (
-                          <div key={i} className="border border-gray-200 rounded-xl p-3.5 hover:bg-gray-50 transition-colors">
-                            <div className="flex items-start justify-between gap-2 mb-1">
-                              <div className="min-w-0">
-                                <p className="font-semibold text-gray-800 text-sm">{orgName}</p>
-                                {orgSector && <p className="text-xs text-gray-500">{orgSector}</p>}
-                                {orgTopic && <p className="text-xs text-blue-600 mt-0.5 font-medium">{orgTopic}</p>}
-                              </div>
-                              {orgValue && (
-                                <span className="text-xs bg-red-100 text-red-800 px-2.5 py-1 rounded-full font-bold flex-shrink-0">
-                                  {formatCurrency(orgValue)}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-                              {orgMeetings && <span>{orgMeetings} meetings</span>}
-                              {orgLast && <span>Last: {orgLast}</span>}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </section>
-              )}
+              <section>
+                <p className="panel-section-label">Lobbying Activity</p>
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+              </section>
 
               {/* CORPORATE CONNECTIONS */}
-              {member.corporateConnections && member.corporateConnections.length > 0 && (
-                <section>
-                  <p className="panel-section-label">Corporate Connections — {member.corporateConnections.length} disclosed</p>
-                  <div className="space-y-2">
-                    {member.corporateConnections.map((conn, i) => (
-                      <div key={i} className="border border-gray-200 rounded-xl p-3.5 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-start justify-between gap-3 mb-1.5">
-                          <div className="min-w-0">
-                            <p className="font-bold text-gray-800 text-sm">{conn.company}</p>
-                            <p className="text-xs font-medium text-indigo-600">{conn.role}</p>
-                          </div>
-                          <span className="text-xs text-gray-500 flex-shrink-0 bg-gray-100 px-2 py-0.5 rounded-full">{conn.period}</span>
-                        </div>
-                        <p className="text-xs text-gray-600 leading-relaxed">{conn.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
+              <section>
+                <p className="panel-section-label">Corporate Connections</p>
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+              </section>
 
             </div>
           </div>
@@ -35701,42 +35193,13 @@ function App() {
             <div onClick={() => toggleSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-6 h-6 text-purple-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
-                  <p className="text-sm text-gray-600">Wealth increased {financialDisclosure.percentageIncrease}% since appointment</p>
-                </div>
+                <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
               </div>
               {expandedSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
             </div>
             {expandedSections.financial && (
               <div className="px-6 pb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Appointed ({financialDisclosure.electedYear})</p>
-                    <p className="text-2xl font-bold text-blue-600">{formatCurrency(financialDisclosure.worthWhenElected)}</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Current Net Worth</p>
-                    <p className="text-2xl font-bold text-green-600">{formatCurrency(financialDisclosure.currentWorth)}</p>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Wealth Increase</p>
-                    <p className="text-2xl font-bold text-purple-600">+{financialDisclosure.percentageIncrease}%</p>
-                  </div>
-                  <div className="bg-orange-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Annual Senate Salary</p>
-                    <p className="text-2xl font-bold text-orange-600">{formatCurrency(financialDisclosure.annualSalary)}</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <p className="font-semibold text-gray-700 mb-2">Asset Breakdown:</p>
-                  {financialDisclosure.assets.map((asset, idx) => (
-                    <div key={idx} className="flex justify-between p-3 bg-gray-50 rounded">
-                      <span className="text-gray-700">{asset.type}</span>
-                      <span className="font-semibold text-gray-900">{formatCurrency(asset.value)}</span>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
               </div>
             )}
           </div>
@@ -35746,30 +35209,13 @@ function App() {
             <div onClick={() => toggleSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
               <div className="flex items-center gap-3">
                 <Building2 className="w-6 h-6 text-red-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
-                  <p className="text-sm text-gray-600">{lobbying.totalMeetings} meetings, {formatCurrency(lobbying.totalValue)} total value</p>
-                </div>
+                <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
               </div>
               {expandedSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
             </div>
             {expandedSections.lobbying && (
-              <div className="px-6 pb-6 space-y-4">
-                {lobbying.organizations.map((org, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-bold text-gray-800">{org.name}</h3>
-                        <p className="text-sm text-gray-600">{org.sector}</p>
-                      </div>
-                      <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">{formatCurrency(org.value)}</span>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span>📅 {org.meetings} meetings</span>
-                      <span>🗓️ Last: {org.lastMeeting}</span>
-                    </div>
-                  </div>
-                ))}
+              <div className="px-6 pb-6">
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
               </div>
             )}
           </div>
@@ -35779,32 +35225,16 @@ function App() {
             <div onClick={() => toggleSection('corporate')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
               <div className="flex items-center gap-3">
                 <Briefcase className="w-6 h-6 text-indigo-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">💼 Corporate Connections</h2>
-                  <p className="text-sm text-gray-600">{corporateConnections.length} disclosed affiliations</p>
-                </div>
+                <h2 className="text-xl font-bold text-gray-800">💼 Corporate Connections</h2>
               </div>
               {expandedSections.corporate ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
             </div>
             {expandedSections.corporate && (
-              <div className="px-6 pb-6 space-y-3">
-                {corporateConnections.map((conn, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-bold text-gray-800">{conn.company}</h3>
-                        <p className="text-sm text-gray-600">{conn.role}</p>
-                      </div>
-                      <span className="text-sm text-gray-500">{conn.period}</span>
-                    </div>
-                    <p className="text-sm text-gray-600">{conn.description}</p>
-                  </div>
-                ))}
+              <div className="px-6 pb-6">
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
               </div>
             )}
           </div>
-
-          <p className="text-center text-sm text-gray-400 pb-8">Illustrative data · figures are statistically modelled</p>
         </div>
       </div>
     );
