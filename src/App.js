@@ -2071,6 +2071,8 @@ function App() {
   const [memberAttendanceLoading, setMemberAttendanceLoading] = useState({});
   const [memberBioData, setMemberBioData] = useState({});
   const [memberBioLoading, setMemberBioLoading] = useState({});
+  const [memberCommitteeData, setMemberCommitteeData] = useState({});
+  const [memberCommitteeLoading, setMemberCommitteeLoading] = useState({});
 
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
@@ -2835,6 +2837,62 @@ function App() {
   useEffect(() => {
     if (view !== 'senator-detail' || !selectedSenator?.name) return;
     fetchMemberBio(selectedSenator);
+  }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Shared helper: fetch member_committees by memberName (or bioguide_id if present)
+  const fetchMemberCommittees = async (member) => {
+    const key = member.name;
+    if (memberCommitteeData[key] !== undefined || memberCommitteeLoading[key]) return;
+    setMemberCommitteeLoading(prev => ({ ...prev, [key]: true }));
+    try {
+      let docs = [];
+      if (member.bioguide_id) {
+        const q = query(collection(db, 'member_committees'), where('bioguide_id', '==', member.bioguide_id));
+        const snap = await getDocs(q);
+        docs = snap.docs.map(d => d.data());
+      }
+      if (docs.length === 0) {
+        const q = query(collection(db, 'member_committees'), where('memberName', '==', key));
+        const snap = await getDocs(q);
+        docs = snap.docs.map(d => d.data());
+      }
+      setMemberCommitteeData(prev => ({ ...prev, [key]: docs }));
+    } catch (err) {
+      console.warn('[LiveData] member_committees fetch failed:', err.message);
+      setMemberCommitteeData(prev => ({ ...prev, [key]: [] }));
+    } finally {
+      setMemberCommitteeLoading(prev => ({ ...prev, [key]: false }));
+    }
+  };
+
+  // Fetch committees when US Congress member panel opens
+  useEffect(() => {
+    if (!showMemberPanel || !selectedMember?.name) return;
+    fetchMemberCommittees(selectedMember);
+  }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch committees when Canadian MP detail opens
+  useEffect(() => {
+    if (view !== 'member-detail' || !selectedMember?.name) return;
+    fetchMemberCommittees(selectedMember);
+  }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch committees when UK MP detail opens
+  useEffect(() => {
+    if (view !== 'uk-member-detail' || !selectedUkMember?.name) return;
+    fetchMemberCommittees(selectedUkMember);
+  }, [view, selectedUkMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch committees when Australian member panel opens
+  useEffect(() => {
+    if (!showAuMemberPanel || !selectedAuMember?.name) return;
+    fetchMemberCommittees(selectedAuMember);
+  }, [showAuMemberPanel, selectedAuMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch committees when Canadian senator detail opens
+  useEffect(() => {
+    if (view !== 'senator-detail' || !selectedSenator?.name) return;
+    fetchMemberCommittees(selectedSenator);
   }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const initializeUSCongress = () => {
@@ -18478,14 +18536,45 @@ function App() {
                     {liveBio.url && <div className="col-span-2"><span className="text-gray-500 font-medium">Official: </span><a href={liveBio.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{liveBio.url}</a></div>}
                   </div>
                 )}
-                {mp.committees?.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-xs text-gray-500 mb-2 font-semibold uppercase tracking-wide">Committee Memberships</p>
-                    <div className="flex flex-wrap gap-2">
-                      {mp.committees.map(c => <span key={c} className="px-3 py-1.5 rounded-xl text-xs font-medium bg-blue-50 text-blue-800">{c}</span>)}
+                {(() => {
+                  const liveCom = memberCommitteeData[mp.name];
+                  const isLoadingCom = !!memberCommitteeLoading[mp.name];
+                  const hasLive = liveCom && liveCom.length > 0;
+                  const fallback = mp.committees || [];
+                  if (!hasLive && !isLoadingCom && !fallback.length) return null;
+                  return (
+                    <div className="mt-4">
+                      <p className="text-xs text-gray-500 mb-2 font-semibold uppercase tracking-wide flex items-center gap-2">
+                        Committee Memberships
+                        {isLoadingCom && <span className="text-blue-500 flex items-center gap-1 font-normal normal-case"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {hasLive && !isLoadingCom && <span className="font-bold bg-green-500 text-white px-2 py-0.5 rounded-full normal-case">LIVE</span>}
+                      </p>
+                      {hasLive ? (
+                        <div className="space-y-2">
+                          {liveCom.map((c, i) => (
+                            <div key={i} className="flex items-start gap-3 p-2.5 bg-blue-50 rounded-lg">
+                              <Scale className="w-3.5 h-3.5 text-blue-600 flex-shrink-0 mt-0.5" />
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-blue-900 leading-snug">{c.committeeName || c.committee || c.name}</p>
+                                {(c.role || c.startDate) && (
+                                  <p className="text-xs text-blue-600 mt-0.5">
+                                    {c.role && <span className="font-medium">{c.role}</span>}
+                                    {c.role && c.startDate && <span className="mx-1">·</span>}
+                                    {c.startDate && <span>Since {c.startDate}</span>}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {fallback.map(c => <span key={c} className="px-3 py-1.5 rounded-xl text-xs font-medium bg-blue-50 text-blue-800">{c}</span>)}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             );
           })()}
@@ -23537,19 +23626,50 @@ function App() {
               })()}
 
               {/* COMMITTEES */}
-              {member.committees && member.committees.length > 0 && (
-                <section>
-                  <p className="panel-section-label">Committee Assignments</p>
-                  <div className="flex flex-wrap gap-2">
-                    {member.committees.map((com, i) => (
-                      <span key={i} className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-800 text-sm font-medium px-3 py-1.5 rounded-full">
-                        <Scale className="w-3.5 h-3.5 flex-shrink-0" />
-                        {com}
-                      </span>
-                    ))}
-                  </div>
-                </section>
-              )}
+              {(() => {
+                const liveCom = memberCommitteeData[member.name];
+                const isLoadingCom = !!memberCommitteeLoading[member.name];
+                const hasLive = liveCom && liveCom.length > 0;
+                const fallback = member.committees || [];
+                if (!hasLive && !isLoadingCom && !fallback.length) return null;
+                return (
+                  <section>
+                    <p className="panel-section-label flex items-center gap-2">
+                      Committee Assignments
+                      {isLoadingCom && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {hasLive && !isLoadingCom && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </p>
+                    {hasLive ? (
+                      <div className="space-y-2">
+                        {liveCom.map((c, i) => (
+                          <div key={i} className="flex items-start gap-3 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                            <Scale className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-amber-900 leading-snug">{c.committeeName || c.committee || c.name}</p>
+                              {(c.role || c.startDate) && (
+                                <p className="text-xs text-amber-600 mt-0.5">
+                                  {c.role && <span className="font-medium">{c.role}</span>}
+                                  {c.role && c.startDate && <span className="mx-1">·</span>}
+                                  {c.startDate && <span>Since {c.startDate}</span>}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {fallback.map((com, i) => (
+                          <span key={i} className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                            <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                            {com}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+                );
+              })()}
 
               {/* CONTACT */}
               {(member.email || member.parliamentHousePhone || member.electoratePhone || member.officeAddress) && (
@@ -31459,6 +31579,41 @@ function App() {
           </div>
         )}
 
+        {/* MP COMMITTEES */}
+        {(() => {
+          const liveCom = memberCommitteeData[selectedMember.name];
+          const isLoadingCom = !!memberCommitteeLoading[selectedMember.name];
+          const hasLive = liveCom && liveCom.length > 0;
+          const fallback = selectedMember.committees || [];
+          if (!hasLive && !isLoadingCom && !fallback.length) return null;
+          return (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                🏛️ Committee Assignments
+                {isLoadingCom && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                {hasLive && !isLoadingCom && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+              </h3>
+              <div className="space-y-2">
+                {(hasLive ? liveCom : fallback.map(c => ({ committeeName: c }))).map((c, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 bg-red-50 border border-red-100 rounded-lg">
+                    <Scale className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-gray-800 font-medium">{c.committeeName || c.committee || c.name}</p>
+                      {(c.role || c.startDate) && (
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {c.role && <span className="font-semibold text-red-700">{c.role}</span>}
+                          {c.role && c.startDate && <span className="mx-1">·</span>}
+                          {c.startDate && <span>Since {c.startDate}</span>}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         {(() => {
           const liveDocs = memberVotesData[selectedMember.name];
           const isLiveVotes = liveDocs && liveDocs.length > 0;
@@ -33907,22 +34062,50 @@ function App() {
               })()}
 
               {/* COMMITTEES */}
-              {member.committees && member.committees.length > 0 && (
-                <section>
-                  <p className="panel-section-label">Committee Assignments</p>
-                  <div className="flex flex-wrap gap-2">
-                    {member.committees.map((com, i) => (
-                      <span
-                        key={i}
-                        className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full"
-                      >
-                        <Scale className="w-3.5 h-3.5 flex-shrink-0" />
-                        {com}
-                      </span>
-                    ))}
-                  </div>
-                </section>
-              )}
+              {(() => {
+                const liveCom = memberCommitteeData[member.name];
+                const isLoadingCom = !!memberCommitteeLoading[member.name];
+                const hasLive = liveCom && liveCom.length > 0;
+                const fallback = member.committees || [];
+                if (!hasLive && !isLoadingCom && !fallback.length) return null;
+                return (
+                  <section>
+                    <p className="panel-section-label flex items-center gap-2">
+                      Committee Assignments
+                      {isLoadingCom && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {hasLive && !isLoadingCom && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </p>
+                    {hasLive ? (
+                      <div className="space-y-2">
+                        {liveCom.map((c, i) => (
+                          <div key={i} className="flex items-start gap-3 p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+                            <Scale className="w-3.5 h-3.5 text-blue-600 flex-shrink-0 mt-0.5" />
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-blue-900 leading-snug">{c.committeeName || c.committee || c.name}</p>
+                              {(c.role || c.startDate) && (
+                                <p className="text-xs text-blue-600 mt-0.5">
+                                  {c.role && <span className="font-medium">{c.role}</span>}
+                                  {c.role && c.startDate && <span className="mx-1">·</span>}
+                                  {c.startDate && <span>Since {c.startDate}</span>}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {fallback.map((com, i) => (
+                          <span key={i} className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                            <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                            {com}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+                );
+              })()}
 
               {/* CONTACT */}
               {(member.email || member.phone || member.constituencyPhone || member.officeAddress) && (
@@ -35190,12 +35373,25 @@ function App() {
                 {memberBioData[s.name].url && <div className="bg-purple-50 rounded-lg p-3 md:col-span-2"><p className="text-xs text-gray-500 font-medium mb-1">Official Page</p><a href={memberBioData[s.name].url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">{memberBioData[s.name].url}</a></div>}
               </div>
             )}
-            <h4 className="font-bold text-gray-700 mb-3">Senate Committees</h4>
+            <h4 className="font-bold text-gray-700 mb-3 flex items-center gap-2">
+              Senate Committees
+              {memberCommitteeLoading[s.name] && <span className="text-xs text-blue-500 flex items-center gap-1 font-normal"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+              {memberCommitteeData[s.name]?.length > 0 && !memberCommitteeLoading[s.name] && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+            </h4>
             <div className="space-y-2">
-              {committees.map((c, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div style={{ backgroundColor: color }} className="w-2 h-2 rounded-full flex-shrink-0" />
-                  <span className="text-gray-700">Standing Senate Committee on {c}</span>
+              {(memberCommitteeData[s.name]?.length > 0 ? memberCommitteeData[s.name] : committees.map(c => ({ committeeName: `Standing Senate Committee on ${c}` }))).map((c, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div style={{ backgroundColor: color }} className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" />
+                  <div className="min-w-0">
+                    <span className="text-gray-700">{c.committeeName || c.committee || c.name || `Standing Senate Committee on ${c}`}</span>
+                    {(c.role || c.startDate) && (
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {c.role && <span className="font-medium">{c.role}</span>}
+                        {c.role && c.startDate && <span className="mx-1">·</span>}
+                        {c.startDate && <span>Since {c.startDate}</span>}
+                      </p>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
