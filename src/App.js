@@ -2075,6 +2075,8 @@ function App() {
   const [memberCommitteeLoading, setMemberCommitteeLoading] = useState({});
   const [memberExpenseData, setMemberExpenseData] = useState({});
   const [memberExpenseLoading, setMemberExpenseLoading] = useState({});
+  const [memberStockTradeData, setMemberStockTradeData] = useState({});
+  const [memberStockTradeLoading, setMemberStockTradeLoading] = useState({});
 
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
@@ -2673,6 +2675,26 @@ function App() {
         setMemberDisclosureData(prev => ({ ...prev, [name]: [] }));
       } finally {
         setMemberDisclosureLoading(prev => ({ ...prev, [name]: false }));
+      }
+    })();
+  }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch US Congress stock trades from Firestore when panel opens
+  useEffect(() => {
+    if (!showMemberPanel || !selectedMember?.name) return;
+    const name = selectedMember.name;
+    if (memberStockTradeData[name] !== undefined || memberStockTradeLoading[name]) return;
+    setMemberStockTradeLoading(prev => ({ ...prev, [name]: true }));
+    (async () => {
+      try {
+        const q = query(collection(db, 'member_stock_trades'), where('memberName', '==', name));
+        const snap = await getDocs(q);
+        setMemberStockTradeData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
+      } catch (err) {
+        console.warn('[LiveData] member_stock_trades fetch failed:', err.message);
+        setMemberStockTradeData(prev => ({ ...prev, [name]: [] }));
+      } finally {
+        setMemberStockTradeLoading(prev => ({ ...prev, [name]: false }));
       }
     })();
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -33515,13 +33537,45 @@ function App() {
               })()}
 
               {/* STOCK TRADES */}
-              {member.stockTrades !== undefined && (
-                <section>
-                  <p className="panel-section-label">Stock Trading Activity</p>
-
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </section>
-              )}
+              {(() => {
+                const liveTrades = memberStockTradeData[member.name];
+                const isLoadingTrades = !!memberStockTradeLoading[member.name];
+                const hasLiveTrades = liveTrades && liveTrades.length > 0;
+                return (
+                  <section>
+                    <div className="flex items-center gap-2 mb-2">
+                      <p className="panel-section-label" style={{ marginBottom: 0 }}>Stock Trading Activity</p>
+                      {isLoadingTrades && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {hasLiveTrades && !isLoadingTrades && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </div>
+                    {hasLiveTrades ? (
+                      <div className="space-y-2">
+                        {liveTrades.map((trade, i) => (
+                          <div key={i} className={`p-3 rounded-lg border ${trade.transactionType === 'Sale' || trade.transactionType === 'Sale (Full)' ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-bold text-gray-800">{trade.assetName || trade.stockName || trade.ticker}</p>
+                                <div className="flex flex-wrap gap-1.5 mt-1">
+                                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${trade.transactionType === 'Sale' || trade.transactionType === 'Sale (Full)' ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'}`}>
+                                    {trade.transactionType || 'Unknown'}
+                                  </span>
+                                  {trade.amount && <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">{trade.amount}</span>}
+                                </div>
+                                {trade.transactionDate && <p className="text-xs text-gray-500 mt-1">Filed: {trade.transactionDate}</p>}
+                              </div>
+                              {trade.documentUrl && (
+                                <a href={trade.documentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-800 font-medium flex-shrink-0 underline">View Filing</a>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                    )}
+                  </section>
+                );
+              })()}
 
               {/* FINANCIAL DISCLOSURE */}
               {(() => {
