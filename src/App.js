@@ -2077,6 +2077,8 @@ function App() {
   const [memberExpenseLoading, setMemberExpenseLoading] = useState({});
   const [memberStockTradeData, setMemberStockTradeData] = useState({});
   const [memberStockTradeLoading, setMemberStockTradeLoading] = useState({});
+  const [memberCorporateData, setMemberCorporateData] = useState({});
+  const [memberCorporateLoading, setMemberCorporateLoading] = useState({});
 
   const [anomalyVotes, setAnomalyVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_anomaly_votes') || '{}'); } catch (_) { return {}; }
@@ -2698,6 +2700,52 @@ function App() {
       }
     })();
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Shared helper: fetch member_corporate_affiliations for any member
+  const fetchMemberCorporate = async (name) => {
+    if (memberCorporateData[name] !== undefined || memberCorporateLoading[name]) return;
+    setMemberCorporateLoading(prev => ({ ...prev, [name]: true }));
+    try {
+      const q = query(collection(db, 'member_corporate_affiliations'), where('memberName', '==', name));
+      const snap = await getDocs(q);
+      setMemberCorporateData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
+    } catch (err) {
+      console.warn('[LiveData] member_corporate_affiliations fetch failed:', err.message);
+      setMemberCorporateData(prev => ({ ...prev, [name]: [] }));
+    } finally {
+      setMemberCorporateLoading(prev => ({ ...prev, [name]: false }));
+    }
+  };
+
+  // Fetch corporate affiliations — US Congress panel
+  useEffect(() => {
+    if (!showMemberPanel || !selectedMember?.name) return;
+    fetchMemberCorporate(selectedMember.name);
+  }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch corporate affiliations — CA MP detail
+  useEffect(() => {
+    if (view !== 'member-detail' || !selectedMember?.name) return;
+    fetchMemberCorporate(selectedMember.name);
+  }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch corporate affiliations — UK MP detail
+  useEffect(() => {
+    if (view !== 'uk-member-detail' || !selectedUkMember?.name) return;
+    fetchMemberCorporate(selectedUkMember.name);
+  }, [view, selectedUkMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch corporate affiliations — UK Lord detail
+  useEffect(() => {
+    if (view !== 'uk-lord-detail' || !selectedUkLord?.name) return;
+    fetchMemberCorporate(selectedUkLord.name);
+  }, [view, selectedUkLord]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch corporate affiliations — AU member panel
+  useEffect(() => {
+    if (!showAuMemberPanel || !selectedAuMember?.name) return;
+    fetchMemberCorporate(selectedAuMember.name);
+  }, [showAuMemberPanel, selectedAuMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch Canadian MP lobbying records from Firestore when member-detail opens
   useEffect(() => {
@@ -18394,10 +18442,33 @@ function App() {
 
           {/* Corporate connections */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-            <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" />
+            <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" badge={
+              memberCorporateData[mp.name]?.length > 0 && !memberCorporateLoading[mp.name]
+                ? <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                : memberCorporateLoading[mp.name]
+                  ? <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>
+                  : null
+            } />
             {expandedUkSections.corporate && (
               <div className="px-5 pb-5">
-                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">This information is not publicly disclosed by official government sources.</p>
+                {memberCorporateData[mp.name]?.length > 0 ? (
+                  <div className="space-y-3">
+                    {memberCorporateData[mp.name].map((aff, i) => (
+                      <div key={i} className="border border-gray-100 rounded-xl p-3 bg-gray-50">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-gray-800">{aff.companyName || aff.company}</p>
+                            {aff.relationshipType && <p className="text-xs font-medium mt-0.5" style={{ color: partyColor }}>{aff.relationshipType}</p>}
+                            {aff.lobbyingConnection && <p className="text-xs text-orange-600 mt-1">⚠ Lobbying connection: {aff.lobbyingConnection}</p>}
+                          </div>
+                          {aff.date && <p className="text-xs text-gray-500 flex-shrink-0">{aff.date}</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">This information is not publicly disclosed by official government sources.</p>
+                )}
               </div>
             )}
           </div>
@@ -18888,10 +18959,33 @@ function App() {
 
           {/* Corporate connections */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-            <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" />
+            <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" badge={
+              memberCorporateData[lord.name]?.length > 0 && !memberCorporateLoading[lord.name]
+                ? <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                : memberCorporateLoading[lord.name]
+                  ? <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>
+                  : null
+            } />
             {expandedLordSections.corporate && (
               <div className="px-5 pb-5 space-y-2">
-                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                {memberCorporateData[lord.name]?.length > 0 ? (
+                  <div className="space-y-2">
+                    {memberCorporateData[lord.name].map((aff, i) => (
+                      <div key={i} className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-gray-800">{aff.companyName || aff.company}</p>
+                            {aff.relationshipType && <p className="text-xs text-blue-700 font-medium mt-0.5">{aff.relationshipType}</p>}
+                            {aff.lobbyingConnection && <p className="text-xs text-orange-600 mt-1">⚠ Lobbying connection: {aff.lobbyingConnection}</p>}
+                          </div>
+                          {aff.date && <p className="text-xs text-gray-500 flex-shrink-0">{aff.date}</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                )}
               </div>
             )}
           </div>
@@ -23432,8 +23526,29 @@ function App() {
 
               {/* CORPORATE AFFILIATIONS */}
               <section>
-                <p className="panel-section-label">Corporate Affiliations</p>
-                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="panel-section-label" style={{ marginBottom: 0 }}>Corporate Affiliations</p>
+                  {!!memberCorporateLoading[member.name] && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                  {memberCorporateData[member.name]?.length > 0 && !memberCorporateLoading[member.name] && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                </div>
+                {memberCorporateData[member.name]?.length > 0 ? (
+                  <div className="space-y-2">
+                    {memberCorporateData[member.name].map((aff, i) => (
+                      <div key={i} className="border border-gray-200 rounded-xl p-3 bg-gray-50">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-gray-800">{aff.companyName || aff.company}</p>
+                            {aff.relationshipType && <p className="text-xs font-medium mt-0.5" style={{ color: partyColor }}>{aff.relationshipType}</p>}
+                            {aff.lobbyingConnection && <p className="text-xs text-orange-600 mt-1">⚠ Lobbying connection: {aff.lobbyingConnection}</p>}
+                          </div>
+                          {aff.date && <p className="text-xs text-gray-500 flex-shrink-0">{aff.date}</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                )}
               </section>
 
             </div>
@@ -31269,13 +31384,36 @@ function App() {
           <div onClick={() => toggleSection('corporate')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
             <div className="flex items-center gap-3">
               <Briefcase className="w-6 h-6 text-indigo-600" />
-              <h2 className="text-xl font-bold text-gray-800">💼 Corporate Connections</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-gray-800">💼 Corporate Connections</h2>
+                {!!memberCorporateLoading[selectedMember?.name] && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                {memberCorporateData[selectedMember?.name]?.length > 0 && !memberCorporateLoading[selectedMember?.name] && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+              </div>
             </div>
             {expandedSections.corporate ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
           </div>
           {expandedSections.corporate && (
             <div className="px-6 pb-6">
-              <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+              {memberCorporateData[selectedMember?.name]?.length > 0 ? (
+                <div className="space-y-3">
+                  {memberCorporateData[selectedMember.name].map((aff, i) => (
+                    <div key={i} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-gray-800">{aff.companyName || aff.company}</p>
+                          {aff.relationshipType && <p className="text-xs text-indigo-600 font-medium mt-0.5">{aff.relationshipType}</p>}
+                          {aff.lobbyingConnection && <p className="text-xs text-orange-600 mt-1">⚠ Lobbying connection: {aff.lobbyingConnection}</p>}
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          {aff.date && <p className="text-xs text-gray-500">{aff.date}</p>}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+              )}
             </div>
           )}
         </div>
@@ -33635,8 +33773,29 @@ function App() {
 
               {/* CORPORATE CONNECTIONS */}
               <section>
-                <p className="panel-section-label">Corporate Connections</p>
-                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="panel-section-label" style={{ marginBottom: 0 }}>Corporate Connections</p>
+                  {!!memberCorporateLoading[member.name] && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                  {memberCorporateData[member.name]?.length > 0 && !memberCorporateLoading[member.name] && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                </div>
+                {memberCorporateData[member.name]?.length > 0 ? (
+                  <div className="space-y-2">
+                    {memberCorporateData[member.name].map((aff, i) => (
+                      <div key={i} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-gray-800">{aff.companyName || aff.company}</p>
+                            {aff.relationshipType && <p className="text-xs text-indigo-600 font-medium mt-0.5">{aff.relationshipType}</p>}
+                            {aff.lobbyingConnection && <p className="text-xs text-orange-600 mt-1">⚠ Lobbying connection: {aff.lobbyingConnection}</p>}
+                          </div>
+                          {aff.date && <p className="text-xs text-gray-500 flex-shrink-0">{aff.date}</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                )}
               </section>
 
             </div>
