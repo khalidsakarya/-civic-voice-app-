@@ -22625,10 +22625,11 @@ function App() {
 
           {/* ── Audit & Oversight Tab ── */}
           {financialDashTab === 'audit' && (() => {
+            try {
             const jurisdiction = isUSA ? 'US' : isAustralia ? 'AU' : isUK ? 'UK' : 'CA';
-            const liveDocs = auditFindingsData[jurisdiction];
-            const isLoadingAudit = !!auditFindingsLoading[jurisdiction];
-            const hasLive = liveDocs && liveDocs.length > 0;
+            const liveDocs = auditFindingsData ? auditFindingsData[jurisdiction] : undefined;
+            const isLoadingAudit = !!(auditFindingsLoading && auditFindingsLoading[jurisdiction]);
+            const hasLive = Array.isArray(liveDocs) && liveDocs.length > 0;
             const severityStyles = {
               critical: { badge: 'bg-red-100 text-red-700',      border: 'border-red-400'    },
               high:     { badge: 'bg-orange-100 text-orange-700', border: 'border-orange-300' },
@@ -22641,7 +22642,7 @@ function App() {
               partial:  { badge: 'bg-yellow-50 text-yellow-700 border border-yellow-200', label: 'Partial'  },
             };
 
-            const findings = liveDocs || [];
+            const findings = Array.isArray(liveDocs) ? liveDocs : [];
 
             return (
               <div>
@@ -22669,7 +22670,7 @@ function App() {
                 <div className="bg-gray-50 rounded-xl px-5 py-3 mb-6 flex items-center justify-between gap-2 border border-gray-200">
                   <div>
                     <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Auditing Body</p>
-                    <p className="text-sm font-semibold text-gray-800 mt-0.5">{data.audit.auditingBody}</p>
+                    <p className="text-sm font-semibold text-gray-800 mt-0.5">{data?.audit?.auditingBody}</p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {isLoadingAudit && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching live data…</span>}
@@ -22684,8 +22685,8 @@ function App() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {findings.map((f, idx) => {
-                      const fId = f.id || `finding-${idx}`;
+                    {findings.filter(f => f && typeof f === 'object').map((f, idx) => {
+                      const fId = f.id || f.title || `finding-${idx}`;
                       const sev = severityStyles[f.severity] || severityStyles.medium;
                       const sta = statusStyles[f.status] || statusStyles.open;
                       const isExpanded = expandedAuditFinding === fId;
@@ -22746,6 +22747,15 @@ function App() {
                 )}
               </div>
             );
+            } catch (err) {
+              console.error('[Audit] render error:', err);
+              return (
+                <div className="bg-red-50 rounded-xl p-8 text-center border border-red-200">
+                  <p className="text-red-600 font-semibold mb-1">Unable to load audit findings</p>
+                  <p className="text-red-400 text-sm">Please refresh the page to try again.</p>
+                </div>
+              );
+            }
           })()}
 
           {/* ── Results Tab ── */}
