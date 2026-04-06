@@ -22625,11 +22625,10 @@ function App() {
 
           {/* ── Audit & Oversight Tab ── */}
           {financialDashTab === 'audit' && (() => {
-            try {
             const jurisdiction = isUSA ? 'US' : isAustralia ? 'AU' : isUK ? 'UK' : 'CA';
-            const liveDocs = auditFindingsData ? auditFindingsData[jurisdiction] : undefined;
-            const isLoadingAudit = !!(auditFindingsLoading && auditFindingsLoading[jurisdiction]);
-            const hasLive = Array.isArray(liveDocs) && liveDocs.length > 0;
+            const liveDocs = Array.isArray(auditFindingsData?.[jurisdiction]) ? auditFindingsData[jurisdiction] : undefined;
+            const isLoadingAudit = !!(auditFindingsLoading?.[jurisdiction]);
+            const findings = liveDocs || [];
             const severityStyles = {
               critical: { badge: 'bg-red-100 text-red-700',      border: 'border-red-400'    },
               high:     { badge: 'bg-orange-100 text-orange-700', border: 'border-orange-300' },
@@ -22641,8 +22640,7 @@ function App() {
               resolved: { badge: 'bg-green-50 text-green-700 border border-green-200', label: 'Resolved' },
               partial:  { badge: 'bg-yellow-50 text-yellow-700 border border-yellow-200', label: 'Partial'  },
             };
-
-            const findings = Array.isArray(liveDocs) ? liveDocs : [];
+            try {
 
             return (
               <div>
