@@ -2747,30 +2747,6 @@ function App() {
     fetchMemberCorporate(selectedAuMember.name);
   }, [showAuMemberPanel, selectedAuMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch audit findings from Firestore when the Audit tab is active
-  useEffect(() => {
-    const moneyViews = ['money-canada', 'money-usa', 'money-uk', 'money-australia'];
-    if (!moneyViews.includes(view) || financialDashTab !== 'audit') return;
-    const jurisdiction = view === 'money-usa' ? 'US' : view === 'money-australia' ? 'AU' : view === 'money-uk' ? 'UK' : 'CA';
-    if (auditFindingsData[jurisdiction] !== undefined || auditFindingsLoading[jurisdiction]) return;
-    setAuditFindingsLoading(prev => ({ ...prev, [jurisdiction]: true }));
-    (async () => {
-      try {
-        const q = query(collection(db, 'audit_findings'), where('jurisdiction', '==', jurisdiction));
-        const snap = await getDocs(q);
-        const docs = snap.docs.map(d => d.data()).sort((a, b) => {
-          const sev = { critical: 0, high: 1, medium: 2, low: 3 };
-          return (sev[a.severity] ?? 4) - (sev[b.severity] ?? 4);
-        });
-        setAuditFindingsData(prev => ({ ...prev, [jurisdiction]: docs }));
-      } catch (err) {
-        console.warn('[LiveData] audit_findings fetch failed:', err.message);
-        setAuditFindingsData(prev => ({ ...prev, [jurisdiction]: [] }));
-      } finally {
-        setAuditFindingsLoading(prev => ({ ...prev, [jurisdiction]: false }));
-      }
-    })();
-  }, [view, financialDashTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch Canadian MP lobbying records from Firestore when member-detail opens
   useEffect(() => {
@@ -6613,6 +6589,31 @@ function App() {
   const [expandedAuditFinding, setExpandedAuditFinding] = useState(null);
   const [auditFindingsData, setAuditFindingsData] = useState({});
   const [auditFindingsLoading, setAuditFindingsLoading] = useState({});
+
+  // Fetch audit findings from Firestore when the Audit tab is active
+  useEffect(() => {
+    const moneyViews = ['money-canada', 'money-usa', 'money-uk', 'money-australia'];
+    if (!moneyViews.includes(view) || financialDashTab !== 'audit') return;
+    const jurisdiction = view === 'money-usa' ? 'US' : view === 'money-australia' ? 'AU' : view === 'money-uk' ? 'UK' : 'CA';
+    if (auditFindingsData[jurisdiction] !== undefined || auditFindingsLoading[jurisdiction]) return;
+    setAuditFindingsLoading(prev => ({ ...prev, [jurisdiction]: true }));
+    (async () => {
+      try {
+        const q = query(collection(db, 'audit_findings'), where('jurisdiction', '==', jurisdiction));
+        const snap = await getDocs(q);
+        const docs = snap.docs.map(d => d.data()).sort((a, b) => {
+          const sev = { critical: 0, high: 1, medium: 2, low: 3 };
+          return (sev[a.severity] ?? 4) - (sev[b.severity] ?? 4);
+        });
+        setAuditFindingsData(prev => ({ ...prev, [jurisdiction]: docs }));
+      } catch (err) {
+        console.warn('[LiveData] audit_findings fetch failed:', err.message);
+        setAuditFindingsData(prev => ({ ...prev, [jurisdiction]: [] }));
+      } finally {
+        setAuditFindingsLoading(prev => ({ ...prev, [jurisdiction]: false }));
+      }
+    })();
+  }, [view, financialDashTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getPartyColor = (party) => partyColors[party] || '#6B7280';
 
