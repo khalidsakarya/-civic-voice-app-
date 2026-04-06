@@ -2747,6 +2747,31 @@ function App() {
     fetchMemberCorporate(selectedAuMember.name);
   }, [showAuMemberPanel, selectedAuMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch audit findings from Firestore when the Audit tab is active
+  useEffect(() => {
+    const moneyViews = ['money-canada', 'money-usa', 'money-uk', 'money-australia'];
+    if (!moneyViews.includes(view) || financialDashTab !== 'audit') return;
+    const jurisdiction = view === 'money-usa' ? 'US' : view === 'money-australia' ? 'AU' : view === 'money-uk' ? 'UK' : 'CA';
+    if (auditFindingsData[jurisdiction] !== undefined || auditFindingsLoading[jurisdiction]) return;
+    setAuditFindingsLoading(prev => ({ ...prev, [jurisdiction]: true }));
+    (async () => {
+      try {
+        const q = query(collection(db, 'audit_findings'), where('jurisdiction', '==', jurisdiction));
+        const snap = await getDocs(q);
+        const docs = snap.docs.map(d => d.data()).sort((a, b) => {
+          const sev = { critical: 0, high: 1, medium: 2, low: 3 };
+          return (sev[a.severity] ?? 4) - (sev[b.severity] ?? 4);
+        });
+        setAuditFindingsData(prev => ({ ...prev, [jurisdiction]: docs }));
+      } catch (err) {
+        console.warn('[LiveData] audit_findings fetch failed:', err.message);
+        setAuditFindingsData(prev => ({ ...prev, [jurisdiction]: [] }));
+      } finally {
+        setAuditFindingsLoading(prev => ({ ...prev, [jurisdiction]: false }));
+      }
+    })();
+  }, [view, financialDashTab]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Fetch Canadian MP lobbying records from Firestore when member-detail opens
   useEffect(() => {
     if (view !== 'member-detail' || !selectedMember?.name) return;
@@ -6586,6 +6611,8 @@ function App() {
   const [financialDashTab, setFinancialDashTab] = useState('overview');
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [expandedAuditFinding, setExpandedAuditFinding] = useState(null);
+  const [auditFindingsData, setAuditFindingsData] = useState({});
+  const [auditFindingsLoading, setAuditFindingsLoading] = useState({});
 
   const getPartyColor = (party) => partyColors[party] || '#6B7280';
 
@@ -22633,103 +22660,132 @@ function App() {
           )}
 
           {/* ── Audit & Oversight Tab ── */}
-          {financialDashTab === 'audit' && (
-            <div>
-              {/* Summary bar */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-                <div className={`bg-white rounded-xl shadow-sm text-center border border-gray-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
-                  <p className={`font-black text-gray-900 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.totalFindings.toLocaleString()}</p>
-                  <p className={`text-gray-400 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Total Findings</p>
-                </div>
-                <div className={`bg-green-50 rounded-xl shadow-sm text-center border border-green-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
-                  <p className={`font-black text-green-700 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.resolved.toLocaleString()}</p>
-                  <p className={`text-green-600 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Resolved</p>
-                  <p className={`text-green-500 mt-0.5 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>{Math.round(data.audit.resolved / data.audit.totalFindings * 100)}%</p>
-                </div>
-                <div className={`bg-red-50 rounded-xl shadow-sm text-center border border-red-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
-                  <p className={`font-black text-red-600 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.open.toLocaleString()}</p>
-                  <p className={`text-red-500 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Open</p>
-                  <p className={`text-red-400 mt-0.5 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>{Math.round(data.audit.open / data.audit.totalFindings * 100)}%</p>
-                </div>
-                <div className={`bg-blue-50 rounded-xl shadow-sm text-center border border-blue-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
-                  <p className={`font-black text-blue-700 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{data.audit.avgResolutionDays}</p>
-                  <p className={`text-blue-500 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Avg. Resolution</p>
-                  <p className={`text-blue-400 mt-0.5 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>days</p>
-                </div>
-              </div>
+          {financialDashTab === 'audit' && (() => {
+            const jurisdiction = isUSA ? 'US' : isAustralia ? 'AU' : isUK ? 'UK' : 'CA';
+            const liveDocs = auditFindingsData[jurisdiction];
+            const isLoadingAudit = !!auditFindingsLoading[jurisdiction];
+            const hasLive = liveDocs && liveDocs.length > 0;
+            const severityStyles = {
+              critical: { badge: 'bg-red-100 text-red-700',      border: 'border-red-400'    },
+              high:     { badge: 'bg-orange-100 text-orange-700', border: 'border-orange-300' },
+              medium:   { badge: 'bg-yellow-100 text-yellow-700', border: 'border-yellow-300' },
+              low:      { badge: 'bg-blue-100 text-blue-700',     border: 'border-blue-300'   },
+            };
+            const statusStyles = {
+              open:     { badge: 'bg-red-50 text-red-600 border border-red-200',     label: 'Open'     },
+              resolved: { badge: 'bg-green-50 text-green-700 border border-green-200', label: 'Resolved' },
+              partial:  { badge: 'bg-yellow-50 text-yellow-700 border border-yellow-200', label: 'Partial'  },
+            };
 
-              {/* Auditing body */}
-              <div className="bg-gray-50 rounded-xl px-5 py-3 mb-6 flex items-center justify-between gap-2 border border-gray-200">
-                <div>
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Auditing Body</p>
-                  <p className="text-sm font-semibold text-gray-800 mt-0.5">{data.audit.auditingBody}</p>
-                </div>
-                <p className="text-xs text-gray-400 flex-shrink-0">{data.audit.lastUpdated}</p>
-              </div>
+            // Use live Firestore data if available, otherwise fall back to hardcoded data
+            const findings = hasLive ? liveDocs : data.audit.findings;
 
-              {/* Findings list */}
-              <div className="space-y-4">
-                {data.audit.findings.map((f) => {
-                  const severityStyles = {
-                    critical: { badge: 'bg-red-100 text-red-700',      border: 'border-red-400'    },
-                    high:     { badge: 'bg-orange-100 text-orange-700', border: 'border-orange-300' },
-                    medium:   { badge: 'bg-yellow-100 text-yellow-700', border: 'border-yellow-300' },
-                    low:      { badge: 'bg-blue-100 text-blue-700',     border: 'border-blue-300'   },
-                  };
-                  const sev = severityStyles[f.severity] || severityStyles.medium;
-                  const isExpanded = expandedAuditFinding === f.id;
-                  return (
-                    <div key={f.id} className={`relative bg-white rounded-xl shadow-sm border-l-4 ${sev.border} overflow-hidden`}>
-                      <button onClick={(e) => handleShare(e, { id: f.id, title: f.title, text: `🔍 Audit: ${f.title} - ${f.severity} severity - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 z-10 p-1.5 rounded-lg transition-colors ${copiedShareId === f.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === f.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
-                      <button
-                        onClick={() => setExpandedAuditFinding(isExpanded ? null : f.id)}
-                        className="w-full text-left p-5 pr-12"
-                      >
-                        <div className="flex items-start justify-between gap-3 mb-2">
-                          <h3 className="font-bold text-gray-900 text-sm leading-tight">{f.title}</h3>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full capitalize ${sev.badge}`}>{f.severity}</span>
-                            <svg className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                          </div>
-                        </div>
-                        <p className="text-xs text-gray-500 mb-3">{f.auditBody} · {f.date}</p>
-                        <p className="text-sm text-gray-700 leading-relaxed">{f.description}</p>
-                        {f.amountAtRisk && (
-                          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
-                            <span className="text-xs font-semibold text-gray-400">Amount at risk:</span>
-                            <span className="text-xs font-bold text-gray-800">{f.amountAtRisk}</span>
-                          </div>
-                        )}
-                      </button>
-                      {isExpanded && f.breakdown && (
-                        <div className="border-t border-gray-100 px-5 pb-6">
-                          <div className="pt-4 pb-3 mb-4 border-b border-gray-100">
-                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Total Authorized</p>
-                            <p className="text-3xl font-extrabold text-gray-900">{f.authorized}</p>
-                          </div>
-                          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Spending Breakdown</p>
-                          <div className="space-y-4">
-                            {f.breakdown.map((cat) => (
-                              <div key={cat.label}>
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="text-xs font-semibold text-gray-700">{cat.label}</span>
-                                  <span className="text-xs font-bold text-gray-800">{cat.amount} <span className="text-gray-400 font-normal">({cat.pct}%)</span></span>
-                                </div>
-                                <div className="w-full bg-gray-100 rounded-full h-2 mb-1">
-                                  <div className="h-2 rounded-full" style={{ width: `${Math.max(cat.pct, cat.pct > 0 ? 1 : 0)}%`, backgroundColor: cat.color }}></div>
-                                </div>
-                                <p className="text-xs text-gray-500 leading-snug">{cat.note}</p>
+            return (
+              <div>
+                {/* Summary bar */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                  <div className={`bg-white rounded-xl shadow-sm text-center border border-gray-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
+                    <p className={`font-black text-gray-900 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{hasLive ? liveDocs.length : data.audit.totalFindings.toLocaleString()}</p>
+                    <p className={`text-gray-400 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Total Findings</p>
+                  </div>
+                  <div className={`bg-green-50 rounded-xl shadow-sm text-center border border-green-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
+                    <p className={`font-black text-green-700 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{hasLive ? liveDocs.filter(f => f.status === 'resolved').length : data.audit.resolved.toLocaleString()}</p>
+                    <p className={`text-green-600 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Resolved</p>
+                  </div>
+                  <div className={`bg-red-50 rounded-xl shadow-sm text-center border border-red-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
+                    <p className={`font-black text-red-600 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{hasLive ? liveDocs.filter(f => f.status === 'open').length : data.audit.open.toLocaleString()}</p>
+                    <p className={`text-red-500 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Open</p>
+                  </div>
+                  <div className={`bg-blue-50 rounded-xl shadow-sm text-center border border-blue-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
+                    <p className={`font-black text-blue-700 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{hasLive ? liveDocs.filter(f => f.severity === 'critical').length : data.audit.avgResolutionDays}</p>
+                    <p className={`text-blue-500 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>{hasLive ? 'Critical' : 'Avg. Resolution'}</p>
+                    {!hasLive && <p className={`text-blue-400 mt-0.5 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>days</p>}
+                  </div>
+                </div>
+
+                {/* Auditing body + LIVE badge */}
+                <div className="bg-gray-50 rounded-xl px-5 py-3 mb-6 flex items-center justify-between gap-2 border border-gray-200">
+                  <div>
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Auditing Body</p>
+                    <p className="text-sm font-semibold text-gray-800 mt-0.5">{data.audit.auditingBody}</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {isLoadingAudit && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching live data…</span>}
+                    {hasLive && !isLoadingAudit && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    {!hasLive && !isLoadingAudit && <p className="text-xs text-gray-400">{data.audit.lastUpdated}</p>}
+                  </div>
+                </div>
+
+                {/* Findings list */}
+                {findings.length === 0 && !isLoadingAudit ? (
+                  <div className="bg-gray-50 rounded-xl p-10 text-center border border-gray-200">
+                    <p className="text-gray-400 text-sm">No audit findings on record for this jurisdiction.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {findings.map((f, idx) => {
+                      const fId = f.id || `finding-${idx}`;
+                      const sev = severityStyles[f.severity] || severityStyles.medium;
+                      const sta = statusStyles[f.status] || statusStyles.open;
+                      const isExpanded = expandedAuditFinding === fId;
+                      return (
+                        <div key={fId} className={`relative bg-white rounded-xl shadow-sm border-l-4 ${sev.border} overflow-hidden`}>
+                          <button onClick={(e) => handleShare(e, { id: fId, title: f.title, text: `🔍 Audit: ${f.title} - ${f.severity} severity - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 z-10 p-1.5 rounded-lg transition-colors ${copiedShareId === fId ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === fId ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+                          <button
+                            onClick={() => setExpandedAuditFinding(isExpanded ? null : fId)}
+                            className="w-full text-left p-5 pr-12"
+                          >
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                              <h3 className="font-bold text-gray-900 text-sm leading-tight">{f.title}</h3>
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full capitalize ${sev.badge}`}>{f.severity}</span>
+                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${sta.badge}`}>{sta.label}</span>
+                                <svg className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                               </div>
-                            ))}
-                          </div>
+                            </div>
+                            <p className="text-xs text-gray-500 mb-2">{f.department || f.auditBody} · {f.date}</p>
+                            <p className="text-sm text-gray-700 leading-relaxed">{f.summary || f.description}</p>
+                            {(f.amountInvolved || f.amountAtRisk) && (
+                              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+                                <span className="text-xs font-semibold text-gray-400">Amount involved:</span>
+                                <span className="text-xs font-bold text-gray-800">{f.amountInvolved || f.amountAtRisk}</span>
+                              </div>
+                            )}
+                          </button>
+                          {isExpanded && (
+                            <div className="border-t border-gray-100 px-5 pb-5 pt-4 space-y-3">
+                              {f.reportUrl && (
+                                <a href={f.reportUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 underline">
+                                  View Full Report →
+                                </a>
+                              )}
+                              {f.breakdown && (
+                                <div className="space-y-3 mt-2">
+                                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Spending Breakdown</p>
+                                  {f.breakdown.map((cat) => (
+                                    <div key={cat.label}>
+                                      <div className="flex items-center justify-between mb-1">
+                                        <span className="text-xs font-semibold text-gray-700">{cat.label}</span>
+                                        <span className="text-xs font-bold text-gray-800">{cat.amount} <span className="text-gray-400 font-normal">({cat.pct}%)</span></span>
+                                      </div>
+                                      <div className="w-full bg-gray-100 rounded-full h-2 mb-1">
+                                        <div className="h-2 rounded-full" style={{ width: `${Math.max(cat.pct, cat.pct > 0 ? 1 : 0)}%`, backgroundColor: cat.color }} />
+                                      </div>
+                                      <p className="text-xs text-gray-500 leading-snug">{cat.note}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ── Results Tab ── */}
           {financialDashTab === 'results' && (
