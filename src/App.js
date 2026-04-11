@@ -14651,24 +14651,28 @@ function App() {
     const promises = (liveData && liveData.length > 0) ? liveData : [];
     const isLoading = promiseTrackerLoading[leaderName];
 
-    const statusOrder = { Broken: 0, 'In Progress': 1, 'Not Started': 2, 'Partially Kept': 3, Kept: 4 };
+    const statusOrder = { Broken: 0, announced: 1, 'In Progress': 2, in_progress: 2, committed: 3, 'Not Started': 3, 'Partially Kept': 4, enacted: 5, Kept: 5 };
     const sorted = [...promises].sort((a, b) => (statusOrder[a.status] ?? 99) - (statusOrder[b.status] ?? 99));
 
-    const scoreMap = { Kept: 100, 'Partially Kept': 60, 'In Progress': 35, 'Not Started': 10, Broken: 0 };
+    const scoreMap = { Kept: 100, enacted: 100, 'Partially Kept': 60, 'In Progress': 35, in_progress: 35, committed: 20, 'Not Started': 10, announced: 5, Broken: 0 };
     const promiseScore = promises.length > 0
       ? Math.round(promises.reduce((s, p) => s + (scoreMap[p.status] || 0), 0) / promises.length)
       : 0;
     const scoreColor = promiseScore >= 70 ? '#22c55e' : promiseScore >= 45 ? '#eab308' : promiseScore >= 25 ? '#f97316' : '#ef4444';
 
     const broken = promises.filter(p => p.status === 'Broken').length;
-    const kept = promises.filter(p => p.status === 'Kept').length;
+    const kept = promises.filter(p => p.status === 'Kept' || p.status === 'enacted').length;
 
     const statusMeta = {
-      Kept:             { bg: 'bg-green-500',  text: 'text-white' },
-      Broken:           { bg: 'bg-red-500',    text: 'text-white' },
-      'In Progress':    { bg: 'bg-yellow-400', text: 'text-gray-900' },
-      'Not Started':    { bg: 'bg-gray-400',   text: 'text-white' },
-      'Partially Kept': { bg: 'bg-orange-400', text: 'text-white' },
+      Kept:             { bg: 'bg-green-500',  text: 'text-white',    label: 'Kept'          },
+      Broken:           { bg: 'bg-red-500',    text: 'text-white',    label: 'Broken'        },
+      'In Progress':    { bg: 'bg-yellow-400', text: 'text-gray-900', label: 'In Progress'   },
+      'Not Started':    { bg: 'bg-gray-400',   text: 'text-white',    label: 'Not Started'   },
+      'Partially Kept': { bg: 'bg-orange-400', text: 'text-white',    label: 'Partially Kept'},
+      enacted:          { bg: 'bg-green-500',  text: 'text-white',    label: 'Enacted'       },
+      in_progress:      { bg: 'bg-yellow-400', text: 'text-gray-900', label: 'In Progress'   },
+      committed:        { bg: 'bg-blue-500',   text: 'text-white',    label: 'Committed'     },
+      announced:        { bg: 'bg-purple-400', text: 'text-white',    label: 'Announced'     },
     };
 
     const catColors = {
@@ -14692,7 +14696,10 @@ function App() {
           <div className="flex items-center gap-3">
             <FileText className="w-6 h-6" style={{ color: accentColor }} />
             <div>
-              <h2 className="text-xl font-bold text-gray-800">📋 Promise Tracker</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-gray-800">📋 Promise Tracker</h2>
+                {promises.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+              </div>
               <p className="text-sm text-gray-600">{kept} kept · {broken} broken · {promises.length} total tracked</p>
             </div>
           </div>
@@ -14750,7 +14757,7 @@ function App() {
                     {/* Badges */}
                     <div className="flex flex-wrap gap-2 mb-3">
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${sMeta.bg} ${sMeta.text}`}>
-                        {promise.status}
+                        {sMeta.label || promise.status}
                       </span>
                       {promise.category && (
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${cClass}`}>
@@ -14764,13 +14771,15 @@ function App() {
                       className="text-gray-800 font-semibold text-sm leading-relaxed mb-2 italic border-l-4 pl-3"
                       style={{ borderColor: accentColor }}
                     >
-                      {promise.text}
+                      {promise.promise_text || promise.text}
                     </blockquote>
 
                     {/* Date + source */}
                     <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-3">
-                      {promise.date_promised && <span>📅 {promise.date_promised}</span>}
-                      {promise.source && <span>📌 {promise.source}</span>}
+                      {(promise.date_promised || promise.date_made) && <span>📅 {promise.date_promised || promise.date_made}</span>}
+                      {promise.source_url
+                        ? <a href={promise.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">📌 {promise.source || 'Source'}</a>
+                        : promise.source && <span>📌 {promise.source}</span>}
                     </div>
 
                     {/* Progress bar */}
@@ -14840,8 +14849,8 @@ function App() {
     const liveData = promiseTrackerData[leaderName];
     const allPromises = (liveData && liveData.length > 0) ? liveData : [];
 
-    const scoreMap    = { Kept: 100, 'Partially Kept': 60, 'In Progress': 35, 'Not Started': 10, Broken: 0 };
-    const statusOrder = { Broken: 0, 'In Progress': 1, 'Not Started': 2, 'Partially Kept': 3, Kept: 4 };
+    const scoreMap    = { Kept: 100, enacted: 100, 'Partially Kept': 60, 'In Progress': 35, in_progress: 35, committed: 20, 'Not Started': 10, announced: 5, Broken: 0 };
+    const statusOrder = { Broken: 0, announced: 1, 'In Progress': 2, in_progress: 2, committed: 3, 'Not Started': 3, 'Partially Kept': 4, enacted: 5, Kept: 5 };
 
     const promiseScore = allPromises.length > 0
       ? Math.round(allPromises.reduce((s, p) => s + (scoreMap[p.status] || 0), 0) / allPromises.length)
@@ -14850,11 +14859,11 @@ function App() {
 
     const stats = {
       total:         allPromises.length,
-      kept:          allPromises.filter(p => p.status === 'Kept').length,
+      kept:          allPromises.filter(p => p.status === 'Kept' || p.status === 'enacted').length,
       broken:        allPromises.filter(p => p.status === 'Broken').length,
-      inProgress:    allPromises.filter(p => p.status === 'In Progress').length,
-      notStarted:    allPromises.filter(p => p.status === 'Not Started').length,
-      partiallyKept: allPromises.filter(p => p.status === 'Partially Kept').length,
+      inProgress:    allPromises.filter(p => p.status === 'In Progress' || p.status === 'in_progress').length,
+      notStarted:    allPromises.filter(p => p.status === 'Not Started' || p.status === 'announced').length,
+      partiallyKept: allPromises.filter(p => p.status === 'Partially Kept' || p.status === 'committed').length,
     };
 
     const filtered = allPromises.filter(p => {
@@ -14865,14 +14874,18 @@ function App() {
     const sorted = [...filtered].sort((a, b) => (statusOrder[a.status] ?? 99) - (statusOrder[b.status] ?? 99));
 
     const allCategories = ['All', ...new Set(allPromises.map(p => p.category).filter(Boolean))];
-    const allStatuses   = ['All', 'Broken', 'In Progress', 'Not Started', 'Partially Kept', 'Kept'];
+    const allStatuses   = ['All', ...new Set(allPromises.map(p => p.status).filter(Boolean))];
 
     const statusMeta = {
-      Kept:             { bg: 'bg-green-500',  text: 'text-white',     ring: 'ring-green-400'  },
-      Broken:           { bg: 'bg-red-500',    text: 'text-white',     ring: 'ring-red-400'    },
-      'In Progress':    { bg: 'bg-yellow-400', text: 'text-gray-900',  ring: 'ring-yellow-300' },
-      'Not Started':    { bg: 'bg-gray-400',   text: 'text-white',     ring: 'ring-gray-300'   },
-      'Partially Kept': { bg: 'bg-orange-400', text: 'text-white',     ring: 'ring-orange-300' },
+      Kept:             { bg: 'bg-green-500',  text: 'text-white',    ring: 'ring-green-400',  label: 'Kept'          },
+      Broken:           { bg: 'bg-red-500',    text: 'text-white',    ring: 'ring-red-400',    label: 'Broken'        },
+      'In Progress':    { bg: 'bg-yellow-400', text: 'text-gray-900', ring: 'ring-yellow-300', label: 'In Progress'   },
+      'Not Started':    { bg: 'bg-gray-400',   text: 'text-white',    ring: 'ring-gray-300',   label: 'Not Started'   },
+      'Partially Kept': { bg: 'bg-orange-400', text: 'text-white',    ring: 'ring-orange-300', label: 'Partially Kept'},
+      enacted:          { bg: 'bg-green-500',  text: 'text-white',    ring: 'ring-green-400',  label: 'Enacted'       },
+      in_progress:      { bg: 'bg-yellow-400', text: 'text-gray-900', ring: 'ring-yellow-300', label: 'In Progress'   },
+      committed:        { bg: 'bg-blue-500',   text: 'text-white',    ring: 'ring-blue-400',   label: 'Committed'     },
+      announced:        { bg: 'bg-purple-400', text: 'text-white',    ring: 'ring-purple-300', label: 'Announced'     },
     };
 
     const catColors = {
@@ -14914,6 +14927,7 @@ function App() {
               <span className="text-3xl">{flag}</span>
               <span className="text-2xl">📋</span>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Promise Tracker</h1>
+              {allPromises.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
             </div>
             <p className="text-gray-500 text-sm ml-1">{leaderName} · {countryName}</p>
             <div className="w-20 h-1 mt-3 rounded-full" style={{ background: `linear-gradient(to right, ${accentColor}, ${accentColor}88)` }} />
@@ -15067,7 +15081,7 @@ function App() {
                     {/* Badges */}
                     <div className="flex flex-wrap gap-2 mb-3">
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${sMeta.bg} ${sMeta.text}`}>
-                        {promise.status}
+                        {sMeta.label || promise.status}
                       </span>
                       {promise.category && (
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${cClass}`}>
@@ -15081,13 +15095,15 @@ function App() {
                       className="text-gray-800 font-semibold text-sm sm:text-base leading-relaxed mb-2 italic border-l-4 pl-3"
                       style={{ borderColor: accentColor }}
                     >
-                      {promise.text}
+                      {promise.promise_text || promise.text}
                     </blockquote>
 
                     {/* Meta: date + source */}
                     <div className="flex flex-wrap gap-3 text-xs text-gray-400 mb-3">
-                      {promise.date_promised && <span>📅 {promise.date_promised}</span>}
-                      {promise.source && <span>📌 {promise.source}</span>}
+                      {(promise.date_promised || promise.date_made) && <span>📅 {promise.date_promised || promise.date_made}</span>}
+                      {promise.source_url
+                        ? <a href={promise.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">📌 {promise.source || 'Source'}</a>
+                        : promise.source && <span>📌 {promise.source}</span>}
                     </div>
 
                     {/* Progress bar */}
@@ -17028,9 +17044,10 @@ function App() {
   };
 
   const fetchPromiseTracker = async (leaderName) => {
+    const jurisdiction = leaderName === 'Donald Trump' ? 'US' : leaderName === 'Anthony Albanese' ? 'AU' : leaderName === 'Keir Starmer' ? 'UK' : 'CA';
     setPromiseTrackerLoading(prev => ({ ...prev, [leaderName]: true }));
     try {
-      const snap = await getDocs(query(collection(db, 'promise_tracker'), where('leader_name', '==', leaderName)));
+      const snap = await getDocs(query(collection(db, 'promise_tracker'), where('jurisdiction', '==', jurisdiction)));
       const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setPromiseTrackerData(prev => ({ ...prev, [leaderName]: items }));
     } catch (err) {
@@ -17040,6 +17057,21 @@ function App() {
       setPromiseTrackerLoading(prev => ({ ...prev, [leaderName]: false }));
     }
   };
+
+  // Auto-fetch promise tracker data when a leader page or the full Promise Tracker page opens
+  useEffect(() => {
+    const leaderForView = {
+      'promise-tracker-page': selectedCountry?.type === 'usa' ? 'Donald Trump' : selectedCountry?.type === 'australia' ? 'Anthony Albanese' : selectedCountry?.type === 'uk' ? 'Keir Starmer' : 'Mark Carney',
+      'canada-pm-detail':     'Mark Carney',
+      'president-detail':     'Donald Trump',
+      'uk-national':          'Keir Starmer',
+      'albanese-detail':      'Anthony Albanese',
+    };
+    const leader = leaderForView[view];
+    if (!leader) return;
+    if (promiseTrackerData[leader] !== undefined || promiseTrackerLoading[leader]) return;
+    fetchPromiseTracker(leader);
+  }, [view, selectedCountry]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchControversies = async (leaderName) => {
     setControversiesLoading(prev => ({ ...prev, [leaderName]: true }));
