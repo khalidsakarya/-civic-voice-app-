@@ -26108,156 +26108,16 @@ function App() {
     const countryCode = isUSA ? 'US' : isAU ? 'AU' : isUK ? 'UK' : 'CA';
     const backView    = isUSA ? 'categories' : isAU ? 'au-categories' : isUK ? 'uk-national' : 'categories';
 
-    const ED = {
-      CA: {
-        flag: '🇨🇦', name: 'Canada', accent: '#EF4444',
-        electionDate: new Date('2029-10-20'),
-        electionLabel: 'Next Federal Election',
-        polls: [
-          { party: 'Liberal', leader: 'Carney', pct: 42, trend: +2, color: '#EF4444' },
-          { party: 'Conservative', leader: 'Poilievre', pct: 35, trend: -1, color: '#1d4ed8' },
-          { party: 'NDP', leader: 'Singh', pct: 14, trend: -1, color: '#f97316' },
-          { party: 'Bloc Québécois', leader: 'Blanchet', pct: 7, trend: 0, color: '#3b82f6' },
-          { party: 'Green', leader: 'May', pct: 2, trend: 0, color: '#16a34a' },
-        ],
-        approvals: [
-          { name: 'Mark Carney', party: 'Liberal', pct: 58, color: '#EF4444' },
-          { name: 'Pierre Poilievre', party: 'Conservative', pct: 38, color: '#1d4ed8' },
-          { name: 'Jagmeet Singh', party: 'NDP', pct: 29, color: '#f97316' },
-        ],
-        battlegrounds: [
-          { name: 'Surrey-Newton', province: 'BC', margin: 'Liberal +3.2%', watch: 'NDP vs Liberal split' },
-          { name: 'Québec-Est', province: 'QC', margin: 'Bloc +6.1%', watch: 'Bloc vs Conservative shift' },
-          { name: 'Winnipeg North', province: 'MB', margin: 'Liberal +4.8%', watch: 'NDP vs Liberal battleground' },
-          { name: 'London West', province: 'ON', margin: 'Liberal +2.1%', watch: 'Bellwether riding since 1953' },
-          { name: 'Halifax', province: 'NS', margin: 'Liberal +5.4%', watch: 'NDP surge could flip' },
-        ],
-        prediction: { winner: 'Liberal Majority', confidence: 68, reasoning: 'Carney\'s economic credibility and trade war management give Liberals a durable polling lead. Conservative support concentrated in Alberta/Saskatchewan limits seat count. Key risk: NDP collapse splitting progressive vote.' },
-        recentResults: [
-          { year: 2025, winner: 'Liberal (Carney)', bars: [{ party: 'Liberal', pct: 43.1, color: '#EF4444' }, { party: 'Conservative', pct: 36.2, color: '#1d4ed8' }, { party: 'NDP', pct: 13.4, color: '#f97316' }, { party: 'Bloc', pct: 5.2, color: '#3b82f6' }] },
-          { year: 2021, winner: 'Liberal Minority (Trudeau)', bars: [{ party: 'Liberal', pct: 32.6, color: '#EF4444' }, { party: 'Conservative', pct: 33.7, color: '#1d4ed8' }, { party: 'NDP', pct: 17.8, color: '#f97316' }, { party: 'Bloc', pct: 7.6, color: '#3b82f6' }] },
-        ],
-        issues: ['Housing Affordability', 'US Tariffs & Trade', 'Cost of Living', 'Healthcare Reform', 'Climate Action', 'Indigenous Reconciliation', 'Defence Spending'],
-        pollQuestion: 'Who do you think will win the next federal election?',
-        pollOptions: ['Liberal', 'Conservative', 'NDP', 'Bloc Québécois'],
-        regions: ['Ontario', 'Quebec', 'British Columbia', 'Alberta', 'Prairies', 'Atlantic'],
-      },
-      US: {
-        flag: '🇺🇸', name: 'United States', accent: '#1d4ed8',
-        electionDate: new Date('2026-11-03'),
-        electionLabel: '2026 Midterm Elections',
-        polls: [
-          { party: 'Republican', leader: 'Trump', pct: 50, trend: -2, color: '#dc2626' },
-          { party: 'Democrat', leader: 'Harris', pct: 47, trend: +3, color: '#1d4ed8' },
-          { party: 'Independent', leader: 'Various', pct: 3, trend: +1, color: '#6b7280' },
-        ],
-        approvals: [
-          { name: 'Donald Trump', party: 'Republican', pct: 42, color: '#dc2626' },
-          { name: 'Kamala Harris', party: 'Democrat (potential)', pct: 41, color: '#1d4ed8' },
-          { name: 'Joe Biden', party: 'Democrat (former)', pct: 34, color: '#3b82f6' },
-        ],
-        battlegrounds: [
-          { name: 'PA-7 (Delco)', province: 'PA', margin: 'R +0.8%', watch: 'Philadelphia suburbs, key bellwether' },
-          { name: 'WI-3 (La Crosse)', province: 'WI', margin: 'D +1.2%', watch: 'Rural-urban divide district' },
-          { name: 'AZ-1 (East Valley)', province: 'AZ', margin: 'R +2.1%', watch: 'Fast-growing suburban Phoenix' },
-          { name: 'GA-6 (NW Atlanta)', province: 'GA', margin: 'R +3.4%', watch: 'Flipped in 2020, targeted by Dems' },
-          { name: 'NV-3 (Las Vegas)', province: 'NV', margin: 'D +1.6%', watch: 'Economy/gaming union turnout' },
-        ],
-        prediction: { winner: 'Democrats +15 House seats, Republicans hold Senate', confidence: 62, reasoning: 'Historical midterm patterns favour opposition party. DOGE cuts and tariff pain drive anti-incumbent sentiment in swing suburbs. Republicans\' structural Senate map advantage holds, but House margin is razor-thin.' },
-        recentResults: [
-          { year: 2024, winner: 'Trump (Republican)', bars: [{ party: 'Republican', pct: 51.1, color: '#dc2626' }, { party: 'Democrat', pct: 48.2, color: '#1d4ed8' }] },
-          { year: 2022, winner: 'Mixed (R Senate, D House)', bars: [{ party: 'Republican', pct: 47.3, color: '#dc2626' }, { party: 'Democrat', pct: 47.8, color: '#1d4ed8' }] },
-        ],
-        issues: ['Economy & Inflation', 'Immigration & Border', 'DOGE Cuts', 'Healthcare Costs', 'Ukraine Policy', 'Climate & Energy', 'Democracy & Institutions'],
-        pollQuestion: 'Which party do you think will win the 2026 midterms?',
-        pollOptions: ['Republican', 'Democrat', 'Split Result'],
-        regions: ['Midwest', 'South', 'Northeast', 'West Coast', 'Southwest'],
-      },
-      UK: {
-        flag: '🇬🇧', name: 'United Kingdom', accent: '#C8102E',
-        electionDate: new Date('2030-01-28'),
-        electionLabel: 'Next General Election (latest)',
-        polls: [
-          { party: 'Labour', leader: 'Starmer', pct: 36, trend: -4, color: '#C8102E' },
-          { party: 'Conservative', leader: 'Badenoch', pct: 26, trend: -2, color: '#012169' },
-          { party: 'Reform UK', leader: 'Farage', pct: 22, trend: +6, color: '#12B6CF' },
-          { party: 'Lib Dem', leader: 'Farron', pct: 12, trend: +1, color: '#FAA61A' },
-          { party: 'Other', leader: '—', pct: 4, trend: -1, color: '#6b7280' },
-        ],
-        approvals: [
-          { name: 'Keir Starmer', party: 'Labour', pct: 32, color: '#C8102E' },
-          { name: 'Kemi Badenoch', party: 'Conservative', pct: 29, color: '#012169' },
-          { name: 'Nigel Farage', party: 'Reform UK', pct: 38, color: '#12B6CF' },
-        ],
-        battlegrounds: [
-          { name: 'Clacton', province: 'Essex', margin: 'Reform +16.2%', watch: 'Farage\'s seat — Reform stronghold' },
-          { name: 'Swindon North', province: 'Wiltshire', margin: 'Labour +1.4%', watch: 'Red Wall reclaim target for Conservatives' },
-          { name: 'Rother Valley', province: 'S. Yorkshire', margin: 'Labour +3.2%', watch: 'Reform surge vs Labour hold' },
-          { name: 'Ashfield', province: 'Nottinghamshire', margin: 'Lab +4.8%', watch: 'Lee Anderson\'s old Reform seat' },
-          { name: 'Stoke-on-Trent N.', province: 'Staffordshire', margin: 'Lab +2.6%', watch: 'Brexit heartland, Reform target' },
-        ],
-        prediction: { winner: 'Labour Largest Party — Possible Minority', confidence: 55, reasoning: 'Reform UK vote splitting Tory-leaning constituencies could hand Labour seats despite falling poll share. A Lab/Lib Dem supply agreement is the most likely path to a Starmer second term. Risk: Reform breakthrough in Red Wall seats.' },
-        recentResults: [
-          { year: 2024, winner: 'Labour Majority (Starmer)', bars: [{ party: 'Labour', pct: 34, color: '#C8102E' }, { party: 'Conservative', pct: 24, color: '#012169' }, { party: 'Reform', pct: 14, color: '#12B6CF' }, { party: 'Lib Dem', pct: 12, color: '#FAA61A' }] },
-          { year: 2019, winner: 'Conservative Majority (Johnson)', bars: [{ party: 'Conservative', pct: 43.6, color: '#012169' }, { party: 'Labour', pct: 32.2, color: '#C8102E' }, { party: 'Lib Dem', pct: 11.6, color: '#FAA61A' }] },
-        ],
-        issues: ['NHS Waiting Lists', 'Cost of Living', 'Immigration & Small Boats', 'Economic Growth', 'Housing', 'Grooming Gangs Inquiry', 'Net Zero Energy'],
-        pollQuestion: 'Who do you think will win the next UK General Election?',
-        pollOptions: ['Labour', 'Conservative', 'Reform UK', 'No Overall Majority'],
-        regions: ['England', 'Scotland', 'Wales', 'Northern Ireland'],
-      },
-      AU: {
-        flag: '🇦🇺', name: 'Australia', accent: '#006833',
-        electionDate: new Date('2028-05-20'),
-        electionLabel: 'Next Federal Election (latest)',
-        polls: [
-          { party: 'Labor', leader: 'Albanese', pct: 36, trend: -3, color: '#CC0000' },
-          { party: 'Coalition (L/NP)', leader: 'Dutton', pct: 37, trend: +2, color: '#1d4ed8' },
-          { party: 'Greens', leader: 'Bandt', pct: 12, trend: 0, color: '#009900' },
-          { party: 'Independents', leader: 'Teals', pct: 9, trend: +1, color: '#14b8a6' },
-          { party: 'Other', leader: '—', pct: 6, trend: 0, color: '#6b7280' },
-        ],
-        approvals: [
-          { name: 'Anthony Albanese', party: 'Labor', pct: 41, color: '#CC0000' },
-          { name: 'Peter Dutton', party: 'Coalition', pct: 38, color: '#1d4ed8' },
-          { name: 'Adam Bandt', party: 'Greens', pct: 31, color: '#009900' },
-        ],
-        battlegrounds: [
-          { name: 'Brisbane', province: 'QLD', margin: 'Coalition +2.1%', watch: 'Greens vs Labor split hurts both' },
-          { name: 'Reid', province: 'NSW', margin: 'Labor +1.8%', watch: 'Multicultural western Sydney bellwether' },
-          { name: 'Deakin', province: 'VIC', margin: 'Coalition +3.4%', watch: 'Eastern Melbourne suburbs swing seat' },
-          { name: 'Swan', province: 'WA', margin: 'Labor +4.2%', watch: 'Perth suburb, mining economy issues' },
-          { name: 'Boothby', province: 'SA', margin: 'Coalition +1.1%', watch: 'Adelaide, tightest seat in 2022' },
-        ],
-        prediction: { winner: 'Coalition Narrow Win — Possible Minority', confidence: 52, reasoning: 'Cost of living erosion and Stage 3 tax cut U-turn damaged Albanese\'s trustworthiness ratings. Teal independents holding seats in leafy Liberal areas further fragments the right. Australia heads toward a hung parliament.' },
-        recentResults: [
-          { year: 2022, winner: 'Labor (Albanese)', bars: [{ party: 'Labor', pct: 32.6, color: '#CC0000' }, { party: 'Coalition', pct: 35.7, color: '#1d4ed8' }, { party: 'Greens', pct: 12.3, color: '#009900' }, { party: 'Independents', pct: 9.6, color: '#14b8a6' }] },
-          { year: 2019, winner: 'Coalition (Morrison)', bars: [{ party: 'Coalition', pct: 41.4, color: '#1d4ed8' }, { party: 'Labor', pct: 33.3, color: '#CC0000' }, { party: 'Greens', pct: 10.4, color: '#009900' }] },
-        ],
-        issues: ['Cost of Living', 'AUKUS & Defence', 'Climate & Energy', 'Housing Affordability', 'Indigenous Affairs', 'China Relations', 'Net Zero'],
-        pollQuestion: 'Who do you think will win the next Australian federal election?',
-        pollOptions: ['Labor', 'Coalition', 'Hung Parliament'],
-        regions: ['New South Wales', 'Victoria', 'Queensland', 'Western Australia', 'South Australia', 'Other'],
-      },
+    const META = {
+      CA: { flag: '🇨🇦', name: 'Canada',         accent: '#EF4444', electionLabel: 'Next Federal Election'           },
+      US: { flag: '🇺🇸', name: 'United States',   accent: '#1d4ed8', electionLabel: 'Next Election'                   },
+      UK: { flag: '🇬🇧', name: 'United Kingdom',  accent: '#C8102E', electionLabel: 'Next General Election'           },
+      AU: { flag: '🇦🇺', name: 'Australia',        accent: '#006833', electionLabel: 'Next Federal Election'           },
     };
-
-    const d = ED[countryCode];
+    const d = META[countryCode];
     const now = new Date();
-    const msLeft = d.electionDate - now;
-    const daysLeft  = Math.max(0, Math.floor(msLeft / 86400000));
-    const hoursLeft = Math.max(0, Math.floor((msLeft % 86400000) / 3600000));
-    const minsLeft  = Math.max(0, Math.floor((msLeft % 3600000) / 60000));
-
     const pollKey = `election-${countryCode}`;
     const myVote = electionPollVotes[pollKey];
-
-    const totalVotes = d.pollOptions.reduce((s, opt) => {
-      const base = { CA: { Liberal: 48, Conservative: 31, NDP: 14, 'Bloc Québécois': 7 }, US: { Republican: 38, Democrat: 51, 'Split Result': 11 }, UK: { Labour: 42, Conservative: 18, 'Reform UK': 24, 'No Overall Majority': 16 }, AU: { Labor: 39, Coalition: 41, 'Hung Parliament': 20 } };
-      return s + ((base[countryCode]?.[opt] || 10));
-    }, 0);
-    const optionPcts = {};
-    const basePcts = { CA: { Liberal: 48, Conservative: 31, NDP: 14, 'Bloc Québécois': 7 }, US: { Republican: 38, Democrat: 51, 'Split Result': 11 }, UK: { Labour: 42, Conservative: 18, 'Reform UK': 24, 'No Overall Majority': 16 }, AU: { Labor: 39, Coalition: 41, 'Hung Parliament': 20 } };
-    d.pollOptions.forEach(opt => { optionPcts[opt] = basePcts[countryCode]?.[opt] || Math.round(100 / d.pollOptions.length); });
 
     return (
       <div className="min-h-screen animate-fade-in" style={{ background: 'linear-gradient(160deg, #0a0a1a 0%, #0f1e3d 40%, #1a0a2e 100%)' }}>
@@ -26287,90 +26147,26 @@ function App() {
                 {d.electionLabel}
               </div>
               <div className="p-6 text-center">
-                <p className="text-blue-300 text-xs font-semibold uppercase tracking-wider mb-4">Time Until Election</p>
-                <div className="flex items-start justify-center gap-3 sm:gap-6">
-                  {[{ value: daysLeft, label: 'Days' }, { value: hoursLeft, label: 'Hours' }, { value: minsLeft, label: 'Minutes' }].map(({ value, label }) => (
-                    <div key={label} className="text-center">
-                      <div
-                        className="w-20 sm:w-28 h-20 sm:h-28 rounded-2xl flex items-center justify-center font-black text-white mb-2"
-                        style={{ fontSize: label === 'Days' ? '2.8rem' : '2rem', background: 'rgba(255,255,255,0.08)', border: `2px solid ${d.accent}66`, boxShadow: `0 0 24px ${d.accent}33` }}
-                      >
-                        {String(value).padStart(2, '0')}
-                      </div>
-                      <p className="text-blue-300 text-xs font-semibold uppercase tracking-wider">{label}</p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-blue-400 text-xs mt-4">{d.electionDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                <p className="text-gray-400 text-sm">No official election date available yet.</p>
               </div>
             </div>
 
             {/* ── CURRENT POLLING ── */}
             <div className="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10">
               <h2 className="text-white font-black text-base mb-4 flex items-center gap-2">📊 Current Polling</h2>
-              <div className="space-y-3">
-                {d.polls.map((p) => (
-                  <div key={p.party}>
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-white text-sm font-bold">{p.party}</span>
-                        <span className="text-xs text-gray-400">{p.leader}</span>
-                        <span className={`text-xs font-bold ${p.trend > 0 ? 'text-green-400' : p.trend < 0 ? 'text-red-400' : 'text-gray-400'}`}>
-                          {p.trend > 0 ? `▲${p.trend}` : p.trend < 0 ? `▼${Math.abs(p.trend)}` : '–'}
-                        </span>
-                      </div>
-                      <span className="text-white font-black text-base">{p.pct}%</span>
-                    </div>
-                    <div className="w-full rounded-full h-5 overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                      <div
-                        className="h-5 rounded-full flex items-center justify-end pr-2 transition-all duration-700"
-                        style={{ width: `${p.pct}%`, background: p.color }}
-                      >
-                        <span className="text-white text-xs font-bold">{p.pct}%</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className="text-gray-500 text-xs mt-3">Aggregate of latest national polls · Updated weekly</p>
+              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
             </div>
 
             {/* ── LEADER APPROVAL RATINGS ── */}
             <div className="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10">
               <h2 className="text-white font-black text-base mb-4">👤 Leader Approval Ratings</h2>
-              <div className="space-y-4">
-                {d.approvals.map((a) => (
-                  <div key={a.name}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div>
-                        <p className="text-white font-bold text-sm">{a.name}</p>
-                        <p className="text-gray-400 text-xs">{a.party}</p>
-                      </div>
-                      <span className="font-black text-2xl" style={{ color: a.color }}>{a.pct}%</span>
-                    </div>
-                    <div className="w-full bg-white/8 rounded-full h-4 overflow-hidden">
-                      <div className="h-4 rounded-full transition-all duration-700" style={{ width: `${a.pct}%`, background: `linear-gradient(to right, ${a.color}88, ${a.color})` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
             </div>
 
             {/* ── BATTLEGROUND SEATS ── */}
             <div className="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10">
               <h2 className="text-white font-black text-base mb-4">⚔️ Key Battleground Seats to Watch</h2>
-              <div className="space-y-3">
-                {d.battlegrounds.map((b, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                    <span className="text-lg flex-shrink-0">{'🎯📍🔥⚡💡'[i]}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-bold text-sm">{b.name} <span className="text-gray-400 font-normal text-xs">· {b.province}</span></p>
-                      <p className="text-blue-300 text-xs font-semibold mt-0.5">{b.margin}</p>
-                      <p className="text-gray-400 text-xs mt-0.5">{b.watch}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
             </div>
 
             {/* ── AI PREDICTION ── */}
@@ -26378,140 +26174,26 @@ function App() {
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xl">🤖</span>
                 <h2 className="text-white font-black text-base">AI Election Prediction</h2>
-                <span className="ml-auto px-2.5 py-0.5 rounded-full text-xs font-black text-white" style={{ background: d.accent }}>
-                  {d.prediction.confidence}% Confidence
-                </span>
               </div>
-              {/* Confidence meter */}
-              <div className="w-full bg-white/10 rounded-full h-3 mb-3 overflow-hidden">
-                <div className="h-3 rounded-full transition-all duration-700" style={{ width: `${d.prediction.confidence}%`, background: `linear-gradient(to right, ${d.accent}88, ${d.accent})` }} />
-              </div>
-              <p className="text-white font-black text-lg mb-2">🏆 {d.prediction.winner}</p>
-              <p className="text-blue-200 text-sm leading-relaxed">{d.prediction.reasoning}</p>
+              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
             </div>
 
             {/* ── RECENT ELECTION RESULTS ── */}
             <div className="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10">
               <h2 className="text-white font-black text-base mb-4">📋 Recent Election Results</h2>
-              <div className="space-y-4">
-                {d.recentResults.map((r) => (
-                  <div key={r.year}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-white font-bold text-sm">{r.year} — {r.winner}</span>
-                    </div>
-                    <div className="flex h-6 rounded-lg overflow-hidden gap-0.5">
-                      {r.bars.map((b) => (
-                        <div
-                          key={b.party}
-                          className="flex items-center justify-center text-white text-xs font-bold transition-all"
-                          style={{ width: `${b.pct}%`, background: b.color, minWidth: b.pct > 8 ? 0 : 4 }}
-                          title={`${b.party}: ${b.pct}%`}
-                        >
-                          {b.pct > 10 && `${b.pct}%`}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-1.5">
-                      {r.bars.map((b) => (
-                        <span key={b.party} className="flex items-center gap-1 text-xs text-gray-400">
-                          <span className="w-2 h-2 rounded-full inline-block" style={{ background: b.color }} />
-                          {b.party} {b.pct}%
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
             </div>
 
             {/* ── KEY ISSUES ── */}
             <div className="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10">
               <h2 className="text-white font-black text-base mb-3">🔑 Key Issues Driving the Election</h2>
-              <div className="flex flex-wrap gap-2">
-                {d.issues.map((issue, i) => (
-                  <span
-                    key={issue}
-                    className="px-3 py-1.5 rounded-full text-xs font-bold"
-                    style={{
-                      background: `${d.accent}${['33','28','22','1e','1a','16','12'][i % 7]}`,
-                      border: `1px solid ${d.accent}55`,
-                      color: i < 3 ? '#fff' : '#e2e8f0',
-                    }}
-                  >
-                    {issue}
-                  </span>
-                ))}
-              </div>
+              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
             </div>
 
             {/* ── CITIZEN POLL ── */}
             <div className="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10">
               <h2 className="text-white font-black text-base mb-1">🗳️ Citizen Poll</h2>
-              <p className="text-blue-300 text-sm mb-4">{d.pollQuestion}</p>
-
-              {/* Vote buttons */}
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                {d.pollOptions.map((opt, i) => {
-                  const isChosen = myVote === opt;
-                  const barColors = [d.accent, '#1d4ed8', '#f97316', '#6b7280'];
-                  return (
-                    <button
-                      key={opt}
-                      onClick={() => setElectionPollVotes(prev => {
-                        const next = { ...prev, [pollKey]: opt };
-                        try { localStorage.setItem('cv_election_poll', JSON.stringify(next)); } catch (_) {}
-                        return next;
-                      })}
-                      className="py-3 px-4 rounded-xl text-sm font-bold border-2 transition-all text-left"
-                      style={isChosen
-                        ? { background: barColors[i % barColors.length], borderColor: barColors[i % barColors.length], color: '#fff' }
-                        : { background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.15)', color: '#cbd5e1' }}
-                    >
-                      {isChosen && '✓ '}{opt}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Results bars */}
-              {myVote && (
-                <div className="space-y-2 mt-3">
-                  <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Civic Voice readers think:</p>
-                  {d.pollOptions.map((opt, i) => {
-                    const pct = optionPcts[opt] || 0;
-                    const barColors = [d.accent, '#1d4ed8', '#f97316', '#6b7280'];
-                    return (
-                      <div key={opt}>
-                        <div className="flex items-center justify-between mb-0.5">
-                          <span className="text-white text-xs font-semibold">{opt}</span>
-                          <span className="text-white text-xs font-black">{pct}%</span>
-                        </div>
-                        <div className="w-full rounded-full h-3 overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                          <div className="h-3 rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: barColors[i % barColors.length] }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {/* Regional breakdown */}
-                  <div className="mt-4 pt-3 border-t border-white/10">
-                    <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Regional Snapshot</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {d.regions.map((region, i) => {
-                        const leading = d.pollOptions[i % d.pollOptions.length];
-                        const pct = 35 + (i * 7 + 11) % 30;
-                        const barColors = [d.accent, '#1d4ed8', '#f97316', '#6b7280'];
-                        return (
-                          <div key={region} className="p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                            <p className="text-gray-400 text-xs mb-0.5">{region}</p>
-                            <p className="text-white text-xs font-bold">{leading} <span style={{ color: barColors[(i) % barColors.length] }}>{pct}%</span></p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
-              {!myVote && <p className="text-gray-500 text-xs text-center mt-1">Vote above to see results</p>}
+              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
             </div>
 
             <p className="text-center text-blue-900 text-xs mt-6 pb-6">
