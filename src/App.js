@@ -14645,40 +14645,10 @@ function App() {
     );
   };
 
-  const PROMISE_FALLBACK_DATA = {
-      'Mark Carney': [
-        { id: 'ca-p1', text: '"We will build 500,000 homes by 2030."', date_promised: 'Mar 2025', source: 'Liberal Platform 2025', category: 'Housing', status: 'In Progress', progress: 12, update: 'Housing Accelerator Fund expanded April 2025. Zoning reforms passed in 3 major cities. No construction starts yet — well behind the required pace of 100,000 homes per year.' },
-        { id: 'ca-p2', text: '"I will remove the consumer carbon tax immediately."', date_promised: 'Mar 2025', source: 'Campaign Pledge', category: 'Economy', status: 'Broken', progress: 0, update: 'Consumer carbon pricing remains in place for 2025. The rebate structure was modified but the tax was not eliminated. Government acknowledged the reversal in April 2025.' },
-        { id: 'ca-p3', text: '"We will deliver a balanced federal budget by 2028."', date_promised: 'Mar 2025', source: 'Liberal Fiscal Plan', category: 'Economy', status: 'Not Started', progress: 5, update: '2025 budget projected a $40.1B deficit. No credible fiscal path to balance presented. Parliamentary Budget Officer states the 2028 target is "not achievable" without significant spending cuts.' },
-        { id: 'ca-p4', text: '"Canada will raise defence spending to 2% of GDP for NATO."', date_promised: 'Mar 2025', source: 'NATO Commitment', category: 'Defence', status: 'In Progress', progress: 45, update: 'Defence spending reached 1.76% of GDP in 2025, up from 1.38%. C$8.1B committed over 5 years. NATO allies have acknowledged progress. Target of 2% projected by 2027.' },
-        { id: 'ca-p5', text: '"Every Canadian will have access to a family doctor by 2028."', date_promised: 'Mar 2025', source: 'Liberal Health Pledge', category: 'Healthcare', status: 'Not Started', progress: 8, update: '17% of Canadians still have no family doctor — unchanged since the pledge. No new funding framework announced. College of Family Physicians calls the 2028 target "impossible at current pace."' },
-      ],
-      'Donald Trump': [
-        { id: 'us-p1', text: '"We will seal the border and conduct the largest deportation in American history."', date_promised: 'Jan 2025', source: 'Inauguration Speech', category: 'Immigration', status: 'In Progress', progress: 58, update: '180,000+ deportations completed through Feb 2025. Record Border Patrol enforcement. Multiple executive orders challenged in federal courts. Scale falls short of "largest ever" claim but enforcement significantly elevated.' },
-        { id: 'us-p2', text: '"Prices will come down immediately — I will end inflation on day one."', date_promised: 'Oct 2024', source: 'Campaign Trail', category: 'Economy', status: 'Broken', progress: 0, update: 'Inflation rose from 3.0% to 3.4% in January 2025. Tariffs imposed in Feb–Mar 2025 are projected to add 1–2% to consumer prices. Core inflation remains elevated well above the Fed\'s 2% target.' },
-        { id: 'us-p3', text: '"I will fully declassify the JFK assassination files."', date_promised: '2024', source: 'Campaign Promise', category: 'Governance', status: 'Kept', progress: 100, update: 'Executive order signed February 2025 directing full release of remaining JFK records. Over 80,000 pages released to the public. Historians and transparency groups consider this promise fully delivered.' },
-        { id: 'us-p4', text: '"America will withdraw from the Paris Climate Agreement on day one."', date_promised: 'Campaign', source: 'Climate Policy Pledge', category: 'Environment', status: 'Kept', progress: 100, update: 'Withdrawal letter submitted to the United Nations on January 20, 2025 — Inauguration Day. The United States formally re-exited the Paris accord, as promised.' },
-        { id: 'us-p5', text: '"We will impose tariffs to bring manufacturing jobs back to America."', date_promised: 'Campaign', source: 'Trade Policy Platform', category: 'Economy', status: 'In Progress', progress: 40, update: '25% tariffs on Canada and Mexico and 10% on China announced March 2025. Some automotive reshoring signals. Economists warn of higher consumer prices. Job impact not yet measurable — likely 12–18 months lag.' },
-      ],
-      'Keir Starmer': [
-        { id: 'uk-p1', text: '"We will cut NHS waiting lists with 40,000 more appointments every week."', date_promised: 'Jul 2024', source: 'King\'s Speech', category: 'Healthcare', status: 'In Progress', progress: 22, update: 'NHS waiting lists reduced by 190,000 from the July 2024 peak. Government\'s own target requires a 2M reduction. Current pace falls well short. Elective recovery plan announced but underfunded by an estimated £1.5B.' },
-        { id: 'uk-p2', text: '"Great British Energy will deliver clean power for Britain by 2030."', date_promised: 'Jul 2024', source: 'Labour Manifesto', category: 'Environment', status: 'In Progress', progress: 18, update: 'Great British Energy Act passed January 2025. £8.3B committed. Offshore wind licences issued. Independent analysts rate the 2030 clean power target as facing "significant delivery risk" given grid upgrade timelines.' },
-        { id: 'uk-p3', text: '"We will build 1.5 million new homes in this parliament."', date_promised: 'Jul 2024', source: 'Labour Manifesto', category: 'Housing', status: 'In Progress', progress: 8, update: 'Planning & Infrastructure Bill introduced November 2024. Housebuilding up only 3% in 2024 — needs to triple. Local authority planning capacity remains a structural barrier. OBR forecasts a significant shortfall.' },
-        { id: 'uk-p4', text: '"Working people will not face higher taxes under a Labour government."', date_promised: 'Jun 2024', source: 'Pre-election Pledge', category: 'Economy', status: 'Broken', progress: 0, update: 'October 2024 Budget raised employer National Insurance by £25B and froze income tax thresholds. Workers face effective real-terms tax rises through fiscal drag. The IFS described this pledge as "clearly broken."' },
-        { id: 'uk-p5', text: '"We will halve knife crime within a decade."', date_promised: 'Jul 2024', source: 'Labour Manifesto', category: 'Crime/Safety', status: 'Not Started', progress: 4, update: 'Serious Violence Reduction Orders introduced. No measurable reduction in knife crime incidents through Q1 2025. Strategy remains in consultation. Experts say the decade target is achievable only with sustained youth intervention funding.' },
-      ],
-      'Anthony Albanese': [
-        { id: 'au-p1', text: '"We will make the cost of living more affordable for Australians."', date_promised: 'May 2022', source: 'Election Campaign', category: 'Economy', status: 'Broken', progress: 0, update: 'Inflation hit 7.8% post-election — highest in 30 years. Grocery prices rose 23% over the parliamentary term. Energy bills up 35% despite bill relief payments. Real wages fell for 18 months before a partial 2024 recovery.' },
-        { id: 'au-p2', text: '"We will get wages moving again for Australian workers."', date_promised: 'May 2022', source: 'Election Campaign', category: 'Economy', status: 'Partially Kept', progress: 55, update: 'Minimum wage increased 8.6% in 2023 and 3.75% in 2024. Real wages grew positively in 2024 for the first time since the election. High-income workers still face real wage losses. Partial delivery — low-paid workers benefited most.' },
-        { id: 'au-p3', text: '"We will build more homes in more places."', date_promised: '2023', source: 'National Housing Accord', category: 'Housing', status: 'In Progress', progress: 20, update: '1.2M home target set for 2024–29. Only 170,000 homes built in 2024 — 43% below the required pace. States are failing to deliver on planning reform commitments. The Housing Minister acknowledged a "significant shortfall."' },
-        { id: 'au-p4', text: '"We will make childcare cheaper for every Australian family."', date_promised: 'May 2022', source: 'Election Platform', category: 'Social Policy', status: 'Kept', progress: 100, update: 'Childcare subsidy raised to 90% for families earning under $80K — implemented July 2023. 1.3M families benefited immediately. Enrolments rose 12%. Delivered fully and ahead of schedule. Widely regarded as a clear win.' },
-        { id: 'au-p5', text: '"We will make the NDIS sustainable for future generations."', date_promised: '2023', source: 'NDIS Review', category: 'Social Policy', status: 'In Progress', progress: 38, update: 'NDIS costs grew 14% in 2024–25 to $43.5B, exceeding targets. NDIS Review recommendations partially implemented. Growth rate slowing but not yet at the target 8% sustainably. Reforms ongoing through 2025–26.' },
-      ],
-    };
 
   const renderPromiseTrackerSection = (leaderName, toggleFn, expandedSections, accentColor) => {
     const liveData = promiseTrackerData[leaderName];
-    const promises = (liveData && liveData.length > 0) ? liveData : (PROMISE_FALLBACK_DATA[leaderName] || []);
+    const promises = (liveData && liveData.length > 0) ? liveData : [];
     const isLoading = promiseTrackerLoading[leaderName];
 
     const statusOrder = { Broken: 0, 'In Progress': 1, 'Not Started': 2, 'Partially Kept': 3, Kept: 4 };
@@ -14757,7 +14727,13 @@ function App() {
             </div>
 
             {/* Promise cards */}
-            {sorted.map((promise, i) => {
+            {isLoading ? (
+              <div className="text-center py-8 text-gray-400 text-sm">⏳ Loading…</div>
+            ) : promises.length === 0 ? (
+              <div className="text-center py-8 bg-gray-50 rounded-xl border border-gray-200">
+                <p className="text-gray-400 text-sm font-medium">No official data available yet.</p>
+              </div>
+            ) : sorted.map((promise, i) => {
               const sMeta = statusMeta[promise.status] || statusMeta['Not Started'];
               const cClass = catColors[promise.category] || 'bg-gray-100 text-gray-800 border border-gray-200';
               const reactionKey = `${leaderName}-${promise.id || i}`;
@@ -14862,7 +14838,7 @@ function App() {
     const backView     = isUSA ? 'categories'      : isAU ? 'au-categories'    : isUK ? 'uk-national'    : 'categories';
 
     const liveData = promiseTrackerData[leaderName];
-    const allPromises = (liveData && liveData.length > 0) ? liveData : (PROMISE_FALLBACK_DATA[leaderName] || []);
+    const allPromises = (liveData && liveData.length > 0) ? liveData : [];
 
     const scoreMap    = { Kept: 100, 'Partially Kept': 60, 'In Progress': 35, 'Not Started': 10, Broken: 0 };
     const statusOrder = { Broken: 0, 'In Progress': 1, 'Not Started': 2, 'Partially Kept': 3, Kept: 4 };
@@ -14982,54 +14958,6 @@ function App() {
             </div>
           </div>
 
-          {/* Promise Score History chart */}
-          {(() => {
-            const SCORE_HISTORY = {
-              'Mark Carney': [
-                { month: 'Oct', score: 52 }, { month: 'Nov', score: 48 }, { month: 'Dec', score: 45 },
-                { month: 'Jan', score: 41 }, { month: 'Feb', score: 38 }, { month: 'Mar', score: promiseScore },
-              ],
-              'Donald Trump': [
-                { month: 'Oct', score: 44 }, { month: 'Nov', score: 40 }, { month: 'Dec', score: 36 },
-                { month: 'Jan', score: 42 }, { month: 'Feb', score: 39 }, { month: 'Mar', score: promiseScore },
-              ],
-              'Keir Starmer': [
-                { month: 'Oct', score: 55 }, { month: 'Nov', score: 50 }, { month: 'Dec', score: 46 },
-                { month: 'Jan', score: 43 }, { month: 'Feb', score: 40 }, { month: 'Mar', score: promiseScore },
-              ],
-              'Anthony Albanese': [
-                { month: 'Oct', score: 58 }, { month: 'Nov', score: 54 }, { month: 'Dec', score: 50 },
-                { month: 'Jan', score: 47 }, { month: 'Feb', score: 44 }, { month: 'Mar', score: promiseScore },
-              ],
-            };
-            const historyData = SCORE_HISTORY[leaderName] || [];
-            return (
-              <div className="bg-white rounded-2xl shadow-md p-5 mb-5 border border-gray-100">
-                <h3 className="font-bold text-gray-700 text-base mb-4">Promise Score History</h3>
-                <ResponsiveContainer width="100%" height={160}>
-                  <AreaChart data={historyData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={scoreColor} stopOpacity={0.3} />
-                        <stop offset="95%" stopColor={scoreColor} stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                    <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                    <Tooltip
-                      formatter={(v) => [`${v}/100`, 'Score']}
-                      contentStyle={{ background: '#1e293b', border: 'none', borderRadius: 10, color: '#fff', fontSize: 12 }}
-                      itemStyle={{ color: '#fff' }}
-                    />
-                    <Area type="monotone" dataKey="score" stroke={scoreColor} strokeWidth={2.5} fill="url(#scoreGrad)" dot={{ fill: scoreColor, r: 4 }} activeDot={{ r: 6 }} />
-                  </AreaChart>
-                </ResponsiveContainer>
-                <p className="text-xs text-gray-400 text-center mt-2">Score trend — last 6 months (fallback estimates)</p>
-              </div>
-            );
-          })()}
-
           {/* Most Broken Promises */}
           {(() => {
             const broken = allPromises.filter(p => p.status === 'Broken').slice(0, 3);
@@ -15114,7 +15042,15 @@ function App() {
 
           {/* Promise cards */}
           <div className="space-y-4">
-            {sorted.map((promise, i) => {
+            {promiseTrackerLoading[leaderName] ? (
+              <div className="text-center py-10 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <p className="text-gray-400 text-sm">⏳ Loading…</p>
+              </div>
+            ) : sorted.length === 0 ? (
+              <div className="text-center py-10 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <p className="text-gray-400 text-sm font-medium">No official data available yet.</p>
+              </div>
+            ) : sorted.map((promise, i) => {
               const sMeta = statusMeta[promise.status] || statusMeta['Not Started'];
               const cClass = catColors[promise.category] || 'bg-gray-100 text-gray-800 border border-gray-200';
               const reactionKey = `${leaderName}-${promise.id || i}`;
