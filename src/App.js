@@ -6589,6 +6589,42 @@ function App() {
   const [expandedAuditFinding, setExpandedAuditFinding] = useState(null);
   const [auditFindingsData, setAuditFindingsData] = useState({});
   const [auditFindingsLoading, setAuditFindingsLoading] = useState({});
+  const [deptBudgetData, setDeptBudgetData] = useState({});
+  const [deptBudgetLoading, setDeptBudgetLoading] = useState({});
+
+  // Fetch department budget data from Firestore when a department/ministry detail page opens
+  useEffect(() => {
+    const detailViews = ['ministry-detail', 'department-detail', 'uk-department-detail', 'au-department-detail'];
+    if (!detailViews.includes(view)) return;
+    const { jurisdiction, deptName } = (() => {
+      if (view === 'ministry-detail' && selectedMinistry?.name) return { jurisdiction: 'CA', deptName: selectedMinistry.name };
+      if (view === 'department-detail' && selectedDepartment?.name) return { jurisdiction: 'US', deptName: selectedDepartment.name };
+      if (view === 'uk-department-detail' && selectedUkDepartment?.name) return { jurisdiction: 'UK', deptName: selectedUkDepartment.name };
+      if (view === 'au-department-detail' && selectedAuDepartment?.name) return { jurisdiction: 'AU', deptName: selectedAuDepartment.name };
+      return {};
+    })();
+    if (!jurisdiction || !deptName) return;
+    const key = `${jurisdiction}:${deptName}`;
+    if (deptBudgetData[key] !== undefined || deptBudgetLoading[key]) return;
+    setDeptBudgetLoading(prev => ({ ...prev, [key]: true }));
+    (async () => {
+      try {
+        const q = query(
+          collection(db, 'department_budgets'),
+          where('jurisdiction', '==', jurisdiction),
+          where('department_name', '==', deptName)
+        );
+        const snap = await getDocs(q);
+        const doc = snap.docs.length > 0 ? snap.docs[0].data() : null;
+        setDeptBudgetData(prev => ({ ...prev, [key]: doc || {} }));
+      } catch (err) {
+        console.warn('[LiveData] department_budgets fetch failed:', err.message);
+        setDeptBudgetData(prev => ({ ...prev, [key]: {} }));
+      } finally {
+        setDeptBudgetLoading(prev => ({ ...prev, [key]: false }));
+      }
+    })();
+  }, [view, selectedMinistry, selectedDepartment, selectedUkDepartment, selectedAuDepartment]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch audit findings from Firestore when the Audit tab is active
   useEffect(() => {
@@ -6945,6 +6981,36 @@ function App() {
                 <p className="text-3xl font-bold text-purple-600">{selectedDepartment.employees.toLocaleString()}</p>
               </div>
             </div>
+
+            {/* Live Budget Detail */}
+            {(() => {
+              const _bKey = 'US:' + selectedDepartment.name;
+              const _bLoading = !!deptBudgetLoading[_bKey];
+              const _bData = deptBudgetData[_bKey];
+              const _hasData = _bData && (_bData.total_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _fmt = (v) => { if (typeof v === 'string') return v; if (typeof v !== 'number') return ''; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
+              if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
+              if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
+              if (!_hasData) return null;
+              const _util = (_bData.total_allocated && _bData.total_spent) ? Math.min(100, Math.round((_bData.total_spent / _bData.total_allocated) * 100)) : null;
+              const _barCol = _util >= 90 ? '#dc2626' : _util >= 70 ? '#f97316' : '#16a34a';
+              return (
+                <div className="mb-6 bg-white rounded-xl border border-gray-200 p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <TrendingUp className="w-5 h-5 text-green-600" />
+                    <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
+                    <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-1">LIVE</span>
+                    {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    {_bData.total_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_bData.total_allocated)}</p></div>}
+                    {_bData.total_spent !== undefined && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                  </div>
+                  {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
+                  {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
+                </div>
+              );
+            })()}
 
             <div className="mb-6">
               <h3 className="text-xl font-bold text-gray-800 mb-3">Key Responsibilities</h3>
@@ -19425,6 +19491,36 @@ function App() {
               </div>
             </div>
 
+            {/* Live Budget Detail */}
+            {(() => {
+              const _bKey = 'UK:' + dept.name;
+              const _bLoading = !!deptBudgetLoading[_bKey];
+              const _bData = deptBudgetData[_bKey];
+              const _hasData = _bData && (_bData.total_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _fmt = (v) => { if (typeof v === 'string') return v; if (typeof v !== 'number') return ''; if (v >= 1e12) return `£${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `£${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `£${(v/1e6).toFixed(1)}M`; return `£${v.toLocaleString()}`; };
+              if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
+              if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
+              if (!_hasData) return null;
+              const _util = (_bData.total_allocated && _bData.total_spent) ? Math.min(100, Math.round((_bData.total_spent / _bData.total_allocated) * 100)) : null;
+              const _barCol = _util >= 90 ? '#dc2626' : _util >= 70 ? '#f97316' : '#16a34a';
+              return (
+                <div className="mb-6 bg-white rounded-xl border border-gray-200 p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <TrendingUp className="w-5 h-5 text-green-600" />
+                    <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
+                    <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-1">LIVE</span>
+                    {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    {_bData.total_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_bData.total_allocated)}</p></div>}
+                    {_bData.total_spent !== undefined && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                  </div>
+                  {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
+                  {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
+                </div>
+              );
+            })()}
+
             {/* Responsibilities */}
             <div className="mb-6">
               <h3 className="text-xl font-bold text-gray-800 mb-3">Key Responsibilities</h3>
@@ -31653,6 +31749,36 @@ function App() {
               </div>
             </div>
 
+            {/* Live Budget Detail */}
+            {(() => {
+              const _bKey = 'CA:' + selectedMinistry.name;
+              const _bLoading = !!deptBudgetLoading[_bKey];
+              const _bData = deptBudgetData[_bKey];
+              const _hasData = _bData && (_bData.total_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _fmt = (v) => { if (typeof v === 'string') return v; if (typeof v !== 'number') return ''; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
+              if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
+              if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
+              if (!_hasData) return null;
+              const _util = (_bData.total_allocated && _bData.total_spent) ? Math.min(100, Math.round((_bData.total_spent / _bData.total_allocated) * 100)) : null;
+              const _barCol = _util >= 90 ? '#dc2626' : _util >= 70 ? '#f97316' : '#16a34a';
+              return (
+                <div className="mb-6 bg-white rounded-xl border border-gray-200 p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <TrendingUp className="w-5 h-5 text-green-600" />
+                    <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
+                    <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-1">LIVE</span>
+                    {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    {_bData.total_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_bData.total_allocated)}</p></div>}
+                    {_bData.total_spent !== undefined && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                  </div>
+                  {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
+                  {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
+                </div>
+              );
+            })()}
+
             {/* Responsibilities */}
             <div className="mb-6">
               <h3 className="text-xl font-bold text-gray-800 mb-3">Key Responsibilities</h3>
@@ -32754,6 +32880,36 @@ function App() {
                 <p className="text-3xl font-bold text-purple-600">{dept.employees.toLocaleString()}</p>
               </div>
             </div>
+
+            {/* Live Budget Detail */}
+            {(() => {
+              const _bKey = 'AU:' + dept.name;
+              const _bLoading = !!deptBudgetLoading[_bKey];
+              const _bData = deptBudgetData[_bKey];
+              const _hasData = _bData && (_bData.total_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _fmt = (v) => { if (typeof v === 'string') return v; if (typeof v !== 'number') return ''; if (v >= 1e12) return `A$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `A$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `A$${(v/1e6).toFixed(1)}M`; return `A$${v.toLocaleString()}`; };
+              if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
+              if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
+              if (!_hasData) return null;
+              const _util = (_bData.total_allocated && _bData.total_spent) ? Math.min(100, Math.round((_bData.total_spent / _bData.total_allocated) * 100)) : null;
+              const _barCol = _util >= 90 ? '#dc2626' : _util >= 70 ? '#f97316' : '#16a34a';
+              return (
+                <div className="mb-6 bg-white rounded-xl border border-gray-200 p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <TrendingUp className="w-5 h-5 text-green-600" />
+                    <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
+                    <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-1">LIVE</span>
+                    {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    {_bData.total_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_bData.total_allocated)}</p></div>}
+                    {_bData.total_spent !== undefined && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                  </div>
+                  {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
+                  {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
+                </div>
+              );
+            })()}
 
             {/* Responsibilities */}
             <div className="mb-6">
