@@ -31449,11 +31449,6 @@ function App() {
   const renderMinistryDetail = () => {
     if (!selectedMinistry) return null;
 
-    const totalVotes = selectedMinistry.approveVotes + selectedMinistry.disapproveVotes;
-    const approvalRate = totalVotes > 0 
-      ? Math.round((selectedMinistry.approveVotes / totalVotes) * 100) 
-      : 0;
-
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm">
@@ -31489,7 +31484,7 @@ function App() {
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
                 </div>
-                <p className="text-3xl font-bold text-green-600">{selectedMinistry.budget}</p>
+                <p className="text-sm text-gray-400 italic">Official data loading</p>
               </div>
 
               <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
@@ -31497,7 +31492,7 @@ function App() {
                   <TrendingUp className="w-8 h-8 text-blue-600" />
                   <h3 className="text-lg font-bold text-gray-800">Grants Given</h3>
                 </div>
-                <p className="text-3xl font-bold text-blue-600">{selectedMinistry.grants}</p>
+                <p className="text-sm text-gray-400 italic">Official data loading</p>
               </div>
 
               <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-6">
@@ -31505,7 +31500,7 @@ function App() {
                   <Users className="w-8 h-8 text-purple-600" />
                   <h3 className="text-lg font-bold text-gray-800">Employees</h3>
                 </div>
-                <p className="text-3xl font-bold text-purple-600">{selectedMinistry.employees.toLocaleString()}</p>
+                <p className="text-sm text-gray-400 italic">Official data loading</p>
               </div>
             </div>
 
@@ -31552,65 +31547,14 @@ function App() {
               </div>
             </div>
 
-            {/* Grants Breakdown - Collapsible */}
-            {selectedMinistry.grantsDetail && selectedMinistry.grantsDetail.length > 0 && (
-              <div className="mb-6">
-                <button
-                  onClick={() => setGrantsExpanded(!grantsExpanded)}
-                  className="w-full bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-400 rounded-lg p-5 hover:shadow-lg transition-all flex items-center justify-between cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <DollarSign className="w-8 h-8 text-green-600" />
-                    <div className="text-left">
-                      <h3 className="text-xl font-bold text-gray-800">💰 Grants & Funding Breakdown</h3>
-                      <p className="text-sm text-gray-600">
-                        {selectedMinistry.grantsDetail.length} major grants • {selectedMinistry.grants} total allocated
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-blue-600">
-                      {grantsExpanded ? 'Hide Details' : 'View All Recipients'}
-                    </span>
-                    {grantsExpanded ? (
-                      <ChevronDown className="w-6 h-6 text-blue-600" />
-                    ) : (
-                      <ChevronRight className="w-6 h-6 text-blue-600" />
-                    )}
-                  </div>
-                </button>
-                
-                {grantsExpanded && (
-                  <div className="mt-4 space-y-3 animate-fadeIn">
-                    <p className="text-gray-700 font-medium mb-3 px-2">
-                      🔍 Major grants over $1M showing specific organizations receiving taxpayer funding:
-                    </p>
-                    {selectedMinistry.grantsDetail.map((grant, index) => (
-                      <div key={index} className="relative bg-white rounded-lg p-4 pr-12 hover:shadow-md transition-shadow" style={{ border: '1px solid #e5e7eb', borderLeft: `4px solid ${grant.type === 'contract' ? '#2563eb' : '#16a34a'}` }}>
-                        <button onClick={(e) => handleShare(e, { id: 'grant-' + grant.recipient, title: grant.recipient, text: `💰 ${grant.recipient} — ${grant.amount} ${grant.type === 'contract' ? '(Contract)' : '(Grant)'}: ${grant.purpose} - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-2 right-2 p-2 rounded-lg transition-colors z-10 ${copiedShareId === 'grant-' + grant.recipient ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === 'grant-' + grant.recipient ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                              <h4 className="text-lg font-bold text-gray-800">{grant.recipient}</h4>
-                              {grant.type && (
-                                <span className="text-sm font-bold px-3 py-1 rounded-full flex-shrink-0" style={{ backgroundColor: grant.type === 'contract' ? '#2563eb' : '#16a34a', color: 'white' }}>
-                                  {grant.type === 'contract' ? 'Contract' : 'Grant'}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm text-gray-600">{grant.purpose}</p>
-                          </div>
-                          <div className="text-right sm:text-right flex-shrink-0">
-                            <p className="text-2xl font-bold text-green-600">{grant.amount}</p>
-                            <p className="text-xs text-gray-500">{grant.date}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+            {/* Grants Breakdown */}
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-3">
+                <DollarSign className="w-6 h-6 text-green-600" />
+                <h3 className="text-xl font-bold text-gray-800">Grants &amp; Funding Breakdown</h3>
               </div>
-            )}
+              <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
+            </div>
           </div>
 
           {/* Expenses */}
@@ -31624,124 +31568,41 @@ function App() {
                   <p className="text-sm text-gray-500">Official travel · entertainment · credit card · flagged items</p>
                 </div>
               </div>
+              <p className="text-gray-400 text-sm text-center py-6">No official data available yet.</p>
               {(() => {
-                const exp = genDeptExpenses(deptHeadsData[`CA:${selectedMinistry.name}`]?.name || selectedMinistry.name, selectedMinistry.name, 'CA$');
                 const liveKey = `CA:${selectedMinistry.name}`;
                 const liveItems = deptLiveExpenses[liveKey] || [];
-                const wsColor = exp.wasteScore >= 7 ? '#dc2626' : exp.wasteScore >= 4 ? '#f97316' : '#22c55e';
                 return (
-                  <>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                      <div className="bg-orange-50 border border-orange-200 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">✈️ Travel</p>
-                        <p className="font-bold text-orange-700 text-sm">{exp.totalTravel}</p>
-                      </div>
-                      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">🎭 Entertainment</p>
-                        <p className="font-bold text-blue-700 text-sm">{exp.totalEntertainment}</p>
-                      </div>
-                      <div className="bg-purple-50 border border-purple-200 p-3 rounded-lg text-center">
-                        <p className="text-xs text-gray-500 mb-1">💳 Credit Card</p>
-                        <p className="font-bold text-purple-700 text-sm">{exp.totalCreditCard}</p>
-                      </div>
-                      <div className="p-3 rounded-lg text-center border-2" style={{ background: `${wsColor}10`, borderColor: wsColor }}>
-                        <p className="text-xs text-gray-500 mb-1">⚠️ Waste Score</p>
-                        <p className="font-bold text-lg" style={{ color: wsColor }}>{exp.wasteScore}<span className="text-xs font-normal text-gray-400">/10</span></p>
-                      </div>
+                  <div className="mt-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-gray-700 text-sm">🔴 Live Flagged Spending (Firestore)</h3>
+                      <button
+                        onClick={() => fetchDeptExpenses(selectedMinistry.name, 'CA')}
+                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1.5 rounded-full font-semibold"
+                      >
+                        {deptExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
+                      </button>
                     </div>
-                    <div className="mb-5">
-                      <h3 className="font-semibold text-gray-700 text-sm mb-2">✈️ Official Travel</h3>
+                    {liveItems.length > 0 ? (
                       <div className="space-y-2">
-                        {exp.travel.map((item, i) => (
-                          <div key={i} className={`flex items-start justify-between gap-2 p-3 rounded-lg border ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs font-bold px-1.5 py-0.5 rounded">🚨 Flagged</span>}</p>
-                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                            </div>
-                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="mb-5">
-                      <h3 className="font-semibold text-gray-700 text-sm mb-2">🎭 Entertainment &amp; Hospitality</h3>
-                      <div className="space-y-2">
-                        {exp.entertainment.map((item, i) => (
-                          <div key={i} className={`flex items-start justify-between gap-2 p-3 rounded-lg border ${item.flagged ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 inline-flex items-center gap-1 bg-orange-100 text-orange-700 text-xs font-bold px-1.5 py-0.5 rounded">⚠️ Flagged</span>}</p>
-                              {item.flagged && item.reason && <p className="text-xs text-orange-700 mt-0.5">{item.reason}</p>}
-                            </div>
-                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="mb-5">
-                      <h3 className="font-semibold text-gray-700 text-sm mb-2">💳 Department Credit Card</h3>
-                      <div className="space-y-2">
-                        {exp.creditCard.map((item, i) => (
-                          <div key={i} className={`flex items-start justify-between gap-2 p-3 rounded-lg border ${item.flagged ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-800">{item.description}</p>
-                              <p className="text-xs text-gray-500">{item.date}{item.flagged && <span className="ml-2 inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs font-bold px-1.5 py-0.5 rounded">🚨 Flagged</span>}</p>
-                              {item.flagged && item.reason && <p className="text-xs text-red-600 mt-0.5">{item.reason}</p>}
-                            </div>
-                            <span className="text-sm font-bold text-gray-800 flex-shrink-0">{item.amount}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-5">
-                      <div className="flex items-center gap-2 mb-3">
-                        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-                        <h3 className="font-bold text-red-800">Flagged Wasteful Items — {exp.flaggedCount} item(s)</h3>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {[
-                          { label: 'Travel Overspend', severity: exp.wasteScore >= 7 ? 'Critical' : 'High', color: exp.wasteScore >= 7 ? '#dc2626' : '#f97316' },
-                          { label: 'Entertainment Conflict', severity: exp.wasteScore >= 5 ? 'High' : 'Medium', color: exp.wasteScore >= 5 ? '#f97316' : '#eab308' },
-                          { label: 'Missing Receipts', severity: 'Medium', color: '#eab308' },
-                        ].slice(0, exp.flaggedCount).map((badge, i) => (
-                          <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white" style={{ backgroundColor: badge.color }}>
-                            🚨 {badge.label} · {badge.severity}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-gray-700 text-sm">🔴 Live Flagged Spending (Firestore)</h3>
-                        <button
-                          onClick={() => fetchDeptExpenses(selectedMinistry.name, 'CA')}
-                          className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1.5 rounded-full font-semibold"
-                        >
-                          {deptExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
-                        </button>
-                      </div>
-                      {liveItems.length > 0 ? (
-                        <div className="space-y-2">
-                          {liveItems.map((item, i) => (
-                            <div key={i} className="bg-red-50 border border-red-300 rounded-lg p-3">
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                  <p className="text-xs text-gray-600">{item.department}</p>
-                                  <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
-                                  {item.severity && <span className={`mt-1 inline-block px-2 py-0.5 rounded text-xs font-bold text-white ${item.severity === 'Critical' ? 'bg-red-700' : item.severity === 'High' ? 'bg-red-500' : item.severity === 'Medium' ? 'bg-orange-500' : 'bg-yellow-500'}`}>{item.severity}</span>}
-                                </div>
-                                <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
+                        {liveItems.map((item, i) => (
+                          <div key={i} className="bg-red-50 border border-red-300 rounded-lg p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-gray-800">{item.title}</p>
+                                <p className="text-xs text-gray-600">{item.department}</p>
+                                <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
+                                {item.severity && <span className={`mt-1 inline-block px-2 py-0.5 rounded text-xs font-bold text-white ${item.severity === 'Critical' ? 'bg-red-700' : item.severity === 'High' ? 'bg-red-500' : item.severity === 'Medium' ? 'bg-orange-500' : 'bg-yellow-500'}`}>{item.severity}</span>}
                               </div>
+                              <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
                             </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
-                      )}
-                    </div>
-                  </>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                    )}
+                  </div>
                 );
               })()}
             </div>
@@ -31753,15 +31614,12 @@ function App() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <ThumbsUp className="w-10 h-10 text-green-600" />
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800">Approve</h3>
-                      <p className="text-sm text-gray-600">They're doing a good job</p>
-                    </div>
+                <div className="flex items-center gap-3 mb-4">
+                  <ThumbsUp className="w-10 h-10 text-green-600" />
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-800">Approve</h3>
+                    <p className="text-sm text-gray-600">They're doing a good job</p>
                   </div>
-                  <div className="text-3xl font-bold text-green-600">{selectedMinistry.approveVotes}</div>
                 </div>
                 <button
                   onClick={() => requireRegion(() => voteMinistry(
@@ -31779,15 +31637,12 @@ function App() {
               </div>
 
               <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <ThumbsDown className="w-10 h-10 text-red-600" />
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
-                      <p className="text-sm text-gray-600">They need to improve</p>
-                    </div>
+                <div className="flex items-center gap-3 mb-4">
+                  <ThumbsDown className="w-10 h-10 text-red-600" />
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
+                    <p className="text-sm text-gray-600">They need to improve</p>
                   </div>
-                  <div className="text-3xl font-bold text-red-600">{selectedMinistry.disapproveVotes}</div>
                 </div>
                 <button
                   onClick={() => requireRegion(() => voteMinistry(
@@ -31805,33 +31660,6 @@ function App() {
               </div>
             </div>
 
-            {/* Approval Stats */}
-            <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-800">Overall Approval Rating</h3>
-                <span className={`text-3xl font-bold ${
-                  approvalRate >= 60 ? 'text-green-600' :
-                  approvalRate >= 40 ? 'text-yellow-600' :
-                  'text-red-600'
-                }`}>
-                  {approvalRate}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-300 rounded-full h-4">
-                <div 
-                  className={`h-4 rounded-full transition-all ${
-                    approvalRate >= 60 ? 'bg-green-500' :
-                    approvalRate >= 40 ? 'bg-yellow-500' :
-                    'bg-red-500'
-                  }`}
-                  style={{ width: `${approvalRate}%` }}
-                ></div>
-              </div>
-              <div className="flex items-center justify-between mt-4 text-gray-600">
-                <span>{totalVotes.toLocaleString()} total votes</span>
-                <span>{selectedMinistry.approveVotes} approve • {selectedMinistry.disapproveVotes} disapprove</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
