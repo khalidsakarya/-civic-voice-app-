@@ -6591,6 +6591,7 @@ function App() {
   const [auditFindingsLoading, setAuditFindingsLoading] = useState({});
   const [deptBudgetData, setDeptBudgetData] = useState({});
   const [deptBudgetLoading, setDeptBudgetLoading] = useState({});
+  const [deptBudgetFetchedJurisdictions, setDeptBudgetFetchedJurisdictions] = useState({});
   const [electionsData, setElectionsData] = useState({});
   const [electionsLoading, setElectionsLoading] = useState({});
 
@@ -6627,6 +6628,28 @@ function App() {
       }
     })();
   }, [view, selectedMinistry, selectedDepartment, selectedUkDepartment, selectedAuDepartment]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Bulk-fetch all department budgets for a jurisdiction when a list page opens
+  useEffect(() => {
+    const listViews = { ministries: 'CA', departments: 'US', 'uk-departments': 'UK', 'au-departments': 'AU' };
+    const jurisdiction = listViews[view];
+    if (!jurisdiction) return;
+    if (deptBudgetFetchedJurisdictions[jurisdiction]) return;
+    setDeptBudgetFetchedJurisdictions(prev => ({ ...prev, [jurisdiction]: true }));
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'department_budgets'), where('jurisdiction', '==', jurisdiction)));
+        const updates = {};
+        snap.docs.forEach(d => {
+          const data = d.data();
+          if (data.department_name) updates[`${jurisdiction}:${data.department_name}`] = data;
+        });
+        setDeptBudgetData(prev => ({ ...prev, ...updates }));
+      } catch (err) {
+        console.warn('[LiveData] department_budgets bulk fetch failed:', err.message);
+      }
+    })();
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch election data from Firestore when Election Tracker is open
   useEffect(() => {
@@ -6896,31 +6919,39 @@ function App() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {usDepartments.map(dept => (
-              <div
-                key={dept.id}
-                onClick={() => { setSelectedDepartment(dept); setView('department-detail'); }}
-                className="relative bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
-              >
-                <button onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">{dept.name}</h3>
-                <p className="text-gray-700 mb-4">{dept.description}</p>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-green-50 rounded p-2">
-                    <p className="text-xs text-gray-600">Budget</p>
-                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
+            {usDepartments.map(dept => {
+              const bd = deptBudgetData[`US:${dept.name}`];
+              const hasLive = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') return v; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
+              return (
+                <div
+                  key={dept.id}
+                  onClick={() => { setSelectedDepartment(dept); setView('department-detail'); }}
+                  className="relative bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
+                >
+                  <button onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+                  <div className="flex items-start justify-between mb-2 pr-8">
+                    <h3 className="text-xl font-bold text-gray-800">{dept.name}</h3>
+                    {hasLive && <span className="shrink-0 ml-2 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                   </div>
-                  <div className="bg-blue-50 rounded p-2">
-                    <p className="text-xs text-gray-600">Grants</p>
-                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
-                  </div>
-                  <div className="bg-purple-50 rounded p-2">
-                    <p className="text-xs text-gray-600">Staff</p>
-                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
+                  <p className="text-gray-700 mb-4">{dept.description}</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-green-50 rounded p-2">
+                      <p className="text-xs text-gray-600">Budget</p>
+                      {hasLive && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                    </div>
+                    <div className="bg-blue-50 rounded p-2">
+                      <p className="text-xs text-gray-600">Spent</p>
+                      {hasLive && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                    </div>
+                    <div className="bg-purple-50 rounded p-2">
+                      <p className="text-xs text-gray-600">Fiscal Year</p>
+                      {hasLive && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -19315,46 +19346,54 @@ function App() {
 
           {/* Departments Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            {ukDepartments.map(dept => (
-              <div
-                key={dept.id}
-                onClick={() => { setSelectedUkDepartment(dept); setView('uk-department-detail'); }}
-                className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent active:scale-95"
-                onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
-              >
-                <div className="flex items-start justify-between mb-3 sm:mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{dept.name}</h3>
-                    <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
+            {ukDepartments.map(dept => {
+              const bd = deptBudgetData[`UK:${dept.name}`];
+              const hasLive = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') return v; if (v >= 1e12) return `£${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `£${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `£${(v/1e6).toFixed(1)}M`; return `£${v.toLocaleString()}`; };
+              return (
+                <div
+                  key={dept.id}
+                  onClick={() => { setSelectedUkDepartment(dept); setView('uk-department-detail'); }}
+                  className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent active:scale-95"
+                  onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+                >
+                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-800">{dept.name}</h3>
+                        {hasLive && <span className="shrink-0 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — civic-voice-app.vercel.app`, url: window.location.href })}
+                        className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
+                        aria-label="Share"
+                      >
+                        {copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                      </button>
+                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <button
-                      onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — civic-voice-app.vercel.app`, url: window.location.href })}
-                      className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
-                      aria-label="Share"
-                    >
-                      {copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
-                    </button>
-                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Budget</p>
+                      {hasLive && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Spent</p>
+                      {hasLive && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Fiscal Year</p>
+                      {hasLive && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                    </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Budget</p>
-                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Grants</p>
-                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Employees</p>
-                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -31298,38 +31337,46 @@ function App() {
 
           {/* Ministries List */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            {ministries.map(ministry => (
-              <div
-                key={ministry.id}
-                onClick={() => { setSelectedMinistry(ministry); setView('ministry-detail'); }}
-                className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95"
-              >
-                <div className="flex items-start justify-between mb-3 sm:mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{ministry.name}</h3>
-                    <p className="text-xs sm:text-sm text-gray-500">{ministry.description}</p>
+            {ministries.map(ministry => {
+              const bd = deptBudgetData[`CA:${ministry.name}`];
+              const hasLive = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') return v; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
+              return (
+                <div
+                  key={ministry.id}
+                  onClick={() => { setSelectedMinistry(ministry); setView('ministry-detail'); }}
+                  className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95"
+                >
+                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-800">{ministry.name}</h3>
+                        {hasLive && <span className="shrink-0 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-500">{ministry.description}</p>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button onClick={(e) => handleShare(e, { id: ministry.id, title: ministry.name, text: `🏛️ ${ministry.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === ministry.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === ministry.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <button onClick={(e) => handleShare(e, { id: ministry.id, title: ministry.name, text: `🏛️ ${ministry.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === ministry.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === ministry.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
-                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Budget</p>
+                      {hasLive && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Spent</p>
+                      {hasLive && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Fiscal Year</p>
+                      {hasLive && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                    </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Budget</p>
-                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Grants</p>
-                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Employees</p>
-                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -32395,44 +32442,52 @@ function App() {
 
           {/* Departments Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            {auDepartments.map(dept => (
-              <div
-                key={dept.id}
-                onClick={() => { setSelectedAuDepartment(dept); setView('au-department-detail'); }}
-                className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95"
-              >
-                <div className="flex items-start justify-between mb-3 sm:mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{dept.name}</h3>
-                    <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
+            {auDepartments.map(dept => {
+              const bd = deptBudgetData[`AU:${dept.name}`];
+              const hasLive = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') return v; if (v >= 1e12) return `A$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `A$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `A$${(v/1e6).toFixed(1)}M`; return `A$${v.toLocaleString()}`; };
+              return (
+                <div
+                  key={dept.id}
+                  onClick={() => { setSelectedAuDepartment(dept); setView('au-department-detail'); }}
+                  className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95"
+                >
+                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-800">{dept.name}</h3>
+                        {hasLive && <span className="shrink-0 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — civic-voice-app.vercel.app`, url: window.location.href })}
+                        className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
+                        aria-label="Share"
+                      >
+                        {copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                      </button>
+                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <button
-                      onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — civic-voice-app.vercel.app`, url: window.location.href })}
-                      className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
-                      aria-label="Share"
-                    >
-                      {copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
-                    </button>
-                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Budget</p>
+                      {hasLive && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Spent</p>
+                      {hasLive && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Fiscal Year</p>
+                      {hasLive && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                    </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Budget</p>
-                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Grants</p>
-                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Employees</p>
-                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
