@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import app, { db } from './firebase';
-import { collection, getDocs, query, where, addDoc, setDoc, doc, increment, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, getDoc, query, where, addDoc, setDoc, doc, increment, serverTimestamp } from 'firebase/firestore';
 import { logEvent } from './analytics';
 import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell } from 'lucide-react';
 import { BarChart, Bar, AreaChart, Area, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -1232,6 +1232,10 @@ function App() {
   const [leaderExpensesLoading, setLeaderExpensesLoading] = useState(false);
   const [deptLiveExpenses, setDeptLiveExpenses] = useState({});
   const [deptExpensesLoading, setDeptExpensesLoading] = useState(false);
+  const [deptVoteCounts, setDeptVoteCounts] = useState({});
+  const [deptUserVotes, setDeptUserVotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cv_dept_votes') || '{}'); } catch (_) { return {}; }
+  });
   const [ukPartyFilter, setUkPartyFilter] = useState('All');
   const [ukMpSearch, setUkMpSearch] = useState('');
   const [selectedUkMember, setSelectedUkMember] = useState(null);
@@ -6666,6 +6670,23 @@ function App() {
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Auto-load flagged expenses and vote counts when a department/ministry detail page opens
+  useEffect(() => {
+    const detailMap = {
+      'ministry-detail':      { country: 'CA', getName: () => selectedMinistry?.name },
+      'department-detail':    { country: 'US', getName: () => selectedDepartment?.name },
+      'uk-department-detail': { country: 'UK', getName: () => selectedUkDepartment?.name },
+      'au-department-detail': { country: 'AU', getName: () => selectedAuDepartment?.name },
+    };
+    const entry = detailMap[view];
+    if (!entry) return;
+    const deptName = entry.getName();
+    if (!deptName) return;
+    const key = `${entry.country}:${deptName}`;
+    if (deptLiveExpenses[key] === undefined) fetchDeptExpenses(deptName, entry.country);
+    fetchDeptVotes(entry.country, deptName);
+  }, [view, selectedMinistry, selectedDepartment, selectedUkDepartment, selectedAuDepartment]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Fetch election data from Firestore when Election Tracker is open
   useEffect(() => {
     if (view !== 'election-tracker') return;
@@ -7131,12 +7152,7 @@ function App() {
                   <div className="mt-4">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold text-gray-700 text-sm">🔴 Live Flagged Spending (Firestore)</h3>
-                      <button
-                        onClick={() => fetchDeptExpenses(selectedDepartment.name, 'US')}
-                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1.5 rounded-full font-semibold"
-                      >
-                        {deptExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
-                      </button>
+                      {deptExpensesLoading && <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
                     </div>
                     {liveItems.length > 0 ? (
                       <div className="space-y-2">
@@ -7155,7 +7171,7 @@ function App() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">No flagged spending data available yet.</p>
                     )}
                   </div>
                 );
@@ -7163,58 +7179,55 @@ function App() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Do You Approve of This Department's Performance?</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <ThumbsUp className="w-10 h-10 text-green-600" />
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">Approve</h3>
-                    <p className="text-sm text-gray-600">They're doing a good job</p>
+          {(() => {
+            const voteKey = `US:${selectedDepartment.name}`;
+            const approveCount = deptVoteCounts[voteKey]?.approve || 0;
+            const disapproveCount = deptVoteCounts[voteKey]?.disapprove || 0;
+            const userVote = deptUserVotes[voteKey] || null;
+            return (
+              <div className="bg-white rounded-lg shadow-md p-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Do You Approve of This Department's Performance?</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <ThumbsUp className="w-10 h-10 text-green-600" />
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800">Approve</h3>
+                          <p className="text-sm text-gray-600">They're doing a good job</p>
+                        </div>
+                      </div>
+                      {approveCount > 0 && <div className="text-3xl font-bold text-green-600">{approveCount.toLocaleString()}</div>}
+                    </div>
+                    <button
+                      onClick={() => submitDeptVote('US', selectedDepartment.name, userVote, userVote === 'approve' ? null : 'approve')}
+                      className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${userVote === 'approve' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
+                    >
+                      {userVote === 'approve' ? '✓ You Approve' : 'Vote Approve'}
+                    </button>
+                  </div>
+                  <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <ThumbsDown className="w-10 h-10 text-red-600" />
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
+                          <p className="text-sm text-gray-600">Not satisfied with performance</p>
+                        </div>
+                      </div>
+                      {disapproveCount > 0 && <div className="text-3xl font-bold text-red-600">{disapproveCount.toLocaleString()}</div>}
+                    </div>
+                    <button
+                      onClick={() => submitDeptVote('US', selectedDepartment.name, userVote, userVote === 'disapprove' ? null : 'disapprove')}
+                      className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${userVote === 'disapprove' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
+                    >
+                      {userVote === 'disapprove' ? '✓ You Disapprove' : 'Vote Disapprove'}
+                    </button>
                   </div>
                 </div>
-                <button
-                  onClick={() => voteDepartment(
-                    selectedDepartment.id, 
-                    selectedDepartment.userVote === 'approve' ? 'remove' : 'approve'
-                  )}
-                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${
-                    selectedDepartment.userVote === 'approve'
-                      ? 'bg-green-600 text-white'
-                      : 'bg-green-100 text-green-700 hover:bg-green-200'
-                  }`}
-                >
-                  {selectedDepartment.userVote === 'approve' ? '✓ You Approve' : 'Vote Approve'}
-                </button>
               </div>
-
-              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <ThumbsDown className="w-10 h-10 text-red-600" />
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
-                    <p className="text-sm text-gray-600">Not satisfied with performance</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => voteDepartment(
-                    selectedDepartment.id, 
-                    selectedDepartment.userVote === 'disapprove' ? 'remove' : 'disapprove'
-                  )}
-                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${
-                    selectedDepartment.userVote === 'disapprove'
-                      ? 'bg-red-600 text-white'
-                      : 'bg-red-100 text-red-700 hover:bg-red-200'
-                  }`}
-                >
-                  {selectedDepartment.userVote === 'disapprove' ? '✓ You Disapprove' : 'Vote Disapprove'}
-                </button>
-              </div>
-            </div>
-
-          </div>
+            );
+          })()}
         </div>
       </div>
     );
@@ -16908,6 +16921,45 @@ function App() {
     }
   };
 
+  const fetchDeptVotes = async (jurisdiction, deptName) => {
+    const key = `${jurisdiction}:${deptName}`;
+    const docId = `${jurisdiction}_${deptName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}`;
+    try {
+      const snap = await getDoc(doc(db, 'department_votes', docId));
+      setDeptVoteCounts(prev => ({ ...prev, [key]: snap.exists() ? snap.data() : { approve: 0, disapprove: 0 } }));
+    } catch (err) {
+      console.warn('[DeptVotes] fetch failed:', err.message);
+    }
+  };
+
+  const submitDeptVote = async (jurisdiction, deptName, prevVote, newVote) => {
+    const key = `${jurisdiction}:${deptName}`;
+    const docId = `${jurisdiction}_${deptName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}`;
+    logEvent('vote_politician', { country: jurisdiction, itemId: deptName });
+    // Optimistic update
+    setDeptVoteCounts(prev => {
+      const cur = prev[key] || { approve: 0, disapprove: 0 };
+      const next = { ...cur };
+      if (prevVote) next[prevVote] = Math.max(0, (next[prevVote] || 0) - 1);
+      if (newVote) next[newVote] = (next[newVote] || 0) + 1;
+      return { ...prev, [key]: next };
+    });
+    setDeptUserVotes(prev => {
+      const next = { ...prev, [key]: newVote || null };
+      try { localStorage.setItem('cv_dept_votes', JSON.stringify(next)); } catch (_) {}
+      return next;
+    });
+    // Write to Firestore
+    try {
+      const update = { jurisdiction, department_name: deptName, updated: serverTimestamp() };
+      if (prevVote) update[prevVote] = increment(-1);
+      if (newVote) update[newVote] = increment(1);
+      await setDoc(doc(db, 'department_votes', docId), update, { merge: true });
+    } catch (err) {
+      console.warn('[DeptVotes] write failed:', err.message);
+    }
+  };
+
   const fetchLeaderExpenses = async (country) => {
     setLeaderExpensesLoading(true);
     try {
@@ -19412,12 +19464,7 @@ function App() {
                   <div className="mt-4">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold text-gray-700 text-sm">🔴 Live Flagged Spending (Firestore)</h3>
-                      <button
-                        onClick={() => fetchDeptExpenses(dept.name, 'UK')}
-                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1.5 rounded-full font-semibold"
-                      >
-                        {deptExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
-                      </button>
+                      {deptExpensesLoading && <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
                     </div>
                     {liveItems.length > 0 ? (
                       <div className="space-y-2">
@@ -19436,7 +19483,7 @@ function App() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">No flagged spending data available yet.</p>
                     )}
                   </div>
                 );
@@ -19445,45 +19492,56 @@ function App() {
           </div>
 
           {/* Approval Voting */}
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Do You Approve of This Department's Performance?</h2>
-            <div className="h-1 w-16 rounded-full mb-6" style={{ background: 'linear-gradient(to right, #C8102E, #012169)' }} />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <ThumbsUp className="w-10 h-10 text-green-600" />
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">Approve</h3>
-                    <p className="text-sm text-gray-600">They're doing a good job</p>
+          {(() => {
+            const voteKey = `UK:${dept.name}`;
+            const approveCount = deptVoteCounts[voteKey]?.approve || 0;
+            const disapproveCount = deptVoteCounts[voteKey]?.disapprove || 0;
+            const userVote = deptUserVotes[voteKey] || null;
+            return (
+              <div className="bg-white rounded-lg shadow-md p-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Do You Approve of This Department's Performance?</h2>
+                <div className="h-1 w-16 rounded-full mb-6" style={{ background: 'linear-gradient(to right, #C8102E, #012169)' }} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <ThumbsUp className="w-10 h-10 text-green-600" />
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800">Approve</h3>
+                          <p className="text-sm text-gray-600">They're doing a good job</p>
+                        </div>
+                      </div>
+                      {approveCount > 0 && <div className="text-3xl font-bold text-green-600">{approveCount.toLocaleString()}</div>}
+                    </div>
+                    <button
+                      onClick={() => requireRegion(() => submitDeptVote('UK', dept.name, userVote, userVote === 'approve' ? null : 'approve'))}
+                      className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${userVote === 'approve' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
+                    >
+                      {userVote === 'approve' ? '✓ You Approve' : 'Vote Approve'}
+                    </button>
+                  </div>
+                  <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <ThumbsDown className="w-10 h-10 text-red-600" />
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
+                          <p className="text-sm text-gray-600">They need to improve</p>
+                        </div>
+                      </div>
+                      {disapproveCount > 0 && <div className="text-3xl font-bold text-red-600">{disapproveCount.toLocaleString()}</div>}
+                    </div>
+                    <button
+                      onClick={() => requireRegion(() => submitDeptVote('UK', dept.name, userVote, userVote === 'disapprove' ? null : 'disapprove'))}
+                      className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${userVote === 'disapprove' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
+                    >
+                      {userVote === 'disapprove' ? '✓ You Disapprove' : 'Vote Disapprove'}
+                    </button>
                   </div>
                 </div>
-                <button
-                  onClick={() => requireRegion(() => voteUkDepartment(dept.id, dept.userVote === 'approve' ? 'remove' : 'approve'))}
-                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${dept.userVote === 'approve' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
-                >
-                  {dept.userVote === 'approve' ? '✓ You Approve' : 'Vote Approve'}
-                </button>
               </div>
-
-              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <ThumbsDown className="w-10 h-10 text-red-600" />
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
-                    <p className="text-sm text-gray-600">They need to improve</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => requireRegion(() => voteUkDepartment(dept.id, dept.userVote === 'disapprove' ? 'remove' : 'disapprove'))}
-                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${dept.userVote === 'disapprove' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
-                >
-                  {dept.userVote === 'disapprove' ? '✓ You Disapprove' : 'Vote Disapprove'}
-                </button>
-              </div>
-            </div>
-
-          </div>
+            );
+          })()}
         </div>
       </div>
     );
@@ -31227,12 +31285,7 @@ function App() {
                   <div className="mt-4">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold text-gray-700 text-sm">🔴 Live Flagged Spending (Firestore)</h3>
-                      <button
-                        onClick={() => fetchDeptExpenses(selectedMinistry.name, 'CA')}
-                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1.5 rounded-full font-semibold"
-                      >
-                        {deptExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
-                      </button>
+                      {deptExpensesLoading && <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
                     </div>
                     {liveItems.length > 0 ? (
                       <div className="space-y-2">
@@ -31251,7 +31304,7 @@ function App() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">No flagged spending data available yet.</p>
                     )}
                   </div>
                 );
@@ -31260,58 +31313,55 @@ function App() {
           </div>
 
           {/* Approval Voting */}
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Do You Approve of This Ministry's Performance?</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <ThumbsUp className="w-10 h-10 text-green-600" />
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">Approve</h3>
-                    <p className="text-sm text-gray-600">They're doing a good job</p>
+          {(() => {
+            const voteKey = `CA:${selectedMinistry.name}`;
+            const approveCount = deptVoteCounts[voteKey]?.approve || 0;
+            const disapproveCount = deptVoteCounts[voteKey]?.disapprove || 0;
+            const userVote = deptUserVotes[voteKey] || null;
+            return (
+              <div className="bg-white rounded-lg shadow-md p-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Do You Approve of This Ministry's Performance?</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <ThumbsUp className="w-10 h-10 text-green-600" />
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800">Approve</h3>
+                          <p className="text-sm text-gray-600">They're doing a good job</p>
+                        </div>
+                      </div>
+                      {approveCount > 0 && <div className="text-3xl font-bold text-green-600">{approveCount.toLocaleString()}</div>}
+                    </div>
+                    <button
+                      onClick={() => requireRegion(() => submitDeptVote('CA', selectedMinistry.name, userVote, userVote === 'approve' ? null : 'approve'))}
+                      className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${userVote === 'approve' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
+                    >
+                      {userVote === 'approve' ? '✓ You Approve' : 'Vote Approve'}
+                    </button>
+                  </div>
+                  <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <ThumbsDown className="w-10 h-10 text-red-600" />
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
+                          <p className="text-sm text-gray-600">They need to improve</p>
+                        </div>
+                      </div>
+                      {disapproveCount > 0 && <div className="text-3xl font-bold text-red-600">{disapproveCount.toLocaleString()}</div>}
+                    </div>
+                    <button
+                      onClick={() => requireRegion(() => submitDeptVote('CA', selectedMinistry.name, userVote, userVote === 'disapprove' ? null : 'disapprove'))}
+                      className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${userVote === 'disapprove' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
+                    >
+                      {userVote === 'disapprove' ? '✓ You Disapprove' : 'Vote Disapprove'}
+                    </button>
                   </div>
                 </div>
-                <button
-                  onClick={() => requireRegion(() => voteMinistry(
-                    selectedMinistry.id,
-                    selectedMinistry.userVote === 'approve' ? 'remove' : 'approve'
-                  ))}
-                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${
-                    selectedMinistry.userVote === 'approve'
-                      ? 'bg-green-600 text-white'
-                      : 'bg-green-100 text-green-700 hover:bg-green-200'
-                  }`}
-                >
-                  {selectedMinistry.userVote === 'approve' ? '✓ You Approve' : 'Vote Approve'}
-                </button>
               </div>
-
-              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <ThumbsDown className="w-10 h-10 text-red-600" />
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
-                    <p className="text-sm text-gray-600">They need to improve</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => requireRegion(() => voteMinistry(
-                    selectedMinistry.id,
-                    selectedMinistry.userVote === 'disapprove' ? 'remove' : 'disapprove'
-                  ))}
-                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${
-                    selectedMinistry.userVote === 'disapprove'
-                      ? 'bg-red-600 text-white'
-                      : 'bg-red-100 text-red-700 hover:bg-red-200'
-                  }`}
-                >
-                  {selectedMinistry.userVote === 'disapprove' ? '✓ You Disapprove' : 'Vote Disapprove'}
-                </button>
-              </div>
-            </div>
-
-          </div>
+            );
+          })()}
         </div>
       </div>
     );
@@ -32180,12 +32230,7 @@ function App() {
                   <div className="mt-4">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold text-gray-700 text-sm">🔴 Live Flagged Spending (Firestore)</h3>
-                      <button
-                        onClick={() => fetchDeptExpenses(dept.name, 'AU')}
-                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1.5 rounded-full font-semibold"
-                      >
-                        {deptExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
-                      </button>
+                      {deptExpensesLoading && <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
                     </div>
                     {liveItems.length > 0 ? (
                       <div className="space-y-2">
@@ -32204,7 +32249,7 @@ function App() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">No flagged spending data available yet.</p>
                     )}
                   </div>
                 );
@@ -32213,44 +32258,55 @@ function App() {
           </div>
 
           {/* Approval Voting */}
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Do You Approve of This Department's Performance?</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <ThumbsUp className="w-10 h-10 text-green-600" />
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">Approve</h3>
-                    <p className="text-sm text-gray-600">They're doing a good job</p>
+          {(() => {
+            const voteKey = `AU:${dept.name}`;
+            const approveCount = deptVoteCounts[voteKey]?.approve || 0;
+            const disapproveCount = deptVoteCounts[voteKey]?.disapprove || 0;
+            const userVote = deptUserVotes[voteKey] || null;
+            return (
+              <div className="bg-white rounded-lg shadow-md p-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Do You Approve of This Department's Performance?</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <ThumbsUp className="w-10 h-10 text-green-600" />
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800">Approve</h3>
+                          <p className="text-sm text-gray-600">They're doing a good job</p>
+                        </div>
+                      </div>
+                      {approveCount > 0 && <div className="text-3xl font-bold text-green-600">{approveCount.toLocaleString()}</div>}
+                    </div>
+                    <button
+                      onClick={() => requireRegion(() => submitDeptVote('AU', dept.name, userVote, userVote === 'approve' ? null : 'approve'))}
+                      className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${userVote === 'approve' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
+                    >
+                      {userVote === 'approve' ? '✓ You Approve' : 'Vote Approve'}
+                    </button>
+                  </div>
+                  <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <ThumbsDown className="w-10 h-10 text-red-600" />
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
+                          <p className="text-sm text-gray-600">They need to improve</p>
+                        </div>
+                      </div>
+                      {disapproveCount > 0 && <div className="text-3xl font-bold text-red-600">{disapproveCount.toLocaleString()}</div>}
+                    </div>
+                    <button
+                      onClick={() => requireRegion(() => submitDeptVote('AU', dept.name, userVote, userVote === 'disapprove' ? null : 'disapprove'))}
+                      className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${userVote === 'disapprove' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
+                    >
+                      {userVote === 'disapprove' ? '✓ You Disapprove' : 'Vote Disapprove'}
+                    </button>
                   </div>
                 </div>
-                <button
-                  onClick={() => requireRegion(() => voteAuDepartment(dept.id, dept.userVote === 'approve' ? 'remove' : 'approve'))}
-                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${dept.userVote === 'approve' ? 'bg-green-600 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200'}`}
-                >
-                  {dept.userVote === 'approve' ? '✓ You Approve' : 'Vote Approve'}
-                </button>
               </div>
-
-              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <ThumbsDown className="w-10 h-10 text-red-600" />
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">Disapprove</h3>
-                    <p className="text-sm text-gray-600">They need to improve</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => requireRegion(() => voteAuDepartment(dept.id, dept.userVote === 'disapprove' ? 'remove' : 'disapprove'))}
-                  className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${dept.userVote === 'disapprove' ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
-                >
-                  {dept.userVote === 'disapprove' ? '✓ You Disapprove' : 'Vote Disapprove'}
-                </button>
-              </div>
-            </div>
-
-          </div>
+            );
+          })()}
         </div>
       </div>
     );
