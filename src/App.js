@@ -6591,6 +6591,8 @@ function App() {
   const [auditFindingsLoading, setAuditFindingsLoading] = useState({});
   const [deptBudgetData, setDeptBudgetData] = useState({});
   const [deptBudgetLoading, setDeptBudgetLoading] = useState({});
+  const [electionsData, setElectionsData] = useState({});
+  const [electionsLoading, setElectionsLoading] = useState({});
 
   // Fetch department budget data from Firestore when a department/ministry detail page opens
   useEffect(() => {
@@ -6625,6 +6627,41 @@ function App() {
       }
     })();
   }, [view, selectedMinistry, selectedDepartment, selectedUkDepartment, selectedAuDepartment]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch election data from Firestore when Election Tracker is open
+  useEffect(() => {
+    if (view !== 'election-tracker') return;
+    const isUSA = selectedCountry?.type === 'usa';
+    const isAU  = selectedCountry?.type === 'australia';
+    const isUK  = selectedCountry?.type === 'uk';
+    const countryCode = isUSA ? 'US' : isAU ? 'AU' : isUK ? 'UK' : 'CA';
+    if (electionsData[countryCode] !== undefined || electionsLoading[countryCode]) return;
+    setElectionsLoading(prev => ({ ...prev, [countryCode]: true }));
+    (async () => {
+      try {
+        const q = query(collection(db, 'elections'), where('country', '==', countryCode));
+        const snap = await getDocs(q);
+        const docs = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => {
+          // upcoming elections first, then by date
+          const aDate = a.election_date ? new Date(a.election_date) : null;
+          const bDate = b.election_date ? new Date(b.election_date) : null;
+          const now = new Date();
+          const aFuture = aDate && aDate >= now;
+          const bFuture = bDate && bDate >= now;
+          if (aFuture && !bFuture) return -1;
+          if (!aFuture && bFuture) return 1;
+          if (aDate && bDate) return aFuture ? aDate - bDate : bDate - aDate;
+          return 0;
+        });
+        setElectionsData(prev => ({ ...prev, [countryCode]: docs }));
+      } catch (err) {
+        console.warn('[LiveData] elections fetch failed:', err.message);
+        setElectionsData(prev => ({ ...prev, [countryCode]: [] }));
+      } finally {
+        setElectionsLoading(prev => ({ ...prev, [countryCode]: false }));
+      }
+    })();
+  }, [view, selectedCountry]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch audit findings from Firestore when the Audit tab is active
   useEffect(() => {
@@ -26109,19 +26146,107 @@ function App() {
     const backView    = isUSA ? 'categories' : isAU ? 'au-categories' : isUK ? 'uk-national' : 'categories';
 
     const META = {
-      CA: { flag: '🇨🇦', name: 'Canada',         accent: '#EF4444', electionLabel: 'Next Federal Election'           },
-      US: { flag: '🇺🇸', name: 'United States',   accent: '#1d4ed8', electionLabel: 'Next Election'                   },
-      UK: { flag: '🇬🇧', name: 'United Kingdom',  accent: '#C8102E', electionLabel: 'Next General Election'           },
-      AU: { flag: '🇦🇺', name: 'Australia',        accent: '#006833', electionLabel: 'Next Federal Election'           },
+      CA: { flag: '🇨🇦', name: 'Canada',         accent: '#EF4444', electionLabel: 'Next Federal Election'  },
+      US: { flag: '🇺🇸', name: 'United States',   accent: '#1d4ed8', electionLabel: 'Next Election'          },
+      UK: { flag: '🇬🇧', name: 'United Kingdom',  accent: '#C8102E', electionLabel: 'Next General Election'  },
+      AU: { flag: '🇦🇺', name: 'Australia',        accent: '#006833', electionLabel: 'Next Federal Election'  },
     };
     const d = META[countryCode];
     const now = new Date();
-    const pollKey = `election-${countryCode}`;
-    const myVote = electionPollVotes[pollKey];
+
+    const elections   = electionsData[countryCode];
+    const isLoading   = !!electionsLoading[countryCode];
+    const hasData     = Array.isArray(elections) && elections.length > 0;
+
+    // Split into upcoming vs past
+    const upcoming = hasData ? elections.filter(e => e.election_date && new Date(e.election_date) >= now) : [];
+    const past     = hasData ? elections.filter(e => !e.election_date || new Date(e.election_date) < now) : [];
+
+    const partyColors = ['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#ec4899','#14b8a6','#f97316'];
+
+    const renderCandidates = (candidates) => {
+      if (!Array.isArray(candidates) || candidates.length === 0) return null;
+      return (
+        <div className="mt-3 space-y-2">
+          {candidates.map((c, i) => {
+            const pct = typeof c.vote_percentage === 'number' ? c.vote_percentage : (typeof c.poll_percentage === 'number' ? c.poll_percentage : null);
+            const color = partyColors[i % partyColors.length];
+            return (
+              <div key={i}>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-white">{c.name || c.candidate}</span>
+                    {c.party && <span className="text-xs px-1.5 py-0.5 rounded-full text-white font-medium" style={{ background: color + '99' }}>{c.party}</span>}
+                    {c.winner && <span className="text-xs px-1.5 py-0.5 rounded-full bg-yellow-400 text-gray-900 font-bold">✓ Winner</span>}
+                  </div>
+                  {pct !== null && <span className="text-xs font-bold text-white">{pct}%</span>}
+                </div>
+                {pct !== null && (
+                  <div className="w-full bg-white/10 rounded-full h-1.5">
+                    <div className="h-1.5 rounded-full transition-all" style={{ width: `${Math.min(100, pct)}%`, background: color }} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    };
+
+    const renderElectionCard = (election, index) => {
+      const eDate = election.election_date ? new Date(election.election_date) : null;
+      const isFuture = eDate && eDate >= now;
+      const dateStr = eDate ? eDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+      let daysLabel = null;
+      if (eDate && isFuture) {
+        const diff = Math.ceil((eDate - now) / (1000 * 60 * 60 * 24));
+        daysLabel = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `${diff} days away`;
+      }
+
+      return (
+        <div key={election.id || index} className="bg-white/8 rounded-2xl p-5 mb-4 border border-white/10">
+          <div className="flex items-start justify-between gap-2 mb-3">
+            <div>
+              <h3 className="text-white font-bold text-sm leading-snug">{election.title || election.name || 'Election'}</h3>
+              {election.type && (
+                <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-white/15 text-gray-300 capitalize">{election.type}</span>
+              )}
+            </div>
+            <span className="shrink-0 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+          </div>
+
+          {dateStr && (
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-gray-400 text-xs">📅 {dateStr}</span>
+              {daysLabel && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: d.accent + '44', color: '#fff' }}>{daysLabel}</span>}
+            </div>
+          )}
+
+          {election.description && (
+            <p className="text-gray-400 text-xs leading-relaxed mb-3">{election.description}</p>
+          )}
+
+          {/* Candidates / Results */}
+          {(election.candidates || election.results) && renderCandidates(election.candidates || election.results)}
+
+          {/* Turnout */}
+          {election.turnout_percentage != null && (
+            <p className="text-gray-400 text-xs mt-3">Voter turnout: <span className="text-white font-semibold">{election.turnout_percentage}%</span></p>
+          )}
+
+          {/* Source */}
+          {election.source_url && (
+            <a href={election.source_url} target="_blank" rel="noopener noreferrer"
+               className="inline-block mt-3 text-xs text-blue-400 underline">
+              📌 {election.source || 'Source'}
+            </a>
+          )}
+        </div>
+      );
+    };
 
     return (
       <div className="min-h-screen animate-fade-in" style={{ background: 'linear-gradient(160deg, #0a0a1a 0%, #0f1e3d 40%, #1a0a2e 100%)' }}>
-        {/* Header */}
         <div className="p-4 sm:p-6">
           <div className="max-w-3xl mx-auto">
             <button
@@ -26141,63 +26266,47 @@ function App() {
               </div>
             </div>
 
-            {/* ── COUNTDOWN TIMER ── */}
-            <div className="rounded-3xl mb-6 overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%)', border: `1px solid ${d.accent}55` }}>
-              <div className="p-1 text-center text-xs font-bold uppercase tracking-widest" style={{ background: `linear-gradient(90deg, ${d.accent}cc, ${d.accent}88)`, color: '#fff' }}>
-                {d.electionLabel}
+            {/* Loading */}
+            {isLoading && (
+              <div className="text-center py-12 text-gray-400 text-sm">⏳ Loading elections…</div>
+            )}
+
+            {/* No data */}
+            {!isLoading && elections !== undefined && !hasData && (
+              <div className="text-center py-12 bg-white/5 rounded-2xl border border-white/10">
+                <p className="text-gray-400 text-sm font-medium">No official data available yet.</p>
               </div>
-              <div className="p-6 text-center">
-                <p className="text-gray-400 text-sm">No official election date available yet.</p>
+            )}
+
+            {/* Upcoming Elections */}
+            {!isLoading && upcoming.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-white font-black text-base mb-3 flex items-center gap-2">
+                  📅 Upcoming Elections
+                  <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                </h2>
+                {upcoming.map((e, i) => renderElectionCard(e, i))}
               </div>
-            </div>
+            )}
 
-            {/* ── CURRENT POLLING ── */}
-            <div className="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10">
-              <h2 className="text-white font-black text-base mb-4 flex items-center gap-2">📊 Current Polling</h2>
-              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
-            </div>
-
-            {/* ── LEADER APPROVAL RATINGS ── */}
-            <div className="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10">
-              <h2 className="text-white font-black text-base mb-4">👤 Leader Approval Ratings</h2>
-              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
-            </div>
-
-            {/* ── BATTLEGROUND SEATS ── */}
-            <div className="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10">
-              <h2 className="text-white font-black text-base mb-4">⚔️ Key Battleground Seats to Watch</h2>
-              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
-            </div>
-
-            {/* ── AI PREDICTION ── */}
-            <div className="rounded-2xl p-5 mb-5 overflow-hidden" style={{ background: `linear-gradient(135deg, ${d.accent}22 0%, rgba(0,0,0,0.4) 100%)`, border: `1px solid ${d.accent}44` }}>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xl">🤖</span>
-                <h2 className="text-white font-black text-base">AI Election Prediction</h2>
+            {/* Past Elections */}
+            {!isLoading && past.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-white font-black text-base mb-3 flex items-center gap-2">
+                  📋 Recent Election Results
+                  <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                </h2>
+                {past.map((e, i) => renderElectionCard(e, i))}
               </div>
-              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
-            </div>
+            )}
 
-            {/* ── RECENT ELECTION RESULTS ── */}
-            <div className="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10">
-              <h2 className="text-white font-black text-base mb-4">📋 Recent Election Results</h2>
-              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
-            </div>
-
-            {/* ── KEY ISSUES ── */}
-            <div className="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10">
-              <h2 className="text-white font-black text-base mb-3">🔑 Key Issues Driving the Election</h2>
-              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
-            </div>
-
-            {/* ── CITIZEN POLL ── */}
-            <div className="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10">
-              <h2 className="text-white font-black text-base mb-1">🗳️ Citizen Poll</h2>
-              <p className="text-gray-400 text-sm text-center py-4">No official data available yet.</p>
-            </div>
+            {/* Still loading initial skeleton */}
+            {!isLoading && elections === undefined && (
+              <div className="text-center py-12 text-gray-400 text-sm">⏳ Loading elections…</div>
+            )}
 
             <p className="text-center text-blue-900 text-xs mt-6 pb-6">
-              Election data sourced from public polling aggregates · AI predictions are analytical estimates, not guarantees · Civic Voice
+              Election data sourced from official records · Civic Voice
             </p>
           </div>
         </div>
