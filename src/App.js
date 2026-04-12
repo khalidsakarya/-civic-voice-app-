@@ -6653,10 +6653,15 @@ function App() {
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Bulk-fetch all department heads for a jurisdiction when a list page opens
+  // Bulk-fetch all department heads for a jurisdiction when a list or detail page opens
   useEffect(() => {
-    const listViews = { ministries: 'CA', departments: 'US', 'uk-departments': 'UK', 'au-departments': 'AU' };
-    const jurisdiction = listViews[view];
+    const allViews = {
+      ministries: 'CA', 'ministry-detail': 'CA',
+      departments: 'US', 'department-detail': 'US',
+      'uk-departments': 'UK', 'uk-department-detail': 'UK',
+      'au-departments': 'AU', 'au-department-detail': 'AU',
+    };
+    const jurisdiction = allViews[view];
     if (!jurisdiction) return;
     if (deptHeadsFetchedJurisdictions[jurisdiction]) return;
     setDeptHeadsFetchedJurisdictions(prev => ({ ...prev, [jurisdiction]: true }));
