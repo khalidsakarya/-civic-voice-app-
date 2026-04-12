@@ -4148,20 +4148,6 @@ function App() {
         { year: 2024, rate: 4.1, context: 'Current Rate' }
       ],
       
-      // Foreign Aid by Country (FY 2024 Top Recipients, in billions)
-      foreignAid: [
-        { country: 'Ukraine', amount: 44.2, purpose: 'Military and humanitarian aid' },
-        { country: 'Israel', amount: 3.8, purpose: 'Military assistance' },
-        { country: 'Egypt', amount: 1.4, purpose: 'Military and economic support' },
-        { country: 'Jordan', amount: 1.7, purpose: 'Economic and military aid' },
-        { country: 'Afghanistan', amount: 3.3, purpose: 'Humanitarian assistance' },
-        { country: 'Kenya', amount: 1.1, purpose: 'Security and development' },
-        { country: 'Ethiopia', amount: 1.4, purpose: 'Humanitarian and development' },
-        { country: 'Nigeria', amount: 1.2, purpose: 'Security and health programs' },
-        { country: 'South Sudan', amount: 1.1, purpose: 'Humanitarian relief' },
-        { country: 'Syria', amount: 1.9, purpose: 'Humanitarian assistance' }
-      ],
-      
       // US Government Loans to Foreign Governments (Active loans, in billions)
       foreignLoans: [
         { country: 'Ukraine', amount: 61.4, purpose: 'Economic stabilization and reconstruction', status: 'Active' },
