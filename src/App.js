@@ -6862,9 +6862,6 @@ function App() {
 
   // US Departments rendering (similar to ministries)
   const renderDepartments = () => {
-    const totalBudget = usDepartments.reduce((sum, dept) => sum + dept.budgetRaw, 0);
-    const totalEmployees = usDepartments.reduce((sum, dept) => sum + dept.employees, 0);
-    
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
@@ -6882,7 +6879,6 @@ function App() {
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">🏛️ US Federal Departments</h2>
             <p className="text-gray-600 mb-4">15 Cabinet-level executive departments managing federal operations</p>
-            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
                 <p className="text-sm text-gray-600">Total Departments</p>
@@ -6890,72 +6886,41 @@ function App() {
               </div>
               <div className="bg-white rounded-lg p-4 border-2 border-green-300">
                 <p className="text-sm text-gray-600">Combined Budget</p>
-                <p className="text-2xl font-bold text-green-600">${(totalBudget / 1000000000000).toFixed(2)}T</p>
+                <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>
               </div>
               <div className="bg-white rounded-lg p-4 border-2 border-purple-300">
                 <p className="text-sm text-gray-600">Total Employees</p>
-                <p className="text-2xl font-bold text-purple-600">{totalEmployees.toLocaleString()}</p>
+                <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {usDepartments.map(dept => {
-              const totalVotes = dept.approveVotes + dept.disapproveVotes;
-              const approvalRate = totalVotes > 0 ? Math.round((dept.approveVotes / totalVotes) * 100) : 0;
-              
-              return (
-                <div
-                  key={dept.id}
-                  onClick={() => {
-                    setSelectedDepartment(dept);
-                    setView('department-detail');
-                  }}
-                  className="relative bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
-                >
-                  <button onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — Budget: ${dept.budget} | Staff: ${dept.employees.toLocaleString()} | Approval: ${approvalRate}% - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">{dept.name}</h3>
-                  <p className="text-sm text-gray-600 mb-1">Secretary: {dept.secretary}</p>
-                  <p className="text-gray-700 mb-4">{dept.description}</p>
-                  
-                  <div className="grid grid-cols-3 gap-3 mb-4">
-                    <div className="bg-green-50 rounded p-2">
-                      <p className="text-xs text-gray-600">Budget</p>
-                      <p className="text-sm font-bold text-green-600">{dept.budget}</p>
-                    </div>
-                    <div className="bg-blue-50 rounded p-2">
-                      <p className="text-xs text-gray-600">Grants</p>
-                      <p className="text-sm font-bold text-blue-600">{dept.grants}</p>
-                    </div>
-                    <div className="bg-purple-50 rounded p-2">
-                      <p className="text-xs text-gray-600">Staff</p>
-                      <p className="text-sm font-bold text-purple-600">{dept.employees.toLocaleString()}</p>
-                    </div>
+            {usDepartments.map(dept => (
+              <div
+                key={dept.id}
+                onClick={() => { setSelectedDepartment(dept); setView('department-detail'); }}
+                className="relative bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
+              >
+                <button onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{dept.name}</h3>
+                <p className="text-gray-700 mb-4">{dept.description}</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-green-50 rounded p-2">
+                    <p className="text-xs text-gray-600">Budget</p>
+                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
                   </div>
-
-                  <div className="mb-2">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-600">Approval Rating</span>
-                      <span className="font-semibold">{approvalRate}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full ${
-                          approvalRate >= 60 ? 'bg-green-500' :
-                          approvalRate >= 40 ? 'bg-yellow-500' : 'bg-red-500'
-                        }`}
-                        style={{width: `${approvalRate}%`}}
-                      />
-                    </div>
+                  <div className="bg-blue-50 rounded p-2">
+                    <p className="text-xs text-gray-600">Grants</p>
+                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
                   </div>
-                  
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <span>👍 {dept.approveVotes}</span>
-                    <span>👎 {dept.disapproveVotes}</span>
+                  <div className="bg-purple-50 rounded p-2">
+                    <p className="text-xs text-gray-600">Staff</p>
+                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -19301,9 +19266,6 @@ function App() {
   };
 
   const renderUKDepartments = () => {
-    const totalBudget = ukDepartments.reduce((sum, d) => sum + d.budgetRaw, 0);
-    const totalEmployees = ukDepartments.reduce((sum, d) => sum + d.employees, 0);
-
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
@@ -19340,84 +19302,59 @@ function App() {
                 <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
                 <h3 className="text-base sm:text-lg font-bold text-gray-800">Combined Budget</h3>
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-green-600">£{(totalBudget / 1000000000000).toFixed(1)}T</p>
+              <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>
             </div>
             <div className="rounded-lg p-4 sm:p-6 border-2" style={{ background: 'linear-gradient(135deg, #01216915, #01216908)', borderColor: '#012169' }}>
               <div className="flex items-center gap-2 sm:gap-3 mb-2">
                 <Users className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: '#012169' }} />
                 <h3 className="text-base sm:text-lg font-bold text-gray-800">Total Employees</h3>
               </div>
-              <p className="text-2xl sm:text-3xl font-bold" style={{ color: '#012169' }}>{totalEmployees.toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>
             </div>
           </div>
 
           {/* Departments Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            {ukDepartments.map(dept => {
-              const totalVotes = dept.approveVotes + dept.disapproveVotes;
-              const approvalRate = totalVotes > 0 ? Math.round((dept.approveVotes / totalVotes) * 100) : 0;
-              return (
-                <div
-                  key={dept.id}
-                  onClick={() => { setSelectedUkDepartment(dept); setView('uk-department-detail'); }}
-                  className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent active:scale-95"
-                  onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
-                >
-                  <div className="flex items-start justify-between mb-3 sm:mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{dept.name}</h3>
-                      <p className="text-sm sm:text-base text-gray-600 mb-2">Minister: {dept.minister}</p>
-                      <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — Budget: ${dept.budget} | Minister: ${dept.minister} | Approval: ${approvalRate}%`, url: window.location.href })}
-                        className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
-                        aria-label="Share"
-                      >
-                        {copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
-                      </button>
-                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
-                    </div>
+            {ukDepartments.map(dept => (
+              <div
+                key={dept.id}
+                onClick={() => { setSelectedUkDepartment(dept); setView('uk-department-detail'); }}
+                className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent active:scale-95"
+                onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+              >
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{dept.name}</h3>
+                    <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
                   </div>
-
-                  <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-3 sm:mb-4">
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Budget</p>
-                      <p className="text-sm sm:text-lg font-bold text-green-600">{dept.budget}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Grants</p>
-                      <p className="text-sm sm:text-lg font-bold text-blue-600">{dept.grants}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Employees</p>
-                      <p className="text-sm sm:text-lg font-bold" style={{ color: '#012169' }}>{dept.employees.toLocaleString()}</p>
-                    </div>
-                  </div>
-
-                  <div className="border-t pt-3 sm:pt-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs sm:text-sm text-gray-600">Public Approval</span>
-                      <span className={`text-base sm:text-lg font-bold ${approvalRate >= 60 ? 'text-green-600' : approvalRate >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
-                        {approvalRate}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                      <div
-                        className={`h-2 rounded-full ${approvalRate >= 60 ? 'bg-green-500' : approvalRate >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                        style={{ width: `${approvalRate}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
-                      <span>👍 {dept.approveVotes}</span>
-                      <span>👎 {dept.disapproveVotes}</span>
-                    </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button
+                      onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — civic-voice-app.vercel.app`, url: window.location.href })}
+                      className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
+                      aria-label="Share"
+                    >
+                      {copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                    </button>
+                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
                   </div>
                 </div>
-              );
-            })}
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Budget</p>
+                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Grants</p>
+                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Employees</p>
+                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -31319,9 +31256,6 @@ function App() {
 
   // Render Ministries List
   const renderMinistries = () => {
-    const totalBudget = ministries.reduce((sum, m) => sum + m.budgetRaw, 0);
-    const totalEmployees = ministries.reduce((sum, m) => sum + m.employees, 0);
-
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
@@ -31351,90 +31285,51 @@ function App() {
                 <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
                 <h3 className="text-base sm:text-lg font-bold text-gray-800">Combined Budget</h3>
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-green-600">${(totalBudget / 1000000000).toFixed(1)}B</p>
+              <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>
             </div>
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-300 rounded-lg p-4 sm:p-6">
               <div className="flex items-center gap-2 sm:gap-3 mb-2">
                 <Users className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
                 <h3 className="text-base sm:text-lg font-bold text-gray-800">Total Employees</h3>
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-purple-600">{totalEmployees.toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>
             </div>
           </div>
 
           {/* Ministries List */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            {ministries.map(ministry => {
-              const totalVotes = ministry.approveVotes + ministry.disapproveVotes;
-              const approvalRate = totalVotes > 0 
-                ? Math.round((ministry.approveVotes / totalVotes) * 100) 
-                : 0;
-
-              return (
-                <div
-                  key={ministry.id}
-                  onClick={() => {
-                    setSelectedMinistry(ministry);
-                    setView('ministry-detail');
-                  }}
-                  className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95"
-                >
-                  <div className="flex items-start justify-between mb-3 sm:mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{ministry.name}</h3>
-                      <p className="text-sm sm:text-base text-gray-600 mb-2">Minister: {ministry.minister}</p>
-                      <p className="text-xs sm:text-sm text-gray-500">{ministry.description}</p>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button onClick={(e) => handleShare(e, { id: ministry.id, title: ministry.name, text: `🏛️ ${ministry.name} — Budget: ${ministry.budget} | Minister: ${ministry.minister} | Approval: ${approvalRate}% - civic-voice-app.vercel.app`, url: window.location.href })} className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === ministry.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === ministry.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
-                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
-                    </div>
+            {ministries.map(ministry => (
+              <div
+                key={ministry.id}
+                onClick={() => { setSelectedMinistry(ministry); setView('ministry-detail'); }}
+                className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95"
+              >
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{ministry.name}</h3>
+                    <p className="text-xs sm:text-sm text-gray-500">{ministry.description}</p>
                   </div>
-
-                  <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-3 sm:mb-4">
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Budget</p>
-                      <p className="text-sm sm:text-lg font-bold text-green-600">{ministry.budget}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Grants</p>
-                      <p className="text-sm sm:text-lg font-bold text-blue-600">{ministry.grants}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Employees</p>
-                      <p className="text-sm sm:text-lg font-bold text-purple-600">{ministry.employees.toLocaleString()}</p>
-                    </div>
-                  </div>
-
-                  <div className="border-t pt-3 sm:pt-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs sm:text-sm text-gray-600">Public Approval</span>
-                      <span className={`text-base sm:text-lg font-bold ${
-                        approvalRate >= 60 ? 'text-green-600' :
-                        approvalRate >= 40 ? 'text-yellow-600' :
-                        'text-red-600'
-                      }`}>
-                        {approvalRate}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                      <div 
-                        className={`h-2 rounded-full ${
-                          approvalRate >= 60 ? 'bg-green-500' :
-                          approvalRate >= 40 ? 'bg-yellow-500' :
-                          'bg-red-500'
-                        }`}
-                        style={{ width: `${approvalRate}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
-                      <span>👍 {ministry.approveVotes}</span>
-                      <span>👎 {ministry.disapproveVotes}</span>
-                    </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button onClick={(e) => handleShare(e, { id: ministry.id, title: ministry.name, text: `🏛️ ${ministry.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === ministry.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === ministry.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
                   </div>
                 </div>
-              );
-            })}
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Budget</p>
+                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Grants</p>
+                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Employees</p>
+                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -32455,9 +32350,6 @@ function App() {
   };
 
   const renderAuDepartments = () => {
-    const totalBudget = auDepartments.reduce((sum, d) => sum + d.budgetRaw, 0);
-    const totalEmployees = auDepartments.reduce((sum, d) => sum + d.employees, 0);
-
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
@@ -32490,82 +32382,57 @@ function App() {
                 <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
                 <h3 className="text-base sm:text-lg font-bold text-gray-800">Combined Budget</h3>
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-green-600">${(totalBudget / 1000000000).toFixed(0)}B</p>
+              <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>
             </div>
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-300 rounded-lg p-4 sm:p-6">
               <div className="flex items-center gap-2 sm:gap-3 mb-2">
                 <Users className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
                 <h3 className="text-base sm:text-lg font-bold text-gray-800">Total Employees</h3>
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-purple-600">{totalEmployees.toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>
             </div>
           </div>
 
           {/* Departments Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            {auDepartments.map(dept => {
-              const totalVotes = dept.approveVotes + dept.disapproveVotes;
-              const approvalRate = totalVotes > 0 ? Math.round((dept.approveVotes / totalVotes) * 100) : 0;
-              return (
-                <div
-                  key={dept.id}
-                  onClick={() => { setSelectedAuDepartment(dept); setView('au-department-detail'); }}
-                  className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95"
-                >
-                  <div className="flex items-start justify-between mb-3 sm:mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{dept.name}</h3>
-                      <p className="text-sm sm:text-base text-gray-600 mb-2">Minister: {dept.minister}</p>
-                      <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — Budget: ${dept.budget} | Minister: ${dept.minister} | Approval: ${approvalRate}%`, url: window.location.href })}
-                        className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
-                        aria-label="Share"
-                      >
-                        {copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
-                      </button>
-                      <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
-                    </div>
+            {auDepartments.map(dept => (
+              <div
+                key={dept.id}
+                onClick={() => { setSelectedAuDepartment(dept); setView('au-department-detail'); }}
+                className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95"
+              >
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">{dept.name}</h3>
+                    <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
                   </div>
-
-                  <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-3 sm:mb-4">
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Budget</p>
-                      <p className="text-sm sm:text-lg font-bold text-green-600">{dept.budget}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Grants</p>
-                      <p className="text-sm sm:text-lg font-bold text-blue-600">{dept.grants}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Employees</p>
-                      <p className="text-sm sm:text-lg font-bold text-purple-600">{dept.employees.toLocaleString()}</p>
-                    </div>
-                  </div>
-
-                  <div className="border-t pt-3 sm:pt-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs sm:text-sm text-gray-600">Public Approval</span>
-                      <span className={`text-base sm:text-lg font-bold ${approvalRate >= 60 ? 'text-green-600' : approvalRate >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
-                        {approvalRate}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                      <div
-                        className={`h-2 rounded-full ${approvalRate >= 60 ? 'bg-green-500' : approvalRate >= 40 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                        style={{ width: `${approvalRate}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
-                      <span>👍 {dept.approveVotes}</span>
-                      <span>👎 {dept.disapproveVotes}</span>
-                    </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button
+                      onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — civic-voice-app.vercel.app`, url: window.location.href })}
+                      className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
+                      aria-label="Share"
+                    >
+                      {copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                    </button>
+                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
                   </div>
                 </div>
-              );
-            })}
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Budget</p>
+                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Grants</p>
+                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Employees</p>
+                    <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
