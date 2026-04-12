@@ -6592,6 +6592,8 @@ function App() {
   const [deptBudgetData, setDeptBudgetData] = useState({});
   const [deptBudgetLoading, setDeptBudgetLoading] = useState({});
   const [deptBudgetFetchedJurisdictions, setDeptBudgetFetchedJurisdictions] = useState({});
+  const [deptHeadsData, setDeptHeadsData] = useState({});
+  const [deptHeadsFetchedJurisdictions, setDeptHeadsFetchedJurisdictions] = useState({});
   const [electionsData, setElectionsData] = useState({});
   const [electionsLoading, setElectionsLoading] = useState({});
 
@@ -6647,6 +6649,28 @@ function App() {
         setDeptBudgetData(prev => ({ ...prev, ...updates }));
       } catch (err) {
         console.warn('[LiveData] department_budgets bulk fetch failed:', err.message);
+      }
+    })();
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Bulk-fetch all department heads for a jurisdiction when a list page opens
+  useEffect(() => {
+    const listViews = { ministries: 'CA', departments: 'US', 'uk-departments': 'UK', 'au-departments': 'AU' };
+    const jurisdiction = listViews[view];
+    if (!jurisdiction) return;
+    if (deptHeadsFetchedJurisdictions[jurisdiction]) return;
+    setDeptHeadsFetchedJurisdictions(prev => ({ ...prev, [jurisdiction]: true }));
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'department_heads'), where('jurisdiction', '==', jurisdiction)));
+        const updates = {};
+        snap.docs.forEach(d => {
+          const data = d.data();
+          if (data.department_name) updates[`${jurisdiction}:${data.department_name}`] = data;
+        });
+        setDeptHeadsData(prev => ({ ...prev, ...updates }));
+      } catch (err) {
+        console.warn('[LiveData] department_heads bulk fetch failed:', err.message);
       }
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -6921,7 +6945,10 @@ function App() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {usDepartments.map(dept => {
               const bd = deptBudgetData[`US:${dept.name}`];
-              const hasLive = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const hd = deptHeadsData[`US:${dept.name}`];
+              const hasLiveBudget = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const hasLiveHead = hd && hd.name;
+              const hasLive = hasLiveBudget || hasLiveHead;
               const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') return v; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
               return (
                 <div
@@ -6930,23 +6957,31 @@ function App() {
                   className="relative bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
                 >
                   <button onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
-                  <div className="flex items-start justify-between mb-2 pr-8">
+                  <div className="flex items-start justify-between mb-1 pr-8">
                     <h3 className="text-xl font-bold text-gray-800">{dept.name}</h3>
                     {hasLive && <span className="shrink-0 ml-2 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                   </div>
+                  {hasLiveHead ? (
+                    <div className="mb-3">
+                      <p className="text-sm font-semibold text-gray-700">{hd.title || 'Secretary'}: {hd.name}</p>
+                      {hd.party && <span className="inline-block mt-0.5 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">{hd.party}</span>}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 italic mb-3">Official data loading</p>
+                  )}
                   <p className="text-gray-700 mb-4">{dept.description}</p>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="bg-green-50 rounded p-2">
                       <p className="text-xs text-gray-600">Budget</p>
-                      {hasLive && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                     <div className="bg-blue-50 rounded p-2">
                       <p className="text-xs text-gray-600">Spent</p>
-                      {hasLive && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                     <div className="bg-purple-50 rounded p-2">
                       <p className="text-xs text-gray-600">Fiscal Year</p>
-                      {hasLive && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                   </div>
                 </div>
@@ -19348,7 +19383,10 @@ function App() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {ukDepartments.map(dept => {
               const bd = deptBudgetData[`UK:${dept.name}`];
-              const hasLive = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const hd = deptHeadsData[`UK:${dept.name}`];
+              const hasLiveBudget = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const hasLiveHead = hd && hd.name;
+              const hasLive = hasLiveBudget || hasLiveHead;
               const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') return v; if (v >= 1e12) return `£${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `£${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `£${(v/1e6).toFixed(1)}M`; return `£${v.toLocaleString()}`; };
               return (
                 <div
@@ -19358,12 +19396,20 @@ function App() {
                   onMouseEnter={e => e.currentTarget.style.borderColor = '#C8102E'}
                   onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
                 >
-                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex items-start justify-between mb-2 sm:mb-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <h3 className="text-lg sm:text-xl font-bold text-gray-800">{dept.name}</h3>
                         {hasLive && <span className="shrink-0 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                       </div>
+                      {hasLiveHead ? (
+                        <div className="mb-1">
+                          <p className="text-sm font-semibold text-gray-700">{hd.title || 'Secretary of State'}: {hd.name}</p>
+                          {hd.party && <span className="inline-block mt-0.5 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400 italic mb-1">Official data loading</p>
+                      )}
                       <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
@@ -19380,15 +19426,15 @@ function App() {
                   <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Budget</p>
-                      {hasLive && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Spent</p>
-                      {hasLive && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Fiscal Year</p>
-                      {hasLive && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                   </div>
                 </div>
@@ -31339,7 +31385,10 @@ function App() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {ministries.map(ministry => {
               const bd = deptBudgetData[`CA:${ministry.name}`];
-              const hasLive = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const hd = deptHeadsData[`CA:${ministry.name}`];
+              const hasLiveBudget = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const hasLiveHead = hd && hd.name;
+              const hasLive = hasLiveBudget || hasLiveHead;
               const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') return v; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
               return (
                 <div
@@ -31347,12 +31396,20 @@ function App() {
                   onClick={() => { setSelectedMinistry(ministry); setView('ministry-detail'); }}
                   className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95"
                 >
-                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex items-start justify-between mb-2 sm:mb-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <h3 className="text-lg sm:text-xl font-bold text-gray-800">{ministry.name}</h3>
                         {hasLive && <span className="shrink-0 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                       </div>
+                      {hasLiveHead ? (
+                        <div className="mb-1">
+                          <p className="text-sm font-semibold text-gray-700">{hd.title || 'Minister'}: {hd.name}</p>
+                          {hd.party && <span className="inline-block mt-0.5 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400 italic mb-1">Official data loading</p>
+                      )}
                       <p className="text-xs sm:text-sm text-gray-500">{ministry.description}</p>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
@@ -31363,15 +31420,15 @@ function App() {
                   <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Budget</p>
-                      {hasLive && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Spent</p>
-                      {hasLive && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Fiscal Year</p>
-                      {hasLive && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                   </div>
                 </div>
@@ -32444,7 +32501,10 @@ function App() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {auDepartments.map(dept => {
               const bd = deptBudgetData[`AU:${dept.name}`];
-              const hasLive = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const hd = deptHeadsData[`AU:${dept.name}`];
+              const hasLiveBudget = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const hasLiveHead = hd && hd.name;
+              const hasLive = hasLiveBudget || hasLiveHead;
               const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') return v; if (v >= 1e12) return `A$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `A$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `A$${(v/1e6).toFixed(1)}M`; return `A$${v.toLocaleString()}`; };
               return (
                 <div
@@ -32452,12 +32512,20 @@ function App() {
                   onClick={() => { setSelectedAuDepartment(dept); setView('au-department-detail'); }}
                   className="bg-white rounded-lg shadow-md p-4 sm:p-6 cursor-pointer hover:shadow-xl transition-all border-2 border-transparent hover:border-amber-500 active:scale-95"
                 >
-                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex items-start justify-between mb-2 sm:mb-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <h3 className="text-lg sm:text-xl font-bold text-gray-800">{dept.name}</h3>
                         {hasLive && <span className="shrink-0 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                       </div>
+                      {hasLiveHead ? (
+                        <div className="mb-1">
+                          <p className="text-sm font-semibold text-gray-700">{hd.title || 'Minister'}: {hd.name}</p>
+                          {hd.party && <span className="inline-block mt-0.5 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">{hd.party}</span>}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400 italic mb-1">Official data loading</p>
+                      )}
                       <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
@@ -32474,15 +32542,15 @@ function App() {
                   <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Budget</p>
-                      {hasLive && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Spent</p>
-                      {hasLive && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Fiscal Year</p>
-                      {hasLive && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                   </div>
                 </div>
