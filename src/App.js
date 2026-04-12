@@ -1369,7 +1369,7 @@ function App() {
   const [selectedAuContract, setSelectedAuContract] = useState(null);
   const [auDepartments, setAuDepartments] = useState([
     {
-      id: 1, name: 'Treasury', minister: 'Jim Chalmers', budget: '$61.5 Billion', budgetRaw: 61500000000,
+      id: 1, name: 'Treasury', minister: '', budget: '$61.5 Billion', budgetRaw: 61500000000,
       grants: '$14.2 Billion', employees: 950,
       description: 'Responsible for economic policy, budget strategy, and financial system oversight for Australia',
       responsibilities: ['Federal budget', 'Economic forecasting', 'Tax policy', 'Financial sector regulation', 'Commonwealth revenue'],
@@ -1388,7 +1388,7 @@ function App() {
       approveVotes: 312, disapproveVotes: 298, userVote: null
     },
     {
-      id: 2, name: 'Defence', minister: 'Richard Marles', budget: '$52.0 Billion', budgetRaw: 52000000000,
+      id: 2, name: 'Defence', minister: '', budget: '$52.0 Billion', budgetRaw: 52000000000,
       grants: '$8.4 Billion', employees: 91000,
       description: 'Responsible for the defence of Australia and its national interests through the Australian Defence Force',
       responsibilities: ['Australian Defence Force', 'Military operations', 'Defence capability', 'AUKUS implementation', 'Cyber security'],
@@ -1408,7 +1408,7 @@ function App() {
       approveVotes: 489, disapproveVotes: 201, userVote: null
     },
     {
-      id: 3, name: 'Health', minister: 'Mark Butler', budget: '$116.0 Billion', budgetRaw: 116000000000,
+      id: 3, name: 'Health', minister: '', budget: '$116.0 Billion', budgetRaw: 116000000000,
       grants: '$98.5 Billion', employees: 5200,
       description: 'Responsible for Medicare, the Pharmaceutical Benefits Scheme, hospitals, aged care, and national health policy',
       responsibilities: ['Medicare', 'Pharmaceutical Benefits Scheme', 'Aged care', 'Mental health', 'Preventive health'],
@@ -1427,7 +1427,7 @@ function App() {
       approveVotes: 521, disapproveVotes: 312, userVote: null
     },
     {
-      id: 4, name: 'Education', minister: 'Jason Clare', budget: '$36.8 Billion', budgetRaw: 36800000000,
+      id: 4, name: 'Education', minister: '', budget: '$36.8 Billion', budgetRaw: 36800000000,
       grants: '$28.4 Billion', employees: 4200,
       description: 'Responsible for schools funding, higher education, vocational training, and early childhood education across Australia',
       responsibilities: ['Schools funding', 'Universities', 'TAFE and vocational education', 'Early childhood', 'Student loans (HECS-HELP)'],
@@ -1446,7 +1446,7 @@ function App() {
       approveVotes: 398, disapproveVotes: 267, userVote: null
     },
     {
-      id: 5, name: 'Home Affairs', minister: 'Tony Burke', budget: '$5.9 Billion', budgetRaw: 5900000000,
+      id: 5, name: 'Home Affairs', minister: '', budget: '$5.9 Billion', budgetRaw: 5900000000,
       grants: '$1.4 Billion', employees: 14500,
       description: 'Responsible for border protection, immigration, citizenship, multicultural affairs, and national emergency management',
       responsibilities: ['Border Force', 'Immigration and visas', 'Citizenship', 'Emergency Management Australia', 'Multicultural affairs'],
@@ -1465,7 +1465,7 @@ function App() {
       approveVotes: 287, disapproveVotes: 334, userVote: null
     },
     {
-      id: 6, name: 'Infrastructure', minister: 'Catherine King', budget: '$13.4 Billion', budgetRaw: 13400000000,
+      id: 6, name: 'Infrastructure', minister: '', budget: '$13.4 Billion', budgetRaw: 13400000000,
       grants: '$9.2 Billion', employees: 4600,
       description: 'Responsible for transport infrastructure investment, regional development, and local government relations across Australia',
       responsibilities: ['National land transport', 'Aviation policy', 'Ports and shipping', 'Regional development', 'Local government'],
@@ -1484,7 +1484,7 @@ function App() {
       approveVotes: 356, disapproveVotes: 198, userVote: null
     },
     {
-      id: 7, name: 'Environment', minister: 'Tanya Plibersek', budget: '$2.1 Billion', budgetRaw: 2100000000,
+      id: 7, name: 'Environment', minister: '', budget: '$2.1 Billion', budgetRaw: 2100000000,
       grants: '$780 Million', employees: 4100,
       description: 'Responsible for environmental protection, climate action, national parks, biodiversity conservation, and water resources',
       responsibilities: ['Climate change policy', 'Biodiversity and threatened species', 'Parks Australia', 'Water management', 'Environmental assessment'],
@@ -1503,7 +1503,7 @@ function App() {
       approveVotes: 412, disapproveVotes: 289, userVote: null
     },
     {
-      id: 8, name: 'Foreign Affairs', minister: 'Penny Wong', budget: '$6.4 Billion', budgetRaw: 6400000000,
+      id: 8, name: 'Foreign Affairs', minister: '', budget: '$6.4 Billion', budgetRaw: 6400000000,
       grants: '$4.8 Billion', employees: 6200,
       description: "Responsible for Australia's foreign policy, international development aid, diplomatic missions, and consular services",
       responsibilities: ['Foreign policy', 'International aid (DFAT ODA)', 'Diplomatic missions', 'Trade and investment', 'Consular services'],
@@ -1523,7 +1523,7 @@ function App() {
       approveVotes: 445, disapproveVotes: 178, userVote: null
     },
     {
-      id: 9, name: "Attorney-General's", minister: 'Mark Dreyfus', budget: '$1.6 Billion', budgetRaw: 1600000000,
+      id: 9, name: "Attorney-General's", minister: '', budget: '$1.6 Billion', budgetRaw: 1600000000,
       grants: '$420 Million', employees: 5100,
       description: 'Responsible for law reform, federal courts, legal assistance, human rights, and Commonwealth legal policy',
       responsibilities: ['Federal courts administration', 'Legal assistance', 'Human rights', 'Privacy law', 'Anti-money laundering'],
@@ -1541,7 +1541,7 @@ function App() {
       approveVotes: 298, disapproveVotes: 201, userVote: null
     },
     {
-      id: 10, name: 'Social Services', minister: 'Amanda Rishworth', budget: '$258.0 Billion', budgetRaw: 258000000000,
+      id: 10, name: 'Social Services', minister: '', budget: '$258.0 Billion', budgetRaw: 258000000000,
       grants: '$248.0 Billion', employees: 3900,
       description: 'Responsible for welfare payments, disability services (NDIS), family benefits, and housing assistance across Australia',
       responsibilities: ['NDIS oversight', 'Centrelink payments', 'Family Tax Benefit', 'Aged pension', 'Disability support'],
@@ -1560,7 +1560,7 @@ function App() {
       approveVotes: 467, disapproveVotes: 356, userVote: null
     },
     {
-      id: 11, name: 'Agriculture', minister: 'Murray Watt', budget: '$1.5 Billion', budgetRaw: 1500000000,
+      id: 11, name: 'Agriculture', minister: '', budget: '$1.5 Billion', budgetRaw: 1500000000,
       grants: '$580 Million', employees: 3700,
       description: 'Responsible for agricultural productivity, biosecurity, food safety, fisheries management, and rural development',
       responsibilities: ['Biosecurity', 'Agricultural exports', 'Fisheries management', 'Drought assistance', 'Food standards'],
@@ -1579,7 +1579,7 @@ function App() {
       approveVotes: 321, disapproveVotes: 198, userVote: null
     },
     {
-      id: 12, name: 'Industry & Science', minister: 'Ed Husic', budget: '$4.2 Billion', budgetRaw: 4200000000,
+      id: 12, name: 'Industry & Science', minister: '', budget: '$4.2 Billion', budgetRaw: 4200000000,
       grants: '$2.1 Billion', employees: 5800,
       description: 'Responsible for industrial policy, manufacturing, space programs, innovation, and resources sector development',
       responsibilities: ['Made in Australia manufacturing', 'Critical minerals', 'Space Australia', 'Innovation and R&D', 'Nuclear Science'],
@@ -1598,7 +1598,7 @@ function App() {
       approveVotes: 298, disapproveVotes: 245, userVote: null
     },
     {
-      id: 13, name: 'Finance', minister: 'Katy Gallagher', budget: '$15.3 Billion', budgetRaw: 15300000000,
+      id: 13, name: 'Finance', minister: '', budget: '$15.3 Billion', budgetRaw: 15300000000,
       grants: '$6.8 Billion', employees: 880,
       description: 'Responsible for Commonwealth resource management, public sector efficiency, procurement, and government property',
       responsibilities: ['Commonwealth resource management', 'Public sector efficiency', 'Government procurement', 'Medibank and NBN co', 'Comsuper'],
@@ -1617,7 +1617,7 @@ function App() {
       approveVotes: 267, disapproveVotes: 312, userVote: null
     },
     {
-      id: 14, name: 'Communications', minister: 'Michelle Rowland', budget: '$1.4 Billion', budgetRaw: 1400000000,
+      id: 14, name: 'Communications', minister: '', budget: '$1.4 Billion', budgetRaw: 1400000000,
       grants: '$650 Million', employees: 3400,
       description: "Responsible for telecommunications, broadband infrastructure, the ABC, SBS, and Australia's digital economy",
       responsibilities: ['Telecommunications policy', 'NBN Co oversight', 'ABC and SBS funding', 'Online safety', 'Digital inclusion'],
@@ -1636,7 +1636,7 @@ function App() {
       approveVotes: 334, disapproveVotes: 198, userVote: null
     },
     {
-      id: 15, name: 'Employment', minister: 'Tony Burke', budget: '$19.8 Billion', budgetRaw: 19800000000,
+      id: 15, name: 'Employment', minister: '', budget: '$19.8 Billion', budgetRaw: 19800000000,
       grants: '$15.2 Billion', employees: 4300,
       description: 'Responsible for workforce policy, industrial relations, employment programs, and Workplace Relations and Safety',
       responsibilities: ['Fair Work Act', 'Employment programs', 'Work health and safety', 'Equal opportunity', 'Workforce Australia'],
@@ -1659,7 +1659,7 @@ function App() {
 
   const [ukDepartments, setUkDepartments] = useState([
     {
-      id: 1, name: 'HM Treasury', minister: 'Rachel Reeves', budget: '£9.1 Billion', budgetRaw: 9100000000,
+      id: 1, name: 'HM Treasury', minister: '', budget: '£9.1 Billion', budgetRaw: 9100000000,
       grants: '£2.3 Billion', employees: 1200,
       description: 'Responsible for the UK\'s economic and financial policy, the Budget, and maintaining fiscal stability.',
       responsibilities: ['Economic and fiscal policy', 'Setting public spending limits', 'Tax policy and HMRC oversight', 'Financial sector regulation', 'Managing government borrowing', 'Growth and productivity strategy'],
@@ -1672,7 +1672,7 @@ function App() {
       approveVotes: 289, disapproveVotes: 412, userVote: null
     },
     {
-      id: 2, name: 'Home Office', minister: 'Yvette Cooper', budget: '£21.4 Billion', budgetRaw: 21400000000,
+      id: 2, name: 'Home Office', minister: '', budget: '£21.4 Billion', budgetRaw: 21400000000,
       grants: '£3.8 Billion', employees: 37000,
       description: 'Leads on immigration, policing, counter-terrorism, and national security to keep the UK safe.',
       responsibilities: ['Policing and crime reduction', 'Immigration and borders', 'Counter-terrorism', 'National security', 'Asylum and refugee policy', 'Serious organised crime'],
@@ -1685,7 +1685,7 @@ function App() {
       approveVotes: 334, disapproveVotes: 489, userVote: null
     },
     {
-      id: 3, name: 'Foreign, Commonwealth & Development Office', minister: 'David Lammy', budget: '£14.8 Billion', budgetRaw: 14800000000,
+      id: 3, name: 'Foreign, Commonwealth & Development Office', minister: '', budget: '£14.8 Billion', budgetRaw: 14800000000,
       grants: '£8.2 Billion', employees: 17000,
       description: 'Promotes UK interests abroad, manages overseas aid, and supports British nationals overseas.',
       responsibilities: ['Foreign policy and diplomacy', 'Official Development Assistance', 'British nationals overseas', 'International trade policy support', 'Conflict prevention', 'Climate diplomacy'],
@@ -1698,7 +1698,7 @@ function App() {
       approveVotes: 402, disapproveVotes: 318, userVote: null
     },
     {
-      id: 4, name: 'Ministry of Defence', minister: 'John Healey', budget: '£52.1 Billion', budgetRaw: 52100000000,
+      id: 4, name: 'Ministry of Defence', minister: '', budget: '£52.1 Billion', budgetRaw: 52100000000,
       grants: '£22.4 Billion', employees: 230000,
       description: 'Responsible for the defence of the UK and its interests, providing capability to deter and act against threats.',
       responsibilities: ['UK armed forces readiness', 'Defence procurement and equipment', 'Nuclear deterrent (Trident)', 'NATO commitments', 'Defence intelligence', 'Veterans welfare'],
@@ -1711,7 +1711,7 @@ function App() {
       approveVotes: 678, disapproveVotes: 234, userVote: null
     },
     {
-      id: 5, name: 'Department of Health & Social Care', minister: 'Wes Streeting', budget: '£225.0 Billion', budgetRaw: 225000000000,
+      id: 5, name: 'Department of Health & Social Care', minister: '', budget: '£225.0 Billion', budgetRaw: 225000000000,
       grants: '£145.2 Billion', employees: 1600000,
       description: 'Leads health and social care policy, oversees NHS England and supports people\'s health across their lives.',
       responsibilities: ['NHS England oversight', 'Social care reform', 'Public health strategy', 'Mental health services', 'Adult social care funding', 'Medicines regulation (MHRA)'],
@@ -1724,7 +1724,7 @@ function App() {
       approveVotes: 512, disapproveVotes: 789, userVote: null
     },
     {
-      id: 6, name: 'Department for Education', minister: 'Bridget Phillipson', budget: '£108.6 Billion', budgetRaw: 108600000000,
+      id: 6, name: 'Department for Education', minister: '', budget: '£108.6 Billion', budgetRaw: 108600000000,
       grants: '£76.4 Billion', employees: 6000,
       description: 'Responsible for education, children\'s services and skills across England, from early years to higher education.',
       responsibilities: ['School funding and curriculum', 'Children\'s social care', 'Special educational needs', 'Further and higher education', 'Skills and apprenticeships', 'Early years provision'],
@@ -1737,7 +1737,7 @@ function App() {
       approveVotes: 489, disapproveVotes: 534, userVote: null
     },
     {
-      id: 7, name: 'Ministry of Justice', minister: 'Shabana Mahmood', budget: '£12.3 Billion', budgetRaw: 12300000000,
+      id: 7, name: 'Ministry of Justice', minister: '', budget: '£12.3 Billion', budgetRaw: 12300000000,
       grants: '£1.8 Billion', employees: 88000,
       description: 'Responsible for courts, prisons, probation services and the legal aid system across England and Wales.',
       responsibilities: ['HM Prison Service', 'Probation Service', 'Courts and tribunals', 'Legal Aid Agency', 'Reducing reoffending', 'Access to justice'],
@@ -1750,7 +1750,7 @@ function App() {
       approveVotes: 298, disapproveVotes: 456, userVote: null
     },
     {
-      id: 8, name: 'Department for Transport', minister: 'Heidi Alexander', budget: '£34.9 Billion', budgetRaw: 34900000000,
+      id: 8, name: 'Department for Transport', minister: '', budget: '£34.9 Billion', budgetRaw: 34900000000,
       grants: '£18.6 Billion', employees: 17000,
       description: 'Oversees transport infrastructure, regulation, and investment including roads, rail, aviation and maritime.',
       responsibilities: ['National roads and Highways England', 'Rail franchising and Network Rail', 'Aviation safety and airports policy', 'Maritime and coastal safety', 'Active travel and cycling', 'Transport decarbonisation'],
@@ -1763,7 +1763,7 @@ function App() {
       approveVotes: 378, disapproveVotes: 512, userVote: null
     },
     {
-      id: 9, name: 'Dept for Environment, Food & Rural Affairs', minister: 'Steve Reed', budget: '£9.8 Billion', budgetRaw: 9800000000,
+      id: 9, name: 'Dept for Environment, Food & Rural Affairs', minister: '', budget: '£9.8 Billion', budgetRaw: 9800000000,
       grants: '£4.1 Billion', employees: 27000,
       description: 'Responsible for environmental protection, food safety, farming policy and rural affairs across England.',
       responsibilities: ['Agricultural policy and farming payments', 'Nature recovery and biodiversity', 'Water quality and flood risk', 'Food standards and safety', 'Animal welfare', 'Climate adaptation'],
@@ -1776,7 +1776,7 @@ function App() {
       approveVotes: 445, disapproveVotes: 287, userVote: null
     },
     {
-      id: 10, name: 'Department for Business & Trade', minister: 'Jonathan Reynolds', budget: '£5.2 Billion', budgetRaw: 5200000000,
+      id: 10, name: 'Department for Business & Trade', minister: '', budget: '£5.2 Billion', budgetRaw: 5200000000,
       grants: '£2.7 Billion', employees: 7200,
       description: 'Promotes UK business, supports trade, drives investment and ensures competitive markets for UK growth.',
       responsibilities: ['Trade negotiations and export promotion', 'Inward investment attraction', 'Business regulation', 'Competition and markets policy', 'Post Office and Royal Mail policy', 'Industrial strategy'],
@@ -1789,7 +1789,7 @@ function App() {
       approveVotes: 367, disapproveVotes: 245, userVote: null
     },
     {
-      id: 11, name: 'Department for Work & Pensions', minister: 'Liz Kendall', budget: '£280.3 Billion', budgetRaw: 280300000000,
+      id: 11, name: 'Department for Work & Pensions', minister: '', budget: '£280.3 Billion', budgetRaw: 280300000000,
       grants: '£245.8 Billion', employees: 91000,
       description: 'The UK\'s biggest spending department, delivering welfare, pensions and employment support to millions.',
       responsibilities: ['State Pension', 'Universal Credit administration', 'Child benefit and disability benefits', 'Back to work support', 'Child maintenance', 'Health and Safety Executive'],
@@ -1802,7 +1802,7 @@ function App() {
       approveVotes: 634, disapproveVotes: 589, userVote: null
     },
     {
-      id: 12, name: 'Housing, Communities & Local Govt', minister: 'Angela Rayner', budget: '£31.8 Billion', budgetRaw: 31800000000,
+      id: 12, name: 'Housing, Communities & Local Govt', minister: '', budget: '£31.8 Billion', budgetRaw: 31800000000,
       grants: '£22.6 Billion', employees: 4500,
       description: 'Leads on housing supply, planning reform, levelling up, local government funding and community cohesion.',
       responsibilities: ['Planning reform and housebuilding', 'Affordable homes programme', 'Local government finance', 'Devolution and combined authorities', 'Building safety', 'Rough sleeping strategy'],
@@ -1815,7 +1815,7 @@ function App() {
       approveVotes: 489, disapproveVotes: 534, userVote: null
     },
     {
-      id: 13, name: 'Dept for Energy Security & Net Zero', minister: 'Ed Miliband', budget: '£6.1 Billion', budgetRaw: 6100000000,
+      id: 13, name: 'Dept for Energy Security & Net Zero', minister: '', budget: '£6.1 Billion', budgetRaw: 6100000000,
       grants: '£4.5 Billion', employees: 3200,
       description: 'Leads the UK\'s transition to clean energy, energy security, and reaching net zero by 2050.',
       responsibilities: ['Offshore wind and renewables expansion', 'Nuclear energy programme', 'North Sea transition', 'Heat pump and home insulation schemes', 'Smart grids and storage', 'International climate finance'],
@@ -1828,7 +1828,7 @@ function App() {
       approveVotes: 523, disapproveVotes: 345, userVote: null
     },
     {
-      id: 14, name: 'Dept for Culture, Media & Sport', minister: 'Lisa Nandy', budget: '£3.4 Billion', budgetRaw: 3400000000,
+      id: 14, name: 'Dept for Culture, Media & Sport', minister: '', budget: '£3.4 Billion', budgetRaw: 3400000000,
       grants: '£2.1 Billion', employees: 1900,
       description: 'Supports arts, culture, media, sport, tourism and the creative economy to enrich lives across the UK.',
       responsibilities: ['BBC Charter and media regulation', 'Arts Council and heritage funding', 'Sport England and elite sport', 'Tourism promotion (VisitBritain)', 'Gambling regulation', 'Broadband and digital inclusion'],
@@ -1841,7 +1841,7 @@ function App() {
       approveVotes: 512, disapproveVotes: 198, userVote: null
     },
     {
-      id: 15, name: 'Dept for Science, Innovation & Technology', minister: 'Peter Kyle', budget: '£13.9 Billion', budgetRaw: 13900000000,
+      id: 15, name: 'Dept for Science, Innovation & Technology', minister: '', budget: '£13.9 Billion', budgetRaw: 13900000000,
       grants: '£8.4 Billion', employees: 3800,
       description: 'Drives UK science investment, technology adoption and digital regulation to boost economic growth.',
       responsibilities: ['R&D investment and innovation strategy', 'AI and data regulation', 'UK Research and Innovation (UKRI)', 'Gigabit broadband rollout', 'Space sector', 'Digital economy regulation'],
@@ -1854,7 +1854,7 @@ function App() {
       approveVotes: 589, disapproveVotes: 212, userVote: null
     },
     {
-      id: 16, name: 'Department for Agriculture', minister: 'Steve Reed', budget: '£3.1 Billion', budgetRaw: 3100000000,
+      id: 16, name: 'Department for Agriculture', minister: '', budget: '£3.1 Billion', budgetRaw: 3100000000,
       grants: '£2.4 Billion', employees: 2800,
       description: 'Supports farming, food production, and rural communities through policy and direct financial support.',
       responsibilities: ['Agricultural transition plan', 'Sustainable farming incentives', 'Farm business support', 'Animal disease control', 'Food supply chain security', 'Rural development funding'],
@@ -1867,7 +1867,7 @@ function App() {
       approveVotes: 412, disapproveVotes: 267, userVote: null
     },
     {
-      id: 17, name: 'Department for International Trade', minister: 'Douglas Alexander', budget: '£0.6 Billion', budgetRaw: 600000000,
+      id: 17, name: 'Department for International Trade', minister: '', budget: '£0.6 Billion', budgetRaw: 600000000,
       grants: '£0.3 Billion', employees: 3500,
       description: 'Negotiates free trade agreements and drives UK export growth and inward investment from global markets.',
       responsibilities: ['Free trade agreement negotiations', 'Export strategy and GREAT campaign', 'Trade remedies authority', 'CPTPP accession implementation', 'Investment security', 'Trade policy post-Brexit'],
@@ -1880,7 +1880,7 @@ function App() {
       approveVotes: 334, disapproveVotes: 289, userVote: null
     },
     {
-      id: 18, name: 'Attorney General\'s Office', minister: 'Lord Hermer KC', budget: '£0.7 Billion', budgetRaw: 700000000,
+      id: 18, name: 'Attorney General\'s Office', minister: '', budget: '£0.7 Billion', budgetRaw: 700000000,
       grants: '£0.4 Billion', employees: 520,
       description: 'Provides independent legal advice to the government and oversees the Crown Prosecution Service and Serious Fraud Office.',
       responsibilities: ['Legal advice to Cabinet', 'Crown Prosecution Service oversight', 'Serious Fraud Office oversight', 'Government Legal Department', 'Public interest litigation', 'Legal aid policy'],
@@ -1893,7 +1893,7 @@ function App() {
       approveVotes: 289, disapproveVotes: 198, userVote: null
     },
     {
-      id: 19, name: 'Cabinet Office', minister: 'Pat McFadden', budget: '£4.1 Billion', budgetRaw: 4100000000,
+      id: 19, name: 'Cabinet Office', minister: '', budget: '£4.1 Billion', budgetRaw: 4100000000,
       grants: '£1.6 Billion', employees: 12000,
       description: 'Supports the Prime Minister and Cabinet, coordinates civil service reform and delivers central government functions.',
       responsibilities: ['Cabinet coordination and governance', 'Civil Service reform', 'Union policy', 'National security coordination', 'Electoral administration', 'Government commercial function'],
@@ -1906,7 +1906,7 @@ function App() {
       approveVotes: 312, disapproveVotes: 378, userVote: null
     },
     {
-      id: 20, name: 'Department for Digital', minister: 'Peter Kyle', budget: '£2.5 Billion', budgetRaw: 2500000000,
+      id: 20, name: 'Department for Digital', minister: '', budget: '£2.5 Billion', budgetRaw: 2500000000,
       grants: '£1.3 Billion', employees: 2200,
       description: 'Drives UK\'s digital strategy, online safety regulation, and government technology infrastructure.',
       responsibilities: ['Online Safety Act implementation', 'AI governance framework', 'Digital public services', 'Cyber resilience', 'Data economy regulation', 'Digital identity infrastructure'],
@@ -1919,7 +1919,7 @@ function App() {
       approveVotes: 534, disapproveVotes: 189, userVote: null
     },
     {
-      id: 21, name: 'Northern Ireland Office', minister: 'Hilary Benn', budget: '£1.4 Billion', budgetRaw: 1400000000,
+      id: 21, name: 'Northern Ireland Office', minister: '', budget: '£1.4 Billion', budgetRaw: 1400000000,
       grants: '£0.9 Billion', employees: 340,
       description: 'Manages the UK government\'s relationship with Northern Ireland and oversees the devolution settlement.',
       responsibilities: ['Northern Ireland devolution settlement', 'Irish border and trade policy', 'Good Friday Agreement oversight', 'Security and legacy issues', 'NI elections and institutions', 'Cross-community relations'],
@@ -1932,7 +1932,7 @@ function App() {
       approveVotes: 298, disapproveVotes: 234, userVote: null
     },
     {
-      id: 22, name: 'Scotland Office', minister: 'Ian Murray', budget: '£0.3 Billion', budgetRaw: 300000000,
+      id: 22, name: 'Scotland Office', minister: '', budget: '£0.3 Billion', budgetRaw: 300000000,
       grants: '£0.1 Billion', employees: 290,
       description: 'Represents Scottish interests in UK government and promotes the devolution partnership with Holyrood.',
       responsibilities: ['Scotland Act devolution oversight', 'Scottish Parliament relationship', 'UK funding for Scotland coordination', 'Reserved matters in Scotland', 'Scottish industry support', 'Offshore wind and energy transition'],
@@ -1945,7 +1945,7 @@ function App() {
       approveVotes: 312, disapproveVotes: 267, userVote: null
     },
     {
-      id: 23, name: 'Wales Office', minister: 'Jo Stevens', budget: '£0.5 Billion', budgetRaw: 500000000,
+      id: 23, name: 'Wales Office', minister: '', budget: '£0.5 Billion', budgetRaw: 500000000,
       grants: '£0.2 Billion', employees: 280,
       description: 'Promotes Wales\'s interests in the UK government and facilitates the Welsh devolution settlement.',
       responsibilities: ['Government of Wales Act oversight', 'Welsh Government relationship', 'Wales devolution settlement', 'Reserved policy in Wales', 'HS2 Barnett consequentials', 'Welsh language policy'],
@@ -1958,7 +1958,7 @@ function App() {
       approveVotes: 289, disapproveVotes: 234, userVote: null
     },
     {
-      id: 24, name: 'Privy Council Office', minister: 'Lucy Powell', budget: '£0.1 Billion', budgetRaw: 100000000,
+      id: 24, name: 'Privy Council Office', minister: '', budget: '£0.1 Billion', budgetRaw: 100000000,
       grants: '£0.0 Billion', employees: 120,
       description: 'Supports the Privy Council and manages royal charters, Orders in Council and the granting of university status.',
       responsibilities: ['Privy Council meetings (Orders in Council)', 'Royal charter applications', 'University status approval', 'Professional body regulation', 'Parliamentary franchise', 'Ministerial appointments'],
@@ -2105,7 +2105,7 @@ function App() {
     {
       id: 1,
       name: 'Health Canada',
-      minister: 'Mark Holland',
+      minister: '',
       budget: '$6.8 Billion',
       budgetRaw: 6800000000,
       grants: '$2.1 Billion',
@@ -2133,7 +2133,7 @@ function App() {
     {
       id: 2,
       name: 'National Defence',
-      minister: 'Bill Blair',
+      minister: '',
       budget: '$26.5 Billion',
       budgetRaw: 26500000000,
       grants: '$890 Million',
@@ -2160,7 +2160,7 @@ function App() {
     {
       id: 3,
       name: 'Finance Canada',
-      minister: 'Chrystia Freeland',
+      minister: '',
       budget: '$120.5 Billion',
       budgetRaw: 120500000000,
       grants: '$45.2 Billion',
@@ -2186,7 +2186,7 @@ function App() {
     {
       id: 4,
       name: 'Immigration, Refugees and Citizenship',
-      minister: 'Marc Miller',
+      minister: '',
       budget: '$3.2 Billion',
       budgetRaw: 3200000000,
       grants: '$1.5 Billion',
@@ -2213,7 +2213,7 @@ function App() {
     {
       id: 5,
       name: 'Environment and Climate Change',
-      minister: 'Steven Guilbeault',
+      minister: '',
       budget: '$4.1 Billion',
       budgetRaw: 4100000000,
       grants: '$2.8 Billion',
@@ -2240,7 +2240,7 @@ function App() {
     {
       id: 6,
       name: 'Public Safety Canada',
-      minister: 'Dominic LeBlanc',
+      minister: '',
       budget: '$10.2 Billion',
       budgetRaw: 10200000000,
       grants: '$3.4 Billion',
@@ -2267,7 +2267,7 @@ function App() {
     {
       id: 7,
       name: 'Employment and Social Development',
-      minister: 'Randy Boissonnault',
+      minister: '',
       budget: '$135.6 Billion',
       budgetRaw: 135600000000,
       grants: '$89.2 Billion',
@@ -2293,7 +2293,7 @@ function App() {
     {
       id: 8,
       name: 'Transport Canada',
-      minister: 'Pablo Rodriguez',
+      minister: '',
       budget: '$8.9 Billion',
       budgetRaw: 8900000000,
       grants: '$4.2 Billion',
@@ -2320,7 +2320,7 @@ function App() {
     {
       id: 9,
       name: 'Innovation, Science and Economic Development',
-      minister: 'François-Philippe Champagne',
+      minister: '',
       budget: '$11.3 Billion',
       budgetRaw: 11300000000,
       grants: '$7.8 Billion',
@@ -2348,7 +2348,7 @@ function App() {
     {
       id: 10,
       name: 'Natural Resources Canada',
-      minister: 'Jonathan Wilkinson',
+      minister: '',
       budget: '$5.7 Billion',
       budgetRaw: 5700000000,
       grants: '$3.1 Billion',
@@ -2374,7 +2374,7 @@ function App() {
     {
       id: 11,
       name: 'Justice Canada',
-      minister: 'Arif Virani',
+      minister: '',
       budget: '$2.8 Billion',
       budgetRaw: 2800000000,
       grants: '$890 Million',
@@ -2400,7 +2400,7 @@ function App() {
     {
       id: 12,
       name: 'Indigenous Services Canada',
-      minister: 'Patty Hajdu',
+      minister: '',
       budget: '$18.2 Billion',
       budgetRaw: 18200000000,
       grants: '$12.4 Billion',
@@ -2427,7 +2427,7 @@ function App() {
     {
       id: 13,
       name: 'Agriculture and Agri-Food Canada',
-      minister: 'Lawrence MacAulay',
+      minister: '',
       budget: '$4.5 Billion',
       budgetRaw: 4500000000,
       grants: '$2.9 Billion',
@@ -2453,7 +2453,7 @@ function App() {
     {
       id: 14,
       name: 'Global Affairs Canada',
-      minister: 'Mélanie Joly',
+      minister: '',
       budget: '$7.9 Billion',
       budgetRaw: 7900000000,
       grants: '$5.2 Billion',
@@ -2480,7 +2480,7 @@ function App() {
     {
       id: 15,
       name: 'Canadian Heritage',
-      minister: 'Pascale St-Onge',
+      minister: '',
       budget: '$2.1 Billion',
       budgetRaw: 2100000000,
       grants: '$1.3 Billion',
@@ -3758,7 +3758,7 @@ function App() {
       {
         id: 1,
         name: 'Department of State',
-        secretary: 'Antony Blinken',
+        secretary: '',
         budget: '$58.1 Billion',
         budgetRaw: 58100000000,
         grants: '$42.3 Billion',
@@ -3779,7 +3779,7 @@ function App() {
       {
         id: 2,
         name: 'Department of the Treasury',
-        secretary: 'Janet Yellen',
+        secretary: '',
         budget: '$7.9 Trillion',
         budgetRaw: 7900000000000,
         grants: '$890 Billion',
@@ -3800,7 +3800,7 @@ function App() {
       {
         id: 3,
         name: 'Department of Defense (DOD)',
-        secretary: 'Lloyd Austin',
+        secretary: '',
         budget: '$842 Billion',
         budgetRaw: 842000000000,
         grants: '$420 Billion',
@@ -3823,7 +3823,7 @@ function App() {
       {
         id: 4,
         name: 'Department of Justice (DOJ)',
-        secretary: 'Merrick Garland',
+        secretary: '',
         budget: '$37.5 Billion',
         budgetRaw: 37500000000,
         grants: '$15.2 Billion',
@@ -3844,7 +3844,7 @@ function App() {
       {
         id: 5,
         name: 'Department of Health & Human Services (HHS)',
-        secretary: 'Xavier Becerra',
+        secretary: '',
         budget: '$1.7 Trillion',
         budgetRaw: 1700000000000,
         grants: '$1.2 Trillion',
@@ -3866,7 +3866,7 @@ function App() {
       {
         id: 6,
         name: 'Department of Education',
-        secretary: 'Miguel Cardona',
+        secretary: '',
         budget: '$79.6 Billion',
         budgetRaw: 79600000000,
         grants: '$68.2 Billion',
@@ -3887,7 +3887,7 @@ function App() {
       {
         id: 7,
         name: 'Department of Veterans Affairs (VA)',
-        secretary: 'Denis McDonough',
+        secretary: '',
         budget: '$301 Billion',
         budgetRaw: 301000000000,
         grants: '$125 Billion',
@@ -3908,7 +3908,7 @@ function App() {
       {
         id: 8,
         name: 'Department of Homeland Security (DHS)',
-        secretary: 'Alejandro Mayorkas',
+        secretary: '',
         budget: '$60.3 Billion',
         budgetRaw: 60300000000,
         grants: '$22.4 Billion',
@@ -3929,7 +3929,7 @@ function App() {
       {
         id: 9,
         name: 'Department of Transportation (DOT)',
-        secretary: 'Pete Buttigieg',
+        secretary: '',
         budget: '$108 Billion',
         budgetRaw: 108000000000,
         grants: '$78.5 Billion',
@@ -3950,7 +3950,7 @@ function App() {
       {
         id: 10,
         name: 'Department of Energy (DOE)',
-        secretary: 'Jennifer Granholm',
+        secretary: '',
         budget: '$45.8 Billion',
         budgetRaw: 45800000000,
         grants: '$28.3 Billion',
@@ -3971,7 +3971,7 @@ function App() {
       {
         id: 11,
         name: 'Department of Agriculture (USDA)',
-        secretary: 'Tom Vilsack',
+        secretary: '',
         budget: '$151 Billion',
         budgetRaw: 151000000000,
         grants: '$124 Billion',
@@ -3992,7 +3992,7 @@ function App() {
       {
         id: 12,
         name: 'Department of Housing & Urban Development (HUD)',
-        secretary: 'Marcia Fudge',
+        secretary: '',
         budget: '$73.4 Billion',
         budgetRaw: 73400000000,
         grants: '$58.9 Billion',
@@ -4013,7 +4013,7 @@ function App() {
       {
         id: 13,
         name: 'Department of the Interior',
-        secretary: 'Deb Haaland',
+        secretary: '',
         budget: '$18.5 Billion',
         budgetRaw: 18500000000,
         grants: '$8.9 Billion',
@@ -4034,7 +4034,7 @@ function App() {
       {
         id: 14,
         name: 'Department of Labor',
-        secretary: 'Julie Su',
+        secretary: '',
         budget: '$14.2 Billion',
         budgetRaw: 14200000000,
         grants: '$8.7 Billion',
@@ -4055,7 +4055,7 @@ function App() {
       {
         id: 15,
         name: 'Department of Commerce',
-        secretary: 'Gina Raimondo',
+        secretary: '',
         budget: '$12.3 Billion',
         budgetRaw: 12300000000,
         grants: '$7.8 Billion',
@@ -7043,9 +7043,9 @@ function App() {
 
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="relative bg-white rounded-lg shadow-md p-8 mb-6">
-            <button onClick={(e) => handleShare(e, { id: selectedDepartment.id, title: selectedDepartment.name, text: `🏛️ ${selectedDepartment.name} — Budget: ${selectedDepartment.budget} | Staff: ${selectedDepartment.employees.toLocaleString()} | Secretary: ${selectedDepartment.secretary} - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === selectedDepartment.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === selectedDepartment.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+            <button onClick={(e) => handleShare(e, { id: selectedDepartment.id, title: selectedDepartment.name, text: `🏛️ ${selectedDepartment.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === selectedDepartment.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === selectedDepartment.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">{selectedDepartment.name}</h1>
-            <p className="text-lg text-gray-700 mb-6">Secretary: {selectedDepartment.secretary}</p>
+            {(() => { const hd = deptHeadsData[`US:${selectedDepartment.name}`]; return hd?.name ? <p className="text-lg text-gray-700 mb-2">{hd.title || 'Secretary'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Secretary: Official data loading</p>; })()}
             <p className="text-gray-600 mb-6">{selectedDepartment.description}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -7188,7 +7188,7 @@ function App() {
                 </div>
               </div>
               {(() => {
-                const exp = genDeptExpenses(selectedDepartment.secretary, selectedDepartment.name, '$');
+                const exp = genDeptExpenses(deptHeadsData[`US:${selectedDepartment.name}`]?.name || selectedDepartment.name, selectedDepartment.name, '$');
                 const liveKey = `US:${selectedDepartment.name}`;
                 const liveItems = deptLiveExpenses[liveKey] || [];
                 const wsColor = exp.wasteScore >= 7 ? '#dc2626' : exp.wasteScore >= 4 ? '#f97316' : '#22c55e';
@@ -11103,32 +11103,32 @@ function App() {
           {(() => {
             const lobbyFallback = {
               CA: [
-                { id: 'ca-l1', company: 'NorthShield Defence Corp.', minister: 'Bill Blair', minister_title: 'Minister of National Defence', lobby_date: '2024-09-12', contract_amount: 48000000, days_to_contract: 47, conflict_score: 9.2, contract_description: 'Tactical equipment supply — CA$48M sole-source contract', finding: 'NorthShield lobbied the Defence Minister 3 times in 6 weeks before securing a CA$48M sole-source contract — bypassing competitive tender. No independent value-for-money assessment was published.' },
-                { id: 'ca-l2', company: 'GreenPath Infrastructure Inc.', minister: 'Steven Guilbeault', minister_title: 'Minister of Environment', lobby_date: '2024-11-03', contract_amount: 31500000, days_to_contract: 62, conflict_score: 8.7, contract_description: 'Carbon capture pilot project — CA$31.5M grant', finding: 'GreenPath met with the Environment Minister twice before receiving a CA$31.5M climate grant. A competing proposal from a non-lobbying firm scored higher on technical merit but was passed over.' },
-                { id: 'ca-l3', company: 'Maple Digital Solutions', minister: 'François-Philippe Champagne', minister_title: 'Minister of Industry', lobby_date: '2025-01-17', contract_amount: 22800000, days_to_contract: 38, conflict_score: 8.1, contract_description: 'AI readiness framework — CA$22.8M contract', finding: 'Maple Digital Solutions held a private briefing with the Industry Minister 38 days before winning a CA$22.8M AI contract. The firm had no prior federal contracts.' },
-                { id: 'ca-l4', company: 'Rideau Health Partners', minister: 'Mark Holland', minister_title: 'Minister of Health', lobby_date: '2024-10-28', contract_amount: 17600000, days_to_contract: 91, conflict_score: 7.4, contract_description: 'Mental health digital platform — CA$17.6M', finding: 'Rideau Health Partners registered 4 lobbying communications with the Health Minister\'s office before being awarded CA$17.6M for a mental health platform. The 91-day gap is shorter than the standard 6-month cooling-off window.' },
-                { id: 'ca-l5', company: 'Cornerstone Housing Group', minister: 'Sean Fraser', minister_title: 'Minister of Housing', lobby_date: '2025-02-04', contract_amount: 54000000, days_to_contract: 29, conflict_score: 9.5, contract_description: 'Rapid housing initiative — CA$54M funding award', finding: 'Cornerstone lobbied the Housing Minister and received a CA$54M rapid housing award just 29 days later — the fastest lobby-to-award timeline in the current parliament. Ethics Commissioner notified.' },
+                { id: 'ca-l1', company: 'NorthShield Defence Corp.', minister: '', minister_title: 'Minister of National Defence', lobby_date: '2024-09-12', contract_amount: 48000000, days_to_contract: 47, conflict_score: 9.2, contract_description: 'Tactical equipment supply — CA$48M sole-source contract', finding: 'NorthShield lobbied the Defence Minister 3 times in 6 weeks before securing a CA$48M sole-source contract — bypassing competitive tender. No independent value-for-money assessment was published.' },
+                { id: 'ca-l2', company: 'GreenPath Infrastructure Inc.', minister: '', minister_title: 'Minister of Environment', lobby_date: '2024-11-03', contract_amount: 31500000, days_to_contract: 62, conflict_score: 8.7, contract_description: 'Carbon capture pilot project — CA$31.5M grant', finding: 'GreenPath met with the Environment Minister twice before receiving a CA$31.5M climate grant. A competing proposal from a non-lobbying firm scored higher on technical merit but was passed over.' },
+                { id: 'ca-l3', company: 'Maple Digital Solutions', minister: '', minister_title: 'Minister of Industry', lobby_date: '2025-01-17', contract_amount: 22800000, days_to_contract: 38, conflict_score: 8.1, contract_description: 'AI readiness framework — CA$22.8M contract', finding: 'Maple Digital Solutions held a private briefing with the Industry Minister 38 days before winning a CA$22.8M AI contract. The firm had no prior federal contracts.' },
+                { id: 'ca-l4', company: 'Rideau Health Partners', minister: '', minister_title: 'Minister of Health', lobby_date: '2024-10-28', contract_amount: 17600000, days_to_contract: 91, conflict_score: 7.4, contract_description: 'Mental health digital platform — CA$17.6M', finding: 'Rideau Health Partners registered 4 lobbying communications with the Health Minister\'s office before being awarded CA$17.6M for a mental health platform. The 91-day gap is shorter than the standard 6-month cooling-off window.' },
+                { id: 'ca-l5', company: 'Cornerstone Housing Group', minister: '', minister_title: 'Minister of Housing', lobby_date: '2025-02-04', contract_amount: 54000000, days_to_contract: 29, conflict_score: 9.5, contract_description: 'Rapid housing initiative — CA$54M funding award', finding: 'Cornerstone lobbied the Housing Minister and received a CA$54M rapid housing award just 29 days later — the fastest lobby-to-award timeline in the current parliament. Ethics Commissioner notified.' },
               ],
               US: [
-                { id: 'us-l1', company: 'Paladin Aerospace Systems', minister: 'Pete Hegseth', minister_title: 'Secretary of Defense', lobby_date: '2025-01-22', contract_amount: 780000000, days_to_contract: 34, conflict_score: 9.6, contract_description: 'Next-gen drone surveillance — $780M Pentagon contract', finding: 'Paladin Aerospace met with the Secretary of Defense 34 days before winning a $780M Pentagon drone contract. Former Paladin executives now work inside the DoD procurement office that approved the deal.' },
-                { id: 'us-l2', company: 'AmeriCare Rx Holdings', minister: 'RFK Jr.', minister_title: 'Sec. of Health & Human Services', lobby_date: '2025-02-11', contract_amount: 210000000, days_to_contract: 41, conflict_score: 9.1, contract_description: 'Vaccine distribution logistics — $210M HHS contract', finding: 'AmeriCare Rx lobbied HHS leadership and received a $210M vaccine logistics contract 41 days later — sole-source, no competitive bid. The HHS Secretary has publicly praised the company by name.' },
-                { id: 'us-l3', company: 'BorderTech Solutions LLC', minister: 'Kristi Noem', minister_title: 'Secretary of Homeland Security', lobby_date: '2025-01-08', contract_amount: 320000000, days_to_contract: 27, conflict_score: 9.4, contract_description: 'AI border surveillance system — $320M DHS award', finding: 'BorderTech met with the DHS Secretary just 27 days before securing a $320M AI surveillance contract. The company was founded 18 months ago and has no prior government contracts.' },
-                { id: 'us-l4', company: 'Atlas Energy Partners', minister: 'Doug Burgum', minister_title: 'Secretary of the Interior', lobby_date: '2024-12-19', contract_amount: 95000000, days_to_contract: 58, conflict_score: 8.3, contract_description: 'Federal land drilling lease — $95M extraction rights', finding: 'Atlas Energy lobbied Interior Department officials 58 days before receiving $95M in federal land drilling rights. Three Atlas board members are major donors to the current administration.' },
-                { id: 'us-l5', company: 'Nexus Cloud Federal', minister: 'Russell Vought', minister_title: 'OMB Director', lobby_date: '2025-02-28', contract_amount: 440000000, days_to_contract: 19, conflict_score: 9.7, contract_description: 'Government cloud migration — $440M OMB-directed sole-source', finding: 'Nexus Cloud met with the OMB Director and 19 days later received a $440M sole-source cloud contract directly directed by OMB — bypassing standard GSA procurement channels entirely.' },
+                { id: 'us-l1', company: 'Paladin Aerospace Systems', minister: '', minister_title: 'Secretary of Defense', lobby_date: '2025-01-22', contract_amount: 780000000, days_to_contract: 34, conflict_score: 9.6, contract_description: 'Next-gen drone surveillance — $780M Pentagon contract', finding: 'Paladin Aerospace met with the Secretary of Defense 34 days before winning a $780M Pentagon drone contract. Former Paladin executives now work inside the DoD procurement office that approved the deal.' },
+                { id: 'us-l2', company: 'AmeriCare Rx Holdings', minister: '', minister_title: 'Sec. of Health & Human Services', lobby_date: '2025-02-11', contract_amount: 210000000, days_to_contract: 41, conflict_score: 9.1, contract_description: 'Vaccine distribution logistics — $210M HHS contract', finding: 'AmeriCare Rx lobbied HHS leadership and received a $210M vaccine logistics contract 41 days later — sole-source, no competitive bid. The HHS Secretary has publicly praised the company by name.' },
+                { id: 'us-l3', company: 'BorderTech Solutions LLC', minister: '', minister_title: 'Secretary of Homeland Security', lobby_date: '2025-01-08', contract_amount: 320000000, days_to_contract: 27, conflict_score: 9.4, contract_description: 'AI border surveillance system — $320M DHS award', finding: 'BorderTech met with the DHS Secretary just 27 days before securing a $320M AI surveillance contract. The company was founded 18 months ago and has no prior government contracts.' },
+                { id: 'us-l4', company: 'Atlas Energy Partners', minister: '', minister_title: 'Secretary of the Interior', lobby_date: '2024-12-19', contract_amount: 95000000, days_to_contract: 58, conflict_score: 8.3, contract_description: 'Federal land drilling lease — $95M extraction rights', finding: 'Atlas Energy lobbied Interior Department officials 58 days before receiving $95M in federal land drilling rights. Three Atlas board members are major donors to the current administration.' },
+                { id: 'us-l5', company: 'Nexus Cloud Federal', minister: '', minister_title: 'OMB Director', lobby_date: '2025-02-28', contract_amount: 440000000, days_to_contract: 19, conflict_score: 9.7, contract_description: 'Government cloud migration — $440M OMB-directed sole-source', finding: 'Nexus Cloud met with the OMB Director and 19 days later received a $440M sole-source cloud contract directly directed by OMB — bypassing standard GSA procurement channels entirely.' },
               ],
               UK: [
-                { id: 'uk-l1', company: 'Meridian Defence Group', minister: 'John Healey', minister_title: 'Secretary of State for Defence', lobby_date: '2024-10-07', contract_amount: 280000000, days_to_contract: 52, conflict_score: 9.0, contract_description: 'Armoured vehicle upgrade programme — £280M MoD contract', finding: 'Meridian Defence held private meetings with the Defence Secretary and received a £280M armoured vehicle contract 52 days later. The MoD\'s own procurement review had ranked a competitor higher.' },
-                { id: 'uk-l2', company: 'ClearPath Digital UK', minister: 'Peter Kyle', minister_title: 'Secretary of State for Science', lobby_date: '2024-11-14', contract_amount: 68000000, days_to_contract: 44, conflict_score: 8.5, contract_description: 'NHS AI diagnostic platform — £68M contract', finding: 'ClearPath Digital lobbied the Science Secretary\'s office before winning a £68M NHS AI contract. The Transparency Register shows 5 meetings in 90 days — more than any other tech firm in the period.' },
-                { id: 'uk-l3', company: 'Albion Infrastructure PLC', minister: 'Angela Rayner', minister_title: 'Deputy Prime Minister', lobby_date: '2024-09-23', contract_amount: 124000000, days_to_contract: 67, conflict_score: 8.2, contract_description: 'Social housing construction — £124M grant framework', finding: 'Albion Infrastructure met with the Deputy PM\'s office and was awarded £124M in housing grants 67 days later. Three other firms submitted stronger bids under the published scoring criteria.' },
-                { id: 'uk-l4', company: 'Hartwell Energy Consulting', minister: 'Ed Miliband', minister_title: 'Secretary of State for Energy', lobby_date: '2025-01-09', contract_amount: 47000000, days_to_contract: 33, conflict_score: 8.8, contract_description: 'Offshore wind consultancy — £47M framework contract', finding: 'Hartwell Energy lobbied the Energy Secretary and secured a £47M offshore wind framework contract just 33 days later. The contract was not published on Contracts Finder within the required 90-day window.' },
-                { id: 'uk-l5', company: 'BritRail Innovations Ltd', minister: 'Heidi Alexander', minister_title: 'Secretary of State for Transport', lobby_date: '2024-12-02', contract_amount: 196000000, days_to_contract: 49, conflict_score: 8.6, contract_description: 'Rolling stock procurement — £196M DfT contract', finding: 'BritRail Innovations met with Transport ministerial staff and received a £196M rolling stock contract 49 days later. A House of Commons select committee has requested the full tender evaluation.' },
+                { id: 'uk-l1', company: 'Meridian Defence Group', minister: '', minister_title: 'Secretary of State for Defence', lobby_date: '2024-10-07', contract_amount: 280000000, days_to_contract: 52, conflict_score: 9.0, contract_description: 'Armoured vehicle upgrade programme — £280M MoD contract', finding: 'Meridian Defence held private meetings with the Defence Secretary and received a £280M armoured vehicle contract 52 days later. The MoD\'s own procurement review had ranked a competitor higher.' },
+                { id: 'uk-l2', company: 'ClearPath Digital UK', minister: '', minister_title: 'Secretary of State for Science', lobby_date: '2024-11-14', contract_amount: 68000000, days_to_contract: 44, conflict_score: 8.5, contract_description: 'NHS AI diagnostic platform — £68M contract', finding: 'ClearPath Digital lobbied the Science Secretary\'s office before winning a £68M NHS AI contract. The Transparency Register shows 5 meetings in 90 days — more than any other tech firm in the period.' },
+                { id: 'uk-l3', company: 'Albion Infrastructure PLC', minister: '', minister_title: 'Deputy Prime Minister', lobby_date: '2024-09-23', contract_amount: 124000000, days_to_contract: 67, conflict_score: 8.2, contract_description: 'Social housing construction — £124M grant framework', finding: 'Albion Infrastructure met with the Deputy PM\'s office and was awarded £124M in housing grants 67 days later. Three other firms submitted stronger bids under the published scoring criteria.' },
+                { id: 'uk-l4', company: 'Hartwell Energy Consulting', minister: '', minister_title: 'Secretary of State for Energy', lobby_date: '2025-01-09', contract_amount: 47000000, days_to_contract: 33, conflict_score: 8.8, contract_description: 'Offshore wind consultancy — £47M framework contract', finding: 'Hartwell Energy lobbied the Energy Secretary and secured a £47M offshore wind framework contract just 33 days later. The contract was not published on Contracts Finder within the required 90-day window.' },
+                { id: 'uk-l5', company: 'BritRail Innovations Ltd', minister: '', minister_title: 'Secretary of State for Transport', lobby_date: '2024-12-02', contract_amount: 196000000, days_to_contract: 49, conflict_score: 8.6, contract_description: 'Rolling stock procurement — £196M DfT contract', finding: 'BritRail Innovations met with Transport ministerial staff and received a £196M rolling stock contract 49 days later. A House of Commons select committee has requested the full tender evaluation.' },
               ],
               AU: [
-                { id: 'au-l1', company: 'Pacific Shield Defence Pty', minister: 'Pat Conroy', minister_title: 'Minister for Defence Industry', lobby_date: '2024-09-18', contract_amount: 340000000, days_to_contract: 43, conflict_score: 9.3, contract_description: 'Naval patrol vessel systems — AU$340M contract', finding: 'Pacific Shield lobbied the Defence Industry Minister and received an AU$340M sole-source naval contract 43 days later. Senate estimates hearings revealed no value-for-money assessment was completed.' },
-                { id: 'au-l2', company: 'TradeWave Australia Ltd', minister: 'Don Farrell', minister_title: 'Minister for Trade & Tourism', lobby_date: '2024-10-31', contract_amount: 82000000, days_to_contract: 36, conflict_score: 8.9, contract_description: 'Export facilitation platform — AU$82M grant', finding: 'TradeWave met with the Trade Minister 36 days before receiving AU$82M in export facilitation grants. The Australian National Audit Office flagged the award as lacking adequate documentation.' },
-                { id: 'au-l3', company: 'GreenGrid Energy Pty', minister: 'Tanya Plibersek', minister_title: 'Minister for Environment', lobby_date: '2025-01-14', contract_amount: 115000000, days_to_contract: 55, conflict_score: 8.4, contract_description: 'Renewable grid integration — AU$115M contract', finding: 'GreenGrid Energy lobbied the Environment Minister and won AU$115M in renewable grid contracts 55 days later. An independent review found the technical bid ranked 3rd among 7 applicants.' },
-                { id: 'au-l4', company: 'Inclusive Care Technologies', minister: 'Bill Shorten', minister_title: 'Minister for the NDIS', lobby_date: '2024-11-22', contract_amount: 63000000, days_to_contract: 71, conflict_score: 7.8, contract_description: 'NDIS case management software — AU$63M tender award', finding: 'Inclusive Care Technologies had 3 meetings on the lobbying register with NDIS ministers before winning AU$63M in software contracts. Staff from the minister\'s office joined the company 4 months later.' },
-                { id: 'au-l5', company: 'FederalBuild Group', minister: 'Anthony Albanese', minister_title: 'Prime Minister', lobby_date: '2025-02-07', contract_amount: 490000000, days_to_contract: 24, conflict_score: 9.8, contract_description: 'Infrastructure stimulus program — AU$490M PMO-directed award', finding: 'FederalBuild Group met with the Prime Minister\'s office and received AU$490M in infrastructure awards just 24 days later — the shortest lobby-to-contract gap ever recorded in the AusTender system.' },
+                { id: 'au-l1', company: 'Pacific Shield Defence Pty', minister: '', minister_title: 'Minister for Defence Industry', lobby_date: '2024-09-18', contract_amount: 340000000, days_to_contract: 43, conflict_score: 9.3, contract_description: 'Naval patrol vessel systems — AU$340M contract', finding: 'Pacific Shield lobbied the Defence Industry Minister and received an AU$340M sole-source naval contract 43 days later. Senate estimates hearings revealed no value-for-money assessment was completed.' },
+                { id: 'au-l2', company: 'TradeWave Australia Ltd', minister: '', minister_title: 'Minister for Trade & Tourism', lobby_date: '2024-10-31', contract_amount: 82000000, days_to_contract: 36, conflict_score: 8.9, contract_description: 'Export facilitation platform — AU$82M grant', finding: 'TradeWave met with the Trade Minister 36 days before receiving AU$82M in export facilitation grants. The Australian National Audit Office flagged the award as lacking adequate documentation.' },
+                { id: 'au-l3', company: 'GreenGrid Energy Pty', minister: '', minister_title: 'Minister for Environment', lobby_date: '2025-01-14', contract_amount: 115000000, days_to_contract: 55, conflict_score: 8.4, contract_description: 'Renewable grid integration — AU$115M contract', finding: 'GreenGrid Energy lobbied the Environment Minister and won AU$115M in renewable grid contracts 55 days later. An independent review found the technical bid ranked 3rd among 7 applicants.' },
+                { id: 'au-l4', company: 'Inclusive Care Technologies', minister: '', minister_title: 'Minister for the NDIS', lobby_date: '2024-11-22', contract_amount: 63000000, days_to_contract: 71, conflict_score: 7.8, contract_description: 'NDIS case management software — AU$63M tender award', finding: 'Inclusive Care Technologies had 3 meetings on the lobbying register with NDIS ministers before winning AU$63M in software contracts. Staff from the minister\'s office joined the company 4 months later.' },
+                { id: 'au-l5', company: 'FederalBuild Group', minister: '', minister_title: 'Prime Minister', lobby_date: '2025-02-07', contract_amount: 490000000, days_to_contract: 24, conflict_score: 9.8, contract_description: 'Infrastructure stimulus program — AU$490M PMO-directed award', finding: 'FederalBuild Group met with the Prime Minister\'s office and received AU$490M in infrastructure awards just 24 days later — the shortest lobby-to-contract gap ever recorded in the AusTender system.' },
               ],
             };
 
@@ -19470,7 +19470,7 @@ function App() {
           {/* Department Header */}
           <div className="relative bg-white rounded-lg shadow-md p-8 mb-6">
             <button
-              onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — Budget: ${dept.budget} | Staff: ${dept.employees.toLocaleString()} | Minister: ${dept.minister}`, url: window.location.href })}
+              onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — civic-voice-app.vercel.app`, url: window.location.href })}
               className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
               aria-label="Share"
             >
@@ -19484,7 +19484,7 @@ function App() {
               <span className="text-4xl flex-shrink-0">🇬🇧</span>
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-1">{dept.name}</h1>
-                <p className="text-lg text-gray-600 mb-3">Secretary of State / Minister: <span className="font-semibold" style={{ color: '#012169' }}>{dept.minister}</span></p>
+                {(() => { const hd = deptHeadsData[`UK:${dept.name}`]; return hd?.name ? <p className="text-lg text-gray-600 mb-2">{hd.title || 'Secretary of State'}: <span className="font-semibold" style={{ color: '#012169' }}>{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Secretary of State: Official data loading</p>; })()}
                 <p className="text-gray-700 max-w-3xl">{dept.description}</p>
               </div>
             </div>
@@ -19641,7 +19641,7 @@ function App() {
                 </div>
               </div>
               {(() => {
-                const exp = genDeptExpenses(dept.minister, dept.name, '£');
+                const exp = genDeptExpenses(deptHeadsData[`UK:${dept.name}`]?.name || dept.name, dept.name, '£');
                 const liveKey = `UK:${dept.name}`;
                 const liveItems = deptLiveExpenses[liveKey] || [];
                 const wsColor = exp.wasteScore >= 7 ? '#dc2626' : exp.wasteScore >= 4 ? '#f97316' : '#22c55e';
@@ -31468,11 +31468,11 @@ function App() {
         <div className="max-w-6xl mx-auto px-4 py-8">
           {/* Ministry Header */}
           <div className="relative bg-white rounded-lg shadow-md p-8 mb-6">
-            <button onClick={(e) => handleShare(e, { id: selectedMinistry.id, title: selectedMinistry.name, text: `🏛️ ${selectedMinistry.name} — Budget: ${selectedMinistry.budget} | Staff: ${selectedMinistry.employees.toLocaleString()} | Minister: ${selectedMinistry.minister} - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === selectedMinistry.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === selectedMinistry.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+            <button onClick={(e) => handleShare(e, { id: selectedMinistry.id, title: selectedMinistry.name, text: `🏛️ ${selectedMinistry.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === selectedMinistry.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === selectedMinistry.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h1 className="text-4xl font-bold text-gray-800 mb-2">{selectedMinistry.name}</h1>
-                <p className="text-xl text-gray-600 mb-4">Minister: {selectedMinistry.minister}</p>
+                {(() => { const hd = deptHeadsData[`CA:${selectedMinistry.name}`]; return hd?.name ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
                 <p className="text-gray-700 max-w-3xl">{selectedMinistry.description}</p>
               </div>
             </div>
@@ -31620,7 +31620,7 @@ function App() {
                 </div>
               </div>
               {(() => {
-                const exp = genDeptExpenses(selectedMinistry.minister, selectedMinistry.name, 'CA$');
+                const exp = genDeptExpenses(deptHeadsData[`CA:${selectedMinistry.name}`]?.name || selectedMinistry.name, selectedMinistry.name, 'CA$');
                 const liveKey = `CA:${selectedMinistry.name}`;
                 const liveItems = deptLiveExpenses[liveKey] || [];
                 const wsColor = exp.wasteScore >= 7 ? '#dc2626' : exp.wasteScore >= 4 ? '#f97316' : '#22c55e';
@@ -32585,7 +32585,7 @@ function App() {
           {/* Department Header */}
           <div className="relative bg-white rounded-lg shadow-md p-8 mb-6">
             <button
-              onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — Budget: ${dept.budget} | Staff: ${dept.employees.toLocaleString()} | Minister: ${dept.minister}`, url: window.location.href })}
+              onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — civic-voice-app.vercel.app`, url: window.location.href })}
               className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`}
               aria-label="Share"
             >
@@ -32597,7 +32597,7 @@ function App() {
                   <span className="text-3xl">🇦🇺</span>
                   <h1 className="text-4xl font-bold text-gray-800">Department of {dept.name}</h1>
                 </div>
-                <p className="text-xl text-gray-600 mb-4">Minister: {dept.minister}</p>
+                {(() => { const hd = deptHeadsData[`AU:${dept.name}`]; return hd?.name ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
                 <p className="text-gray-700 max-w-3xl">{dept.description}</p>
               </div>
             </div>
@@ -32752,7 +32752,7 @@ function App() {
                 </div>
               </div>
               {(() => {
-                const exp = genDeptExpenses(dept.minister, dept.name, 'AU$');
+                const exp = genDeptExpenses(deptHeadsData[`AU:${dept.name}`]?.name || dept.name, dept.name, 'AU$');
                 const liveKey = `AU:${dept.name}`;
                 const liveItems = deptLiveExpenses[liveKey] || [];
                 const wsColor = exp.wasteScore >= 7 ? '#dc2626' : exp.wasteScore >= 4 ? '#f97316' : '#22c55e';
