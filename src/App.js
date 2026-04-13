@@ -543,6 +543,24 @@ const customStyles = `
   }
 `;
 
+// Maps AU short display names → Firestore 'name' field values in department_budgets
+const AU_DEPT_FIRESTORE_NAMES = {
+  'Treasury':        'Department of the Treasury',
+  'Finance':         'Department of Finance',
+  'Health':          'Department of Health, Disability and Ageing',
+  'Education':       'Department of Education',
+  'Infrastructure':  'Department of Infrastructure, Transport, Regional Development, Communications, Sport and the Arts',
+  'Environment':     'Department of Climate Change, Energy, the Environment and Water',
+  'Foreign Affairs': 'Department of Foreign Affairs and Trade',
+  'Social Services': 'Department of Social Services',
+  'Agriculture':     'Department of Agriculture, Fisheries and Forestry',
+  'Industry & Science': 'Department of Industry, Science and Resources',
+  'Employment':      'Department of Employment and Workplace Relations',
+};
+// Reverse map: Firestore name → AU display name
+const AU_DEPT_DISPLAY_NAMES = Object.fromEntries(
+  Object.entries(AU_DEPT_FIRESTORE_NAMES).map(([k, v]) => [v, k])
+);
 
 // --- EXECUTIVE ORDERS DATA -----------------------------------------------
 // Source: Federal Register API  https://www.federalregister.gov/api/v1/documents
@@ -2785,7 +2803,8 @@ function App() {
         docs = snap.docs.map(d => d.data());
       }
       if (docs.length === 0) {
-        const q = query(collection(db, 'member_votes'), where('memberName', '==', key));
+        const slug = key.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const q = query(collection(db, 'member_votes'), where('politician_slug', '==', slug));
         const snap = await getDocs(q);
         docs = snap.docs.map(d => d.data());
       }
@@ -2873,7 +2892,7 @@ function App() {
         if (!snap.empty) bioDoc = snap.docs[0].data();
       }
       if (!bioDoc) {
-        const q = query(collection(db, 'member_bios'), where('memberName', '==', key));
+        const q = query(collection(db, 'member_bios'), where('name', '==', key));
         const snap = await getDocs(q);
         if (!snap.empty) bioDoc = snap.docs[0].data();
       }
@@ -2929,7 +2948,7 @@ function App() {
         docs = snap.docs.map(d => d.data());
       }
       if (docs.length === 0) {
-        const q = query(collection(db, 'member_committees'), where('memberName', '==', key));
+        const q = query(collection(db, 'member_committees'), where('full_name', '==', key));
         const snap = await getDocs(q);
         docs = snap.docs.map(d => d.data());
       }
@@ -3803,7 +3822,7 @@ function App() {
       },
       {
         id: 3,
-        name: 'Department of Defense (DOD)',
+        name: 'Department of Defense',
         secretary: '',
         budget: '$842 Billion',
         budgetRaw: 842000000000,
@@ -3826,7 +3845,7 @@ function App() {
       },
       {
         id: 4,
-        name: 'Department of Justice (DOJ)',
+        name: 'Department of Justice',
         secretary: '',
         budget: '$37.5 Billion',
         budgetRaw: 37500000000,
@@ -3847,7 +3866,7 @@ function App() {
       },
       {
         id: 5,
-        name: 'Department of Health & Human Services (HHS)',
+        name: 'Department of Health and Human Services',
         secretary: '',
         budget: '$1.7 Trillion',
         budgetRaw: 1700000000000,
@@ -3890,7 +3909,7 @@ function App() {
       },
       {
         id: 7,
-        name: 'Department of Veterans Affairs (VA)',
+        name: 'Department of Veterans Affairs',
         secretary: '',
         budget: '$301 Billion',
         budgetRaw: 301000000000,
@@ -3911,7 +3930,7 @@ function App() {
       },
       {
         id: 8,
-        name: 'Department of Homeland Security (DHS)',
+        name: 'Department of Homeland Security',
         secretary: '',
         budget: '$60.3 Billion',
         budgetRaw: 60300000000,
@@ -3932,7 +3951,7 @@ function App() {
       },
       {
         id: 9,
-        name: 'Department of Transportation (DOT)',
+        name: 'Department of Transportation',
         secretary: '',
         budget: '$108 Billion',
         budgetRaw: 108000000000,
@@ -3953,7 +3972,7 @@ function App() {
       },
       {
         id: 10,
-        name: 'Department of Energy (DOE)',
+        name: 'Department of Energy',
         secretary: '',
         budget: '$45.8 Billion',
         budgetRaw: 45800000000,
@@ -3974,7 +3993,7 @@ function App() {
       },
       {
         id: 11,
-        name: 'Department of Agriculture (USDA)',
+        name: 'Department of Agriculture',
         secretary: '',
         budget: '$151 Billion',
         budgetRaw: 151000000000,
@@ -3995,7 +4014,7 @@ function App() {
       },
       {
         id: 12,
-        name: 'Department of Housing & Urban Development (HUD)',
+        name: 'Department of Housing and Urban Development',
         secretary: '',
         budget: '$73.4 Billion',
         budgetRaw: 73400000000,
@@ -6602,12 +6621,13 @@ function App() {
     const key = `${jurisdiction}:${deptName}`;
     if (deptBudgetData[key] !== undefined || deptBudgetLoading[key]) return;
     setDeptBudgetLoading(prev => ({ ...prev, [key]: true }));
+    const fsName = jurisdiction === 'AU' ? (AU_DEPT_FIRESTORE_NAMES[deptName] || deptName) : deptName;
     (async () => {
       try {
         const q = query(
           collection(db, 'department_budgets'),
           where('jurisdiction', '==', jurisdiction),
-          where('department_name', '==', deptName)
+          where('name', '==', fsName)
         );
         const snap = await getDocs(q);
         const doc = snap.docs.length > 0 ? snap.docs[0].data() : null;
@@ -6634,7 +6654,10 @@ function App() {
         const updates = {};
         snap.docs.forEach(d => {
           const data = d.data();
-          if (data.department_name) updates[`${jurisdiction}:${data.department_name}`] = data;
+          if (data.name) {
+            const displayName = jurisdiction === 'AU' ? (AU_DEPT_DISPLAY_NAMES[data.name] || data.name) : data.name;
+            updates[`${jurisdiction}:${displayName}`] = data;
+          }
         });
         setDeptBudgetData(prev => ({ ...prev, ...updates }));
       } catch (err) {
@@ -6661,7 +6684,11 @@ function App() {
         const updates = {};
         snap.docs.forEach(d => {
           const data = d.data();
-          if (data.department_name) updates[`${jurisdiction}:${data.department_name}`] = data;
+          const headName = data.department_name || data.name;
+          if (headName) {
+            const displayName = jurisdiction === 'AU' ? (AU_DEPT_DISPLAY_NAMES[headName] || headName) : headName;
+            updates[`${jurisdiction}:${displayName}`] = data;
+          }
         });
         setDeptHeadsData(prev => ({ ...prev, ...updates }));
       } catch (err) {
@@ -6698,7 +6725,7 @@ function App() {
     setElectionsLoading(prev => ({ ...prev, [countryCode]: true }));
     (async () => {
       try {
-        const q = query(collection(db, 'elections'), where('country', '==', countryCode));
+        const q = query(collection(db, 'elections'), where('jurisdiction', '==', countryCode));
         const snap = await getDocs(q);
         const docs = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => {
           // upcoming elections first, then by date
@@ -6733,7 +6760,7 @@ function App() {
     setForeignAidLoading(prev => ({ ...prev, [countryCode]: true }));
     (async () => {
       try {
-        const snap = await getDocs(query(collection(db, 'foreign_aid'), where('country', '==', countryCode)));
+        const snap = await getDocs(query(collection(db, 'foreign_aid'), where('jurisdiction', '==', countryCode)));
         const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
           .sort((a, b) => (b.amount || 0) - (a.amount || 0));
         setForeignAidData(prev => ({ ...prev, [countryCode]: items }));
@@ -17103,7 +17130,7 @@ function App() {
   const fetchForeignAid = async (country) => {
     setForeignAidLoading(prev => ({ ...prev, [country]: true }));
     try {
-      const snap = await getDocs(query(collection(db, 'foreign_aid'), where('country', '==', country)));
+      const snap = await getDocs(query(collection(db, 'foreign_aid'), where('jurisdiction', '==', country)));
       const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
         .sort((a, b) => (b.amount || 0) - (a.amount || 0));
       setForeignAidData(prev => ({ ...prev, [country]: items }));
