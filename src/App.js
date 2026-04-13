@@ -31341,13 +31341,40 @@ function App() {
             </div>
 
             {/* Grants Breakdown */}
-            <div className="mb-6">
-              <div className="flex items-center gap-3 mb-3">
-                <DollarSign className="w-6 h-6 text-green-600" />
-                <h3 className="text-xl font-bold text-gray-800">Grants &amp; Funding Breakdown</h3>
-              </div>
-              <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
-            </div>
+            {(() => {
+              const bData = deptBudgetData[`CA:${selectedMinistry.name}`];
+              const programs = Array.isArray(bData?.key_programs) ? bData.key_programs : [];
+              const fmtCAD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; const m = n / 1_000_000; if (m >= 1000) return `CA${(m/1000).toFixed(1)}B`; if (m >= 1) return `CA${m.toFixed(1)}M`; return `CA${(m*1000).toFixed(0)}K`; };
+              return (
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <DollarSign className="w-6 h-6 text-green-600" />
+                    <h3 className="text-xl font-bold text-gray-800">Grants &amp; Funding Breakdown</h3>
+                    {programs.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                  </div>
+                  {programs.length === 0 ? (
+                    <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {programs.map((p, i) => (
+                        <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-800 text-sm">{p.program_name}</p>
+                            {p.actual_spending != null && p.planned_spending != null && (
+                              <p className="text-xs text-gray-500 mt-1">Actual: {fmtCAD(p.actual_spending)} · Planned: {fmtCAD(p.planned_spending)}</p>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-lg font-bold text-green-700">{fmtCAD(p.planned_spending ?? p.actual_spending)}</p>
+                            <p className="text-xs text-gray-400">planned</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Expenses */}
