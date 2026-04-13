@@ -31274,8 +31274,8 @@ function App() {
               const _bData = deptBudgetData[_bKey];
               const _allocated = _bData?.total_budget ?? _bData?.total_allocated;
               const _hasData = _bData && (_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              // Values stored in thousands CAD — divide by 1000 → millions, then apply B/M/K
-              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; const m = v / 1000; if (m >= 1000) return `CA$${(m/1000).toFixed(1)}B`; if (m >= 1) return `CA$${m.toFixed(1)}M`; return `CA$${(m*1000).toFixed(0)}K`; };
+              // Values in CAD — divide by 1,000,000 → millions, then /1000 for billions
+              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; const m = v / 1_000_000; if (m >= 1000) return `CA$${(m/1000).toFixed(1)}B`; if (m >= 1) return `CA$${m.toFixed(1)}M`; return `CA$${(m*1000).toFixed(0)}K`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
               if (!_hasData) return null;
