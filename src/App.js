@@ -574,10 +574,29 @@ const CA_DEPT_FIRESTORE_NAMES = {
   'Employment and Social Development':       'Employment and Social Development Canada',
   'Innovation, Science and Economic Development': 'Innovation, Science and Economic Development Canada',
 };
-// Reverse map: Firestore name → CA display name
+// Reverse map: Firestore budget 'name' → CA display name
 const CA_DEPT_DISPLAY_NAMES = Object.fromEntries(
   Object.entries(CA_DEPT_FIRESTORE_NAMES).map(([k, v]) => [v, k])
 );
+
+// Maps Firestore department_heads 'department' field → CA app ministry display name
+const CA_DEPT_HEADS_MAP = {
+  'Agriculture':           'Agriculture and Agri-Food Canada',
+  'Canadian Identity':     'Canadian Heritage',
+  'Department of Justice': 'Justice Canada',
+  'Energy':                'Natural Resources Canada',
+  'Environment':           'Environment and Climate Change',
+  'Finance':               'Finance Canada',
+  'Foreign Affairs':       'Global Affairs Canada',
+  'Health':                'Health Canada',
+  'Immigration':           'Immigration, Refugees and Citizenship',
+  'Indigenous Services':   'Indigenous Services Canada',
+  'Industry':              'Innovation, Science and Economic Development',
+  'Jobs':                  'Employment and Social Development',
+  'National Defence':      'National Defence',
+  'Public Safety':         'Public Safety Canada',
+  'Transport':             'Transport Canada',
+};
 
 // --- EXECUTIVE ORDERS DATA -----------------------------------------------
 // Source: Federal Register API  https://www.federalregister.gov/api/v1/documents
@@ -6707,10 +6726,12 @@ function App() {
         const updates = {};
         snap.docs.forEach(d => {
           const data = d.data();
-          const headName = data.department_name || data.name;
+          const headName = jurisdiction === 'CA'
+            ? data.department
+            : (data.department_name || data.name);
           if (headName) {
             const displayName = jurisdiction === 'AU' ? (AU_DEPT_DISPLAY_NAMES[headName] || headName)
-                              : jurisdiction === 'CA' ? (CA_DEPT_DISPLAY_NAMES[headName] || headName)
+                              : jurisdiction === 'CA' ? (CA_DEPT_HEADS_MAP[headName] || headName)
                               : headName;
             updates[`${jurisdiction}:${displayName}`] = data;
           }
@@ -31235,7 +31256,7 @@ function App() {
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h1 className="text-4xl font-bold text-gray-800 mb-2">{selectedMinistry.name}</h1>
-                {(() => { const hd = deptHeadsData[`CA:${selectedMinistry.name}`]; return hd?.name ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
+                {(() => { const hd = deptHeadsData[`CA:${selectedMinistry.name}`]; const hdName = hd?.name?.replace(/^The Honourable\s+/i, ''); return hdName ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hdName}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
                 <p className="text-gray-700 max-w-3xl">{selectedMinistry.description}</p>
               </div>
             </div>
@@ -31246,8 +31267,15 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
+                  {deptBudgetData[`CA:${selectedMinistry.name}`]?.total_budget != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                <p className="text-sm text-gray-400 italic">Official data loading</p>
+                {(() => {
+                  const raw = deptBudgetData[`CA:${selectedMinistry.name}`]?.total_budget;
+                  if (raw == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>;
+                  const m = Number(raw) / 1_000_000;
+                  const display = m >= 1000 ? `CA$${(m/1000).toFixed(1)}B` : m >= 1 ? `CA$${m.toFixed(1)}M` : `CA$${(m*1000).toFixed(0)}K`;
+                  return <p className="text-2xl font-bold text-green-700">{display}</p>;
+                })()}
               </div>
 
               <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
