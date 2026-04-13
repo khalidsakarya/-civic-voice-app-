@@ -562,6 +562,21 @@ const AU_DEPT_DISPLAY_NAMES = Object.fromEntries(
   Object.entries(AU_DEPT_FIRESTORE_NAMES).map(([k, v]) => [v, k])
 );
 
+// Maps CA ministry display names → official Firestore 'name' field values in department_budgets
+const CA_DEPT_FIRESTORE_NAMES = {
+  'National Defence':                        'Department of National Defence',
+  'Finance Canada':                          'Department of Finance Canada',
+  'Immigration, Refugees and Citizenship':   'Immigration, Refugees and Citizenship Canada',
+  'Environment and Climate Change':          'Environment and Climate Change Canada',
+  'Employment and Social Development':       'Employment and Social Development Canada',
+  'Innovation, Science and Economic Development': 'Innovation, Science and Economic Development Canada',
+  'Justice Canada':                          'Department of Justice Canada',
+};
+// Reverse map: Firestore name → CA display name
+const CA_DEPT_DISPLAY_NAMES = Object.fromEntries(
+  Object.entries(CA_DEPT_FIRESTORE_NAMES).map(([k, v]) => [v, k])
+);
+
 // --- EXECUTIVE ORDERS DATA -----------------------------------------------
 // Source: Federal Register API  https://www.federalregister.gov/api/v1/documents
 // Live endpoint: GET /api/v1/documents?conditions[type]=PRESDOCU&conditions[presidential_document_type]=executive_order&per_page=10&order=newest
@@ -6621,7 +6636,9 @@ function App() {
     const key = `${jurisdiction}:${deptName}`;
     if (deptBudgetData[key] !== undefined || deptBudgetLoading[key]) return;
     setDeptBudgetLoading(prev => ({ ...prev, [key]: true }));
-    const fsName = jurisdiction === 'AU' ? (AU_DEPT_FIRESTORE_NAMES[deptName] || deptName) : deptName;
+    const fsName = jurisdiction === 'AU' ? (AU_DEPT_FIRESTORE_NAMES[deptName] || deptName)
+                 : jurisdiction === 'CA' ? (CA_DEPT_FIRESTORE_NAMES[deptName] || deptName)
+                 : deptName;
     (async () => {
       try {
         const q = query(
@@ -6655,7 +6672,9 @@ function App() {
         snap.docs.forEach(d => {
           const data = d.data();
           if (data.name) {
-            const displayName = jurisdiction === 'AU' ? (AU_DEPT_DISPLAY_NAMES[data.name] || data.name) : data.name;
+            const displayName = jurisdiction === 'AU' ? (AU_DEPT_DISPLAY_NAMES[data.name] || data.name)
+                              : jurisdiction === 'CA' ? (CA_DEPT_DISPLAY_NAMES[data.name] || data.name)
+                              : data.name;
             updates[`${jurisdiction}:${displayName}`] = data;
           }
         });
@@ -6686,7 +6705,9 @@ function App() {
           const data = d.data();
           const headName = data.department_name || data.name;
           if (headName) {
-            const displayName = jurisdiction === 'AU' ? (AU_DEPT_DISPLAY_NAMES[headName] || headName) : headName;
+            const displayName = jurisdiction === 'AU' ? (AU_DEPT_DISPLAY_NAMES[headName] || headName)
+                              : jurisdiction === 'CA' ? (CA_DEPT_DISPLAY_NAMES[headName] || headName)
+                              : headName;
             updates[`${jurisdiction}:${displayName}`] = data;
           }
         });
