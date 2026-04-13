@@ -7133,8 +7133,9 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
+                  {(deptBudgetData[`US:${selectedDepartment.name}`]?.total_budget ?? deptBudgetData[`US:${selectedDepartment.name}`]?.total_allocated) != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                <p className="text-sm text-gray-400 italic">Official data loading</p>
+                {(() => { const raw = deptBudgetData[`US:${selectedDepartment.name}`]?.total_budget ?? deptBudgetData[`US:${selectedDepartment.name}`]?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; const v = Number(raw); const fmt = v >= 1e12 ? `$${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
 
               <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
@@ -7198,13 +7199,40 @@ function App() {
             </div>
 
             {/* Grants Breakdown */}
-            <div className="mb-6">
-              <div className="flex items-center gap-3 mb-3">
-                <DollarSign className="w-6 h-6 text-green-600" />
-                <h3 className="text-xl font-bold text-gray-800">Grants &amp; Funding Breakdown</h3>
-              </div>
-              <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
-            </div>
+            {(() => {
+              const bData = deptBudgetData[`US:${selectedDepartment.name}`];
+              const programs = Array.isArray(bData?.key_programs) ? bData.key_programs : [];
+              const fmtUSD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e12) return `$${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`; return `$${n.toLocaleString()}`; };
+              return (
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <DollarSign className="w-6 h-6 text-green-600" />
+                    <h3 className="text-xl font-bold text-gray-800">Grants &amp; Funding Breakdown</h3>
+                    {programs.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                  </div>
+                  {programs.length === 0 ? (
+                    <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {programs.map((p, i) => (
+                        <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-800 text-sm">{p.program_name}</p>
+                            {p.actual_spending != null && p.planned_spending != null && (
+                              <p className="text-xs text-gray-500 mt-1">Actual: {fmtUSD(p.actual_spending)} · Planned: {fmtUSD(p.planned_spending)}</p>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-lg font-bold text-green-700">{fmtUSD(p.planned_spending ?? p.actual_spending)}</p>
+                            <p className="text-xs text-gray-400">planned</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Expenses */}
@@ -19447,8 +19475,9 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
+                  {(deptBudgetData[`UK:${dept.name}`]?.total_budget ?? deptBudgetData[`UK:${dept.name}`]?.total_allocated) != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                <p className="text-sm text-gray-400 italic">Official data loading</p>
+                {(() => { const raw = deptBudgetData[`UK:${dept.name}`]?.total_budget ?? deptBudgetData[`UK:${dept.name}`]?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; const v = Number(raw); const fmt = v >= 1e12 ? `£${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `£${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `£${(v/1e6).toFixed(1)}M` : `£${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
               <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
                 <div className="flex items-center gap-3 mb-2">
@@ -19511,13 +19540,40 @@ function App() {
             </div>
 
             {/* Grants Breakdown */}
-            <div className="mb-6">
-              <div className="flex items-center gap-3 mb-3">
-                <DollarSign className="w-6 h-6" style={{ color: '#C8102E' }} />
-                <h3 className="text-xl font-bold text-gray-800">Grants &amp; Funding Breakdown</h3>
-              </div>
-              <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
-            </div>
+            {(() => {
+              const bData = deptBudgetData[`UK:${dept.name}`];
+              const programs = Array.isArray(bData?.key_programs) ? bData.key_programs : [];
+              const fmtGBP = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e12) return `£${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `£${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `£${(n/1e6).toFixed(1)}M`; return `£${n.toLocaleString()}`; };
+              return (
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <DollarSign className="w-6 h-6" style={{ color: '#C8102E' }} />
+                    <h3 className="text-xl font-bold text-gray-800">Grants &amp; Funding Breakdown</h3>
+                    {programs.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                  </div>
+                  {programs.length === 0 ? (
+                    <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {programs.map((p, i) => (
+                        <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-800 text-sm">{p.program_name}</p>
+                            {p.actual_spending != null && p.planned_spending != null && (
+                              <p className="text-xs text-gray-500 mt-1">Actual: {fmtGBP(p.actual_spending)} · Planned: {fmtGBP(p.planned_spending)}</p>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-lg font-bold" style={{ color: '#C8102E' }}>{fmtGBP(p.planned_spending ?? p.actual_spending)}</p>
+                            <p className="text-xs text-gray-400">planned</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Expenses */}
@@ -32250,8 +32306,9 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
+                  {(deptBudgetData[`AU:${dept.name}`]?.total_budget ?? deptBudgetData[`AU:${dept.name}`]?.total_allocated) != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                <p className="text-sm text-gray-400 italic">Official data loading</p>
+                {(() => { const raw = deptBudgetData[`AU:${dept.name}`]?.total_budget ?? deptBudgetData[`AU:${dept.name}`]?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; const v = Number(raw); const fmt = v >= 1e12 ? `A$${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `A$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `A$${(v/1e6).toFixed(1)}M` : `A$${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
               <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
                 <div className="flex items-center gap-3 mb-2">
@@ -32314,13 +32371,40 @@ function App() {
             </div>
 
             {/* Grants Breakdown */}
-            <div className="mb-6">
-              <div className="flex items-center gap-3 mb-3">
-                <DollarSign className="w-6 h-6 text-amber-600" />
-                <h3 className="text-xl font-bold text-gray-800">Grants &amp; Funding Breakdown</h3>
-              </div>
-              <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
-            </div>
+            {(() => {
+              const bData = deptBudgetData[`AU:${dept.name}`];
+              const programs = Array.isArray(bData?.key_programs) ? bData.key_programs : [];
+              const fmtAUD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e12) return `A$${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `A$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `A$${(n/1e6).toFixed(1)}M`; return `A$${n.toLocaleString()}`; };
+              return (
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <DollarSign className="w-6 h-6 text-amber-600" />
+                    <h3 className="text-xl font-bold text-gray-800">Grants &amp; Funding Breakdown</h3>
+                    {programs.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                  </div>
+                  {programs.length === 0 ? (
+                    <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {programs.map((p, i) => (
+                        <div key={i} className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-800 text-sm">{p.program_name}</p>
+                            {p.actual_spending != null && p.planned_spending != null && (
+                              <p className="text-xs text-gray-500 mt-1">Actual: {fmtAUD(p.actual_spending)} · Planned: {fmtAUD(p.planned_spending)}</p>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-lg font-bold text-amber-700">{fmtAUD(p.planned_spending ?? p.actual_spending)}</p>
+                            <p className="text-xs text-gray-400">planned</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Expenses */}
