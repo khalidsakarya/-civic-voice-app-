@@ -6641,6 +6641,7 @@ function App() {
     const fsName = jurisdiction === 'AU' ? (AU_DEPT_FIRESTORE_NAMES[deptName] || deptName)
                  : jurisdiction === 'CA' ? (CA_DEPT_FIRESTORE_NAMES[deptName] || deptName)
                  : deptName;
+    console.log('[DeptBudget] querying', { jurisdiction, deptName, fsName });
     (async () => {
       try {
         const q = query(
@@ -6649,6 +6650,7 @@ function App() {
           where('name', '==', fsName)
         );
         const snap = await getDocs(q);
+        console.log('[DeptBudget] result', { hits: snap.docs.length, docs: snap.docs.map(d => d.data()) });
         const doc = snap.docs.length > 0 ? snap.docs[0].data() : null;
         setDeptBudgetData(prev => ({ ...prev, [key]: doc || {} }));
       } catch (err) {
