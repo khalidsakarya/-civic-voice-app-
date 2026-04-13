@@ -565,12 +565,13 @@ const AU_DEPT_DISPLAY_NAMES = Object.fromEntries(
 // Maps CA ministry display names → official Firestore 'name' field values in department_budgets
 const CA_DEPT_FIRESTORE_NAMES = {
   'National Defence':                        'Department of National Defence',
-  'Finance Canada':                          'Department of Finance Canada',
-  'Immigration, Refugees and Citizenship':   'Immigration, Refugees and Citizenship Canada',
+  'Finance Canada':                          'Department of Finance',
+  'Immigration, Refugees and Citizenship':   'Immigration Refugees and Citizenship Canada',
   'Environment and Climate Change':          'Environment and Climate Change Canada',
   'Employment and Social Development':       'Employment and Social Development Canada',
   'Innovation, Science and Economic Development': 'Innovation, Science and Economic Development Canada',
-  'Justice Canada':                          'Department of Justice Canada',
+  'Justice Canada':                          'Department of Justice',
+  'Transport Canada':                        'Transport Canada',
 };
 // Reverse map: Firestore name → CA display name
 const CA_DEPT_DISPLAY_NAMES = Object.fromEntries(
@@ -7006,10 +7007,10 @@ function App() {
             {usDepartments.map(dept => {
               const bd = deptBudgetData[`US:${dept.name}`];
               const hd = deptHeadsData[`US:${dept.name}`];
-              const hasLiveBudget = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const hasLiveBudget = bd && ((bd.total_allocated ?? bd.total_budget) != null || bd.total_spent != null || bd.fiscal_year);
               const hasLiveHead = hd && hd.name;
               const hasLive = hasLiveBudget || hasLiveHead;
-              const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') return v; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
+              const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
               return (
                 <div
                   key={dept.id}
@@ -7033,7 +7034,7 @@ function App() {
                   <div className="grid grid-cols-3 gap-3">
                     <div className="bg-green-50 rounded p-2">
                       <p className="text-xs text-gray-600">Budget</p>
-                      {hasLiveBudget && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && (bd.total_allocated ?? bd.total_budget) != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated ?? bd.total_budget)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                     <div className="bg-blue-50 rounded p-2">
                       <p className="text-xs text-gray-600">Spent</p>
@@ -7134,12 +7135,13 @@ function App() {
               const _bKey = 'US:' + selectedDepartment.name;
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
-              const _hasData = _bData && (_bData.total_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              const _fmt = (v) => { if (typeof v === 'string') return v; if (typeof v !== 'number') return ''; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
+              const _allocated = _bData?.total_allocated ?? _bData?.total_budget;
+              const _hasData = _bData && (_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number') return ''; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
               if (!_hasData) return null;
-              const _util = (_bData.total_allocated && _bData.total_spent) ? Math.min(100, Math.round((_bData.total_spent / _bData.total_allocated) * 100)) : null;
+              const _util = (_allocated && _bData.total_spent) ? Math.min(100, Math.round((Number(_bData.total_spent) / Number(_allocated)) * 100)) : null;
               const _barCol = _util >= 90 ? '#dc2626' : _util >= 70 ? '#f97316' : '#16a34a';
               return (
                 <div className="mb-6 bg-white rounded-xl border border-gray-200 p-6">
@@ -7150,7 +7152,7 @@ function App() {
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_bData.total_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_bData.total_allocated)}</p></div>}
+                    {_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
                     {_bData.total_spent !== undefined && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
                   </div>
                   {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
@@ -19313,10 +19315,10 @@ function App() {
             {ukDepartments.map(dept => {
               const bd = deptBudgetData[`UK:${dept.name}`];
               const hd = deptHeadsData[`UK:${dept.name}`];
-              const hasLiveBudget = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const hasLiveBudget = bd && ((bd.total_allocated ?? bd.total_budget) != null || bd.total_spent != null || bd.fiscal_year);
               const hasLiveHead = hd && hd.name;
               const hasLive = hasLiveBudget || hasLiveHead;
-              const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') return v; if (v >= 1e12) return `£${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `£${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `£${(v/1e6).toFixed(1)}M`; return `£${v.toLocaleString()}`; };
+              const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (v >= 1e12) return `£${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `£${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `£${(v/1e6).toFixed(1)}M`; return `£${v.toLocaleString()}`; };
               return (
                 <div
                   key={dept.id}
@@ -19355,7 +19357,7 @@ function App() {
                   <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Budget</p>
-                      {hasLiveBudget && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && (bd.total_allocated ?? bd.total_budget) != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated ?? bd.total_budget)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Spent</p>
@@ -19445,12 +19447,13 @@ function App() {
               const _bKey = 'UK:' + dept.name;
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
-              const _hasData = _bData && (_bData.total_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              const _fmt = (v) => { if (typeof v === 'string') return v; if (typeof v !== 'number') return ''; if (v >= 1e12) return `£${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `£${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `£${(v/1e6).toFixed(1)}M`; return `£${v.toLocaleString()}`; };
+              const _allocated = _bData?.total_allocated ?? _bData?.total_budget;
+              const _hasData = _bData && (_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number') return ''; if (v >= 1e12) return `£${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `£${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `£${(v/1e6).toFixed(1)}M`; return `£${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
               if (!_hasData) return null;
-              const _util = (_bData.total_allocated && _bData.total_spent) ? Math.min(100, Math.round((_bData.total_spent / _bData.total_allocated) * 100)) : null;
+              const _util = (_allocated && _bData.total_spent) ? Math.min(100, Math.round((Number(_bData.total_spent) / Number(_allocated)) * 100)) : null;
               const _barCol = _util >= 90 ? '#dc2626' : _util >= 70 ? '#f97316' : '#16a34a';
               return (
                 <div className="mb-6 bg-white rounded-xl border border-gray-200 p-6">
@@ -19461,7 +19464,7 @@ function App() {
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_bData.total_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_bData.total_allocated)}</p></div>}
+                    {_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
                     {_bData.total_spent !== undefined && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
                   </div>
                   {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
@@ -31148,10 +31151,10 @@ function App() {
             {ministries.map(ministry => {
               const bd = deptBudgetData[`CA:${ministry.name}`];
               const hd = deptHeadsData[`CA:${ministry.name}`];
-              const hasLiveBudget = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const hasLiveBudget = bd && ((bd.total_allocated ?? bd.total_budget) != null || bd.total_spent != null || bd.fiscal_year);
               const hasLiveHead = hd && hd.name;
               const hasLive = hasLiveBudget || hasLiveHead;
-              const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') return v; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
+              const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
               return (
                 <div
                   key={ministry.id}
@@ -31182,7 +31185,7 @@ function App() {
                   <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Budget</p>
-                      {hasLiveBudget && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && (bd.total_allocated ?? bd.total_budget) != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated ?? bd.total_budget)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Spent</p>
@@ -31266,12 +31269,13 @@ function App() {
               const _bKey = 'CA:' + selectedMinistry.name;
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
-              const _hasData = _bData && (_bData.total_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              const _fmt = (v) => { if (typeof v === 'string') return v; if (typeof v !== 'number') return ''; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
+              const _allocated = _bData?.total_allocated ?? _bData?.total_budget;
+              const _hasData = _bData && (_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number') return ''; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
               if (!_hasData) return null;
-              const _util = (_bData.total_allocated && _bData.total_spent) ? Math.min(100, Math.round((_bData.total_spent / _bData.total_allocated) * 100)) : null;
+              const _util = (_allocated && _bData.total_spent) ? Math.min(100, Math.round((Number(_bData.total_spent) / Number(_allocated)) * 100)) : null;
               const _barCol = _util >= 90 ? '#dc2626' : _util >= 70 ? '#f97316' : '#16a34a';
               return (
                 <div className="mb-6 bg-white rounded-xl border border-gray-200 p-6">
@@ -31282,7 +31286,7 @@ function App() {
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_bData.total_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_bData.total_allocated)}</p></div>}
+                    {_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
                     {_bData.total_spent !== undefined && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
                   </div>
                   {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
@@ -32084,10 +32088,10 @@ function App() {
             {auDepartments.map(dept => {
               const bd = deptBudgetData[`AU:${dept.name}`];
               const hd = deptHeadsData[`AU:${dept.name}`];
-              const hasLiveBudget = bd && (bd.total_allocated != null || bd.total_spent != null || bd.fiscal_year);
+              const hasLiveBudget = bd && ((bd.total_allocated ?? bd.total_budget) != null || bd.total_spent != null || bd.fiscal_year);
               const hasLiveHead = hd && hd.name;
               const hasLive = hasLiveBudget || hasLiveHead;
-              const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') return v; if (v >= 1e12) return `A$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `A$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `A$${(v/1e6).toFixed(1)}M`; return `A$${v.toLocaleString()}`; };
+              const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (v >= 1e12) return `A$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `A$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `A$${(v/1e6).toFixed(1)}M`; return `A$${v.toLocaleString()}`; };
               return (
                 <div
                   key={dept.id}
@@ -32124,7 +32128,7 @@ function App() {
                   <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Budget</p>
-                      {hasLiveBudget && bd.total_allocated != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && (bd.total_allocated ?? bd.total_budget) != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated ?? bd.total_budget)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Spent</p>
@@ -32211,12 +32215,13 @@ function App() {
               const _bKey = 'AU:' + dept.name;
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
-              const _hasData = _bData && (_bData.total_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              const _fmt = (v) => { if (typeof v === 'string') return v; if (typeof v !== 'number') return ''; if (v >= 1e12) return `A$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `A$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `A$${(v/1e6).toFixed(1)}M`; return `A$${v.toLocaleString()}`; };
+              const _allocated = _bData?.total_allocated ?? _bData?.total_budget;
+              const _hasData = _bData && (_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number') return ''; if (v >= 1e12) return `A$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `A$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `A$${(v/1e6).toFixed(1)}M`; return `A$${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
               if (!_hasData) return null;
-              const _util = (_bData.total_allocated && _bData.total_spent) ? Math.min(100, Math.round((_bData.total_spent / _bData.total_allocated) * 100)) : null;
+              const _util = (_allocated && _bData.total_spent) ? Math.min(100, Math.round((Number(_bData.total_spent) / Number(_allocated)) * 100)) : null;
               const _barCol = _util >= 90 ? '#dc2626' : _util >= 70 ? '#f97316' : '#16a34a';
               return (
                 <div className="mb-6 bg-white rounded-xl border border-gray-200 p-6">
@@ -32227,7 +32232,7 @@ function App() {
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_bData.total_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_bData.total_allocated)}</p></div>}
+                    {_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
                     {_bData.total_spent !== undefined && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
                   </div>
                   {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
