@@ -564,14 +564,15 @@ const AU_DEPT_DISPLAY_NAMES = Object.fromEntries(
 
 // Maps CA ministry display names → official Firestore 'name' field values in department_budgets
 const CA_DEPT_FIRESTORE_NAMES = {
+  'Health Canada':                           'Department of Health',
   'National Defence':                        'Department of National Defence',
   'Finance Canada':                          'Department of Finance',
-  'Immigration, Refugees and Citizenship':   'Immigration Refugees and Citizenship Canada',
+  'Justice Canada':                          'Department of Justice',
+  'Transport Canada':                        'Department of Transport',
+  'Immigration, Refugees and Citizenship':   'Department of Citizenship and Immigration',
   'Environment and Climate Change':          'Environment and Climate Change Canada',
   'Employment and Social Development':       'Employment and Social Development Canada',
   'Innovation, Science and Economic Development': 'Innovation, Science and Economic Development Canada',
-  'Justice Canada':                          'Department of Justice',
-  'Transport Canada':                        'Transport Canada',
 };
 // Reverse map: Firestore name → CA display name
 const CA_DEPT_DISPLAY_NAMES = Object.fromEntries(
@@ -31269,9 +31270,10 @@ function App() {
               const _bKey = 'CA:' + selectedMinistry.name;
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
-              const _allocated = _bData?.total_allocated ?? _bData?.total_budget;
+              const _allocated = _bData?.total_budget ?? _bData?.total_allocated;
               const _hasData = _bData && (_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number') return ''; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
+              // Values stored in thousands CAD — divide by 1000 → millions, then apply B/M/K
+              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; const m = v / 1000; if (m >= 1000) return `CA$${(m/1000).toFixed(1)}B`; if (m >= 1) return `CA$${m.toFixed(1)}M`; return `CA$${(m*1000).toFixed(0)}K`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
               if (!_hasData) return null;
