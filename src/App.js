@@ -634,6 +634,34 @@ const AU_DEPT_HEADS_MAP = {
   'Industry and Innovation':            'Industry & Science',
 };
 
+// AU: per-detail fetch — app dept name → Firestore 'department' query value (only non-identical entries)
+const AU_DEPT_HEADS_QUERY_NAMES = {
+  'Health':             'Health and Ageing',
+  'Employment':         'Employment and Workplace Relations',
+  'Environment':        'Climate Change and Energy',
+  "Attorney-General's": "Attorney-General's Department",
+  'Industry & Science': 'Industry and Innovation',
+};
+
+// UK: per-detail fetch — app dept name → Firestore 'department' query value (only non-identical entries)
+const UK_DEPT_HEADS_QUERY_NAMES = {
+  'Ministry of Defence':                        'Department for Defence',
+  'Department of Health & Social Care':         'Department for Health and Social Care',
+  'Department for Work & Pensions':             'Department for Work and Pensions',
+  'Dept for Energy Security & Net Zero':        'Department for Energy Security and Net Zero',
+  'Dept for Culture, Media & Sport':            'Department for Culture',
+  'Dept for Science, Innovation & Technology':  'Department for Science',
+  'Home Office':                                'Department for the Home Department',
+  'Foreign, Commonwealth & Development Office': 'Department for Foreign',
+  'Scotland Office':                            'Department for Scotland',
+  'Northern Ireland Office':                    'Department for Northern Ireland',
+  'Wales Office':                               'Department for Wales',
+  'Dept for Environment, Food & Rural Affairs': 'Department for Environment',
+  'Housing, Communities & Local Govt':          'Department for Housing',
+  'Department for Business & Trade':            'Department for Trade',
+  'Ministry of Justice':                        'Department for Courts and Legal Services',
+};
+
 // --- EXECUTIVE ORDERS DATA -----------------------------------------------
 // Source: Federal Register API  https://www.federalregister.gov/api/v1/documents
 // Live endpoint: GET /api/v1/documents?conditions[type]=PRESDOCU&conditions[presidential_document_type]=executive_order&per_page=10&order=newest
@@ -6781,6 +6809,37 @@ function App() {
       }
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Per-detail-page fallback fetch for department_heads (handles UK/AU name mapping gaps)
+  useEffect(() => {
+    const detailViews = ['ministry-detail', 'department-detail', 'uk-department-detail', 'au-department-detail'];
+    if (!detailViews.includes(view)) return;
+    const { jurisdiction, deptName } = (() => {
+      if (view === 'ministry-detail' && selectedMinistry?.name) return { jurisdiction: 'CA', deptName: selectedMinistry.name };
+      if (view === 'department-detail' && selectedDepartment?.name) return { jurisdiction: 'US', deptName: selectedDepartment.name };
+      if (view === 'uk-department-detail' && selectedUkDepartment?.name) return { jurisdiction: 'UK', deptName: selectedUkDepartment.name };
+      if (view === 'au-department-detail' && selectedAuDepartment?.name) return { jurisdiction: 'AU', deptName: selectedAuDepartment.name };
+      return {};
+    })();
+    if (!jurisdiction || !deptName) return;
+    const key = `${jurisdiction}:${deptName}`;
+    if (deptHeadsData[key] !== undefined) return;
+    const fsName = jurisdiction === 'AU' ? (AU_DEPT_HEADS_QUERY_NAMES[deptName] || deptName)
+                 : jurisdiction === 'UK' ? (UK_DEPT_HEADS_QUERY_NAMES[deptName] || deptName)
+                 : deptName;
+    (async () => {
+      try {
+        const snap = await getDocs(query(
+          collection(db, 'department_heads'),
+          where('jurisdiction', '==', jurisdiction),
+          where('department', '==', fsName)
+        ));
+        setDeptHeadsData(prev => ({ ...prev, [key]: snap.docs.length > 0 ? snap.docs[0].data() : null }));
+      } catch (err) {
+        console.warn('[LiveData] department_heads detail fetch failed:', err.message);
+      }
+    })();
+  }, [view, selectedMinistry, selectedDepartment, selectedUkDepartment, selectedAuDepartment]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-load flagged expenses and vote counts when a department/ministry detail page opens
   useEffect(() => {
