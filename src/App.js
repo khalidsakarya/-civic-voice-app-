@@ -605,6 +605,35 @@ const US_DEPT_HEADS_MAP = {
   'Department of Interior':  'Department of the Interior',
 };
 
+// UK dept heads mapping: Firestore 'department' field (after stripping trailing ')') → app department display name
+const UK_DEPT_HEADS_MAP = {
+  'Department for Defence':                    'Ministry of Defence',
+  'Department for Health and Social Care':     'Department of Health & Social Care',
+  'Department for Work and Pensions':          'Department for Work & Pensions',
+  'Department for Energy Security and Net Zero': 'Dept for Energy Security & Net Zero',
+  'Department for Culture':                    'Dept for Culture, Media & Sport',
+  'Department for Science':                    'Dept for Science, Innovation & Technology',
+  'Department for the Home Department':        'Home Office',
+  'Department for Foreign':                    'Foreign, Commonwealth & Development Office',
+  'Department for Scotland':                   'Scotland Office',
+  'Department for Northern Ireland':           'Northern Ireland Office',
+  'Department for Wales':                      'Wales Office',
+  'Department for Environment':                'Dept for Environment, Food & Rural Affairs',
+  'Department for Housing':                    'Housing, Communities & Local Govt',
+  'Department for Trade':                      'Department for Business & Trade',
+};
+
+// AU dept heads mapping: Firestore 'department' portfolio name → app short display name
+const AU_DEPT_HEADS_MAP = {
+  'Health and Ageing':                  'Health',
+  'Health and Aged Care':               'Health',
+  'Employment and Workplace Relations': 'Employment',
+  'Climate Change and Energy':          'Environment',
+  'the Environment and Water':          'Environment',
+  "Attorney-General's Department":      "Attorney-General's",
+  'Industry and Innovation':            'Industry & Science',
+};
+
 // --- EXECUTIVE ORDERS DATA -----------------------------------------------
 // Source: Federal Register API  https://www.federalregister.gov/api/v1/documents
 // Live endpoint: GET /api/v1/documents?conditions[type]=PRESDOCU&conditions[presidential_document_type]=executive_order&per_page=10&order=newest
@@ -6733,11 +6762,15 @@ function App() {
         const updates = {};
         snap.docs.forEach(d => {
           const data = d.data();
-          const headName = data.department || data.department_name;
+          const rawHeadName = data.department || data.department_name;
+          const headName = jurisdiction === 'UK' && rawHeadName
+            ? rawHeadName.replace(/\)\s*$/, '').trim()
+            : rawHeadName;
           if (headName) {
-            const displayName = jurisdiction === 'AU' ? (AU_DEPT_DISPLAY_NAMES[headName] || headName)
+            const displayName = jurisdiction === 'AU' ? (AU_DEPT_HEADS_MAP[headName] || headName)
                               : jurisdiction === 'CA' ? (CA_DEPT_HEADS_MAP[headName] || headName)
                               : jurisdiction === 'US' ? (US_DEPT_HEADS_MAP[headName] || headName)
+                              : jurisdiction === 'UK' ? (UK_DEPT_HEADS_MAP[headName] || headName)
                               : headName;
             updates[`${jurisdiction}:${displayName}`] = data;
           }
