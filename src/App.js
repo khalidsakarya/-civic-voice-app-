@@ -7150,8 +7150,9 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-8 h-8 text-purple-600" />
                   <h3 className="text-lg font-bold text-gray-800">Employees</h3>
+                  {deptBudgetData[`US:${selectedDepartment.name}`]?.employee_count != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                <p className="text-sm text-gray-400 italic">Official data loading</p>
+                {(() => { const ec = deptBudgetData[`US:${selectedDepartment.name}`]?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
               </div>
             </div>
 
@@ -19490,8 +19491,9 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-8 h-8" style={{ color: '#012169' }} />
                   <h3 className="text-lg font-bold text-gray-800">Civil Servants</h3>
+                  {deptBudgetData[`UK:${dept.name}`]?.employee_count != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                <p className="text-sm text-gray-400 italic">Official data loading</p>
+                {(() => { const ec = deptBudgetData[`UK:${dept.name}`]?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; return <p className="text-2xl font-bold" style={{ color: '#012169' }}>{Number(ec).toLocaleString()}</p>; })()}
               </div>
             </div>
 
@@ -31346,8 +31348,9 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-8 h-8 text-purple-600" />
                   <h3 className="text-lg font-bold text-gray-800">Employees</h3>
+                  {deptBudgetData[`CA:${selectedMinistry.name}`]?.employee_count != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                <p className="text-sm text-gray-400 italic">Official data loading</p>
+                {(() => { const ec = deptBudgetData[`CA:${selectedMinistry.name}`]?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
               </div>
             </div>
 
@@ -32321,8 +32324,9 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-8 h-8 text-purple-600" />
                   <h3 className="text-lg font-bold text-gray-800">Employees</h3>
+                  {deptBudgetData[`AU:${dept.name}`]?.employee_count != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                <p className="text-sm text-gray-400 italic">Official data loading</p>
+                {(() => { const ec = deptBudgetData[`AU:${dept.name}`]?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
               </div>
             </div>
 
