@@ -598,6 +598,13 @@ const CA_DEPT_HEADS_MAP = {
   'Transport':             'Transport Canada',
 };
 
+// US dept heads mapping: Firestore 'department' field → app department display name
+const US_DEPT_HEADS_MAP = {
+  'Department of Treasury':  'Department of the Treasury',
+  'Department of War':       'Department of Defense',
+  'Department of Interior':  'Department of the Interior',
+};
+
 // --- EXECUTIVE ORDERS DATA -----------------------------------------------
 // Source: Federal Register API  https://www.federalregister.gov/api/v1/documents
 // Live endpoint: GET /api/v1/documents?conditions[type]=PRESDOCU&conditions[presidential_document_type]=executive_order&per_page=10&order=newest
@@ -6726,12 +6733,11 @@ function App() {
         const updates = {};
         snap.docs.forEach(d => {
           const data = d.data();
-          const headName = jurisdiction === 'CA'
-            ? data.department
-            : (data.department_name || data.name);
+          const headName = data.department || data.department_name;
           if (headName) {
             const displayName = jurisdiction === 'AU' ? (AU_DEPT_DISPLAY_NAMES[headName] || headName)
                               : jurisdiction === 'CA' ? (CA_DEPT_HEADS_MAP[headName] || headName)
+                              : jurisdiction === 'US' ? (US_DEPT_HEADS_MAP[headName] || headName)
                               : headName;
             updates[`${jurisdiction}:${displayName}`] = data;
           }
