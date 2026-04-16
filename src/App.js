@@ -1436,6 +1436,8 @@ function App() {
   const [usAnalyticsData, setUsAnalyticsData] = useState(null);
   const [usSupremeCourt, setUsSupremeCourt] = useState(null);
   const [usContracts, setUsContracts] = useState([]);
+  const [liveContracts, setLiveContracts] = useState({});
+  const [contractsFetchedJurisdictions, setContractsFetchedJurisdictions] = useState({});
 
   // Laws & Legal Search data
   const [usLaws, setUsLaws] = useState([]);
@@ -6841,6 +6843,25 @@ function App() {
     })();
   }, [view, selectedMinistry, selectedDepartment, selectedUkDepartment, selectedAuDepartment]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch government_contracts from Firestore when a contracts page opens
+  useEffect(() => {
+    const viewMap = { 'contracts': 'CA', 'us-contracts': 'US', 'uk-contracts': 'UK', 'au-contracts': 'AU' };
+    const jurisdiction = viewMap[view];
+    if (!jurisdiction) return;
+    if (contractsFetchedJurisdictions[jurisdiction]) return;
+    setContractsFetchedJurisdictions(prev => ({ ...prev, [jurisdiction]: true }));
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'government_contracts'), where('jurisdiction', '==', jurisdiction)));
+        const docs = snap.docs.map(d => d.data()).filter(d => d.contractor_name);
+        setLiveContracts(prev => ({ ...prev, [jurisdiction]: docs }));
+      } catch (err) {
+        console.warn('[LiveData] government_contracts fetch failed:', err.message);
+        setLiveContracts(prev => ({ ...prev, [jurisdiction]: [] }));
+      }
+    })();
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-load flagged expenses and vote counts when a department/ministry detail page opens
   useEffect(() => {
     const detailMap = {
@@ -7014,7 +7035,7 @@ function App() {
   const categories = [
     { id: 1, name: 'Federal Parliament', icon: <Globe className="w-6 h-6" />, count: mps.length || 338, type: 'parliament' },
     { id: 2, name: 'Latest Laws & Regulations', icon: <FileText className="w-6 h-6" />, count: laws.length || 12, type: 'laws' },
-    { id: 3, name: 'Government Contracts', icon: <DollarSign className="w-6 h-6" />, count: contracts.length || 15, type: 'contracts' }
+    { id: 3, name: 'Government Contracts', icon: <DollarSign className="w-6 h-6" />, count: (liveContracts.CA?.length ?? 0) || 15, type: 'contracts' }
   ];
 
   const getAnalyticsData = () => {
@@ -8078,32 +8099,23 @@ function App() {
 
   // US Federal Contracts Render Function
   const renderUSContracts = () => {
-    const totalValue = usContracts.reduce((sum, contract) => sum + contract.amountRaw, 0);
-    
-    // Get unique departments and types
-    const departments = ['All', ...new Set(usContracts.map(c => c.department))];
-    const types = ['All', ...new Set(usContracts.map(c => c.type))];
-    
-    // Filter contracts
-    let filteredContracts = usContracts.filter(contract => {
-      const matchesSearch = contract.company.toLowerCase().includes(contractSearch.toLowerCase()) ||
-                          contract.purpose.toLowerCase().includes(contractSearch.toLowerCase());
-      const matchesDepartment = departmentFilter === 'All' || contract.department === departmentFilter;
-      const matchesType = typeFilter === 'All' || contract.type === typeFilter;
-      return matchesSearch && matchesDepartment && matchesType;
+    const data = liveContracts.US;
+    const fmtVal = (val) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `$${(v/1e3).toFixed(0)}K`; return `$${v.toLocaleString()}`; };
+    const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); if (isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch { return null; } };
+    const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
+    const departments = data ? ['All', ...new Set(data.map(c => c.department).filter(Boolean))] : ['All'];
+    let filtered = (data || []).filter(c => {
+      const matchSearch = !contractSearch || c.contractor_name?.toLowerCase().includes(contractSearch.toLowerCase()) || c.purpose?.toLowerCase().includes(contractSearch.toLowerCase());
+      const matchDept = departmentFilter === 'All' || c.department === departmentFilter;
+      return matchSearch && matchDept;
     });
-    
-    // Sort by amount (highest first)
-    filteredContracts.sort((a, b) => b.amountRaw - a.amountRaw);
+    filtered = [...filtered].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
 
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4 py-4">
-            <button
-              onClick={() => setView('categories')}
-              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
-            >
+            <button onClick={() => setView('categories')} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">
               <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
             </button>
           </div>
@@ -8111,21 +8123,23 @@ function App() {
 
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-300 rounded-lg p-6 mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">💰 US Federal Contracts</h2>
-            <p className="text-gray-600 mb-4">See which companies receive billions in taxpayer money</p>
-            
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-3xl font-bold text-gray-800">💰 US Federal Contracts</h2>
+              {data && data.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+            </div>
+            <p className="text-gray-600 mb-4">See which companies receive taxpayer money</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white rounded-lg p-4 border-2 border-red-300">
                 <p className="text-sm text-gray-600">Total Contracts</p>
-                <p className="text-3xl font-bold text-red-600">{usContracts.length}</p>
+                <p className="text-3xl font-bold text-red-600">{data ? data.length : '—'}</p>
               </div>
               <div className="bg-white rounded-lg p-4 border-2 border-green-300">
                 <p className="text-sm text-gray-600">Total Value</p>
-                <p className="text-3xl font-bold text-green-600">${(totalValue / 1000000000).toFixed(1)}B</p>
+                <p className="text-3xl font-bold text-green-600">{totalValue > 0 ? fmtVal(totalValue) : '—'}</p>
               </div>
               <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
                 <p className="text-sm text-gray-600">Showing Results</p>
-                <p className="text-3xl font-bold text-blue-600">{filteredContracts.length}</p>
+                <p className="text-3xl font-bold text-blue-600">{filtered.length}</p>
               </div>
             </div>
           </div>
@@ -8133,133 +8147,86 @@ function App() {
           {/* Search and Filters */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h3 className="text-xl font-bold text-gray-800 mb-4">Search & Filter</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Search Company or Purpose</label>
-                <input
-                  type="text"
-                  value={contractSearch}
-                  onChange={(e) => setContractSearch(e.target.value)}
-                  placeholder="e.g., Lockheed, SpaceX, fighter jets..."
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Search Contractor or Purpose</label>
+                <input type="text" value={contractSearch} onChange={(e) => setContractSearch(e.target.value)}
+                  placeholder="e.g., Lockheed, defence..." className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Department</label>
-                <select
-                  value={departmentFilter}
-                  onChange={(e) => setDepartmentFilter(e.target.value)}
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-                >
-                  {departments.map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Type</label>
-                <select
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-                >
-                  {types.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
+                <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
             </div>
           </div>
 
           {/* Contracts List */}
-          <div className="space-y-4">
-            {filteredContracts.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-md p-8 text-center">
-                <p className="text-gray-600 text-lg">No contracts found matching your criteria</p>
-              </div>
-            ) : (
-              filteredContracts.map((contract) => (
-                <div
-                  key={contract.id}
-                  className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-shadow border-l-4 border-red-500"
-                >
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-2xl font-bold text-gray-800 mb-2">{contract.company}</h3>
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                          {contract.department}
-                        </span>
-                        <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-                          {contract.type}
-                        </span>
-                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                          {contract.status}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-4xl font-bold text-green-600">{contract.amount}</p>
-                      <p className="text-sm text-gray-500 mt-1">{contract.date}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-1">Contract Purpose:</h4>
-                    <p className="text-gray-700">{contract.purpose}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Summary by Department */}
-          <div className="bg-white rounded-lg shadow-md p-6 mt-8">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">Contracts by Department</h3>
-            <div className="space-y-3">
-              {departments.filter(d => d !== 'All').map(dept => {
-                const deptContracts = usContracts.filter(c => c.department === dept);
-                const deptTotal = deptContracts.reduce((sum, c) => sum + c.amountRaw, 0);
-                const percentage = ((deptTotal / totalValue) * 100).toFixed(1);
-                
+          {data === undefined ? (
+            <div className="text-center py-12 text-gray-400 text-lg">Loading contracts…</div>
+          ) : data.length === 0 ? (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+              <p className="text-gray-500 text-lg">No contract data available yet.</p>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-md p-8 text-center">
+              <p className="text-gray-600 text-lg">No contracts found matching your criteria.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filtered.map((c, i) => {
+                const val = fmtVal(c.value);
+                const dt = fmtDate(c.date_awarded);
                 return (
-                  <div key={dept}>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-gray-700 font-medium">{dept}</span>
-                      <span className="font-bold text-gray-800">
-                        ${(deptTotal / 1000000000).toFixed(1)}B ({percentage}%) • {deptContracts.length} contracts
-                      </span>
+                  <div key={c.id || i} className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-shadow border-l-4 border-red-500">
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">{c.contractor_name}</h3>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {c.department && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
+                          {dt && <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{dt}</span>}
+                          <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full self-center">LIVE</span>
+                        </div>
+                      </div>
+                      {val && <div className="text-right shrink-0"><p className="text-3xl font-bold text-green-600">{val}</p></div>}
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div
-                        className="bg-red-500 h-3 rounded-full"
-                        style={{width: `${percentage}%`}}
-                      />
-                    </div>
+                    {c.purpose && (
+                      <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
+                        <p className="text-gray-700">{c.purpose}</p>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
-          </div>
+          )}
 
-          {/* Top Contractors */}
-          <div className="bg-white rounded-lg shadow-md p-6 mt-8">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">Top 10 Federal Contractors</h3>
-            <div className="space-y-3">
-              {usContracts.slice(0, 10).map((contract, index) => (
-                <div key={contract.id} className="flex items-center gap-4">
-                  <div className="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-bold">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-gray-800">{contract.company}</p>
-                    <p className="text-sm text-gray-600">{contract.type}</p>
-                  </div>
-                  <p className="text-xl font-bold text-green-600">{contract.amount}</p>
-                </div>
-              ))}
+          {/* Summary by Department */}
+          {data && data.length > 0 && totalValue > 0 && (
+            <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">Contracts by Department</h3>
+              <div className="space-y-3">
+                {departments.filter(d => d !== 'All').map(dept => {
+                  const deptContracts = data.filter(c => c.department === dept);
+                  const deptTotal = deptContracts.reduce((s, c) => s + (Number(c.value) || 0), 0);
+                  const pct = totalValue > 0 ? ((deptTotal / totalValue) * 100).toFixed(1) : 0;
+                  return (
+                    <div key={dept}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-gray-700 font-medium">{dept}</span>
+                        <span className="font-bold text-gray-800">{fmtVal(deptTotal) || '—'} ({pct}%) · {deptContracts.length}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div className="bg-red-500 h-3 rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     );
@@ -19780,54 +19747,10 @@ function App() {
 
   const renderUKContracts = () => {
     const RED = '#C8102E', NAVY = '#012169';
-    const ukContracts = [
-      { id: 1,  company: 'BAE Systems plc',                  project: 'Dreadnought-class Ballistic Missile Submarine Programme',          amountRaw: 31000000000, contractType: 'Sole-Source',      category: 'Defence',         department: 'Ministry of Defence',                         dateAwarded: 'October 2016',   duration: '25 years', status: 'Active',
-        description: 'Design, build and integration of four Dreadnought-class nuclear-armed ballistic missile submarines to replace the Vanguard-class Trident boats. Maintains the UK\'s Continuous At Sea Deterrent (CASD) and is the largest defence procurement in British history.',
-        justification: 'Sole-source award to BAE Systems Submarines (Barrow-in-Furness) as the only UK facility with the capability and security clearance to build nuclear-armed submarines. Dreadnought is a national sovereign programme with no competitive alternative.' },
-      { id: 2,  company: 'HS2 Ltd / Balfour Beatty Vinci SYSTRA JV', project: 'High Speed 2 Phase 1 — Main Works Civils Contract',   amountRaw: 11100000000, contractType: 'Open Tender',      category: 'Infrastructure', department: 'Department for Transport / HS2 Ltd',           dateAwarded: 'July 2017',      duration: '9 years',  status: 'Active',
-        description: 'Design and construction of the main civil infrastructure for HS2 Phase 1 (London–Birmingham), including viaducts, cuttings, embankments, tunnels and over 50 structures. The largest civil engineering contract ever awarded in the United Kingdom.',
-        justification: 'Competitive two-stage open tender process managed by HS2 Ltd. BBVS JV won on technical capability, programme confidence and value for money against five shortlisted consortia.' },
-      { id: 3,  company: 'Rolls-Royce Holdings plc',          project: 'Dreadnought Nuclear Propulsion and Reactor Systems',             amountRaw:  9200000000, contractType: 'Sole-Source',      category: 'Defence',         department: 'Ministry of Defence',                         dateAwarded: 'November 2016',  duration: '30 years', status: 'Active',
-        description: 'Design, development, manufacture and through-life support of the nuclear propulsion reactor plant for the Dreadnought-class submarines, including the Core H reactor and associated systems at Rolls-Royce\'s Derby facility.',
-        justification: 'Sole-source contract as Rolls-Royce Submarines is the only UK company with the sovereign nuclear propulsion capability. Maintaining this expertise is a national security requirement under the Nuclear Enterprise.' },
-      { id: 4,  company: 'Serco Group plc',                   project: 'National Probation Service Unpaid Work & Rehabilitation',        amountRaw:  3800000000, contractType: 'Open Tender',      category: 'Justice',         department: 'Ministry of Justice',                         dateAwarded: 'June 2021',      duration: '7 years',  status: 'Active',
-        description: 'Delivery of unpaid work placements, accredited programmes, rehabilitation activities and Through the Gate services for National Probation Service offenders across six regions of England and Wales.',
-        justification: 'Competitive tender under the NPS Regional Operating Hubs model. Serco selected on quality of service methodology and value for money across designated probation regions.' },
-      { id: 5,  company: 'BT Group plc',                      project: 'Emergency Services Network (ESN) — Critical National Infrastructure', amountRaw: 9000000000, contractType: 'Sole-Source',   category: 'Technology',      department: 'Home Office',                                 dateAwarded: 'December 2015',  duration: '20 years', status: 'Active',
-        description: 'Design, build and operation of the Emergency Services Network replacing Airwave — a 4G/5G LTE communications network for police, fire and ambulance services across the UK. Originally estimated at £1.2B; programme has experienced significant cost escalation.',
-        justification: 'Sole-source EE/BT selected as the only UK operator with a nationwide 4G network meeting coverage requirements. The technical complexity and incumbent scale precluded competitive re-tender at contract revision.' },
-      { id: 6,  company: 'Airbus Defence & Space UK',          project: 'Skynet 6 Military Satellite Communications Programme',            amountRaw:  6000000000, contractType: 'Sole-Source',      category: 'Defence',         department: 'Ministry of Defence / DSIT',                  dateAwarded: 'July 2020',      duration: '15 years', status: 'Active',
-        description: 'Design, build, launch and operation of the next generation of UK military SATCOM satellites (Skynet 6A and 6B), sustaining secure, resilient communications for UK and allied armed forces worldwide to 2050 and beyond.',
-        justification: 'Sole-source award leveraging Airbus\'s unique expertise from Skynet 5 operations. The transition continuity requirement and national security sensitivity of the programme precluded open competition.' },
-      { id: 7,  company: 'Capita plc',                        project: 'British Army Recruiting Partnership Programme',                    amountRaw:  1400000000, contractType: 'Open Tender',      category: 'Defence',         department: 'Ministry of Defence / British Army',          dateAwarded: 'March 2012',     duration: '10 years', status: 'Completed',
-        description: 'End-to-end management of British Army officer and soldier recruitment, including marketing, application processing, assessment centres and medical screening. The programme faced significant public criticism for recruitment shortfalls.',
-        justification: 'Competitive tender under the Recruiting Partnership Project. Capita selected on total cost of ownership and transformation capability. Contract extension granted after initial performance issues.' },
-      { id: 8,  company: 'Stagecoach / Avanti West Coast JV', project: 'West Coast Partnership Rail Franchise',                           amountRaw:  7600000000, contractType: 'Open Tender',      category: 'Transport',        department: 'Department for Transport',                    dateAwarded: 'March 2019',     duration: '9 years',  status: 'Active',
-        description: 'Operation of intercity passenger rail services on the West Coast Main Line (London Euston to Glasgow, Liverpool, Birmingham and Manchester), including direct award of HS2 services. Carries over 30 million passengers annually.',
-        justification: 'Competitive tender process under DfT\'s Rail franchising programme. Avanti West Coast consortium selected on bid quality, investment plans and passenger experience commitments.' },
-      { id: 9,  company: 'MBDA UK Ltd',                       project: 'Future Ground Based Air Defence (FGBAD) — Sky Sabre System',      amountRaw:  2700000000, contractType: 'Sole-Source',      category: 'Defence',         department: 'Ministry of Defence',                         dateAwarded: 'May 2019',       duration: '10 years', status: 'Active',
-        description: 'Procurement and through-life support of the Sky Sabre ground-based air defence system, replacing Rapier. Integrates CAMM missiles with a Common Anti-Air Modular Missile launcher able to track and engage 1,000 targets simultaneously.',
-        justification: 'Sole-source to MBDA as developer of the CAMM missile system and integration prime. The sovereign missile capability and interoperability requirements precluded open competition.' },
-      { id: 10, company: 'Northrop Grumman / Leonardo UK',    project: 'E-7 Wedgetail Airborne Early Warning & Control Aircraft',         amountRaw:  2000000000, contractType: 'Sole-Source',      category: 'Defence',         department: 'Ministry of Defence',                         dateAwarded: 'March 2019',     duration: '20 years', status: 'Active',
-        description: 'Purchase and conversion of five Boeing 737-based E-7A Wedgetail AEW&C aircraft to replace the Sentry (E-3D), providing the RAF with advanced airborne surveillance and battle management capability.',
-        justification: 'Sole-source acquisition aligned with the US Air Force\'s E-7A programme, maximising interoperability with Five Eyes partners. Unique capability requirement precluded open tender.' },
-      { id: 11, company: 'NHS Shared Business Services / DXC Technology', project: 'NHS National IT Infrastructure Managed Services',    amountRaw:  1800000000, contractType: 'Restricted Tender', category: 'Health',           department: 'Department of Health & Social Care / NHS England', dateAwarded: 'April 2023',  duration: '7 years',  status: 'Active',
-        description: 'End-to-end managed IT services for NHS England\'s national infrastructure including data centres, network operations, end-user computing, service desk and cloud migration for 1.3 million NHS employees.',
-        justification: 'Restricted to Crown Commercial Service-approved managed service providers. DXC Technology selected on NHS transformation experience, security clearance and commercial value.' },
-      { id: 12, company: 'Palantir Technologies UK Ltd',      project: 'NHS Federated Data Platform (FDP)',                               amountRaw:   480000000, contractType: 'Open Tender',      category: 'Technology',      department: 'Department of Health & Social Care / NHS England', dateAwarded: 'November 2023', duration: '7 years', status: 'Active',
-        description: 'Build and operation of a national NHS Federated Data Platform integrating patient records, operational data and analytics across all NHS trusts — enabling joined-up care planning and reducing waiting lists.',
-        justification: 'Open competitive tender under NHS procurement rules. Palantir\'s Foundry platform selected after evaluation of six shortlisted bidders on technical capability, interoperability and patient data governance.' },
-      { id: 13, company: 'G4S / Serco (AASC Consortium)',     project: 'Asylum Accommodation & Support Contract (AASC)',                  amountRaw:  4500000000, contractType: 'Open Tender',      category: 'Immigration',     department: 'Home Office',                                 dateAwarded: 'January 2019',   duration: '10 years', status: 'Active',
-        description: 'Provision of accommodation, transport and support services for asylum seekers in initial, dispersal and contingency accommodation across England, Scotland and Wales. Covers around 110,000 service users at any one time.',
-        justification: 'Competitive procurement under AASC framework. G4S and Serco awarded regional lots on value for money, property supply capacity and support service quality commitments.' },
-      { id: 14, company: 'Babcock International Group',       project: 'Type 31 Frigate (Inspiration Class) — Arrowhead 140',             amountRaw:  1250000000, contractType: 'Open Tender',      category: 'Defence',         department: 'Ministry of Defence',                         dateAwarded: 'November 2019',  duration: '8 years',  status: 'Active',
-        description: 'Design and build of five Type 31 general-purpose frigates for the Royal Navy at Babcock\'s Rosyth dockyard, replacing the Type 23. An exportable warship design aiming to rebuild UK shipbuilding capacity.',
-        justification: 'Competitive tender under the Type 31 programme; Babcock\'s Arrowhead 140 won against Cammell Laird and BMT on technical merit and cost. Programme supported by £20M Type 31 design competition.' },
-      { id: 15, company: 'Deloitte UK / Accenture UK',        project: 'HMRC Making Tax Digital (MTD) Programme Delivery',               amountRaw:   890000000, contractType: 'Restricted Tender', category: 'Technology',      department: 'HM Revenue & Customs',                        dateAwarded: 'September 2021', duration: '6 years',  status: 'Active',
-        description: 'Programme management, architecture and delivery support for HMRC\'s Making Tax Digital transformation — moving businesses and landlords to quarterly digital tax reporting and eliminating paper self-assessment.',
-        justification: 'Restricted to government-approved programme delivery partners. Deloitte/Accenture consortium selected for HMRC relationship continuity, tax technology expertise and delivery capability.' },
-    ];
-    const totalValue = ukContracts.reduce((s, c) => s + c.amountRaw, 0);
+    const data = liveContracts.UK;
+    const fmtVal = (val) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; if (v >= 1e9) return `£${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `£${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `£${(v/1e3).toFixed(0)}K`; return `£${v.toLocaleString()}`; };
+    const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); if (isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return null; } };
+    const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
@@ -19839,58 +19762,67 @@ function App() {
             <div className="w-20" />
           </div>
         </div>
-
         <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
           <div className="rounded-xl p-6 mb-8 border-2" style={{ background: 'linear-gradient(to right, #C8102E08, #01216908)', borderColor: '#C8102E' }}>
             <div className="flex items-center gap-3 mb-2">
               <span className="text-3xl">💷</span>
               <h2 className="text-2xl font-bold text-gray-800">Follow the Taxpayer Money</h2>
+              {data && data.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
             </div>
-            <p className="text-gray-600">Major UK government contracts worth £{(totalValue / 1e9).toFixed(1)} Billion · {ukContracts.length} contracts listed</p>
+            {data && data.length > 0
+              ? <p className="text-gray-600">UK government contracts worth {totalValue > 0 ? `£${(totalValue/1e9).toFixed(1)}B` : '—'} · {data.length} contracts</p>
+              : <p className="text-gray-600">UK government contracts</p>}
             <div className="w-16 h-1 mt-3 rounded-full" style={{ background: `linear-gradient(to right, ${RED}, ${NAVY})` }} />
           </div>
-
-          <div className="space-y-5">
-            {ukContracts.map(contract => (
-              <div key={contract.id}
-                onClick={() => { setSelectedUkContract(contract); setView('uk-contract-detail'); }}
-                className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all border-2 border-transparent cursor-pointer p-5 sm:p-6 active:scale-[0.99]"
-                onMouseEnter={e => e.currentTarget.style.borderColor = RED}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
-              >
-                <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-4 py-1.5 rounded-full text-base font-bold text-white" style={{ backgroundColor: RED }}>
-                      £{contract.amountRaw >= 1e9 ? (contract.amountRaw / 1e9).toFixed(1) + 'B' : (contract.amountRaw / 1e6).toFixed(0) + 'M'}
-                    </span>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${contract.contractType === 'Sole-Source' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}`}>
-                      {contract.contractType}
-                    </span>
-                    <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">{contract.category}</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${contract.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{contract.status}</span>
+          {data === undefined ? (
+            <div className="text-center py-12 text-gray-400 text-lg">Loading contracts…</div>
+          ) : data.length === 0 ? (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+              <p className="text-gray-500 text-lg">No contract data available yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {data.map((c, i) => {
+                const val = fmtVal(c.value);
+                const dt = fmtDate(c.date_awarded);
+                return (
+                  <div key={c.id || i}
+                    onClick={() => { setSelectedUkContract(c); setView('uk-contract-detail'); }}
+                    className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all border-2 border-transparent cursor-pointer p-5 sm:p-6 active:scale-[0.99]"
+                    onMouseEnter={e => e.currentTarget.style.borderColor = RED}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {val && <span className="px-4 py-1.5 rounded-full text-base font-bold text-white" style={{ backgroundColor: RED }}>{val}</span>}
+                        <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {dt && <span className="text-xs text-gray-400">{dt}</span>}
+                        <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0" />
+                      </div>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800 mb-1">{c.contractor_name}</h2>
+                    {c.department && <p className="text-sm text-gray-600 mb-2 truncate">🏛️ {c.department}</p>}
+                    {c.purpose && <p className="text-sm text-gray-700 line-clamp-2">{c.purpose}</p>}
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0 mt-1" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-800 mb-1">{contract.company}</h2>
-                <h3 className="text-base text-gray-600 mb-3">{contract.project}</h3>
-                <div className="flex items-center gap-4 text-xs sm:text-sm text-gray-500 mb-3 flex-wrap">
-                  <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{contract.dateAwarded}</span>
-                  <span>⏱️ {contract.duration}</span>
-                  <span className="truncate">🏛️ {contract.department}</span>
-                </div>
-                <p className="text-sm text-gray-700 line-clamp-2">{contract.description}</p>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     );
   };
 
+  // UK contracts data removed (now live from Firestore)
+
   const renderUKContractDetail = () => {
     if (!selectedUkContract) return null;
     const c = selectedUkContract;
     const RED = '#C8102E', NAVY = '#012169';
+    const fmtVal = (val) => { if (val == null) return '—'; const v = Number(val); if (isNaN(v) || v === 0) return '—'; if (v >= 1e9) return `£${(v/1e9).toFixed(2)} Billion`; if (v >= 1e6) return `£${(v/1e6).toFixed(1)} Million`; if (v >= 1e3) return `£${(v/1e3).toFixed(0)}K`; return `£${v.toLocaleString()}`; };
+    const fmtDate = (d) => { if (!d) return '—'; try { const dt = new Date(d); if (isNaN(dt.getTime())) return d; return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return d; } };
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm">
@@ -19900,48 +19832,33 @@ function App() {
             </button>
           </div>
         </div>
-
         <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
           <div className="bg-white rounded-xl shadow-md p-6 sm:p-8 mb-6">
-            {/* UK flag bar */}
             <div className="h-1.5 w-full rounded-full mb-6" style={{ background: `linear-gradient(to right, ${RED}, #FFFFFF, ${NAVY})` }} />
-
             <div className="flex items-center gap-3 mb-5 flex-wrap">
-              <span className="px-4 py-2 rounded-full text-xl font-bold text-white" style={{ backgroundColor: RED }}>
-                £{c.amountRaw >= 1e9 ? (c.amountRaw / 1e9).toFixed(2) + ' Billion' : (c.amountRaw / 1e6).toFixed(0) + ' Million'}
-              </span>
-              <span className={`px-4 py-2 rounded-full font-medium ${c.contractType === 'Sole-Source' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}`}>{c.contractType}</span>
-              <span className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full">{c.category}</span>
-              <span className={`px-4 py-2 rounded-full font-semibold ${c.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{c.status}</span>
+              <span className="px-4 py-2 rounded-full text-xl font-bold text-white" style={{ backgroundColor: RED }}>{fmtVal(c.value)}</span>
+              <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
             </div>
-
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">{c.company}</h1>
-            <h2 className="text-lg sm:text-xl text-gray-600 mb-6">{c.project}</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">{c.contractor_name}</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-1">Date Awarded</p>
-                <p className="text-lg font-bold text-blue-700">{c.dateAwarded}</p>
-              </div>
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Duration</p>
-                <p className="text-lg font-bold text-purple-700">{c.duration}</p>
+                <p className="text-lg font-bold text-blue-700">{fmtDate(c.date_awarded)}</p>
               </div>
               <div className="rounded-lg p-4 border" style={{ background: '#01216908', borderColor: NAVY }}>
                 <p className="text-sm text-gray-600 mb-1">Awarding Department</p>
                 <p className="text-base font-bold" style={{ color: NAVY }}>{c.department}</p>
               </div>
             </div>
-
-            <div className="rounded-lg p-5 mb-5 border" style={{ background: '#01216908', borderColor: NAVY }}>
-              <h3 className="font-bold text-gray-800 mb-2 text-lg">Project Description</h3>
-              <p className="text-gray-700 leading-relaxed">{c.description}</p>
+            <div className="rounded-lg p-5 mb-4 border" style={{ background: '#01216908', borderColor: NAVY }}>
+              <h3 className="font-bold text-gray-800 mb-2 text-lg">Purpose</h3>
+              <p className="text-gray-700 leading-relaxed">{c.purpose}</p>
             </div>
-
-            <div className="rounded-lg p-5 border" style={{ background: '#C8102E08', borderColor: RED }}>
-              <h3 className="font-bold text-gray-800 mb-2 text-lg">Contract Justification</h3>
-              <p className="text-gray-700 leading-relaxed">{c.justification}</p>
-            </div>
+            {c.source_url && (
+              <a href={c.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
+                View Official Source ↗
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -27097,7 +27014,7 @@ function App() {
               }
             </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{isUSA ? usContracts.length : contracts.length} Contracts</span>
+              <span>{isUSA ? (liveContracts.US?.length ?? 0) : (liveContracts.CA?.length ?? 0)} Contracts</span>
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
@@ -30465,139 +30382,114 @@ function App() {
     ],
   });
 
-  const renderContracts = () => (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <button onClick={() => setView('categories')} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">
-            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
-          </button>
-          <h1 className="text-2xl font-bold text-gray-800">Government Contracts</h1>
-          <div className="w-20"></div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">💰 Follow the Taxpayer Money</h2>
-          <p className="text-gray-600">
-            Government contracts worth ${(contracts.reduce((sum, c) => sum + c.amount, 0) / 1e9).toFixed(1)} Billion
-          </p>
-        </div>
-
-        {contracts.length === 0 ? (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-            <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">No Contracts Found</h3>
-            <p className="text-gray-600">Run create-contracts-data.js!</p>
+  const renderContracts = () => {
+    const data = liveContracts.CA;
+    const fmtVal = (val, cur) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; const sym = cur === 'CAD' ? 'CA$' : '$'; if (v >= 1e9) return `${sym}${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `${sym}${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `${sym}${(v/1e3).toFixed(0)}K`; return `${sym}${v.toLocaleString()}`; };
+    const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); if (isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-CA', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return null; } };
+    const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <button onClick={() => setView('categories')} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
+            </button>
+            <h1 className="text-2xl font-bold text-gray-800">Government Contracts</h1>
+            <div className="w-20"></div>
           </div>
-        ) : (
-          <div className="space-y-6">
-            {contracts.map(contract => (
-              <div key={contract.id} onClick={() => { setSelectedContract(contract); setView('contract-detail'); }}
-                className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-green-500 cursor-pointer p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-lg font-bold">
-                        ${(contract.amount / 1e9).toFixed(2)}B
-                      </span>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        contract.contractType === 'Sole-Source' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {contract.contractType}
-                      </span>
-                      <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
-                        {contract.category}
-                      </span>
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">{contract.company}</h2>
-                    <h3 className="text-lg text-gray-600 mb-3">{contract.project}</h3>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{contract.dateAwarded}</span>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 mb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-2xl font-bold text-gray-800">💰 Follow the Taxpayer Money</h2>
+              {data && data.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+            </div>
+            {data && data.length > 0
+              ? <p className="text-gray-600">Canadian federal contracts worth {totalValue > 0 ? `CA$${(totalValue/1e9).toFixed(1)}B` : '—'} · {data.length} contracts</p>
+              : <p className="text-gray-600">Canadian federal government contracts</p>}
+          </div>
+          {data === undefined ? (
+            <div className="text-center py-12 text-gray-400 text-lg">Loading contracts…</div>
+          ) : data.length === 0 ? (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+              <p className="text-gray-500 text-lg">No contract data available yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {data.map((c, i) => {
+                const val = fmtVal(c.value, c.currency);
+                const dt = fmtDate(c.date_awarded);
+                return (
+                  <div key={c.id || i}
+                    onClick={() => { setSelectedContract(c); setView('contract-detail'); }}
+                    className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-l-4 border-green-500 cursor-pointer p-5 sm:p-6"
+                  >
+                    <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {val && <span className="bg-green-100 text-green-800 px-3 py-1.5 rounded-full font-bold text-base">{val}</span>}
+                        <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
                       </div>
-                      <span>⏱️ {contract.duration}</span>
-                      <span>🏛️ {contract.department}</span>
+                      {dt && <span className="text-xs text-gray-400">{dt}</span>}
                     </div>
-                    <p className="text-gray-700 mb-4">{contract.description}</p>
-                    <button className="text-green-600 hover:text-green-800 font-medium text-sm flex items-center gap-1">
-                      View Full Details <ChevronRight className="w-4 h-4" />
-                    </button>
+                    <h2 className="text-xl font-bold text-gray-800 mb-1">{c.contractor_name}</h2>
+                    {c.department && <p className="text-sm text-gray-600 mb-2">🏛️ {c.department}</p>}
+                    {c.purpose && <p className="text-sm text-gray-700 line-clamp-3">{c.purpose}</p>}
                   </div>
-                </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderContractDetail = () => {
+    if (!selectedContract) return null;
+    const c = selectedContract;
+    const fmtVal = (val, cur) => { if (val == null) return '—'; const v = Number(val); if (isNaN(v) || v === 0) return '—'; const sym = cur === 'CAD' ? 'CA$' : '$'; if (v >= 1e9) return `${sym}${(v/1e9).toFixed(2)} Billion`; if (v >= 1e6) return `${sym}${(v/1e6).toFixed(1)} Million`; if (v >= 1e3) return `${sym}${(v/1e3).toFixed(0)}K`; return `${sym}${v.toLocaleString()}`; };
+    const fmtDate = (d) => { if (!d) return '—'; try { const dt = new Date(d); if (isNaN(dt.getTime())) return d; return dt.toLocaleDateString('en-CA', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return d; } };
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-6xl mx-auto px-4 py-4">
+            <button onClick={() => { setSelectedContract(null); setView('contracts'); }}
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4">
+              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Contracts</span>
+            </button>
+          </div>
+        </div>
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+            <div className="flex items-center gap-3 mb-5 flex-wrap">
+              <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-xl font-bold">{fmtVal(c.value, c.currency)}</span>
+              <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-6">{c.contractor_name}</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Date Awarded</p>
+                <p className="text-lg font-bold text-blue-700">{fmtDate(c.date_awarded)}</p>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
-  const renderContractDetail = () => (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <button onClick={() => { setSelectedContract(null); setView('contracts'); }}
-            className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4">
-            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Contracts</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-md p-8 mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-2xl font-bold">
-              ${(selectedContract.amount / 1e9).toFixed(2)} Billion
-            </span>
-            <span className={`px-4 py-2 rounded-full font-medium ${
-              selectedContract.contractType === 'Sole-Source' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
-            }`}>
-              {selectedContract.contractType}
-            </span>
-            <span className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full">
-              {selectedContract.category}
-            </span>
-          </div>
-
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">{selectedContract.company}</h1>
-          <h2 className="text-xl text-gray-600 mb-6">{selectedContract.project}</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">Date Awarded</p>
-              <p className="text-lg font-bold text-blue-700">{selectedContract.dateAwarded}</p>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Department</p>
+                <p className="text-base font-bold text-gray-800">{c.department}</p>
+              </div>
             </div>
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">Duration</p>
-              <p className="text-lg font-bold text-purple-700">{selectedContract.duration}</p>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-4">
+              <h3 className="font-bold text-gray-800 mb-2 text-lg">Purpose</h3>
+              <p className="text-gray-700 leading-relaxed">{c.purpose}</p>
             </div>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">Status</p>
-              <p className="text-lg font-bold text-green-700">{selectedContract.status}</p>
-            </div>
-          </div>
-
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
-            <h3 className="font-bold text-gray-800 mb-2 text-lg">Department</h3>
-            <p className="text-gray-700">{selectedContract.department}</p>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-            <h3 className="font-bold text-gray-800 mb-2 text-lg">Project Description</h3>
-            <p className="text-gray-700">{selectedContract.description}</p>
-          </div>
-
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
-            <h3 className="font-bold text-gray-800 mb-2 text-lg">Justification</h3>
-            <p className="text-gray-700">{selectedContract.justification}</p>
+            {c.source_url && (
+              <a href={c.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
+                View Official Source ↗
+              </a>
+            )}
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderLaws = () => (
     <div className="min-h-screen bg-gray-50">
@@ -31826,56 +31718,10 @@ function App() {
   };
 
   const renderAuContracts = () => {
-    const auContracts = [
-      { id: 1,  company: 'BAE Systems Australia',          project: 'Hunter-class Frigate Program (SEA 5000)',                    amountRaw: 45600000000, contractType: 'Sole-Source',       category: 'Defence',          department: 'Department of Defence',                           dateAwarded: 'June 2018',      duration: '25 years', status: 'Active',
-        description: 'Design and construction of nine Hunter-class guided-missile frigates for the Royal Australian Navy, replacing the Anzac-class. Largest single defence procurement in Australian history.',
-        justification: 'Sole-source selection followed a rigorous competitive evaluation phase (SEA 5000 Phase 1) in which BAE Systems\' Type 26 Global Combat Ship was down-selected as the preferred design in June 2018.' },
-      { id: 2,  company: 'Laing O\'Rourke / Bouygues JV',  project: 'North East Link — Tunnels Package (Victoria)',              amountRaw: 15800000000, contractType: 'Open Tender',        category: 'Infrastructure',   department: 'Major Road Projects Victoria',                    dateAwarded: 'August 2021',    duration: '6 years',  status: 'Active',
-        description: 'Design and construction of twin 6.5 km tunnels connecting the Eastern Freeway to the Ring Road, forming the centrepiece of Victoria\'s largest ever road project, reducing travel times by up to 35 minutes.',
-        justification: 'Awarded through a competitive market process following Expression of Interest and Request for Proposal stages. The Laing O\'Rourke/Bouygues joint venture offered the best value for money outcome.' },
-      { id: 3,  company: 'CPB Contractors / John Holland JV', project: 'Sydney Metro West — Central Tunnelling Package',          amountRaw: 14500000000, contractType: 'Open Tender',        category: 'Transport',        department: 'Transport for NSW',                               dateAwarded: 'February 2022',  duration: '7 years',  status: 'Active',
-        description: 'Twin 11 km rail tunnels from The Bays to Sydney CBD for Sydney Metro West, Australia\'s biggest public transport project. Will double rail capacity in the Sydney CBD corridor.',
-        justification: 'Competitive request for tender process managed by Transport for NSW. CPB/John Holland JV selected on the basis of technical capability, schedule certainty, and value for money.' },
-      { id: 4,  company: 'Future Generation JV (Webuild / Lane)',   project: 'Snowy 2.0 Pumped Hydro Power Station',              amountRaw: 12000000000, contractType: 'Restricted Tender',  category: 'Energy',           department: 'Snowy Hydro Ltd (Commonwealth-owned)',            dateAwarded: 'November 2018',  duration: '9 years',  status: 'Active',
-        description: 'Underground pumped hydro expansion of Snowy Scheme: 2,000 MW of dispatchable generation and 350,000 MWh of large-scale storage via 27 km of tunnels between Tantangara and Talbingo reservoirs.',
-        justification: 'Restricted tender with pre-qualified international contractors. Future Generation JV (formerly Salini Impregilo / Clough) selected following detailed evaluation of technical proposals and commercial submissions.' },
-      { id: 5,  company: 'CIMIC Group (CPB Contractors)',   project: 'Cross River Rail — Tunnel, Stations & Development',       amountRaw:  5400000000, contractType: 'Open Tender',        category: 'Transport',        department: 'Cross River Rail Delivery Authority (QLD)',       dateAwarded: 'March 2019',     duration: '6 years',  status: 'Active',
-        description: 'Construction of 10.2 km of twin rail tunnels under the Brisbane River and CBD, four new underground stations, and associated track and systems works for Queensland\'s largest ever infrastructure project.',
-        justification: 'Competitive procurement process run by the Cross River Rail Delivery Authority. CIMIC/CPB selected on value, program delivery confidence and technical approach.' },
-      { id: 6,  company: 'Rheinmetall Defence Australia',   project: 'Land 400 Phase 2 — Boxer Combat Reconnaissance Vehicle',  amountRaw:  5200000000, contractType: 'Competitive',        category: 'Defence',          department: 'Department of Defence',                           dateAwarded: 'March 2019',     duration: '10 years', status: 'Active',
-        description: 'Acquisition of 211 Boxer Combat Reconnaissance Vehicles (CRVs) for the Australian Army, replacing the ASLAV. Includes a significant Australian Industry Content (AIC) commitment with a vehicle assembly facility in Queensland.',
-        justification: 'Won through a rigorous competitive evaluation against BAE Systems\' AMV35. Rheinmetall\'s Boxer was selected for superior protection, growth potential, and industry capability benefits.' },
-      { id: 7,  company: 'John Holland / CPB Contractors',  project: 'Inland Rail Program — Southern NSW Packages',             amountRaw:  4800000000, contractType: 'Panel Arrangement',  category: 'Transport',        department: 'Australian Rail Track Corporation (ARTC)',        dateAwarded: 'July 2020',      duration: '8 years',  status: 'Active',
-        description: 'Design and construction of new and upgraded rail corridor across southern New South Wales forming part of the 1,700 km Melbourne–Brisbane Inland Rail. Includes new bridges, earthworks, and track.',
-        justification: 'ARTC panel arrangement for major civil works. John Holland/CPB selected through competitive evaluation of panel-listed contractors for southern NSW packages.' },
-      { id: 8,  company: 'Boeing Defence Australia',        project: 'AIR 7000 Phase 2B — P-8A Poseidon Maritime Patrol',      amountRaw:  4100000000, contractType: 'Sole-Source',        category: 'Defence',          department: 'Department of Defence',                           dateAwarded: 'March 2014',     duration: '30 years', status: 'Active',
-        description: 'Acquisition of 15 Boeing P-8A Poseidon maritime patrol and anti-submarine warfare aircraft, replacing the AP-3C Orion. Includes through-life support, simulation, and ground support equipment.',
-        justification: 'Sole-source selection following Australian government alignment with the US Navy\'s P-8A program, providing interoperability benefits, schedule certainty, and lower through-life costs.' },
-      { id: 9,  company: 'Lockheed Martin Australia',       project: 'Joint Air Battle Management System (AIR 6500 Phase 1)',   amountRaw:  2900000000, contractType: 'Sole-Source',        category: 'Defence',          department: 'Department of Defence',                           dateAwarded: 'December 2021',  duration: '15 years', status: 'Active',
-        description: 'Design and integration of a sovereign Air Battle Management System providing integrated air and missile defence capabilities for the ADF, connecting sensors, weapons and command nodes.',
-        justification: 'Sole-source contract leveraging Lockheed Martin\'s IBCS integration work with the US Army and Five Eyes allies, providing the fastest pathway to a sovereign, interoperable ADF capability.' },
-      { id: 10, company: 'Pfizer Australia / AstraZeneca',  project: 'National COVID-19 Vaccine Procurement and Distribution',  amountRaw:  2700000000, contractType: 'Sole-Source',        category: 'Health',           department: 'Department of Health and Aged Care',             dateAwarded: 'November 2020',  duration: '3 years',  status: 'Completed',
-        description: 'Procurement of 85 million Pfizer (Comirnaty) and 53.8 million AstraZeneca (Vaxzevria) COVID-19 vaccine doses for the Australian adult population, including cold-chain logistics and distribution.',
-        justification: 'Emergency sole-source procurement under Commonwealth Procurement Rules crisis provisions. Advance Purchase Agreements signed concurrently with multiple vaccine developers to ensure supply certainty.' },
-      { id: 11, company: 'NBN Co / Ventia',                 project: 'HFC Network Maintenance and Upgrade Services',            amountRaw:  3200000000, contractType: 'Panel Arrangement',  category: 'Telecommunications', department: 'NBN Co (Commonwealth-owned Corporation)',         dateAwarded: 'January 2021',   duration: '10 years', status: 'Active',
-        description: 'Comprehensive maintenance, remediation, and capacity upgrade of the 4.2 million-premises HFC cable network, including node splits, amplifier replacements, and DOCSIS 3.1 upgrades.',
-        justification: 'Competitive panel procurement by NBN Co. Ventia selected for network engineering capability, geographic coverage, and demonstrated delivery track record on the HFC rollout.' },
-      { id: 12, company: 'Amazon Web Services (AWS)',        project: 'Whole of Australian Government Cloud (WofG) Panel',      amountRaw:  1300000000, contractType: 'Panel Arrangement',  category: 'Technology',       department: 'Services Australia / Digital Transformation Agency', dateAwarded: 'July 2022',     duration: '5 years',  status: 'Active',
-        description: 'Whole of Government cloud computing services providing IaaS, PaaS, and SaaS to Australian federal agencies through the Cloud Marketplace Panel, hosted in AWS Sydney and Melbourne regions.',
-        justification: 'Competitive panel assessment under the Cloud Services Panel. AWS selected for sovereign capability commitments, ASD-certified data centres, and breadth of services available to government.' },
-      { id: 13, company: 'Accenture Australia',             project: 'Australian Taxation Office Enterprise Transformation',    amountRaw:   780000000, contractType: 'Restricted Tender',  category: 'Technology',       department: 'Australian Taxation Office',                      dateAwarded: 'April 2021',     duration: '6 years',  status: 'Active',
-        description: 'End-to-end digital transformation of ATO core systems including the Online Services for Business platform, myTax lodgement systems, and Single Touch Payroll Phase 2 implementation.',
-        justification: 'Restricted tender to pre-qualified ICT service providers. Accenture selected for proven public sector transformation experience, ATO relationship continuity, and competitive commercial proposal.' },
-      { id: 14, company: 'Deloitte Australia / DXC Technology', project: 'Services Australia ICT Modernisation Program',       amountRaw:  1100000000, contractType: 'Restricted Tender',  category: 'Technology',       department: 'Services Australia',                              dateAwarded: 'September 2020', duration: '7 years',  status: 'Active',
-        description: 'Modernisation of legacy CENTRELINK and Medicare payment processing systems supporting 1.4 trillion in annual social payments, migrating to modern cloud-native platforms with improved citizen experience.',
-        justification: 'Restricted to experienced large-scale government ICT providers. Deloitte/DXC consortium selected for combined breadth of system integration and legacy modernisation capabilities.' },
-      { id: 15, company: 'Acciona / Ferrovial',             project: 'Melbourne Airport Rail Link — Main Civil Works',          amountRaw: 10800000000, contractType: 'Open Tender',        category: 'Transport',        department: 'Major Transport Infrastructure Authority (VIC)',   dateAwarded: 'March 2024',     duration: '7 years',  status: 'Active',
-        description: 'Design and construction of a 26 km dedicated rail line from Southern Cross Station to Melbourne Airport, including twin tunnels under the inner suburbs and three new stations.',
-        justification: 'Competitive open tender managed by the Major Transport Infrastructure Authority. Acciona/Ferrovial JV selected on technical merit, programme certainty, and value for money.' },
-    ];
-
-    const totalValue = auContracts.reduce((sum, c) => sum + c.amountRaw, 0);
-
+    const data = liveContracts.AU;
+    const fmtVal = (val) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; if (v >= 1e9) return `A$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `A$${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `A$${(v/1e3).toFixed(0)}K`; return `A$${v.toLocaleString()}`; };
+    const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); if (isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return null; } };
+    const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
@@ -31887,53 +31733,47 @@ function App() {
             <div className="w-20" />
           </div>
         </div>
-
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200 rounded-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">💰 Follow the Taxpayer Money</h2>
-            <p className="text-gray-600">Australian federal contracts worth A${(totalValue / 1e9).toFixed(1)} Billion</p>
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-2xl font-bold text-gray-800">💰 Follow the Taxpayer Money</h2>
+              {data && data.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+            </div>
+            {data && data.length > 0
+              ? <p className="text-gray-600">Australian federal contracts worth {totalValue > 0 ? `A$${(totalValue/1e9).toFixed(1)}B` : '—'} · {data.length} contracts</p>
+              : <p className="text-gray-600">Australian federal government contracts</p>}
           </div>
-
-          <div className="space-y-6">
-            {auContracts.map(contract => (
-              <div key={contract.id}
-                onClick={() => { setSelectedAuContract(contract); setView('au-contract-detail'); }}
-                className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-rose-500 cursor-pointer p-6"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3 flex-wrap">
-                      <span className="bg-rose-100 text-rose-800 px-4 py-2 rounded-full text-lg font-bold">
-                        A${contract.amountRaw >= 1e9 ? (contract.amountRaw / 1e9).toFixed(1) + 'B' : (contract.amountRaw / 1e6).toFixed(0) + 'M'}
-                      </span>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        contract.contractType === 'Sole-Source' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {contract.contractType}
-                      </span>
-                      <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
-                        {contract.category}
-                      </span>
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">{contract.company}</h2>
-                    <h3 className="text-lg text-gray-600 mb-3">{contract.project}</h3>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 flex-wrap">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{contract.dateAwarded}</span>
+          {data === undefined ? (
+            <div className="text-center py-12 text-gray-400 text-lg">Loading contracts…</div>
+          ) : data.length === 0 ? (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+              <p className="text-gray-500 text-lg">No contract data available yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {data.map((c, i) => {
+                const val = fmtVal(c.value);
+                const dt = fmtDate(c.date_awarded);
+                return (
+                  <div key={c.id || i}
+                    onClick={() => { setSelectedAuContract(c); setView('au-contract-detail'); }}
+                    className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-rose-500 cursor-pointer p-6"
+                  >
+                    <div className="flex items-start justify-between mb-3 flex-wrap gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {val && <span className="bg-rose-100 text-rose-800 px-4 py-1.5 rounded-full text-base font-bold">{val}</span>}
+                        <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
                       </div>
-                      <span>⏱️ {contract.duration}</span>
-                      <span>🏛️ {contract.department}</span>
+                      {dt && <span className="text-xs text-gray-400 flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{dt}</span>}
                     </div>
-                    <p className="text-gray-700 mb-4">{contract.description}</p>
-                    <button className="text-rose-600 hover:text-rose-800 font-medium text-sm flex items-center gap-1">
-                      View Full Details <ChevronRight className="w-4 h-4" />
-                    </button>
+                    <h2 className="text-xl font-bold text-gray-800 mb-1">{c.contractor_name}</h2>
+                    {c.department && <p className="text-sm text-gray-600 mb-2">🏛️ {c.department}</p>}
+                    {c.purpose && <p className="text-sm text-gray-700 line-clamp-3">{c.purpose}</p>}
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -31941,7 +31781,9 @@ function App() {
 
   const renderAuContractDetail = () => {
     if (!selectedAuContract) return null;
-    const contract = selectedAuContract;
+    const c = selectedAuContract;
+    const fmtVal = (val) => { if (val == null) return '—'; const v = Number(val); if (isNaN(v) || v === 0) return '—'; if (v >= 1e9) return `A$${(v/1e9).toFixed(2)} Billion`; if (v >= 1e6) return `A$${(v/1e6).toFixed(1)} Million`; if (v >= 1e3) return `A$${(v/1e3).toFixed(0)}K`; return `A$${v.toLocaleString()}`; };
+    const fmtDate = (d) => { if (!d) return '—'; try { const dt = new Date(d); if (isNaN(dt.getTime())) return d; return dt.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return d; } };
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm">
@@ -31952,61 +31794,39 @@ function App() {
             </button>
           </div>
         </div>
-
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="bg-white rounded-lg shadow-md p-8 mb-6">
-            <div className="flex items-center gap-3 mb-4 flex-wrap">
-              <span className="bg-rose-100 text-rose-800 px-4 py-2 rounded-full text-2xl font-bold">
-                A${contract.amountRaw >= 1e9 ? (contract.amountRaw / 1e9).toFixed(2) + ' Billion' : (contract.amountRaw / 1e6).toFixed(0) + ' Million'}
-              </span>
-              <span className={`px-4 py-2 rounded-full font-medium ${
-                contract.contractType === 'Sole-Source' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
-              }`}>
-                {contract.contractType}
-              </span>
-              <span className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full">
-                {contract.category}
-              </span>
+            <div className="flex items-center gap-3 mb-5 flex-wrap">
+              <span className="bg-rose-100 text-rose-800 px-4 py-2 rounded-full text-2xl font-bold">{fmtVal(c.value)}</span>
+              <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
             </div>
-
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">{contract.company}</h1>
-            <h2 className="text-xl text-gray-600 mb-6">{contract.project}</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <h1 className="text-3xl font-bold text-gray-800 mb-6">{c.contractor_name}</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-1">Date Awarded</p>
-                <p className="text-lg font-bold text-blue-700">{contract.dateAwarded}</p>
+                <p className="text-lg font-bold text-blue-700">{fmtDate(c.date_awarded)}</p>
               </div>
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Duration</p>
-                <p className="text-lg font-bold text-purple-700">{contract.duration}</p>
-              </div>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">Status</p>
-                <p className="text-lg font-bold text-green-700">{contract.status}</p>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">Department</p>
+                <p className="text-base font-bold text-gray-800">{c.department}</p>
               </div>
             </div>
-
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
-              <h3 className="font-bold text-gray-800 mb-2 text-lg">Department</h3>
-              <p className="text-gray-700">{contract.department}</p>
+            <div className="bg-rose-50 border border-rose-200 rounded-lg p-6 mb-4">
+              <h3 className="font-bold text-gray-800 mb-2 text-lg">Purpose</h3>
+              <p className="text-gray-700 leading-relaxed">{c.purpose}</p>
             </div>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-              <h3 className="font-bold text-gray-800 mb-2 text-lg">Project Description</h3>
-              <p className="text-gray-700">{contract.description}</p>
-            </div>
-
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
-              <h3 className="font-bold text-gray-800 mb-2 text-lg">Justification</h3>
-              <p className="text-gray-700">{contract.justification}</p>
-            </div>
+            {c.source_url && (
+              <a href={c.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
+                View Official Source ↗
+              </a>
+            )}
           </div>
         </div>
       </div>
     );
   };
 
+  // AU contracts placeholder (data below removed - now live from Firestore)
   const renderAuAnalytics = () => renderGovernmentStatsPage({
     cc: 'AU',
     backView: 'au-categories',
