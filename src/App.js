@@ -7338,13 +7338,13 @@ function App() {
                         <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-gray-800 text-sm">{p.program_name}</p>
-                            {p.actual_spending != null && p.planned_spending != null && (
-                              <p className="text-xs text-gray-500 mt-1">Actual: {fmtUSD(p.actual_spending)} · Planned: {fmtUSD(p.planned_spending)}</p>
+                            {p.cfda_number && (
+                              <p className="text-xs text-gray-500 mt-1">CFDA: {p.cfda_number}</p>
                             )}
                           </div>
                           <div className="text-right shrink-0">
-                            <p className="text-lg font-bold text-green-700">{fmtUSD(p.planned_spending ?? p.actual_spending)}</p>
-                            <p className="text-xs text-gray-400">planned</p>
+                            <p className="text-lg font-bold text-green-700">{p.amount != null ? fmtUSD(p.amount) : '—'}</p>
+                            <p className="text-xs text-gray-400">amount</p>
                           </div>
                         </div>
                       ))}
@@ -19622,20 +19622,25 @@ function App() {
                     <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
                   ) : (
                     <div className="space-y-3">
-                      {programs.map((p, i) => (
-                        <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-800 text-sm">{p.program_name}</p>
-                            {p.actual_spending != null && p.planned_spending != null && (
-                              <p className="text-xs text-gray-500 mt-1">Actual: {fmtGBP(p.actual_spending)} · Planned: {fmtGBP(p.planned_spending)}</p>
+                      {programs.map((p, i) => {
+                        const amt = p.amount ?? p.planned_spending ?? p.actual_spending;
+                        return (
+                          <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-800 text-sm">{p.program_name}</p>
+                              {p.actual_spending != null && p.planned_spending != null && (
+                                <p className="text-xs text-gray-500 mt-1">Actual: {fmtGBP(p.actual_spending)} · Planned: {fmtGBP(p.planned_spending)}</p>
+                              )}
+                            </div>
+                            {amt != null && (
+                              <div className="text-right shrink-0">
+                                <p className="text-lg font-bold" style={{ color: '#C8102E' }}>{fmtGBP(amt)}</p>
+                                <p className="text-xs text-gray-400">budget</p>
+                              </div>
                             )}
                           </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-lg font-bold" style={{ color: '#C8102E' }}>{fmtGBP(p.planned_spending ?? p.actual_spending)}</p>
-                            <p className="text-xs text-gray-400">planned</p>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -32308,20 +32313,25 @@ function App() {
                     <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
                   ) : (
                     <div className="space-y-3">
-                      {programs.map((p, i) => (
-                        <div key={i} className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-800 text-sm">{p.program_name}</p>
-                            {p.actual_spending != null && p.planned_spending != null && (
-                              <p className="text-xs text-gray-500 mt-1">Actual: {fmtAUD(p.actual_spending)} · Planned: {fmtAUD(p.planned_spending)}</p>
+                      {programs.map((p, i) => {
+                        const amt = p.amount ?? p.planned_spending ?? p.actual_spending;
+                        return (
+                          <div key={i} className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-800 text-sm">{p.program_name}</p>
+                              {p.actual_spending != null && p.planned_spending != null && (
+                                <p className="text-xs text-gray-500 mt-1">Actual: {fmtAUD(p.actual_spending)} · Planned: {fmtAUD(p.planned_spending)}</p>
+                              )}
+                            </div>
+                            {amt != null && (
+                              <div className="text-right shrink-0">
+                                <p className="text-lg font-bold text-amber-700">{fmtAUD(amt)}</p>
+                                <p className="text-xs text-gray-400">amount</p>
+                              </div>
                             )}
                           </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-lg font-bold text-amber-700">{fmtAUD(p.planned_spending ?? p.actual_spending)}</p>
-                            <p className="text-xs text-gray-400">planned</p>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
