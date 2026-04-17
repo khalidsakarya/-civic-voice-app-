@@ -579,6 +579,34 @@ const CA_DEPT_DISPLAY_NAMES = Object.fromEntries(
   Object.entries(CA_DEPT_FIRESTORE_NAMES).map(([k, v]) => [v, k])
 );
 
+// Maps UK department display names → Firestore 'name' field values in department_budgets (and reverse)
+const UK_DEPT_FIRESTORE_NAMES = {
+  'HM Treasury':                              'HM Treasury',
+  'Home Office':                              'Home Office',
+  'Foreign, Commonwealth & Development Office': 'Foreign, Commonwealth and Development Office',
+  'Ministry of Defence':                      'Defence',
+  'Department of Health & Social Care':       'Health and Social Care',
+  'Department for Education':                 'Education',
+  'Ministry of Justice':                      'Justice',
+  'Department for Transport':                 'Transport',
+  'Dept for Environment, Food & Rural Affairs': 'Environment, Food and Rural Affairs',
+  'Department for Business & Trade':          'Business and Trade',
+  'Department for Work & Pensions':           'Work and Pensions',
+  'Housing, Communities & Local Govt':        'MHCLG Housing, Communities and Local Government',
+  'Dept for Energy Security & Net Zero':      'Energy Security and Net Zero',
+  'Dept for Culture, Media & Sport':          'Culture, Media and Sport',
+  'Dept for Science, Innovation & Technology': 'Science, Innovation and Technology',
+  'Cabinet Office':                           'Cabinet Office',
+  'Attorney General\'s Office':               "Law Officers' Departments",
+  'Northern Ireland Office':                  'Northern Ireland Executive',
+  'Scotland Office':                          'Scottish Government',
+  'Wales Office':                             'Welsh Government',
+};
+// Reverse map: Firestore budget 'name' → UK display name
+const UK_DEPT_DISPLAY_NAMES = Object.fromEntries(
+  Object.entries(UK_DEPT_FIRESTORE_NAMES).map(([k, v]) => [v, k])
+);
+
 // Maps Firestore department_heads 'department' field → CA app ministry display name
 const CA_DEPT_HEADS_MAP = {
   'Agriculture':           'Agriculture and Agri-Food Canada',
@@ -6725,6 +6753,7 @@ function App() {
     setDeptBudgetLoading(prev => ({ ...prev, [key]: true }));
     const fsName = jurisdiction === 'AU' ? (AU_DEPT_FIRESTORE_NAMES[deptName] || deptName)
                  : jurisdiction === 'CA' ? (CA_DEPT_FIRESTORE_NAMES[deptName] || deptName)
+                 : jurisdiction === 'UK' ? (UK_DEPT_FIRESTORE_NAMES[deptName] || deptName)
                  : deptName;
     console.log('[DeptBudget] querying', { jurisdiction, deptName, fsName });
     (async () => {
@@ -6763,6 +6792,7 @@ function App() {
           if (data.name) {
             const displayName = jurisdiction === 'AU' ? (AU_DEPT_DISPLAY_NAMES[data.name] || data.name)
                               : jurisdiction === 'CA' ? (CA_DEPT_DISPLAY_NAMES[data.name] || data.name)
+                              : jurisdiction === 'UK' ? (UK_DEPT_DISPLAY_NAMES[data.name] || data.name)
                               : data.name;
             updates[`${jurisdiction}:${displayName}`] = data;
           }
