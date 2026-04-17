@@ -7348,39 +7348,64 @@ function App() {
               </div>
             </div>
 
-            {/* Grants Breakdown */}
+            {/* Grants Given + Internal Spending */}
             {(() => {
               const bData = deptBudgetData[`US:${selectedDepartment.name}`];
-              const programs = Array.isArray(bData?.key_programs) ? bData.key_programs : [];
+              const grantsGiven = Array.isArray(bData?.grants_given) ? bData.grants_given : [];
+              const internalSpending = Array.isArray(bData?.internal_spending) ? bData.internal_spending : [];
               const fmtUSD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e12) return `$${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`; return `$${n.toLocaleString()}`; };
               return (
-                <div className="mb-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <DollarSign className="w-6 h-6 text-green-600" />
-                    <h3 className="text-xl font-bold text-gray-800">Grants &amp; Funding Breakdown</h3>
-                    {programs.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
-                  </div>
-                  {programs.length === 0 ? (
-                    <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {programs.map((p, i) => (
-                        <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-800 text-sm">{p.program_name}</p>
-                            {p.cfda_number && (
-                              <p className="text-xs text-gray-500 mt-1">CFDA: {p.cfda_number}</p>
-                            )}
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-lg font-bold text-green-700">{p.amount != null ? fmtUSD(p.amount) : '—'}</p>
-                            <p className="text-xs text-gray-400">amount</p>
-                          </div>
-                        </div>
-                      ))}
+                <>
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <DollarSign className="w-6 h-6 text-green-600" />
+                      <h3 className="text-xl font-bold text-gray-800">Grants Given</h3>
+                      {grantsGiven.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                     </div>
-                  )}
-                </div>
+                    {grantsGiven.length === 0 ? (
+                      <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No grants data available yet.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {grantsGiven.map((g, i) => (
+                          <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-800 text-sm">{g.recipient}</p>
+                              {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-lg font-bold text-green-700">{g.amount != null ? fmtUSD(g.amount) : '—'}</p>
+                              <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <DollarSign className="w-6 h-6 text-blue-600" />
+                      <h3 className="text-xl font-bold text-gray-800">Internal Spending</h3>
+                      {internalSpending.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </div>
+                    {internalSpending.length === 0 ? (
+                      <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No internal spending data available yet.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {internalSpending.map((s, i) => (
+                          <div key={i} className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-800 text-sm">{s.category}</p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-lg font-bold text-blue-700">{s.amount != null ? fmtUSD(s.amount) : '—'}</p>
+                              <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">internal</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
               );
             })()}
           </div>
@@ -19636,44 +19661,64 @@ function App() {
               </div>
             </div>
 
-            {/* Grants Breakdown */}
+            {/* Grants Given + Internal Spending */}
             {(() => {
               const bData = deptBudgetData[`UK:${dept.name}`];
-              const programs = Array.isArray(bData?.key_programs) ? bData.key_programs : [];
+              const grantsGiven = Array.isArray(bData?.grants_given) ? bData.grants_given : [];
+              const internalSpending = Array.isArray(bData?.internal_spending) ? bData.internal_spending : [];
               const fmtGBP = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e12) return `£${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `£${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `£${(n/1e6).toFixed(1)}M`; return `£${n.toLocaleString()}`; };
               return (
-                <div className="mb-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <DollarSign className="w-6 h-6" style={{ color: '#C8102E' }} />
-                    <h3 className="text-xl font-bold text-gray-800">Grants &amp; Funding Breakdown</h3>
-                    {programs.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
-                  </div>
-                  {programs.length === 0 ? (
-                    <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {programs.map((p, i) => {
-                        const amt = p.amount ?? p.planned_spending ?? p.actual_spending;
-                        return (
-                          <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{p.program_name}</p>
-                              {p.actual_spending != null && p.planned_spending != null && (
-                                <p className="text-xs text-gray-500 mt-1">Actual: {fmtGBP(p.actual_spending)} · Planned: {fmtGBP(p.planned_spending)}</p>
-                              )}
-                            </div>
-                            {amt != null && (
-                              <div className="text-right shrink-0">
-                                <p className="text-lg font-bold" style={{ color: '#C8102E' }}>{fmtGBP(amt)}</p>
-                                <p className="text-xs text-gray-400">budget</p>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                <>
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <DollarSign className="w-6 h-6 text-green-600" />
+                      <h3 className="text-xl font-bold text-gray-800">Grants Given</h3>
+                      {grantsGiven.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                     </div>
-                  )}
-                </div>
+                    {grantsGiven.length === 0 ? (
+                      <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No grants data available yet.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {grantsGiven.map((g, i) => (
+                          <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-800 text-sm">{g.recipient}</p>
+                              {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-lg font-bold text-green-700">{g.amount != null ? fmtGBP(g.amount) : '—'}</p>
+                              <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <DollarSign className="w-6 h-6 text-blue-600" />
+                      <h3 className="text-xl font-bold text-gray-800">Internal Spending</h3>
+                      {internalSpending.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </div>
+                    {internalSpending.length === 0 ? (
+                      <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No internal spending data available yet.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {internalSpending.map((s, i) => (
+                          <div key={i} className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-800 text-sm">{s.category}</p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-lg font-bold text-blue-700">{s.amount != null ? fmtGBP(s.amount) : '—'}</p>
+                              <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">internal</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
               );
             })()}
           </div>
@@ -31424,39 +31469,64 @@ function App() {
               </div>
             </div>
 
-            {/* Grants Breakdown */}
+            {/* Grants Given + Internal Spending */}
             {(() => {
               const bData = deptBudgetData[`CA:${selectedMinistry.name}`];
-              const programs = Array.isArray(bData?.key_programs) ? bData.key_programs : [];
-              const fmtCAD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; const m = n / 1_000_000; if (m >= 1000) return `CA${(m/1000).toFixed(1)}B`; if (m >= 1) return `CA${m.toFixed(1)}M`; return `CA${(m*1000).toFixed(0)}K`; };
+              const grantsGiven = Array.isArray(bData?.grants_given) ? bData.grants_given : [];
+              const internalSpending = Array.isArray(bData?.internal_spending) ? bData.internal_spending : [];
+              const fmtCAD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; const m = n / 1_000_000; if (m >= 1000) return `CA$${(m/1000).toFixed(1)}B`; if (m >= 1) return `CA$${m.toFixed(1)}M`; return `CA$${(m*1000).toFixed(0)}K`; };
               return (
-                <div className="mb-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <DollarSign className="w-6 h-6 text-green-600" />
-                    <h3 className="text-xl font-bold text-gray-800">Grants &amp; Funding Breakdown</h3>
-                    {programs.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
-                  </div>
-                  {programs.length === 0 ? (
-                    <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {programs.map((p, i) => (
-                        <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-800 text-sm">{p.program_name}</p>
-                            {p.actual_spending != null && p.planned_spending != null && (
-                              <p className="text-xs text-gray-500 mt-1">Actual: {fmtCAD(p.actual_spending)} · Planned: {fmtCAD(p.planned_spending)}</p>
-                            )}
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-lg font-bold text-green-700">{fmtCAD(p.planned_spending ?? p.actual_spending)}</p>
-                            <p className="text-xs text-gray-400">planned</p>
-                          </div>
-                        </div>
-                      ))}
+                <>
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <DollarSign className="w-6 h-6 text-green-600" />
+                      <h3 className="text-xl font-bold text-gray-800">Grants Given</h3>
+                      {grantsGiven.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                     </div>
-                  )}
-                </div>
+                    {grantsGiven.length === 0 ? (
+                      <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No grants data available yet.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {grantsGiven.map((g, i) => (
+                          <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-800 text-sm">{g.recipient}</p>
+                              {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-lg font-bold text-green-700">{g.amount != null ? fmtCAD(g.amount) : '—'}</p>
+                              <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <DollarSign className="w-6 h-6 text-blue-600" />
+                      <h3 className="text-xl font-bold text-gray-800">Internal Spending</h3>
+                      {internalSpending.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </div>
+                    {internalSpending.length === 0 ? (
+                      <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No internal spending data available yet.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {internalSpending.map((s, i) => (
+                          <div key={i} className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-800 text-sm">{s.category}</p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-lg font-bold text-blue-700">{s.amount != null ? fmtCAD(s.amount) : '—'}</p>
+                              <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">internal</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
               );
             })()}
           </div>
@@ -32327,44 +32397,64 @@ function App() {
               </div>
             </div>
 
-            {/* Grants Breakdown */}
+            {/* Grants Given + Internal Spending */}
             {(() => {
               const bData = deptBudgetData[`AU:${dept.name}`];
-              const programs = Array.isArray(bData?.key_programs) ? bData.key_programs : [];
+              const grantsGiven = Array.isArray(bData?.grants_given) ? bData.grants_given : [];
+              const internalSpending = Array.isArray(bData?.internal_spending) ? bData.internal_spending : [];
               const fmtAUD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e12) return `A$${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `A$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `A$${(n/1e6).toFixed(1)}M`; return `A$${n.toLocaleString()}`; };
               return (
-                <div className="mb-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <DollarSign className="w-6 h-6 text-amber-600" />
-                    <h3 className="text-xl font-bold text-gray-800">Grants &amp; Funding Breakdown</h3>
-                    {programs.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
-                  </div>
-                  {programs.length === 0 ? (
-                    <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No official data available yet.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {programs.map((p, i) => {
-                        const amt = p.amount ?? p.planned_spending ?? p.actual_spending;
-                        return (
-                          <div key={i} className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{p.program_name}</p>
-                              {p.actual_spending != null && p.planned_spending != null && (
-                                <p className="text-xs text-gray-500 mt-1">Actual: {fmtAUD(p.actual_spending)} · Planned: {fmtAUD(p.planned_spending)}</p>
-                              )}
-                            </div>
-                            {amt != null && (
-                              <div className="text-right shrink-0">
-                                <p className="text-lg font-bold text-amber-700">{fmtAUD(amt)}</p>
-                                <p className="text-xs text-gray-400">amount</p>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                <>
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <DollarSign className="w-6 h-6 text-green-600" />
+                      <h3 className="text-xl font-bold text-gray-800">Grants Given</h3>
+                      {grantsGiven.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                     </div>
-                  )}
-                </div>
+                    {grantsGiven.length === 0 ? (
+                      <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No grants data available yet.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {grantsGiven.map((g, i) => (
+                          <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-800 text-sm">{g.recipient}</p>
+                              {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-lg font-bold text-green-700">{g.amount != null ? fmtAUD(g.amount) : '—'}</p>
+                              <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <DollarSign className="w-6 h-6 text-blue-600" />
+                      <h3 className="text-xl font-bold text-gray-800">Internal Spending</h3>
+                      {internalSpending.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </div>
+                    {internalSpending.length === 0 ? (
+                      <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No internal spending data available yet.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {internalSpending.map((s, i) => (
+                          <div key={i} className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-800 text-sm">{s.category}</p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-lg font-bold text-blue-700">{s.amount != null ? fmtAUD(s.amount) : '—'}</p>
+                              <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">internal</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
               );
             })()}
           </div>
