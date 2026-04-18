@@ -607,6 +607,19 @@ const UK_DEPT_DISPLAY_NAMES = Object.fromEntries(
   Object.entries(UK_DEPT_FIRESTORE_NAMES).map(([k, v]) => [v, k])
 );
 
+// Maps app display name → Firestore department_expenses 'department' field (uses abbreviations)
+const UK_DEPT_EXPENSES_NAMES = {
+  'HM Treasury':                                'HM Treasury',
+  'Home Office':                                'Home Office',
+  'Cabinet Office':                             'Cabinet Office',
+  'Ministry of Defence':                        'Ministry of Defence',
+  'Department of Health & Social Care':         'DHSC',
+  'Department for Education':                   'DfE',
+  'Foreign, Commonwealth & Development Office': 'FCDO',
+  'Ministry of Justice':                        'Ministry of Justice',
+  'Department for Transport':                   'Department for Transport',
+};
+
 // Maps Firestore department_heads 'department' field → CA app ministry display name
 const CA_DEPT_HEADS_MAP = {
   'Agriculture':           'Agriculture and Agri-Food Canada',
@@ -17145,7 +17158,7 @@ function App() {
   const fetchDeptExpenses = async (deptName, country) => {
     setDeptExpensesLoading(true);
     const key = `${country}:${deptName}`;
-    const fsName = country === 'UK' ? (UK_DEPT_FIRESTORE_NAMES[deptName] || deptName)
+    const fsName = country === 'UK' ? (UK_DEPT_EXPENSES_NAMES[deptName] || deptName)
                  : country === 'AU' ? (AU_DEPT_FIRESTORE_NAMES[deptName] || deptName)
                  : country === 'CA' ? (CA_DEPT_FIRESTORE_NAMES[deptName] || deptName)
                  : deptName;
