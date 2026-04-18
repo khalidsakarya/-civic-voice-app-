@@ -7425,9 +7425,9 @@ function App() {
                 const liveKey = `US:${selectedDepartment.name}`;
                 const expDocs = deptLiveExpenses[liveKey];
                 const isLoading = expDocs === undefined;
-                const travel = expDocs ? expDocs.flatMap(d => d.travel || []) : [];
-                const hospitality = expDocs ? expDocs.flatMap(d => d.hospitality || []) : [];
-                const flagged = expDocs ? expDocs.flatMap(d => d.flagged || []) : [];
+                const travel = expDocs ? expDocs.flatMap(d => d.travel_expenses || d.travel || []) : [];
+                const hospitality = expDocs ? expDocs.flatMap(d => d.hospitality_expenses || d.hospitality || []) : [];
+                const flagged = expDocs ? expDocs.flatMap(d => d.flagged_items || d.flagged || []) : [];
                 const hasAny = travel.length > 0 || hospitality.length > 0 || flagged.length > 0;
                 const fmtUSD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`; if (n >= 1e3) return `$${(n/1e3).toFixed(0)}K`; return `$${n.toLocaleString()}`; };
                 return (
@@ -17217,7 +17217,12 @@ function App() {
         }
       }
       const items = snap.docs.map(d => d.data());
-      console.log(`[DeptExpenses] final result for "${deptName}": ${items.length} doc(s)`, items.map(d => ({ department: d.department, travel: (d.travel||[]).length, hospitality: (d.hospitality||[]).length, flagged: (d.flagged||[]).length })));
+      console.log(`[DeptExpenses] document fields for "${deptName}":`, items.map(d => Object.keys(d)));
+      console.log(`[DeptExpenses] array lengths:`, items.map(d => ({
+        travel: (d.travel||[]).length, travel_expenses: (d.travel_expenses||[]).length,
+        hospitality: (d.hospitality||[]).length, hospitality_expenses: (d.hospitality_expenses||[]).length,
+        flagged: (d.flagged||[]).length, flagged_items: (d.flagged_items||[]).length,
+      })));
       setDeptLiveExpenses(prev => ({ ...prev, [key]: items }));
     } catch (err) {
       console.warn('[DeptExpenses] Firestore fetch failed:', err.message);
@@ -19814,9 +19819,9 @@ function App() {
                 const liveKey = `UK:${dept.name}`;
                 const expDocs = deptLiveExpenses[liveKey];
                 const isLoading = expDocs === undefined;
-                const travel = expDocs ? expDocs.flatMap(d => d.travel || []) : [];
-                const hospitality = expDocs ? expDocs.flatMap(d => d.hospitality || []) : [];
-                const flagged = expDocs ? expDocs.flatMap(d => d.flagged || []) : [];
+                const travel = expDocs ? expDocs.flatMap(d => d.travel_expenses || d.travel || []) : [];
+                const hospitality = expDocs ? expDocs.flatMap(d => d.hospitality_expenses || d.hospitality || []) : [];
+                const flagged = expDocs ? expDocs.flatMap(d => d.flagged_items || d.flagged || []) : [];
                 const hasAny = travel.length > 0 || hospitality.length > 0 || flagged.length > 0;
                 const fmtGBP = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e9) return `£${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `£${(n/1e6).toFixed(1)}M`; if (n >= 1e3) return `£${(n/1e3).toFixed(0)}K`; return `£${n.toLocaleString()}`; };
                 return (
@@ -31670,9 +31675,9 @@ function App() {
                 const liveKey = `CA:${selectedMinistry.name}`;
                 const expDocs = deptLiveExpenses[liveKey];
                 const isLoading = expDocs === undefined;
-                const travel = expDocs ? expDocs.flatMap(d => d.travel || []) : [];
-                const hospitality = expDocs ? expDocs.flatMap(d => d.hospitality || []) : [];
-                const flagged = expDocs ? expDocs.flatMap(d => d.flagged || []) : [];
+                const travel = expDocs ? expDocs.flatMap(d => d.travel_expenses || d.travel || []) : [];
+                const hospitality = expDocs ? expDocs.flatMap(d => d.hospitality_expenses || d.hospitality || []) : [];
+                const flagged = expDocs ? expDocs.flatMap(d => d.flagged_items || d.flagged || []) : [];
                 const hasAny = travel.length > 0 || hospitality.length > 0 || flagged.length > 0;
                 const fmtCAD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e9) return `CA$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `CA$${(n/1e6).toFixed(1)}M`; if (n >= 1e3) return `CA$${(n/1e3).toFixed(0)}K`; return `CA$${n.toLocaleString()}`; };
                 return (
@@ -32646,9 +32651,9 @@ function App() {
                 const liveKey = `AU:${dept.name}`;
                 const expDocs = deptLiveExpenses[liveKey];
                 const isLoading = expDocs === undefined;
-                const travel = expDocs ? expDocs.flatMap(d => d.travel || []) : [];
-                const hospitality = expDocs ? expDocs.flatMap(d => d.hospitality || []) : [];
-                const flagged = expDocs ? expDocs.flatMap(d => d.flagged || []) : [];
+                const travel = expDocs ? expDocs.flatMap(d => d.travel_expenses || d.travel || []) : [];
+                const hospitality = expDocs ? expDocs.flatMap(d => d.hospitality_expenses || d.hospitality || []) : [];
+                const flagged = expDocs ? expDocs.flatMap(d => d.flagged_items || d.flagged || []) : [];
                 const hasAny = travel.length > 0 || hospitality.length > 0 || flagged.length > 0;
                 const fmtAUD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e9) return `A$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `A$${(n/1e6).toFixed(1)}M`; if (n >= 1e3) return `A$${(n/1e3).toFixed(0)}K`; return `A$${n.toLocaleString()}`; };
                 return (
