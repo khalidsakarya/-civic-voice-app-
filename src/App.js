@@ -7366,18 +7366,22 @@ function App() {
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No grants data available yet.</p>
                     ) : (
                       <div className="space-y-3">
-                        {grantsGiven.map((g, i) => (
-                          <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{g.recipient}</p>
-                              {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
+                        {grantsGiven.map((g, i) => {
+                          const name = g.program_name || g.program || g.recipient_name || g.recipient || '—';
+                          const sub = (g.recipient_name || g.recipient) !== name ? (g.recipient_name || g.recipient) : null;
+                          return (
+                            <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-gray-800 text-sm">{name}</p>
+                                {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
+                              </div>
+                              <div className="text-right shrink-0">
+                                <p className="text-lg font-bold text-green-700">{g.amount != null ? fmtUSD(g.amount) : '—'}</p>
+                                <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
+                              </div>
                             </div>
-                            <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-green-700">{g.amount != null ? fmtUSD(g.amount) : '—'}</p>
-                              <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -17181,11 +17185,24 @@ function App() {
                  : country === 'CA' ? (CA_DEPT_FIRESTORE_NAMES[deptName] || deptName)
                  : deptName;
     try {
-      const snap = await getDocs(query(
+      let snap = await getDocs(query(
         collection(db, 'department_expenses'),
         where('jurisdiction', '==', country),
         where('department', '==', fsName)
       ));
+      console.log(`[DeptExpenses] ${country}:${fsName} → ${snap.docs.length} doc(s)`);
+      // US fallback: try short name (strip leading "Department of/for/the ")
+      if (snap.docs.length === 0 && country === 'US') {
+        const short = fsName.replace(/^Department (of the|of|for the|for)\s+/i, '');
+        if (short !== fsName) {
+          snap = await getDocs(query(
+            collection(db, 'department_expenses'),
+            where('jurisdiction', '==', country),
+            where('department', '==', short)
+          ));
+          console.log(`[DeptExpenses] US fallback short name "${short}" → ${snap.docs.length} doc(s)`);
+        }
+      }
       const items = snap.docs.map(d => d.data());
       setDeptLiveExpenses(prev => ({ ...prev, [key]: items }));
     } catch (err) {
