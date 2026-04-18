@@ -17149,17 +17149,18 @@ function App() {
                  : country === 'AU' ? (AU_DEPT_FIRESTORE_NAMES[deptName] || deptName)
                  : country === 'CA' ? (CA_DEPT_FIRESTORE_NAMES[deptName] || deptName)
                  : deptName;
-    console.log(`[DeptExpenses] querying: jurisdiction="${country}" department="${fsName}"`);
+    console.log(`[DeptExpenses] querying: jurisdiction="${country}" department="${fsName}" (display name="${deptName}")`);
     try {
-      // Dump all US docs once so we can see every stored department name
-      if (country === 'US') {
-        getDocs(query(collection(db, 'department_expenses'), where('jurisdiction', '==', 'US')))
-          .then(all => {
-            const names = all.docs.map(d => d.data().department).filter(Boolean);
-            console.log('[DeptExpenses] All US department names in Firestore:', names);
-          })
-          .catch(() => {});
-      }
+      // Dump all docs for this jurisdiction so we can see every stored department name
+      getDocs(query(collection(db, 'department_expenses'), where('jurisdiction', '==', country)))
+        .then(all => {
+          const names = all.docs.map(d => d.data().department).filter(Boolean);
+          console.log(`[DeptExpenses] All ${country} department names in Firestore:`, names);
+          if (names.length > 0 && !names.includes(fsName)) {
+            console.warn(`[DeptExpenses] MISMATCH: queried "${fsName}" but Firestore has:`, names);
+          }
+        })
+        .catch(() => {});
       let snap = await getDocs(query(
         collection(db, 'department_expenses'),
         where('jurisdiction', '==', country),
