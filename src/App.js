@@ -7414,43 +7414,91 @@ function App() {
           <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
             <div className="h-1.5 w-full" style={{ background: 'linear-gradient(to right, #dc2626, #f97316)' }} />
             <div className="p-6 sm:p-8">
-              <div className="flex items-center gap-3 mb-5">
-                <DollarSign className="w-7 h-7 text-orange-500" />
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
-                  <p className="text-sm text-gray-500">Official travel · entertainment · credit card · flagged items</p>
-                </div>
-              </div>
-              <p className="text-gray-400 text-sm text-center py-6">No official data available yet.</p>
               {(() => {
                 const liveKey = `US:${selectedDepartment.name}`;
-                const liveItems = deptLiveExpenses[liveKey] || [];
+                const expDocs = deptLiveExpenses[liveKey];
+                const isLoading = expDocs === undefined;
+                const travel = expDocs ? expDocs.flatMap(d => d.travel || []) : [];
+                const hospitality = expDocs ? expDocs.flatMap(d => d.hospitality || []) : [];
+                const flagged = expDocs ? expDocs.flatMap(d => d.flagged || []) : [];
+                const hasAny = travel.length > 0 || hospitality.length > 0 || flagged.length > 0;
+                const fmtUSD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`; if (n >= 1e3) return `$${(n/1e3).toFixed(0)}K`; return `$${n.toLocaleString()}`; };
                 return (
-                  <div className="mt-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-700 text-sm">🔴 Live Flagged Spending (Firestore)</h3>
-                      {deptExpensesLoading && <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
+                  <>
+                    <div className="flex items-center gap-3 mb-5">
+                      <DollarSign className="w-7 h-7 text-orange-500" />
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
+                        <p className="text-sm text-gray-500">Official travel · hospitality · flagged items</p>
+                      </div>
+                      {hasAny && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {isLoading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin ml-auto" />}
                     </div>
-                    {liveItems.length > 0 ? (
-                      <div className="space-y-2">
-                        {liveItems.map((item, i) => (
-                          <div key={i} className="bg-red-50 border border-red-300 rounded-lg p-3">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                <p className="text-xs text-gray-600">{item.department}</p>
-                                <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
-                                {item.severity && <span className={`mt-1 inline-block px-2 py-0.5 rounded text-xs font-bold text-white ${item.severity === 'Critical' ? 'bg-red-700' : item.severity === 'High' ? 'bg-red-500' : item.severity === 'Medium' ? 'bg-orange-500' : 'bg-yellow-500'}`}>{item.severity}</span>}
-                              </div>
-                              <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
+                    {!isLoading && !hasAny ? (
+                      <p className="text-sm text-gray-400 italic text-center py-6 bg-gray-50 rounded-lg">No expenses data available yet.</p>
+                    ) : (
+                      <>
+                        {travel.length > 0 && (
+                          <div className="mb-5">
+                            <h3 className="text-base font-bold text-gray-700 mb-2">✈️ Travel</h3>
+                            <div className="space-y-2">
+                              {travel.map((t, i) => (
+                                <div key={i} className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800">{t.description}</p>
+                                    {t.date && <p className="text-xs text-gray-500 mt-0.5">{t.date}</p>}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-sm font-bold text-sky-700">{t.amount != null ? fmtUSD(t.amount) : '—'}</p>
+                                    <span className="text-xs font-bold bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded-full">travel</span>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">No flagged spending data available yet.</p>
+                        )}
+                        {hospitality.length > 0 && (
+                          <div className="mb-5">
+                            <h3 className="text-base font-bold text-gray-700 mb-2">🍽️ Hospitality</h3>
+                            <div className="space-y-2">
+                              {hospitality.map((h, i) => (
+                                <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800">{h.description}</p>
+                                    {h.date && <p className="text-xs text-gray-500 mt-0.5">{h.date}</p>}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-sm font-bold text-purple-700">{h.amount != null ? fmtUSD(h.amount) : '—'}</p>
+                                    <span className="text-xs font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">hospitality</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {flagged.length > 0 && (
+                          <div className="mb-5">
+                            <h3 className="text-base font-bold text-gray-700 mb-2">🚩 Flagged Items</h3>
+                            <div className="space-y-2">
+                              {flagged.map((f, i) => (
+                                <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800">{f.title || f.description}</p>
+                                    {(f.reason || f.explanation) && <p className="text-xs text-red-600 mt-0.5">{f.reason || f.explanation}</p>}
+                                    {f.date && <p className="text-xs text-gray-500 mt-0.5">{f.date}</p>}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-sm font-bold text-red-700">{f.amount != null ? fmtUSD(f.amount) : '—'}</p>
+                                    <span className="text-xs font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">flagged</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
-                  </div>
+                  </>
                 );
               })()}
             </div>
@@ -17128,13 +17176,17 @@ function App() {
   const fetchDeptExpenses = async (deptName, country) => {
     setDeptExpensesLoading(true);
     const key = `${country}:${deptName}`;
+    const fsName = country === 'UK' ? (UK_DEPT_FIRESTORE_NAMES[deptName] || deptName)
+                 : country === 'AU' ? (AU_DEPT_FIRESTORE_NAMES[deptName] || deptName)
+                 : country === 'CA' ? (CA_DEPT_FIRESTORE_NAMES[deptName] || deptName)
+                 : deptName;
     try {
       const snap = await getDocs(query(
-        collection(db, 'flagged_expenses'),
-        where('country', '==', country),
-        where('department', '==', deptName)
+        collection(db, 'department_expenses'),
+        where('jurisdiction', '==', country),
+        where('department', '==', fsName)
       ));
-      const items = snap.docs.map(d => d.data()).sort((a, b) => (b.waste_score || 0) - (a.waste_score || 0));
+      const items = snap.docs.map(d => d.data());
       setDeptLiveExpenses(prev => ({ ...prev, [key]: items }));
     } catch (err) {
       console.warn('[DeptExpenses] Firestore fetch failed:', err.message);
@@ -19727,43 +19779,91 @@ function App() {
           <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
             <div className="h-1.5 w-full" style={{ background: 'linear-gradient(to right, #dc2626, #f97316)' }} />
             <div className="p-6 sm:p-8">
-              <div className="flex items-center gap-3 mb-5">
-                <DollarSign className="w-7 h-7 text-orange-500" />
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
-                  <p className="text-sm text-gray-500">Official travel · entertainment · credit card · flagged items</p>
-                </div>
-              </div>
-              <p className="text-gray-400 text-sm text-center py-6">No official data available yet.</p>
               {(() => {
                 const liveKey = `UK:${dept.name}`;
-                const liveItems = deptLiveExpenses[liveKey] || [];
+                const expDocs = deptLiveExpenses[liveKey];
+                const isLoading = expDocs === undefined;
+                const travel = expDocs ? expDocs.flatMap(d => d.travel || []) : [];
+                const hospitality = expDocs ? expDocs.flatMap(d => d.hospitality || []) : [];
+                const flagged = expDocs ? expDocs.flatMap(d => d.flagged || []) : [];
+                const hasAny = travel.length > 0 || hospitality.length > 0 || flagged.length > 0;
+                const fmtGBP = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e9) return `£${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `£${(n/1e6).toFixed(1)}M`; if (n >= 1e3) return `£${(n/1e3).toFixed(0)}K`; return `£${n.toLocaleString()}`; };
                 return (
-                  <div className="mt-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-700 text-sm">🔴 Live Flagged Spending (Firestore)</h3>
-                      {deptExpensesLoading && <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
+                  <>
+                    <div className="flex items-center gap-3 mb-5">
+                      <DollarSign className="w-7 h-7 text-orange-500" />
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
+                        <p className="text-sm text-gray-500">Official travel · hospitality · flagged items</p>
+                      </div>
+                      {hasAny && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {isLoading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin ml-auto" />}
                     </div>
-                    {liveItems.length > 0 ? (
-                      <div className="space-y-2">
-                        {liveItems.map((item, i) => (
-                          <div key={i} className="bg-red-50 border border-red-300 rounded-lg p-3">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                <p className="text-xs text-gray-600">{item.department}</p>
-                                <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
-                                {item.severity && <span className={`mt-1 inline-block px-2 py-0.5 rounded text-xs font-bold text-white ${item.severity === 'Critical' ? 'bg-red-700' : item.severity === 'High' ? 'bg-red-500' : item.severity === 'Medium' ? 'bg-orange-500' : 'bg-yellow-500'}`}>{item.severity}</span>}
-                              </div>
-                              <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
+                    {!isLoading && !hasAny ? (
+                      <p className="text-sm text-gray-400 italic text-center py-6 bg-gray-50 rounded-lg">No expenses data available yet.</p>
+                    ) : (
+                      <>
+                        {travel.length > 0 && (
+                          <div className="mb-5">
+                            <h3 className="text-base font-bold text-gray-700 mb-2">✈️ Travel</h3>
+                            <div className="space-y-2">
+                              {travel.map((t, i) => (
+                                <div key={i} className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800">{t.description}</p>
+                                    {t.date && <p className="text-xs text-gray-500 mt-0.5">{t.date}</p>}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-sm font-bold text-sky-700">{t.amount != null ? fmtGBP(t.amount) : '—'}</p>
+                                    <span className="text-xs font-bold bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded-full">travel</span>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">No flagged spending data available yet.</p>
+                        )}
+                        {hospitality.length > 0 && (
+                          <div className="mb-5">
+                            <h3 className="text-base font-bold text-gray-700 mb-2">🍽️ Hospitality</h3>
+                            <div className="space-y-2">
+                              {hospitality.map((h, i) => (
+                                <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800">{h.description}</p>
+                                    {h.date && <p className="text-xs text-gray-500 mt-0.5">{h.date}</p>}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-sm font-bold text-purple-700">{h.amount != null ? fmtGBP(h.amount) : '—'}</p>
+                                    <span className="text-xs font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">hospitality</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {flagged.length > 0 && (
+                          <div className="mb-5">
+                            <h3 className="text-base font-bold text-gray-700 mb-2">🚩 Flagged Items</h3>
+                            <div className="space-y-2">
+                              {flagged.map((f, i) => (
+                                <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800">{f.title || f.description}</p>
+                                    {(f.reason || f.explanation) && <p className="text-xs text-red-600 mt-0.5">{f.reason || f.explanation}</p>}
+                                    {f.date && <p className="text-xs text-gray-500 mt-0.5">{f.date}</p>}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-sm font-bold text-red-700">{f.amount != null ? fmtGBP(f.amount) : '—'}</p>
+                                    <span className="text-xs font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">flagged</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
-                  </div>
+                  </>
                 );
               })()}
             </div>
@@ -31535,43 +31635,91 @@ function App() {
           <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
             <div className="h-1.5 w-full" style={{ background: 'linear-gradient(to right, #dc2626, #f97316)' }} />
             <div className="p-6 sm:p-8">
-              <div className="flex items-center gap-3 mb-5">
-                <DollarSign className="w-7 h-7 text-orange-500" />
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
-                  <p className="text-sm text-gray-500">Official travel · entertainment · credit card · flagged items</p>
-                </div>
-              </div>
-              <p className="text-gray-400 text-sm text-center py-6">No official data available yet.</p>
               {(() => {
                 const liveKey = `CA:${selectedMinistry.name}`;
-                const liveItems = deptLiveExpenses[liveKey] || [];
+                const expDocs = deptLiveExpenses[liveKey];
+                const isLoading = expDocs === undefined;
+                const travel = expDocs ? expDocs.flatMap(d => d.travel || []) : [];
+                const hospitality = expDocs ? expDocs.flatMap(d => d.hospitality || []) : [];
+                const flagged = expDocs ? expDocs.flatMap(d => d.flagged || []) : [];
+                const hasAny = travel.length > 0 || hospitality.length > 0 || flagged.length > 0;
+                const fmtCAD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e9) return `CA$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `CA$${(n/1e6).toFixed(1)}M`; if (n >= 1e3) return `CA$${(n/1e3).toFixed(0)}K`; return `CA$${n.toLocaleString()}`; };
                 return (
-                  <div className="mt-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-700 text-sm">🔴 Live Flagged Spending (Firestore)</h3>
-                      {deptExpensesLoading && <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
+                  <>
+                    <div className="flex items-center gap-3 mb-5">
+                      <DollarSign className="w-7 h-7 text-orange-500" />
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
+                        <p className="text-sm text-gray-500">Official travel · hospitality · flagged items</p>
+                      </div>
+                      {hasAny && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {isLoading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin ml-auto" />}
                     </div>
-                    {liveItems.length > 0 ? (
-                      <div className="space-y-2">
-                        {liveItems.map((item, i) => (
-                          <div key={i} className="bg-red-50 border border-red-300 rounded-lg p-3">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                <p className="text-xs text-gray-600">{item.department}</p>
-                                <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
-                                {item.severity && <span className={`mt-1 inline-block px-2 py-0.5 rounded text-xs font-bold text-white ${item.severity === 'Critical' ? 'bg-red-700' : item.severity === 'High' ? 'bg-red-500' : item.severity === 'Medium' ? 'bg-orange-500' : 'bg-yellow-500'}`}>{item.severity}</span>}
-                              </div>
-                              <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
+                    {!isLoading && !hasAny ? (
+                      <p className="text-sm text-gray-400 italic text-center py-6 bg-gray-50 rounded-lg">No expenses data available yet.</p>
+                    ) : (
+                      <>
+                        {travel.length > 0 && (
+                          <div className="mb-5">
+                            <h3 className="text-base font-bold text-gray-700 mb-2">✈️ Travel</h3>
+                            <div className="space-y-2">
+                              {travel.map((t, i) => (
+                                <div key={i} className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800">{t.description}</p>
+                                    {t.date && <p className="text-xs text-gray-500 mt-0.5">{t.date}</p>}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-sm font-bold text-sky-700">{t.amount != null ? fmtCAD(t.amount) : '—'}</p>
+                                    <span className="text-xs font-bold bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded-full">travel</span>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">No flagged spending data available yet.</p>
+                        )}
+                        {hospitality.length > 0 && (
+                          <div className="mb-5">
+                            <h3 className="text-base font-bold text-gray-700 mb-2">🍽️ Hospitality</h3>
+                            <div className="space-y-2">
+                              {hospitality.map((h, i) => (
+                                <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800">{h.description}</p>
+                                    {h.date && <p className="text-xs text-gray-500 mt-0.5">{h.date}</p>}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-sm font-bold text-purple-700">{h.amount != null ? fmtCAD(h.amount) : '—'}</p>
+                                    <span className="text-xs font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">hospitality</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {flagged.length > 0 && (
+                          <div className="mb-5">
+                            <h3 className="text-base font-bold text-gray-700 mb-2">🚩 Flagged Items</h3>
+                            <div className="space-y-2">
+                              {flagged.map((f, i) => (
+                                <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800">{f.title || f.description}</p>
+                                    {(f.reason || f.explanation) && <p className="text-xs text-red-600 mt-0.5">{f.reason || f.explanation}</p>}
+                                    {f.date && <p className="text-xs text-gray-500 mt-0.5">{f.date}</p>}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-sm font-bold text-red-700">{f.amount != null ? fmtCAD(f.amount) : '—'}</p>
+                                    <span className="text-xs font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">flagged</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
-                  </div>
+                  </>
                 );
               })()}
             </div>
@@ -32463,43 +32611,91 @@ function App() {
           <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
             <div className="h-1.5 w-full" style={{ background: 'linear-gradient(to right, #dc2626, #f97316)' }} />
             <div className="p-6 sm:p-8">
-              <div className="flex items-center gap-3 mb-5">
-                <DollarSign className="w-7 h-7 text-orange-500" />
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
-                  <p className="text-sm text-gray-500">Official travel · entertainment · credit card · flagged items</p>
-                </div>
-              </div>
-              <p className="text-gray-400 text-sm text-center py-6">No official data available yet.</p>
               {(() => {
                 const liveKey = `AU:${dept.name}`;
-                const liveItems = deptLiveExpenses[liveKey] || [];
+                const expDocs = deptLiveExpenses[liveKey];
+                const isLoading = expDocs === undefined;
+                const travel = expDocs ? expDocs.flatMap(d => d.travel || []) : [];
+                const hospitality = expDocs ? expDocs.flatMap(d => d.hospitality || []) : [];
+                const flagged = expDocs ? expDocs.flatMap(d => d.flagged || []) : [];
+                const hasAny = travel.length > 0 || hospitality.length > 0 || flagged.length > 0;
+                const fmtAUD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e9) return `A$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `A$${(n/1e6).toFixed(1)}M`; if (n >= 1e3) return `A$${(n/1e3).toFixed(0)}K`; return `A$${n.toLocaleString()}`; };
                 return (
-                  <div className="mt-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-700 text-sm">🔴 Live Flagged Spending (Firestore)</h3>
-                      {deptExpensesLoading && <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
+                  <>
+                    <div className="flex items-center gap-3 mb-5">
+                      <DollarSign className="w-7 h-7 text-orange-500" />
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
+                        <p className="text-sm text-gray-500">Official travel · hospitality · flagged items</p>
+                      </div>
+                      {hasAny && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {isLoading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin ml-auto" />}
                     </div>
-                    {liveItems.length > 0 ? (
-                      <div className="space-y-2">
-                        {liveItems.map((item, i) => (
-                          <div key={i} className="bg-red-50 border border-red-300 rounded-lg p-3">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                <p className="text-xs text-gray-600">{item.department}</p>
-                                <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
-                                {item.severity && <span className={`mt-1 inline-block px-2 py-0.5 rounded text-xs font-bold text-white ${item.severity === 'Critical' ? 'bg-red-700' : item.severity === 'High' ? 'bg-red-500' : item.severity === 'Medium' ? 'bg-orange-500' : 'bg-yellow-500'}`}>{item.severity}</span>}
-                              </div>
-                              <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
+                    {!isLoading && !hasAny ? (
+                      <p className="text-sm text-gray-400 italic text-center py-6 bg-gray-50 rounded-lg">No expenses data available yet.</p>
+                    ) : (
+                      <>
+                        {travel.length > 0 && (
+                          <div className="mb-5">
+                            <h3 className="text-base font-bold text-gray-700 mb-2">✈️ Travel</h3>
+                            <div className="space-y-2">
+                              {travel.map((t, i) => (
+                                <div key={i} className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800">{t.description}</p>
+                                    {t.date && <p className="text-xs text-gray-500 mt-0.5">{t.date}</p>}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-sm font-bold text-sky-700">{t.amount != null ? fmtAUD(t.amount) : '—'}</p>
+                                    <span className="text-xs font-bold bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded-full">travel</span>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">No flagged spending data available yet.</p>
+                        )}
+                        {hospitality.length > 0 && (
+                          <div className="mb-5">
+                            <h3 className="text-base font-bold text-gray-700 mb-2">🍽️ Hospitality</h3>
+                            <div className="space-y-2">
+                              {hospitality.map((h, i) => (
+                                <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800">{h.description}</p>
+                                    {h.date && <p className="text-xs text-gray-500 mt-0.5">{h.date}</p>}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-sm font-bold text-purple-700">{h.amount != null ? fmtAUD(h.amount) : '—'}</p>
+                                    <span className="text-xs font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">hospitality</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {flagged.length > 0 && (
+                          <div className="mb-5">
+                            <h3 className="text-base font-bold text-gray-700 mb-2">🚩 Flagged Items</h3>
+                            <div className="space-y-2">
+                              {flagged.map((f, i) => (
+                                <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-800">{f.title || f.description}</p>
+                                    {(f.reason || f.explanation) && <p className="text-xs text-red-600 mt-0.5">{f.reason || f.explanation}</p>}
+                                    {f.date && <p className="text-xs text-gray-500 mt-0.5">{f.date}</p>}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-sm font-bold text-red-700">{f.amount != null ? fmtAUD(f.amount) : '—'}</p>
+                                    <span className="text-xs font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">flagged</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
-                  </div>
+                  </>
                 );
               })()}
             </div>
