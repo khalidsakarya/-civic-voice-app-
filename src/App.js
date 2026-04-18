@@ -17184,13 +17184,23 @@ function App() {
                  : country === 'AU' ? (AU_DEPT_FIRESTORE_NAMES[deptName] || deptName)
                  : country === 'CA' ? (CA_DEPT_FIRESTORE_NAMES[deptName] || deptName)
                  : deptName;
+    console.log(`[DeptExpenses] querying: jurisdiction="${country}" department="${fsName}"`);
     try {
+      // Dump all US docs once so we can see every stored department name
+      if (country === 'US') {
+        getDocs(query(collection(db, 'department_expenses'), where('jurisdiction', '==', 'US')))
+          .then(all => {
+            const names = all.docs.map(d => d.data().department).filter(Boolean);
+            console.log('[DeptExpenses] All US department names in Firestore:', names);
+          })
+          .catch(() => {});
+      }
       let snap = await getDocs(query(
         collection(db, 'department_expenses'),
         where('jurisdiction', '==', country),
         where('department', '==', fsName)
       ));
-      console.log(`[DeptExpenses] ${country}:${fsName} → ${snap.docs.length} doc(s)`);
+      console.log(`[DeptExpenses] exact match "${fsName}" → ${snap.docs.length} doc(s)`);
       // US fallback: try short name (strip leading "Department of/for/the ")
       if (snap.docs.length === 0 && country === 'US') {
         const short = fsName.replace(/^Department (of the|of|for the|for)\s+/i, '');
@@ -17200,10 +17210,11 @@ function App() {
             where('jurisdiction', '==', country),
             where('department', '==', short)
           ));
-          console.log(`[DeptExpenses] US fallback short name "${short}" → ${snap.docs.length} doc(s)`);
+          console.log(`[DeptExpenses] short-name fallback "${short}" → ${snap.docs.length} doc(s)`);
         }
       }
       const items = snap.docs.map(d => d.data());
+      console.log(`[DeptExpenses] final result for "${deptName}": ${items.length} doc(s)`, items.map(d => ({ department: d.department, travel: (d.travel||[]).length, hospitality: (d.hospitality||[]).length, flagged: (d.flagged||[]).length })));
       setDeptLiveExpenses(prev => ({ ...prev, [key]: items }));
     } catch (err) {
       console.warn('[DeptExpenses] Firestore fetch failed:', err.message);
