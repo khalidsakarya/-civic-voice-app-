@@ -6894,6 +6894,7 @@ function App() {
 
   // Auto-load flagged expenses and vote counts when a department/ministry detail page opens
   useEffect(() => {
+    console.log('[ExpensesEffect] fired — view:', view, '| selectedDepartment:', selectedDepartment?.name ?? null);
     const detailMap = {
       'ministry-detail':      { country: 'CA', getName: () => selectedMinistry?.name },
       'department-detail':    { country: 'US', getName: () => selectedDepartment?.name },
@@ -6901,11 +6902,13 @@ function App() {
       'au-department-detail': { country: 'AU', getName: () => selectedAuDepartment?.name },
     };
     const entry = detailMap[view];
-    if (!entry) return;
+    if (!entry) { console.log('[ExpensesEffect] view not in detailMap — skipping'); return; }
     const deptName = entry.getName();
-    if (!deptName) return;
+    if (!deptName) { console.log('[ExpensesEffect] no deptName — skipping'); return; }
     const key = `${entry.country}:${deptName}`;
-    if (deptLiveExpenses[key] === undefined) fetchDeptExpenses(deptName, entry.country);
+    const existing = deptLiveExpenses[key];
+    console.log('[ExpensesEffect] key:', key, '| existing value:', existing === undefined ? 'undefined (will fetch)' : JSON.stringify(existing).slice(0, 80));
+    if (existing === undefined) fetchDeptExpenses(deptName, entry.country);
     fetchDeptVotes(entry.country, deptName);
   }, [view, selectedMinistry, selectedDepartment, selectedUkDepartment, selectedAuDepartment]); // eslint-disable-line react-hooks/exhaustive-deps
 
