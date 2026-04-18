@@ -7449,18 +7449,23 @@ function App() {
                           <div className="mb-5">
                             <h3 className="text-base font-bold text-gray-700 mb-2">✈️ Travel</h3>
                             <div className="space-y-2">
-                              {travel.map((t, i) => (
-                                <div key={i} className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800">{t.description}</p>
-                                    {t.date && <p className="text-xs text-gray-500 mt-0.5">{t.date}</p>}
+                              {travel.map((t, i) => {
+                                const label = t.description || t.title || t.name || t.purpose || '—';
+                                const amt = t.amount ?? t.cost ?? t.value ?? t.total;
+                                const dateStr = t.date || t.date_incurred || t.period || null;
+                                return (
+                                  <div key={i} className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <p className="text-sm font-bold text-sky-700">{amt != null ? fmtUSD(amt) : '—'}</p>
+                                      <span className="text-xs font-bold bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded-full">travel</span>
+                                    </div>
                                   </div>
-                                  <div className="text-right shrink-0">
-                                    <p className="text-sm font-bold text-sky-700">{t.amount != null ? fmtUSD(t.amount) : '—'}</p>
-                                    <span className="text-xs font-bold bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded-full">travel</span>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -7468,18 +7473,23 @@ function App() {
                           <div className="mb-5">
                             <h3 className="text-base font-bold text-gray-700 mb-2">🍽️ Hospitality</h3>
                             <div className="space-y-2">
-                              {hospitality.map((h, i) => (
-                                <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800">{h.description}</p>
-                                    {h.date && <p className="text-xs text-gray-500 mt-0.5">{h.date}</p>}
+                              {hospitality.map((h, i) => {
+                                const label = h.description || h.title || h.name || h.purpose || '—';
+                                const amt = h.amount ?? h.cost ?? h.value ?? h.total;
+                                const dateStr = h.date || h.date_incurred || h.period || null;
+                                return (
+                                  <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <p className="text-sm font-bold text-purple-700">{amt != null ? fmtUSD(amt) : '—'}</p>
+                                      <span className="text-xs font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">hospitality</span>
+                                    </div>
                                   </div>
-                                  <div className="text-right shrink-0">
-                                    <p className="text-sm font-bold text-purple-700">{h.amount != null ? fmtUSD(h.amount) : '—'}</p>
-                                    <span className="text-xs font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">hospitality</span>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -7487,19 +7497,25 @@ function App() {
                           <div className="mb-5">
                             <h3 className="text-base font-bold text-gray-700 mb-2">🚩 Flagged Items</h3>
                             <div className="space-y-2">
-                              {flagged.map((f, i) => (
-                                <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800">{f.title || f.description}</p>
-                                    {(f.reason || f.explanation) && <p className="text-xs text-red-600 mt-0.5">{f.reason || f.explanation}</p>}
-                                    {f.date && <p className="text-xs text-gray-500 mt-0.5">{f.date}</p>}
+                              {flagged.map((f, i) => {
+                                const label = f.title || f.description || f.name || f.purpose || '—';
+                                const note = f.reason || f.explanation || f.notes || f.flag_reason || null;
+                                const amt = f.amount ?? f.cost ?? f.value ?? f.total;
+                                const dateStr = f.date || f.date_incurred || f.period || null;
+                                return (
+                                  <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                      {note && <p className="text-xs text-red-600 mt-0.5">{note}</p>}
+                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <p className="text-sm font-bold text-red-700">{amt != null ? fmtUSD(amt) : '—'}</p>
+                                      <span className="text-xs font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">flagged</span>
+                                    </div>
                                   </div>
-                                  <div className="text-right shrink-0">
-                                    <p className="text-sm font-bold text-red-700">{f.amount != null ? fmtUSD(f.amount) : '—'}</p>
-                                    <span className="text-xs font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">flagged</span>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -17217,12 +17233,15 @@ function App() {
         }
       }
       const items = snap.docs.map(d => d.data());
-      console.log(`[DeptExpenses] document fields for "${deptName}":`, items.map(d => Object.keys(d)));
-      console.log(`[DeptExpenses] array lengths:`, items.map(d => ({
-        travel: (d.travel||[]).length, travel_expenses: (d.travel_expenses||[]).length,
-        hospitality: (d.hospitality||[]).length, hospitality_expenses: (d.hospitality_expenses||[]).length,
-        flagged: (d.flagged||[]).length, flagged_items: (d.flagged_items||[]).length,
-      })));
+      if (items.length > 0) {
+        const doc = items[0];
+        const travelArr = doc.travel_expenses || doc.travel || [];
+        const hospArr = doc.hospitality_expenses || doc.hospitality || [];
+        const flaggedArr = doc.flagged_items || doc.flagged || [];
+        if (travelArr.length > 0) console.log('[DeptExpenses] sample travel_expenses item:', JSON.stringify(travelArr[0]));
+        if (hospArr.length > 0) console.log('[DeptExpenses] sample hospitality_expenses item:', JSON.stringify(hospArr[0]));
+        if (flaggedArr.length > 0) console.log('[DeptExpenses] sample flagged_items item:', JSON.stringify(flaggedArr[0]));
+      }
       setDeptLiveExpenses(prev => ({ ...prev, [key]: items }));
     } catch (err) {
       console.warn('[DeptExpenses] Firestore fetch failed:', err.message);
@@ -19843,18 +19862,23 @@ function App() {
                           <div className="mb-5">
                             <h3 className="text-base font-bold text-gray-700 mb-2">✈️ Travel</h3>
                             <div className="space-y-2">
-                              {travel.map((t, i) => (
-                                <div key={i} className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800">{t.description}</p>
-                                    {t.date && <p className="text-xs text-gray-500 mt-0.5">{t.date}</p>}
+                              {travel.map((t, i) => {
+                                const label = t.description || t.title || t.name || t.purpose || '—';
+                                const amt = t.amount ?? t.cost ?? t.value ?? t.total;
+                                const dateStr = t.date || t.date_incurred || t.period || null;
+                                return (
+                                  <div key={i} className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <p className="text-sm font-bold text-sky-700">{amt != null ? fmtGBP(amt) : '—'}</p>
+                                      <span className="text-xs font-bold bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded-full">travel</span>
+                                    </div>
                                   </div>
-                                  <div className="text-right shrink-0">
-                                    <p className="text-sm font-bold text-sky-700">{t.amount != null ? fmtGBP(t.amount) : '—'}</p>
-                                    <span className="text-xs font-bold bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded-full">travel</span>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -19862,18 +19886,23 @@ function App() {
                           <div className="mb-5">
                             <h3 className="text-base font-bold text-gray-700 mb-2">🍽️ Hospitality</h3>
                             <div className="space-y-2">
-                              {hospitality.map((h, i) => (
-                                <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800">{h.description}</p>
-                                    {h.date && <p className="text-xs text-gray-500 mt-0.5">{h.date}</p>}
+                              {hospitality.map((h, i) => {
+                                const label = h.description || h.title || h.name || h.purpose || '—';
+                                const amt = h.amount ?? h.cost ?? h.value ?? h.total;
+                                const dateStr = h.date || h.date_incurred || h.period || null;
+                                return (
+                                  <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <p className="text-sm font-bold text-purple-700">{amt != null ? fmtGBP(amt) : '—'}</p>
+                                      <span className="text-xs font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">hospitality</span>
+                                    </div>
                                   </div>
-                                  <div className="text-right shrink-0">
-                                    <p className="text-sm font-bold text-purple-700">{h.amount != null ? fmtGBP(h.amount) : '—'}</p>
-                                    <span className="text-xs font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">hospitality</span>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -19881,19 +19910,25 @@ function App() {
                           <div className="mb-5">
                             <h3 className="text-base font-bold text-gray-700 mb-2">🚩 Flagged Items</h3>
                             <div className="space-y-2">
-                              {flagged.map((f, i) => (
-                                <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800">{f.title || f.description}</p>
-                                    {(f.reason || f.explanation) && <p className="text-xs text-red-600 mt-0.5">{f.reason || f.explanation}</p>}
-                                    {f.date && <p className="text-xs text-gray-500 mt-0.5">{f.date}</p>}
+                              {flagged.map((f, i) => {
+                                const label = f.title || f.description || f.name || f.purpose || '—';
+                                const note = f.reason || f.explanation || f.notes || f.flag_reason || null;
+                                const amt = f.amount ?? f.cost ?? f.value ?? f.total;
+                                const dateStr = f.date || f.date_incurred || f.period || null;
+                                return (
+                                  <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                      {note && <p className="text-xs text-red-600 mt-0.5">{note}</p>}
+                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <p className="text-sm font-bold text-red-700">{amt != null ? fmtGBP(amt) : '—'}</p>
+                                      <span className="text-xs font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">flagged</span>
+                                    </div>
                                   </div>
-                                  <div className="text-right shrink-0">
-                                    <p className="text-sm font-bold text-red-700">{f.amount != null ? fmtGBP(f.amount) : '—'}</p>
-                                    <span className="text-xs font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">flagged</span>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -31699,18 +31734,23 @@ function App() {
                           <div className="mb-5">
                             <h3 className="text-base font-bold text-gray-700 mb-2">✈️ Travel</h3>
                             <div className="space-y-2">
-                              {travel.map((t, i) => (
-                                <div key={i} className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800">{t.description}</p>
-                                    {t.date && <p className="text-xs text-gray-500 mt-0.5">{t.date}</p>}
+                              {travel.map((t, i) => {
+                                const label = t.description || t.title || t.name || t.purpose || '—';
+                                const amt = t.amount ?? t.cost ?? t.value ?? t.total;
+                                const dateStr = t.date || t.date_incurred || t.period || null;
+                                return (
+                                  <div key={i} className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <p className="text-sm font-bold text-sky-700">{amt != null ? fmtCAD(amt) : '—'}</p>
+                                      <span className="text-xs font-bold bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded-full">travel</span>
+                                    </div>
                                   </div>
-                                  <div className="text-right shrink-0">
-                                    <p className="text-sm font-bold text-sky-700">{t.amount != null ? fmtCAD(t.amount) : '—'}</p>
-                                    <span className="text-xs font-bold bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded-full">travel</span>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -31718,18 +31758,23 @@ function App() {
                           <div className="mb-5">
                             <h3 className="text-base font-bold text-gray-700 mb-2">🍽️ Hospitality</h3>
                             <div className="space-y-2">
-                              {hospitality.map((h, i) => (
-                                <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800">{h.description}</p>
-                                    {h.date && <p className="text-xs text-gray-500 mt-0.5">{h.date}</p>}
+                              {hospitality.map((h, i) => {
+                                const label = h.description || h.title || h.name || h.purpose || '—';
+                                const amt = h.amount ?? h.cost ?? h.value ?? h.total;
+                                const dateStr = h.date || h.date_incurred || h.period || null;
+                                return (
+                                  <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <p className="text-sm font-bold text-purple-700">{amt != null ? fmtCAD(amt) : '—'}</p>
+                                      <span className="text-xs font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">hospitality</span>
+                                    </div>
                                   </div>
-                                  <div className="text-right shrink-0">
-                                    <p className="text-sm font-bold text-purple-700">{h.amount != null ? fmtCAD(h.amount) : '—'}</p>
-                                    <span className="text-xs font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">hospitality</span>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -31737,19 +31782,25 @@ function App() {
                           <div className="mb-5">
                             <h3 className="text-base font-bold text-gray-700 mb-2">🚩 Flagged Items</h3>
                             <div className="space-y-2">
-                              {flagged.map((f, i) => (
-                                <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800">{f.title || f.description}</p>
-                                    {(f.reason || f.explanation) && <p className="text-xs text-red-600 mt-0.5">{f.reason || f.explanation}</p>}
-                                    {f.date && <p className="text-xs text-gray-500 mt-0.5">{f.date}</p>}
+                              {flagged.map((f, i) => {
+                                const label = f.title || f.description || f.name || f.purpose || '—';
+                                const note = f.reason || f.explanation || f.notes || f.flag_reason || null;
+                                const amt = f.amount ?? f.cost ?? f.value ?? f.total;
+                                const dateStr = f.date || f.date_incurred || f.period || null;
+                                return (
+                                  <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                      {note && <p className="text-xs text-red-600 mt-0.5">{note}</p>}
+                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <p className="text-sm font-bold text-red-700">{amt != null ? fmtCAD(amt) : '—'}</p>
+                                      <span className="text-xs font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">flagged</span>
+                                    </div>
                                   </div>
-                                  <div className="text-right shrink-0">
-                                    <p className="text-sm font-bold text-red-700">{f.amount != null ? fmtCAD(f.amount) : '—'}</p>
-                                    <span className="text-xs font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">flagged</span>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -32675,18 +32726,23 @@ function App() {
                           <div className="mb-5">
                             <h3 className="text-base font-bold text-gray-700 mb-2">✈️ Travel</h3>
                             <div className="space-y-2">
-                              {travel.map((t, i) => (
-                                <div key={i} className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800">{t.description}</p>
-                                    {t.date && <p className="text-xs text-gray-500 mt-0.5">{t.date}</p>}
+                              {travel.map((t, i) => {
+                                const label = t.description || t.title || t.name || t.purpose || '—';
+                                const amt = t.amount ?? t.cost ?? t.value ?? t.total;
+                                const dateStr = t.date || t.date_incurred || t.period || null;
+                                return (
+                                  <div key={i} className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <p className="text-sm font-bold text-sky-700">{amt != null ? fmtAUD(amt) : '—'}</p>
+                                      <span className="text-xs font-bold bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded-full">travel</span>
+                                    </div>
                                   </div>
-                                  <div className="text-right shrink-0">
-                                    <p className="text-sm font-bold text-sky-700">{t.amount != null ? fmtAUD(t.amount) : '—'}</p>
-                                    <span className="text-xs font-bold bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded-full">travel</span>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -32694,18 +32750,23 @@ function App() {
                           <div className="mb-5">
                             <h3 className="text-base font-bold text-gray-700 mb-2">🍽️ Hospitality</h3>
                             <div className="space-y-2">
-                              {hospitality.map((h, i) => (
-                                <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800">{h.description}</p>
-                                    {h.date && <p className="text-xs text-gray-500 mt-0.5">{h.date}</p>}
+                              {hospitality.map((h, i) => {
+                                const label = h.description || h.title || h.name || h.purpose || '—';
+                                const amt = h.amount ?? h.cost ?? h.value ?? h.total;
+                                const dateStr = h.date || h.date_incurred || h.period || null;
+                                return (
+                                  <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <p className="text-sm font-bold text-purple-700">{amt != null ? fmtAUD(amt) : '—'}</p>
+                                      <span className="text-xs font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">hospitality</span>
+                                    </div>
                                   </div>
-                                  <div className="text-right shrink-0">
-                                    <p className="text-sm font-bold text-purple-700">{h.amount != null ? fmtAUD(h.amount) : '—'}</p>
-                                    <span className="text-xs font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">hospitality</span>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -32713,19 +32774,25 @@ function App() {
                           <div className="mb-5">
                             <h3 className="text-base font-bold text-gray-700 mb-2">🚩 Flagged Items</h3>
                             <div className="space-y-2">
-                              {flagged.map((f, i) => (
-                                <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800">{f.title || f.description}</p>
-                                    {(f.reason || f.explanation) && <p className="text-xs text-red-600 mt-0.5">{f.reason || f.explanation}</p>}
-                                    {f.date && <p className="text-xs text-gray-500 mt-0.5">{f.date}</p>}
+                              {flagged.map((f, i) => {
+                                const label = f.title || f.description || f.name || f.purpose || '—';
+                                const note = f.reason || f.explanation || f.notes || f.flag_reason || null;
+                                const amt = f.amount ?? f.cost ?? f.value ?? f.total;
+                                const dateStr = f.date || f.date_incurred || f.period || null;
+                                return (
+                                  <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
+                                      {note && <p className="text-xs text-red-600 mt-0.5">{note}</p>}
+                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                      <p className="text-sm font-bold text-red-700">{amt != null ? fmtAUD(amt) : '—'}</p>
+                                      <span className="text-xs font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">flagged</span>
+                                    </div>
                                   </div>
-                                  <div className="text-right shrink-0">
-                                    <p className="text-sm font-bold text-red-700">{f.amount != null ? fmtAUD(f.amount) : '—'}</p>
-                                    <span className="text-xs font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">flagged</span>
-                                  </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
