@@ -7425,101 +7425,47 @@ function App() {
                 const liveKey = `US:${selectedDepartment.name}`;
                 const expDocs = deptLiveExpenses[liveKey];
                 const isLoading = expDocs === undefined;
-                const travel = expDocs ? expDocs.flatMap(d => d.travel_expenses || d.travel || []) : [];
-                const hospitality = expDocs ? expDocs.flatMap(d => d.hospitality_expenses || d.hospitality || []) : [];
-                const flagged = expDocs ? expDocs.flatMap(d => d.flagged_items || d.flagged || []) : [];
-                const hasAny = travel.length > 0 || hospitality.length > 0 || flagged.length > 0;
                 const fmtUSD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`; if (n >= 1e3) return `$${(n/1e3).toFixed(0)}K`; return `$${n.toLocaleString()}`; };
+                const doc = expDocs && expDocs.length > 0 ? expDocs[0] : null;
+                const travelAmt = doc != null ? (doc.travel_expenses ?? doc.travel ?? null) : null;
+                const hospAmt = doc != null ? (doc.hospitality_expenses ?? doc.hospitality ?? null) : null;
+                const hasAny = travelAmt != null || hospAmt != null;
                 return (
                   <>
                     <div className="flex items-center gap-3 mb-5">
                       <DollarSign className="w-7 h-7 text-orange-500" />
                       <div>
                         <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
-                        <p className="text-sm text-gray-500">Official travel · hospitality · flagged items</p>
+                        <p className="text-sm text-gray-500">Official travel · hospitality</p>
                       </div>
                       {hasAny && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                       {isLoading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin ml-auto" />}
                     </div>
                     {!isLoading && !hasAny ? (
                       <p className="text-sm text-gray-400 italic text-center py-6 bg-gray-50 rounded-lg">No expenses data available yet.</p>
-                    ) : (
-                      <>
-                        {travel.length > 0 && (
-                          <div className="mb-5">
-                            <h3 className="text-base font-bold text-gray-700 mb-2">✈️ Travel</h3>
-                            <div className="space-y-2">
-                              {travel.map((t, i) => {
-                                const label = t.description || t.title || t.name || t.purpose || '—';
-                                const amt = t.amount ?? t.cost ?? t.value ?? t.total;
-                                const dateStr = t.date || t.date_incurred || t.period || null;
-                                return (
-                                  <div key={i} className="bg-sky-50 border border-sky-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
-                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
-                                    </div>
-                                    <div className="text-right shrink-0">
-                                      <p className="text-sm font-bold text-sky-700">{amt != null ? fmtUSD(amt) : '—'}</p>
-                                      <span className="text-xs font-bold bg-sky-100 text-sky-700 px-1.5 py-0.5 rounded-full">travel</span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
+                    ) : hasAny && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {travelAmt != null && (
+                          <div className="bg-sky-50 border border-sky-200 rounded-xl p-5 flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl">✈️</span>
+                              <span className="text-sm font-semibold text-sky-700">Travel Expenses</span>
                             </div>
+                            <p className="text-3xl font-extrabold text-sky-800">{fmtUSD(travelAmt)}</p>
+                            <span className="text-xs font-bold bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full self-start">travel</span>
                           </div>
                         )}
-                        {hospitality.length > 0 && (
-                          <div className="mb-5">
-                            <h3 className="text-base font-bold text-gray-700 mb-2">🍽️ Hospitality</h3>
-                            <div className="space-y-2">
-                              {hospitality.map((h, i) => {
-                                const label = h.description || h.title || h.name || h.purpose || '—';
-                                const amt = h.amount ?? h.cost ?? h.value ?? h.total;
-                                const dateStr = h.date || h.date_incurred || h.period || null;
-                                return (
-                                  <div key={i} className="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
-                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
-                                    </div>
-                                    <div className="text-right shrink-0">
-                                      <p className="text-sm font-bold text-purple-700">{amt != null ? fmtUSD(amt) : '—'}</p>
-                                      <span className="text-xs font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">hospitality</span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
+                        {hospAmt != null && (
+                          <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl">🍽️</span>
+                              <span className="text-sm font-semibold text-purple-700">Hospitality Expenses</span>
                             </div>
+                            <p className="text-3xl font-extrabold text-purple-800">{fmtUSD(hospAmt)}</p>
+                            <span className="text-xs font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full self-start">hospitality</span>
                           </div>
                         )}
-                        {flagged.length > 0 && (
-                          <div className="mb-5">
-                            <h3 className="text-base font-bold text-gray-700 mb-2">🚩 Flagged Items</h3>
-                            <div className="space-y-2">
-                              {flagged.map((f, i) => {
-                                const label = f.title || f.description || f.name || f.purpose || '—';
-                                const note = f.reason || f.explanation || f.notes || f.flag_reason || null;
-                                const amt = f.amount ?? f.cost ?? f.value ?? f.total;
-                                const dateStr = f.date || f.date_incurred || f.period || null;
-                                return (
-                                  <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start justify-between gap-3">
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-semibold text-gray-800">{label}</p>
-                                      {note && <p className="text-xs text-red-600 mt-0.5">{note}</p>}
-                                      {dateStr && <p className="text-xs text-gray-500 mt-0.5">{dateStr}</p>}
-                                    </div>
-                                    <div className="text-right shrink-0">
-                                      <p className="text-sm font-bold text-red-700">{amt != null ? fmtUSD(amt) : '—'}</p>
-                                      <span className="text-xs font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">flagged</span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-                      </>
+                      </div>
                     )}
                   </>
                 );
