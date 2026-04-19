@@ -17421,8 +17421,8 @@ function App() {
   const fetchBudgetData = async (country) => {
     setBudgetLoading(prev => ({ ...prev, [country]: true }));
     try {
-      console.log(`[Budget] Fetching budget_data for country == "${country}"`);
-      const snap = await getDocs(query(collection(db, 'budget_data'), where('country', '==', country)));
+      console.log(`[Budget] Fetching budget_data for jurisdiction == "${country}"`);
+      const snap = await getDocs(query(collection(db, 'budget_data'), where('jurisdiction', '==', country)));
       console.log(`[Budget] ${country}: snap.empty=${snap.empty}, docs=${snap.docs.length}`);
       if (!snap.empty) {
         const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
