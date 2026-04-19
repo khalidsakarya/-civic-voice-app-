@@ -8129,11 +8129,15 @@ function App() {
     };
     const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
     const departments = data ? ['All', ...new Set(data.map(c => c.department).filter(Boolean))] : ['All'];
+    const getAwardYear = (c) => { const d = c.date_awarded || c.start_date; if (!d) return null; try { const y = new Date(d).getFullYear(); return isNaN(y) ? null : y; } catch { return null; } };
     let filtered = (data || []).filter(c => {
       const matchSearch = !contractSearch || c.contractor_name?.toLowerCase().includes(contractSearch.toLowerCase()) || c.purpose?.toLowerCase().includes(contractSearch.toLowerCase());
       const matchDept = departmentFilter === 'All' || c.department === departmentFilter;
       const matchStatus = usContractsStatusFilter === 'All' || getStatus(c) === usContractsStatusFilter.toLowerCase();
-      return matchSearch && matchDept && matchStatus;
+      // Only show contracts from 2022 onwards or currently active
+      const year = getAwardYear(c);
+      const matchYear = getStatus(c) === 'active' || (year != null && year >= 2022);
+      return matchSearch && matchDept && matchStatus && matchYear;
     });
     filtered = [...filtered].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
 
@@ -8244,7 +8248,7 @@ function App() {
                 const valTypeNote = c.contract_value_type === 'ceiling' ? 'ceiling value' : c.contract_value_type === 'total' ? 'total contract value' : null;
                 const startDate = fmtDate(c.start_date || c.date_awarded);
                 const endDate = fmtDate(c.end_date);
-                const awardYear = (() => { const d = c.date_awarded || c.start_date; if (!d) return null; try { const y = new Date(d).getFullYear(); return isNaN(y) ? null : y; } catch { return null; } })();
+                const awardYear = getAwardYear(c);
                 const effectiveStatus = getStatus(c);
                 const isActive = effectiveStatus === 'active';
                 const isCompleted = effectiveStatus === 'completed';
@@ -8252,15 +8256,17 @@ function App() {
                   <div key={c.id || i} className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-shadow border-l-4 border-red-500">
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                       <div className="flex-1">
-                        <div className="flex flex-wrap gap-2 mb-2">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
                           {isActive && <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Active</span>}
                           {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
-                          {awardYear && <span className="text-xs font-bold bg-red-100 text-red-700 px-2.5 py-0.5 rounded-full">{awardYear}</span>}
                           {c.contract_type && <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">{c.contract_type}</span>}
                           {c.department && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
-                          <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full self-center">LIVE</span>
+                          <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-800 mb-2">{c.contractor_name}</h3>
+                        <div className="flex items-baseline gap-3 mb-2">
+                          {awardYear && <span className="text-4xl font-black text-red-600 leading-none">{awardYear}</span>}
+                          <h3 className="text-2xl font-bold text-gray-800">{c.contractor_name}</h3>
+                        </div>
                         {(startDate || endDate) && (
                           <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
                             <Calendar className="w-3.5 h-3.5" />
