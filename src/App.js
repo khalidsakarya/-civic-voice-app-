@@ -575,10 +575,10 @@ const CA_DEPT_FIRESTORE_NAMES = {
   'Innovation, Science and Economic Development':    'Department of Industry',
   'Public Safety Canada':                            'Public Safety Canada',
   'Natural Resources Canada':                        'Natural Resources Canada',
-  'Indigenous Services Canada':                      'Indigenous Services Canada',
-  'Agriculture and Agri-Food Canada':                'Agriculture and Agri-Food Canada',
-  'Global Affairs Canada':                           'Global Affairs Canada',
-  'Canadian Heritage':                               'Canadian Heritage',
+  'Indigenous Services Canada':                      'Department of Indigenous Services',
+  'Agriculture and Agri-Food Canada':                'Department of Agriculture and Agri-Food',
+  'Global Affairs Canada':                           'Department of Foreign Affairs, Trade and Development',
+  'Canadian Heritage':                               'Department of Canadian Heritage',
 };
 // Reverse map: Firestore budget 'name' → CA display name
 const CA_DEPT_DISPLAY_NAMES = Object.fromEntries(
