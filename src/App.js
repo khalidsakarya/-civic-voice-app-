@@ -1509,6 +1509,9 @@ function App() {
   const [departmentFilter, setDepartmentFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
   const [caContractsStatusFilter, setCaContractsStatusFilter] = useState('All');
+  const [usContractsStatusFilter, setUsContractsStatusFilter] = useState('All');
+  const [ukContractsStatusFilter, setUkContractsStatusFilter] = useState('All');
+  const [auContractsStatusFilter, setAuContractsStatusFilter] = useState('All');
   
   // US Bills filter states
   const [billSearch, setBillSearch] = useState('');
@@ -8193,7 +8196,8 @@ function App() {
     let filtered = (data || []).filter(c => {
       const matchSearch = !contractSearch || c.contractor_name?.toLowerCase().includes(contractSearch.toLowerCase()) || c.purpose?.toLowerCase().includes(contractSearch.toLowerCase());
       const matchDept = departmentFilter === 'All' || c.department === departmentFilter;
-      return matchSearch && matchDept;
+      const matchStatus = usContractsStatusFilter === 'All' || c.status?.toLowerCase() === usContractsStatusFilter.toLowerCase();
+      return matchSearch && matchDept && matchStatus;
     });
     filtered = [...filtered].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
 
@@ -8231,7 +8235,7 @@ function App() {
           </div>
 
           {/* Search and Filters */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h3 className="text-xl font-bold text-gray-800 mb-4">Search & Filter</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -8249,6 +8253,18 @@ function App() {
             </div>
           </div>
 
+          {/* Status filter buttons */}
+          {data && data.length > 0 && (
+            <div className="flex gap-2 mb-6">
+              {['All', 'Active', 'Completed'].map(f => (
+                <button key={f} onClick={() => setUsContractsStatusFilter(f)}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${usContractsStatusFilter === f ? (f === 'Active' ? 'bg-green-500 text-white border-green-500' : f === 'Completed' ? 'bg-gray-500 text-white border-gray-500' : 'bg-red-600 text-white border-red-600') : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'}`}>
+                  {f}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Contracts List */}
           {data === undefined ? (
             <div className="text-center py-12 text-gray-400 text-lg">Loading contracts…</div>
@@ -8264,20 +8280,36 @@ function App() {
             <div className="space-y-4">
               {filtered.map((c, i) => {
                 const val = fmtVal(c.value);
-                const dt = fmtDate(c.date_awarded);
+                const valTypeNote = c.contract_value_type === 'ceiling' ? 'ceiling value' : c.contract_value_type === 'total' ? 'total contract value' : null;
+                const startDate = fmtDate(c.start_date || c.date_awarded);
+                const endDate = fmtDate(c.end_date);
+                const isActive = c.status?.toLowerCase() === 'active';
+                const isCompleted = c.status?.toLowerCase() === 'completed';
                 return (
                   <div key={c.id || i} className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-shadow border-l-4 border-red-500">
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                       <div className="flex-1">
-                        <h3 className="text-2xl font-bold text-gray-800 mb-2">{c.contractor_name}</h3>
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {c.department && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {isActive && <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Active</span>}
+                          {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
                           {c.contract_type && <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">{c.contract_type}</span>}
-                          {dt && <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{dt}</span>}
+                          {c.department && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
                           <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full self-center">LIVE</span>
                         </div>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">{c.contractor_name}</h3>
+                        {(startDate || endDate) && (
+                          <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {startDate || '?'}{endDate ? ` → ${endDate}` : ''}
+                          </p>
+                        )}
                       </div>
-                      {val && <div className="text-right shrink-0"><p className="text-3xl font-bold text-green-600">{val}</p></div>}
+                      {val && (
+                        <div className="text-right shrink-0">
+                          <p className="text-3xl font-bold text-green-600">{val}</p>
+                          {valTypeNote && <p className="text-xs text-gray-400 mt-0.5">{valTypeNote}</p>}
+                        </div>
+                      )}
                     </div>
                     {c.purpose && (
                       <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
@@ -19910,6 +19942,11 @@ function App() {
     const fmtVal = (val) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; if (v >= 1e9) return `£${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `£${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `£${(v/1e3).toFixed(0)}K`; return `£${v.toLocaleString()}`; };
     const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); if (isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return null; } };
     const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
+    const filtered = (data || []).filter(c => {
+      if (ukContractsStatusFilter === 'Active') return c.status?.toLowerCase() === 'active';
+      if (ukContractsStatusFilter === 'Completed') return c.status?.toLowerCase() === 'completed';
+      return true;
+    });
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
@@ -19922,7 +19959,7 @@ function App() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
-          <div className="rounded-xl p-6 mb-8 border-2" style={{ background: 'linear-gradient(to right, #C8102E08, #01216908)', borderColor: '#C8102E' }}>
+          <div className="rounded-xl p-6 mb-6 border-2" style={{ background: 'linear-gradient(to right, #C8102E08, #01216908)', borderColor: '#C8102E' }}>
             <div className="flex items-center gap-3 mb-2">
               <span className="text-3xl">💷</span>
               <h2 className="text-2xl font-bold text-gray-800">Follow the Taxpayer Money</h2>
@@ -19933,17 +19970,38 @@ function App() {
               : <p className="text-gray-600">UK government contracts</p>}
             <div className="w-16 h-1 mt-3 rounded-full" style={{ background: `linear-gradient(to right, ${RED}, ${NAVY})` }} />
           </div>
+
+          {/* Status filter buttons */}
+          {data && data.length > 0 && (
+            <div className="flex gap-2 mb-6">
+              {['All', 'Active', 'Completed'].map(f => (
+                <button key={f} onClick={() => setUkContractsStatusFilter(f)}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${ukContractsStatusFilter === f ? (f === 'Active' ? 'bg-green-500 text-white border-green-500' : f === 'Completed' ? 'bg-gray-500 text-white border-gray-500' : 'bg-red-700 text-white border-red-700') : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'}`}>
+                  {f}
+                </button>
+              ))}
+            </div>
+          )}
+
           {data === undefined ? (
             <div className="text-center py-12 text-gray-400 text-lg">Loading contracts…</div>
           ) : data.length === 0 ? (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
               <p className="text-gray-500 text-lg">No contract data available yet.</p>
             </div>
+          ) : filtered.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-md p-8 text-center">
+              <p className="text-gray-600 text-lg">No {ukContractsStatusFilter.toLowerCase()} contracts found.</p>
+            </div>
           ) : (
             <div className="space-y-5">
-              {data.map((c, i) => {
+              {filtered.map((c, i) => {
                 const val = fmtVal(c.value);
-                const dt = fmtDate(c.date_awarded);
+                const valTypeNote = c.contract_value_type === 'ceiling' ? 'ceiling value' : c.contract_value_type === 'total' ? 'total contract value' : null;
+                const startDate = fmtDate(c.start_date || c.date_awarded);
+                const endDate = fmtDate(c.end_date);
+                const isActive = c.status?.toLowerCase() === 'active';
+                const isCompleted = c.status?.toLowerCase() === 'completed';
                 return (
                   <div key={c.id || i}
                     onClick={() => { setSelectedUkContract(c); setView('uk-contract-detail'); }}
@@ -19953,17 +20011,29 @@ function App() {
                   >
                     <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
                       <div className="flex items-center gap-2 flex-wrap">
-                        {val && <span className="px-4 py-1.5 rounded-full text-base font-bold text-white" style={{ backgroundColor: RED }}>{val}</span>}
+                        {isActive && <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Active</span>}
+                        {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
+                        {c.contract_type && <span className="inline-block text-xs font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">{c.contract_type}</span>}
                         <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        {dt && <span className="text-xs text-gray-400">{dt}</span>}
+                        {(startDate || endDate) && (
+                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {startDate || '?'}{endDate ? ` → ${endDate}` : ''}
+                          </span>
+                        )}
                         <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0" />
                       </div>
                     </div>
                     <h2 className="text-xl font-bold text-gray-800 mb-1">{c.contractor_name}</h2>
                     {c.department && <p className="text-sm text-gray-600 mb-2 truncate">🏛️ {c.department}</p>}
-                    {c.contract_type && <span className="inline-block text-xs font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full mb-2">{c.contract_type}</span>}
+                    {val && (
+                      <div className="flex items-baseline gap-2 mb-2">
+                        <span className="px-3 py-1 rounded-full text-base font-bold text-white" style={{ backgroundColor: RED }}>{val}</span>
+                        {valTypeNote && <span className="text-xs text-gray-400">{valTypeNote}</span>}
+                      </div>
+                    )}
                     {c.purpose && <p className="text-sm text-gray-700 line-clamp-2">{c.purpose}</p>}
                   </div>
                 );
@@ -31956,6 +32026,11 @@ function App() {
     const fmtVal = (val) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; if (v >= 1e9) return `A$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `A$${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `A$${(v/1e3).toFixed(0)}K`; return `A$${v.toLocaleString()}`; };
     const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); if (isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return null; } };
     const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
+    const filtered = (data || []).filter(c => {
+      if (auContractsStatusFilter === 'Active') return c.status?.toLowerCase() === 'active';
+      if (auContractsStatusFilter === 'Completed') return c.status?.toLowerCase() === 'completed';
+      return true;
+    });
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
@@ -31968,7 +32043,7 @@ function App() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200 rounded-lg p-6 mb-8">
+          <div className="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200 rounded-lg p-6 mb-6">
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-2xl font-bold text-gray-800">💰 Follow the Taxpayer Money</h2>
               {data && data.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
@@ -31977,17 +32052,38 @@ function App() {
               ? <p className="text-gray-600">Australian federal contracts worth {totalValue > 0 ? `A$${(totalValue/1e9).toFixed(1)}B` : '—'} · {data.length} contracts</p>
               : <p className="text-gray-600">Australian federal government contracts</p>}
           </div>
+
+          {/* Status filter buttons */}
+          {data && data.length > 0 && (
+            <div className="flex gap-2 mb-6">
+              {['All', 'Active', 'Completed'].map(f => (
+                <button key={f} onClick={() => setAuContractsStatusFilter(f)}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${auContractsStatusFilter === f ? (f === 'Active' ? 'bg-green-500 text-white border-green-500' : f === 'Completed' ? 'bg-gray-500 text-white border-gray-500' : 'bg-rose-700 text-white border-rose-700') : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'}`}>
+                  {f}
+                </button>
+              ))}
+            </div>
+          )}
+
           {data === undefined ? (
             <div className="text-center py-12 text-gray-400 text-lg">Loading contracts…</div>
           ) : data.length === 0 ? (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
               <p className="text-gray-500 text-lg">No contract data available yet.</p>
             </div>
+          ) : filtered.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-md p-8 text-center">
+              <p className="text-gray-600 text-lg">No {auContractsStatusFilter.toLowerCase()} contracts found.</p>
+            </div>
           ) : (
             <div className="space-y-6">
-              {data.map((c, i) => {
+              {filtered.map((c, i) => {
                 const val = fmtVal(c.value);
-                const dt = fmtDate(c.date_awarded);
+                const valTypeNote = c.contract_value_type === 'ceiling' ? 'ceiling value' : c.contract_value_type === 'total' ? 'total contract value' : null;
+                const startDate = fmtDate(c.start_date || c.date_awarded);
+                const endDate = fmtDate(c.end_date);
+                const isActive = c.status?.toLowerCase() === 'active';
+                const isCompleted = c.status?.toLowerCase() === 'completed';
                 return (
                   <div key={c.id || i}
                     onClick={() => { setSelectedAuContract(c); setView('au-contract-detail'); }}
@@ -31995,14 +32091,26 @@ function App() {
                   >
                     <div className="flex items-start justify-between mb-3 flex-wrap gap-2">
                       <div className="flex items-center gap-2 flex-wrap">
-                        {val && <span className="bg-rose-100 text-rose-800 px-4 py-1.5 rounded-full text-base font-bold">{val}</span>}
+                        {isActive && <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Active</span>}
+                        {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
+                        {c.contract_type && <span className="inline-block text-xs font-bold bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full">{c.contract_type}</span>}
                         <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
                       </div>
-                      {dt && <span className="text-xs text-gray-400 flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{dt}</span>}
+                      {(startDate || endDate) && (
+                        <span className="text-xs text-gray-400 flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {startDate || '?'}{endDate ? ` → ${endDate}` : ''}
+                        </span>
+                      )}
                     </div>
                     <h2 className="text-xl font-bold text-gray-800 mb-1">{c.contractor_name}</h2>
                     {c.department && <p className="text-sm text-gray-600 mb-2">🏛️ {c.department}</p>}
-                    {c.contract_type && <span className="inline-block text-xs font-bold bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full mb-2">{c.contract_type}</span>}
+                    {val && (
+                      <div className="flex items-baseline gap-2 mb-2">
+                        <span className="bg-rose-100 text-rose-800 px-3 py-1 rounded-full text-base font-bold">{val}</span>
+                        {valTypeNote && <span className="text-xs text-gray-400">{valTypeNote}</span>}
+                      </div>
+                    )}
                     {c.purpose && <p className="text-sm text-gray-700 line-clamp-3">{c.purpose}</p>}
                   </div>
                 );
