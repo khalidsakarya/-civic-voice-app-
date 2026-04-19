@@ -1476,7 +1476,6 @@ function App() {
   const [usDepartments, setUsDepartments] = useState([]);
   const [usAnalyticsData, setUsAnalyticsData] = useState(null);
   const [usSupremeCourt, setUsSupremeCourt] = useState(null);
-  const [usContracts, setUsContracts] = useState([]);
   const [liveContracts, setLiveContracts] = useState({});
   const [contractsFetchedJurisdictions, setContractsFetchedJurisdictions] = useState({});
 
@@ -2707,7 +2706,7 @@ function App() {
     initializeCanadaSupremeCourt();
     initializeUSSupremeCourt();
     initializeUKSupremeCourt();
-    initializeUSContracts();
+
     initializeUSBills();
     initializeUSLaws();
     initializeAuBills();
@@ -4885,70 +4884,6 @@ function App() {
     setUkSupremeCourt(data);
   };
 
-  const initializeUSContracts = () => {
-    const contracts = [
-      // Defense Contracts
-      { id: 1, company: 'Lockheed Martin Corporation', amount: '$75.2 Billion', amountRaw: 75200000000, department: 'Department of Defense', purpose: 'F-35 Lightning II fighter jets - production, maintenance, and upgrades', date: 'Ongoing 2024', status: 'Active', type: 'Defense' },
-      { id: 2, company: 'Boeing Defense, Space & Security', amount: '$24.3 Billion', amountRaw: 24300000000, department: 'Department of Defense', purpose: 'F/A-18 Super Hornet, KC-46 tanker aircraft, and missile defense systems', date: 'Ongoing 2024', status: 'Active', type: 'Defense' },
-      { id: 3, company: 'Raytheon Technologies', amount: '$17.8 Billion', amountRaw: 17800000000, department: 'Department of Defense', purpose: 'Patriot missile systems, Tomahawk cruise missiles, and radar systems', date: 'Ongoing 2024', status: 'Active', type: 'Defense' },
-      { id: 4, company: 'Northrop Grumman Corporation', amount: '$13.4 Billion', amountRaw: 13400000000, department: 'Department of Defense', purpose: 'B-21 Raider stealth bomber development and space systems', date: 'January 2024', status: 'Active', type: 'Defense' },
-      { id: 5, company: 'General Dynamics Corporation', amount: '$11.2 Billion', amountRaw: 11200000000, department: 'Department of Defense', purpose: 'Virginia-class submarines, Abrams tanks, and Stryker combat vehicles', date: 'Ongoing 2024', status: 'Active', type: 'Defense' },
-      { id: 6, company: 'BAE Systems USA', amount: '$8.5 Billion', amountRaw: 8500000000, department: 'Department of Defense', purpose: 'Armored combat vehicles, naval gun systems, and electronic warfare', date: 'November 2023', status: 'Active', type: 'Defense' },
-      { id: 7, company: 'L3Harris Technologies', amount: '$6.2 Billion', amountRaw: 6200000000, department: 'Department of Defense', purpose: 'Tactical radio systems, electronic warfare, and ISR solutions', date: 'September 2024', status: 'Active', type: 'Defense' },
-      { id: 8, company: 'Huntington Ingalls Industries', amount: '$5.8 Billion', amountRaw: 5800000000, department: 'Department of Defense', purpose: 'Gerald R. Ford-class aircraft carriers and Arleigh Burke destroyers', date: 'December 2023', status: 'Active', type: 'Defense' },
-      { id: 9, company: 'Leidos Holdings Inc.', amount: '$4.3 Billion', amountRaw: 4300000000, department: 'Department of Defense', purpose: 'IT modernization, cybersecurity, and logistics support services', date: 'August 2024', status: 'Active', type: 'Defense' },
-      { id: 10, company: 'SAIC (Science Applications International)', amount: '$3.7 Billion', amountRaw: 3700000000, department: 'Department of Defense', purpose: 'Intelligence analysis, software development, and technical services', date: 'July 2024', status: 'Active', type: 'Defense' },
-      
-      // NASA Contracts
-      { id: 11, company: 'SpaceX', amount: '$3.5 Billion', amountRaw: 3500000000, department: 'NASA', purpose: 'Starship lunar lander, ISS cargo resupply, and crew transportation', date: 'April 2024', status: 'Active', type: 'Space' },
-      { id: 12, company: 'Blue Origin', amount: '$2.1 Billion', amountRaw: 2100000000, department: 'NASA', purpose: 'Blue Moon lunar lander for Artemis program', date: 'May 2023', status: 'Active', type: 'Space' },
-      { id: 13, company: 'Boeing Space', amount: '$1.5 Billion', amountRaw: 1500000000, department: 'NASA', purpose: 'Space Launch System (SLS) rocket development and production', date: 'Ongoing 2024', status: 'Active', type: 'Space' },
-      { id: 14, company: 'Northrop Grumman Space', amount: '$1.8 Billion', amountRaw: 1800000000, department: 'NASA', purpose: 'James Webb Space Telescope support and future observatory missions', date: 'March 2024', status: 'Active', type: 'Space' },
-      { id: 15, company: 'Axiom Space', amount: '$850 Million', amountRaw: 850000000, department: 'NASA', purpose: 'Commercial space station modules and astronaut spacesuits', date: 'June 2024', status: 'Active', type: 'Space' },
-      
-      // Infrastructure & Transportation
-      { id: 16, company: 'Bechtel Corporation', amount: '$4.2 Billion', amountRaw: 4200000000, department: 'Department of Transportation', purpose: 'California High-Speed Rail construction and infrastructure modernization', date: 'February 2024', status: 'Active', type: 'Infrastructure' },
-      { id: 17, company: 'Fluor Corporation', amount: '$2.8 Billion', amountRaw: 2800000000, department: 'Department of Energy', purpose: 'Nuclear site cleanup and environmental remediation', date: 'January 2024', status: 'Active', type: 'Infrastructure' },
-      { id: 18, company: 'AECOM', amount: '$2.3 Billion', amountRaw: 2300000000, department: 'Department of Transportation', purpose: 'Highway infrastructure design, construction management, and bridge repairs', date: 'October 2023', status: 'Active', type: 'Infrastructure' },
-      { id: 19, company: 'Jacobs Engineering Group', amount: '$1.9 Billion', amountRaw: 1900000000, department: 'Department of Transportation', purpose: 'Airport modernization and public transit system upgrades', date: 'December 2023', status: 'Active', type: 'Infrastructure' },
-      { id: 20, company: 'KBR Inc.', amount: '$1.7 Billion', amountRaw: 1700000000, department: 'Department of Defense', purpose: 'Overseas military base operations and logistics support', date: 'August 2024', status: 'Active', type: 'Infrastructure' },
-      
-      // Technology & IT
-      { id: 21, company: 'Amazon Web Services (AWS)', amount: '$10.0 Billion', amountRaw: 10000000000, department: 'Department of Defense', purpose: 'Joint Warfighting Cloud Capability (JWCC) - cloud computing infrastructure', date: 'December 2022', status: 'Active', type: 'Technology' },
-      { id: 22, company: 'Microsoft Corporation', amount: '$8.7 Billion', amountRaw: 8700000000, department: 'Department of Defense', purpose: 'JWCC cloud services and Army HoloLens augmented reality systems', date: 'December 2022', status: 'Active', type: 'Technology' },
-      { id: 23, company: 'Google Cloud', amount: '$6.2 Billion', amountRaw: 6200000000, department: 'Department of Defense', purpose: 'JWCC cloud infrastructure and AI/ML capabilities', date: 'December 2022', status: 'Active', type: 'Technology' },
-      { id: 24, company: 'Oracle Corporation', amount: '$4.1 Billion', amountRaw: 4100000000, department: 'Department of Defense', purpose: 'JWCC database services and enterprise software systems', date: 'December 2022', status: 'Active', type: 'Technology' },
-      { id: 25, company: 'Palantir Technologies', amount: '$1.3 Billion', amountRaw: 1300000000, department: 'Department of Defense', purpose: 'AI-powered data analytics and battlefield intelligence platforms', date: 'May 2024', status: 'Active', type: 'Technology' },
-      
-      // Cybersecurity
-      { id: 26, company: 'Booz Allen Hamilton', amount: '$2.9 Billion', amountRaw: 2900000000, department: 'Department of Homeland Security', purpose: 'Cybersecurity consulting, threat intelligence, and IT modernization', date: 'September 2024', status: 'Active', type: 'Cybersecurity' },
-      { id: 27, company: 'Accenture Federal Services', amount: '$2.1 Billion', amountRaw: 2100000000, department: 'Department of Homeland Security', purpose: 'Digital transformation and cybersecurity infrastructure', date: 'July 2024', status: 'Active', type: 'Cybersecurity' },
-      { id: 28, company: 'CrowdStrike Holdings', amount: '$850 Million', amountRaw: 850000000, department: 'Department of Defense', purpose: 'Endpoint security and threat detection across military networks', date: 'March 2024', status: 'Active', type: 'Cybersecurity' },
-      
-      // Healthcare & Pharmaceuticals
-      { id: 29, company: 'Pfizer Inc.', amount: '$5.3 Billion', amountRaw: 5300000000, department: 'Health & Human Services', purpose: 'COVID-19 vaccines, antiviral medications, and pandemic preparedness', date: 'Ongoing 2024', status: 'Active', type: 'Healthcare' },
-      { id: 30, company: 'Moderna Inc.', amount: '$3.8 Billion', amountRaw: 3800000000, department: 'Health & Human Services', purpose: 'mRNA vaccines for COVID-19 and future pandemic preparedness', date: 'Ongoing 2024', status: 'Active', type: 'Healthcare' },
-      { id: 31, company: 'Johnson & Johnson', amount: '$2.4 Billion', amountRaw: 2400000000, department: 'Health & Human Services', purpose: 'Vaccine development and medical research partnerships', date: 'June 2024', status: 'Active', type: 'Healthcare' },
-      { id: 32, company: 'UnitedHealth Group', amount: '$1.9 Billion', amountRaw: 1900000000, department: 'Veterans Affairs', purpose: 'Healthcare services and insurance administration for veterans', date: 'April 2024', status: 'Active', type: 'Healthcare' },
-      
-      // Energy
-      { id: 33, company: 'NextEra Energy', amount: '$3.2 Billion', amountRaw: 3200000000, department: 'Department of Energy', purpose: 'Renewable energy infrastructure - wind and solar power generation', date: 'February 2024', status: 'Active', type: 'Energy' },
-      { id: 34, company: 'Tesla Energy', amount: '$1.8 Billion', amountRaw: 1800000000, department: 'Department of Energy', purpose: 'Grid-scale battery storage systems and EV charging infrastructure', date: 'May 2024', status: 'Active', type: 'Energy' },
-      { id: 35, company: 'Westinghouse Electric', amount: '$2.5 Billion', amountRaw: 2500000000, department: 'Department of Energy', purpose: 'Nuclear reactor technology and small modular reactor development', date: 'November 2023', status: 'Active', type: 'Energy' },
-      
-      // Consulting & Professional Services
-      { id: 36, company: 'Deloitte Consulting', amount: '$3.4 Billion', amountRaw: 3400000000, department: 'Multiple Agencies', purpose: 'Management consulting, financial advisory, and digital transformation', date: 'Ongoing 2024', status: 'Active', type: 'Consulting' },
-      { id: 37, company: 'McKinsey & Company', amount: '$1.7 Billion', amountRaw: 1700000000, department: 'Multiple Agencies', purpose: 'Strategic consulting and organizational transformation services', date: 'August 2024', status: 'Active', type: 'Consulting' },
-      { id: 38, company: 'CACI International', amount: '$2.8 Billion', amountRaw: 2800000000, department: 'Department of Defense', purpose: 'Intelligence support, IT services, and mission-critical solutions', date: 'July 2024', status: 'Active', type: 'Consulting' },
-      
-      // Border & Immigration
-      { id: 39, company: 'CoreCivic Inc.', amount: '$1.2 Billion', amountRaw: 1200000000, department: 'Department of Homeland Security', purpose: 'Immigration detention facility operations and management', date: 'January 2024', status: 'Active', type: 'Border Security' },
-      { id: 40, company: 'GEO Group Inc.', amount: '$950 Million', amountRaw: 950000000, department: 'Department of Homeland Security', purpose: 'Detention center operations and transportation services', date: 'February 2024', status: 'Active', type: 'Border Security' },
-      { id: 41, company: 'Anduril Industries', amount: '$850 Million', amountRaw: 850000000, department: 'Department of Homeland Security', purpose: 'AI-powered border surveillance towers and autonomous systems', date: 'September 2024', status: 'Active', type: 'Border Security' }
-    ];
-    
-    setUsContracts(contracts);
-  };
   
   const initializeUSBills = () => {
     const bills = [
