@@ -1477,6 +1477,9 @@ function App() {
   const [usAnalyticsData, setUsAnalyticsData] = useState(null);
   const [liveContracts, setLiveContracts] = useState({});
   const [contractsFetchedJurisdictions, setContractsFetchedJurisdictions] = useState({});
+  const [courtJustices, setCourtJustices] = useState({});
+  const [courtCases, setCourtCases] = useState({});
+  const [courtFetched, setCourtFetched] = useState({});
 
   // Laws & Legal Search data
   const [usLaws, setUsLaws] = useState([]);
@@ -6294,6 +6297,26 @@ function App() {
     })();
   }, [view, selectedMinistry, selectedDepartment, selectedUkDepartment, selectedAuDepartment]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch supreme court justices and cases from Firestore when a court page opens
+  useEffect(() => {
+    const viewMap = { 'supreme-court': 'CA', 'us-supreme-court': 'US', 'uk-supreme-court': 'UK', 'au-high-court': 'AU' };
+    const jur = viewMap[view];
+    if (!jur || courtFetched[jur]) return;
+    setCourtFetched(prev => ({ ...prev, [jur]: true }));
+    (async () => {
+      try {
+        const [jSnap, cSnap] = await Promise.all([
+          getDocs(query(collection(db, 'supreme_court_justices'), where('jurisdiction', '==', jur))),
+          getDocs(query(collection(db, 'supreme_court_cases'),    where('jurisdiction', '==', jur))),
+        ]);
+        setCourtJustices(prev => ({ ...prev, [jur]: jSnap.docs.map(d => ({ id: d.id, ...d.data() })) }));
+        setCourtCases(prev =>    ({ ...prev, [jur]: cSnap.docs.map(d => ({ id: d.id, ...d.data() })) }));
+      } catch (err) {
+        console.warn('[Court] Firestore fetch failed:', err.message);
+      }
+    })();
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Fetch government_contracts from Firestore when a contracts page opens
   useEffect(() => {
     const viewMap = { 'contracts': 'CA', 'us-contracts': 'US', 'uk-contracts': 'UK', 'au-contracts': 'AU' };
@@ -7183,41 +7206,104 @@ function App() {
   });
 
   // Supreme Court Render Functions
-  const renderCanadaSupremeCourt = () => {
+  const renderCourtPage = ({ jur, title, accent, backView }) => {
+    const justices = courtJustices[jur] || [];
+    const cases    = courtCases[jur]    || [];
+    const loaded   = !!courtFetched[jur];
+    const fmtDate  = (d) => {
+      if (!d) return null;
+      try {
+        const dt = d.toDate ? d.toDate() : new Date(d);
+        if (isNaN(dt.getTime())) return null;
+        return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      } catch { return null; }
+    };
+    const decisionColor = (dec) => {
+      if (!dec) return 'bg-gray-100 text-gray-600';
+      const d = dec.toLowerCase();
+      if (d.includes('unanimous') || d.includes('upheld') || d.includes('affirm')) return 'bg-green-100 text-green-700';
+      if (d.includes('dissent') || d.includes('overtur') || d.includes('struck')) return 'bg-red-100 text-red-700';
+      return 'bg-blue-100 text-blue-700';
+    };
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-7xl mx-auto px-4 py-4">
-            <button onClick={() => setView('categories')} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">← Back</button>
+            <button onClick={() => setView(backView)} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">← Back</button>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-          <p className="text-5xl mb-4">⚖️</p>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Supreme Court of Canada</h2>
-          <p className="text-gray-500 text-lg">Official data loading</p>
-          <p className="text-gray-400 text-sm mt-2">Justice profiles and case data will appear here once connected to official sources.</p>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center gap-3 mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+            {loaded && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+          </div>
+
+          {/* Justices */}
+          <h2 className="text-xl font-bold text-gray-800 mb-4">⚖️ Justices</h2>
+          {!loaded ? (
+            <div className="text-center py-10 text-gray-400">Loading…</div>
+          ) : justices.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500 mb-8">Official data loading</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              {justices.map((j, i) => (
+                <div key={j.id || i} className="bg-white rounded-lg shadow-sm p-5 border-l-4" style={{ borderColor: accent }}>
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h3 className="text-lg font-bold text-gray-900">{j.name}</h3>
+                    {(j.title || j.role) && (
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-white flex-shrink-0" style={{ backgroundColor: accent }}>{j.title || j.role}</span>
+                    )}
+                  </div>
+                  {j.appointed_by || j.appointedBy ? (
+                    <p className="text-sm text-gray-500 mb-1">Appointed by {j.appointed_by || j.appointedBy}</p>
+                  ) : null}
+                  {(j.date_appointed || j.appointed) ? (
+                    <p className="text-xs text-gray-400 mb-2">{fmtDate(j.date_appointed || j.appointed)}</p>
+                  ) : null}
+                  {j.background || j.bio ? (
+                    <p className="text-sm text-gray-600 leading-relaxed">{j.background || j.bio}</p>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Cases */}
+          <h2 className="text-xl font-bold text-gray-800 mb-4">📋 Cases</h2>
+          {!loaded ? (
+            <div className="text-center py-10 text-gray-400">Loading…</div>
+          ) : cases.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">Official data loading</div>
+          ) : (
+            <div className="space-y-4">
+              {cases.map((c, i) => (
+                <div key={c.id || i} className="bg-white rounded-lg shadow-sm p-5 border-l-4 border-gray-300">
+                  <div className="flex flex-wrap items-start gap-2 mb-2">
+                    {(c.decision || c.outcome) && (
+                      <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${decisionColor(c.decision || c.outcome)}`}>{c.decision || c.outcome}</span>
+                    )}
+                    {(c.date || c.date_decided || c.date_argued) && (
+                      <span className="text-xs text-gray-400">{fmtDate(c.date || c.date_decided || c.date_argued)}</span>
+                    )}
+                  </div>
+                  <h3 className="text-base font-bold text-gray-900 mb-2">{c.title || c.name || c.case_name}</h3>
+                  {(c.summary || c.description) && (
+                    <p className="text-sm text-gray-600 leading-relaxed">{c.summary || c.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
   };
 
-  const renderUSSupremeCourt = () => {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <button onClick={() => setView('categories')} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">← Back</button>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-          <p className="text-5xl mb-4">⚖️</p>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">US Supreme Court</h2>
-          <p className="text-gray-500 text-lg">Official data loading</p>
-          <p className="text-gray-400 text-sm mt-2">Justice profiles and case data will appear here once connected to official sources.</p>
-        </div>
-      </div>
-    );
-  };
+  const renderCanadaSupremeCourt = () => renderCourtPage({ jur: 'CA', title: 'Supreme Court of Canada', accent: '#C41230', backView: 'categories' });
+
+
+  const renderUSSupremeCourt    = () => renderCourtPage({ jur: 'US', title: 'US Supreme Court',          accent: '#B22234', backView: 'categories' });
+
 
   const renderCaseDetail = () => {
     if (!selectedCase) return null;
@@ -18480,23 +18566,8 @@ function App() {
     );
   };
 
-  const renderUKSupremeCourt = () => {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <button onClick={() => setView('uk-national')} className="flex items-center gap-2 font-medium text-blue-600 hover:text-blue-800">← Back</button>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-          <p className="text-5xl mb-4">⚖️</p>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">UK Supreme Court</h2>
-          <p className="text-gray-500 text-lg">Official data loading</p>
-          <p className="text-gray-400 text-sm mt-2">Justice profiles and case data will appear here once connected to official sources.</p>
-        </div>
-      </div>
-    );
-  };
+  const renderUKSupremeCourt    = () => renderCourtPage({ jur: 'UK', title: 'UK Supreme Court',          accent: '#C8102E', backView: 'uk-national' });
+
 
   const renderUKDepartments = () => {
     return (
@@ -30906,23 +30977,8 @@ function App() {
     );
   };
 
-  const renderAuHighCourt = () => {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <button onClick={() => setView('categories')} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">← Back</button>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-          <p className="text-5xl mb-4">⚖️</p>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">High Court of Australia</h2>
-          <p className="text-gray-500 text-lg">Official data loading</p>
-          <p className="text-gray-400 text-sm mt-2">Justice profiles and case data will appear here once connected to official sources.</p>
-        </div>
-      </div>
-    );
-  };
+  const renderAuHighCourt       = () => renderCourtPage({ jur: 'AU', title: 'High Court of Australia',   accent: '#00008B', backView: 'categories'  });
+
 
   const renderAuContracts = () => {
     const data = liveContracts.AU;
