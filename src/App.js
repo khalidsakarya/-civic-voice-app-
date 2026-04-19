@@ -8271,6 +8271,7 @@ function App() {
                         <h3 className="text-2xl font-bold text-gray-800 mb-2">{c.contractor_name}</h3>
                         <div className="flex flex-wrap gap-2 mb-3">
                           {c.department && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
+                          {c.contract_type && <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">{c.contract_type}</span>}
                           {dt && <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{dt}</span>}
                           <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full self-center">LIVE</span>
                         </div>
@@ -19961,6 +19962,7 @@ function App() {
                     </div>
                     <h2 className="text-xl font-bold text-gray-800 mb-1">{c.contractor_name}</h2>
                     {c.department && <p className="text-sm text-gray-600 mb-2 truncate">🏛️ {c.department}</p>}
+                    {c.contract_type && <span className="inline-block text-xs font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full mb-2">{c.contract_type}</span>}
                     {c.purpose && <p className="text-sm text-gray-700 line-clamp-2">{c.purpose}</p>}
                   </div>
                 );
@@ -30590,6 +30592,7 @@ function App() {
                     </div>
                     <h2 className="text-xl font-bold text-gray-800 mb-1">{c.contractor_name}</h2>
                     {c.department && <p className="text-sm text-gray-600 mb-2">🏛️ {c.department}</p>}
+                    {c.contract_type && <span className="inline-block text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full mb-2">{c.contract_type}</span>}
                     {c.purpose && <p className="text-sm text-gray-700 line-clamp-3">{c.purpose}</p>}
                   </div>
                 );
@@ -31960,6 +31963,7 @@ function App() {
                     </div>
                     <h2 className="text-xl font-bold text-gray-800 mb-1">{c.contractor_name}</h2>
                     {c.department && <p className="text-sm text-gray-600 mb-2">🏛️ {c.department}</p>}
+                    {c.contract_type && <span className="inline-block text-xs font-bold bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full mb-2">{c.contract_type}</span>}
                     {c.purpose && <p className="text-sm text-gray-700 line-clamp-3">{c.purpose}</p>}
                   </div>
                 );
