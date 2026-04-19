@@ -6195,13 +6195,16 @@ function App() {
         const headsUpdates = {};
         docs.forEach(data => {
           if (!data.name) return;
-          const displayName = jur === 'AU' ? (AU_DEPT_DISPLAY_NAMES[data.name] || data.name)
-                            : jur === 'CA' ? (CA_DEPT_DISPLAY_NAMES[data.name] || data.name)
-                            : jur === 'UK' ? (UK_DEPT_DISPLAY_NAMES[data.name] || data.name)
-                            : data.name;
+          // Firestore stores bilingual names like "Department of Health | Ministère de la Santé".
+          // Strip everything after the pipe to get the English name for map lookups.
+          const englishName = data.name.split('|')[0].trim();
+          const displayName = jur === 'AU' ? (AU_DEPT_DISPLAY_NAMES[englishName] || englishName)
+                            : jur === 'CA' ? (CA_DEPT_DISPLAY_NAMES[englishName] || englishName)
+                            : jur === 'UK' ? (UK_DEPT_DISPLAY_NAMES[englishName] || englishName)
+                            : englishName;
           const key = `${jur}:${displayName}`;
           if (jur === 'CA') {
-            console.log(`[FederalDepts] CA shim: doc.name="${data.name}" → displayName="${displayName}" → key="${key}"`);
+            console.log(`[FederalDepts] CA shim: doc.name="${data.name}" → englishName="${englishName}" → displayName="${displayName}" → key="${key}"`);
             console.log(`[FederalDepts] CA shim fields: budget_authority=${data.budget_authority}, obligations=${data.obligations}, fiscal_year=${data.fiscal_year}, employees_count=${data.employees_count}, leader_name="${data.leader_name}", leader_title="${data.leader_title}", political_party="${data.political_party}"`);
           }
           budgetUpdates[key] = {
