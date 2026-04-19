@@ -6162,148 +6162,63 @@ function App() {
   const [auditFindingsLoading, setAuditFindingsLoading] = useState({});
   const [deptBudgetData, setDeptBudgetData] = useState({});
   const [deptBudgetLoading, setDeptBudgetLoading] = useState({});
-  const [deptBudgetFetchedJurisdictions, setDeptBudgetFetchedJurisdictions] = useState({});
   const [deptHeadsData, setDeptHeadsData] = useState({});
-  const [deptHeadsFetchedJurisdictions, setDeptHeadsFetchedJurisdictions] = useState({});
+  const [federalDepts, setFederalDepts] = useState({});
+  const [federalDeptsFetched, setFederalDeptsFetched] = useState({});
   const [electionsData, setElectionsData] = useState({});
   const [electionsLoading, setElectionsLoading] = useState({});
 
-  // Fetch department budget data from Firestore when a department/ministry detail page opens
+  // Fetch federal departments from unified Firestore collection when a dept list or detail page opens
   useEffect(() => {
-    const detailViews = ['ministry-detail', 'department-detail', 'uk-department-detail', 'au-department-detail'];
-    if (!detailViews.includes(view)) return;
-    const { jurisdiction, deptName } = (() => {
-      if (view === 'ministry-detail' && selectedMinistry?.name) return { jurisdiction: 'CA', deptName: selectedMinistry.name };
-      if (view === 'department-detail' && selectedDepartment?.name) return { jurisdiction: 'US', deptName: selectedDepartment.name };
-      if (view === 'uk-department-detail' && selectedUkDepartment?.name) return { jurisdiction: 'UK', deptName: selectedUkDepartment.name };
-      if (view === 'au-department-detail' && selectedAuDepartment?.name) return { jurisdiction: 'AU', deptName: selectedAuDepartment.name };
-      return {};
-    })();
-    if (!jurisdiction || !deptName) return;
-    const key = `${jurisdiction}:${deptName}`;
-    if (deptBudgetData[key] !== undefined || deptBudgetLoading[key]) return;
-    setDeptBudgetLoading(prev => ({ ...prev, [key]: true }));
-    const fsName = jurisdiction === 'AU' ? (AU_DEPT_FIRESTORE_NAMES[deptName] || deptName)
-                 : jurisdiction === 'CA' ? (CA_DEPT_FIRESTORE_NAMES[deptName] || deptName)
-                 : jurisdiction === 'UK' ? (UK_DEPT_FIRESTORE_NAMES[deptName] || deptName)
-                 : deptName;
-    console.log('[DeptBudget] querying', { jurisdiction, deptName, fsName });
-    (async () => {
-      try {
-        const q = query(
-          collection(db, 'department_budgets'),
-          where('jurisdiction', '==', jurisdiction),
-          where('name', '==', fsName)
-        );
-        const snap = await getDocs(q);
-        console.log('[DeptBudget] result', { hits: snap.docs.length, docs: snap.docs.map(d => d.data()) });
-        const doc = snap.docs.length > 0 ? snap.docs[0].data() : null;
-        setDeptBudgetData(prev => ({ ...prev, [key]: doc || {} }));
-      } catch (err) {
-        console.warn('[LiveData] department_budgets fetch failed:', err.message);
-        setDeptBudgetData(prev => ({ ...prev, [key]: {} }));
-      } finally {
-        setDeptBudgetLoading(prev => ({ ...prev, [key]: false }));
-      }
-    })();
-  }, [view, selectedMinistry, selectedDepartment, selectedUkDepartment, selectedAuDepartment]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Bulk-fetch all department budgets for a jurisdiction when a list page opens
-  useEffect(() => {
-    const listViews = { ministries: 'CA', departments: 'US', 'uk-departments': 'UK', 'au-departments': 'AU' };
-    const jurisdiction = listViews[view];
-    if (!jurisdiction) return;
-    if (deptBudgetFetchedJurisdictions[jurisdiction]) return;
-    setDeptBudgetFetchedJurisdictions(prev => ({ ...prev, [jurisdiction]: true }));
-    (async () => {
-      try {
-        const snap = await getDocs(query(collection(db, 'department_budgets'), where('jurisdiction', '==', jurisdiction)));
-        const updates = {};
-        snap.docs.forEach(d => {
-          const data = d.data();
-          if (data.name) {
-            const displayName = jurisdiction === 'AU' ? (AU_DEPT_DISPLAY_NAMES[data.name] || data.name)
-                              : jurisdiction === 'CA' ? (CA_DEPT_DISPLAY_NAMES[data.name] || data.name)
-                              : jurisdiction === 'UK' ? (UK_DEPT_DISPLAY_NAMES[data.name] || data.name)
-                              : data.name;
-            updates[`${jurisdiction}:${displayName}`] = data;
-          }
-        });
-        setDeptBudgetData(prev => ({ ...prev, ...updates }));
-      } catch (err) {
-        console.warn('[LiveData] department_budgets bulk fetch failed:', err.message);
-      }
-    })();
-  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Bulk-fetch all department heads for a jurisdiction when a list or detail page opens
-  useEffect(() => {
-    const allViews = {
+    const viewJurMap = {
       ministries: 'CA', 'ministry-detail': 'CA',
       departments: 'US', 'department-detail': 'US',
       'uk-departments': 'UK', 'uk-department-detail': 'UK',
       'au-departments': 'AU', 'au-department-detail': 'AU',
     };
-    const jurisdiction = allViews[view];
-    if (!jurisdiction) return;
-    if (deptHeadsFetchedJurisdictions[jurisdiction]) return;
-    setDeptHeadsFetchedJurisdictions(prev => ({ ...prev, [jurisdiction]: true }));
+    const jur = viewJurMap[view];
+    if (!jur || federalDeptsFetched[jur]) return;
+    setFederalDeptsFetched(prev => ({ ...prev, [jur]: true }));
     (async () => {
       try {
-        const snap = await getDocs(query(collection(db, 'department_heads'), where('jurisdiction', '==', jurisdiction)));
-        const updates = {};
-        snap.docs.forEach(d => {
-          const data = d.data();
-          const rawHeadName = data.department || data.department_name;
-          const headName = jurisdiction === 'UK' && rawHeadName
-            ? rawHeadName.replace(/\)\s*$/, '').trim()
-            : rawHeadName;
-          if (headName) {
-            const displayName = jurisdiction === 'AU' ? (AU_DEPT_HEADS_MAP[headName] || headName)
-                              : jurisdiction === 'CA' ? (CA_DEPT_HEADS_MAP[headName] || headName)
-                              : jurisdiction === 'US' ? (US_DEPT_HEADS_MAP[headName] || headName)
-                              : jurisdiction === 'UK' ? (UK_DEPT_HEADS_MAP[headName] || headName)
-                              : headName;
-            updates[`${jurisdiction}:${displayName}`] = data;
-          }
+        const snap = await getDocs(query(collection(db, 'federal_departments'), where('jurisdiction', '==', jur)));
+        const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setFederalDepts(prev => ({ ...prev, [jur]: docs }));
+
+        // Compatibility shim: populate deptBudgetData and deptHeadsData with mapped field names
+        // so existing detail-page and list-card code keeps working without changes.
+        const budgetUpdates = {};
+        const headsUpdates = {};
+        docs.forEach(data => {
+          if (!data.name) return;
+          const displayName = jur === 'AU' ? (AU_DEPT_DISPLAY_NAMES[data.name] || data.name)
+                            : jur === 'CA' ? (CA_DEPT_DISPLAY_NAMES[data.name] || data.name)
+                            : jur === 'UK' ? (UK_DEPT_DISPLAY_NAMES[data.name] || data.name)
+                            : data.name;
+          const key = `${jur}:${displayName}`;
+          budgetUpdates[key] = {
+            total_allocated: data.budget_authority ?? null,
+            total_budget:    data.budget_authority ?? null,
+            total_spent:     data.obligations ?? null,
+            fiscal_year:     data.fiscal_year ?? null,
+            outlays:         data.outlays ?? null,
+            employees_count: data.employees_count ?? null,
+            grants:          data.grants ?? null,
+            internal_spending: data.internal_spending ?? null,
+          };
+          headsUpdates[key] = {
+            name:  data.leader_name  ?? null,
+            title: data.leader_title ?? null,
+            party: data.political_party ?? null,
+          };
         });
-        setDeptHeadsData(prev => ({ ...prev, ...updates }));
+        setDeptBudgetData(prev => ({ ...prev, ...budgetUpdates }));
+        setDeptHeadsData(prev =>  ({ ...prev, ...headsUpdates }));
       } catch (err) {
-        console.warn('[LiveData] department_heads bulk fetch failed:', err.message);
+        console.warn('[FederalDepts] Firestore fetch failed:', err.message);
       }
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Per-detail-page fallback fetch for department_heads (handles UK/AU name mapping gaps)
-  useEffect(() => {
-    const detailViews = ['ministry-detail', 'department-detail', 'uk-department-detail', 'au-department-detail'];
-    if (!detailViews.includes(view)) return;
-    const { jurisdiction, deptName } = (() => {
-      if (view === 'ministry-detail' && selectedMinistry?.name) return { jurisdiction: 'CA', deptName: selectedMinistry.name };
-      if (view === 'department-detail' && selectedDepartment?.name) return { jurisdiction: 'US', deptName: selectedDepartment.name };
-      if (view === 'uk-department-detail' && selectedUkDepartment?.name) return { jurisdiction: 'UK', deptName: selectedUkDepartment.name };
-      if (view === 'au-department-detail' && selectedAuDepartment?.name) return { jurisdiction: 'AU', deptName: selectedAuDepartment.name };
-      return {};
-    })();
-    if (!jurisdiction || !deptName) return;
-    const key = `${jurisdiction}:${deptName}`;
-    if (deptHeadsData[key] !== undefined) return;
-    const fsName = jurisdiction === 'AU' ? (AU_DEPT_HEADS_QUERY_NAMES[deptName] || deptName)
-                 : jurisdiction === 'UK' ? (UK_DEPT_HEADS_QUERY_NAMES[deptName] || deptName)
-                 : deptName;
-    (async () => {
-      try {
-        const snap = await getDocs(query(
-          collection(db, 'department_heads'),
-          where('jurisdiction', '==', jurisdiction),
-          where('department', '==', fsName)
-        ));
-        setDeptHeadsData(prev => ({ ...prev, [key]: snap.docs.length > 0 ? snap.docs[0].data() : null }));
-      } catch (err) {
-        console.warn('[LiveData] department_heads detail fetch failed:', err.message);
-      }
-    })();
-  }, [view, selectedMinistry, selectedDepartment, selectedUkDepartment, selectedAuDepartment]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch supreme court justices and cases from Firestore when a court page opens
   useEffect(() => {
