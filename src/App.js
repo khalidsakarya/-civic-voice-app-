@@ -8117,6 +8117,7 @@ function App() {
   // US Federal Contracts Render Function
   const renderUSContracts = () => {
     const data = liveContracts.US;
+    if (data && data.length > 0) console.log('[US Contracts] first record fields:', data[0]);
     const fmtVal = (val) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `$${(v/1e3).toFixed(0)}K`; return `$${v.toLocaleString()}`; };
     // Resolve a Firestore Timestamp, ISO string, or millis number to a JS Date
     const toDate = (d) => { if (!d) return null; try { if (d.toDate) return d.toDate(); if (d.seconds) return new Date(d.seconds * 1000); return new Date(d); } catch { return null; } };
