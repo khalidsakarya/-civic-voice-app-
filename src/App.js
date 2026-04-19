@@ -1508,6 +1508,7 @@ function App() {
   const [contractSearch, setContractSearch] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
+  const [caContractsStatusFilter, setCaContractsStatusFilter] = useState('All');
   
   // US Bills filter states
   const [billSearch, setBillSearch] = useState('');
@@ -30546,6 +30547,11 @@ function App() {
     const fmtVal = (val, cur) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; const sym = cur === 'CAD' ? 'CA$' : '$'; if (v >= 1e9) return `${sym}${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `${sym}${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `${sym}${(v/1e3).toFixed(0)}K`; return `${sym}${v.toLocaleString()}`; };
     const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); if (isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-CA', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return null; } };
     const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
+    const filtered = (data || []).filter(c => {
+      if (caContractsStatusFilter === 'Active') return c.status?.toLowerCase() === 'active';
+      if (caContractsStatusFilter === 'Completed') return c.status?.toLowerCase() === 'completed';
+      return true;
+    });
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
@@ -30567,17 +30573,38 @@ function App() {
               ? <p className="text-gray-600">Canadian federal contracts worth {totalValue > 0 ? `CA$${(totalValue/1e9).toFixed(1)}B` : '—'} · {data.length} contracts</p>
               : <p className="text-gray-600">Canadian federal government contracts</p>}
           </div>
+
+          {/* Status filter buttons */}
+          {data && data.length > 0 && (
+            <div className="flex gap-2 mb-6">
+              {['All', 'Active', 'Completed'].map(f => (
+                <button key={f} onClick={() => setCaContractsStatusFilter(f)}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${caContractsStatusFilter === f ? (f === 'Active' ? 'bg-green-500 text-white border-green-500' : f === 'Completed' ? 'bg-gray-500 text-white border-gray-500' : 'bg-blue-600 text-white border-blue-600') : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'}`}>
+                  {f}
+                </button>
+              ))}
+            </div>
+          )}
+
           {data === undefined ? (
             <div className="text-center py-12 text-gray-400 text-lg">Loading contracts…</div>
           ) : data.length === 0 ? (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
               <p className="text-gray-500 text-lg">No contract data available yet.</p>
             </div>
+          ) : filtered.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-md p-8 text-center">
+              <p className="text-gray-600 text-lg">No {caContractsStatusFilter.toLowerCase()} contracts found.</p>
+            </div>
           ) : (
             <div className="space-y-4">
-              {data.map((c, i) => {
+              {filtered.map((c, i) => {
                 const val = fmtVal(c.value, c.currency);
-                const dt = fmtDate(c.date_awarded);
+                const valTypeNote = c.contract_value_type === 'ceiling' ? 'ceiling value' : c.contract_value_type === 'total' ? 'total contract value' : null;
+                const startDate = fmtDate(c.start_date || c.date_awarded);
+                const endDate = fmtDate(c.end_date);
+                const isActive = c.status?.toLowerCase() === 'active';
+                const isCompleted = c.status?.toLowerCase() === 'completed';
                 return (
                   <div key={c.id || i}
                     onClick={() => { setSelectedContract(c); setView('contract-detail'); }}
@@ -30585,14 +30612,26 @@ function App() {
                   >
                     <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
                       <div className="flex items-center gap-2 flex-wrap">
-                        {val && <span className="bg-green-100 text-green-800 px-3 py-1.5 rounded-full font-bold text-base">{val}</span>}
+                        {isActive && <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Active</span>}
+                        {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
+                        {c.contract_type && <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">{c.contract_type}</span>}
                         <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
                       </div>
-                      {dt && <span className="text-xs text-gray-400">{dt}</span>}
+                      {(startDate || endDate) && (
+                        <span className="text-xs text-gray-400 flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {startDate || '?'}{endDate ? ` → ${endDate}` : ''}
+                        </span>
+                      )}
                     </div>
                     <h2 className="text-xl font-bold text-gray-800 mb-1">{c.contractor_name}</h2>
                     {c.department && <p className="text-sm text-gray-600 mb-2">🏛️ {c.department}</p>}
-                    {c.contract_type && <span className="inline-block text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full mb-2">{c.contract_type}</span>}
+                    {val && (
+                      <div className="flex items-baseline gap-2 mb-2">
+                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-bold text-base">{val}</span>
+                        {valTypeNote && <span className="text-xs text-gray-400">{valTypeNote}</span>}
+                      </div>
+                    )}
                     {c.purpose && <p className="text-sm text-gray-700 line-clamp-3">{c.purpose}</p>}
                   </div>
                 );
