@@ -6197,19 +6197,24 @@ function App() {
                             : data.name;
           const key = `${jur}:${displayName}`;
           budgetUpdates[key] = {
-            total_allocated: data.budget_authority ?? null,
-            total_budget:    data.budget_authority ?? null,
-            total_spent:     data.obligations ?? null,
-            fiscal_year:     data.fiscal_year ?? null,
-            outlays:         data.outlays ?? null,
-            employees_count: data.employees_count ?? null,
-            grants:          data.grants ?? null,
-            internal_spending: data.internal_spending ?? null,
+            _loaded:           true,
+            total_allocated:   data.budget_authority ?? null,
+            total_budget:      data.budget_authority ?? null,
+            total_spent:       data.obligations ?? null,
+            fiscal_year:       data.fiscal_year ?? null,
+            outlays:           data.outlays ?? null,
+            // field name used by all detail pages
+            employee_count:    data.employees_count ?? null,
+            // grants_given must be an array for the grants section renderer
+            grants_given:      Array.isArray(data.grants) ? data.grants : [],
+            // internal_spending must be an array for the internal spending renderer
+            internal_spending: Array.isArray(data.internal_spending) ? data.internal_spending : [],
           };
           headsUpdates[key] = {
-            name:  data.leader_name  ?? null,
-            title: data.leader_title ?? null,
-            party: data.political_party ?? null,
+            _loaded: true,
+            name:    data.leader_name  ?? null,
+            title:   data.leader_title ?? null,
+            party:   data.political_party ?? null,
           };
         });
         setDeptBudgetData(prev => ({ ...prev, ...budgetUpdates }));
@@ -6571,21 +6576,21 @@ function App() {
                       {hd.party && <span className="inline-block mt-0.5 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">{hd.party}</span>}
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-400 italic mb-3">Official data loading</p>
+                    <p className="text-xs text-gray-400 italic mb-3">{hd?._loaded ? 'No data available' : 'Official data loading'}</p>
                   )}
                   <p className="text-gray-700 mb-4">{dept.description}</p>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="bg-green-50 rounded p-2">
                       <p className="text-xs text-gray-600">Budget</p>
-                      {hasLiveBudget && (bd.total_allocated ?? bd.total_budget) != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated ?? bd.total_budget)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && (bd.total_allocated ?? bd.total_budget) != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated ?? bd.total_budget)}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
                     </div>
                     <div className="bg-blue-50 rounded p-2">
                       <p className="text-xs text-gray-600">Spent</p>
-                      {hasLiveBudget && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
                     </div>
                     <div className="bg-purple-50 rounded p-2">
                       <p className="text-xs text-gray-600">Fiscal Year</p>
-                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
                     </div>
                   </div>
                 </div>
@@ -6654,7 +6659,7 @@ function App() {
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
                   {(deptBudgetData[`US:${selectedDepartment.name}`]?.total_budget ?? deptBudgetData[`US:${selectedDepartment.name}`]?.total_allocated) != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                {(() => { const raw = deptBudgetData[`US:${selectedDepartment.name}`]?.total_budget ?? deptBudgetData[`US:${selectedDepartment.name}`]?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; const v = Number(raw); const fmt = v >= 1e12 ? `$${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
+                {(() => { const _bd = deptBudgetData[`US:${selectedDepartment.name}`]; const raw = _bd?.total_budget ?? _bd?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; const v = Number(raw); const fmt = v >= 1e12 ? `$${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
 
               <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
@@ -6671,7 +6676,7 @@ function App() {
                   <h3 className="text-lg font-bold text-gray-800">Employees</h3>
                   {deptBudgetData[`US:${selectedDepartment.name}`]?.employee_count != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                {(() => { const ec = deptBudgetData[`US:${selectedDepartment.name}`]?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
+                {(() => { const _bd = deptBudgetData[`US:${selectedDepartment.name}`]; const ec = _bd?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
               </div>
             </div>
 
@@ -6681,7 +6686,7 @@ function App() {
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
               const _allocated = _bData?.total_allocated ?? _bData?.total_budget;
-              const _hasData = _bData && (_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _hasData = _bData?._loaded && (_allocated != null || _bData.total_spent != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
               const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number') return ''; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
@@ -6697,8 +6702,8 @@ function App() {
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
-                    {_bData.total_spent !== undefined && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                    {_allocated != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
+                    {_bData.total_spent != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
                   </div>
                   {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
                   {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
@@ -18677,7 +18682,7 @@ function App() {
                           {hd.party && <span className="inline-block mt-0.5 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}
                         </div>
                       ) : (
-                        <p className="text-xs text-gray-400 italic mb-1">Official data loading</p>
+                        <p className="text-xs text-gray-400 italic mb-1">{hd?._loaded ? 'No data available' : 'Official data loading'}</p>
                       )}
                       <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
                     </div>
@@ -18695,15 +18700,15 @@ function App() {
                   <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Budget</p>
-                      {hasLiveBudget && (bd.total_allocated ?? bd.total_budget) != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated ?? bd.total_budget)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && (bd.total_allocated ?? bd.total_budget) != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated ?? bd.total_budget)}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Spent</p>
-                      {hasLiveBudget && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Fiscal Year</p>
-                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
                     </div>
                   </div>
                 </div>
@@ -18763,7 +18768,7 @@ function App() {
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
                   {(deptBudgetData[`UK:${dept.name}`]?.total_budget ?? deptBudgetData[`UK:${dept.name}`]?.total_allocated) != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                {(() => { const raw = deptBudgetData[`UK:${dept.name}`]?.total_budget ?? deptBudgetData[`UK:${dept.name}`]?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; const v = Number(raw); const fmt = v >= 1e12 ? `£${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `£${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `£${(v/1e6).toFixed(1)}M` : `£${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
+                {(() => { const _bd = deptBudgetData[`UK:${dept.name}`]; const raw = _bd?.total_budget ?? _bd?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; const v = Number(raw); const fmt = v >= 1e12 ? `£${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `£${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `£${(v/1e6).toFixed(1)}M` : `£${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
               <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
                 <div className="flex items-center gap-3 mb-2">
@@ -18778,7 +18783,7 @@ function App() {
                   <h3 className="text-lg font-bold text-gray-800">Civil Servants</h3>
                   {deptBudgetData[`UK:${dept.name}`]?.employee_count != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                {(() => { const ec = deptBudgetData[`UK:${dept.name}`]?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; return <p className="text-2xl font-bold" style={{ color: '#012169' }}>{Number(ec).toLocaleString()}</p>; })()}
+                {(() => { const _bd = deptBudgetData[`UK:${dept.name}`]; const ec = _bd?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; return <p className="text-2xl font-bold" style={{ color: '#012169' }}>{Number(ec).toLocaleString()}</p>; })()}
               </div>
             </div>
 
@@ -18788,7 +18793,7 @@ function App() {
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
               const _allocated = _bData?.total_allocated ?? _bData?.total_budget;
-              const _hasData = _bData && (_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _hasData = _bData?._loaded && (_allocated != null || _bData.total_spent != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
               const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number') return ''; if (v >= 1e12) return `£${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `£${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `£${(v/1e6).toFixed(1)}M`; return `£${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
@@ -18804,8 +18809,8 @@ function App() {
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
-                    {_bData.total_spent !== undefined && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                    {_allocated != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
+                    {_bData.total_spent != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
                   </div>
                   {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
                   {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
@@ -30691,7 +30696,7 @@ function App() {
                           {hd.party && <span className="inline-block mt-0.5 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}
                         </div>
                       ) : (
-                        <p className="text-xs text-gray-400 italic mb-1">Official data loading</p>
+                        <p className="text-xs text-gray-400 italic mb-1">{hd?._loaded ? 'No data available' : 'Official data loading'}</p>
                       )}
                       <p className="text-xs sm:text-sm text-gray-500">{ministry.description}</p>
                     </div>
@@ -30703,15 +30708,15 @@ function App() {
                   <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Budget</p>
-                      {hasLiveBudget && (bd.total_allocated ?? bd.total_budget) != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated ?? bd.total_budget)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && (bd.total_allocated ?? bd.total_budget) != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated ?? bd.total_budget)}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Spent</p>
-                      {hasLiveBudget && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Fiscal Year</p>
-                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
                     </div>
                   </div>
                 </div>
@@ -30764,8 +30769,9 @@ function App() {
                   {deptBudgetData[`CA:${selectedMinistry.name}`]?.total_budget != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
                 {(() => {
-                  const raw = deptBudgetData[`CA:${selectedMinistry.name}`]?.total_budget;
-                  if (raw == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>;
+                  const _bdCA = deptBudgetData[`CA:${selectedMinistry.name}`];
+                  const raw = _bdCA?.total_budget;
+                  if (raw == null) return <p className="text-sm text-gray-400 italic">{_bdCA?._loaded ? 'No data available' : 'Official data loading'}</p>;
                   const m = Number(raw) / 1_000_000;
                   const display = m >= 1000 ? `CA$${(m/1000).toFixed(1)}B` : m >= 1 ? `CA$${m.toFixed(1)}M` : `CA$${(m*1000).toFixed(0)}K`;
                   return <p className="text-2xl font-bold text-green-700">{display}</p>;
@@ -30786,7 +30792,7 @@ function App() {
                   <h3 className="text-lg font-bold text-gray-800">Employees</h3>
                   {deptBudgetData[`CA:${selectedMinistry.name}`]?.employee_count != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                {(() => { const ec = deptBudgetData[`CA:${selectedMinistry.name}`]?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
+                {(() => { const _bd = deptBudgetData[`CA:${selectedMinistry.name}`]; const ec = _bd?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
               </div>
             </div>
 
@@ -30796,7 +30802,7 @@ function App() {
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
               const _allocated = _bData?.total_budget ?? _bData?.total_allocated;
-              const _hasData = _bData && (_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _hasData = _bData?._loaded && (_allocated != null || _bData.total_spent != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
               // Values in CAD — divide by 1,000,000 → millions, then /1000 for billions
               const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; const m = v / 1_000_000; if (m >= 1000) return `CA$${(m/1000).toFixed(1)}B`; if (m >= 1) return `CA$${m.toFixed(1)}M`; return `CA$${(m*1000).toFixed(0)}K`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
@@ -30813,8 +30819,8 @@ function App() {
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
-                    {_bData.total_spent !== undefined && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                    {_allocated != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
+                    {_bData.total_spent != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
                   </div>
                   {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
                   {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
@@ -31518,7 +31524,7 @@ function App() {
                           {hd.party && <span className="inline-block mt-0.5 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">{hd.party}</span>}
                         </div>
                       ) : (
-                        <p className="text-xs text-gray-400 italic mb-1">Official data loading</p>
+                        <p className="text-xs text-gray-400 italic mb-1">{hd?._loaded ? 'No data available' : 'Official data loading'}</p>
                       )}
                       <p className="text-xs sm:text-sm text-gray-500">{dept.description}</p>
                     </div>
@@ -31536,15 +31542,15 @@ function App() {
                   <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Budget</p>
-                      {hasLiveBudget && (bd.total_allocated ?? bd.total_budget) != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated ?? bd.total_budget)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && (bd.total_allocated ?? bd.total_budget) != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.total_allocated ?? bd.total_budget)}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Spent</p>
-                      {hasLiveBudget && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.total_spent != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.total_spent)}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Fiscal Year</p>
-                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">Official data loading</p>}
+                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
                     </div>
                   </div>
                 </div>
@@ -31601,7 +31607,7 @@ function App() {
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
                   {(deptBudgetData[`AU:${dept.name}`]?.total_budget ?? deptBudgetData[`AU:${dept.name}`]?.total_allocated) != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                {(() => { const raw = deptBudgetData[`AU:${dept.name}`]?.total_budget ?? deptBudgetData[`AU:${dept.name}`]?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; const v = Number(raw); const fmt = v >= 1e12 ? `A$${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `A$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `A$${(v/1e6).toFixed(1)}M` : `A$${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
+                {(() => { const _bd = deptBudgetData[`AU:${dept.name}`]; const raw = _bd?.total_budget ?? _bd?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; const v = Number(raw); const fmt = v >= 1e12 ? `A$${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `A$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `A$${(v/1e6).toFixed(1)}M` : `A$${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
               <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
                 <div className="flex items-center gap-3 mb-2">
@@ -31616,7 +31622,7 @@ function App() {
                   <h3 className="text-lg font-bold text-gray-800">Employees</h3>
                   {deptBudgetData[`AU:${dept.name}`]?.employee_count != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
                 </div>
-                {(() => { const ec = deptBudgetData[`AU:${dept.name}`]?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">Official data loading</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
+                {(() => { const _bd = deptBudgetData[`AU:${dept.name}`]; const ec = _bd?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
               </div>
             </div>
 
@@ -31626,7 +31632,7 @@ function App() {
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
               const _allocated = _bData?.total_allocated ?? _bData?.total_budget;
-              const _hasData = _bData && (_allocated !== undefined || _bData.total_spent !== undefined || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _hasData = _bData?._loaded && (_allocated != null || _bData.total_spent != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
               const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number') return ''; if (v >= 1e12) return `A$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `A$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `A$${(v/1e6).toFixed(1)}M`; return `A$${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
@@ -31642,8 +31648,8 @@ function App() {
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_allocated !== undefined && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
-                    {_bData.total_spent !== undefined && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                    {_allocated != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
+                    {_bData.total_spent != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
                   </div>
                   {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
                   {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
