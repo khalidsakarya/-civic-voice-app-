@@ -6182,7 +6182,11 @@ function App() {
     (async () => {
       try {
         const snap = await getDocs(query(collection(db, 'federal_departments'), where('jurisdiction', '==', jur)));
+        console.log(`[FederalDepts] ${jur}: snap.empty=${snap.empty}, docs=${snap.docs.length}`);
         const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        if (jur === 'CA' && docs.length > 0) {
+          console.log('[FederalDepts] CA first doc (all fields):', JSON.stringify(docs[0], null, 2));
+        }
         setFederalDepts(prev => ({ ...prev, [jur]: docs }));
 
         // Compatibility shim: populate deptBudgetData and deptHeadsData with mapped field names
@@ -6196,6 +6200,10 @@ function App() {
                             : jur === 'UK' ? (UK_DEPT_DISPLAY_NAMES[data.name] || data.name)
                             : data.name;
           const key = `${jur}:${displayName}`;
+          if (jur === 'CA') {
+            console.log(`[FederalDepts] CA shim: doc.name="${data.name}" → displayName="${displayName}" → key="${key}"`);
+            console.log(`[FederalDepts] CA shim fields: budget_authority=${data.budget_authority}, obligations=${data.obligations}, fiscal_year=${data.fiscal_year}, employees_count=${data.employees_count}, leader_name="${data.leader_name}", leader_title="${data.leader_title}", political_party="${data.political_party}"`);
+          }
           budgetUpdates[key] = {
             _loaded:           true,
             total_allocated:   data.budget_authority ?? null,
@@ -6217,6 +6225,10 @@ function App() {
             party:   data.political_party ?? null,
           };
         });
+        if (jur === 'CA') {
+          console.log('[FederalDepts] CA deptBudgetData updates:', budgetUpdates);
+          console.log('[FederalDepts] CA deptHeadsData updates:', headsUpdates);
+        }
         setDeptBudgetData(prev => ({ ...prev, ...budgetUpdates }));
         setDeptHeadsData(prev =>  ({ ...prev, ...headsUpdates }));
       } catch (err) {
