@@ -564,15 +564,21 @@ const AU_DEPT_DISPLAY_NAMES = Object.fromEntries(
 
 // Maps CA ministry display names → official Firestore 'name' field values in department_budgets
 const CA_DEPT_FIRESTORE_NAMES = {
-  'Health Canada':                           'Department of Health',
-  'National Defence':                        'Department of National Defence',
-  'Finance Canada':                          'Department of Finance',
-  'Justice Canada':                          'Department of Justice',
-  'Transport Canada':                        'Department of Transport',
-  'Immigration, Refugees and Citizenship':   'Department of Citizenship and Immigration',
-  'Environment and Climate Change':          'Environment and Climate Change Canada',
-  'Employment and Social Development':       'Employment and Social Development Canada',
-  'Innovation, Science and Economic Development': 'Innovation, Science and Economic Development Canada',
+  'Health Canada':                                   'Department of Health',
+  'National Defence':                                'Department of National Defence',
+  'Finance Canada':                                  'Department of Finance',
+  'Justice Canada':                                  'Department of Justice',
+  'Transport Canada':                                'Department of Transport',
+  'Immigration, Refugees and Citizenship':           'Department of Citizenship and Immigration',
+  'Environment and Climate Change':                  'Environment and Climate Change Canada',
+  'Employment and Social Development':               'Employment and Social Development Canada',
+  'Innovation, Science and Economic Development':    'Innovation, Science and Economic Development Canada',
+  'Public Safety Canada':                            'Public Safety Canada',
+  'Natural Resources Canada':                        'Natural Resources Canada',
+  'Indigenous Services Canada':                      'Indigenous Services Canada',
+  'Agriculture and Agri-Food Canada':                'Agriculture and Agri-Food Canada',
+  'Global Affairs Canada':                           'Global Affairs Canada',
+  'Canadian Heritage':                               'Canadian Heritage',
 };
 // Reverse map: Firestore budget 'name' → CA display name
 const CA_DEPT_DISPLAY_NAMES = Object.fromEntries(
