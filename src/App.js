@@ -1507,7 +1507,6 @@ function App() {
   const [contractSearch, setContractSearch] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
-  const [contractsDeptOpen, setContractsDeptOpen] = useState({ US: false, CA: false, UK: false, AU: false });
   const [caContractsStatusFilter, setCaContractsStatusFilter] = useState('All');
   const [caContractSearch, setCaContractSearch] = useState('');
   const [caContractDeptFilter, setCaContractDeptFilter] = useState('All');
@@ -8188,36 +8187,6 @@ function App() {
             </div>
           </div>
 
-          {/* Statistics — collapsible */}
-          {data && data.length > 0 && totalValue > 0 && (
-            <div className="bg-white rounded-lg shadow-md mb-8">
-              <button onClick={() => setContractsDeptOpen(p => ({ ...p, US: !p.US }))}
-                className="w-full flex items-center justify-between p-6 text-left">
-                <h3 className="text-xl font-bold text-gray-800">📊 Contracts by Department</h3>
-                <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform ${contractsDeptOpen.US ? 'rotate-180' : ''}`} />
-              </button>
-              {contractsDeptOpen.US && (
-                <div className="px-6 pb-6 space-y-3">
-                  {departments.filter(d => d !== 'All').map(dept => {
-                    const deptContracts = data.filter(c => c.department === dept);
-                    const deptTotal = deptContracts.reduce((s, c) => s + (Number(c.value) || 0), 0);
-                    const pct = totalValue > 0 ? ((deptTotal / totalValue) * 100).toFixed(1) : 0;
-                    return (
-                      <div key={dept}>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-gray-700 font-medium text-sm">{dept}</span>
-                          <span className="font-bold text-gray-800 text-sm">{fmtVal(deptTotal) || '—'} ({pct}%) · {deptContracts.length}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div className="bg-red-500 h-2.5 rounded-full" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Search and Filters */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -20046,36 +20015,6 @@ function App() {
             </div>
           )}
 
-          {/* Summary by Department */}
-          {data && data.length > 0 && totalValue > 0 && (
-            <div className="bg-white rounded-lg shadow-md mt-8">
-              <button onClick={() => setContractsDeptOpen(p => ({ ...p, UK: !p.UK }))}
-                className="w-full flex items-center justify-between p-6 text-left">
-                <h3 className="text-2xl font-bold text-gray-800">Contracts by Department</h3>
-                <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform ${contractsDeptOpen.UK ? 'rotate-180' : ''}`} />
-              </button>
-              {contractsDeptOpen.UK && (
-                <div className="px-6 pb-6 space-y-3">
-                  {departments.filter(d => d !== 'All').map(dept => {
-                    const deptContracts = data.filter(c => c.department === dept);
-                    const deptTotal = deptContracts.reduce((s, c) => s + (Number(c.value) || 0), 0);
-                    const pct = totalValue > 0 ? ((deptTotal / totalValue) * 100).toFixed(1) : 0;
-                    return (
-                      <div key={dept}>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-gray-700 font-medium">{dept}</span>
-                          <span className="font-bold text-gray-800">{fmtVal(deptTotal) || '—'} ({pct}%) · {deptContracts.length}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div className="h-3 rounded-full" style={{ width: `${pct}%`, backgroundColor: RED }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
     );
@@ -30783,36 +30722,6 @@ function App() {
             </div>
           )}
 
-          {/* Summary by Department */}
-          {data && data.length > 0 && totalValue > 0 && (
-            <div className="bg-white rounded-lg shadow-md mt-8">
-              <button onClick={() => setContractsDeptOpen(p => ({ ...p, CA: !p.CA }))}
-                className="w-full flex items-center justify-between p-6 text-left">
-                <h3 className="text-2xl font-bold text-gray-800">Contracts by Department</h3>
-                <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform ${contractsDeptOpen.CA ? 'rotate-180' : ''}`} />
-              </button>
-              {contractsDeptOpen.CA && (
-                <div className="px-6 pb-6 space-y-3">
-                  {departments.filter(d => d !== 'All').map(dept => {
-                    const deptContracts = data.filter(c => c.department === dept);
-                    const deptTotal = deptContracts.reduce((s, c) => s + (Number(c.value) || 0), 0);
-                    const pct = totalValue > 0 ? ((deptTotal / totalValue) * 100).toFixed(1) : 0;
-                    return (
-                      <div key={dept}>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-gray-700 font-medium">{dept}</span>
-                          <span className="font-bold text-gray-800">{fmtVal(deptTotal) || '—'} ({pct}%) · {deptContracts.length}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div className="bg-green-500 h-3 rounded-full" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
     );
@@ -32261,36 +32170,6 @@ function App() {
             </div>
           )}
 
-          {/* Summary by Department */}
-          {data && data.length > 0 && totalValue > 0 && (
-            <div className="bg-white rounded-lg shadow-md mt-8">
-              <button onClick={() => setContractsDeptOpen(p => ({ ...p, AU: !p.AU }))}
-                className="w-full flex items-center justify-between p-6 text-left">
-                <h3 className="text-2xl font-bold text-gray-800">Contracts by Department</h3>
-                <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform ${contractsDeptOpen.AU ? 'rotate-180' : ''}`} />
-              </button>
-              {contractsDeptOpen.AU && (
-                <div className="px-6 pb-6 space-y-3">
-                  {departments.filter(d => d !== 'All').map(dept => {
-                    const deptContracts = data.filter(c => c.department === dept);
-                    const deptTotal = deptContracts.reduce((s, c) => s + (Number(c.value) || 0), 0);
-                    const pct = totalValue > 0 ? ((deptTotal / totalValue) * 100).toFixed(1) : 0;
-                    return (
-                      <div key={dept}>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-gray-700 font-medium">{dept}</span>
-                          <span className="font-bold text-gray-800">{fmtVal(deptTotal) || '—'} ({pct}%) · {deptContracts.length}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div className="bg-rose-500 h-3 rounded-full" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
     );
