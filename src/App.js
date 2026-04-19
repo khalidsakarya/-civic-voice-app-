@@ -17421,11 +17421,16 @@ function App() {
   const fetchBudgetData = async (country) => {
     setBudgetLoading(prev => ({ ...prev, [country]: true }));
     try {
+      console.log(`[Budget] Fetching budget_data for country == "${country}"`);
       const snap = await getDocs(query(collection(db, 'budget_data'), where('country', '==', country)));
+      console.log(`[Budget] ${country}: snap.empty=${snap.empty}, docs=${snap.docs.length}`);
       if (!snap.empty) {
         const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        console.log(`[Budget] ${country} first doc fields:`, data[0]);
         setBudgetFirestoreData(prev => ({ ...prev, [country]: data }));
         setBudgetLastUpdated(prev => ({ ...prev, [country]: new Date() }));
+      } else {
+        console.warn(`[Budget] ${country}: no documents matched — check 'country' field value in Firestore`);
       }
     } catch (err) {
       console.warn('[Budget] Firestore fetch failed:', err.message);
