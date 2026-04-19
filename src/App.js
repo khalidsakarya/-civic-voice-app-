@@ -8197,12 +8197,20 @@ function App() {
     const data = liveContracts.US;
     const fmtVal = (val) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `$${(v/1e3).toFixed(0)}K`; return `$${v.toLocaleString()}`; };
     const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); if (isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch { return null; } };
+    const now = new Date();
+    // Derive effective status: if end_date is in the past → Completed, otherwise → Active
+    const getStatus = (c) => {
+      if (c.end_date) {
+        try { return new Date(c.end_date) < now ? 'completed' : 'active'; } catch { return 'active'; }
+      }
+      return c.status?.toLowerCase() || 'active';
+    };
     const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
     const departments = data ? ['All', ...new Set(data.map(c => c.department).filter(Boolean))] : ['All'];
     let filtered = (data || []).filter(c => {
       const matchSearch = !contractSearch || c.contractor_name?.toLowerCase().includes(contractSearch.toLowerCase()) || c.purpose?.toLowerCase().includes(contractSearch.toLowerCase());
       const matchDept = departmentFilter === 'All' || c.department === departmentFilter;
-      const matchStatus = usContractsStatusFilter === 'All' || c.status?.toLowerCase() === usContractsStatusFilter.toLowerCase();
+      const matchStatus = usContractsStatusFilter === 'All' || getStatus(c) === usContractsStatusFilter.toLowerCase();
       return matchSearch && matchDept && matchStatus;
     });
     filtered = [...filtered].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
@@ -8239,6 +8247,31 @@ function App() {
               </div>
             </div>
           </div>
+
+          {/* Statistics — always visible */}
+          {data && data.length > 0 && totalValue > 0 && (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Contracts by Department</h3>
+              <div className="space-y-3">
+                {departments.filter(d => d !== 'All').map(dept => {
+                  const deptContracts = data.filter(c => c.department === dept);
+                  const deptTotal = deptContracts.reduce((s, c) => s + (Number(c.value) || 0), 0);
+                  const pct = totalValue > 0 ? ((deptTotal / totalValue) * 100).toFixed(1) : 0;
+                  return (
+                    <div key={dept}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-gray-700 font-medium text-sm">{dept}</span>
+                        <span className="font-bold text-gray-800 text-sm">{fmtVal(deptTotal) || '—'} ({pct}%) · {deptContracts.length}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div className="bg-red-500 h-2.5 rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Search and Filters */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -8289,8 +8322,10 @@ function App() {
                 const valTypeNote = c.contract_value_type === 'ceiling' ? 'ceiling value' : c.contract_value_type === 'total' ? 'total contract value' : null;
                 const startDate = fmtDate(c.start_date || c.date_awarded);
                 const endDate = fmtDate(c.end_date);
-                const isActive = c.status?.toLowerCase() === 'active';
-                const isCompleted = c.status?.toLowerCase() === 'completed';
+                const awardYear = (() => { const d = c.date_awarded || c.start_date; if (!d) return null; try { const y = new Date(d).getFullYear(); return isNaN(y) ? null : y; } catch { return null; } })();
+                const effectiveStatus = getStatus(c);
+                const isActive = effectiveStatus === 'active';
+                const isCompleted = effectiveStatus === 'completed';
                 return (
                   <div key={c.id || i} className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-shadow border-l-4 border-red-500">
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
@@ -8298,6 +8333,7 @@ function App() {
                         <div className="flex flex-wrap gap-2 mb-2">
                           {isActive && <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Active</span>}
                           {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
+                          {awardYear && <span className="text-xs font-bold bg-red-100 text-red-700 px-2.5 py-0.5 rounded-full">{awardYear}</span>}
                           {c.contract_type && <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">{c.contract_type}</span>}
                           {c.department && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
                           <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full self-center">LIVE</span>
@@ -8325,31 +8361,6 @@ function App() {
                   </div>
                 );
               })}
-            </div>
-          )}
-
-          {/* Summary by Department */}
-          {data && data.length > 0 && totalValue > 0 && (
-            <div className="bg-white rounded-lg shadow-md p-6 mt-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-6">Contracts by Department</h3>
-              <div className="space-y-3">
-                {departments.filter(d => d !== 'All').map(dept => {
-                  const deptContracts = data.filter(c => c.department === dept);
-                  const deptTotal = deptContracts.reduce((s, c) => s + (Number(c.value) || 0), 0);
-                  const pct = totalValue > 0 ? ((deptTotal / totalValue) * 100).toFixed(1) : 0;
-                  return (
-                    <div key={dept}>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-gray-700 font-medium">{dept}</span>
-                        <span className="font-bold text-gray-800">{fmtVal(deptTotal) || '—'} ({pct}%) · {deptContracts.length}</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3">
-                        <div className="bg-red-500 h-3 rounded-full" style={{ width: `${pct}%` }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
           )}
         </div>
