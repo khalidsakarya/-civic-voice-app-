@@ -1480,6 +1480,8 @@ function App() {
   const [courtJustices, setCourtJustices] = useState({});
   const [courtCases, setCourtCases] = useState({});
   const [courtFetched, setCourtFetched] = useState({});
+  const [courtTab, setCourtTab] = useState({});        // jur -> 'cases' | 'justices'
+  const [courtExpandedCase, setCourtExpandedCase] = useState({}); // caseId -> bool
 
   // Laws & Legal Search data
   const [usLaws, setUsLaws] = useState([]);
@@ -7210,7 +7212,9 @@ function App() {
     const justices = courtJustices[jur] || [];
     const cases    = courtCases[jur]    || [];
     const loaded   = !!courtFetched[jur];
-    const fmtDate  = (d) => {
+    const activeTab = courtTab[jur] || 'cases';
+
+    const fmtDate = (d) => {
       if (!d) return null;
       try {
         const dt = d.toDate ? d.toDate() : new Date(d);
@@ -7218,81 +7222,163 @@ function App() {
         return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
       } catch { return null; }
     };
-    const decisionColor = (dec) => {
-      if (!dec) return 'bg-gray-100 text-gray-600';
-      const d = dec.toLowerCase();
-      if (d.includes('unanimous') || d.includes('upheld') || d.includes('affirm')) return 'bg-green-100 text-green-700';
-      if (d.includes('dissent') || d.includes('overtur') || d.includes('struck')) return 'bg-red-100 text-red-700';
-      return 'bg-blue-100 text-blue-700';
+
+    const getStatus = (c) => {
+      const raw = (c.status || c.decision || '').toLowerCase();
+      if (raw.includes('decided') || raw.includes('judgment') || raw.includes('ruled') || raw.includes('affirm') || raw.includes('struck') || raw.includes('overtur') || raw.includes('upheld') || raw.includes('dismissed')) return 'decided';
+      if (raw.includes('ongoing') || raw.includes('pending') || raw.includes('argued') || raw.includes('reserved')) return 'ongoing';
+      if (raw.includes('upcoming') || raw.includes('scheduled') || raw.includes('granted')) return 'upcoming';
+      // fallback: if there's a date in the past treat as decided
+      const d = c.date_decided || c.date;
+      if (d) { try { const dt = d.toDate ? d.toDate() : new Date(d); if (dt < new Date()) return 'decided'; } catch {} }
+      return 'upcoming';
     };
+
+    const statusBadge = (status) => {
+      if (status === 'decided')  return <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Decided</span>;
+      if (status === 'ongoing')  return <span className="text-xs font-bold bg-yellow-100 text-yellow-700 border border-yellow-300 px-2.5 py-0.5 rounded-full">Ongoing</span>;
+      return                            <span className="text-xs font-bold bg-blue-100 text-blue-700 border border-blue-300 px-2.5 py-0.5 rounded-full">Upcoming</span>;
+    };
+
+    const statusBorder = (status) => status === 'decided' ? '#22c55e' : status === 'ongoing' ? '#eab308' : '#3b82f6';
+
     return (
       <div className="min-h-screen bg-gray-50">
+        {/* Sticky header */}
         <div className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <button onClick={() => setView(backView)} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">← Back</button>
+          <div className="max-w-4xl mx-auto px-4 py-4">
+            <button onClick={() => setView(backView)} className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-3">← Back</button>
+            <div className="flex items-center gap-3 mb-4">
+              <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+              {loaded && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+            </div>
+            {/* Tab buttons */}
+            <div className="flex gap-2">
+              {['cases', 'justices'].map(tab => (
+                <button key={tab} onClick={() => setCourtTab(p => ({ ...p, [jur]: tab }))}
+                  className={`px-5 py-2 rounded-full text-sm font-semibold border transition-colors ${activeTab === tab ? 'text-white border-transparent' : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'}`}
+                  style={activeTab === tab ? { backgroundColor: accent, borderColor: accent } : {}}>
+                  {tab === 'cases' ? '📋 Cases' : '⚖️ Justices'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex items-center gap-3 mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-            {loaded && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
-          </div>
 
-          {/* Justices */}
-          <h2 className="text-xl font-bold text-gray-800 mb-4">⚖️ Justices</h2>
+        <div className="max-w-4xl mx-auto px-4 py-8">
           {!loaded ? (
-            <div className="text-center py-10 text-gray-400">Loading…</div>
-          ) : justices.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500 mb-8">Official data loading</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {justices.map((j, i) => (
-                <div key={j.id || i} className="bg-white rounded-lg shadow-sm p-5 border-l-4" style={{ borderColor: accent }}>
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <h3 className="text-lg font-bold text-gray-900">{j.name}</h3>
-                    {(j.title || j.role) && (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-white flex-shrink-0" style={{ backgroundColor: accent }}>{j.title || j.role}</span>
+            <div className="text-center py-20 text-gray-400 text-lg">Loading…</div>
+          ) : activeTab === 'justices' ? (
+            /* ── JUSTICES TAB ── */
+            justices.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-sm p-10 text-center text-gray-500">Official data loading</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {justices.map((j, i) => (
+                  <div key={j.id || i} className="bg-white rounded-xl shadow-sm p-5 border-l-4" style={{ borderColor: accent }}>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h3 className="text-lg font-bold text-gray-900">{j.name}</h3>
+                      {(j.title || j.role) && (
+                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full text-white flex-shrink-0" style={{ backgroundColor: accent }}>
+                          {j.title || j.role}
+                        </span>
+                      )}
+                    </div>
+                    {(j.appointed_by || j.appointedBy) && (
+                      <p className="text-sm text-gray-600 mb-1">
+                        <span className="font-medium">Appointed by</span> {j.appointed_by || j.appointedBy}
+                      </p>
+                    )}
+                    {(j.date_appointed || j.appointed) && (
+                      <p className="text-xs text-gray-400 mb-3">{fmtDate(j.date_appointed || j.appointed)}</p>
+                    )}
+                    {(j.background || j.bio) && (
+                      <p className="text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-3">{j.background || j.bio}</p>
                     )}
                   </div>
-                  {j.appointed_by || j.appointedBy ? (
-                    <p className="text-sm text-gray-500 mb-1">Appointed by {j.appointed_by || j.appointedBy}</p>
-                  ) : null}
-                  {(j.date_appointed || j.appointed) ? (
-                    <p className="text-xs text-gray-400 mb-2">{fmtDate(j.date_appointed || j.appointed)}</p>
-                  ) : null}
-                  {j.background || j.bio ? (
-                    <p className="text-sm text-gray-600 leading-relaxed">{j.background || j.bio}</p>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Cases */}
-          <h2 className="text-xl font-bold text-gray-800 mb-4">📋 Cases</h2>
-          {!loaded ? (
-            <div className="text-center py-10 text-gray-400">Loading…</div>
-          ) : cases.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">Official data loading</div>
+                ))}
+              </div>
+            )
           ) : (
-            <div className="space-y-4">
-              {cases.map((c, i) => (
-                <div key={c.id || i} className="bg-white rounded-lg shadow-sm p-5 border-l-4 border-gray-300">
-                  <div className="flex flex-wrap items-start gap-2 mb-2">
-                    {(c.decision || c.outcome) && (
-                      <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${decisionColor(c.decision || c.outcome)}`}>{c.decision || c.outcome}</span>
-                    )}
-                    {(c.date || c.date_decided || c.date_argued) && (
-                      <span className="text-xs text-gray-400">{fmtDate(c.date || c.date_decided || c.date_argued)}</span>
-                    )}
-                  </div>
-                  <h3 className="text-base font-bold text-gray-900 mb-2">{c.title || c.name || c.case_name}</h3>
-                  {(c.summary || c.description) && (
-                    <p className="text-sm text-gray-600 leading-relaxed">{c.summary || c.description}</p>
-                  )}
-                </div>
-              ))}
-            </div>
+            /* ── CASES TAB ── */
+            cases.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-sm p-10 text-center text-gray-500">Official data loading</div>
+            ) : (
+              <div className="space-y-3">
+                {cases.map((c, i) => {
+                  const caseKey  = c.id || `${jur}-${i}`;
+                  const status   = getStatus(c);
+                  const isOpen   = !!courtExpandedCase[caseKey];
+                  const caseDate = fmtDate(c.date_decided || c.date_argued || c.date);
+                  const caseTitle = c.title || c.name || c.case_name || 'Untitled Case';
+                  const isDecided = status === 'decided';
+                  return (
+                    <div key={caseKey} className="bg-white rounded-xl shadow-sm overflow-hidden border-l-4 transition-shadow hover:shadow-md"
+                      style={{ borderColor: statusBorder(status) }}>
+                      {/* Card header — always visible, clickable */}
+                      <button className="w-full text-left p-5"
+                        onClick={() => setCourtExpandedCase(p => ({ ...p, [caseKey]: !p[caseKey] }))}>
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          {statusBadge(status)}
+                          {caseDate && <span className="text-xs text-gray-400">{caseDate}</span>}
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="text-base font-bold text-gray-900 leading-snug">{caseTitle}</h3>
+                          <ChevronDown className={`w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                        </div>
+                      </button>
+
+                      {/* Expanded detail */}
+                      {isOpen && (
+                        <div className="border-t border-gray-100 px-5 pb-5 pt-4 space-y-4">
+                          {/* Summary */}
+                          {(c.summary || c.description) && (
+                            <div>
+                              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Summary</p>
+                              <p className="text-sm text-gray-700 leading-relaxed">{c.summary || c.description}</p>
+                            </div>
+                          )}
+
+                          {/* Arguments for / against */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {(c.arguments_for || c.arguments_appellant || c.for) && (
+                              <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                                <p className="text-xs font-bold text-green-700 uppercase tracking-wider mb-1">Arguments For</p>
+                                <p className="text-sm text-green-800 leading-relaxed">{c.arguments_for || c.arguments_appellant || c.for}</p>
+                              </div>
+                            )}
+                            {(c.arguments_against || c.arguments_respondent || c.against) && (
+                              <div className="bg-red-50 rounded-lg p-3 border border-red-200">
+                                <p className="text-xs font-bold text-red-700 uppercase tracking-wider mb-1">Arguments Against</p>
+                                <p className="text-sm text-red-800 leading-relaxed">{c.arguments_against || c.arguments_respondent || c.against}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Decided-only: vote distribution + reasoning */}
+                          {isDecided && (
+                            <>
+                              {(c.vote_distribution || c.vote || c.majority) && (
+                                <div className="bg-gray-50 rounded-lg p-4">
+                                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Vote Distribution</p>
+                                  <p className="text-3xl font-black text-gray-800">{c.vote_distribution || c.vote || c.majority}</p>
+                                </div>
+                              )}
+                              {(c.majority_reasoning || c.reasoning || c.holding) && (
+                                <div>
+                                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Why Justices Voted This Way</p>
+                                  <p className="text-sm text-gray-700 leading-relaxed">{c.majority_reasoning || c.reasoning || c.holding}</p>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )
           )}
         </div>
       </div>
