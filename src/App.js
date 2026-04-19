@@ -8118,18 +8118,21 @@ function App() {
   const renderUSContracts = () => {
     const data = liveContracts.US;
     const fmtVal = (val) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `$${(v/1e3).toFixed(0)}K`; return `$${v.toLocaleString()}`; };
-    const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); if (isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch { return null; } };
+    // Resolve a Firestore Timestamp, ISO string, or millis number to a JS Date
+    const toDate = (d) => { if (!d) return null; try { if (d.toDate) return d.toDate(); if (d.seconds) return new Date(d.seconds * 1000); return new Date(d); } catch { return null; } };
+    const fmtDate = (d) => { const dt = toDate(d); if (!dt || isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
     const now = new Date();
     // Derive effective status: if end_date is in the past → Completed, otherwise → Active
     const getStatus = (c) => {
       if (c.end_date) {
-        try { return new Date(c.end_date) < now ? 'completed' : 'active'; } catch { return 'active'; }
+        const dt = toDate(c.end_date);
+        if (dt && !isNaN(dt.getTime())) return dt < now ? 'completed' : 'active';
       }
       return c.status?.toLowerCase() || 'active';
     };
     const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
     const departments = data ? ['All', ...new Set(data.map(c => c.department).filter(Boolean))] : ['All'];
-    const getAwardYear = (c) => { const d = c.date_awarded; if (!d) return null; try { const y = new Date(d).getFullYear(); return isNaN(y) ? null : y; } catch { return null; } };
+    const getAwardYear = (c) => { const dt = toDate(c.date_awarded); if (!dt || isNaN(dt.getTime())) return null; return dt.getFullYear(); };
     // Strip FPDS-style codes like IGF::OT::IGF or TAS::97 0100::TAS from purpose text
     const cleanPurpose = (text) => { if (!text) return null; return text.replace(/[A-Z]{2,}::[^:]*::[A-Z]{2,}/g, '').replace(/\s{2,}/g, ' ').trim() || null; };
     let filtered = (data || []).filter(c => {
