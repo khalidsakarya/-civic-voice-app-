@@ -22095,6 +22095,24 @@ function App() {
     const scoreBorder = isGreen ? 'border-green-500' : isYellow ? 'border-yellow-500' : 'border-red-500';
     const scoreLabel  = isGreen ? '✅ Good — Above 70%' : isYellow ? '⚠️ Fair — 50 to 70%' : '🚨 Poor — Below 50%';
 
+    // Live Firestore data for Overview tab
+    const budgetCC = isUSA ? 'US' : isAustralia ? 'AU' : isUK ? 'UK' : 'CA';
+    const fsDocs = budgetFirestoreData[budgetCC] || [];
+    const fsDoc = fsDocs.length > 0 ? fsDocs[0] : null;
+    const hasLiveOverview = !!fsDoc;
+    const fmtBudgetVal = (val) => {
+      if (val == null) return null;
+      const v = Number(val); if (isNaN(v) || v === 0) return null;
+      const sym = isUK ? '£' : isAustralia ? 'A$' : isUSA ? '$' : 'CA$';
+      if (v >= 1e12) return `${sym}${(v/1e12).toFixed(2)} Trillion`;
+      if (v >= 1e9)  return `${sym}${(v/1e9).toFixed(1)} Billion`;
+      if (v >= 1e6)  return `${sym}${(v/1e6).toFixed(1)} Million`;
+      return `${sym}${v.toLocaleString()}`;
+    };
+    const liveTotalBudget = fsDoc ? fmtBudgetVal(fsDoc.totalGovtExpenditureUSD) : null;
+    const liveFiscalYear  = fsDoc?.fiscalYear ?? null;
+    const liveGdpPct      = fsDoc?.govtExpenditurePctOfGDP ?? null;
+
     const unknownEntry = data.flowData.find(d => d.name === 'Unknown & Undisclosed');
     const unknownAboveThreshold = unknownEntry && unknownEntry.value > 10;
 
@@ -22290,26 +22308,36 @@ function App() {
                   {isOpen && key === 'overview' && (
                     <div className="border-t border-gray-100 px-5 pb-6 pt-5 space-y-5">
                       <div className="bg-gray-50 rounded-2xl p-6 text-center">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Total Federal Budget</p>
-                        <p className="text-6xl font-black text-gray-900 leading-none">{data.totalBudget}</p>
-                        <p className="text-base text-gray-500 mt-3">{data.fiscalYear} · {data.currency}</p>
+                        <div className="flex items-center justify-center gap-2 mb-3">
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Federal Budget</p>
+                          {hasLiveOverview && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                        </div>
+                        <p className="text-6xl font-black text-gray-900 leading-none">{liveTotalBudget || data.totalBudget}</p>
+                        <p className="text-base text-gray-500 mt-3">{liveFiscalYear || data.fiscalYear} · {data.currency}</p>
                         <p className="text-sm text-gray-400 mt-1">{data.fiscalYearDetail}</p>
                       </div>
-                      <div className={`bg-white border-2 rounded-2xl p-5 ${scoreBorder}`}>
+                      <div className="bg-white border-2 border-gray-200 rounded-2xl p-5">
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Efficiency Score</p>
-                        <p className={`text-6xl font-black leading-none ${scoreNum}`}>{eff}%</p>
-                        <p className={`text-base font-bold mt-1 mb-4 ${scoreNum}`}>{scoreLabel}</p>
-                        <div className="h-4 bg-gray-100 rounded-full overflow-hidden mb-3">
-                          <div className={`h-full rounded-full ${scoreBar}`} style={{ width: `${eff}%` }}></div>
-                        </div>
-                        <p className="text-sm text-gray-500">Share of spending that reaches citizens directly</p>
+                        <p className="text-2xl font-bold text-gray-500 mt-2">Not available</p>
+                        <p className="text-sm text-gray-400 mt-2">No verified efficiency data exists for public spending accuracy.</p>
                       </div>
+                      {liveGdpPct != null && (
+                        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                          <div className="flex items-center gap-2 mb-3">
+                            <TrendingUp className="w-5 h-5 text-green-500 flex-shrink-0" />
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Govt Expenditure (% of GDP)</p>
+                            <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                          </div>
+                          <p className="text-4xl font-black text-gray-800">{liveGdpPct}%</p>
+                        </div>
+                      )}
                       <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
                         <div className="flex items-center gap-2 mb-3">
                           <Calendar className="w-5 h-5 text-blue-500 flex-shrink-0" />
                           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Fiscal Year</p>
+                          {hasLiveOverview && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
                         </div>
-                        <p className="text-2xl font-bold text-gray-800">{data.fiscalYear}</p>
+                        <p className="text-2xl font-bold text-gray-800">{liveFiscalYear || data.fiscalYear}</p>
                         <p className="text-sm text-gray-500 mt-1">{data.fiscalYearDetail}</p>
                       </div>
                       <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
@@ -22510,20 +22538,26 @@ function App() {
               <div className={`bg-white rounded-2xl border border-gray-100 text-center mb-6 ${isWide ? 'shadow-md p-8 lg:p-14' : 'shadow-md p-8'}`}>
                 {isAustralia && <div className="flex justify-center mb-4"><span className="inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest" style={{ backgroundColor: '#C9952A22', color: '#C9952A' }}>Australian Federal Budget</span></div>}
                 {isUK && <div className="flex justify-center mb-4"><span className="inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest" style={{ backgroundColor: '#C8102E22', color: '#C8102E' }}>🇬🇧 UK Public Spending</span></div>}
-                <p className={`font-semibold text-gray-400 uppercase tracking-widest mb-3 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Total Federal Budget</p>
-                <p className={`font-black text-gray-900 mb-2 leading-none ${isWide ? 'text-5xl sm:text-7xl lg:text-8xl xl:text-9xl' : 'text-5xl sm:text-7xl'}`}>{data.totalBudget}</p>
-                <p className={`text-gray-500 mt-3 ${isWide ? 'text-base lg:text-lg' : 'text-base'}`}>{data.currency} · {data.fiscalYear} · {data.fiscalYearDetail}</p>
+                <div className={`flex items-center justify-center gap-2 mb-3`}>
+                  <p className={`font-semibold text-gray-400 uppercase tracking-widest ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Total Federal Budget</p>
+                  {hasLiveOverview && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                </div>
+                <p className={`font-black text-gray-900 mb-2 leading-none ${isWide ? 'text-5xl sm:text-7xl lg:text-8xl xl:text-9xl' : 'text-5xl sm:text-7xl'}`}>{liveTotalBudget || data.totalBudget}</p>
+                <p className={`text-gray-500 mt-3 ${isWide ? 'text-base lg:text-lg' : 'text-base'}`}>{data.currency} · {liveFiscalYear || data.fiscalYear} · {data.fiscalYearDetail}</p>
               </div>
 
-              {/* Fiscal Year + Department — 3-col on desktop for AU, 2-col otherwise */}
+              {/* Fiscal Year + Department + GDP/Efficiency — 3-col grid */}
               <div className={`grid grid-cols-1 gap-6 mb-6 ${isWide ? 'md:grid-cols-2 xl:grid-cols-3' : 'md:grid-cols-2'}`}>
                 <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 ${isWide ? 'p-6 lg:p-8' : 'p-6'}`}>
                   <div className="bg-blue-100 p-3 rounded-lg flex-shrink-0">
                     <Calendar className={`text-blue-600 ${isWide ? 'w-6 h-6 lg:w-7 lg:h-7' : 'w-6 h-6'}`} />
                   </div>
                   <div>
-                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-1 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Fiscal Year</p>
-                    <p className={`font-bold text-gray-800 ${isWide ? 'text-xl lg:text-2xl' : 'text-xl'}`}>{data.fiscalYear}</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className={`font-semibold text-gray-400 uppercase tracking-wider ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Fiscal Year</p>
+                      {hasLiveOverview && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    </div>
+                    <p className={`font-bold text-gray-800 ${isWide ? 'text-xl lg:text-2xl' : 'text-xl'}`}>{liveFiscalYear || data.fiscalYear}</p>
                     <p className={`text-gray-500 mt-1 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>{data.fiscalYearDetail}</p>
                   </div>
                 </div>
@@ -22537,25 +22571,32 @@ function App() {
                     <p className={`text-gray-500 mt-1 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>{data.departmentNote}</p>
                   </div>
                 </div>
-                {/* Efficiency Score card — third column on desktop for AU, full row otherwise */}
-                <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 border-l-4 ${scoreBorder} ${isWide ? 'p-6 lg:p-8 xl:col-span-1' : 'p-6 md:col-span-2'}`}>
-                  <div className={`p-3 rounded-lg flex-shrink-0 ${scoreBg}`}>
-                    <TrendingUp className={`${scoreNum} ${isWide ? 'w-6 h-6 lg:w-7 lg:h-7' : 'w-6 h-6'}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-1 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Efficiency Score</p>
-                    <div className="flex items-end justify-between gap-2 mb-3">
-                      <div>
-                        <p className={`font-black ${scoreNum} ${isWide ? 'text-4xl lg:text-5xl' : 'text-4xl'}`}>{eff}%</p>
-                        <p className={`font-semibold mt-0.5 ${scoreNum} ${isWide ? 'text-sm' : 'text-sm'}`}>{scoreLabel}</p>
+                {/* GDP % card (live) or Efficiency Score "Not available" */}
+                {liveGdpPct != null ? (
+                  <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 border-l-4 border-green-500 ${isWide ? 'p-6 lg:p-8 xl:col-span-1' : 'p-6 md:col-span-2'}`}>
+                    <div className="bg-green-100 p-3 rounded-lg flex-shrink-0">
+                      <TrendingUp className={`text-green-600 ${isWide ? 'w-6 h-6 lg:w-7 lg:h-7' : 'w-6 h-6'}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className={`font-semibold text-gray-400 uppercase tracking-wider ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Govt Expenditure (% of GDP)</p>
+                        <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
                       </div>
-                      <p className={`text-gray-500 text-right hidden sm:block ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>Share reaching<br/>citizens directly</p>
-                    </div>
-                    <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${scoreBar}`} style={{ width: `${eff}%` }}></div>
+                      <p className={`font-black text-green-600 ${isWide ? 'text-4xl lg:text-5xl' : 'text-4xl'}`}>{liveGdpPct}%</p>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 border-l-4 border-gray-200 ${isWide ? 'p-6 lg:p-8 xl:col-span-1' : 'p-6 md:col-span-2'}`}>
+                    <div className="bg-gray-100 p-3 rounded-lg flex-shrink-0">
+                      <TrendingUp className={`text-gray-400 ${isWide ? 'w-6 h-6 lg:w-7 lg:h-7' : 'w-6 h-6'}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-semibold text-gray-400 uppercase tracking-wider mb-1 ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Efficiency Score</p>
+                      <p className={`font-bold text-gray-500 ${isWide ? 'text-2xl' : 'text-2xl'}`}>Not available</p>
+                      <p className="text-sm text-gray-400 mt-1">No verified efficiency data exists for public spending accuracy.</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Plain language summary */}
