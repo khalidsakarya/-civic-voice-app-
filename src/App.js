@@ -8129,7 +8129,9 @@ function App() {
     };
     const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
     const departments = data ? ['All', ...new Set(data.map(c => c.department).filter(Boolean))] : ['All'];
-    const getAwardYear = (c) => { const d = c.date_awarded || c.start_date; if (!d) return null; try { const y = new Date(d).getFullYear(); return isNaN(y) ? null : y; } catch { return null; } };
+    const getAwardYear = (c) => { const d = c.date_awarded; if (!d) return null; try { const y = new Date(d).getFullYear(); return isNaN(y) ? null : y; } catch { return null; } };
+    // Strip FPDS-style codes like IGF::OT::IGF or TAS::97 0100::TAS from purpose text
+    const cleanPurpose = (text) => { if (!text) return null; return text.replace(/[A-Z]{2,}::[^:]*::[A-Z]{2,}/g, '').replace(/\s{2,}/g, ' ').trim() || null; };
     let filtered = (data || []).filter(c => {
       const matchSearch = !contractSearch || c.contractor_name?.toLowerCase().includes(contractSearch.toLowerCase()) || c.purpose?.toLowerCase().includes(contractSearch.toLowerCase());
       const matchDept = departmentFilter === 'All' || c.department === departmentFilter;
@@ -8239,7 +8241,15 @@ function App() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="bg-white rounded-lg shadow-md p-8 text-center">
-              <p className="text-gray-600 text-lg">No contracts found matching your criteria.</p>
+              {usContractsStatusFilter === 'Completed' ? (
+                <div>
+                  <p className="text-2xl mb-3">📋</p>
+                  <p className="text-gray-700 font-semibold text-lg mb-2">No completed contracts shown</p>
+                  <p className="text-gray-500 text-sm max-w-md mx-auto">All US federal contracts are marked Active as end dates are not publicly disclosed in this dataset.</p>
+                </div>
+              ) : (
+                <p className="text-gray-600 text-lg">No contracts found matching your criteria.</p>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
@@ -8281,9 +8291,9 @@ function App() {
                         </div>
                       )}
                     </div>
-                    {c.purpose && (
+                    {cleanPurpose(c.purpose) && (
                       <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
-                        <p className="text-gray-700">{c.purpose}</p>
+                        <p className="text-gray-700">{cleanPurpose(c.purpose)}</p>
                       </div>
                     )}
                   </div>
