@@ -8132,7 +8132,14 @@ function App() {
     };
     const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
     const departments = data ? ['All', ...new Set(data.map(c => c.department).filter(Boolean))] : ['All'];
-    const getAwardYear = (c) => { const dt = toDate(c.date_awarded); if (!dt || isNaN(dt.getTime())) return null; return dt.getFullYear(); };
+    // Try every plausible date field; return the 4-digit year or null
+    const getAwardYear = (c) => {
+      const raw = c.date_awarded ?? c.award_date ?? c.dateAwarded ?? c.start_date ?? c.startDate ?? null;
+      const dt = toDate(raw);
+      if (!dt || isNaN(dt.getTime())) return null;
+      const y = dt.getFullYear();
+      return y > 1900 ? y : null;
+    };
     // Strip FPDS-style codes like IGF::OT::IGF or TAS::97 0100::TAS from purpose text
     const cleanPurpose = (text) => { if (!text) return null; return text.replace(/[A-Z]{2,}::[^:]*::[A-Z]{2,}/g, '').replace(/\s{2,}/g, ' ').trim() || null; };
     let filtered = (data || []).filter(c => {
@@ -8277,7 +8284,7 @@ function App() {
                           <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
                         </div>
                         <div className="flex items-baseline gap-3 mb-2">
-                          {awardYear && <span className="text-4xl font-black text-red-600 leading-none">{awardYear}</span>}
+                          <span className="text-4xl font-black text-red-600 leading-none">{awardYear ?? '—'}</span>
                           <h3 className="text-2xl font-bold text-gray-800">{c.contractor_name}</h3>
                         </div>
                         {(startDate || endDate) && (
