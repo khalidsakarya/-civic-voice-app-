@@ -1509,9 +1509,15 @@ function App() {
   const [departmentFilter, setDepartmentFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
   const [caContractsStatusFilter, setCaContractsStatusFilter] = useState('All');
+  const [caContractSearch, setCaContractSearch] = useState('');
+  const [caContractDeptFilter, setCaContractDeptFilter] = useState('All');
   const [usContractsStatusFilter, setUsContractsStatusFilter] = useState('All');
   const [ukContractsStatusFilter, setUkContractsStatusFilter] = useState('All');
+  const [ukContractSearch, setUkContractSearch] = useState('');
+  const [ukContractDeptFilter, setUkContractDeptFilter] = useState('All');
   const [auContractsStatusFilter, setAuContractsStatusFilter] = useState('All');
+  const [auContractSearch, setAuContractSearch] = useState('');
+  const [auContractDeptFilter, setAuContractDeptFilter] = useState('All');
   
   // US Bills filter states
   const [billSearch, setBillSearch] = useState('');
@@ -19937,38 +19943,68 @@ function App() {
   };
 
   const renderUKContracts = () => {
-    const RED = '#C8102E', NAVY = '#012169';
+    const RED = '#C8102E';
     const data = liveContracts.UK;
     const fmtVal = (val) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; if (v >= 1e9) return `£${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `£${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `£${(v/1e3).toFixed(0)}K`; return `£${v.toLocaleString()}`; };
     const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); if (isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return null; } };
     const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
-    const filtered = (data || []).filter(c => {
-      if (ukContractsStatusFilter === 'Active') return c.status?.toLowerCase() === 'active';
-      if (ukContractsStatusFilter === 'Completed') return c.status?.toLowerCase() === 'completed';
-      return true;
+    const departments = data ? ['All', ...new Set(data.map(c => c.department).filter(Boolean))] : ['All'];
+    let filtered = (data || []).filter(c => {
+      const matchSearch = !ukContractSearch || c.contractor_name?.toLowerCase().includes(ukContractSearch.toLowerCase()) || c.purpose?.toLowerCase().includes(ukContractSearch.toLowerCase());
+      const matchDept = ukContractDeptFilter === 'All' || c.department === ukContractDeptFilter;
+      const matchStatus = ukContractsStatusFilter === 'All' || c.status?.toLowerCase() === ukContractsStatusFilter.toLowerCase();
+      return matchSearch && matchDept && matchStatus;
     });
+    filtered = [...filtered].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 py-4">
             <button onClick={() => setView('uk-national')} className="flex items-center gap-2 font-medium" style={{ color: RED }}>
               <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Westminster</span>
             </button>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Government Contracts</h1>
-            <div className="w-20" />
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
-          <div className="rounded-xl p-6 mb-6 border-2" style={{ background: 'linear-gradient(to right, #C8102E08, #01216908)', borderColor: '#C8102E' }}>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="rounded-lg p-6 mb-8 border-2" style={{ background: 'linear-gradient(to right, #C8102E08, #01216908)', borderColor: RED }}>
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-3xl">💷</span>
-              <h2 className="text-2xl font-bold text-gray-800">Follow the Taxpayer Money</h2>
+              <h2 className="text-3xl font-bold text-gray-800">💷 UK Government Contracts</h2>
               {data && data.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
             </div>
-            {data && data.length > 0
-              ? <p className="text-gray-600">UK government contracts worth {totalValue > 0 ? `£${(totalValue/1e9).toFixed(1)}B` : '—'} · {data.length} contracts</p>
-              : <p className="text-gray-600">UK government contracts</p>}
-            <div className="w-16 h-1 mt-3 rounded-full" style={{ background: `linear-gradient(to right, ${RED}, ${NAVY})` }} />
+            <p className="text-gray-600 mb-4">See which companies receive taxpayer money</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-lg p-4 border-2" style={{ borderColor: RED }}>
+                <p className="text-sm text-gray-600">Total Contracts</p>
+                <p className="text-3xl font-bold" style={{ color: RED }}>{data ? data.length : '—'}</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border-2 border-green-300">
+                <p className="text-sm text-gray-600">Total Value</p>
+                <p className="text-3xl font-bold text-green-600">{totalValue > 0 ? fmtVal(totalValue) : '—'}</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
+                <p className="text-sm text-gray-600">Showing Results</p>
+                <p className="text-3xl font-bold text-blue-600">{filtered.length}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Search & Filter</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Search Contractor or Purpose</label>
+                <input type="text" value={ukContractSearch} onChange={e => setUkContractSearch(e.target.value)}
+                  placeholder="e.g., Serco, defence..." className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none" style={{ '--tw-ring-color': RED }} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Department</label>
+                <select value={ukContractDeptFilter} onChange={e => setUkContractDeptFilter(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none">
+                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+            </div>
           </div>
 
           {/* Status filter buttons */}
@@ -19976,7 +20012,8 @@ function App() {
             <div className="flex gap-2 mb-6">
               {['All', 'Active', 'Completed'].map(f => (
                 <button key={f} onClick={() => setUkContractsStatusFilter(f)}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${ukContractsStatusFilter === f ? (f === 'Active' ? 'bg-green-500 text-white border-green-500' : f === 'Completed' ? 'bg-gray-500 text-white border-gray-500' : 'bg-red-700 text-white border-red-700') : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'}`}>
+                  className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${ukContractsStatusFilter === f ? (f === 'Active' ? 'bg-green-500 text-white border-green-500' : f === 'Completed' ? 'bg-gray-500 text-white border-gray-500' : 'text-white border-transparent') : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'}`}
+                  style={ukContractsStatusFilter === f && f === 'All' ? { backgroundColor: RED, borderColor: RED } : {}}>
                   {f}
                 </button>
               ))}
@@ -19991,10 +20028,10 @@ function App() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="bg-white rounded-lg shadow-md p-8 text-center">
-              <p className="text-gray-600 text-lg">No {ukContractsStatusFilter.toLowerCase()} contracts found.</p>
+              <p className="text-gray-600 text-lg">No contracts found matching your criteria.</p>
             </div>
           ) : (
-            <div className="space-y-5">
+            <div className="space-y-4">
               {filtered.map((c, i) => {
                 const val = fmtVal(c.value);
                 const valTypeNote = c.contract_value_type === 'ceiling' ? 'ceiling value' : c.contract_value_type === 'total' ? 'total contract value' : null;
@@ -20005,39 +20042,65 @@ function App() {
                 return (
                   <div key={c.id || i}
                     onClick={() => { setSelectedUkContract(c); setView('uk-contract-detail'); }}
-                    className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all border-2 border-transparent cursor-pointer p-5 sm:p-6 active:scale-[0.99]"
-                    onMouseEnter={e => e.currentTarget.style.borderColor = RED}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
-                  >
-                    <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {isActive && <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Active</span>}
-                        {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
-                        {c.contract_type && <span className="inline-block text-xs font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">{c.contract_type}</span>}
-                        <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
-                      </div>
-                      <div className="flex items-center gap-2">
+                    className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-shadow cursor-pointer border-l-4"
+                    style={{ borderLeftColor: RED }}>
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                      <div className="flex-1">
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {isActive && <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Active</span>}
+                          {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
+                          {c.contract_type && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.contract_type}</span>}
+                          {c.department && <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
+                          <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full self-center">LIVE</span>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">{c.contractor_name}</h3>
                         {(startDate || endDate) && (
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                          <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
                             <Calendar className="w-3.5 h-3.5" />
                             {startDate || '?'}{endDate ? ` → ${endDate}` : ''}
-                          </span>
+                          </p>
                         )}
-                        <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0" />
                       </div>
+                      {val && (
+                        <div className="text-right shrink-0">
+                          <p className="text-3xl font-bold text-green-600">{val}</p>
+                          {valTypeNote && <p className="text-xs text-gray-400 mt-0.5">{valTypeNote}</p>}
+                        </div>
+                      )}
                     </div>
-                    <h2 className="text-xl font-bold text-gray-800 mb-1">{c.contractor_name}</h2>
-                    {c.department && <p className="text-sm text-gray-600 mb-2 truncate">🏛️ {c.department}</p>}
-                    {val && (
-                      <div className="flex items-baseline gap-2 mb-2">
-                        <span className="px-3 py-1 rounded-full text-base font-bold text-white" style={{ backgroundColor: RED }}>{val}</span>
-                        {valTypeNote && <span className="text-xs text-gray-400">{valTypeNote}</span>}
+                    {c.purpose && (
+                      <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
+                        <p className="text-gray-700">{c.purpose}</p>
                       </div>
                     )}
-                    {c.purpose && <p className="text-sm text-gray-700 line-clamp-2">{c.purpose}</p>}
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* Summary by Department */}
+          {data && data.length > 0 && totalValue > 0 && (
+            <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">Contracts by Department</h3>
+              <div className="space-y-3">
+                {departments.filter(d => d !== 'All').map(dept => {
+                  const deptContracts = data.filter(c => c.department === dept);
+                  const deptTotal = deptContracts.reduce((s, c) => s + (Number(c.value) || 0), 0);
+                  const pct = totalValue > 0 ? ((deptTotal / totalValue) * 100).toFixed(1) : 0;
+                  return (
+                    <div key={dept}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-gray-700 font-medium">{dept}</span>
+                        <span className="font-bold text-gray-800">{fmtVal(deptTotal) || '—'} ({pct}%) · {deptContracts.length}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div className="h-3 rounded-full" style={{ width: `${pct}%`, backgroundColor: RED }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -30614,34 +30677,66 @@ function App() {
 
   const renderContracts = () => {
     const data = liveContracts.CA;
-    const fmtVal = (val, cur) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; const sym = cur === 'CAD' ? 'CA$' : '$'; if (v >= 1e9) return `${sym}${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `${sym}${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `${sym}${(v/1e3).toFixed(0)}K`; return `${sym}${v.toLocaleString()}`; };
+    const fmtVal = (val) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; if (v >= 1e9) return `CA$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `CA$${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `CA$${(v/1e3).toFixed(0)}K`; return `CA$${v.toLocaleString()}`; };
     const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); if (isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-CA', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return null; } };
     const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
-    const filtered = (data || []).filter(c => {
-      if (caContractsStatusFilter === 'Active') return c.status?.toLowerCase() === 'active';
-      if (caContractsStatusFilter === 'Completed') return c.status?.toLowerCase() === 'completed';
-      return true;
+    const departments = data ? ['All', ...new Set(data.map(c => c.department).filter(Boolean))] : ['All'];
+    let filtered = (data || []).filter(c => {
+      const matchSearch = !caContractSearch || c.contractor_name?.toLowerCase().includes(caContractSearch.toLowerCase()) || c.purpose?.toLowerCase().includes(caContractSearch.toLowerCase());
+      const matchDept = caContractDeptFilter === 'All' || c.department === caContractDeptFilter;
+      const matchStatus = caContractsStatusFilter === 'All' || c.status?.toLowerCase() === caContractsStatusFilter.toLowerCase();
+      return matchSearch && matchDept && matchStatus;
     });
+    filtered = [...filtered].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 py-4">
             <button onClick={() => setView('categories')} className="text-blue-600 hover:text-blue-800 flex items-center gap-2">
               <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
             </button>
-            <h1 className="text-2xl font-bold text-gray-800">Government Contracts</h1>
-            <div className="w-20"></div>
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 mb-8">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-6 mb-8">
             <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-2xl font-bold text-gray-800">💰 Follow the Taxpayer Money</h2>
+              <h2 className="text-3xl font-bold text-gray-800">💰 Canadian Federal Contracts</h2>
               {data && data.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
             </div>
-            {data && data.length > 0
-              ? <p className="text-gray-600">Canadian federal contracts worth {totalValue > 0 ? `CA$${(totalValue/1e9).toFixed(1)}B` : '—'} · {data.length} contracts</p>
-              : <p className="text-gray-600">Canadian federal government contracts</p>}
+            <p className="text-gray-600 mb-4">See which companies receive taxpayer money</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-lg p-4 border-2 border-green-300">
+                <p className="text-sm text-gray-600">Total Contracts</p>
+                <p className="text-3xl font-bold text-green-600">{data ? data.length : '—'}</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border-2 border-emerald-300">
+                <p className="text-sm text-gray-600">Total Value</p>
+                <p className="text-3xl font-bold text-emerald-600">{totalValue > 0 ? fmtVal(totalValue) : '—'}</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
+                <p className="text-sm text-gray-600">Showing Results</p>
+                <p className="text-3xl font-bold text-blue-600">{filtered.length}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Search & Filter</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Search Contractor or Purpose</label>
+                <input type="text" value={caContractSearch} onChange={e => setCaContractSearch(e.target.value)}
+                  placeholder="e.g., Deloitte, IT services..." className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Department</label>
+                <select value={caContractDeptFilter} onChange={e => setCaContractDeptFilter(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none">
+                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+            </div>
           </div>
 
           {/* Status filter buttons */}
@@ -30649,7 +30744,7 @@ function App() {
             <div className="flex gap-2 mb-6">
               {['All', 'Active', 'Completed'].map(f => (
                 <button key={f} onClick={() => setCaContractsStatusFilter(f)}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${caContractsStatusFilter === f ? (f === 'Active' ? 'bg-green-500 text-white border-green-500' : f === 'Completed' ? 'bg-gray-500 text-white border-gray-500' : 'bg-blue-600 text-white border-blue-600') : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'}`}>
+                  className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${caContractsStatusFilter === f ? (f === 'Active' ? 'bg-green-500 text-white border-green-500' : f === 'Completed' ? 'bg-gray-500 text-white border-gray-500' : 'bg-emerald-600 text-white border-emerald-600') : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'}`}>
                   {f}
                 </button>
               ))}
@@ -30664,12 +30759,12 @@ function App() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="bg-white rounded-lg shadow-md p-8 text-center">
-              <p className="text-gray-600 text-lg">No {caContractsStatusFilter.toLowerCase()} contracts found.</p>
+              <p className="text-gray-600 text-lg">No contracts found matching your criteria.</p>
             </div>
           ) : (
             <div className="space-y-4">
               {filtered.map((c, i) => {
-                const val = fmtVal(c.value, c.currency);
+                const val = fmtVal(c.value);
                 const valTypeNote = c.contract_value_type === 'ceiling' ? 'ceiling value' : c.contract_value_type === 'total' ? 'total contract value' : null;
                 const startDate = fmtDate(c.start_date || c.date_awarded);
                 const endDate = fmtDate(c.end_date);
@@ -30678,34 +30773,65 @@ function App() {
                 return (
                   <div key={c.id || i}
                     onClick={() => { setSelectedContract(c); setView('contract-detail'); }}
-                    className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-l-4 border-green-500 cursor-pointer p-5 sm:p-6"
+                    className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-shadow border-l-4 border-green-500 cursor-pointer"
                   >
-                    <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {isActive && <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Active</span>}
-                        {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
-                        {c.contract_type && <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">{c.contract_type}</span>}
-                        <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                      <div className="flex-1">
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {isActive && <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Active</span>}
+                          {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
+                          {c.contract_type && <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-medium">{c.contract_type}</span>}
+                          {c.department && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
+                          <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full self-center">LIVE</span>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">{c.contractor_name}</h3>
+                        {(startDate || endDate) && (
+                          <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {startDate || '?'}{endDate ? ` → ${endDate}` : ''}
+                          </p>
+                        )}
                       </div>
-                      {(startDate || endDate) && (
-                        <span className="text-xs text-gray-400 flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {startDate || '?'}{endDate ? ` → ${endDate}` : ''}
-                        </span>
+                      {val && (
+                        <div className="text-right shrink-0">
+                          <p className="text-3xl font-bold text-green-600">{val}</p>
+                          {valTypeNote && <p className="text-xs text-gray-400 mt-0.5">{valTypeNote}</p>}
+                        </div>
                       )}
                     </div>
-                    <h2 className="text-xl font-bold text-gray-800 mb-1">{c.contractor_name}</h2>
-                    {c.department && <p className="text-sm text-gray-600 mb-2">🏛️ {c.department}</p>}
-                    {val && (
-                      <div className="flex items-baseline gap-2 mb-2">
-                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-bold text-base">{val}</span>
-                        {valTypeNote && <span className="text-xs text-gray-400">{valTypeNote}</span>}
+                    {c.purpose && (
+                      <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-green-400">
+                        <p className="text-gray-700">{c.purpose}</p>
                       </div>
                     )}
-                    {c.purpose && <p className="text-sm text-gray-700 line-clamp-3">{c.purpose}</p>}
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* Summary by Department */}
+          {data && data.length > 0 && totalValue > 0 && (
+            <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">Contracts by Department</h3>
+              <div className="space-y-3">
+                {departments.filter(d => d !== 'All').map(dept => {
+                  const deptContracts = data.filter(c => c.department === dept);
+                  const deptTotal = deptContracts.reduce((s, c) => s + (Number(c.value) || 0), 0);
+                  const pct = totalValue > 0 ? ((deptTotal / totalValue) * 100).toFixed(1) : 0;
+                  return (
+                    <div key={dept}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-gray-700 font-medium">{dept}</span>
+                        <span className="font-bold text-gray-800">{fmtVal(deptTotal) || '—'} ({pct}%) · {deptContracts.length}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div className="bg-green-500 h-3 rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -32026,31 +32152,63 @@ function App() {
     const fmtVal = (val) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; if (v >= 1e9) return `A$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `A$${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `A$${(v/1e3).toFixed(0)}K`; return `A$${v.toLocaleString()}`; };
     const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); if (isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return null; } };
     const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
-    const filtered = (data || []).filter(c => {
-      if (auContractsStatusFilter === 'Active') return c.status?.toLowerCase() === 'active';
-      if (auContractsStatusFilter === 'Completed') return c.status?.toLowerCase() === 'completed';
-      return true;
+    const departments = data ? ['All', ...new Set(data.map(c => c.department).filter(Boolean))] : ['All'];
+    let filtered = (data || []).filter(c => {
+      const matchSearch = !auContractSearch || c.contractor_name?.toLowerCase().includes(auContractSearch.toLowerCase()) || c.purpose?.toLowerCase().includes(auContractSearch.toLowerCase());
+      const matchDept = auContractDeptFilter === 'All' || c.department === auContractDeptFilter;
+      const matchStatus = auContractsStatusFilter === 'All' || c.status?.toLowerCase() === auContractsStatusFilter.toLowerCase();
+      return matchSearch && matchDept && matchStatus;
     });
+    filtered = [...filtered].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 py-4">
             <button onClick={() => setView('au-categories')} className="text-rose-700 hover:text-rose-900 flex items-center gap-2">
               <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Australian Federal Government</span>
             </button>
-            <h1 className="text-2xl font-bold text-gray-800">Government Contracts</h1>
-            <div className="w-20" />
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200 rounded-lg p-6 mb-6">
+          <div className="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-300 rounded-lg p-6 mb-8">
             <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-2xl font-bold text-gray-800">💰 Follow the Taxpayer Money</h2>
+              <h2 className="text-3xl font-bold text-gray-800">💰 Australian Federal Contracts</h2>
               {data && data.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
             </div>
-            {data && data.length > 0
-              ? <p className="text-gray-600">Australian federal contracts worth {totalValue > 0 ? `A$${(totalValue/1e9).toFixed(1)}B` : '—'} · {data.length} contracts</p>
-              : <p className="text-gray-600">Australian federal government contracts</p>}
+            <p className="text-gray-600 mb-4">See which companies receive taxpayer money</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-lg p-4 border-2 border-rose-300">
+                <p className="text-sm text-gray-600">Total Contracts</p>
+                <p className="text-3xl font-bold text-rose-600">{data ? data.length : '—'}</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border-2 border-green-300">
+                <p className="text-sm text-gray-600">Total Value</p>
+                <p className="text-3xl font-bold text-green-600">{totalValue > 0 ? fmtVal(totalValue) : '—'}</p>
+              </div>
+              <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
+                <p className="text-sm text-gray-600">Showing Results</p>
+                <p className="text-3xl font-bold text-blue-600">{filtered.length}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Search & Filter</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Search Contractor or Purpose</label>
+                <input type="text" value={auContractSearch} onChange={e => setAuContractSearch(e.target.value)}
+                  placeholder="e.g., Accenture, defence..." className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-rose-500 focus:outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Department</label>
+                <select value={auContractDeptFilter} onChange={e => setAuContractDeptFilter(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-rose-500 focus:outline-none">
+                  {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+            </div>
           </div>
 
           {/* Status filter buttons */}
@@ -32073,10 +32231,10 @@ function App() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="bg-white rounded-lg shadow-md p-8 text-center">
-              <p className="text-gray-600 text-lg">No {auContractsStatusFilter.toLowerCase()} contracts found.</p>
+              <p className="text-gray-600 text-lg">No contracts found matching your criteria.</p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {filtered.map((c, i) => {
                 const val = fmtVal(c.value);
                 const valTypeNote = c.contract_value_type === 'ceiling' ? 'ceiling value' : c.contract_value_type === 'total' ? 'total contract value' : null;
@@ -32087,34 +32245,65 @@ function App() {
                 return (
                   <div key={c.id || i}
                     onClick={() => { setSelectedAuContract(c); setView('au-contract-detail'); }}
-                    className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-rose-500 cursor-pointer p-6"
+                    className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-shadow border-l-4 border-rose-500 cursor-pointer"
                   >
-                    <div className="flex items-start justify-between mb-3 flex-wrap gap-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {isActive && <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Active</span>}
-                        {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
-                        {c.contract_type && <span className="inline-block text-xs font-bold bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full">{c.contract_type}</span>}
-                        <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                      <div className="flex-1">
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {isActive && <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Active</span>}
+                          {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
+                          {c.contract_type && <span className="bg-rose-100 text-rose-800 px-3 py-1 rounded-full text-sm font-medium">{c.contract_type}</span>}
+                          {c.department && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
+                          <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full self-center">LIVE</span>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">{c.contractor_name}</h3>
+                        {(startDate || endDate) && (
+                          <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
+                            <Calendar className="w-3.5 h-3.5" />
+                            {startDate || '?'}{endDate ? ` → ${endDate}` : ''}
+                          </p>
+                        )}
                       </div>
-                      {(startDate || endDate) && (
-                        <span className="text-xs text-gray-400 flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {startDate || '?'}{endDate ? ` → ${endDate}` : ''}
-                        </span>
+                      {val && (
+                        <div className="text-right shrink-0">
+                          <p className="text-3xl font-bold text-green-600">{val}</p>
+                          {valTypeNote && <p className="text-xs text-gray-400 mt-0.5">{valTypeNote}</p>}
+                        </div>
                       )}
                     </div>
-                    <h2 className="text-xl font-bold text-gray-800 mb-1">{c.contractor_name}</h2>
-                    {c.department && <p className="text-sm text-gray-600 mb-2">🏛️ {c.department}</p>}
-                    {val && (
-                      <div className="flex items-baseline gap-2 mb-2">
-                        <span className="bg-rose-100 text-rose-800 px-3 py-1 rounded-full text-base font-bold">{val}</span>
-                        {valTypeNote && <span className="text-xs text-gray-400">{valTypeNote}</span>}
+                    {c.purpose && (
+                      <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-rose-400">
+                        <p className="text-gray-700">{c.purpose}</p>
                       </div>
                     )}
-                    {c.purpose && <p className="text-sm text-gray-700 line-clamp-3">{c.purpose}</p>}
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* Summary by Department */}
+          {data && data.length > 0 && totalValue > 0 && (
+            <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">Contracts by Department</h3>
+              <div className="space-y-3">
+                {departments.filter(d => d !== 'All').map(dept => {
+                  const deptContracts = data.filter(c => c.department === dept);
+                  const deptTotal = deptContracts.reduce((s, c) => s + (Number(c.value) || 0), 0);
+                  const pct = totalValue > 0 ? ((deptTotal / totalValue) * 100).toFixed(1) : 0;
+                  return (
+                    <div key={dept}>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-gray-700 font-medium">{dept}</span>
+                        <span className="font-bold text-gray-800">{fmtVal(deptTotal) || '—'} ({pct}%) · {deptContracts.length}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div className="bg-rose-500 h-3 rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
