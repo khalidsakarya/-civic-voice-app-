@@ -6228,6 +6228,9 @@ function App() {
         if (jur === 'CA') {
           console.log('[FederalDepts] CA deptBudgetData updates:', budgetUpdates);
           console.log('[FederalDepts] CA deptHeadsData updates:', headsUpdates);
+          console.log('[FederalDepts] CA:Health Canada budgetUpdate:', budgetUpdates['CA:Health Canada']);
+          console.log('[FederalDepts] CA:Health Canada headsUpdate:', headsUpdates['CA:Health Canada']);
+          console.log('[FederalDepts] All CA budget keys:', Object.keys(budgetUpdates));
         }
         setDeptBudgetData(prev => ({ ...prev, ...budgetUpdates }));
         setDeptHeadsData(prev =>  ({ ...prev, ...headsUpdates }));
