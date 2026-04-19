@@ -1467,7 +1467,7 @@ function App() {
   const [mps, setMps] = useState([]);
   const [bills, setBills] = useState([]);
   const [laws, setLaws] = useState([]);
-  const [contracts, setContracts] = useState([]);
+
   const [governmentData, setGovernmentData] = useState(null);
   
   // US data
@@ -2699,7 +2699,6 @@ function App() {
     fetchBills();
     fetchGovernmentData();
     fetchLaws();
-    fetchContracts();
     initializeUSCongress();
     initializeUSDepartments();
     initializeUSAnalytics();
@@ -5844,18 +5843,6 @@ function App() {
     }
   };
 
-  const fetchContracts = async () => {
-    try {
-      const response = await fetch('https://civic-voice-backend-e3sz.onrender.com/api/contracts');
-      const result = await response.json();
-      
-      if (result.success) {
-        setContracts(result.data);
-      }
-    } catch (err) {
-      console.error('Error fetching contracts:', err);
-    }
-  };
 
   // Get user's location and find their MP
   const findMyMP = () => {
