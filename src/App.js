@@ -7339,35 +7339,59 @@ function App() {
                             </div>
                           )}
 
-                          {/* Arguments for / against */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {(c.arguments_for || c.arguments_appellant || c.for) && (
-                              <div className="bg-green-50 rounded-lg p-3 border border-green-200">
-                                <p className="text-xs font-bold text-green-700 uppercase tracking-wider mb-1">Arguments For</p>
-                                <p className="text-sm text-green-800 leading-relaxed">{c.arguments_for || c.arguments_appellant || c.for}</p>
+                          {/* Arguments for / against — render as bullet points if array, plain text if string */}
+                          {(() => {
+                            const forRaw     = c.arguments_for;
+                            const againstRaw = c.arguments_against;
+                            const toBullets  = (val) => Array.isArray(val) ? val : typeof val === 'string' ? val.split(/\n|;(?=\s)/).map(s => s.trim()).filter(Boolean) : [];
+                            const forItems     = toBullets(forRaw);
+                            const againstItems = toBullets(againstRaw);
+                            if (!forItems.length && !againstItems.length) return null;
+                            return (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {forItems.length > 0 && (
+                                  <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                                    <p className="text-xs font-bold text-green-700 uppercase tracking-wider mb-2">Arguments For</p>
+                                    <ul className="space-y-1">
+                                      {forItems.map((pt, idx) => (
+                                        <li key={idx} className="flex items-start gap-2 text-sm text-green-800">
+                                          <span className="mt-0.5 flex-shrink-0 text-green-500">•</span>
+                                          <span className="leading-relaxed">{pt}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                {againstItems.length > 0 && (
+                                  <div className="bg-red-50 rounded-lg p-3 border border-red-200">
+                                    <p className="text-xs font-bold text-red-700 uppercase tracking-wider mb-2">Arguments Against</p>
+                                    <ul className="space-y-1">
+                                      {againstItems.map((pt, idx) => (
+                                        <li key={idx} className="flex items-start gap-2 text-sm text-red-800">
+                                          <span className="mt-0.5 flex-shrink-0 text-red-500">•</span>
+                                          <span className="leading-relaxed">{pt}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                            {(c.arguments_against || c.arguments_respondent || c.against) && (
-                              <div className="bg-red-50 rounded-lg p-3 border border-red-200">
-                                <p className="text-xs font-bold text-red-700 uppercase tracking-wider mb-1">Arguments Against</p>
-                                <p className="text-sm text-red-800 leading-relaxed">{c.arguments_against || c.arguments_respondent || c.against}</p>
-                              </div>
-                            )}
-                          </div>
+                            );
+                          })()}
 
-                          {/* Decided-only: vote distribution + reasoning */}
+                          {/* Decided-only: vote distribution + voting_reason */}
                           {isDecided && (
                             <>
-                              {(c.vote_distribution || c.vote || c.majority) && (
-                                <div className="bg-gray-50 rounded-lg p-4">
-                                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Vote Distribution</p>
-                                  <p className="text-3xl font-black text-gray-800">{c.vote_distribution || c.vote || c.majority}</p>
+                              {c.vote_distribution && (
+                                <div className="bg-gray-900 rounded-lg p-4 flex items-center gap-4">
+                                  <p className="text-4xl font-black text-white leading-none">{c.vote_distribution}</p>
+                                  <p className="text-sm font-semibold text-gray-300">Decision</p>
                                 </div>
                               )}
-                              {(c.majority_reasoning || c.reasoning || c.holding) && (
+                              {c.voting_reason && (
                                 <div>
-                                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Why Justices Voted This Way</p>
-                                  <p className="text-sm text-gray-700 leading-relaxed">{c.majority_reasoning || c.reasoning || c.holding}</p>
+                                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Why Justices Voted This Way</p>
+                                  <p className="text-sm text-gray-700 leading-relaxed">{c.voting_reason}</p>
                                 </div>
                               )}
                             </>
