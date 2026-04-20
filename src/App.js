@@ -30882,7 +30882,8 @@ function App() {
               const bData = deptBudgetData[`CA:${selectedMinistry.name}`];
               const grantsGiven = Array.isArray(bData?.grants_given) ? bData.grants_given : [];
               const internalSpending = Array.isArray(bData?.internal_spending) ? bData.internal_spending : [];
-              const fmtCAD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; const m = n / 1_000_000; if (m >= 1000) return `CA$${(m/1000).toFixed(1)}B`; if (m >= 1) return `CA$${m.toFixed(1)}M`; return `CA$${(m*1000).toFixed(0)}K`; };
+              // amounts are stored in USD; divide by 0.735 to convert to CAD
+              const fmtCAD = (usd) => { const n = Number(usd); if (isNaN(n)) return '—'; const cad = n / 0.735; const m = cad / 1_000_000; if (m >= 1000) return `CA$${(m/1000).toFixed(1)}B`; if (m >= 1) return `CA$${m.toFixed(1)}M`; return `CA$${(m*1000).toFixed(0)}K`; };
               return (
                 <>
                   <div className="mb-6">
@@ -30898,11 +30899,11 @@ function App() {
                         {grantsGiven.map((g, i) => (
                           <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{g.recipient}</p>
+                              <p className="font-semibold text-gray-800 text-sm">{g.recipient || g.program_name || g.name || '—'}</p>
                               {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-green-700">{g.amount != null ? fmtCAD(g.amount) : '—'}</p>
+                              <p className="text-lg font-bold text-green-700">{fmtCAD(g.amount_usd ?? g.amount)}</p>
                               <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
                             </div>
                           </div>
@@ -30923,10 +30924,10 @@ function App() {
                         {internalSpending.map((s, i) => (
                           <div key={i} className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{s.category}</p>
+                              <p className="font-semibold text-gray-800 text-sm">{s.category || s.name || '—'}</p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-blue-700">{s.amount != null ? fmtCAD(s.amount) : '—'}</p>
+                              <p className="text-lg font-bold text-blue-700">{fmtCAD(s.amount_usd ?? s.amount)}</p>
                               <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">internal</span>
                             </div>
                           </div>
