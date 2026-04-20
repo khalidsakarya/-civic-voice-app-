@@ -580,10 +580,27 @@ const CA_DEPT_FIRESTORE_NAMES = {
   'Global Affairs Canada':                           'Department of Foreign Affairs, Trade and Development',
   'Canadian Heritage':                               'Department of Canadian Heritage',
 };
-// Reverse map: Firestore budget 'name' → CA display name
-const CA_DEPT_DISPLAY_NAMES = Object.fromEntries(
-  Object.entries(CA_DEPT_FIRESTORE_NAMES).map(([k, v]) => [v, k])
-);
+// Reverse map: Firestore English department name → CA ministry display name.
+// Explicit (not computed) so every entry is visible and easy to audit.
+// Must stay in sync with CA_DEPT_FIRESTORE_NAMES above.
+const CA_DEPT_DISPLAY_NAMES = {
+  'Department of Health':                                  'Health Canada',
+  'Department of National Defence':                        'National Defence',
+  'Department of Finance':                                 'Finance Canada',
+  'Department of Justice':                                 'Justice Canada',
+  'Department of Transport':                               'Transport Canada',
+  'Department of Citizenship and Immigration':             'Immigration, Refugees and Citizenship',
+  'Department of the Environment':                         'Environment and Climate Change',
+  'Department of Employment and Social Development':       'Employment and Social Development',
+  'Department of Industry':                                'Innovation, Science and Economic Development',
+  'Public Safety Canada':                                  'Public Safety Canada',
+  'Natural Resources Canada':                              'Natural Resources Canada',
+  'Department of Indigenous Services':                     'Indigenous Services Canada',
+  'Department of Agriculture and Agri-Food':               'Agriculture and Agri-Food Canada',
+  'Department of Foreign Affairs, Trade and Development':  'Global Affairs Canada',
+  'Department of Canadian Heritage':                       'Canadian Heritage',
+};
+console.log('[CA_DEPT_DISPLAY_NAMES] entries:', CA_DEPT_DISPLAY_NAMES);
 
 // Maps UK department display names → Firestore 'name' field values in department_budgets (and reverse)
 const UK_DEPT_FIRESTORE_NAMES = {
@@ -6194,10 +6211,8 @@ function App() {
         const budgetUpdates = {};
         const headsUpdates = {};
         docs.forEach(data => {
-          // 'name' may be a field OR the document ID (Firestore "document name").
-          // Fall back to data.id so bilingual doc IDs like
-          // "Department of Health | Ministère de la Santé" are also handled.
-          const rawName = data.name || data.id;
+          // The bilingual department name may be in 'name', 'department_name', or the doc ID.
+          const rawName = data.name || data.department_name || data.id;
           if (!rawName) return;
           // Strip the French half after the pipe to get the English name for map lookups.
           const englishName = rawName.split('|')[0].trim();
