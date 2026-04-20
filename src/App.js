@@ -6232,11 +6232,11 @@ function App() {
           };
         });
         if (jur === 'CA') {
-          console.log('[FederalDepts] CA deptBudgetData updates:', budgetUpdates);
-          console.log('[FederalDepts] CA deptHeadsData updates:', headsUpdates);
-          console.log('[FederalDepts] CA:Health Canada budgetUpdate:', budgetUpdates['CA:Health Canada']);
-          console.log('[FederalDepts] CA:Health Canada headsUpdate:', headsUpdates['CA:Health Canada']);
           console.log('[FederalDepts] All CA budget keys:', Object.keys(budgetUpdates));
+          const hcBudget = budgetUpdates['CA:Health Canada'];
+          const hcHead   = headsUpdates['CA:Health Canada'];
+          console.log('[FederalDepts] deptBudgetData["CA:Health Canada"] will be set to:', hcBudget ? JSON.stringify(hcBudget, null, 2) : 'UNDEFINED — key was not generated');
+          console.log('[FederalDepts] deptHeadsData["CA:Health Canada"] will be set to:',  hcHead   ? JSON.stringify(hcHead,   null, 2) : 'UNDEFINED — key was not generated');
         }
         setDeptBudgetData(prev => ({ ...prev, ...budgetUpdates }));
         setDeptHeadsData(prev =>  ({ ...prev, ...headsUpdates }));
