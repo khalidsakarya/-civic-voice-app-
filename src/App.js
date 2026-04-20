@@ -6227,16 +6227,15 @@ function App() {
           }
           budgetUpdates[key] = {
             _loaded:           true,
+            currency:          data.currency ?? null,
             total_allocated:   data.budget_authority ?? null,
             total_budget:      data.budget_authority ?? null,
             total_spent:       data.obligations ?? null,
             fiscal_year:       data.fiscal_year ?? null,
             outlays:           data.outlays ?? null,
-            // field name used by all detail pages
+            remaining_balance: data.remaining_balance ?? null,
             employee_count:    data.employees_count ?? null,
-            // grants_given must be an array for the grants section renderer
             grants_given:      Array.isArray(data.grants) ? data.grants : [],
-            // internal_spending must be an array for the internal spending renderer
             internal_spending: Array.isArray(data.internal_spending) ? data.internal_spending : [],
           };
           headsUpdates[key] = {
@@ -6723,7 +6722,8 @@ function App() {
               const _bData = deptBudgetData[_bKey];
               const _allocated = _bData?.total_allocated ?? _bData?.total_budget;
               const _hasData = _bData?._loaded && (_allocated != null || _bData.total_spent != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number') return ''; if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
+              const _sym = _bData.currency === 'GBP' ? '£' : _bData.currency === 'AUD' ? 'A$' : _bData.currency === 'CAD' ? 'CA$' : '$';
+              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; if (v >= 1e12) return `${_sym}${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `${_sym}${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `${_sym}${(v/1e6).toFixed(1)}M`; return `${_sym}${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
               if (!_hasData) return null;
@@ -6738,8 +6738,10 @@ function App() {
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_allocated != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
-                    {_bData.total_spent != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                    {_allocated != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Budget Authority</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
+                    {_bData.total_spent != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Obligations</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                    {_bData.outlays != null && <div className="bg-blue-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Outlays</p><p className="text-2xl font-bold text-blue-700">{_fmt(_bData.outlays)}</p></div>}
+                    {_bData.remaining_balance != null && <div className="bg-purple-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Remaining Balance</p><p className="text-2xl font-bold text-purple-700">{_fmt(_bData.remaining_balance)}</p></div>}
                   </div>
                   {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
                   {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
@@ -6764,8 +6766,7 @@ function App() {
               const bData = deptBudgetData[`US:${selectedDepartment.name}`];
               const grantsGiven = Array.isArray(bData?.grants_given) ? bData.grants_given : [];
               const internalSpending = Array.isArray(bData?.internal_spending) ? bData.internal_spending : [];
-              // amount_usd is already in USD — no conversion needed
-              const fmtUSD = (usd) => { const n = Number(usd); if (isNaN(n)) return '—'; if (n >= 1e12) return `$${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`; return `$${n.toLocaleString()}`; };
+              const fmtAmt = (amount, cur) => { const n = Number(amount); if (isNaN(n) || amount == null) return '—'; const sym = cur === 'GBP' ? '£' : cur === 'AUD' ? 'A$' : cur === 'CAD' ? 'CA$' : '$'; if (n >= 1e12) return `${sym}${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `${sym}${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `${sym}${(n/1e6).toFixed(1)}M`; return `${sym}${n.toLocaleString()}`; };
               return (
                 <>
                   <div className="mb-6">
@@ -6788,7 +6789,7 @@ function App() {
                                 {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
                               </div>
                               <div className="text-right shrink-0">
-                                <p className="text-lg font-bold text-green-700">{fmtUSD(g.amount_usd ?? g.amount)}</p>
+                                <p className="text-lg font-bold text-green-700">{fmtAmt(g.amount, g.currency)}</p>
                                 <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
                               </div>
                             </div>
@@ -6813,7 +6814,7 @@ function App() {
                               <p className="font-semibold text-gray-800 text-sm">{s.category || s.name || '—'}</p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-blue-700">{fmtUSD(s.amount_usd ?? s.amount)}</p>
+                              <p className="text-lg font-bold text-blue-700">{fmtAmt(s.amount, s.currency)}</p>
                               <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">internal</span>
                             </div>
                           </div>
@@ -18831,7 +18832,8 @@ function App() {
               const _bData = deptBudgetData[_bKey];
               const _allocated = _bData?.total_allocated ?? _bData?.total_budget;
               const _hasData = _bData?._loaded && (_allocated != null || _bData.total_spent != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number') return ''; if (v >= 1e12) return `£${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `£${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `£${(v/1e6).toFixed(1)}M`; return `£${v.toLocaleString()}`; };
+              const _sym = _bData.currency === 'GBP' ? '£' : _bData.currency === 'AUD' ? 'A$' : _bData.currency === 'CAD' ? 'CA$' : '$';
+              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; if (v >= 1e12) return `${_sym}${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `${_sym}${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `${_sym}${(v/1e6).toFixed(1)}M`; return `${_sym}${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
               if (!_hasData) return null;
@@ -18846,8 +18848,10 @@ function App() {
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_allocated != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
-                    {_bData.total_spent != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                    {_allocated != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Budget Authority</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
+                    {_bData.total_spent != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Obligations</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                    {_bData.outlays != null && <div className="bg-blue-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Outlays</p><p className="text-2xl font-bold text-blue-700">{_fmt(_bData.outlays)}</p></div>}
+                    {_bData.remaining_balance != null && <div className="bg-purple-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Remaining Balance</p><p className="text-2xl font-bold text-purple-700">{_fmt(_bData.remaining_balance)}</p></div>}
                   </div>
                   {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
                   {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
@@ -18873,8 +18877,7 @@ function App() {
               const bData = deptBudgetData[`UK:${dept.name}`];
               const grantsGiven = Array.isArray(bData?.grants_given) ? bData.grants_given : [];
               const internalSpending = Array.isArray(bData?.internal_spending) ? bData.internal_spending : [];
-              // amount_usd × 0.79 converts USD → GBP
-              const fmtGBP = (usd) => { const n = Number(usd); if (isNaN(n)) return '—'; const gbp = n * 0.79; if (gbp >= 1e12) return `£${(gbp/1e12).toFixed(1)}T`; if (gbp >= 1e9) return `£${(gbp/1e9).toFixed(1)}B`; if (gbp >= 1e6) return `£${(gbp/1e6).toFixed(1)}M`; return `£${gbp.toLocaleString()}`; };
+              const fmtAmt = (amount, cur) => { const n = Number(amount); if (isNaN(n) || amount == null) return '—'; const sym = cur === 'GBP' ? '£' : cur === 'AUD' ? 'A$' : cur === 'CAD' ? 'CA$' : '$'; if (n >= 1e12) return `${sym}${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `${sym}${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `${sym}${(n/1e6).toFixed(1)}M`; return `${sym}${n.toLocaleString()}`; };
               return (
                 <>
                   <div className="mb-6">
@@ -18894,7 +18897,7 @@ function App() {
                               {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-green-700">{fmtGBP(g.amount_usd ?? g.amount)}</p>
+                              <p className="text-lg font-bold text-green-700">{fmtAmt(g.amount, g.currency)}</p>
                               <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
                             </div>
                           </div>
@@ -18918,7 +18921,7 @@ function App() {
                               <p className="font-semibold text-gray-800 text-sm">{s.category || s.name || '—'}</p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-blue-700">{fmtGBP(s.amount_usd ?? s.amount)}</p>
+                              <p className="text-lg font-bold text-blue-700">{fmtAmt(s.amount, s.currency)}</p>
                               <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">internal</span>
                             </div>
                           </div>
@@ -30841,8 +30844,8 @@ function App() {
               const _bData = deptBudgetData[_bKey];
               const _allocated = _bData?.total_budget ?? _bData?.total_allocated;
               const _hasData = _bData?._loaded && (_allocated != null || _bData.total_spent != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              // Values in CAD — divide by 1,000,000 → millions, then /1000 for billions
-              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; const m = v / 1_000_000; if (m >= 1000) return `CA$${(m/1000).toFixed(1)}B`; if (m >= 1) return `CA$${m.toFixed(1)}M`; return `CA$${(m*1000).toFixed(0)}K`; };
+              const _sym = _bData.currency === 'GBP' ? '£' : _bData.currency === 'AUD' ? 'A$' : _bData.currency === 'CAD' ? 'CA$' : '$';
+              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; if (v >= 1e12) return `${_sym}${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `${_sym}${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `${_sym}${(v/1e6).toFixed(1)}M`; return `${_sym}${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
               if (!_hasData) return null;
@@ -30857,8 +30860,10 @@ function App() {
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_allocated != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
-                    {_bData.total_spent != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                    {_allocated != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Budget Authority</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
+                    {_bData.total_spent != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Obligations</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                    {_bData.outlays != null && <div className="bg-blue-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Outlays</p><p className="text-2xl font-bold text-blue-700">{_fmt(_bData.outlays)}</p></div>}
+                    {_bData.remaining_balance != null && <div className="bg-purple-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Remaining Balance</p><p className="text-2xl font-bold text-purple-700">{_fmt(_bData.remaining_balance)}</p></div>}
                   </div>
                   {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
                   {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
@@ -30884,8 +30889,7 @@ function App() {
               const bData = deptBudgetData[`CA:${selectedMinistry.name}`];
               const grantsGiven = Array.isArray(bData?.grants_given) ? bData.grants_given : [];
               const internalSpending = Array.isArray(bData?.internal_spending) ? bData.internal_spending : [];
-              // amounts are stored in USD; divide by 0.735 to convert to CAD
-              const fmtCAD = (usd) => { const n = Number(usd); if (isNaN(n)) return '—'; const cad = n / 0.735; const m = cad / 1_000_000; if (m >= 1000) return `CA$${(m/1000).toFixed(1)}B`; if (m >= 1) return `CA$${m.toFixed(1)}M`; return `CA$${(m*1000).toFixed(0)}K`; };
+              const fmtAmt = (amount, cur) => { const n = Number(amount); if (isNaN(n) || amount == null) return '—'; const sym = cur === 'GBP' ? '£' : cur === 'AUD' ? 'A$' : cur === 'CAD' ? 'CA$' : '$'; if (n >= 1e12) return `${sym}${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `${sym}${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `${sym}${(n/1e6).toFixed(1)}M`; return `${sym}${n.toLocaleString()}`; };
               return (
                 <>
                   <div className="mb-6">
@@ -30905,7 +30909,7 @@ function App() {
                               {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-green-700">{fmtCAD(g.amount_usd ?? g.amount)}</p>
+                              <p className="text-lg font-bold text-green-700">{fmtAmt(g.amount, g.currency)}</p>
                               <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
                             </div>
                           </div>
@@ -30929,7 +30933,7 @@ function App() {
                               <p className="font-semibold text-gray-800 text-sm">{s.category || s.name || '—'}</p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-blue-700">{fmtCAD(s.amount_usd ?? s.amount)}</p>
+                              <p className="text-lg font-bold text-blue-700">{fmtAmt(s.amount, s.currency)}</p>
                               <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">internal</span>
                             </div>
                           </div>
@@ -31672,7 +31676,8 @@ function App() {
               const _bData = deptBudgetData[_bKey];
               const _allocated = _bData?.total_allocated ?? _bData?.total_budget;
               const _hasData = _bData?._loaded && (_allocated != null || _bData.total_spent != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number') return ''; if (v >= 1e12) return `A$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `A$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `A$${(v/1e6).toFixed(1)}M`; return `A$${v.toLocaleString()}`; };
+              const _sym = _bData.currency === 'GBP' ? '£' : _bData.currency === 'AUD' ? 'A$' : _bData.currency === 'CAD' ? 'CA$' : '$';
+              const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; if (v >= 1e12) return `${_sym}${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `${_sym}${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `${_sym}${(v/1e6).toFixed(1)}M`; return `${_sym}${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
               if (!_hasData) return null;
@@ -31687,8 +31692,10 @@ function App() {
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_allocated != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Allocated</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
-                    {_bData.total_spent != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Total Spent</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                    {_allocated != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Budget Authority</p><p className="text-2xl font-bold text-green-700">{_fmt(_allocated)}</p></div>}
+                    {_bData.total_spent != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Obligations</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.total_spent)}</p></div>}
+                    {_bData.outlays != null && <div className="bg-blue-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Outlays</p><p className="text-2xl font-bold text-blue-700">{_fmt(_bData.outlays)}</p></div>}
+                    {_bData.remaining_balance != null && <div className="bg-purple-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Remaining Balance</p><p className="text-2xl font-bold text-purple-700">{_fmt(_bData.remaining_balance)}</p></div>}
                   </div>
                   {_util !== null && <div className="mb-4"><div className="flex justify-between text-sm text-gray-600 mb-1"><span>Budget Utilization</span><span className="font-bold" style={{ color: _barCol }}>{_util}%</span></div><div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${_util}%`, backgroundColor: _barCol }} /></div></div>}
                   {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
@@ -31714,8 +31721,7 @@ function App() {
               const bData = deptBudgetData[`AU:${dept.name}`];
               const grantsGiven = Array.isArray(bData?.grants_given) ? bData.grants_given : [];
               const internalSpending = Array.isArray(bData?.internal_spending) ? bData.internal_spending : [];
-              // amount_usd ÷ 0.645 converts USD → AUD
-              const fmtAUD = (usd) => { const n = Number(usd); if (isNaN(n)) return '—'; const aud = n / 0.645; if (aud >= 1e12) return `A$${(aud/1e12).toFixed(1)}T`; if (aud >= 1e9) return `A$${(aud/1e9).toFixed(1)}B`; if (aud >= 1e6) return `A$${(aud/1e6).toFixed(1)}M`; return `A$${aud.toLocaleString()}`; };
+              const fmtAmt = (amount, cur) => { const n = Number(amount); if (isNaN(n) || amount == null) return '—'; const sym = cur === 'GBP' ? '£' : cur === 'AUD' ? 'A$' : cur === 'CAD' ? 'CA$' : '$'; if (n >= 1e12) return `${sym}${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `${sym}${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `${sym}${(n/1e6).toFixed(1)}M`; return `${sym}${n.toLocaleString()}`; };
               return (
                 <>
                   <div className="mb-6">
@@ -31735,7 +31741,7 @@ function App() {
                               {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-green-700">{fmtAUD(g.amount_usd ?? g.amount)}</p>
+                              <p className="text-lg font-bold text-green-700">{fmtAmt(g.amount, g.currency)}</p>
                               <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
                             </div>
                           </div>
@@ -31759,7 +31765,7 @@ function App() {
                               <p className="font-semibold text-gray-800 text-sm">{s.category || s.name || '—'}</p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-blue-700">{fmtAUD(s.amount_usd ?? s.amount)}</p>
+                              <p className="text-lg font-bold text-blue-700">{fmtAmt(s.amount, s.currency)}</p>
                               <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">internal</span>
                             </div>
                           </div>
