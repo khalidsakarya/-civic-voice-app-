@@ -6764,7 +6764,8 @@ function App() {
               const bData = deptBudgetData[`US:${selectedDepartment.name}`];
               const grantsGiven = Array.isArray(bData?.grants_given) ? bData.grants_given : [];
               const internalSpending = Array.isArray(bData?.internal_spending) ? bData.internal_spending : [];
-              const fmtUSD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e12) return `$${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`; return `$${n.toLocaleString()}`; };
+              // amount_usd is already in USD — no conversion needed
+              const fmtUSD = (usd) => { const n = Number(usd); if (isNaN(n)) return '—'; if (n >= 1e12) return `$${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `$${(n/1e6).toFixed(1)}M`; return `$${n.toLocaleString()}`; };
               return (
                 <>
                   <div className="mb-6">
@@ -6778,8 +6779,8 @@ function App() {
                     ) : (
                       <div className="space-y-3">
                         {grantsGiven.map((g, i) => {
-                          const name = g.program_name || g.program || g.recipient_name || g.recipient || '—';
-                          const sub = (g.recipient_name || g.recipient) !== name ? (g.recipient_name || g.recipient) : null;
+                          const name = g.recipient || g.program_name || g.program || g.name || '—';
+                          const sub = g.recipient && g.program_name ? g.program_name : null;
                           return (
                             <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
                               <div className="flex-1 min-w-0">
@@ -6787,7 +6788,7 @@ function App() {
                                 {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
                               </div>
                               <div className="text-right shrink-0">
-                                <p className="text-lg font-bold text-green-700">{g.amount != null ? fmtUSD(g.amount) : '—'}</p>
+                                <p className="text-lg font-bold text-green-700">{fmtUSD(g.amount_usd ?? g.amount)}</p>
                                 <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
                               </div>
                             </div>
@@ -6809,10 +6810,10 @@ function App() {
                         {internalSpending.map((s, i) => (
                           <div key={i} className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{s.category}</p>
+                              <p className="font-semibold text-gray-800 text-sm">{s.category || s.name || '—'}</p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-blue-700">{s.amount != null ? fmtUSD(s.amount) : '—'}</p>
+                              <p className="text-lg font-bold text-blue-700">{fmtUSD(s.amount_usd ?? s.amount)}</p>
                               <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">internal</span>
                             </div>
                           </div>
@@ -18872,7 +18873,8 @@ function App() {
               const bData = deptBudgetData[`UK:${dept.name}`];
               const grantsGiven = Array.isArray(bData?.grants_given) ? bData.grants_given : [];
               const internalSpending = Array.isArray(bData?.internal_spending) ? bData.internal_spending : [];
-              const fmtGBP = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e12) return `£${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `£${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `£${(n/1e6).toFixed(1)}M`; return `£${n.toLocaleString()}`; };
+              // amount_usd × 0.79 converts USD → GBP
+              const fmtGBP = (usd) => { const n = Number(usd); if (isNaN(n)) return '—'; const gbp = n * 0.79; if (gbp >= 1e12) return `£${(gbp/1e12).toFixed(1)}T`; if (gbp >= 1e9) return `£${(gbp/1e9).toFixed(1)}B`; if (gbp >= 1e6) return `£${(gbp/1e6).toFixed(1)}M`; return `£${gbp.toLocaleString()}`; };
               return (
                 <>
                   <div className="mb-6">
@@ -18888,11 +18890,11 @@ function App() {
                         {grantsGiven.map((g, i) => (
                           <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{g.recipient}</p>
+                              <p className="font-semibold text-gray-800 text-sm">{g.recipient || g.program_name || g.name || '—'}</p>
                               {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-green-700">{g.amount != null ? fmtGBP(g.amount) : '—'}</p>
+                              <p className="text-lg font-bold text-green-700">{fmtGBP(g.amount_usd ?? g.amount)}</p>
                               <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
                             </div>
                           </div>
@@ -18913,10 +18915,10 @@ function App() {
                         {internalSpending.map((s, i) => (
                           <div key={i} className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{s.category}</p>
+                              <p className="font-semibold text-gray-800 text-sm">{s.category || s.name || '—'}</p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-blue-700">{s.amount != null ? fmtGBP(s.amount) : '—'}</p>
+                              <p className="text-lg font-bold text-blue-700">{fmtGBP(s.amount_usd ?? s.amount)}</p>
                               <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">internal</span>
                             </div>
                           </div>
@@ -31712,7 +31714,8 @@ function App() {
               const bData = deptBudgetData[`AU:${dept.name}`];
               const grantsGiven = Array.isArray(bData?.grants_given) ? bData.grants_given : [];
               const internalSpending = Array.isArray(bData?.internal_spending) ? bData.internal_spending : [];
-              const fmtAUD = (v) => { const n = Number(v); if (isNaN(n)) return '—'; if (n >= 1e12) return `A$${(n/1e12).toFixed(1)}T`; if (n >= 1e9) return `A$${(n/1e9).toFixed(1)}B`; if (n >= 1e6) return `A$${(n/1e6).toFixed(1)}M`; return `A$${n.toLocaleString()}`; };
+              // amount_usd ÷ 0.645 converts USD → AUD
+              const fmtAUD = (usd) => { const n = Number(usd); if (isNaN(n)) return '—'; const aud = n / 0.645; if (aud >= 1e12) return `A$${(aud/1e12).toFixed(1)}T`; if (aud >= 1e9) return `A$${(aud/1e9).toFixed(1)}B`; if (aud >= 1e6) return `A$${(aud/1e6).toFixed(1)}M`; return `A$${aud.toLocaleString()}`; };
               return (
                 <>
                   <div className="mb-6">
@@ -31728,11 +31731,11 @@ function App() {
                         {grantsGiven.map((g, i) => (
                           <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{g.recipient}</p>
+                              <p className="font-semibold text-gray-800 text-sm">{g.recipient || g.program_name || g.name || '—'}</p>
                               {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-green-700">{g.amount != null ? fmtAUD(g.amount) : '—'}</p>
+                              <p className="text-lg font-bold text-green-700">{fmtAUD(g.amount_usd ?? g.amount)}</p>
                               <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">grant</span>
                             </div>
                           </div>
@@ -31753,10 +31756,10 @@ function App() {
                         {internalSpending.map((s, i) => (
                           <div key={i} className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{s.category}</p>
+                              <p className="font-semibold text-gray-800 text-sm">{s.category || s.name || '—'}</p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-blue-700">{s.amount != null ? fmtAUD(s.amount) : '—'}</p>
+                              <p className="text-lg font-bold text-blue-700">{fmtAUD(s.amount_usd ?? s.amount)}</p>
                               <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">internal</span>
                             </div>
                           </div>
