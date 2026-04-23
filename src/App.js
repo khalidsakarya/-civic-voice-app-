@@ -6419,6 +6419,25 @@ function App() {
     );
   };
 
+  const deptInfoBar = (lastUpdated) => {
+    const fmtDate = (d) => {
+      if (!d) return null;
+      try { const dt = d?.toDate ? d.toDate() : new Date(d); return isNaN(dt.getTime()) ? null : dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }); } catch { return null; }
+    };
+    const ds = fmtDate(lastUpdated);
+    return (
+      <div className="flex items-center gap-2 flex-wrap text-xs bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-5">
+        <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+        <span className="font-medium text-green-700">Data from official sources</span>
+        {ds && <><span className="text-gray-300">·</span><span className="text-gray-600">Updated: {ds}</span></>}
+        <span className="text-gray-300">·</span>
+        <span className="text-gray-500">Budget &amp; Grants: Quarterly</span>
+        <span className="text-gray-300">·</span>
+        <span className="text-gray-500">Employees &amp; Expenses: Monthly</span>
+      </div>
+    );
+  };
+
   const getVoteIcon = (vote) => {
     if (vote === 'For') return <CheckCircle className="w-5 h-5 text-green-600" />;
     if (vote === 'Against') return <XCircle className="w-5 h-5 text-red-600" />;
@@ -6699,14 +6718,15 @@ function App() {
             <button onClick={(e) => handleShare(e, { id: selectedDepartment.id, title: selectedDepartment.name, text: `🏛️ ${selectedDepartment.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === selectedDepartment.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === selectedDepartment.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">{selectedDepartment.name}</h1>
             {(() => { const hd = deptHeadsData[`US:${selectedDepartment.name}`]; return hd?.name ? <p className="text-lg text-gray-700 mb-2">{hd.title || 'Secretary'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Secretary: Official data loading</p>; })()}
-            <p className="text-gray-600 mb-6">{selectedDepartment.description}</p>
+            <p className="text-gray-600 mb-4">{selectedDepartment.description}</p>
+            {deptInfoBar(deptBudgetData[`US:${selectedDepartment.name}`]?.last_updated)}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
-                  {(deptBudgetData[`US:${selectedDepartment.name}`]?.total_budget ?? deptBudgetData[`US:${selectedDepartment.name}`]?.total_allocated) != null && liveBadge(deptBudgetData[`US:${selectedDepartment.name}`]?.last_updated, 'Quarterly', 'ml-auto')}
+                  {(deptBudgetData[`US:${selectedDepartment.name}`]?.total_budget ?? deptBudgetData[`US:${selectedDepartment.name}`]?.total_allocated) != null && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0 ml-auto" />}
                 </div>
                 {(() => { const _bd = deptBudgetData[`US:${selectedDepartment.name}`]; const raw = _bd?.total_budget ?? _bd?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; const v = Number(raw); const fmt = v >= 1e12 ? `$${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
@@ -6723,7 +6743,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-8 h-8 text-purple-600" />
                   <h3 className="text-lg font-bold text-gray-800">Employees</h3>
-                  {deptBudgetData[`US:${selectedDepartment.name}`]?.employee_count != null && liveBadge(deptBudgetData[`US:${selectedDepartment.name}`]?.last_updated, 'Monthly', 'ml-auto')}
+                  {deptBudgetData[`US:${selectedDepartment.name}`]?.employee_count != null && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0 ml-auto" />}
                 </div>
                 {(() => { const _bd = deptBudgetData[`US:${selectedDepartment.name}`]; const ec = _bd?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
               </div>
@@ -6748,7 +6768,7 @@ function App() {
                   <div className="flex items-center gap-2 mb-4">
                     <TrendingUp className="w-5 h-5 text-green-600" />
                     <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
-                    {liveBadge(_bData?.last_updated, 'Quarterly', 'ml-1')}
+                    <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -6787,7 +6807,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-green-600" />
                       <h3 className="text-xl font-bold text-gray-800">Grants Given</h3>
-                      {grantsGiven.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
+                      {grantsGiven.length > 0 && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />}
                     </div>
                     {grantsGiven.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No grants data available yet.</p>
@@ -6816,7 +6836,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-blue-600" />
                       <h3 className="text-xl font-bold text-gray-800">Internal Spending</h3>
-                      {internalSpending.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
+                      {internalSpending.length > 0 && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />}
                     </div>
                     {internalSpending.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No internal spending data available yet.</p>
@@ -6862,7 +6882,7 @@ function App() {
                         <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
                         <p className="text-sm text-gray-500">Official travel · hospitality</p>
                       </div>
-                      {hasAny && liveBadge(expDocs?.[0]?.last_updated, 'Monthly')}
+                      {hasAny && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />}
                       {isLoading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin ml-auto" />}
                     </div>
                     {!isLoading && !hasAny ? (
@@ -18806,7 +18826,8 @@ function App() {
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-1">{dept.name}</h1>
                 {(() => { const hd = deptHeadsData[`UK:${dept.name}`]; return hd?.name ? <p className="text-lg text-gray-600 mb-2">{hd.title || 'Secretary of State'}: <span className="font-semibold" style={{ color: '#012169' }}>{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Secretary of State: Official data loading</p>; })()}
-                <p className="text-gray-700 max-w-3xl">{dept.description}</p>
+                <p className="text-gray-700 max-w-3xl mb-4">{dept.description}</p>
+                {deptInfoBar(deptBudgetData[`UK:${dept.name}`]?.last_updated)}
               </div>
             </div>
 
@@ -18816,7 +18837,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
-                  {(deptBudgetData[`UK:${dept.name}`]?.total_budget ?? deptBudgetData[`UK:${dept.name}`]?.total_allocated) != null && liveBadge(deptBudgetData[`UK:${dept.name}`]?.last_updated, 'Quarterly', 'ml-auto')}
+                  {(deptBudgetData[`UK:${dept.name}`]?.total_budget ?? deptBudgetData[`UK:${dept.name}`]?.total_allocated) != null && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0 ml-auto" />}
                 </div>
                 {(() => { const _bd = deptBudgetData[`UK:${dept.name}`]; const raw = _bd?.total_budget ?? _bd?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; const v = Number(raw); const fmt = v >= 1e12 ? `£${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `£${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `£${(v/1e6).toFixed(1)}M` : `£${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
@@ -18831,7 +18852,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-8 h-8" style={{ color: '#012169' }} />
                   <h3 className="text-lg font-bold text-gray-800">Civil Servants</h3>
-                  {deptBudgetData[`UK:${dept.name}`]?.employee_count != null && liveBadge(deptBudgetData[`UK:${dept.name}`]?.last_updated, 'Monthly', 'ml-auto')}
+                  {deptBudgetData[`UK:${dept.name}`]?.employee_count != null && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0 ml-auto" />}
                 </div>
                 {(() => { const _bd = deptBudgetData[`UK:${dept.name}`]; const ec = _bd?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; return <p className="text-2xl font-bold" style={{ color: '#012169' }}>{Number(ec).toLocaleString()}</p>; })()}
               </div>
@@ -18856,7 +18877,7 @@ function App() {
                   <div className="flex items-center gap-2 mb-4">
                     <TrendingUp className="w-5 h-5 text-green-600" />
                     <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
-                    {liveBadge(_bData?.last_updated, 'Quarterly', 'ml-1')}
+                    <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -18896,7 +18917,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-green-600" />
                       <h3 className="text-xl font-bold text-gray-800">Grants Given</h3>
-                      {grantsGiven.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
+                      {grantsGiven.length > 0 && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />}
                     </div>
                     {grantsGiven.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No grants data available yet.</p>
@@ -18921,7 +18942,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-blue-600" />
                       <h3 className="text-xl font-bold text-gray-800">Internal Spending</h3>
-                      {internalSpending.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
+                      {internalSpending.length > 0 && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />}
                     </div>
                     {internalSpending.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No internal spending data available yet.</p>
@@ -18967,7 +18988,7 @@ function App() {
                         <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
                         <p className="text-sm text-gray-500">Official travel · hospitality</p>
                       </div>
-                      {hasAny && liveBadge(expDocs?.[0]?.last_updated, 'Monthly')}
+                      {hasAny && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />}
                       {isLoading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin ml-auto" />}
                     </div>
                     {!isLoading && !hasAny ? (
@@ -30805,7 +30826,8 @@ function App() {
               <div>
                 <h1 className="text-4xl font-bold text-gray-800 mb-2">{selectedMinistry.name}</h1>
                 {(() => { const hd = deptHeadsData[`CA:${selectedMinistry.name}`]; const hdName = hd?.name?.replace(/^The Honourable\s+/i, ''); return hdName ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hdName}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
-                <p className="text-gray-700 max-w-3xl">{selectedMinistry.description}</p>
+                <p className="text-gray-700 max-w-3xl mb-4">{selectedMinistry.description}</p>
+                {deptInfoBar(deptBudgetData[`CA:${selectedMinistry.name}`]?.last_updated)}
               </div>
             </div>
 
@@ -30815,7 +30837,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
-                  {deptBudgetData[`CA:${selectedMinistry.name}`]?.total_budget != null && liveBadge(deptBudgetData[`CA:${selectedMinistry.name}`]?.last_updated, 'Quarterly', 'ml-auto')}
+                  {deptBudgetData[`CA:${selectedMinistry.name}`]?.total_budget != null && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0 ml-auto" />}
                 </div>
                 {(() => {
                   const _bdCA = deptBudgetData[`CA:${selectedMinistry.name}`];
@@ -30839,7 +30861,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-8 h-8 text-purple-600" />
                   <h3 className="text-lg font-bold text-gray-800">Employees</h3>
-                  {deptBudgetData[`CA:${selectedMinistry.name}`]?.employee_count != null && liveBadge(deptBudgetData[`CA:${selectedMinistry.name}`]?.last_updated, 'Monthly', 'ml-auto')}
+                  {deptBudgetData[`CA:${selectedMinistry.name}`]?.employee_count != null && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0 ml-auto" />}
                 </div>
                 {(() => { const _bd = deptBudgetData[`CA:${selectedMinistry.name}`]; const ec = _bd?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
               </div>
@@ -30864,7 +30886,7 @@ function App() {
                   <div className="flex items-center gap-2 mb-4">
                     <TrendingUp className="w-5 h-5 text-green-600" />
                     <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
-                    {liveBadge(_bData?.last_updated, 'Quarterly', 'ml-1')}
+                    <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -30904,7 +30926,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-green-600" />
                       <h3 className="text-xl font-bold text-gray-800">Grants Given</h3>
-                      {grantsGiven.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
+                      {grantsGiven.length > 0 && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />}
                     </div>
                     {grantsGiven.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No grants data available yet.</p>
@@ -30929,7 +30951,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-blue-600" />
                       <h3 className="text-xl font-bold text-gray-800">Internal Spending</h3>
-                      {internalSpending.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
+                      {internalSpending.length > 0 && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />}
                     </div>
                     {internalSpending.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No internal spending data available yet.</p>
@@ -30975,7 +30997,7 @@ function App() {
                         <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
                         <p className="text-sm text-gray-500">Official travel · hospitality</p>
                       </div>
-                      {hasAny && liveBadge(expDocs?.[0]?.last_updated, 'Monthly')}
+                      {hasAny && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />}
                       {isLoading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin ml-auto" />}
                     </div>
                     {!isLoading && !hasAny ? (
@@ -31646,7 +31668,8 @@ function App() {
                   <h1 className="text-4xl font-bold text-gray-800">Department of {dept.name}</h1>
                 </div>
                 {(() => { const hd = deptHeadsData[`AU:${dept.name}`]; return hd?.name ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
-                <p className="text-gray-700 max-w-3xl">{dept.description}</p>
+                <p className="text-gray-700 max-w-3xl mb-4">{dept.description}</p>
+                {deptInfoBar(deptBudgetData[`AU:${dept.name}`]?.last_updated)}
               </div>
             </div>
 
@@ -31656,7 +31679,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
-                  {(deptBudgetData[`AU:${dept.name}`]?.total_budget ?? deptBudgetData[`AU:${dept.name}`]?.total_allocated) != null && liveBadge(deptBudgetData[`AU:${dept.name}`]?.last_updated, 'Quarterly', 'ml-auto')}
+                  {(deptBudgetData[`AU:${dept.name}`]?.total_budget ?? deptBudgetData[`AU:${dept.name}`]?.total_allocated) != null && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0 ml-auto" />}
                 </div>
                 {(() => { const _bd = deptBudgetData[`AU:${dept.name}`]; const raw = _bd?.total_budget ?? _bd?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; const v = Number(raw); const fmt = v >= 1e12 ? `A$${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `A$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `A$${(v/1e6).toFixed(1)}M` : `A$${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
@@ -31671,7 +31694,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-8 h-8 text-purple-600" />
                   <h3 className="text-lg font-bold text-gray-800">Employees</h3>
-                  {deptBudgetData[`AU:${dept.name}`]?.employee_count != null && liveBadge(deptBudgetData[`AU:${dept.name}`]?.last_updated, 'Monthly', 'ml-auto')}
+                  {deptBudgetData[`AU:${dept.name}`]?.employee_count != null && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0 ml-auto" />}
                 </div>
                 {(() => { const _bd = deptBudgetData[`AU:${dept.name}`]; const ec = _bd?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
               </div>
@@ -31696,7 +31719,7 @@ function App() {
                   <div className="flex items-center gap-2 mb-4">
                     <TrendingUp className="w-5 h-5 text-green-600" />
                     <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
-                    {liveBadge(_bData?.last_updated, 'Quarterly', 'ml-1')}
+                    <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -31736,7 +31759,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-green-600" />
                       <h3 className="text-xl font-bold text-gray-800">Grants Given</h3>
-                      {grantsGiven.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
+                      {grantsGiven.length > 0 && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />}
                     </div>
                     {grantsGiven.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No grants data available yet.</p>
@@ -31761,7 +31784,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-blue-600" />
                       <h3 className="text-xl font-bold text-gray-800">Internal Spending</h3>
-                      {internalSpending.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
+                      {internalSpending.length > 0 && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />}
                     </div>
                     {internalSpending.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No internal spending data available yet.</p>
@@ -31807,7 +31830,7 @@ function App() {
                         <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
                         <p className="text-sm text-gray-500">Official travel · hospitality · flagged items</p>
                       </div>
-                      {hasAny && liveBadge(expDocs?.[0]?.last_updated, 'Monthly')}
+                      {hasAny && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />}
                       {isLoading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin ml-auto" />}
                     </div>
                     {!isLoading && !hasAny ? (
