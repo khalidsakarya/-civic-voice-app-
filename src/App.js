@@ -6405,6 +6405,20 @@ function App() {
 
   const getPartyColor = (party) => partyColors[party] || '#6B7280';
 
+  const liveBadge = (lastUpdated, freq, extraClass = '') => {
+    const fmtDate = (d) => {
+      if (!d) return null;
+      try { const dt = d?.toDate ? d.toDate() : new Date(d); return isNaN(dt.getTime()) ? null : dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }); } catch { return null; }
+    };
+    const ds = fmtDate(lastUpdated);
+    return (
+      <span className={`inline-flex flex-col items-center bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-bold leading-tight ${extraClass}`}>
+        <span className="whitespace-nowrap">{ds ? `Updated: ${ds}` : 'Official Source'}</span>
+        {freq && <span className="font-normal text-green-100 whitespace-nowrap" style={{fontSize:'0.6rem'}}>{freq}</span>}
+      </span>
+    );
+  };
+
   const getVoteIcon = (vote) => {
     if (vote === 'For') return <CheckCircle className="w-5 h-5 text-green-600" />;
     if (vote === 'Against') return <XCircle className="w-5 h-5 text-red-600" />;
@@ -6603,7 +6617,7 @@ function App() {
                   <button onClick={(e) => handleShare(e, { id: dept.id, title: dept.name, text: `🏛️ ${dept.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 p-2 rounded-lg transition-colors z-10 ${copiedShareId === dept.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === dept.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                   <div className="flex items-start justify-between mb-1 pr-8">
                     <h3 className="text-xl font-bold text-gray-800">{dept.name}</h3>
-                    {hasLive && <span className="shrink-0 ml-2 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    {hasLive && liveBadge(bd?.last_updated, 'Quarterly', 'shrink-0 ml-2')}
                   </div>
                   {hasLiveHead ? (
                     <div className="mb-3">
@@ -6692,7 +6706,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
-                  {(deptBudgetData[`US:${selectedDepartment.name}`]?.total_budget ?? deptBudgetData[`US:${selectedDepartment.name}`]?.total_allocated) != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
+                  {(deptBudgetData[`US:${selectedDepartment.name}`]?.total_budget ?? deptBudgetData[`US:${selectedDepartment.name}`]?.total_allocated) != null && liveBadge(deptBudgetData[`US:${selectedDepartment.name}`]?.last_updated, 'Quarterly', 'ml-auto')}
                 </div>
                 {(() => { const _bd = deptBudgetData[`US:${selectedDepartment.name}`]; const raw = _bd?.total_budget ?? _bd?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; const v = Number(raw); const fmt = v >= 1e12 ? `$${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
@@ -6709,7 +6723,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-8 h-8 text-purple-600" />
                   <h3 className="text-lg font-bold text-gray-800">Employees</h3>
-                  {deptBudgetData[`US:${selectedDepartment.name}`]?.employee_count != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
+                  {deptBudgetData[`US:${selectedDepartment.name}`]?.employee_count != null && liveBadge(deptBudgetData[`US:${selectedDepartment.name}`]?.last_updated, 'Monthly', 'ml-auto')}
                 </div>
                 {(() => { const _bd = deptBudgetData[`US:${selectedDepartment.name}`]; const ec = _bd?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
               </div>
@@ -6734,7 +6748,7 @@ function App() {
                   <div className="flex items-center gap-2 mb-4">
                     <TrendingUp className="w-5 h-5 text-green-600" />
                     <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
-                    <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-1">LIVE</span>
+                    {liveBadge(_bData?.last_updated, 'Quarterly', 'ml-1')}
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -6773,7 +6787,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-green-600" />
                       <h3 className="text-xl font-bold text-gray-800">Grants Given</h3>
-                      {grantsGiven.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {grantsGiven.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
                     </div>
                     {grantsGiven.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No grants data available yet.</p>
@@ -6802,7 +6816,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-blue-600" />
                       <h3 className="text-xl font-bold text-gray-800">Internal Spending</h3>
-                      {internalSpending.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {internalSpending.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
                     </div>
                     {internalSpending.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No internal spending data available yet.</p>
@@ -6848,7 +6862,7 @@ function App() {
                         <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
                         <p className="text-sm text-gray-500">Official travel · hospitality</p>
                       </div>
-                      {hasAny && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {hasAny && liveBadge(expDocs?.[0]?.last_updated, 'Monthly')}
                       {isLoading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin ml-auto" />}
                     </div>
                     {!isLoading && !hasAny ? (
@@ -6989,7 +7003,7 @@ function App() {
           )}
           {isLive && !isLoading && (
             <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-4">
-              <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded">LIVE</span>
+              {liveBadge(govStatsLastUpdated[d.cc], 'Monthly')}
               Last updated: {govStatsLastUpdated[d.cc]?.toLocaleString()}
             </div>
           )}
@@ -7042,7 +7056,7 @@ function App() {
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-bold text-gray-800 leading-snug">{stat.label}</p>
                                   {live?.value != null && (
-                                    <span className="inline-block bg-green-500 text-white text-xs font-bold px-1.5 py-0.5 rounded mt-1">LIVE</span>
+                                    {liveBadge(live?.last_updated, 'Monthly')}
                                   )}
                                 </div>
                                 {/* value + year + ⓘ */}
@@ -7088,7 +7102,7 @@ function App() {
                               <div className="flex items-start justify-between mb-1">
                                 <div className="flex items-center gap-1.5 min-w-0">
                                   <p className="text-xs text-gray-500 uppercase tracking-wide font-medium leading-tight">{stat.label}</p>
-                                  {live?.value != null && <span className="bg-green-500 text-white text-xs font-bold px-1.5 py-0.5 rounded flex-shrink-0">LIVE</span>}
+                                  {live?.value != null && liveBadge(live?.last_updated, 'Monthly', 'flex-shrink-0')}
                                 </div>
                                 {displayUpdated && <span className="text-xs text-gray-400 whitespace-nowrap ml-1 flex-shrink-0">{displayUpdated}</span>}
                               </div>
@@ -7214,7 +7228,7 @@ function App() {
             <button onClick={() => setView(backView)} className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-3">← Back</button>
             <div className="flex items-center gap-3 mb-4">
               <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-              {loaded && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+              {loaded && liveBadge(null, 'Annual')}
             </div>
             {/* Tab buttons */}
             <div className="flex gap-2">
@@ -7535,7 +7549,7 @@ function App() {
           <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-300 rounded-lg p-6 mb-8">
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-bold text-gray-800">💰 US Federal Contracts</h2>
-              {data && data.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+              {data && data.length > 0 && liveBadge(null, 'Monthly')}
             </div>
             <p className="text-gray-600 mb-4">See which companies receive taxpayer money</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -7625,7 +7639,7 @@ function App() {
                           {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
                           {c.contract_type && <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">{c.contract_type}</span>}
                           {c.department && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
-                          <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                          {liveBadge(c.last_updated, 'Monthly')}
                         </div>
                         <div className="flex items-baseline gap-3 mb-2">
                           <span className="text-4xl font-black text-red-600 leading-none">{awardYear ?? '—'}</span>
@@ -11049,7 +11063,7 @@ function App() {
                         <p className="text-blue-300 text-xs mt-0.5">{flag} {countryName} · International disbursements</p>
                       </div>
                     </div>
-                    {hasAidData && <span className="shrink-0 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    {hasAidData && liveBadge(null, 'Monthly', 'shrink-0')}
                   </div>
 
                   {/* World map visual — recipient flags grid */}
@@ -14201,7 +14215,7 @@ function App() {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-bold text-gray-800">📋 Promise Tracker</h2>
-                {promises.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                {promises.length > 0 && liveBadge(promises[0]?.last_updated, 'Monthly')}
               </div>
               <p className="text-sm text-gray-600">{kept} kept · {broken} broken · {promises.length} total tracked</p>
             </div>
@@ -14430,7 +14444,7 @@ function App() {
               <span className="text-3xl">{flag}</span>
               <span className="text-2xl">📋</span>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Promise Tracker</h1>
-              {allPromises.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+              {allPromises.length > 0 && liveBadge(allPromises[0]?.last_updated, 'Monthly')}
             </div>
             <p className="text-gray-500 text-sm ml-1">{leaderName} · {countryName}</p>
             <div className="w-20 h-1 mt-3 rounded-full" style={{ background: `linear-gradient(to right, ${accentColor}, ${accentColor}88)` }} />
@@ -17810,7 +17824,7 @@ function App() {
     const ukVotingBadge = ukIsLoadingVotes
       ? <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>
       : ukIsLiveVotes
-        ? <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+        ? liveBadge(ukLiveDocs[0]?.last_updated, 'Weekly')
         : null;
 
     const ukAttLiveDocs  = memberAttendanceData[mp.name];
@@ -17826,7 +17840,7 @@ function App() {
     const ukAttBadge     = ukIsLoadingAtt
       ? <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>
       : ukIsLiveAtt
-        ? <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+        ? liveBadge(ukAttLiveDoc?.last_updated, 'Monthly')
         : null;
 
     return (
@@ -17907,7 +17921,7 @@ function App() {
                 <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
                   <Users className="w-5 h-5 text-blue-600" /> Biography
                   {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1 ml-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                  {liveBio && !isLoadingBio && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-1">LIVE</span>}
+                  {liveBio && !isLoadingBio && liveBadge(liveBio?.last_updated, 'Monthly', 'ml-1')}
                 </h3>
                 {bioText && <p className="text-sm text-gray-700 leading-relaxed">{bioText}</p>}
                 {liveBio && (
@@ -17932,7 +17946,7 @@ function App() {
                       <p className="text-xs text-gray-500 mb-2 font-semibold uppercase tracking-wide flex items-center gap-2">
                         Committee Memberships
                         {isLoadingCom && <span className="text-blue-500 flex items-center gap-1 font-normal normal-case"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                        {hasLive && !isLoadingCom && <span className="font-bold bg-green-500 text-white px-2 py-0.5 rounded-full normal-case">LIVE</span>}
+                        {hasLive && !isLoadingCom && liveBadge(liveCom?.[0]?.last_updated, 'Monthly')}
                       </p>
                       {hasLive ? (
                         <div className="space-y-2">
@@ -18023,7 +18037,7 @@ function App() {
             const fmtExp = (r) => { const sym = { CAD: 'CA$', USD: '$', GBP: '£', AUD: 'A$' }; return `${sym[r.currency] || r.currency}${Number(r.amountLocal || 0).toLocaleString()}`; };
             return (
               <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-                <SectionHeader id="expenses" icon="💰" title="Office Expenses" badge={hasLiveExp && !isLoadingExp ? <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span> : null} />
+                <SectionHeader id="expenses" icon="💰" title="Office Expenses" badge={hasLiveExp && !isLoadingExp ? liveBadge(liveExp?.[0]?.last_updated, 'Monthly') : null} />
                 {expandedUkSections.expenses && (
                   <div className="px-5 pb-5">
                     {isLoadingExp && <p className="text-xs text-blue-500 flex items-center gap-1 mb-3"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching live data…</p>}
@@ -18090,7 +18104,7 @@ function App() {
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
             <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" badge={
               memberCorporateData[mp.name]?.length > 0 && !memberCorporateLoading[mp.name]
-                ? <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                ? liveBadge(memberCorporateData[mp.name]?.[0]?.last_updated, 'Monthly')
                 : memberCorporateLoading[mp.name]
                   ? <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>
                   : null
@@ -18607,7 +18621,7 @@ function App() {
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
             <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" badge={
               memberCorporateData[lord.name]?.length > 0 && !memberCorporateLoading[lord.name]
-                ? <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                ? liveBadge(memberCorporateData[lord.name]?.[0]?.last_updated, 'Monthly')
                 : memberCorporateLoading[lord.name]
                   ? <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>
                   : null
@@ -18712,7 +18726,7 @@ function App() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <h3 className="text-lg sm:text-xl font-bold text-gray-800">{dept.name}</h3>
-                        {hasLive && <span className="shrink-0 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                        {hasLive && liveBadge(bd?.last_updated, 'Quarterly', 'shrink-0')}
                       </div>
                       {hasLiveHead ? (
                         <div className="mb-1">
@@ -18804,7 +18818,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
-                  {(deptBudgetData[`UK:${dept.name}`]?.total_budget ?? deptBudgetData[`UK:${dept.name}`]?.total_allocated) != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
+                  {(deptBudgetData[`UK:${dept.name}`]?.total_budget ?? deptBudgetData[`UK:${dept.name}`]?.total_allocated) != null && liveBadge(deptBudgetData[`UK:${dept.name}`]?.last_updated, 'Quarterly', 'ml-auto')}
                 </div>
                 {(() => { const _bd = deptBudgetData[`UK:${dept.name}`]; const raw = _bd?.total_budget ?? _bd?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; const v = Number(raw); const fmt = v >= 1e12 ? `£${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `£${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `£${(v/1e6).toFixed(1)}M` : `£${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
@@ -18819,7 +18833,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-8 h-8" style={{ color: '#012169' }} />
                   <h3 className="text-lg font-bold text-gray-800">Civil Servants</h3>
-                  {deptBudgetData[`UK:${dept.name}`]?.employee_count != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
+                  {deptBudgetData[`UK:${dept.name}`]?.employee_count != null && liveBadge(deptBudgetData[`UK:${dept.name}`]?.last_updated, 'Monthly', 'ml-auto')}
                 </div>
                 {(() => { const _bd = deptBudgetData[`UK:${dept.name}`]; const ec = _bd?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; return <p className="text-2xl font-bold" style={{ color: '#012169' }}>{Number(ec).toLocaleString()}</p>; })()}
               </div>
@@ -18844,7 +18858,7 @@ function App() {
                   <div className="flex items-center gap-2 mb-4">
                     <TrendingUp className="w-5 h-5 text-green-600" />
                     <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
-                    <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-1">LIVE</span>
+                    {liveBadge(_bData?.last_updated, 'Quarterly', 'ml-1')}
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -18884,7 +18898,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-green-600" />
                       <h3 className="text-xl font-bold text-gray-800">Grants Given</h3>
-                      {grantsGiven.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {grantsGiven.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
                     </div>
                     {grantsGiven.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No grants data available yet.</p>
@@ -18909,7 +18923,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-blue-600" />
                       <h3 className="text-xl font-bold text-gray-800">Internal Spending</h3>
-                      {internalSpending.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {internalSpending.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
                     </div>
                     {internalSpending.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No internal spending data available yet.</p>
@@ -18955,7 +18969,7 @@ function App() {
                         <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
                         <p className="text-sm text-gray-500">Official travel · hospitality</p>
                       </div>
-                      {hasAny && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {hasAny && liveBadge(expDocs?.[0]?.last_updated, 'Monthly')}
                       {isLoading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin ml-auto" />}
                     </div>
                     {!isLoading && !hasAny ? (
@@ -19073,7 +19087,7 @@ function App() {
           <div className="rounded-lg p-6 mb-8 border-2" style={{ background: 'linear-gradient(to right, #C8102E08, #01216908)', borderColor: RED }}>
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-bold text-gray-800">💷 UK Government Contracts</h2>
-              {data && data.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+              {data && data.length > 0 && liveBadge(null, 'Monthly')}
             </div>
             <p className="text-gray-600 mb-4">See which companies receive taxpayer money</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -19155,7 +19169,7 @@ function App() {
                           {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
                           {c.contract_type && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.contract_type}</span>}
                           {c.department && <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
-                          <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full self-center">LIVE</span>
+                          {liveBadge(c.last_updated, 'Monthly', 'self-center')}
                         </div>
                         <h3 className="text-2xl font-bold text-gray-800 mb-2">{c.contractor_name}</h3>
                         {(startDate || endDate) && (
@@ -19210,7 +19224,7 @@ function App() {
             <div className="h-1.5 w-full rounded-full mb-6" style={{ background: `linear-gradient(to right, ${RED}, #FFFFFF, ${NAVY})` }} />
             <div className="flex items-center gap-3 mb-5 flex-wrap">
               <span className="px-4 py-2 rounded-full text-xl font-bold text-white" style={{ backgroundColor: RED }}>{fmtVal(c.value)}</span>
-              <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+              {liveBadge(c.last_updated, 'Monthly')}
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">{c.contractor_name}</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -21478,7 +21492,7 @@ function App() {
                       <div className="bg-gray-50 rounded-2xl p-6 text-center">
                         <div className="flex items-center justify-center gap-2 mb-3">
                           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Federal Budget</p>
-                          {hasLiveOverview && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                          {hasLiveOverview && liveBadge(fsDoc?.last_updated, 'Quarterly')}
                         </div>
                         <p className="text-6xl font-black text-gray-900 leading-none">{liveTotalBudget || data.totalBudget}</p>
                         <p className="text-base text-gray-500 mt-3">{liveFiscalYear || data.fiscalYear} · {data.currency}</p>
@@ -21494,7 +21508,7 @@ function App() {
                           <div className="flex items-center gap-2 mb-3">
                             <TrendingUp className="w-5 h-5 text-green-500 flex-shrink-0" />
                             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Govt Expenditure (% of GDP)</p>
-                            <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                            {liveBadge(fsDoc?.last_updated, 'Quarterly')}
                           </div>
                           <p className="text-4xl font-black text-gray-800">{liveGdpPct}%</p>
                         </div>
@@ -21503,7 +21517,7 @@ function App() {
                         <div className="flex items-center gap-2 mb-3">
                           <Calendar className="w-5 h-5 text-blue-500 flex-shrink-0" />
                           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Fiscal Year</p>
-                          {hasLiveOverview && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                          {hasLiveOverview && liveBadge(fsDoc?.last_updated, 'Quarterly')}
                         </div>
                         <p className="text-2xl font-bold text-gray-800">{liveFiscalYear || data.fiscalYear}</p>
                         <p className="text-sm text-gray-500 mt-1">{data.fiscalYearDetail}</p>
@@ -21708,7 +21722,7 @@ function App() {
                 {isUK && <div className="flex justify-center mb-4"><span className="inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest" style={{ backgroundColor: '#C8102E22', color: '#C8102E' }}>🇬🇧 UK Public Spending</span></div>}
                 <div className={`flex items-center justify-center gap-2 mb-3`}>
                   <p className={`font-semibold text-gray-400 uppercase tracking-widest ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Total Federal Budget</p>
-                  {hasLiveOverview && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                  {hasLiveOverview && liveBadge(fsDoc?.last_updated, 'Quarterly')}
                 </div>
                 <p className={`font-black text-gray-900 mb-2 leading-none ${isWide ? 'text-5xl sm:text-7xl lg:text-8xl xl:text-9xl' : 'text-5xl sm:text-7xl'}`}>{liveTotalBudget || data.totalBudget}</p>
                 <p className={`text-gray-500 mt-3 ${isWide ? 'text-base lg:text-lg' : 'text-base'}`}>{data.currency} · {liveFiscalYear || data.fiscalYear} · {data.fiscalYearDetail}</p>
@@ -21723,7 +21737,7 @@ function App() {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <p className={`font-semibold text-gray-400 uppercase tracking-wider ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Fiscal Year</p>
-                      {hasLiveOverview && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {hasLiveOverview && liveBadge(fsDoc?.last_updated, 'Quarterly')}
                     </div>
                     <p className={`font-bold text-gray-800 ${isWide ? 'text-xl lg:text-2xl' : 'text-xl'}`}>{liveFiscalYear || data.fiscalYear}</p>
                     <p className={`text-gray-500 mt-1 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>{data.fiscalYearDetail}</p>
@@ -21748,7 +21762,7 @@ function App() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <p className={`font-semibold text-gray-400 uppercase tracking-wider ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Govt Expenditure (% of GDP)</p>
-                        <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                        {liveBadge(fsDoc?.last_updated, 'Quarterly')}
                       </div>
                       <p className={`font-black text-green-600 ${isWide ? 'text-4xl lg:text-5xl' : 'text-4xl'}`}>{liveGdpPct}%</p>
                     </div>
@@ -22069,7 +22083,7 @@ function App() {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {isLoadingAudit && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching live data…</span>}
-                    {!isLoadingAudit && findings.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    {!isLoadingAudit && findings.length > 0 && liveBadge(findings[0]?.last_updated, 'Annual')}
                   </div>
                 </div>
 
@@ -22733,7 +22747,7 @@ function App() {
                     <p className="panel-section-label flex items-center gap-2">
                       Biography
                       {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {liveBio && !isLoadingBio && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {liveBio && !isLoadingBio && liveBadge(liveBio?.last_updated, 'Monthly')}
                     </p>
                     <div className="bg-gradient-to-br from-gray-50 to-amber-50 border border-gray-200 rounded-xl p-4">
                       {bioText && <p className="text-gray-700 text-sm leading-relaxed">{bioText}</p>}
@@ -22765,7 +22779,7 @@ function App() {
                     <p className="panel-section-label flex items-center gap-2">
                       Committee Assignments
                       {isLoadingCom && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {hasLive && !isLoadingCom && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {hasLive && !isLoadingCom && liveBadge(liveCom?.[0]?.last_updated, 'Monthly')}
                     </p>
                     {hasLive ? (
                       <div className="space-y-2">
@@ -22882,7 +22896,7 @@ function App() {
                     <p className="panel-section-label flex items-center gap-2">
                       Office Expense Reports
                       {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {hasLiveExp && !isLoadingExp && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {hasLiveExp && !isLoadingExp && liveBadge(liveExp?.[0]?.last_updated, 'Monthly')}
                     </p>
                     {hasLiveExp ? (
                       <div className="space-y-2">
@@ -22951,7 +22965,7 @@ function App() {
                 <div className="flex items-center gap-2 mb-2">
                   <p className="panel-section-label" style={{ marginBottom: 0 }}>Corporate Affiliations</p>
                   {!!memberCorporateLoading[member.name] && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                  {memberCorporateData[member.name]?.length > 0 && !memberCorporateLoading[member.name] && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                  {memberCorporateData[member.name]?.length > 0 && !memberCorporateLoading[member.name] && liveBadge(memberCorporateData[member.name]?.[0]?.last_updated, 'Monthly')}
                 </div>
                 {memberCorporateData[member.name]?.length > 0 ? (
                   <div className="space-y-2">
@@ -25507,7 +25521,7 @@ function App() {
                 <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-white/15 text-gray-300 capitalize">{election.type}</span>
               )}
             </div>
-            <span className="shrink-0 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+            {liveBadge(election.last_updated, 'Annual', 'shrink-0')}
           </div>
 
           {dateStr && (
@@ -25578,7 +25592,7 @@ function App() {
               <div className="mb-6">
                 <h2 className="text-white font-black text-base mb-3 flex items-center gap-2">
                   📅 Upcoming Elections
-                  <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                  {liveBadge(null, 'Annual')}
                 </h2>
                 {upcoming.map((e, i) => renderElectionCard(e, i))}
               </div>
@@ -25589,7 +25603,7 @@ function App() {
               <div className="mb-6">
                 <h2 className="text-white font-black text-base mb-3 flex items-center gap-2">
                   📋 Recent Election Results
-                  <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+                  {liveBadge(null, 'Annual')}
                 </h2>
                 {past.map((e, i) => renderElectionCard(e, i))}
               </div>
@@ -28514,7 +28528,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <h2 className="text-2xl font-bold text-gray-800">🏛️ Ongoing Parliamentary Bills</h2>
                   {caLiveData && !caFirestoreLoading && caFirestoreBills.length > 0 && (
-                    <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">LIVE</span>
+                    {liveBadge(caFirestoreBills[0]?.last_updated, 'Weekly')}
                   )}
                   {caFirestoreLoading && <span className="text-sm text-gray-400 animate-pulse">Fetching from Firestore…</span>}
                 </div>
@@ -28572,7 +28586,7 @@ function App() {
                               {bill.status}
                             </span>
                             {caLiveData && caFirestoreBills.length > 0 && (
-                              <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">LIVE</span>
+                              {liveBadge(bill.last_updated, 'Weekly')}
                             )}
                             <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                           </div>
@@ -29822,7 +29836,7 @@ function App() {
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-6 mb-8">
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-bold text-gray-800">💰 Canadian Federal Contracts</h2>
-              {data && data.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+              {data && data.length > 0 && liveBadge(null, 'Monthly')}
             </div>
             <p className="text-gray-600 mb-4">See which companies receive taxpayer money</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -29903,7 +29917,7 @@ function App() {
                           {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
                           {c.contract_type && <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-medium">{c.contract_type}</span>}
                           {c.department && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
-                          <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full self-center">LIVE</span>
+                          {liveBadge(c.last_updated, 'Monthly', 'self-center')}
                         </div>
                         <h3 className="text-2xl font-bold text-gray-800 mb-2">{c.contractor_name}</h3>
                         {(startDate || endDate) && (
@@ -29955,7 +29969,7 @@ function App() {
           <div className="bg-white rounded-lg shadow-md p-8 mb-6">
             <div className="flex items-center gap-3 mb-5 flex-wrap">
               <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-xl font-bold">{fmtVal(c.value, c.currency)}</span>
-              <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+              {liveBadge(c.last_updated, 'Monthly')}
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-6">{c.contractor_name}</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -30287,7 +30301,7 @@ function App() {
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 📖 Biography
                 {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                {liveBio && !isLoadingBio && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                {liveBio && !isLoadingBio && liveBadge(liveBio?.last_updated, 'Monthly')}
               </h3>
               {bioText && <p className="text-gray-700 leading-relaxed mb-4">{bioText}</p>}
               {liveBio && (
@@ -30351,7 +30365,7 @@ function App() {
               <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 🏛️ Committee Assignments
                 {isLoadingCom && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                {hasLive && !isLoadingCom && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                {hasLive && !isLoadingCom && liveBadge(liveCom?.[0]?.last_updated, 'Monthly')}
               </h3>
               <div className="space-y-2">
                 {(hasLive ? liveCom : fallback.map(c => ({ committeeName: c }))).map((c, i) => (
@@ -30394,7 +30408,7 @@ function App() {
                     <div className="flex items-center gap-2 mb-0.5">
                       <h2 className="text-xl font-bold text-gray-800">📊 Voting History</h2>
                       {isLoadingVotes && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {isLiveVotes && !isLoadingVotes && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {isLiveVotes && !isLoadingVotes && liveBadge(null, 'Weekly')}
                     </div>
                     <p className="text-sm text-gray-600">{displayVotes.length} recent votes</p>
                   </div>
@@ -30446,7 +30460,7 @@ function App() {
                     <div className="flex items-center gap-2 mb-0.5">
                       <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
                       {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {isLive && !isLoading && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {isLive && !isLoading && liveBadge(null, 'Monthly')}
                     </div>
                     <p className={`text-sm font-semibold ${pctColor}`}>{pct}% attendance rate</p>
                   </div>
@@ -30498,7 +30512,7 @@ function App() {
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                       💸 Office Expense Reports
                       {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1 font-normal"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {hasLiveExp && !isLoadingExp && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {hasLiveExp && !isLoadingExp && liveBadge(liveExp?.[0]?.last_updated, 'Monthly')}
                     </h2>
                     {!hasLiveExp && fallbackExp && <p className="text-sm text-gray-600">{formatCurrency(fallbackExp.total)} total ({fallbackExp.year})</p>}
                     {hasLiveExp && <p className="text-sm text-gray-600">{liveExp.length} records from official disclosure</p>}
@@ -30574,7 +30588,7 @@ function App() {
                   <div className="flex items-center gap-2">
                     <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
                     {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                    {isLiveLobby && !isLoadingLobby && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                    {isLiveLobby && !isLoadingLobby && liveBadge(null, 'Monthly')}
                   </div>
                 </div>
                 {expandedSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
@@ -30616,7 +30630,7 @@ function App() {
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-bold text-gray-800">💼 Corporate Connections</h2>
                 {!!memberCorporateLoading[selectedMember?.name] && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                {memberCorporateData[selectedMember?.name]?.length > 0 && !memberCorporateLoading[selectedMember?.name] && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                {memberCorporateData[selectedMember?.name]?.length > 0 && !memberCorporateLoading[selectedMember?.name] && liveBadge(memberCorporateData[selectedMember?.name]?.[0]?.last_updated, 'Monthly')}
               </div>
             </div>
             {expandedSections.corporate ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
@@ -30729,7 +30743,7 @@ function App() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <h3 className="text-lg sm:text-xl font-bold text-gray-800">{ministry.name}</h3>
-                        {hasLive && <span className="shrink-0 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                        {hasLive && liveBadge(bd?.last_updated, 'Quarterly', 'shrink-0')}
                       </div>
                       {hasLiveHead ? (
                         <div className="mb-1">
@@ -30807,7 +30821,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
-                  {deptBudgetData[`CA:${selectedMinistry.name}`]?.total_budget != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
+                  {deptBudgetData[`CA:${selectedMinistry.name}`]?.total_budget != null && liveBadge(deptBudgetData[`CA:${selectedMinistry.name}`]?.last_updated, 'Quarterly', 'ml-auto')}
                 </div>
                 {(() => {
                   const _bdCA = deptBudgetData[`CA:${selectedMinistry.name}`];
@@ -30831,7 +30845,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-8 h-8 text-purple-600" />
                   <h3 className="text-lg font-bold text-gray-800">Employees</h3>
-                  {deptBudgetData[`CA:${selectedMinistry.name}`]?.employee_count != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
+                  {deptBudgetData[`CA:${selectedMinistry.name}`]?.employee_count != null && liveBadge(deptBudgetData[`CA:${selectedMinistry.name}`]?.last_updated, 'Monthly', 'ml-auto')}
                 </div>
                 {(() => { const _bd = deptBudgetData[`CA:${selectedMinistry.name}`]; const ec = _bd?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
               </div>
@@ -30856,7 +30870,7 @@ function App() {
                   <div className="flex items-center gap-2 mb-4">
                     <TrendingUp className="w-5 h-5 text-green-600" />
                     <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
-                    <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-1">LIVE</span>
+                    {liveBadge(_bData?.last_updated, 'Quarterly', 'ml-1')}
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -30896,7 +30910,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-green-600" />
                       <h3 className="text-xl font-bold text-gray-800">Grants Given</h3>
-                      {grantsGiven.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {grantsGiven.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
                     </div>
                     {grantsGiven.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No grants data available yet.</p>
@@ -30921,7 +30935,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-blue-600" />
                       <h3 className="text-xl font-bold text-gray-800">Internal Spending</h3>
-                      {internalSpending.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {internalSpending.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
                     </div>
                     {internalSpending.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No internal spending data available yet.</p>
@@ -30967,7 +30981,7 @@ function App() {
                         <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
                         <p className="text-sm text-gray-500">Official travel · hospitality</p>
                       </div>
-                      {hasAny && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {hasAny && liveBadge(expDocs?.[0]?.last_updated, 'Monthly')}
                       {isLoading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin ml-auto" />}
                     </div>
                     {!isLoading && !hasAny ? (
@@ -31086,7 +31100,7 @@ function App() {
           <div className="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-300 rounded-lg p-6 mb-8">
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-3xl font-bold text-gray-800">💰 Australian Federal Contracts</h2>
-              {data && data.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+              {data && data.length > 0 && liveBadge(null, 'Monthly')}
             </div>
             <p className="text-gray-600 mb-4">See which companies receive taxpayer money</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -31167,7 +31181,7 @@ function App() {
                           {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
                           {c.contract_type && <span className="bg-rose-100 text-rose-800 px-3 py-1 rounded-full text-sm font-medium">{c.contract_type}</span>}
                           {c.department && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
-                          <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full self-center">LIVE</span>
+                          {liveBadge(c.last_updated, 'Monthly', 'self-center')}
                         </div>
                         <h3 className="text-2xl font-bold text-gray-800 mb-2">{c.contractor_name}</h3>
                         {(startDate || endDate) && (
@@ -31219,7 +31233,7 @@ function App() {
           <div className="bg-white rounded-lg shadow-md p-8 mb-6">
             <div className="flex items-center gap-3 mb-5 flex-wrap">
               <span className="bg-rose-100 text-rose-800 px-4 py-2 rounded-full text-2xl font-bold">{fmtVal(c.value)}</span>
-              <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>
+              {liveBadge(c.last_updated, 'Monthly')}
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-6">{c.contractor_name}</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -31559,7 +31573,7 @@ function App() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <h3 className="text-lg sm:text-xl font-bold text-gray-800">{dept.name}</h3>
-                        {hasLive && <span className="shrink-0 text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                        {hasLive && liveBadge(bd?.last_updated, 'Quarterly', 'shrink-0')}
                       </div>
                       {hasLiveHead ? (
                         <div className="mb-1">
@@ -31648,7 +31662,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
                   <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
-                  {(deptBudgetData[`AU:${dept.name}`]?.total_budget ?? deptBudgetData[`AU:${dept.name}`]?.total_allocated) != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
+                  {(deptBudgetData[`AU:${dept.name}`]?.total_budget ?? deptBudgetData[`AU:${dept.name}`]?.total_allocated) != null && liveBadge(deptBudgetData[`AU:${dept.name}`]?.last_updated, 'Quarterly', 'ml-auto')}
                 </div>
                 {(() => { const _bd = deptBudgetData[`AU:${dept.name}`]; const raw = _bd?.total_budget ?? _bd?.total_allocated; if (raw == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; const v = Number(raw); const fmt = v >= 1e12 ? `A$${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `A$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `A$${(v/1e6).toFixed(1)}M` : `A$${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
@@ -31663,7 +31677,7 @@ function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-8 h-8 text-purple-600" />
                   <h3 className="text-lg font-bold text-gray-800">Employees</h3>
-                  {deptBudgetData[`AU:${dept.name}`]?.employee_count != null && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-auto">LIVE</span>}
+                  {deptBudgetData[`AU:${dept.name}`]?.employee_count != null && liveBadge(deptBudgetData[`AU:${dept.name}`]?.last_updated, 'Monthly', 'ml-auto')}
                 </div>
                 {(() => { const _bd = deptBudgetData[`AU:${dept.name}`]; const ec = _bd?.employee_count; if (ec == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; return <p className="text-2xl font-bold text-purple-700">{Number(ec).toLocaleString()}</p>; })()}
               </div>
@@ -31688,7 +31702,7 @@ function App() {
                   <div className="flex items-center gap-2 mb-4">
                     <TrendingUp className="w-5 h-5 text-green-600" />
                     <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
-                    <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full ml-1">LIVE</span>
+                    {liveBadge(_bData?.last_updated, 'Quarterly', 'ml-1')}
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -31728,7 +31742,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-green-600" />
                       <h3 className="text-xl font-bold text-gray-800">Grants Given</h3>
-                      {grantsGiven.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {grantsGiven.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
                     </div>
                     {grantsGiven.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No grants data available yet.</p>
@@ -31753,7 +31767,7 @@ function App() {
                     <div className="flex items-center gap-3 mb-3">
                       <DollarSign className="w-6 h-6 text-blue-600" />
                       <h3 className="text-xl font-bold text-gray-800">Internal Spending</h3>
-                      {internalSpending.length > 0 && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {internalSpending.length > 0 && liveBadge(bData?.last_updated, 'Quarterly')}
                     </div>
                     {internalSpending.length === 0 ? (
                       <p className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg">No internal spending data available yet.</p>
@@ -31799,7 +31813,7 @@ function App() {
                         <h2 className="text-2xl font-bold text-gray-800">🧾 Expenses &amp; Spending</h2>
                         <p className="text-sm text-gray-500">Official travel · hospitality · flagged items</p>
                       </div>
-                      {hasAny && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {hasAny && liveBadge(expDocs?.[0]?.last_updated, 'Monthly')}
                       {isLoading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin ml-auto" />}
                     </div>
                     {!isLoading && !hasAny ? (
@@ -32326,7 +32340,7 @@ function App() {
                     <p className="panel-section-label flex items-center gap-2">
                       Biography
                       {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {liveBio && !isLoadingBio && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {liveBio && !isLoadingBio && liveBadge(liveBio?.last_updated, 'Monthly')}
                     </p>
                     <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
                       {bioText && <p className="text-gray-700 text-sm leading-relaxed">{bioText}</p>}
@@ -32358,7 +32372,7 @@ function App() {
                     <p className="panel-section-label flex items-center gap-2">
                       Committee Assignments
                       {isLoadingCom && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {hasLive && !isLoadingCom && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {hasLive && !isLoadingCom && liveBadge(liveCom?.[0]?.last_updated, 'Monthly')}
                     </p>
                     {hasLive ? (
                       <div className="space-y-2">
@@ -32482,7 +32496,7 @@ function App() {
                     <div className="flex items-center gap-2 mb-2">
                       <p className="panel-section-label" style={{ marginBottom: 0 }}>Attendance Record</p>
                       {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {isLive && !isLoading && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {isLive && !isLoading && liveBadge(null, 'Monthly')}
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
@@ -32524,7 +32538,7 @@ function App() {
                     <p className="panel-section-label flex items-center gap-2">
                       Office Expense Reports
                       {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {hasLiveExp && !isLoadingExp && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {hasLiveExp && !isLoadingExp && liveBadge(liveExp?.[0]?.last_updated, 'Monthly')}
                     </p>
                     {hasLiveExp ? (
                       <div className="space-y-2">
@@ -32577,7 +32591,7 @@ function App() {
                         Voting Record &mdash; {displayVotes.length} recent vote{displayVotes.length !== 1 ? 's' : ''}
                       </p>
                       {isLoadingVotes && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {isLiveVotes && !isLoadingVotes && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {isLiveVotes && !isLoadingVotes && liveBadge(null, 'Weekly')}
                     </div>
                     <div className="space-y-2">
                       {displayVotes.map((vote, i) => (
@@ -32612,7 +32626,7 @@ function App() {
                     <div className="flex items-center gap-2 mb-2">
                       <p className="panel-section-label" style={{ marginBottom: 0 }}>Stock Trading Activity</p>
                       {isLoadingTrades && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {hasLiveTrades && !isLoadingTrades && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {hasLiveTrades && !isLoadingTrades && liveBadge(null, 'Weekly')}
                     </div>
                     {hasLiveTrades ? (
                       <div className="space-y-2">
@@ -32654,7 +32668,7 @@ function App() {
                     <div className="flex items-center gap-2 mb-2">
                       <p className="panel-section-label" style={{ marginBottom: 0 }}>Financial Disclosure</p>
                       {isLoadingDisc && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {isLiveDisc && !isLoadingDisc && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                      {isLiveDisc && !isLoadingDisc && liveBadge(null, 'Annual')}
                     </div>
                     {isLiveDisc ? (
                       <>
@@ -32704,7 +32718,7 @@ function App() {
                 <div className="flex items-center gap-2 mb-2">
                   <p className="panel-section-label" style={{ marginBottom: 0 }}>Corporate Connections</p>
                   {!!memberCorporateLoading[member.name] && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                  {memberCorporateData[member.name]?.length > 0 && !memberCorporateLoading[member.name] && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                  {memberCorporateData[member.name]?.length > 0 && !memberCorporateLoading[member.name] && liveBadge(memberCorporateData[member.name]?.[0]?.last_updated, 'Monthly')}
                 </div>
                 {memberCorporateData[member.name]?.length > 0 ? (
                   <div className="space-y-2">
@@ -33572,7 +33586,7 @@ function App() {
             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
               📖 Biography
               {memberBioLoading[s.name] && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-              {memberBioData[s.name] && !memberBioLoading[s.name] && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+              {memberBioData[s.name] && !memberBioLoading[s.name] && liveBadge(memberBioData[s.name]?.last_updated, 'Monthly')}
             </h3>
             <p className="text-gray-700 leading-relaxed mb-4">{memberBioData[s.name]?.bio || memberBioData[s.name]?.biography || s.bio}</p>
             {memberBioData[s.name] && (
@@ -33589,7 +33603,7 @@ function App() {
             <h4 className="font-bold text-gray-700 mb-3 flex items-center gap-2">
               Senate Committees
               {memberCommitteeLoading[s.name] && <span className="text-xs text-blue-500 flex items-center gap-1 font-normal"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-              {memberCommitteeData[s.name]?.length > 0 && !memberCommitteeLoading[s.name] && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+              {memberCommitteeData[s.name]?.length > 0 && !memberCommitteeLoading[s.name] && liveBadge(memberCommitteeData[s.name]?.[0]?.last_updated, 'Monthly')}
             </h4>
             <div className="space-y-2">
               {(memberCommitteeData[s.name]?.length > 0 ? memberCommitteeData[s.name] : committees.map(c => ({ committeeName: `Standing Senate Committee on ${c}` }))).map((c, i) => (
@@ -33663,7 +33677,7 @@ function App() {
                       <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                         💸 Office Expense Reports
                         {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1 font-normal"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                        {hasLiveExp && !isLoadingExp && <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">LIVE</span>}
+                        {hasLiveExp && !isLoadingExp && liveBadge(liveExp?.[0]?.last_updated, 'Monthly')}
                       </h2>
                       {hasLiveExp ? <p className="text-sm text-gray-600">{liveExp.length} records from official disclosure</p> : <p className="text-sm text-gray-600">Office expense reports</p>}
                     </div>
