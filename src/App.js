@@ -7055,9 +7055,7 @@ function App() {
                                 {/* label + LIVE badge */}
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-bold text-gray-800 leading-snug">{stat.label}</p>
-                                  {live?.value != null && (
-                                    {liveBadge(live?.last_updated, 'Monthly')}
-                                  )}
+                                  {live?.value != null && liveBadge(live?.last_updated, 'Monthly')}
                                 </div>
                                 {/* value + year + ⓘ */}
                                 <div className="flex items-start gap-2 flex-shrink-0">
@@ -28527,9 +28525,7 @@ function App() {
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-6 mb-8">
                 <div className="flex items-center gap-3 mb-2">
                   <h2 className="text-2xl font-bold text-gray-800">🏛️ Ongoing Parliamentary Bills</h2>
-                  {caLiveData && !caFirestoreLoading && caFirestoreBills.length > 0 && (
-                    {liveBadge(caFirestoreBills[0]?.last_updated, 'Weekly')}
-                  )}
+                  {caLiveData && !caFirestoreLoading && caFirestoreBills.length > 0 && liveBadge(caFirestoreBills[0]?.last_updated, 'Weekly')}
                   {caFirestoreLoading && <span className="text-sm text-gray-400 animate-pulse">Fetching from Firestore…</span>}
                 </div>
                 <p className="text-gray-600">Bills currently moving through Parliament — being debated, reviewed, or voted on</p>
@@ -28585,9 +28581,7 @@ function App() {
                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(bill.status)}`}>
                               {bill.status}
                             </span>
-                            {caLiveData && caFirestoreBills.length > 0 && (
-                              {liveBadge(bill.last_updated, 'Weekly')}
-                            )}
+                            {caLiveData && caFirestoreBills.length > 0 && liveBadge(bill.last_updated, 'Weekly')}
                             <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                           </div>
                           <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
