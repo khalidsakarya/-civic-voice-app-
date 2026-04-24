@@ -6778,7 +6778,7 @@ function App() {
           <div className="relative bg-white rounded-lg shadow-md p-8 mb-6">
             <button onClick={(e) => handleShare(e, { id: selectedDepartment.id, title: selectedDepartment.name, text: `🏛️ ${selectedDepartment.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === selectedDepartment.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === selectedDepartment.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">{selectedDepartment.name}</h1>
-            {(() => { const hd = deptHeadsData[`US:${selectedDepartment.name}`]; return hd?.name ? <p className="text-lg text-gray-700 mb-2">{hd.title || 'Secretary'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">{hd.party}</span>}{coverageBadge('partial', 'Cabinet Secretaries', 'Deputy and Under-Secretaries excluded')}</p> : <p className="text-sm text-gray-400 italic mb-2">Secretary: Official data loading</p>; })()}
+            {(() => { const hd = deptHeadsData[`US:${selectedDepartment.name}`]; return hd?.name ? <p className="text-lg text-gray-700 mb-2">{hd.title || 'Secretary'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">{hd.party}</span>}{coverageBadge('partial', 'Cabinet Ministers Only', 'Junior ministers may be missing')}</p> : <p className="text-sm text-gray-400 italic mb-2">Secretary: Official data loading</p>; })()}
             <p className="text-gray-600 mb-4">{selectedDepartment.description}</p>
             {deptInfoBar(deptBudgetData[`US:${selectedDepartment.name}`]?.last_updated)}
 
@@ -15332,7 +15332,7 @@ function App() {
               {/* Lobbying Activity */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div onClick={() => toggleCarneySection('lobbying')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h3>
+                  <h3 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h3>{coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.lobbying ? '' : 'hidden sm:block'}`}>
@@ -15354,7 +15354,7 @@ function App() {
               {/* Financial Disclosures */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div onClick={() => toggleCarneySection('financial')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h3>
+                  <h3 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h3>{coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.financial ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.financial ? '' : 'hidden sm:block'}`}>
@@ -15801,7 +15801,7 @@ function App() {
               {/* Lobbying Activity */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div onClick={() => togglePresidentSection('lobbying')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h3>
+                  <h3 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h3>{coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 space-y-4 ${expandedPresidentSections.lobbying ? '' : 'hidden sm:block'}`}>
@@ -15823,7 +15823,7 @@ function App() {
               {/* Financial Disclosures */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div onClick={() => togglePresidentSection('financial')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h3>
+                  <h3 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h3>{coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.financial ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 ${expandedPresidentSections.financial ? '' : 'hidden sm:block'}`}>
@@ -16265,7 +16265,10 @@ function App() {
                 <div className="flex items-center gap-3">
                   <Users className="w-6 h-6 text-orange-600" />
                   <div>
-                    <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
+                      {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
+                    </div>
                     <p className="text-sm text-gray-600">Lobbying meetings register</p>
                   </div>
                 </div>
@@ -16303,7 +16306,10 @@ function App() {
                 <div className="flex items-center gap-3">
                   <TrendingUp className="w-6 h-6 text-purple-600" />
                   <div>
-                    <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                      {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+                    </div>
                     <p className="text-sm text-gray-600">Financial disclosures</p>
                   </div>
                 </div>
@@ -17997,7 +18003,7 @@ function App() {
                   <Users className="w-5 h-5 text-blue-600" /> Biography
                   {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1 ml-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                   {liveBio && !isLoadingBio && liveBadge(liveBio?.last_updated, 'Monthly', 'ml-1')}
-                  {coverageBadge('partial', 'Official parliamentary records', 'Some historical bios unavailable')}
+                  {coverageBadge('partial', 'Based on available official records', 'Private details excluded')}
                 </h3>
                 {bioText && <p className="text-sm text-gray-700 leading-relaxed">{bioText}</p>}
                 {liveBio && (
@@ -18113,7 +18119,7 @@ function App() {
             const fmtExp = (r) => { const sym = { CAD: 'CA$', USD: '$', GBP: '£', AUD: 'A$' }; return `${sym[r.currency] || r.currency}${Number(r.amountLocal || 0).toLocaleString()}`; };
             return (
               <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-                <SectionHeader id="expenses" icon="💰" title="Office Expenses" badge={<>{hasLiveExp && !isLoadingExp ? liveBadge(liveExp?.[0]?.last_updated, 'Monthly') : null}{coverageBadge('limited', 'Ministers and Senior Officials', 'Backbench MPs excluded')}</>} />
+                <SectionHeader id="expenses" icon="💰" title="Office Expenses" badge={<>{hasLiveExp && !isLoadingExp ? liveBadge(liveExp?.[0]?.last_updated, 'Monthly') : null}{coverageBadge('limited', 'Ministers and Senior Officials Only', 'Backbench MPs not included')}</>} />
                 {expandedUkSections.expenses && (
                   <div className="px-5 pb-5">
                     {isLoadingExp && <p className="text-xs text-blue-500 flex items-center gap-1 mb-3"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching live data…</p>}
@@ -18158,7 +18164,7 @@ function App() {
 
           {/* Financial disclosure */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-            <SectionHeader id="financial" icon="📊" title="Financial Disclosure" />
+            <SectionHeader id="financial" icon="📊" title="Financial Disclosure" badge={coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')} />
             {expandedUkSections.financial && (
               <div className="px-5 pb-5">
                 <p className="text-sm text-gray-500 italic bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">This information is not publicly disclosed by official government sources.</p>
@@ -18168,7 +18174,7 @@ function App() {
 
           {/* Lobbying */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-            <SectionHeader id="lobbying" icon="🤝" title="Lobbying Activity" />
+            <SectionHeader id="lobbying" icon="🤝" title="Lobbying Activity" badge={coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')} />
             {expandedUkSections.lobbying && (
               <div className="px-5 pb-5">
                 <p className="text-sm text-gray-500 italic bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">This information is not publicly disclosed by official government sources.</p>
@@ -18676,7 +18682,7 @@ function App() {
 
           {/* Financial disclosure */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-            <SectionHeader id="financial" icon="📊" title="Financial Disclosure" />
+            <SectionHeader id="financial" icon="📊" title="Financial Disclosure" badge={coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')} />
             {expandedLordSections.financial && (
               <div className="px-5 pb-5">
                 <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
@@ -18686,7 +18692,7 @@ function App() {
 
           {/* Lobbying */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-            <SectionHeader id="lobbying" icon="🤝" title="Lobbying & Meetings" />
+            <SectionHeader id="lobbying" icon="🤝" title="Lobbying & Meetings" badge={coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')} />
             {expandedLordSections.lobbying && (
               <div className="px-5 pb-5">
                 <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
@@ -18885,7 +18891,7 @@ function App() {
               <span className="text-4xl flex-shrink-0">🇬🇧</span>
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-1">{dept.name}</h1>
-                {(() => { const hd = deptHeadsData[`UK:${dept.name}`]; return hd?.name ? <p className="text-lg text-gray-600 mb-2">{hd.title || 'Secretary of State'}: <span className="font-semibold" style={{ color: '#012169' }}>{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}{coverageBadge('partial', 'Cabinet Ministers Only', 'Junior Ministers excluded')}</p> : <p className="text-sm text-gray-400 italic mb-2">Secretary of State: Official data loading</p>; })()}
+                {(() => { const hd = deptHeadsData[`UK:${dept.name}`]; return hd?.name ? <p className="text-lg text-gray-600 mb-2">{hd.title || 'Secretary of State'}: <span className="font-semibold" style={{ color: '#012169' }}>{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}{coverageBadge('partial', 'Cabinet Ministers Only', 'Junior ministers may be missing')}</p> : <p className="text-sm text-gray-400 italic mb-2">Secretary of State: Official data loading</p>; })()}
                 <p className="text-gray-700 max-w-3xl mb-4">{dept.description}</p>
                 {deptInfoBar(deptBudgetData[`UK:${dept.name}`]?.last_updated)}
               </div>
@@ -22823,7 +22829,7 @@ function App() {
                       Biography
                       {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {liveBio && !isLoadingBio && liveBadge(liveBio?.last_updated, 'Monthly')}
-                      {coverageBadge('partial', 'Official parliamentary records', 'Some historical bios unavailable')}
+                      {coverageBadge('partial', 'Based on available official records', 'Private details excluded')}
                     </p>
                     <div className="bg-gradient-to-br from-gray-50 to-amber-50 border border-gray-200 rounded-xl p-4">
                       {bioText && <p className="text-gray-700 text-sm leading-relaxed">{bioText}</p>}
@@ -22976,7 +22982,7 @@ function App() {
                       Office Expense Reports
                       {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {hasLiveExp && !isLoadingExp && liveBadge(liveExp?.[0]?.last_updated, 'Monthly')}
-                      {coverageBadge('limited', 'Ministers and Senior Officials', 'Backbench MPs excluded')}
+                      {coverageBadge('limited', 'Ministers and Senior Officials Only', 'Backbench MPs not included')}
                     </p>
                     {hasLiveExp ? (
                       <div className="space-y-2">
@@ -23030,13 +23036,19 @@ function App() {
 
               {/* FINANCIAL DISCLOSURE */}
               <section>
-                <p className="panel-section-label">Financial Disclosure</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="panel-section-label" style={{ marginBottom: 0 }}>Financial Disclosure</p>
+                  {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+                </div>
                 <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
               </section>
 
               {/* LOBBYING */}
               <section>
-                <p className="panel-section-label">Lobbying Activity</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="panel-section-label" style={{ marginBottom: 0 }}>Lobbying Activity</p>
+                  {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
+                </div>
                 <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
               </section>
 
@@ -24813,7 +24825,10 @@ function App() {
                   <div className="flex items-center gap-3">
                     <TrendingUp className="w-5 h-5 text-purple-600" />
                     <div>
-                      <h4 className="text-base font-black text-gray-900">💰 Financial Disclosures</h4>
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-base font-black text-gray-900">💰 Financial Disclosures</h4>
+                        {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+                      </div>
                       <p className="text-xs text-gray-500">Net worth up {increase}% since election</p>
                     </div>
                   </div>
@@ -24897,7 +24912,10 @@ function App() {
                   <div className="flex items-center gap-3">
                     <Users className="w-5 h-5 text-orange-600" />
                     <div>
-                      <h4 className="text-base font-black text-gray-900">🤝 Lobbying Activity</h4>
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-base font-black text-gray-900">🤝 Lobbying Activity</h4>
+                        {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
+                      </div>
                       <p className="text-xs text-gray-500">{totalMeetings} meetings with registered lobbyists</p>
                     </div>
                   </div>
@@ -25210,7 +25228,10 @@ function App() {
                 <div className="flex items-center gap-3">
                   <Users className="w-6 h-6 text-orange-600" />
                   <div>
-                    <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
+                      {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
+                    </div>
                     <p className="text-sm text-gray-600">Lobbying meetings register</p>
                   </div>
                 </div>
@@ -25248,7 +25269,10 @@ function App() {
                 <div className="flex items-center gap-3">
                   <TrendingUp className="w-6 h-6 text-purple-600" />
                   <div>
-                    <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                      {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+                    </div>
                     <p className="text-sm text-gray-600">Financial disclosures</p>
                   </div>
                 </div>
@@ -30382,7 +30406,7 @@ function App() {
                 📖 Biography
                 {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                 {liveBio && !isLoadingBio && liveBadge(liveBio?.last_updated, 'Monthly')}
-                {coverageBadge('partial', 'Official parliamentary records', 'Some historical bios unavailable')}
+                {coverageBadge('partial', 'Based on available official records', 'Private details excluded')}
               </h3>
               {bioText && <p className="text-gray-700 leading-relaxed mb-4">{bioText}</p>}
               {liveBio && (
@@ -30595,7 +30619,7 @@ function App() {
                       💸 Office Expense Reports
                       {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1 font-normal"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {hasLiveExp && !isLoadingExp && liveBadge(liveExp?.[0]?.last_updated, 'Monthly')}
-                      {coverageBadge('limited', 'Ministers and Senior Officials', 'Backbench MPs excluded')}
+                      {coverageBadge('limited', 'Ministers and Senior Officials Only', 'Backbench MPs not included')}
                     </h2>
                     {!hasLiveExp && fallbackExp && <p className="text-sm text-gray-600">{formatCurrency(fallbackExp.total)} total ({fallbackExp.year})</p>}
                     {hasLiveExp && <p className="text-sm text-gray-600">{liveExp.length} records from official disclosure</p>}
@@ -30648,7 +30672,10 @@ function App() {
           <div onClick={() => toggleSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
             <div className="flex items-center gap-3">
               <TrendingUp className="w-6 h-6 text-purple-600" />
-              <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+              </div>
             </div>
             {expandedSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
           </div>
@@ -30672,6 +30699,7 @@ function App() {
                     <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
                     {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                     {isLiveLobby && !isLoadingLobby && liveBadge(null, 'Monthly')}
+                    {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
                   </div>
                 </div>
                 {expandedSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
@@ -30897,7 +30925,7 @@ function App() {
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h1 className="text-4xl font-bold text-gray-800 mb-2">{selectedMinistry.name}</h1>
-                {(() => { const hd = deptHeadsData[`CA:${selectedMinistry.name}`]; const hdName = hd?.name?.replace(/^The Honourable\s+/i, ''); return hdName ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hdName}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}{coverageBadge('partial', 'Cabinet Ministers Only', 'Parliamentary Secretaries excluded')}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
+                {(() => { const hd = deptHeadsData[`CA:${selectedMinistry.name}`]; const hdName = hd?.name?.replace(/^The Honourable\s+/i, ''); return hdName ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hdName}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}{coverageBadge('partial', 'Cabinet Ministers Only', 'Junior ministers may be missing')}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
                 <p className="text-gray-700 max-w-3xl mb-4">{selectedMinistry.description}</p>
                 {deptInfoBar(deptBudgetData[`CA:${selectedMinistry.name}`]?.last_updated)}
               </div>
@@ -31735,7 +31763,7 @@ function App() {
                   <span className="text-3xl">🇦🇺</span>
                   <h1 className="text-4xl font-bold text-gray-800">Department of {dept.name}</h1>
                 </div>
-                {(() => { const hd = deptHeadsData[`AU:${dept.name}`]; return hd?.name ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">{hd.party}</span>}{coverageBadge('partial', 'Cabinet Ministers Only', 'Assistant Ministers excluded')}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
+                {(() => { const hd = deptHeadsData[`AU:${dept.name}`]; return hd?.name ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">{hd.party}</span>}{coverageBadge('partial', 'Cabinet Ministers Only', 'Junior ministers may be missing')}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
                 <p className="text-gray-700 max-w-3xl mb-4">{dept.description}</p>
                 {deptInfoBar(deptBudgetData[`AU:${dept.name}`]?.last_updated)}
               </div>
@@ -32422,7 +32450,7 @@ function App() {
                       Biography
                       {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {liveBio && !isLoadingBio && liveBadge(liveBio?.last_updated, 'Monthly')}
-                      {coverageBadge('partial', 'Official parliamentary records', 'Some historical bios unavailable')}
+                      {coverageBadge('partial', 'Based on available official records', 'Private details excluded')}
                     </p>
                     <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
                       {bioText && <p className="text-gray-700 text-sm leading-relaxed">{bioText}</p>}
@@ -32622,7 +32650,7 @@ function App() {
                       Office Expense Reports
                       {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {hasLiveExp && !isLoadingExp && liveBadge(liveExp?.[0]?.last_updated, 'Monthly')}
-                      {coverageBadge('limited', 'Ministers and Senior Officials', 'Backbench MPs excluded')}
+                      {coverageBadge('limited', 'Ministers and Senior Officials Only', 'Backbench MPs not included')}
                     </p>
                     {hasLiveExp ? (
                       <div className="space-y-2">
@@ -32754,6 +32782,7 @@ function App() {
                       <p className="panel-section-label" style={{ marginBottom: 0 }}>Financial Disclosure</p>
                       {isLoadingDisc && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {isLiveDisc && !isLoadingDisc && liveBadge(null, 'Annual')}
+                      {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
                     </div>
                     {isLiveDisc ? (
                       <>
@@ -32794,7 +32823,10 @@ function App() {
 
               {/* LOBBYING */}
               <section>
-                <p className="panel-section-label">Lobbying Activity</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="panel-section-label" style={{ marginBottom: 0 }}>Lobbying Activity</p>
+                  {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
+                </div>
                 <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
               </section>
 
@@ -33767,7 +33799,7 @@ function App() {
                         💸 Office Expense Reports
                         {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1 font-normal"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                         {hasLiveExp && !isLoadingExp && liveBadge(liveExp?.[0]?.last_updated, 'Monthly')}
-                        {coverageBadge('limited', 'Ministers and Senior Officials', 'Backbench MPs excluded')}
+                        {coverageBadge('limited', 'Ministers and Senior Officials Only', 'Backbench MPs not included')}
                       </h2>
                       {hasLiveExp ? <p className="text-sm text-gray-600">{liveExp.length} records from official disclosure</p> : <p className="text-sm text-gray-600">Office expense reports</p>}
                     </div>
@@ -33807,7 +33839,10 @@ function App() {
             <div onClick={() => toggleSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-6 h-6 text-purple-600" />
-                <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                  {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+                </div>
               </div>
               {expandedSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
             </div>
@@ -33823,7 +33858,10 @@ function App() {
             <div onClick={() => toggleSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
               <div className="flex items-center gap-3">
                 <Building2 className="w-6 h-6 text-red-600" />
-                <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
+                  {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
+                </div>
               </div>
               {expandedSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
             </div>
