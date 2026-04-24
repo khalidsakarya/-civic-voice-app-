@@ -6229,6 +6229,9 @@ function App() {
           if (jur === 'CA') {
             console.log(`[FederalDepts] CA shim: id="${data.id}" name="${data.name}" → rawName="${rawName}" → englishName="${englishName}" → displayName="${displayName}" → key="${key}"`);
             console.log(`[FederalDepts] CA shim fields: budget_authority=${data.budget_authority}, obligations=${data.obligations}, fiscal_year=${data.fiscal_year}, employees_count=${data.employees_count}, leader_name="${data.leader_name}", leader_title="${data.leader_title}", political_party="${data.political_party}"`);
+            if (englishName.includes('National Defence')) {
+              console.log(`[DEBUG National Defence] budget_authority=${data.budget_authority}`);
+            }
             if (englishName === 'Department of Health' || englishName === 'Health Canada' ||
                 englishName === 'Department of National Defence' || englishName === 'National Defence') {
               console.log(`[CA_DEPT_DISPLAY_NAMES] lookup "${englishName}" →`, CA_DEPT_DISPLAY_NAMES[englishName], '| chars:', [...englishName].map(c => c.charCodeAt(0)));
