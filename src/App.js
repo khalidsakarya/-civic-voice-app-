@@ -6250,7 +6250,7 @@ function App() {
               currency: data.currency,
             }, null, 2));
           }
-          budgetUpdates[key] = {
+          const newBudgetEntry = {
             _loaded:           true,
             currency:          data.currency ?? null,
             budget_authority:  data.budget_authority ?? null,
@@ -6266,6 +6266,16 @@ function App() {
             grants_given:      Array.isArray(data.grants) ? data.grants : [],
             internal_spending: Array.isArray(data.internal_spending) ? data.internal_spending : [],
           };
+          const existing = budgetUpdates[key];
+          const existingBA = existing?.budget_authority ?? null;
+          const newBA = newBudgetEntry.budget_authority;
+          // Keep the doc with the highest budget_authority; prefer non-null over null.
+          if (!existing || (newBA != null && (existingBA == null || newBA > existingBA))) {
+            budgetUpdates[key] = newBudgetEntry;
+            if (existing) console.log(`[FederalDepts] key="${key}" duplicate: replacing budget_authority=${existingBA} with ${newBA}`);
+          } else {
+            console.log(`[FederalDepts] key="${key}" duplicate: keeping existing budget_authority=${existingBA}, skipping doc id="${data.id}" (budget_authority=${newBA})`);
+          }
           headsUpdates[key] = {
             _loaded: true,
             name:    data.leader_name  ?? null,
