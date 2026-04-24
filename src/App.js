@@ -586,6 +586,7 @@ const CA_DEPT_FIRESTORE_NAMES = {
 const CA_DEPT_DISPLAY_NAMES = {
   'Department of Health':                                  'Health Canada',
   'Department of National Defence':                        'National Defence',
+  'National Defence':                                      'National Defence',
   'Department of Finance':                                 'Finance Canada',
   'Department of Justice':                                 'Justice Canada',
   'Department of Transport':                               'Transport Canada',
@@ -6225,14 +6226,16 @@ function App() {
           if (jur === 'CA') {
             console.log(`[FederalDepts] CA shim: id="${data.id}" name="${data.name}" → rawName="${rawName}" → englishName="${englishName}" → displayName="${displayName}" → key="${key}"`);
             console.log(`[FederalDepts] CA shim fields: budget_authority=${data.budget_authority}, obligations=${data.obligations}, fiscal_year=${data.fiscal_year}, employees_count=${data.employees_count}, leader_name="${data.leader_name}", leader_title="${data.leader_title}", political_party="${data.political_party}"`);
-            if (englishName === 'Department of Health' || englishName === 'Health Canada') {
+            if (englishName === 'Department of Health' || englishName === 'Health Canada' ||
+                englishName === 'Department of National Defence' || englishName === 'National Defence') {
               console.log(`[CA_DEPT_DISPLAY_NAMES] lookup "${englishName}" →`, CA_DEPT_DISPLAY_NAMES[englishName], '| chars:', [...englishName].map(c => c.charCodeAt(0)));
             }
           }
-          if (displayName === 'Health Canada') {
-            console.log('[FederalDepts] Health Canada raw Firestore doc:', JSON.stringify({
+          if (displayName === 'Health Canada' || displayName === 'National Defence') {
+            console.log(`[FederalDepts] ${displayName} raw Firestore doc:`, JSON.stringify({
               id: data.id,
               name: data.name,
+              department_name: data.department_name,
               budget_authority: data.budget_authority,
               obligations: data.obligations,
               outlays: data.outlays,
