@@ -6225,15 +6225,30 @@ function App() {
             console.log(`[FederalDepts] CA shim: id="${data.id}" name="${data.name}" → rawName="${rawName}" → englishName="${englishName}" → displayName="${displayName}" → key="${key}"`);
             console.log(`[FederalDepts] CA shim fields: budget_authority=${data.budget_authority}, obligations=${data.obligations}, fiscal_year=${data.fiscal_year}, employees_count=${data.employees_count}, leader_name="${data.leader_name}", leader_title="${data.leader_title}", political_party="${data.political_party}"`);
           }
+          if (displayName === 'Health Canada') {
+            console.log('[FederalDepts] Health Canada raw Firestore doc:', JSON.stringify({
+              id: data.id,
+              name: data.name,
+              budget_authority: data.budget_authority,
+              obligations: data.obligations,
+              outlays: data.outlays,
+              remaining_balance: data.remaining_balance,
+              fiscal_year: data.fiscal_year,
+              currency: data.currency,
+            }, null, 2));
+          }
           budgetUpdates[key] = {
             _loaded:           true,
             currency:          data.currency ?? null,
+            budget_authority:  data.budget_authority ?? null,
+            obligations:       data.obligations ?? null,
             total_allocated:   data.budget_authority ?? null,
             total_budget:      data.budget_authority ?? null,
             total_spent:       data.obligations ?? null,
             fiscal_year:       data.fiscal_year ?? null,
             outlays:           data.outlays ?? null,
             remaining_balance: data.remaining_balance ?? null,
+            last_updated:      data.last_updated ?? null,
             employee_count:    data.employees_count ?? null,
             grants_given:      Array.isArray(data.grants) ? data.grants : [],
             internal_spending: Array.isArray(data.internal_spending) ? data.internal_spending : [],
