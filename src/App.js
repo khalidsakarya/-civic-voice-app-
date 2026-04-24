@@ -6205,6 +6205,9 @@ function App() {
         const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         if (jur === 'CA' && docs.length > 0) {
           console.log('[FederalDepts] CA first doc (all fields):', JSON.stringify(docs[0], null, 2));
+          const ndDoc = docs.find(d => d.id.toLowerCase().includes('national-defence') || d.id.toLowerCase().includes('national_defence'));
+          console.log('[FederalDepts] CA national-defence doc search → id:', ndDoc?.id ?? 'NOT FOUND', '| budget_authority:', ndDoc?.budget_authority ?? 'MISSING');
+          if (ndDoc) console.log('[FederalDepts] CA national-defence full doc:', JSON.stringify(ndDoc, null, 2));
         }
         setFederalDepts(prev => ({ ...prev, [jur]: docs }));
 
