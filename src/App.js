@@ -6793,7 +6793,7 @@ function App() {
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
               const _hasData = _bData?._loaded && (_bData.budget_authority != null || _bData.obligations != null || _bData.outlays != null || _bData.remaining_balance != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              const _sym = _bData.currency === 'GBP' ? '£' : _bData.currency === 'AUD' ? 'A$' : _bData.currency === 'CAD' ? 'CA$' : '$';
+              const _sym = _bData?.currency === 'GBP' ? '£' : _bData?.currency === 'AUD' ? 'A$' : _bData?.currency === 'CAD' ? 'CA$' : '$';
               const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; if (v >= 1e12) return `${_sym}${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `${_sym}${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `${_sym}${(v/1e6).toFixed(1)}M`; return `${_sym}${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
@@ -18898,7 +18898,7 @@ function App() {
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
               const _hasData = _bData?._loaded && (_bData.budget_authority != null || _bData.obligations != null || _bData.outlays != null || _bData.remaining_balance != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              const _sym = _bData.currency === 'GBP' ? '£' : _bData.currency === 'AUD' ? 'A$' : _bData.currency === 'CAD' ? 'CA$' : '$';
+              const _sym = _bData?.currency === 'GBP' ? '£' : _bData?.currency === 'AUD' ? 'A$' : _bData?.currency === 'CAD' ? 'CA$' : '$';
               const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; if (v >= 1e12) return `${_sym}${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `${_sym}${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `${_sym}${(v/1e6).toFixed(1)}M`; return `${_sym}${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
@@ -30902,9 +30902,8 @@ function App() {
               const _bKey = 'CA:' + selectedMinistry.name;
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
-              const _allocated = _bData?.total_budget ?? _bData?.total_allocated;
-              const _hasData = _bData?._loaded && (_allocated != null || _bData.total_spent != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              const _sym = _bData.currency === 'GBP' ? '£' : _bData.currency === 'AUD' ? 'A$' : _bData.currency === 'CAD' ? 'CA$' : '$';
+              const _hasData = _bData?._loaded && (_bData.budget_authority != null || _bData.obligations != null || _bData.outlays != null || _bData.remaining_balance != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _sym = _bData?.currency === 'GBP' ? '£' : _bData?.currency === 'AUD' ? 'A$' : _bData?.currency === 'CAD' ? 'CA$' : '$';
               const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; if (v >= 1e12) return `${_sym}${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `${_sym}${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `${_sym}${(v/1e6).toFixed(1)}M`; return `${_sym}${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
@@ -31733,7 +31732,7 @@ function App() {
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
               const _hasData = _bData?._loaded && (_bData.budget_authority != null || _bData.obligations != null || _bData.outlays != null || _bData.remaining_balance != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
-              const _sym = _bData.currency === 'GBP' ? '£' : _bData.currency === 'AUD' ? 'A$' : _bData.currency === 'CAD' ? 'CA$' : '$';
+              const _sym = _bData?.currency === 'GBP' ? '£' : _bData?.currency === 'AUD' ? 'A$' : _bData?.currency === 'CAD' ? 'CA$' : '$';
               const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; if (v >= 1e12) return `${_sym}${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `${_sym}${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `${_sym}${(v/1e6).toFixed(1)}M`; return `${_sym}${v.toLocaleString()}`; };
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
