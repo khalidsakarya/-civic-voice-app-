@@ -541,6 +541,14 @@ const customStyles = `
     /* Grid gap reduction on mobile */
     .mc-grid { gap: 0.625rem !important; }
   }
+  .cov-wrap { position: relative; display: inline-flex; align-items: center; }
+  .cov-pill { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.04em; padding: 1px 7px; border-radius: 9999px; cursor: default; }
+  .cov-full    { background: #16a34a; color: #fff; }
+  .cov-partial { background: #ca8a04; color: #fff; }
+  .cov-limited { background: #ea580c; color: #fff; }
+  .cov-tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #111827; color: #f3f4f6; padding: 6px 10px; border-radius: 6px; font-size: 0.68rem; line-height: 1.5; white-space: nowrap; z-index: 100; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+  .cov-tip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #111827; }
+  .cov-wrap:hover .cov-tip { display: block; }
 `;
 
 // Maps AU short display names → Firestore 'name' field values in department_budgets
@@ -6477,6 +6485,20 @@ function App() {
     );
   };
 
+  const coverageBadge = (level, covered, missing) => {
+    const cls = level === 'full' ? 'cov-full' : level === 'partial' ? 'cov-partial' : 'cov-limited';
+    const label = level === 'full' ? 'FULL' : level === 'partial' ? 'PARTIAL' : 'LIMITED';
+    return (
+      <span className="cov-wrap">
+        <span className={`cov-pill ${cls}`}>{label}</span>
+        <span className="cov-tip">
+          {covered && <><span style={{color:'#86efac'}}>✓</span> {covered}</>}
+          {missing && <><br/><span style={{color:'#fca5a5'}}>✗</span> {missing}</>}
+        </span>
+      </span>
+    );
+  };
+
   const getVoteIcon = (vote) => {
     if (vote === 'For') return <CheckCircle className="w-5 h-5 text-green-600" />;
     if (vote === 'Against') return <XCircle className="w-5 h-5 text-red-600" />;
@@ -6756,7 +6778,7 @@ function App() {
           <div className="relative bg-white rounded-lg shadow-md p-8 mb-6">
             <button onClick={(e) => handleShare(e, { id: selectedDepartment.id, title: selectedDepartment.name, text: `🏛️ ${selectedDepartment.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === selectedDepartment.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === selectedDepartment.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">{selectedDepartment.name}</h1>
-            {(() => { const hd = deptHeadsData[`US:${selectedDepartment.name}`]; return hd?.name ? <p className="text-lg text-gray-700 mb-2">{hd.title || 'Secretary'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Secretary: Official data loading</p>; })()}
+            {(() => { const hd = deptHeadsData[`US:${selectedDepartment.name}`]; return hd?.name ? <p className="text-lg text-gray-700 mb-2">{hd.title || 'Secretary'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">{hd.party}</span>}{coverageBadge('partial', 'Cabinet Secretaries', 'Deputy and Under-Secretaries excluded')}</p> : <p className="text-sm text-gray-400 italic mb-2">Secretary: Official data loading</p>; })()}
             <p className="text-gray-600 mb-4">{selectedDepartment.description}</p>
             {deptInfoBar(deptBudgetData[`US:${selectedDepartment.name}`]?.last_updated)}
 
@@ -17975,6 +17997,7 @@ function App() {
                   <Users className="w-5 h-5 text-blue-600" /> Biography
                   {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1 ml-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                   {liveBio && !isLoadingBio && liveBadge(liveBio?.last_updated, 'Monthly', 'ml-1')}
+                  {coverageBadge('partial', 'Official parliamentary records', 'Some historical bios unavailable')}
                 </h3>
                 {bioText && <p className="text-sm text-gray-700 leading-relaxed">{bioText}</p>}
                 {liveBio && (
@@ -18090,7 +18113,7 @@ function App() {
             const fmtExp = (r) => { const sym = { CAD: 'CA$', USD: '$', GBP: '£', AUD: 'A$' }; return `${sym[r.currency] || r.currency}${Number(r.amountLocal || 0).toLocaleString()}`; };
             return (
               <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-                <SectionHeader id="expenses" icon="💰" title="Office Expenses" badge={hasLiveExp && !isLoadingExp ? liveBadge(liveExp?.[0]?.last_updated, 'Monthly') : null} />
+                <SectionHeader id="expenses" icon="💰" title="Office Expenses" badge={<>{hasLiveExp && !isLoadingExp ? liveBadge(liveExp?.[0]?.last_updated, 'Monthly') : null}{coverageBadge('limited', 'Ministers and Senior Officials', 'Backbench MPs excluded')}</>} />
                 {expandedUkSections.expenses && (
                   <div className="px-5 pb-5">
                     {isLoadingExp && <p className="text-xs text-blue-500 flex items-center gap-1 mb-3"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching live data…</p>}
@@ -18860,7 +18883,7 @@ function App() {
               <span className="text-4xl flex-shrink-0">🇬🇧</span>
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-1">{dept.name}</h1>
-                {(() => { const hd = deptHeadsData[`UK:${dept.name}`]; return hd?.name ? <p className="text-lg text-gray-600 mb-2">{hd.title || 'Secretary of State'}: <span className="font-semibold" style={{ color: '#012169' }}>{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Secretary of State: Official data loading</p>; })()}
+                {(() => { const hd = deptHeadsData[`UK:${dept.name}`]; return hd?.name ? <p className="text-lg text-gray-600 mb-2">{hd.title || 'Secretary of State'}: <span className="font-semibold" style={{ color: '#012169' }}>{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}{coverageBadge('partial', 'Cabinet Ministers Only', 'Junior Ministers excluded')}</p> : <p className="text-sm text-gray-400 italic mb-2">Secretary of State: Official data loading</p>; })()}
                 <p className="text-gray-700 max-w-3xl mb-4">{dept.description}</p>
                 {deptInfoBar(deptBudgetData[`UK:${dept.name}`]?.last_updated)}
               </div>
@@ -22798,6 +22821,7 @@ function App() {
                       Biography
                       {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {liveBio && !isLoadingBio && liveBadge(liveBio?.last_updated, 'Monthly')}
+                      {coverageBadge('partial', 'Official parliamentary records', 'Some historical bios unavailable')}
                     </p>
                     <div className="bg-gradient-to-br from-gray-50 to-amber-50 border border-gray-200 rounded-xl p-4">
                       {bioText && <p className="text-gray-700 text-sm leading-relaxed">{bioText}</p>}
@@ -22947,6 +22971,7 @@ function App() {
                       Office Expense Reports
                       {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {hasLiveExp && !isLoadingExp && liveBadge(liveExp?.[0]?.last_updated, 'Monthly')}
+                      {coverageBadge('limited', 'Ministers and Senior Officials', 'Backbench MPs excluded')}
                     </p>
                     {hasLiveExp ? (
                       <div className="space-y-2">
@@ -30348,6 +30373,7 @@ function App() {
                 📖 Biography
                 {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                 {liveBio && !isLoadingBio && liveBadge(liveBio?.last_updated, 'Monthly')}
+                {coverageBadge('partial', 'Official parliamentary records', 'Some historical bios unavailable')}
               </h3>
               {bioText && <p className="text-gray-700 leading-relaxed mb-4">{bioText}</p>}
               {liveBio && (
@@ -30559,6 +30585,7 @@ function App() {
                       💸 Office Expense Reports
                       {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1 font-normal"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {hasLiveExp && !isLoadingExp && liveBadge(liveExp?.[0]?.last_updated, 'Monthly')}
+                      {coverageBadge('limited', 'Ministers and Senior Officials', 'Backbench MPs excluded')}
                     </h2>
                     {!hasLiveExp && fallbackExp && <p className="text-sm text-gray-600">{formatCurrency(fallbackExp.total)} total ({fallbackExp.year})</p>}
                     {hasLiveExp && <p className="text-sm text-gray-600">{liveExp.length} records from official disclosure</p>}
@@ -30856,7 +30883,7 @@ function App() {
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h1 className="text-4xl font-bold text-gray-800 mb-2">{selectedMinistry.name}</h1>
-                {(() => { const hd = deptHeadsData[`CA:${selectedMinistry.name}`]; const hdName = hd?.name?.replace(/^The Honourable\s+/i, ''); return hdName ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hdName}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
+                {(() => { const hd = deptHeadsData[`CA:${selectedMinistry.name}`]; const hdName = hd?.name?.replace(/^The Honourable\s+/i, ''); return hdName ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hdName}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">{hd.party}</span>}{coverageBadge('partial', 'Cabinet Ministers Only', 'Parliamentary Secretaries excluded')}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
                 <p className="text-gray-700 max-w-3xl mb-4">{selectedMinistry.description}</p>
                 {deptInfoBar(deptBudgetData[`CA:${selectedMinistry.name}`]?.last_updated)}
               </div>
@@ -31694,7 +31721,7 @@ function App() {
                   <span className="text-3xl">🇦🇺</span>
                   <h1 className="text-4xl font-bold text-gray-800">Department of {dept.name}</h1>
                 </div>
-                {(() => { const hd = deptHeadsData[`AU:${dept.name}`]; return hd?.name ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">{hd.party}</span>}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
+                {(() => { const hd = deptHeadsData[`AU:${dept.name}`]; return hd?.name ? <p className="text-xl text-gray-600 mb-2">{hd.title || 'Minister'}: <span className="font-semibold">{hd.name}</span>{hd.party && <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">{hd.party}</span>}{coverageBadge('partial', 'Cabinet Ministers Only', 'Assistant Ministers excluded')}</p> : <p className="text-sm text-gray-400 italic mb-2">Minister: Official data loading</p>; })()}
                 <p className="text-gray-700 max-w-3xl mb-4">{dept.description}</p>
                 {deptInfoBar(deptBudgetData[`AU:${dept.name}`]?.last_updated)}
               </div>
@@ -32381,6 +32408,7 @@ function App() {
                       Biography
                       {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {liveBio && !isLoadingBio && liveBadge(liveBio?.last_updated, 'Monthly')}
+                      {coverageBadge('partial', 'Official parliamentary records', 'Some historical bios unavailable')}
                     </p>
                     <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-4">
                       {bioText && <p className="text-gray-700 text-sm leading-relaxed">{bioText}</p>}
@@ -32579,6 +32607,7 @@ function App() {
                       Office Expense Reports
                       {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {hasLiveExp && !isLoadingExp && liveBadge(liveExp?.[0]?.last_updated, 'Monthly')}
+                      {coverageBadge('limited', 'Ministers and Senior Officials', 'Backbench MPs excluded')}
                     </p>
                     {hasLiveExp ? (
                       <div className="space-y-2">
@@ -33718,6 +33747,7 @@ function App() {
                         💸 Office Expense Reports
                         {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1 font-normal"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                         {hasLiveExp && !isLoadingExp && liveBadge(liveExp?.[0]?.last_updated, 'Monthly')}
+                        {coverageBadge('limited', 'Ministers and Senior Officials', 'Backbench MPs excluded')}
                       </h2>
                       {hasLiveExp ? <p className="text-sm text-gray-600">{liveExp.length} records from official disclosure</p> : <p className="text-sm text-gray-600">Office expense reports</p>}
                     </div>
