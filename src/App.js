@@ -18078,7 +18078,7 @@ function App() {
 
           {/* Attendance */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-            <SectionHeader id="attendance" icon="📅" title="Attendance" badge={ukAttBadge} />
+            <SectionHeader id="attendance" icon="📅" title="Attendance" badge={<>{ukAttBadge}{coverageBadge('partial', 'Based on recorded votes', 'Committee attendance excluded')}</>} />
             {expandedUkSections.attendance && (
               <div className="px-5 pb-5">
                 <div className="grid grid-cols-3 gap-3 mb-4">
@@ -18178,13 +18178,14 @@ function App() {
 
           {/* Corporate connections */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-            <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" badge={
-              memberCorporateData[mp.name]?.length > 0 && !memberCorporateLoading[mp.name]
+            <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" badge={<>
+              {memberCorporateData[mp.name]?.length > 0 && !memberCorporateLoading[mp.name]
                 ? liveBadge(memberCorporateData[mp.name]?.[0]?.last_updated, 'Monthly')
                 : memberCorporateLoading[mp.name]
                   ? <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>
-                  : null
-            } />
+                  : null}
+              {coverageBadge('partial', 'Registered interests and lobbying records', 'Unregistered connections not included')}
+            </>} />
             {expandedUkSections.corporate && (
               <div className="px-5 pb-5">
                 {memberCorporateData[mp.name]?.length > 0 ? (
@@ -18665,7 +18666,7 @@ function App() {
 
           {/* Attendance */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-            <SectionHeader id="attendance" icon="📅" title="Attendance" />
+            <SectionHeader id="attendance" icon="📅" title="Attendance" badge={coverageBadge('partial', 'Based on recorded votes', 'Committee attendance excluded')} />
             {expandedLordSections.attendance && (
               <div className="px-5 pb-5">
                 <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
@@ -18695,13 +18696,14 @@ function App() {
 
           {/* Corporate connections */}
           <div className="bg-white rounded-2xl shadow-elegant-lg overflow-hidden">
-            <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" badge={
-              memberCorporateData[lord.name]?.length > 0 && !memberCorporateLoading[lord.name]
+            <SectionHeader id="corporate" icon="🏢" title="Corporate Connections" badge={<>
+              {memberCorporateData[lord.name]?.length > 0 && !memberCorporateLoading[lord.name]
                 ? liveBadge(memberCorporateData[lord.name]?.[0]?.last_updated, 'Monthly')
                 : memberCorporateLoading[lord.name]
                   ? <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>
-                  : null
-            } />
+                  : null}
+              {coverageBadge('partial', 'Registered interests and lobbying records', 'Unregistered connections not included')}
+            </>} />
             {expandedLordSections.corporate && (
               <div className="px-5 pb-5 space-y-2">
                 {memberCorporateData[lord.name]?.length > 0 ? (
@@ -22953,7 +22955,10 @@ function App() {
 
               {/* ATTENDANCE */}
               <section>
-                <p className="panel-section-label">Attendance Record</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="panel-section-label" style={{ marginBottom: 0 }}>Attendance Record</p>
+                  {coverageBadge('partial', 'Based on recorded votes', 'Committee attendance excluded')}
+                </div>
                 <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
               </section>
 
@@ -23041,6 +23046,7 @@ function App() {
                   <p className="panel-section-label" style={{ marginBottom: 0 }}>Corporate Affiliations</p>
                   {!!memberCorporateLoading[member.name] && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                   {memberCorporateData[member.name]?.length > 0 && !memberCorporateLoading[member.name] && liveBadge(memberCorporateData[member.name]?.[0]?.last_updated, 'Monthly')}
+                  {coverageBadge('partial', 'Registered interests and lobbying records', 'Unregistered connections not included')}
                 </div>
                 {memberCorporateData[member.name]?.length > 0 ? (
                   <div className="space-y-2">
@@ -24854,7 +24860,10 @@ function App() {
                   <div className="flex items-center gap-3">
                     <TrendingUp className="w-5 h-5 text-blue-600" />
                     <div>
-                      <h4 className="text-base font-black text-gray-900">📈 Asset Disclosures</h4>
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-base font-black text-gray-900">📈 Asset Disclosures</h4>
+                        {coverageBadge('limited', 'US House and Senate STOCK Act filings', 'International equivalents not included')}
+                      </div>
                       <p className="text-xs text-gray-500">{stockTrades.length} disclosed holdings</p>
                     </div>
                   </div>
@@ -30533,6 +30542,7 @@ function App() {
                       <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
                       {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {isLive && !isLoading && liveBadge(null, 'Monthly')}
+                      {coverageBadge('partial', 'Based on recorded votes', 'Committee attendance excluded')}
                     </div>
                     <p className={`text-sm font-semibold ${pctColor}`}>{pct}% attendance rate</p>
                   </div>
@@ -30704,6 +30714,7 @@ function App() {
                 <h2 className="text-xl font-bold text-gray-800">💼 Corporate Connections</h2>
                 {!!memberCorporateLoading[selectedMember?.name] && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                 {memberCorporateData[selectedMember?.name]?.length > 0 && !memberCorporateLoading[selectedMember?.name] && liveBadge(memberCorporateData[selectedMember?.name]?.[0]?.last_updated, 'Monthly')}
+                {coverageBadge('partial', 'Registered interests and lobbying records', 'Unregistered connections not included')}
               </div>
             </div>
             {expandedSections.corporate ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
@@ -30740,7 +30751,10 @@ function App() {
             <div onClick={() => toggleSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-6 h-6 text-green-600" />
-                <h2 className="text-xl font-bold text-gray-800">📈 Stock Trading Activity</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-gray-800">📈 Stock Trading Activity</h2>
+                  {coverageBadge('limited', 'US House and Senate STOCK Act filings', 'International equivalents not included')}
+                </div>
               </div>
               {expandedSections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
             </div>
@@ -32565,6 +32579,7 @@ function App() {
                       <p className="panel-section-label" style={{ marginBottom: 0 }}>Attendance Record</p>
                       {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {isLive && !isLoading && liveBadge(null, 'Monthly')}
+                      {coverageBadge('partial', 'Based on recorded votes', 'Committee attendance excluded')}
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
@@ -32696,6 +32711,7 @@ function App() {
                       <p className="panel-section-label" style={{ marginBottom: 0 }}>Stock Trading Activity</p>
                       {isLoadingTrades && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {hasLiveTrades && !isLoadingTrades && liveBadge(null, 'Weekly')}
+                      {coverageBadge('limited', 'US House and Senate STOCK Act filings', 'International equivalents not included')}
                     </div>
                     {hasLiveTrades ? (
                       <div className="space-y-2">
@@ -32788,6 +32804,7 @@ function App() {
                   <p className="panel-section-label" style={{ marginBottom: 0 }}>Corporate Connections</p>
                   {!!memberCorporateLoading[member.name] && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                   {memberCorporateData[member.name]?.length > 0 && !memberCorporateLoading[member.name] && liveBadge(memberCorporateData[member.name]?.[0]?.last_updated, 'Monthly')}
+                  {coverageBadge('partial', 'Registered interests and lobbying records', 'Unregistered connections not included')}
                 </div>
                 {memberCorporateData[member.name]?.length > 0 ? (
                   <div className="space-y-2">
@@ -33718,7 +33735,10 @@ function App() {
               <div className="flex items-center gap-3">
                 <Award className="w-6 h-6 text-blue-600" />
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
+                    {coverageBadge('partial', 'Based on recorded votes', 'Committee attendance excluded')}
+                  </div>
                   <p className="text-sm text-gray-600">Attendance record</p>
                 </div>
               </div>
@@ -33819,7 +33839,10 @@ function App() {
             <div onClick={() => toggleSection('corporate')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
               <div className="flex items-center gap-3">
                 <Briefcase className="w-6 h-6 text-indigo-600" />
-                <h2 className="text-xl font-bold text-gray-800">💼 Corporate Connections</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-gray-800">💼 Corporate Connections</h2>
+                  {coverageBadge('partial', 'Registered interests and lobbying records', 'Unregistered connections not included')}
+                </div>
               </div>
               {expandedSections.corporate ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
             </div>
