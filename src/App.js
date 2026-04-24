@@ -596,6 +596,7 @@ const CA_DEPT_DISPLAY_NAMES = {
   'Department of Industry':                                'Innovation, Science and Economic Development',
   'Public Safety Canada':                                  'Public Safety Canada',
   'Natural Resources Canada':                              'Natural Resources Canada',
+  'Department of Natural Resources':                       'Natural Resources Canada',
   'Department of Indigenous Services':                     'Indigenous Services Canada',
   'Department of Agriculture and Agri-Food':               'Agriculture and Agri-Food Canada',
   'Department of Foreign Affairs, Trade and Development':  'Global Affairs Canada',
