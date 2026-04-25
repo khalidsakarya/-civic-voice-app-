@@ -6207,6 +6207,7 @@ function App() {
   const [auditFindingsLoading, setAuditFindingsLoading] = useState({});
   const [deptBudgetData, setDeptBudgetData] = useState({});
   const [deptBudgetLoading, setDeptBudgetLoading] = useState({});
+  const [budgetValidationData, setBudgetValidationData] = useState({});
   const [deptHeadsData, setDeptHeadsData] = useState({});
   const [federalDepts, setFederalDepts] = useState({});
   const [federalDeptsFetched, setFederalDeptsFetched] = useState({});
@@ -6318,6 +6319,18 @@ function App() {
         }
         setDeptBudgetData(prev => ({ ...prev, ...budgetUpdates }));
         setDeptHeadsData(prev =>  ({ ...prev, ...headsUpdates }));
+        try {
+          const valSnap = await getDocs(query(collection(db, 'budget_validation'), where('jurisdiction', '==', jur)));
+          const valUpdates = {};
+          valSnap.docs.forEach(d => {
+            const vd = d.data();
+            const vKey = `${jur}:${vd.department}`;
+            if (vd.department) valUpdates[vKey] = { status: vd.status, source_url: vd.source_url, validation_date: vd.validation_date };
+          });
+          setBudgetValidationData(prev => ({ ...prev, ...valUpdates }));
+        } catch (vErr) {
+          console.warn('[BudgetValidation] Firestore fetch failed:', vErr.message);
+        }
       } catch (err) {
         console.warn('[FederalDepts] Firestore fetch failed:', err.message);
       }
@@ -6521,6 +6534,24 @@ function App() {
         <span className="cov-tip">
           {covered && <><span style={{color:'#86efac'}}>✓</span> {covered}</>}
           {missing && <><br/><span style={{color:'#fca5a5'}}>✗</span> {missing}</>}
+        </span>
+      </span>
+    );
+  };
+
+  const budgetValidBadge = (validDoc) => {
+    if (!validDoc) return null;
+    const verified = validDoc.status === 'verified';
+    return (
+      <span className="cov-wrap" style={{ marginLeft: '0.25rem' }}>
+        <span className={`cov-pill ${verified ? 'cov-full' : 'cov-partial'}`} style={{ fontSize: '0.58rem' }}>
+          {verified ? '✓ Verified' : '⚠ Unverified'}
+        </span>
+        <span className="cov-tip" style={{ left: 'auto', right: 0, transform: 'none', whiteSpace: 'normal', width: '220px', textAlign: 'left' }}>
+          <strong style={{ color: verified ? '#86efac' : '#fcd34d' }}>{verified ? 'Budget Verified' : 'Budget Unverified'}</strong><br />
+          {validDoc.source_url && <><span style={{ color: '#93c5fd' }}>Source:</span> <a href={validDoc.source_url} target="_blank" rel="noopener noreferrer" style={{ color: '#93c5fd', textDecoration: 'underline', pointerEvents: 'auto' }}>{validDoc.source_url}</a><br /></>}
+          {validDoc.validation_date && <><span style={{ color: '#d1d5db' }}>Checked:</span> {validDoc.validation_date}</>}
+          {!validDoc.source_url && !validDoc.validation_date && <span style={{ color: '#9ca3af' }}>No verification details available.</span>}
         </span>
       </span>
     );
@@ -6854,6 +6885,7 @@ function App() {
                     <TrendingUp className="w-5 h-5 text-green-600" />
                     <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
                     <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />
+                    {budgetValidBadge(budgetValidationData[_bKey])}
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -18970,6 +19002,7 @@ function App() {
                     <TrendingUp className="w-5 h-5 text-green-600" />
                     <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
                     <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />
+                    {budgetValidBadge(budgetValidationData[_bKey])}
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -31016,6 +31049,7 @@ function App() {
                     <TrendingUp className="w-5 h-5 text-green-600" />
                     <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
                     <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />
+                    {budgetValidBadge(budgetValidationData[_bKey])}
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -31845,6 +31879,7 @@ function App() {
                     <TrendingUp className="w-5 h-5 text-green-600" />
                     <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
                     <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />
+                    {budgetValidBadge(budgetValidationData[_bKey])}
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
