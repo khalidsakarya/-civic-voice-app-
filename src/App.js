@@ -6541,17 +6541,27 @@ function App() {
 
   const budgetValidBadge = (validDoc) => {
     if (!validDoc) return null;
-    const verified = validDoc.status === 'verified';
+    const s = validDoc.status;
+    const isMismatch = s === 'mismatch';
+    const isSelfReported = s === 'self-reported';
+    const isVerified = s === 'verified';
+    const pillCls = isVerified ? 'cov-full' : isSelfReported ? 'cov-partial' : 'cov-limited';
+    const label = isVerified ? '✓ Verified' : isSelfReported ? '⚠ Self-reported' : '✗ Mismatch';
+    const titleColor = isVerified ? '#86efac' : isSelfReported ? '#fcd34d' : '#fca5a5';
+    const titleText = isVerified ? 'Cross-checked & Verified' : isSelfReported ? 'Self-reported (Single Source)' : 'Discrepancy Detected';
+    const desc = isVerified
+      ? 'Figures confirmed against multiple independent official sources.'
+      : isSelfReported
+      ? 'Figures sourced from the department\'s own reporting only — not independently cross-checked.'
+      : 'A discrepancy was found between reported figures and an independent source.';
     return (
       <span className="cov-wrap" style={{ marginLeft: '0.25rem' }}>
-        <span className={`cov-pill ${verified ? 'cov-full' : 'cov-partial'}`} style={{ fontSize: '0.58rem' }}>
-          {verified ? '✓ Verified' : '⚠ Unverified'}
-        </span>
-        <span className="cov-tip" style={{ left: 'auto', right: 0, transform: 'none', whiteSpace: 'normal', width: '220px', textAlign: 'left' }}>
-          <strong style={{ color: verified ? '#86efac' : '#fcd34d' }}>{verified ? 'Budget Verified' : 'Budget Unverified'}</strong><br />
-          {validDoc.source_url && <><span style={{ color: '#93c5fd' }}>Source:</span> <a href={validDoc.source_url} target="_blank" rel="noopener noreferrer" style={{ color: '#93c5fd', textDecoration: 'underline', pointerEvents: 'auto' }}>{validDoc.source_url}</a><br /></>}
-          {validDoc.validation_date && <><span style={{ color: '#d1d5db' }}>Checked:</span> {validDoc.validation_date}</>}
-          {!validDoc.source_url && !validDoc.validation_date && <span style={{ color: '#9ca3af' }}>No verification details available.</span>}
+        <span className={`cov-pill ${pillCls}`} style={{ fontSize: '0.58rem' }}>{label}</span>
+        <span className="cov-tip" style={{ left: 'auto', right: 0, transform: 'none', whiteSpace: 'normal', width: '240px', textAlign: 'left' }}>
+          <strong style={{ color: titleColor }}>{titleText}</strong><br />
+          <span style={{ color: '#d1d5db' }}>{desc}</span>
+          {validDoc.source_url && <><br /><span style={{ color: '#93c5fd' }}>Source:</span> <a href={validDoc.source_url} target="_blank" rel="noopener noreferrer" style={{ color: '#93c5fd', textDecoration: 'underline', pointerEvents: 'auto' }}>{validDoc.source_url}</a></>}
+          {validDoc.validation_date && <><br /><span style={{ color: '#d1d5db' }}>Checked:</span> {validDoc.validation_date}</>}
         </span>
       </span>
     );
