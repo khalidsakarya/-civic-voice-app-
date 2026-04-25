@@ -3193,8 +3193,8 @@ function App() {
     try {
       const q = opts.skipDocTypeFilter
         ? query(collection(db, 'member_expenses'), where('member_name', '==', key))
-        : query(collection(db, 'member_expenses'), where('member_name', '==', key), where('docType', '==', 'expense'));
-      console.log(`[MemberFetch] member_expenses — query: member_name == "${key}"${opts.skipDocTypeFilter ? '' : ' AND docType == "expense"'}`);
+        : query(collection(db, 'member_expenses'), where('member_name', '==', key), where('doc_type', '==', 'expense'));
+      console.log(`[MemberFetch] member_expenses — query: member_name == "${key}"${opts.skipDocTypeFilter ? '' : ' AND doc_type == "expense"'}`);
       const snap = await getDocs(q);
       console.log(`[MemberFetch] member_expenses — result count: ${snap.docs.length}`, snap.docs.map(d => d.data()));
       const docs = snap.empty ? null : snap.docs.map(d => d.data());
