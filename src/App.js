@@ -15428,9 +15428,13 @@ function App() {
                       {liveLobby?.length > 0 ? (
                         liveLobby.map((org, idx) => (
                           <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                            <p className="font-semibold text-gray-800 text-sm">{org.organization || org.name}</p>
-                            {org.topic && <p className="text-xs text-gray-500 mt-0.5">{org.topic}</p>}
-                            {org.date && <p className="text-xs text-gray-400 mt-0.5">{org.date}</p>}
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <p className="font-semibold text-gray-800 text-sm">{org.lobbyist_name}</p>
+                              {org.meeting_date && <span className="text-xs text-gray-400 flex-shrink-0">{org.meeting_date}</span>}
+                            </div>
+                            {org.client_organization && <p className="text-xs text-blue-700 font-medium">{org.client_organization}</p>}
+                            {org.dpoh_institution && <p className="text-xs text-gray-500 mt-0.5">Institution: {org.dpoh_institution}</p>}
+                            {org.subject_description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.subject_description}</p>}
                           </div>
                         ))
                       ) : (
@@ -30837,18 +30841,13 @@ function App() {
                     <div className="space-y-4">
                       {liveLobbyDocs.map((org, idx) => (
                         <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h3 className="font-bold text-gray-800">{org.organization ?? org.name}</h3>
-                              {org.sector && <p className="text-sm text-gray-600">{org.sector}</p>}
-                              {org.topic && <p className="text-xs text-blue-600 mt-0.5 font-medium">{org.topic}</p>}
-                            </div>
-                            {org.value ? <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">{formatCurrency(org.value)}</span> : null}
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <h3 className="font-bold text-gray-800 text-sm">{org.lobbyist_name}</h3>
+                            {org.meeting_date && <span className="text-xs text-gray-400 flex-shrink-0">{org.meeting_date}</span>}
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            {org.meetings && <span>📅 {org.meetings} meetings</span>}
-                            {org.lastMeeting && <span>🗓️ Last: {org.lastMeeting}</span>}
-                          </div>
+                          {org.client_organization && <p className="text-xs text-blue-700 font-medium">{org.client_organization}</p>}
+                          {org.dpoh_institution && <p className="text-xs text-gray-500 mt-0.5">Institution: {org.dpoh_institution}</p>}
+                          {org.subject_description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.subject_description}</p>}
                         </div>
                       ))}
                     </div>
