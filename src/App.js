@@ -3061,8 +3061,9 @@ function App() {
     fetchMemberAttendance(selectedMember);
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch attendance when Canadian MP detail opens
+  // Fetch attendance when Canadian MP detail or PM detail opens
   useEffect(() => {
+    if (view === 'canada-pm-detail') { fetchMemberAttendance({ name: 'Mark Carney' }); return; }
     if (view !== 'member-detail' || !selectedMember?.name) return;
     fetchMemberAttendance(selectedMember);
   }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -15495,25 +15496,74 @@ function App() {
 
               {/* Financial Disclosures */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('financial')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h3>{coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.financial ? 'rotate-0' : '-rotate-90'}`} />
+                <div onClick={() => toggleCarneySection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h3>
+                    {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedCarneySections.financial ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.financial ? '' : 'hidden sm:block'}`}>
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
+                {expandedCarneySections.financial && (
+                  <div className="px-6 pb-6">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm text-gray-700 leading-relaxed">
+                      Financial disclosure filed with the Conflict of Interest and Ethics Commissioner. Registry currently unavailable — check{' '}
+                      <a href="https://ciec-ccie.oic.gc.ca" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium">ciec-ccie.oic.gc.ca</a>{' '}
+                      directly.
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Attendance Record */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('attendance')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">📈 Attendance Record</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.attendance ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedCarneySections.attendance ? '' : 'hidden sm:block'}`}>
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
-              </div>
+              {(() => {
+                const attDocs = memberAttendanceData['Mark Carney'];
+                const isLoadingAtt = !!memberAttendanceLoading['Mark Carney'];
+                const att = attDocs?.[0] ?? null;
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => toggleCarneySection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">📈 Attendance Record</h3>
+                        {isLoadingAtt && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {att && !isLoadingAtt && liveBadge(null, 'Session')}
+                        {coverageBadge('partial', 'Based on recorded votes only', 'Unrecorded absences not included')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedCarneySections.attendance ? 'rotate-0' : '-rotate-90'}`} />
+                    </div>
+                    {expandedCarneySections.attendance && (
+                      <div className="px-6 pb-6">
+                        {att ? (
+                          <div className="space-y-3">
+                            {att.session && <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{att.session}</p>}
+                            <div className="grid grid-cols-3 gap-3">
+                              {att.attendance_percentage != null && (
+                                <div className="bg-green-50 rounded-lg p-3 text-center">
+                                  <p className="text-2xl font-bold text-green-700">{att.attendance_percentage}%</p>
+                                  <p className="text-xs text-gray-500 mt-0.5">Attendance</p>
+                                </div>
+                              )}
+                              {att.votes_participated != null && (
+                                <div className="bg-blue-50 rounded-lg p-3 text-center">
+                                  <p className="text-2xl font-bold text-blue-700">{att.votes_participated}</p>
+                                  <p className="text-xs text-gray-500 mt-0.5">Votes Participated</p>
+                                </div>
+                              )}
+                              {att.total_votes != null && (
+                                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                                  <p className="text-2xl font-bold text-gray-700">{att.total_votes}</p>
+                                  <p className="text-xs text-gray-500 mt-0.5">Total Votes</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingAtt ? 'Loading…' : 'No attendance records found in official database.'}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Cabinet Members */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
