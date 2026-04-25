@@ -2916,7 +2916,9 @@ function App() {
     setMemberCorporateLoading(prev => ({ ...prev, [name]: true }));
     try {
       const q = query(collection(db, 'member_corporate_affiliations'), where('memberName', '==', name));
+      console.log(`[MemberFetch] member_corporate_affiliations — query: memberName == "${name}"`);
       const snap = await getDocs(q);
+      console.log(`[MemberFetch] member_corporate_affiliations — result count: ${snap.docs.length}`, snap.docs.map(d => d.data()));
       setMemberCorporateData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
     } catch (err) {
       console.warn('[LiveData] member_corporate_affiliations fetch failed:', err.message);
@@ -2935,6 +2937,8 @@ function App() {
   // Fetch corporate affiliations — CA MP detail
   useEffect(() => {
     if (view !== 'member-detail' || !selectedMember?.name) return;
+    console.log(`[MemberFetch] CA member-detail opened for: "${selectedMember.name}" — triggering fetch for member_corporate_affiliations, member_lobbying, member_expenses`);
+    console.log(`[MemberFetch] member_disclosures: NOT fetched for CA member-detail (section uses static placeholder)`);
     fetchMemberCorporate(selectedMember.name);
   }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -2966,7 +2970,9 @@ function App() {
     (async () => {
       try {
         const q = query(collection(db, 'member_lobbying'), where('memberName', '==', name));
+        console.log(`[MemberFetch] member_lobbying — query: memberName == "${name}"`);
         const snap = await getDocs(q);
+        console.log(`[MemberFetch] member_lobbying — result count: ${snap.docs.length}`, snap.docs.map(d => d.data()));
         setMemberLobbyingData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
       } catch (err) {
         console.warn('[LiveData] member_lobbying fetch failed:', err.message);
@@ -3184,7 +3190,9 @@ function App() {
     setMemberExpenseLoading(prev => ({ ...prev, [key]: true }));
     try {
       const q = query(collection(db, 'member_expenses'), where('memberName', '==', key), where('docType', '==', 'expense'));
+      console.log(`[MemberFetch] member_expenses — query: memberName == "${key}" AND docType == "expense"`);
       const snap = await getDocs(q);
+      console.log(`[MemberFetch] member_expenses — result count: ${snap.docs.length}`, snap.docs.map(d => d.data()));
       const docs = snap.empty ? null : snap.docs.map(d => d.data());
       setMemberExpenseData(prev => ({ ...prev, [key]: docs }));
     } catch (err) {
