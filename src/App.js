@@ -3185,13 +3185,15 @@ function App() {
     fetchMemberCommittees(selectedSenator);
   }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchMemberExpenses = async (member) => {
+  const fetchMemberExpenses = async (member, opts = {}) => {
     const key = member.name;
     if (memberExpenseData[key] !== undefined || memberExpenseLoading[key]) return;
     setMemberExpenseLoading(prev => ({ ...prev, [key]: true }));
     try {
-      const q = query(collection(db, 'member_expenses'), where('member_name', '==', key), where('docType', '==', 'expense'));
-      console.log(`[MemberFetch] member_expenses — query: member_name == "${key}" AND docType == "expense"`);
+      const q = opts.skipDocTypeFilter
+        ? query(collection(db, 'member_expenses'), where('member_name', '==', key))
+        : query(collection(db, 'member_expenses'), where('member_name', '==', key), where('docType', '==', 'expense'));
+      console.log(`[MemberFetch] member_expenses — query: member_name == "${key}"${opts.skipDocTypeFilter ? '' : ' AND docType == "expense"'}`);
       const snap = await getDocs(q);
       console.log(`[MemberFetch] member_expenses — result count: ${snap.docs.length}`, snap.docs.map(d => d.data()));
       const docs = snap.empty ? null : snap.docs.map(d => d.data());
@@ -3212,9 +3214,10 @@ function App() {
 
   // Fetch expenses when Canadian MP detail or PM detail opens
   useEffect(() => {
-    const name = view === 'canada-pm-detail' ? 'Mark Carney' : (view === 'member-detail' ? selectedMember?.name : null);
+    const isPM = view === 'canada-pm-detail';
+    const name = isPM ? 'Mark Carney' : (view === 'member-detail' ? selectedMember?.name : null);
     if (!name) return;
-    fetchMemberExpenses({ name });
+    fetchMemberExpenses({ name }, { skipDocTypeFilter: isPM });
   }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch expenses when UK member detail opens
@@ -15370,45 +15373,54 @@ function App() {
               {renderPromiseTrackerSection('Mark Carney', toggleCarneySection, expandedCarneySections, '#EF4444')}
 
               {/* Expenses */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('expenses')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🧾 Expenses</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.expenses ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.expenses ? '' : 'hidden sm:block'}`}>
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                  <p className="text-xs text-gray-400 bg-blue-50 border border-blue-100 rounded-lg px-4 py-2">ℹ️ Personal travel and hospitality expenses are published quarterly. Q1 2025–26 data expected late 2025.</p>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('CA'); }}
-                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
-                      >
-                        {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
-                      </button>
-                    </div>
-                    {leaderLiveExpenses['CA'] && leaderLiveExpenses['CA'].length > 0 ? (
-                      <div className="space-y-2">
-                        {leaderLiveExpenses['CA'].map((item, i) => (
-                          <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
-                                <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
-                              </div>
-                              <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
-                            </div>
-                          </div>
-                        ))}
+              {(() => {
+                const expDocs = memberExpenseData['Mark Carney'];
+                const isLoadingExp = !!memberExpenseLoading['Mark Carney'];
+                const exp = expDocs?.[0] ?? null;
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => toggleCarneySection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">🧾 Expenses</h3>
+                        {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {exp && !isLoadingExp && liveBadge(null, 'Quarterly')}
+                        {coverageBadge('limited', 'Ministers and Senior Officials Only', 'Backbench MPs not included')}
                       </div>
-                    ) : (
-                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedCarneySections.expenses ? 'rotate-0' : '-rotate-90'}`} />
+                    </div>
+                    {expandedCarneySections.expenses && (
+                      <div className="px-6 pb-6 space-y-4">
+                        <p className="text-xs text-gray-400 bg-blue-50 border border-blue-100 rounded-lg px-4 py-2">ℹ️ Personal travel and hospitality expenses are published quarterly. Q1 2025–26 data expected late 2025.</p>
+                        {exp ? (
+                          <>
+                            <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
+                              <div>
+                                <p className="text-xs text-gray-500 mb-0.5">{exp.fiscal_year ?? ''}{exp.organization ? ` · ${exp.organization}` : ''}</p>
+                                <p className="text-2xl font-bold text-green-700">CA${Number(exp.total_cad ?? 0).toLocaleString()}</p>
+                                {(exp.period_start || exp.period_end) && <p className="text-xs text-gray-400 mt-0.5">{exp.period_start}{exp.period_start && exp.period_end ? ' – ' : ''}{exp.period_end}</p>}
+                              </div>
+                            </div>
+                            {exp.expenses_breakdown && Object.keys(exp.expenses_breakdown).length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-sm font-semibold text-gray-700">Breakdown</p>
+                                {Object.entries(exp.expenses_breakdown).map(([cat, amt], i) => (
+                                  <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                    <span className="text-sm text-gray-700">{cat}</span>
+                                    <span className="text-sm font-bold text-gray-900">CA${Number(amt).toLocaleString()}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {exp.source_url && <a href={exp.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline flex items-center gap-1">📄 View official source</a>}
+                          </>
+                        ) : (
+                          <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingExp ? 'Loading…' : 'No expense records found in official database.'}</p>
+                        )}
+                      </div>
                     )}
                   </div>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* Lobbying Activity */}
               {(() => {
