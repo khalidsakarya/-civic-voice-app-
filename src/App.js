@@ -1391,8 +1391,15 @@ function App() {
   const [readNotifIds, setReadNotifIds] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cvNotifRead') || '[]'); } catch { return []; }
   });
-  const [homeRegion, setHomeRegion] = useState(() => localStorage.getItem('cvHomeRegion') || null);
+  const [homeRegion, setHomeRegion] = useState(() => {
+    const region = localStorage.getItem('cvHomeRegion');
+    const grantedAt = parseInt(localStorage.getItem('cvLocationGrantedAt') || '0', 10);
+    const expired = region && (Date.now() - grantedAt > 90 * 24 * 60 * 60 * 1000);
+    if (expired) { localStorage.removeItem('cvHomeRegion'); localStorage.removeItem('cvLocationGrantedAt'); return null; }
+    return region || null;
+  });
   const [showLocationGate, setShowLocationGate] = useState(false);
+  const [locationPrivacyStep, setLocationPrivacyStep] = useState(true);
   const [regionManualMode, setRegionManualMode] = useState(false);
   const [manualRegionType, setManualRegionType] = useState('canada');
   const [manualRegionValue, setManualRegionValue] = useState('');
@@ -5932,9 +5939,15 @@ function App() {
     return null;
   };
 
+  const clearStoredLocation = () => {
+    localStorage.removeItem('cvHomeRegion');
+    localStorage.removeItem('cvLocationGrantedAt');
+    setHomeRegion(null);
+  };
+
   const storeHomeRegion = (region) => {
-    if (localStorage.getItem('cvHomeRegion')) return; // locked — cannot change
     localStorage.setItem('cvHomeRegion', region);
+    localStorage.setItem('cvLocationGrantedAt', Date.now().toString());
     setHomeRegion(region);
   };
 
@@ -5953,8 +5966,12 @@ function App() {
   };
 
   const requireRegion = (fn) => {
-    if (homeRegion) { fn(); return; }
+    const grantedAt = parseInt(localStorage.getItem('cvLocationGrantedAt') || '0', 10);
+    const expired = homeRegion && (Date.now() - grantedAt > 90 * 24 * 60 * 60 * 1000);
+    if (expired) { localStorage.removeItem('cvHomeRegion'); localStorage.removeItem('cvLocationGrantedAt'); setHomeRegion(null); }
+    if (homeRegion && !expired) { fn(); return; }
     pendingVoteRef.current = fn;
+    setLocationPrivacyStep(true);
     setShowLocationGate(true);
   };
 
@@ -6484,6 +6501,16 @@ function App() {
       </div>
     );
   };
+
+  const locInfoBtn = () => (
+    <span className="cov-wrap" style={{ alignSelf: 'center', marginLeft: '0.25rem' }}>
+      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-400 hover:text-blue-500 transition-colors cursor-default text-xs font-bold select-none">ℹ</span>
+      <span className="cov-tip" style={{ left: 'auto', right: 0, transform: 'none', whiteSpace: 'normal', width: '220px', textAlign: 'left' }}>
+        <strong style={{ color: '#93c5fd' }}>Why location?</strong><br />
+        Location verifies your regional eligibility for voting. Only your region name (e.g. "Ontario") is stored — never exact coordinates. Confirmation expires after 90 days.
+      </span>
+    </span>
+  );
 
   const coverageBadge = (level, covered, missing) => {
     const cls = level === 'full' ? 'cov-full' : level === 'partial' ? 'cov-partial' : 'cov-limited';
@@ -15246,7 +15273,7 @@ function App() {
               })()}
 
               {/* Vote buttons */}
-              <div className="flex gap-2 mt-2">
+              <div className="flex gap-2 mt-2 items-center">
                 <button
                   onClick={() => requireRegion(() => votePM('support'))}
                   className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${pmVotes.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
@@ -15265,6 +15292,7 @@ function App() {
                 >
                   <ThumbsDown className="w-4 h-4" /> Oppose
                 </button>
+                {locInfoBtn()}
               </div>
             </div>
           </div>
@@ -15734,6 +15762,7 @@ function App() {
                 >
                   <ThumbsDown className="w-4 h-4" /> Oppose
                 </button>
+                {locInfoBtn()}
               </div>
             </div>
           </div>
@@ -27260,6 +27289,7 @@ function App() {
 
                       {mp.supportVotes !== undefined && (
                         <div className="flex items-center gap-2 pt-2 border-t flex-wrap" onClick={e => e.stopPropagation()}>
+                          {locInfoBtn()}
                           <button
                             onClick={() => requireRegion(() => voteCongressMember(mp.name, 'support'))}
                             className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${mp.userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
@@ -27566,7 +27596,8 @@ function App() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 items-center">
+                {locInfoBtn()}
                 <button
                   onClick={() => requireRegion(() => voteBill(selectedBill.id, selectedBill.userVote === 'support' ? 'remove' : 'support'))}
                   className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
@@ -27777,7 +27808,8 @@ function App() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3 items-center">
+                      {locInfoBtn()}
                       <button
                         onClick={() => requireRegion(() => voteEO(selectedEO.number, 'support'))}
                         className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
@@ -32412,7 +32444,7 @@ function App() {
             )}
 
             {/* Vote buttons */}
-            <div className="flex gap-2 mt-2">
+            <div className="flex gap-2 mt-2 items-center">
               <button
                 onClick={() => requireRegion(() => voteCongressMember(member.name, 'support'))}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${member.userVote === 'support' ? 'bg-green-500 text-white' : 'bg-white bg-opacity-60 text-green-700 hover:bg-green-100'}`}
@@ -32431,6 +32463,7 @@ function App() {
               >
                 <ThumbsDown className="w-4 h-4" /> Oppose
               </button>
+              {locInfoBtn()}
             </div>
           </div>
 
@@ -33649,7 +33682,8 @@ function App() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 items-center">
+                  {locInfoBtn()}
                   <button
                     onClick={() => requireRegion(() => voteSenator(s.name, 'support'))}
                     className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${userVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
@@ -34092,20 +34126,42 @@ function App() {
           {/* Header */}
           <div className="bg-blue-600 px-6 py-5 text-white text-center">
             <div className="text-3xl mb-2">📍</div>
-            <h2 className="text-lg font-bold leading-tight">Set Your Location to Vote</h2>
-            <p className="text-blue-100 text-sm mt-1">This ensures votes reflect real regional opinions</p>
+            <h2 className="text-lg font-bold leading-tight">Set Your Region to Vote</h2>
+            <p className="text-blue-100 text-sm mt-1">Ensures votes reflect real regional opinions</p>
           </div>
           <div className="px-6 py-5">
-            {!regionManualMode ? (
+            {locationPrivacyStep ? (
+              <>
+                {/* Privacy pre-consent */}
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-sm text-gray-700 space-y-2">
+                  <p className="font-semibold text-blue-800">How we use your location</p>
+                  <p>Location is used <strong>only</strong> to verify regional eligibility for voting. No personal location history is stored.</p>
+                  <p>Your location is converted to a <strong>region name only</strong> (e.g. "Ontario" or "California") — exact coordinates are never saved.</p>
+                  <p className="text-gray-500 text-xs">Confirmation expires after 90 days and you can clear it at any time in settings.</p>
+                </div>
+                <button
+                  onClick={() => setLocationPrivacyStep(false)}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors"
+                >
+                  Understood, Continue
+                </button>
+                <button
+                  onClick={() => { setShowLocationGate(false); setRegionManualMode(false); setLocationPrivacyStep(true); }}
+                  className="w-full mt-3 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  Skip for now (voting requires a region)
+                </button>
+              </>
+            ) : !regionManualMode ? (
               <>
                 <p className="text-sm text-gray-600 text-center mb-5">
-                  Your location is used once to record your home region. It is <strong>permanently locked</strong> after being set to prevent vote manipulation.
+                  Allow location to automatically detect your region, or select it manually.
                 </p>
                 <button
                   onClick={handleRegionDetect}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
-                  <MapPin className="w-5 h-5" /> Allow Location
+                  <MapPin className="w-5 h-5" /> Detect My Region
                 </button>
                 <button
                   onClick={() => setRegionManualMode(true)}
@@ -34113,10 +34169,16 @@ function App() {
                 >
                   Select region manually instead
                 </button>
+                <button
+                  onClick={() => { setShowLocationGate(false); setRegionManualMode(false); setLocationPrivacyStep(true); }}
+                  className="w-full mt-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  Skip for now
+                </button>
               </>
             ) : (
               <>
-                <p className="text-sm text-gray-600 text-center mb-4">Select your home region. This cannot be changed later.</p>
+                <p className="text-sm text-gray-600 text-center mb-4">Select your home region.</p>
                 <div className="flex rounded-lg overflow-hidden border border-gray-200 mb-3">
                   <button
                     onClick={() => { setManualRegionType('canada'); setManualRegionValue(''); }}
@@ -34146,14 +34208,14 @@ function App() {
                 >
                   Confirm My Region
                 </button>
+                <button
+                  onClick={() => { setShowLocationGate(false); setRegionManualMode(false); setLocationPrivacyStep(true); }}
+                  className="w-full mt-3 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  Skip for now
+                </button>
               </>
             )}
-            <button
-              onClick={() => { setShowLocationGate(false); setRegionManualMode(false); }}
-              className="w-full mt-3 text-xs text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              Skip for now (voting requires a region)
-            </button>
           </div>
         </div>
       </div>
@@ -34221,6 +34283,30 @@ function App() {
 
           {/* Scrollable sections */}
           <div className="px-6 md:px-10 py-5 md:py-8 space-y-5 md:space-y-8 md:overflow-y-auto">
+            {/* Privacy & Data section */}
+            <div className="pb-5 md:pb-8 border-b border-gray-100">
+              <h3 className="font-bold text-gray-800 text-sm md:text-xl mb-1.5 md:mb-3">Privacy &amp; Data</h3>
+              <p className="text-sm md:text-base text-gray-600 leading-relaxed mb-3">
+                Voting requires a region name to verify eligibility. Only the region name is stored (e.g. "Ontario") — never exact coordinates. This confirmation expires after 90 days.
+              </p>
+              {homeRegion ? (
+                <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700">Stored region: <span className="text-blue-700">{homeRegion}</span></p>
+                    <p className="text-xs text-gray-500 mt-0.5">Expires 90 days after grant</p>
+                  </div>
+                  <button
+                    onClick={() => { clearStoredLocation(); }}
+                    className="text-xs font-semibold text-red-600 hover:text-red-800 border border-red-200 hover:border-red-400 rounded-lg px-3 py-1.5 transition-colors"
+                  >
+                    Clear Location
+                  </button>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 italic">No region stored. You will be prompted when you vote.</p>
+              )}
+            </div>
+
             {sections.map(({ title, text, bullets, principles }, i) => (
               <div key={title} className="pb-5 md:pb-8 border-b border-gray-100 last:border-0 last:pb-0">
                 <h3 className="font-bold text-gray-800 text-sm md:text-xl mb-1.5 md:mb-3">
