@@ -2934,12 +2934,13 @@ function App() {
     fetchMemberCorporate(selectedMember.name);
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch corporate affiliations — CA MP detail
+  // Fetch corporate affiliations — CA MP detail + PM detail
   useEffect(() => {
-    if (view !== 'member-detail' || !selectedMember?.name) return;
-    console.log(`[MemberFetch] CA member-detail opened for: "${selectedMember.name}" — triggering fetch for member_corporate_affiliations, member_lobbying, member_expenses`);
+    const name = view === 'canada-pm-detail' ? 'Mark Carney' : (view === 'member-detail' ? selectedMember?.name : null);
+    if (!name) return;
+    console.log(`[MemberFetch] CA member-detail opened for: "${name}" — triggering fetch for member_corporate_affiliations, member_lobbying, member_expenses`);
     console.log(`[MemberFetch] member_disclosures: NOT fetched for CA member-detail (section uses static placeholder)`);
-    fetchMemberCorporate(selectedMember.name);
+    fetchMemberCorporate(name);
   }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch corporate affiliations — UK MP detail
@@ -2961,10 +2962,10 @@ function App() {
   }, [showAuMemberPanel, selectedAuMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
-  // Fetch Canadian MP lobbying records from Firestore when member-detail opens
+  // Fetch Canadian MP lobbying records from Firestore when member-detail or PM detail opens
   useEffect(() => {
-    if (view !== 'member-detail' || !selectedMember?.name) return;
-    const name = selectedMember.name;
+    const name = view === 'canada-pm-detail' ? 'Mark Carney' : (view === 'member-detail' ? selectedMember?.name : null);
+    if (!name) return;
     if (memberLobbyingData[name] !== undefined || memberLobbyingLoading[name]) return;
     setMemberLobbyingLoading(prev => ({ ...prev, [name]: true }));
     (async () => {
@@ -3209,10 +3210,11 @@ function App() {
     fetchMemberExpenses(selectedMember);
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch expenses when Canadian MP detail opens
+  // Fetch expenses when Canadian MP detail or PM detail opens
   useEffect(() => {
-    if (view !== 'member-detail' || !selectedMember?.name) return;
-    fetchMemberExpenses(selectedMember);
+    const name = view === 'canada-pm-detail' ? 'Mark Carney' : (view === 'member-detail' ? selectedMember?.name : null);
+    if (!name) return;
+    fetchMemberExpenses({ name });
   }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch expenses when UK member detail opens
@@ -15408,26 +15410,68 @@ function App() {
               </div>
 
               {/* Lobbying Activity */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('lobbying')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h3>{coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.lobbying ? '' : 'hidden sm:block'}`}>
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
-              </div>
+              {(() => {
+                const liveLobby = memberLobbyingData['Mark Carney'];
+                const isLoadingLobby = !!memberLobbyingLoading['Mark Carney'];
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => toggleCarneySection('lobbying')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h3>
+                        {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {liveLobby?.length > 0 && !isLoadingLobby && liveBadge(null, 'Monthly')}
+                        {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
+                    </div>
+                    <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.lobbying ? '' : 'hidden sm:block'}`}>
+                      {liveLobby?.length > 0 ? (
+                        liveLobby.map((org, idx) => (
+                          <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                            <p className="font-semibold text-gray-800 text-sm">{org.organization || org.name}</p>
+                            {org.topic && <p className="text-xs text-gray-500 mt-0.5">{org.topic}</p>}
+                            {org.date && <p className="text-xs text-gray-400 mt-0.5">{org.date}</p>}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingLobby ? 'Loading…' : 'No lobbying records found in official database.'}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Corporate Affiliations */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('stockTrades')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🏢 Corporate Affiliations</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.stockTrades ? '' : 'hidden sm:block'}`}>
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
-              </div>
+              {(() => {
+                const liveCorp = memberCorporateData['Mark Carney'];
+                const isLoadingCorp = !!memberCorporateLoading['Mark Carney'];
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => toggleCarneySection('stockTrades')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">🏢 Corporate Affiliations</h3>
+                        {isLoadingCorp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {liveCorp?.length > 0 && !isLoadingCorp && liveBadge(null, 'Monthly')}
+                        {coverageBadge('partial', 'Registered interests and lobbying records only', 'Undisclosed holdings not included')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
+                    </div>
+                    <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.stockTrades ? '' : 'hidden sm:block'}`}>
+                      {liveCorp?.length > 0 ? (
+                        liveCorp.map((aff, i) => (
+                          <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                            <p className="font-semibold text-gray-800 text-sm">{aff.company || aff.organization}</p>
+                            {aff.role && <p className="text-xs text-blue-600 font-medium mt-0.5">{aff.role}</p>}
+                            {aff.period && <p className="text-xs text-gray-400 mt-0.5">{aff.period}</p>}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingCorp ? 'Loading…' : 'No corporate affiliation records found in official database.'}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Financial Disclosures */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
