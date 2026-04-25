@@ -2878,7 +2878,7 @@ function App() {
     setMemberDisclosureLoading(prev => ({ ...prev, [name]: true }));
     (async () => {
       try {
-        const q = query(collection(db, 'member_disclosures'), where('memberName', '==', name));
+        const q = query(collection(db, 'member_disclosures'), where('member_name', '==', name));
         const snap = await getDocs(q);
         setMemberDisclosureData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
       } catch (err) {
@@ -2898,7 +2898,7 @@ function App() {
     setMemberStockTradeLoading(prev => ({ ...prev, [name]: true }));
     (async () => {
       try {
-        const q = query(collection(db, 'member_stock_trades'), where('memberName', '==', name));
+        const q = query(collection(db, 'member_stock_trades'), where('member_name', '==', name));
         const snap = await getDocs(q);
         setMemberStockTradeData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
       } catch (err) {
@@ -2915,8 +2915,8 @@ function App() {
     if (memberCorporateData[name] !== undefined || memberCorporateLoading[name]) return;
     setMemberCorporateLoading(prev => ({ ...prev, [name]: true }));
     try {
-      const q = query(collection(db, 'member_corporate_affiliations'), where('memberName', '==', name));
-      console.log(`[MemberFetch] member_corporate_affiliations — query: memberName == "${name}"`);
+      const q = query(collection(db, 'member_corporate_affiliations'), where('member_name', '==', name));
+      console.log(`[MemberFetch] member_corporate_affiliations — query: member_name == "${name}"`);
       const snap = await getDocs(q);
       console.log(`[MemberFetch] member_corporate_affiliations — result count: ${snap.docs.length}`, snap.docs.map(d => d.data()));
       setMemberCorporateData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
@@ -2970,8 +2970,8 @@ function App() {
     setMemberLobbyingLoading(prev => ({ ...prev, [name]: true }));
     (async () => {
       try {
-        const q = query(collection(db, 'member_lobbying'), where('memberName', '==', name));
-        console.log(`[MemberFetch] member_lobbying — query: memberName == "${name}"`);
+        const q = query(collection(db, 'member_lobbying'), where('member_name', '==', name));
+        console.log(`[MemberFetch] member_lobbying — query: member_name == "${name}"`);
         const snap = await getDocs(q);
         console.log(`[MemberFetch] member_lobbying — result count: ${snap.docs.length}`, snap.docs.map(d => d.data()));
         setMemberLobbyingData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
@@ -3042,7 +3042,7 @@ function App() {
         docs = snap.docs.map(d => d.data());
       }
       if (docs.length === 0) {
-        const q = query(collection(db, 'member_attendance'), where('memberName', '==', key));
+        const q = query(collection(db, 'member_attendance'), where('member_name', '==', key));
         const snap = await getDocs(q);
         docs = snap.docs.map(d => d.data());
       }
@@ -3190,8 +3190,8 @@ function App() {
     if (memberExpenseData[key] !== undefined || memberExpenseLoading[key]) return;
     setMemberExpenseLoading(prev => ({ ...prev, [key]: true }));
     try {
-      const q = query(collection(db, 'member_expenses'), where('memberName', '==', key), where('docType', '==', 'expense'));
-      console.log(`[MemberFetch] member_expenses — query: memberName == "${key}" AND docType == "expense"`);
+      const q = query(collection(db, 'member_expenses'), where('member_name', '==', key), where('docType', '==', 'expense'));
+      console.log(`[MemberFetch] member_expenses — query: member_name == "${key}" AND docType == "expense"`);
       const snap = await getDocs(q);
       console.log(`[MemberFetch] member_expenses — result count: ${snap.docs.length}`, snap.docs.map(d => d.data()));
       const docs = snap.empty ? null : snap.docs.map(d => d.data());
