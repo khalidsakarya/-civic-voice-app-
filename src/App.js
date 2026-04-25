@@ -15377,6 +15377,7 @@ function App() {
                 </div>
                 <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.expenses ? '' : 'hidden sm:block'}`}>
                   <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                  <p className="text-xs text-gray-400 bg-blue-50 border border-blue-100 rounded-lg px-4 py-2">ℹ️ Personal travel and hospitality expenses are published quarterly. Q1 2025–26 data expected late 2025.</p>
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
@@ -15413,34 +15414,37 @@ function App() {
               {(() => {
                 const liveLobby = memberLobbyingData['Mark Carney'];
                 const isLoadingLobby = !!memberLobbyingLoading['Mark Carney'];
+                const count = liveLobby?.length ?? 0;
                 return (
                   <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div onClick={() => toggleCarneySection('lobbying')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                      <div className="flex items-center gap-2">
+                    <div onClick={() => toggleCarneySection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h3>
                         {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                        {liveLobby?.length > 0 && !isLoadingLobby && liveBadge(null, 'Monthly')}
+                        {count > 0 && !isLoadingLobby && <><span className="text-sm text-gray-500 font-normal">{count} meeting{count !== 1 ? 's' : ''}</span>{liveBadge(null, 'Monthly')}</>}
                         {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
                       </div>
-                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedCarneySections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
                     </div>
-                    <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.lobbying ? '' : 'hidden sm:block'}`}>
-                      {liveLobby?.length > 0 ? (
-                        liveLobby.map((org, idx) => (
-                          <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                            <div className="flex items-start justify-between gap-2 mb-1">
-                              <p className="font-semibold text-gray-800 text-sm">{org.lobbyist_name}</p>
-                              {org.meeting_date && <span className="text-xs text-gray-400 flex-shrink-0">{org.meeting_date}</span>}
+                    {expandedCarneySections.lobbying && (
+                      <div className="px-6 pb-6 space-y-3">
+                        {count > 0 ? (
+                          liveLobby.map((org, idx) => (
+                            <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <p className="font-semibold text-gray-800 text-sm">{org.lobbyist_name}</p>
+                                {org.meeting_date && <span className="text-xs text-gray-400 flex-shrink-0">{org.meeting_date}</span>}
+                              </div>
+                              {org.client_organization && <p className="text-xs text-blue-700 font-medium">{org.client_organization}</p>}
+                              {org.dpoh_institution && <p className="text-xs text-gray-500 mt-0.5">Institution: {org.dpoh_institution}</p>}
+                              {org.subject_description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.subject_description}</p>}
                             </div>
-                            {org.client_organization && <p className="text-xs text-blue-700 font-medium">{org.client_organization}</p>}
-                            {org.dpoh_institution && <p className="text-xs text-gray-500 mt-0.5">Institution: {org.dpoh_institution}</p>}
-                            {org.subject_description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.subject_description}</p>}
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingLobby ? 'Loading…' : 'No lobbying records found in official database.'}</p>
-                      )}
-                    </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingLobby ? 'Loading…' : 'No lobbying records found in official database.'}</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })()}
