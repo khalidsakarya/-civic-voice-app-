@@ -2283,6 +2283,8 @@ function App() {
   const [memberVotesLoading, setMemberVotesLoading] = useState({});
   const [memberAttendanceData, setMemberAttendanceData] = useState({});
   const [memberAttendanceLoading, setMemberAttendanceLoading] = useState({});
+  const [leaderActivityData, setLeaderActivityData] = useState({});
+  const [leaderActivityLoading, setLeaderActivityLoading] = useState({});
   const [memberBioData, setMemberBioData] = useState({});
   const [memberBioLoading, setMemberBioLoading] = useState({});
   const [memberCommitteeData, setMemberCommitteeData] = useState({});
@@ -3073,6 +3075,26 @@ function App() {
     if (view !== 'uk-member-detail' || !selectedUkMember?.name) return;
     fetchMemberAttendance(selectedUkMember);
   }, [view, selectedUkMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch recent activity for leader profiles from Firestore
+  useEffect(() => {
+    const leaderViews = { 'canada-pm-detail': 'Mark Carney', 'president-detail': 'Donald Trump', 'uk-pm-detail': 'Keir Starmer', 'albanese-detail': 'Anthony Albanese' };
+    const name = leaderViews[view];
+    if (!name || leaderActivityData[name] !== undefined || leaderActivityLoading[name]) return;
+    setLeaderActivityLoading(prev => ({ ...prev, [name]: true }));
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'member_recent_activity'), where('member_name', '==', name)));
+        const docs = snap.docs.map(d => d.data()).sort((a, b) => (b.date ?? '').localeCompare(a.date ?? '')).slice(0, 10);
+        setLeaderActivityData(prev => ({ ...prev, [name]: docs }));
+      } catch (err) {
+        console.warn('[LeaderActivity] fetch failed:', err.message);
+        setLeaderActivityData(prev => ({ ...prev, [name]: [] }));
+      } finally {
+        setLeaderActivityLoading(prev => ({ ...prev, [name]: false }));
+      }
+    })();
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Shared helper: fetch member_bios for a given member; tries bioguide_id first, then memberName
   const fetchMemberBio = async (member) => {
@@ -15659,17 +15681,37 @@ function App() {
               </div>
 
               {/* Recent Activity */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <h3 className="text-xl font-bold text-gray-800">📊 Recent Activity</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedCarneySections.activity ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                {expandedCarneySections.activity && (
-                  <div className="px-6 pb-6">
-                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">No recent activity data available yet.</p>
+              {(() => {
+                const acts = leaderActivityData['Mark Carney'];
+                const isLoading = !!leaderActivityLoading['Mark Carney'];
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => toggleCarneySection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">📊 Recent Activity</h3>
+                        {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {acts?.length > 0 && !isLoading && liveBadge(null, 'Live')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedCarneySections.activity ? 'rotate-0' : '-rotate-90'}`} />
+                    </div>
+                    {expandedCarneySections.activity && (
+                      <div className="px-6 pb-6 space-y-4">
+                        {acts?.length > 0 ? acts.map((item, i) => (
+                          <div key={i} className="border rounded-lg p-4 bg-red-50 border-red-200">
+                            <div className="flex items-start justify-between mb-2">
+                              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-200 text-red-800">{item.category}</span>
+                              <div className="flex items-center gap-1.5 text-sm text-gray-500"><Calendar className="w-3.5 h-3.5" /><span>{item.date}</span></div>
+                            </div>
+                            <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                            <p className="text-sm text-gray-600 mb-2">{item.description}</p>
+                            {item.source_url && <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">📄 Source</a>}
+                          </div>
+                        )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoading ? 'Loading…' : 'No recent activity data available yet.'}</p>}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                );
+              })()}
 
               {/* Senior Advisors */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -16119,27 +16161,37 @@ function App() {
               </div>
 
               {/* Recent Activity */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => togglePresidentSection('activity')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">📊 Recent Activity</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.activity ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 space-y-4 ${expandedPresidentSections.activity ? '' : 'hidden sm:block'}`}>
-                  {trump.recentActivity.map((item, i) => (
-                    <div key={i} className={`border rounded-lg p-4 ${item.type === 'Executive Order' ? 'bg-red-50 border-red-200' : item.type === 'Trade Action' ? 'bg-orange-50 border-orange-200' : 'bg-blue-50 border-blue-200'}`}>
-                      <div className="flex items-start justify-between mb-2">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${item.type === 'Executive Order' ? 'bg-red-200 text-red-800' : item.type === 'Trade Action' ? 'bg-orange-200 text-orange-800' : 'bg-blue-200 text-blue-800'}`}>{item.type}</span>
-                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{item.date}</span>
-                        </div>
+              {(() => {
+                const acts = leaderActivityData['Donald Trump'];
+                const isLoading = !!leaderActivityLoading['Donald Trump'];
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => togglePresidentSection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">📊 Recent Activity</h3>
+                        {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {acts?.length > 0 && !isLoading && liveBadge(null, 'Live')}
                       </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
-                      <p className="text-sm text-gray-600">{item.description}</p>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedPresidentSections.activity ? 'rotate-0' : '-rotate-90'}`} />
                     </div>
-                  ))}
-                </div>
-              </div>
+                    {expandedPresidentSections.activity && (
+                      <div className="px-6 pb-6 space-y-4">
+                        {acts?.length > 0 ? acts.map((item, i) => (
+                          <div key={i} className="border rounded-lg p-4 bg-blue-50 border-blue-200">
+                            <div className="flex items-start justify-between mb-2">
+                              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-200 text-blue-800">{item.category}</span>
+                              <div className="flex items-center gap-1.5 text-sm text-gray-500"><Calendar className="w-3.5 h-3.5" /><span>{item.date}</span></div>
+                            </div>
+                            <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                            <p className="text-sm text-gray-600 mb-2">{item.description}</p>
+                            {item.source_url && <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">📄 Source</a>}
+                          </div>
+                        )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoading ? 'Loading…' : 'No recent activity data available yet.'}</p>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Key Executive Actions */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -16617,35 +16669,40 @@ function App() {
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleStarmerSection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-6 h-6" style={{ color: partyColor }} />
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
-                    <p className="text-sm text-gray-600">{starmer.recentActivity.length} recent actions</p>
-                  </div>
-                </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.activity ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              {expandedStarmerSections.activity && (
-                <div className="px-6 pb-6 space-y-4">
-                  {starmer.recentActivity.map((item, i) => (
-                    <div key={i} className="border rounded-lg p-4" style={{ backgroundColor: '#E4003B08', borderColor: '#E4003B30' }}>
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ backgroundColor: '#E4003B20', color: '#9B0020' }}>{item.type}</span>
-                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{item.date}</span>
-                        </div>
+            {(() => {
+              const acts = leaderActivityData['Keir Starmer'];
+              const isLoading = !!leaderActivityLoading['Keir Starmer'];
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleStarmerSection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-6 h-6" style={{ color: partyColor }} />
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
+                        {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {acts?.length > 0 && !isLoading && liveBadge(null, 'Live')}
                       </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
-                      <p className="text-sm text-gray-600">{item.description}</p>
                     </div>
-                  ))}
+                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.activity ? 'rotate-0' : '-rotate-90'}`} />
+                  </div>
+                  {expandedStarmerSections.activity && (
+                    <div className="px-6 pb-6 space-y-4">
+                      {acts?.length > 0 ? acts.map((item, i) => (
+                        <div key={i} className="border rounded-lg p-4" style={{ backgroundColor: '#E4003B08', borderColor: '#E4003B30' }}>
+                          <div className="flex items-start justify-between mb-2">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold" style={{ backgroundColor: '#E4003B20', color: '#9B0020' }}>{item.category}</span>
+                            <div className="flex items-center gap-1.5 text-sm text-gray-500"><Calendar className="w-3.5 h-3.5" /><span>{item.date}</span></div>
+                          </div>
+                          <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                          <p className="text-sm text-gray-600 mb-2">{item.description}</p>
+                          {item.source_url && <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">📄 Source</a>}
+                        </div>
+                      )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoading ? 'Loading…' : 'No recent activity data available yet.'}</p>}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Senior Advisors */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -25581,35 +25638,40 @@ function App() {
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleAlbaneseSection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-6 h-6" style={{ color: partyColor }} />
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
-                    <p className="text-sm text-gray-600">{albanese.recentActivity.length} recent actions</p>
-                  </div>
-                </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.activity ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              {expandedAlbaneseSections.activity && (
-                <div className="px-6 pb-6 space-y-4">
-                  {albanese.recentActivity.map((item, i) => (
-                    <div key={i} className="border rounded-lg p-4 bg-red-50 border-red-200">
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-200 text-red-800">{item.type}</span>
-                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{item.date}</span>
-                        </div>
+            {(() => {
+              const acts = leaderActivityData['Anthony Albanese'];
+              const isLoading = !!leaderActivityLoading['Anthony Albanese'];
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleAlbaneseSection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <FileText className="w-6 h-6" style={{ color: partyColor }} />
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-gray-800">📊 Recent Activity</h2>
+                        {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {acts?.length > 0 && !isLoading && liveBadge(null, 'Live')}
                       </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
-                      <p className="text-sm text-gray-600">{item.description}</p>
                     </div>
-                  ))}
+                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.activity ? 'rotate-0' : '-rotate-90'}`} />
+                  </div>
+                  {expandedAlbaneseSections.activity && (
+                    <div className="px-6 pb-6 space-y-4">
+                      {acts?.length > 0 ? acts.map((item, i) => (
+                        <div key={i} className="border rounded-lg p-4 bg-red-50 border-red-200">
+                          <div className="flex items-start justify-between mb-2">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-200 text-red-800">{item.category}</span>
+                            <div className="flex items-center gap-1.5 text-sm text-gray-500"><Calendar className="w-3.5 h-3.5" /><span>{item.date}</span></div>
+                          </div>
+                          <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
+                          <p className="text-sm text-gray-600 mb-2">{item.description}</p>
+                          {item.source_url && <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">📄 Source</a>}
+                        </div>
+                      )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoading ? 'Loading…' : 'No recent activity data available yet.'}</p>}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Senior Advisors */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
