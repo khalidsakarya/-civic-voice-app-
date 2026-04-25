@@ -15660,25 +15660,15 @@ function App() {
 
               {/* Recent Activity */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('activity')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <div onClick={() => toggleCarneySection('activity')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
                   <h3 className="text-xl font-bold text-gray-800">📊 Recent Activity</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.activity ? 'rotate-0' : '-rotate-90'}`} />
+                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedCarneySections.activity ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                <div className={`px-6 pb-6 space-y-4 ${expandedCarneySections.activity ? '' : 'hidden sm:block'}`}>
-                  {carney.recentActivity.map((item, i) => (
-                    <div key={i} className="border rounded-lg p-4 bg-red-50 border-red-200">
-                      <div className="flex items-start justify-between mb-2">
-                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-200 text-red-800">{item.type}</span>
-                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>{item.date}</span>
-                        </div>
-                      </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
-                      <p className="text-sm text-gray-600">{item.description}</p>
-                    </div>
-                  ))}
-                </div>
+                {expandedCarneySections.activity && (
+                  <div className="px-6 pb-6">
+                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">No recent activity data available yet.</p>
+                  </div>
+                )}
               </div>
 
               {/* Senior Advisors */}
