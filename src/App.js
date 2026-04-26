@@ -2285,6 +2285,8 @@ function App() {
   const [memberAttendanceLoading, setMemberAttendanceLoading] = useState({});
   const [leaderActivityData, setLeaderActivityData] = useState({});
   const [leaderActivityLoading, setLeaderActivityLoading] = useState({});
+  const [leaderExecActionsData, setLeaderExecActionsData] = useState({});
+  const [leaderExecActionsLoading, setLeaderExecActionsLoading] = useState({});
   const [memberBioData, setMemberBioData] = useState({});
   const [memberBioLoading, setMemberBioLoading] = useState({});
   const [memberCommitteeData, setMemberCommitteeData] = useState({});
@@ -3111,6 +3113,26 @@ function App() {
         setLeaderActivityData(prev => ({ ...prev, [name]: [] }));
       } finally {
         setLeaderActivityLoading(prev => ({ ...prev, [name]: false }));
+      }
+    })();
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch executive actions for leader profiles from Firestore
+  useEffect(() => {
+    const leaderViews = { 'canada-pm-detail': 'Mark Carney', 'president-detail': 'Donald Trump', 'uk-pm-detail': 'Keir Starmer', 'albanese-detail': 'Anthony Albanese' };
+    const name = leaderViews[view];
+    if (!name || leaderExecActionsData[name] !== undefined || leaderExecActionsLoading[name]) return;
+    setLeaderExecActionsLoading(prev => ({ ...prev, [name]: true }));
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'executive_actions'), where('member_name', '==', name)));
+        const docs = snap.docs.map(d => d.data()).sort((a, b) => (b.date ?? '').localeCompare(a.date ?? '')).slice(0, 10);
+        setLeaderExecActionsData(prev => ({ ...prev, [name]: docs }));
+      } catch (err) {
+        console.warn('[LeaderExecActions] fetch failed:', err.message);
+        setLeaderExecActionsData(prev => ({ ...prev, [name]: [] }));
+      } finally {
+        setLeaderExecActionsLoading(prev => ({ ...prev, [name]: false }));
       }
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -15746,15 +15768,35 @@ function App() {
               </div>
 
               {/* Key Government Priorities */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('keyDecisions')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedCarneySections.keyDecisions ? '' : 'hidden sm:block'}`}>
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">No executive actions data available yet.</p>
-                </div>
-              </div>
+              {(() => {
+                const acts = leaderExecActionsData['Mark Carney'];
+                const isLoading = !!leaderExecActionsLoading['Mark Carney'];
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => toggleCarneySection('keyDecisions')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h3>
+                        {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {acts?.length > 0 && !isLoading && liveBadge(null, 'Live')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
+                    </div>
+                    <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.keyDecisions ? '' : 'hidden sm:block'}`}>
+                      {acts?.length > 0 ? acts.map((item, i) => (
+                        <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            {item.type && <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 flex-shrink-0">{item.type}</span>}
+                            {item.date && <span className="text-xs text-gray-400 flex-shrink-0">{item.date}</span>}
+                          </div>
+                          {item.title && <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>}
+                          {item.description && <p className="text-xs text-gray-600 leading-relaxed">{item.description}</p>}
+                          {item.source_url && <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
+                        </div>
+                      )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoading ? 'Loading…' : 'No executive actions data available yet.'}</p>}
+                    </div>
+                  </div>
+                );
+              })()}
 
           </div>
         </div>
@@ -16234,15 +16276,35 @@ function App() {
               })()}
 
               {/* Key Executive Actions */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => togglePresidentSection('keyDecisions')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">⚖️ Key Executive Actions</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedPresidentSections.keyDecisions ? '' : 'hidden sm:block'}`}>
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">No executive actions data available yet.</p>
-                </div>
-              </div>
+              {(() => {
+                const acts = leaderExecActionsData['Donald Trump'];
+                const isLoading = !!leaderExecActionsLoading['Donald Trump'];
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => togglePresidentSection('keyDecisions')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">⚖️ Key Executive Actions</h3>
+                        {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {acts?.length > 0 && !isLoading && liveBadge(null, 'Live')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
+                    </div>
+                    <div className={`px-6 pb-6 space-y-3 ${expandedPresidentSections.keyDecisions ? '' : 'hidden sm:block'}`}>
+                      {acts?.length > 0 ? acts.map((item, i) => (
+                        <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            {item.type && <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 flex-shrink-0">{item.type}</span>}
+                            {item.date && <span className="text-xs text-gray-400 flex-shrink-0">{item.date}</span>}
+                          </div>
+                          {item.title && <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>}
+                          {item.description && <p className="text-xs text-gray-600 leading-relaxed">{item.description}</p>}
+                          {item.source_url && <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
+                        </div>
+                      )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoading ? 'Loading…' : 'No executive actions data available yet.'}</p>}
+                    </div>
+                  </div>
+                );
+              })()}
           </div>
         </div>
       </div>
@@ -16754,23 +16816,40 @@ function App() {
             </div>
 
             {/* Key Government Commitments */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleStarmerSection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <Scale className="w-6 h-6" style={{ color: partyColor }} />
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-800">⚖️ Key Government Commitments</h2>
-
+            {(() => {
+              const acts = leaderExecActionsData['Keir Starmer'];
+              const isLoading = !!leaderExecActionsLoading['Keir Starmer'];
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleStarmerSection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <Scale className="w-6 h-6" style={{ color: partyColor }} />
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-gray-800">⚖️ Key Government Commitments</h2>
+                        {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {acts?.length > 0 && !isLoading && liveBadge(null, 'Live')}
+                      </div>
+                    </div>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
                   </div>
+                  {expandedStarmerSections.keyDecisions && (
+                    <div className="px-6 pb-6 space-y-3">
+                      {acts?.length > 0 ? acts.map((item, i) => (
+                        <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            {item.type && <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 flex-shrink-0">{item.type}</span>}
+                            {item.date && <span className="text-xs text-gray-400 flex-shrink-0">{item.date}</span>}
+                          </div>
+                          {item.title && <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>}
+                          {item.description && <p className="text-xs text-gray-600 leading-relaxed">{item.description}</p>}
+                          {item.source_url && <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
+                        </div>
+                      )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoading ? 'Loading…' : 'No executive actions data available yet.'}</p>}
+                    </div>
+                  )}
                 </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              {expandedStarmerSections.keyDecisions && (
-                <div className="px-6 pb-6">
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">No executive actions data available yet.</p>
-                </div>
-              )}
-            </div>
+              );
+            })()}
 
           </div>
         </div>
@@ -25715,23 +25794,40 @@ function App() {
             </div>
 
             {/* Key Government Priorities */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleAlbaneseSection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <Scale className="w-6 h-6" style={{ color: partyColor }} />
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h2>
-
+            {(() => {
+              const acts = leaderExecActionsData['Anthony Albanese'];
+              const isLoading = !!leaderExecActionsLoading['Anthony Albanese'];
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleAlbaneseSection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <Scale className="w-6 h-6" style={{ color: partyColor }} />
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h2>
+                        {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {acts?.length > 0 && !isLoading && liveBadge(null, 'Live')}
+                      </div>
+                    </div>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
                   </div>
+                  {expandedAlbaneseSections.keyDecisions && (
+                    <div className="px-6 pb-6 space-y-3">
+                      {acts?.length > 0 ? acts.map((item, i) => (
+                        <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            {item.type && <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 flex-shrink-0">{item.type}</span>}
+                            {item.date && <span className="text-xs text-gray-400 flex-shrink-0">{item.date}</span>}
+                          </div>
+                          {item.title && <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>}
+                          {item.description && <p className="text-xs text-gray-600 leading-relaxed">{item.description}</p>}
+                          {item.source_url && <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
+                        </div>
+                      )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoading ? 'Loading…' : 'No executive actions data available yet.'}</p>}
+                    </div>
+                  )}
                 </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              {expandedAlbaneseSections.keyDecisions && (
-                <div className="px-6 pb-6">
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">No executive actions data available yet.</p>
-                </div>
-              )}
-            </div>
+              );
+            })()}
 
           </div>
         </div>
