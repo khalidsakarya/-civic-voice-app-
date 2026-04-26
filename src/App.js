@@ -15190,16 +15190,6 @@ function App() {
         { type: 'Defence', date: 'Mar 2025', title: 'NATO Defence Spending Commitment', description: 'Pledged to increase Canadian defence spending to 2% of GDP by 2030, committing $8.1B in new military investments including Arctic surveillance and NORAD modernization.' },
         { type: 'Indigenous', date: 'Mar 2025', title: 'First Nations Infrastructure Fund', description: 'Launched a $3.2B First Nations Infrastructure Fund to address housing, clean water, and community services in Indigenous communities across Canada.' },
       ],
-      executiveActions: [
-        'Launched Canada Housing Action Plan — 500,000 new homes by 2029',
-        'Increased defence spending to meet 2% NATO GDP target by 2030',
-        'Introduced emergency tariff retaliation framework against US trade measures',
-        'Established Canada–US Economic Security Council to protect bilateral trade',
-        'Signed clean electricity agreements with seven provinces',
-        'Created the National Housing Bank with $15B in direct financing capacity',
-        'Expanded Indigenous child welfare funding by $2.3B',
-        'Launched Trade Diversification Strategy to reduce US dependency',
-      ],
       attendance: { percentage: 94, sessionsAttended: 47, totalSessions: 50 },
       financialDisclosure: {
         electedYear: 2025,
@@ -15761,12 +15751,8 @@ function App() {
                   <h3 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h3>
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                <div className={`px-6 pb-6 space-y-2 ${expandedCarneySections.keyDecisions ? '' : 'hidden sm:block'}`}>
-                  {carney.executiveActions.map((action, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <span className="text-sm text-gray-700 font-medium">{action}</span>
-                    </div>
-                  ))}
+                <div className={`px-6 pb-6 ${expandedCarneySections.keyDecisions ? '' : 'hidden sm:block'}`}>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">No executive actions data available yet.</p>
                 </div>
               </div>
 
@@ -15788,14 +15774,6 @@ function App() {
       education: 'B.S. Economics, Wharton School, University of Pennsylvania',
       bio: 'Donald J. Trump is the 47th President of the United States, inaugurated on January 20, 2025. Previously serving as the 45th President from 2017 to 2021, Trump became the first U.S. president elected to non-consecutive terms since Grover Cleveland in 1892. Before entering politics he was a prominent real estate developer and television personality known for The Apprentice.',
       policies: ['Border Security & Immigration', 'Tariffs & Economic Nationalism', 'Energy Independence', 'Deregulation', 'America First Foreign Policy'],
-      executiveActions: [
-        'Declared national emergency at the southern border',
-        'Withdrew from the Paris Climate Agreement',
-        'Issued executive orders on immigration enforcement and deportation',
-        'Imposed broad tariffs on imports from major trading partners',
-        'Established DOGE — Department of Government Efficiency advisory body',
-        'Signed executive order to end birthright citizenship for children of illegal immigrants (pending courts)',
-      ],
       cabinet: [
         { role: 'Vice President', name: 'JD Vance' },
         { role: 'Secretary of State', name: 'Marco Rubio' },
@@ -16261,13 +16239,9 @@ function App() {
                   <h3 className="text-xl font-bold text-gray-800">⚖️ Key Executive Actions</h3>
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                <div className={`px-6 pb-6 space-y-2 ${expandedPresidentSections.keyDecisions ? '' : 'hidden sm:block'}`}>
-                    {trump.executiveActions.map((action, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <span className="text-sm text-gray-700 font-medium">{action}</span>
-                      </div>
-                    ))}
-                  </div>
+                <div className={`px-6 pb-6 ${expandedPresidentSections.keyDecisions ? '' : 'hidden sm:block'}`}>
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">No executive actions data available yet.</p>
+                </div>
               </div>
           </div>
         </div>
@@ -16296,16 +16270,6 @@ function App() {
         'Economic Growth & Investment',
         'Education & Skills',
         'National Security & Defence',
-      ],
-      executiveActions: [
-        'Launched NHS 10-Year Plan — target to halve waiting lists and end the 18-week backlog by 2029',
-        'Established Great British Energy — publicly owned clean energy company with £8.3B investment',
-        'Passed Employment Rights Act — day-one unfair dismissal protection and stronger unions',
-        'Published National Wealth Fund — £7.3B in green industry and infrastructure investment',
-        'Commissioned Strategic Defence Review — first comprehensive review since 2010',
-        'Launched English Devolution Bill — new powers for metro mayors across England',
-        'Introduced Planning & Infrastructure Bill — targeting 1.5M homes by 2030',
-        'Hosted UK–EU Reset Summit — first joint summit since Brexit at Lancaster House',
       ],
       attendance: { percentage: 88, sessionsAttended: 132, totalSessions: 150 },
       financialDisclosure: {
@@ -16796,18 +16760,14 @@ function App() {
                   <Scale className="w-6 h-6" style={{ color: partyColor }} />
                   <div>
                     <h2 className="text-xl font-bold text-gray-800">⚖️ Key Government Commitments</h2>
-                    <p className="text-sm text-gray-600">{starmer.executiveActions.length} key commitments</p>
+
                   </div>
                 </div>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
               </div>
               {expandedStarmerSections.keyDecisions && (
-                <div className="px-6 pb-6 space-y-2">
-                  {starmer.executiveActions.map((action, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <span className="text-sm text-gray-700 font-medium">{action}</span>
-                    </div>
-                  ))}
+                <div className="px-6 pb-6">
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">No executive actions data available yet.</p>
                 </div>
               )}
             </div>
@@ -25273,16 +25233,6 @@ function App() {
       phone: '+61 2 6277 7700',
       bio: 'Anthony Albanese is the 31st Prime Minister of Australia, elected on May 21, 2022, ending nine years of Coalition government. Known as "Albo" to supporters, he grew up in public housing in Camperdown, Sydney, raised by a single mother. He entered federal parliament in 1996 as the Member for Grayndler and served as Deputy Prime Minister and Minister for Infrastructure under Kevin Rudd and Julia Gillard. A lifelong Labor figure and proud South Sydney Rabbitohs supporter, Albanese has focused his government on climate action, cost of living relief, housing affordability, and rebuilding international relationships including with China and the Pacific.',
       policies: ['Climate Action & Renewable Energy', 'Housing Affordability', 'Cost of Living Relief', 'AUKUS & National Security', 'Medicare & Healthcare', 'Indigenous Reconciliation', 'Industrial Relations Reform'],
-      executiveActions: [
-        'Legislated 43% emissions reduction target by 2030 — Australia\'s first statutory climate target',
-        'Established the National Housing Accord targeting 1.2 million new homes by 2029',
-        'Restored Australia–China ministerial dialogue after three years of diplomatic freeze',
-        'Signed the AUKUS nuclear-powered submarine agreement with US and UK',
-        'Introduced the Closing the Gap refresh with binding targets for Indigenous outcomes',
-        'Passed the Fair Work Legislation Amendment for multi-employer bargaining rights',
-        'Created the $10B Housing Australia Future Fund for social and affordable housing',
-        'Extended the Energy Price Relief Plan — $300 rebate to every household',
-      ],
       attendance: { percentage: 91, sessionsAttended: 46, totalSessions: 50 },
       financialDisclosure: {
         electedYear: 2022,
@@ -25771,18 +25721,14 @@ function App() {
                   <Scale className="w-6 h-6" style={{ color: partyColor }} />
                   <div>
                     <h2 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h2>
-                    <p className="text-sm text-gray-600">{albanese.executiveActions.length} key commitments</p>
+
                   </div>
                 </div>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
               </div>
               {expandedAlbaneseSections.keyDecisions && (
-                <div className="px-6 pb-6 space-y-2">
-                  {albanese.executiveActions.map((action, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <span className="text-sm text-gray-700 font-medium">{action}</span>
-                    </div>
-                  ))}
+                <div className="px-6 pb-6">
+                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">No executive actions data available yet.</p>
                 </div>
               )}
             </div>
