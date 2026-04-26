@@ -15487,12 +15487,15 @@ function App() {
                           liveLobby.map((org, idx) => (
                             <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                               <div className="flex items-start justify-between gap-2 mb-1">
-                                <p className="font-semibold text-gray-800 text-sm">{org.lobbyist_name}</p>
-                                {org.meeting_date && <span className="text-xs text-gray-400 flex-shrink-0">{org.meeting_date}</span>}
+                                <p className="font-semibold text-gray-800 text-sm">{org.registrant}</p>
+                                {org.date && <span className="text-xs text-gray-400 flex-shrink-0">{org.date}</span>}
                               </div>
-                              {org.client_organization && <p className="text-xs text-blue-700 font-medium">{org.client_organization}</p>}
-                              {org.dpoh_institution && <p className="text-xs text-gray-500 mt-0.5">Institution: {org.dpoh_institution}</p>}
-                              {org.subject_description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.subject_description}</p>}
+                              {org.title && <p className="text-xs font-medium text-gray-700 mb-0.5">{org.title}</p>}
+                              {org.client && <p className="text-xs text-blue-700 font-medium">{org.client}</p>}
+                              {org.filing_period && <p className="text-xs text-gray-400 mt-0.5">Period: {org.filing_period}</p>}
+                              {org.issues?.length > 0 && <div className="flex flex-wrap gap-1 mt-1">{org.issues.map((iss, ii) => <span key={ii} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{iss}</span>)}</div>}
+                              {org.description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.description}</p>}
+                              {org.source_url && <a href={org.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
                             </div>
                           ))
                         ) : (
@@ -16062,12 +16065,15 @@ function App() {
                         {count > 0 ? liveLobby.map((org, idx) => (
                           <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                             <div className="flex items-start justify-between gap-2 mb-1">
-                              <p className="font-semibold text-gray-800 text-sm">{org.lobbyist_name}</p>
-                              {org.meeting_date && <span className="text-xs text-gray-400 flex-shrink-0">{org.meeting_date}</span>}
+                              <p className="font-semibold text-gray-800 text-sm">{org.registrant}</p>
+                              {org.date && <span className="text-xs text-gray-400 flex-shrink-0">{org.date}</span>}
                             </div>
-                            {org.client_organization && <p className="text-xs text-blue-700 font-medium">{org.client_organization}</p>}
-                            {org.dpoh_institution && <p className="text-xs text-gray-500 mt-0.5">Institution: {org.dpoh_institution}</p>}
-                            {org.subject_description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.subject_description}</p>}
+                            {org.title && <p className="text-xs font-medium text-gray-700 mb-0.5">{org.title}</p>}
+                            {org.client && <p className="text-xs text-blue-700 font-medium">{org.client}</p>}
+                            {org.filing_period && <p className="text-xs text-gray-400 mt-0.5">Period: {org.filing_period}</p>}
+                            {org.issues?.length > 0 && <div className="flex flex-wrap gap-1 mt-1">{org.issues.map((iss, ii) => <span key={ii} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{iss}</span>)}</div>}
+                            {org.description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.description}</p>}
+                            {org.source_url && <a href={org.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
                           </div>
                         )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingLobby ? 'Loading…' : 'No lobbying records found.'}</p>}
                       </div>
@@ -16563,12 +16569,15 @@ function App() {
                       {count > 0 ? liveLobby.map((org, idx) => (
                         <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                           <div className="flex items-start justify-between gap-2 mb-1">
-                            <p className="font-semibold text-gray-800 text-sm">{org.lobbyist_name}</p>
-                            {org.meeting_date && <span className="text-xs text-gray-400 flex-shrink-0">{org.meeting_date}</span>}
+                            <p className="font-semibold text-gray-800 text-sm">{org.registrant}</p>
+                            {org.date && <span className="text-xs text-gray-400 flex-shrink-0">{org.date}</span>}
                           </div>
-                          {org.client_organization && <p className="text-xs text-blue-700 font-medium">{org.client_organization}</p>}
-                          {org.dpoh_institution && <p className="text-xs text-gray-500 mt-0.5">Institution: {org.dpoh_institution}</p>}
-                          {org.subject_description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.subject_description}</p>}
+                          {org.title && <p className="text-xs font-medium text-gray-700 mb-0.5">{org.title}</p>}
+                          {org.client && <p className="text-xs text-blue-700 font-medium">{org.client}</p>}
+                          {org.filing_period && <p className="text-xs text-gray-400 mt-0.5">Period: {org.filing_period}</p>}
+                          {org.issues?.length > 0 && <div className="flex flex-wrap gap-1 mt-1">{org.issues.map((iss, ii) => <span key={ii} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{iss}</span>)}</div>}
+                          {org.description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.description}</p>}
+                          {org.source_url && <a href={org.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
                         </div>
                       )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingLobby ? 'Loading…' : 'No lobbying records found.'}</p>}
                     </div>
@@ -25535,12 +25544,15 @@ function App() {
                       {count > 0 ? liveLobby.map((org, idx) => (
                         <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                           <div className="flex items-start justify-between gap-2 mb-1">
-                            <p className="font-semibold text-gray-800 text-sm">{org.lobbyist_name}</p>
-                            {org.meeting_date && <span className="text-xs text-gray-400 flex-shrink-0">{org.meeting_date}</span>}
+                            <p className="font-semibold text-gray-800 text-sm">{org.registrant}</p>
+                            {org.date && <span className="text-xs text-gray-400 flex-shrink-0">{org.date}</span>}
                           </div>
-                          {org.client_organization && <p className="text-xs text-blue-700 font-medium">{org.client_organization}</p>}
-                          {org.dpoh_institution && <p className="text-xs text-gray-500 mt-0.5">Institution: {org.dpoh_institution}</p>}
-                          {org.subject_description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.subject_description}</p>}
+                          {org.title && <p className="text-xs font-medium text-gray-700 mb-0.5">{org.title}</p>}
+                          {org.client && <p className="text-xs text-blue-700 font-medium">{org.client}</p>}
+                          {org.filing_period && <p className="text-xs text-gray-400 mt-0.5">Period: {org.filing_period}</p>}
+                          {org.issues?.length > 0 && <div className="flex flex-wrap gap-1 mt-1">{org.issues.map((iss, ii) => <span key={ii} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{iss}</span>)}</div>}
+                          {org.description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.description}</p>}
+                          {org.source_url && <a href={org.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
                         </div>
                       )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingLobby ? 'Loading…' : 'No lobbying records found.'}</p>}
                     </div>
@@ -31022,12 +31034,15 @@ function App() {
                       {liveLobbyDocs.map((org, idx) => (
                         <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                           <div className="flex items-start justify-between gap-2 mb-1">
-                            <h3 className="font-bold text-gray-800 text-sm">{org.lobbyist_name}</h3>
-                            {org.meeting_date && <span className="text-xs text-gray-400 flex-shrink-0">{org.meeting_date}</span>}
+                            <h3 className="font-bold text-gray-800 text-sm">{org.registrant}</h3>
+                            {org.date && <span className="text-xs text-gray-400 flex-shrink-0">{org.date}</span>}
                           </div>
-                          {org.client_organization && <p className="text-xs text-blue-700 font-medium">{org.client_organization}</p>}
-                          {org.dpoh_institution && <p className="text-xs text-gray-500 mt-0.5">Institution: {org.dpoh_institution}</p>}
-                          {org.subject_description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.subject_description}</p>}
+                          {org.title && <p className="text-xs font-medium text-gray-700 mb-0.5">{org.title}</p>}
+                          {org.client && <p className="text-xs text-blue-700 font-medium">{org.client}</p>}
+                          {org.filing_period && <p className="text-xs text-gray-400 mt-0.5">Period: {org.filing_period}</p>}
+                          {org.issues?.length > 0 && <div className="flex flex-wrap gap-1 mt-1">{org.issues.map((iss, ii) => <span key={ii} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{iss}</span>)}</div>}
+                          {org.description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.description}</p>}
+                          {org.source_url && <a href={org.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
                         </div>
                       ))}
                     </div>
