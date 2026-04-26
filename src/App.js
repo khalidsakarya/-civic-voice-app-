@@ -15785,13 +15785,6 @@ function App() {
       ],
       email: 'president@whitehouse.gov',
       phone: '(202) 456-1414',
-      recentActivity: [
-        { type: 'Executive Order', title: 'Securing the Southern Border', description: 'Declared national emergency at the southern border; deployed military resources and ended catch-and-release policies.', date: 'Jan 20, 2025' },
-        { type: 'Trade Action', title: 'Reciprocal Tariff Policy', description: 'Imposed 10% baseline tariff on all imports; escalated to 145% on Chinese goods by April 2025.', date: 'Apr 2, 2025' },
-        { type: 'Executive Order', title: 'DOGE Advisory Body', description: 'Created the Department of Government Efficiency, led by Elon Musk, to identify and cut federal spending.', date: 'Jan 20, 2025' },
-        { type: 'Withdrawal', title: 'Paris Climate Agreement', description: 'Initiated formal withdrawal from the Paris Climate Accord on day one of the second term.', date: 'Jan 20, 2025' },
-        { type: 'Executive Order', title: 'Ending Federal DEI Programs', description: 'Ordered elimination of all Diversity, Equity, and Inclusion offices and programs across federal agencies.', date: 'Jan 20, 2025' },
-      ],
       attendance: {
         percentage: 89,
         briefingsAttended: 183,
@@ -16234,13 +16227,6 @@ function App() {
         'Economic Growth & Investment',
         'Education & Skills',
         'National Security & Defence',
-      ],
-      recentActivity: [
-        { type: 'Health Policy', date: 'Feb 2026', title: 'NHS 10-Year Plan Published', description: 'Government published the NHS 10-Year Plan targeting a 50% reduction in waiting lists by 2029, backed by the largest sustained NHS funding increase in a generation.' },
-        { type: 'Energy', date: 'Jan 2026', title: 'Great British Energy Operational', description: 'Great British Energy — the publicly owned clean energy company — became operational, with an initial £8.3B investment commitment to offshore wind and solar projects across the UK.' },
-        { type: 'Housing', date: 'Dec 2025', title: 'Planning & Infrastructure Bill Second Reading', description: 'The Planning & Infrastructure Bill completed its second reading, unlocking major reforms to the planning system to accelerate delivery of 1.5 million new homes by 2030.' },
-        { type: 'Workers\' Rights', date: 'Nov 2025', title: 'Employment Rights Act Passed', description: 'The Employment Rights Act received Royal Assent, delivering the most significant strengthening of workers\' rights in a generation, including day-one unfair dismissal protections.' },
-        { type: 'Foreign Policy', date: 'Oct 2025', title: 'UK–EU Reset Summit', description: 'Hosted the first UK–EU Summit since Brexit at Lancaster House, agreeing a new UK–EU defence and security partnership and a framework for simplified trade in agricultural goods.' },
       ],
       executiveActions: [
         'Launched NHS 10-Year Plan — target to halve waiting lists and end the 18-week backlog by 2029',
@@ -25205,13 +25191,6 @@ function App() {
       phone: '+61 2 6277 7700',
       bio: 'Anthony Albanese is the 31st Prime Minister of Australia, elected on May 21, 2022, ending nine years of Coalition government. Known as "Albo" to supporters, he grew up in public housing in Camperdown, Sydney, raised by a single mother. He entered federal parliament in 1996 as the Member for Grayndler and served as Deputy Prime Minister and Minister for Infrastructure under Kevin Rudd and Julia Gillard. A lifelong Labor figure and proud South Sydney Rabbitohs supporter, Albanese has focused his government on climate action, cost of living relief, housing affordability, and rebuilding international relationships including with China and the Pacific.',
       policies: ['Climate Action & Renewable Energy', 'Housing Affordability', 'Cost of Living Relief', 'AUKUS & National Security', 'Medicare & Healthcare', 'Indigenous Reconciliation', 'Industrial Relations Reform'],
-      recentActivity: [
-        { type: 'Energy Policy', date: 'Feb 2026', title: 'Renewable Energy Target Expanded', description: 'Government increased the 2030 renewable energy target to 90%, backed by $15B in clean energy investment through the Australian Renewable Energy Agency.' },
-        { type: 'Housing', date: 'Jan 2026', title: 'Housing Australia Future Fund Milestone', description: 'Announced the first 10,000 social and affordable homes funded through the $10B Housing Australia Future Fund, with construction underway in all states.' },
-        { type: 'Foreign Policy', date: 'Dec 2025', title: 'Pacific Engagement Strategy', description: 'Launched the expanded Pacific Engagement Visa program, increasing migration pathways from Pacific Island nations and strengthening regional security partnerships.' },
-        { type: 'Cost of Living', date: 'Nov 2025', title: 'Energy Bill Relief Extended', description: 'Extended the $300 energy bill relief rebate for all Australian households into 2026, totalling $3.5B in direct cost-of-living support.' },
-        { type: 'Defence', date: 'Oct 2025', title: 'AUKUS Submarine Progress', description: 'Confirmed the first Virginia-class submarine sale from the US to Australia under AUKUS Pillar I, with Australian crew training commencing at Pearl Harbor.' },
-      ],
       executiveActions: [
         'Legislated 43% emissions reduction target by 2030 — Australia\'s first statutory climate target',
         'Established the National Housing Accord targeting 1.2 million new homes by 2029',
