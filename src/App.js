@@ -2892,6 +2892,25 @@ function App() {
     })();
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch financial disclosures for leader profiles on view open
+  useEffect(() => {
+    const leaderNames = { 'canada-pm-detail': 'Mark Carney', 'president-detail': 'Donald Trump', 'uk-pm-detail': 'Keir Starmer', 'albanese-detail': 'Anthony Albanese' };
+    const name = leaderNames[view];
+    if (!name || memberDisclosureData[name] !== undefined || memberDisclosureLoading[name]) return;
+    setMemberDisclosureLoading(prev => ({ ...prev, [name]: true }));
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'member_disclosures'), where('member_name', '==', name)));
+        setMemberDisclosureData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
+      } catch (err) {
+        console.warn('[LiveData] member_disclosures (leader) fetch failed:', err.message);
+        setMemberDisclosureData(prev => ({ ...prev, [name]: [] }));
+      } finally {
+        setMemberDisclosureLoading(prev => ({ ...prev, [name]: false }));
+      }
+    })();
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Fetch US Congress stock trades from Firestore when panel opens
   useEffect(() => {
     if (!showMemberPanel || !selectedMember?.name) return;
@@ -2936,12 +2955,11 @@ function App() {
     fetchMemberCorporate(selectedMember.name);
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch corporate affiliations — CA MP detail + PM detail
+  // Fetch corporate affiliations — CA/US/UK/AU leader profiles + CA MP detail
   useEffect(() => {
-    const name = view === 'canada-pm-detail' ? 'Mark Carney' : (view === 'member-detail' ? selectedMember?.name : null);
+    const leaderNames = { 'canada-pm-detail': 'Mark Carney', 'president-detail': 'Donald Trump', 'uk-pm-detail': 'Keir Starmer', 'albanese-detail': 'Anthony Albanese' };
+    const name = leaderNames[view] ?? (view === 'member-detail' ? selectedMember?.name : null);
     if (!name) return;
-    console.log(`[MemberFetch] CA member-detail opened for: "${name}" — triggering fetch for member_corporate_affiliations, member_lobbying, member_expenses`);
-    console.log(`[MemberFetch] member_disclosures: NOT fetched for CA member-detail (section uses static placeholder)`);
     fetchMemberCorporate(name);
   }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -2964,9 +2982,10 @@ function App() {
   }, [showAuMemberPanel, selectedAuMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
-  // Fetch Canadian MP lobbying records from Firestore when member-detail or PM detail opens
+  // Fetch lobbying records for CA/US/UK/AU leader profiles + CA MP detail
   useEffect(() => {
-    const name = view === 'canada-pm-detail' ? 'Mark Carney' : (view === 'member-detail' ? selectedMember?.name : null);
+    const leaderNames = { 'canada-pm-detail': 'Mark Carney', 'president-detail': 'Donald Trump', 'uk-pm-detail': 'Keir Starmer', 'albanese-detail': 'Anthony Albanese' };
+    const name = leaderNames[view] ?? (view === 'member-detail' ? selectedMember?.name : null);
     if (!name) return;
     if (memberLobbyingData[name] !== undefined || memberLobbyingLoading[name]) return;
     setMemberLobbyingLoading(prev => ({ ...prev, [name]: true }));
@@ -3235,12 +3254,13 @@ function App() {
     fetchMemberExpenses(selectedMember);
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch expenses when Canadian MP detail or PM detail opens
+  // Fetch expenses for CA/US/UK/AU leader profiles + CA MP detail
   useEffect(() => {
-    const isPM = view === 'canada-pm-detail';
-    const name = isPM ? 'Mark Carney' : (view === 'member-detail' ? selectedMember?.name : null);
+    const leaderNames = { 'canada-pm-detail': 'Mark Carney', 'president-detail': 'Donald Trump', 'uk-pm-detail': 'Keir Starmer', 'albanese-detail': 'Anthony Albanese' };
+    const isLeader = view in leaderNames;
+    const name = leaderNames[view] ?? (view === 'member-detail' ? selectedMember?.name : null);
     if (!name) return;
-    fetchMemberExpenses({ name }, { skipDocTypeFilter: isPM });
+    fetchMemberExpenses({ name }, { skipDocTypeFilter: isLeader });
   }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch expenses when UK member detail opens
@@ -15977,77 +15997,120 @@ function App() {
               {renderPromiseTrackerSection('Donald Trump', togglePresidentSection, expandedPresidentSections, '#1d4ed8')}
 
               {/* Expenses */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => togglePresidentSection('expenses')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🧾 Expenses</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.expenses ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 space-y-4 ${expandedPresidentSections.expenses ? '' : 'hidden sm:block'}`}>
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('US'); }}
-                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
-                      >
-                        {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
-                      </button>
-                    </div>
-                    {leaderLiveExpenses['US'] && leaderLiveExpenses['US'].length > 0 ? (
-                      <div className="space-y-2">
-                        {leaderLiveExpenses['US'].map((item, i) => (
-                          <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
-                                <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
-                              </div>
-                              <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
-                            </div>
-                          </div>
-                        ))}
+              {(() => {
+                const expDocs = memberExpenseData['Donald Trump'];
+                const isLoadingExp = !!memberExpenseLoading['Donald Trump'];
+                const exp = expDocs?.[0] ?? null;
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => togglePresidentSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">🧾 Expenses</h3>
+                        {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {exp && !isLoadingExp && liveBadge(null, 'Quarterly')}
+                        {coverageBadge('limited', 'Ministers and Senior Officials Only', 'Backbench members not included')}
                       </div>
-                    ) : (
-                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedPresidentSections.expenses ? 'rotate-0' : '-rotate-90'}`} />
+                    </div>
+                    {expandedPresidentSections.expenses && (
+                      <div className="px-6 pb-6 space-y-4">
+                        {exp ? (
+                          <>
+                            <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                              <p className="text-xs text-gray-500 mb-0.5">{exp.fiscal_year ?? ''}{exp.organization ? ` · ${exp.organization}` : ''}</p>
+                              <p className="text-2xl font-bold text-green-700">${Number(exp.total_cad ?? exp.total_usd ?? 0).toLocaleString()}</p>
+                              {(exp.period_start || exp.period_end) && <p className="text-xs text-gray-400 mt-0.5">{exp.period_start}{exp.period_start && exp.period_end ? ' – ' : ''}{exp.period_end}</p>}
+                            </div>
+                            {exp.expenses_breakdown && Object.keys(exp.expenses_breakdown).length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-sm font-semibold text-gray-700">Breakdown</p>
+                                {Object.entries(exp.expenses_breakdown).map(([cat, amt], i) => (
+                                  <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                    <span className="text-sm text-gray-700">{cat}</span>
+                                    <span className="text-sm font-bold text-gray-900">${Number(amt).toLocaleString()}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {exp.source_url && <a href={exp.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">📄 View official source</a>}
+                          </>
+                        ) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingExp ? 'Loading…' : 'No expense records found.'}</p>}
+                      </div>
                     )}
                   </div>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* Lobbying Activity */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => togglePresidentSection('lobbying')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h3>{coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 space-y-4 ${expandedPresidentSections.lobbying ? '' : 'hidden sm:block'}`}>
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
-              </div>
-
-              {/* Financial Holdings & Conflicts */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => togglePresidentSection('stockTrades')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">📈 Financial Holdings &amp; Conflicts</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedPresidentSections.stockTrades ? '' : 'hidden sm:block'}`}>
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
-              </div>
+              {(() => {
+                const liveLobby = memberLobbyingData['Donald Trump'];
+                const isLoadingLobby = !!memberLobbyingLoading['Donald Trump'];
+                const count = liveLobby?.length ?? 0;
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => togglePresidentSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h3>
+                        {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {count > 0 && !isLoadingLobby && <><span className="text-sm text-gray-500 font-normal">{count} meeting{count !== 1 ? 's' : ''}</span>{liveBadge(null, 'Monthly')}</>}
+                        {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedPresidentSections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
+                    </div>
+                    {expandedPresidentSections.lobbying && (
+                      <div className="px-6 pb-6 space-y-3">
+                        {count > 0 ? liveLobby.map((org, idx) => (
+                          <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <p className="font-semibold text-gray-800 text-sm">{org.lobbyist_name}</p>
+                              {org.meeting_date && <span className="text-xs text-gray-400 flex-shrink-0">{org.meeting_date}</span>}
+                            </div>
+                            {org.client_organization && <p className="text-xs text-blue-700 font-medium">{org.client_organization}</p>}
+                            {org.dpoh_institution && <p className="text-xs text-gray-500 mt-0.5">Institution: {org.dpoh_institution}</p>}
+                            {org.subject_description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.subject_description}</p>}
+                          </div>
+                        )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingLobby ? 'Loading…' : 'No lobbying records found.'}</p>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Financial Disclosures */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => togglePresidentSection('financial')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h3>{coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.financial ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedPresidentSections.financial ? '' : 'hidden sm:block'}`}>
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
-              </div>
+              {(() => {
+                const discDocs = memberDisclosureData['Donald Trump'];
+                const isLoadingDisc = !!memberDisclosureLoading['Donald Trump'];
+                const disc = discDocs?.[0] ?? null;
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => togglePresidentSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h3>
+                        {isLoadingDisc && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {disc && !isLoadingDisc && liveBadge(null, 'Annual')}
+                        {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedPresidentSections.financial ? 'rotate-0' : '-rotate-90'}`} />
+                    </div>
+                    {expandedPresidentSections.financial && (
+                      <div className="px-6 pb-6 space-y-3">
+                        {disc ? (
+                          <>
+                            {disc.net_worth && <div className="bg-purple-50 border border-purple-200 rounded-xl p-4"><p className="text-xs text-gray-500 mb-0.5">Declared Net Worth</p><p className="text-2xl font-bold text-purple-700">{disc.net_worth}</p></div>}
+                            {disc.assets?.length > 0 && disc.assets.map((a, i) => (
+                              <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                <span className="text-sm text-gray-700">{a.type ?? a.description}</span>
+                                <span className="text-sm font-bold text-gray-900">{a.value}</span>
+                              </div>
+                            ))}
+                            {disc.source_url && <a href={disc.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">📄 View official source</a>}
+                          </>
+                        ) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingDisc ? 'Loading…' : 'No financial disclosure records found.'}</p>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Attendance Record */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -16433,115 +16496,125 @@ function App() {
             {renderPromiseTrackerSection('Keir Starmer', toggleStarmerSection, expandedStarmerSections, '#E4003B')}
 
             {/* Expenses */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleStarmerSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <DollarSign className="w-6 h-6 text-orange-600" />
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
-                    <p className="text-sm text-gray-600">Travel, entertainment &amp; flagged spending</p>
-                  </div>
-                </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.expenses ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              {expandedStarmerSections.expenses && (
-                <div className="px-6 pb-6 space-y-4">
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('UK'); }}
-                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
-                      >
-                        {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
-                      </button>
+            {(() => {
+              const expDocs = memberExpenseData['Keir Starmer'];
+              const isLoadingExp = !!memberExpenseLoading['Keir Starmer'];
+              const exp = expDocs?.[0] ?? null;
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleStarmerSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-6 h-6 text-orange-600" />
+                      <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
+                      {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {exp && !isLoadingExp && liveBadge(null, 'Quarterly')}
+                      {coverageBadge('limited', 'Ministers and Senior Officials Only', 'Backbench MPs not included')}
                     </div>
-                    {leaderLiveExpenses['UK'] && leaderLiveExpenses['UK'].length > 0 ? (
-                      <div className="space-y-2">
-                        {leaderLiveExpenses['UK'].map((item, i) => (
-                          <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
-                                <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
-                              </div>
-                              <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
-                    )}
+                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.expenses ? 'rotate-0' : '-rotate-90'}`} />
                   </div>
+                  {expandedStarmerSections.expenses && (
+                    <div className="px-6 pb-6 space-y-4">
+                      {exp ? (
+                        <>
+                          <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                            <p className="text-xs text-gray-500 mb-0.5">{exp.fiscal_year ?? ''}{exp.organization ? ` · ${exp.organization}` : ''}</p>
+                            <p className="text-2xl font-bold text-green-700">£{Number(exp.total_cad ?? exp.total_gbp ?? 0).toLocaleString()}</p>
+                            {(exp.period_start || exp.period_end) && <p className="text-xs text-gray-400 mt-0.5">{exp.period_start}{exp.period_start && exp.period_end ? ' – ' : ''}{exp.period_end}</p>}
+                          </div>
+                          {exp.expenses_breakdown && Object.keys(exp.expenses_breakdown).length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-sm font-semibold text-gray-700">Breakdown</p>
+                              {Object.entries(exp.expenses_breakdown).map(([cat, amt], i) => (
+                                <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                  <span className="text-sm text-gray-700">{cat}</span>
+                                  <span className="text-sm font-bold text-gray-900">£{Number(amt).toLocaleString()}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {exp.source_url && <a href={exp.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">📄 View official source</a>}
+                        </>
+                      ) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingExp ? 'Loading…' : 'No expense records found.'}</p>}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Lobbying Activity */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleStarmerSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <Users className="w-6 h-6 text-orange-600" />
-                  <div>
-                    <div className="flex items-center gap-2">
+            {(() => {
+              const liveLobby = memberLobbyingData['Keir Starmer'];
+              const isLoadingLobby = !!memberLobbyingLoading['Keir Starmer'];
+              const count = liveLobby?.length ?? 0;
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleStarmerSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Users className="w-6 h-6 text-orange-600" />
                       <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
+                      {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {count > 0 && !isLoadingLobby && <><span className="text-sm text-gray-500 font-normal">{count} meeting{count !== 1 ? 's' : ''}</span>{liveBadge(null, 'Monthly')}</>}
                       {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
                     </div>
-                    <p className="text-sm text-gray-600">Lobbying meetings register</p>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
                   </div>
+                  {expandedStarmerSections.lobbying && (
+                    <div className="px-6 pb-6 space-y-3">
+                      {count > 0 ? liveLobby.map((org, idx) => (
+                        <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <p className="font-semibold text-gray-800 text-sm">{org.lobbyist_name}</p>
+                            {org.meeting_date && <span className="text-xs text-gray-400 flex-shrink-0">{org.meeting_date}</span>}
+                          </div>
+                          {org.client_organization && <p className="text-xs text-blue-700 font-medium">{org.client_organization}</p>}
+                          {org.dpoh_institution && <p className="text-xs text-gray-500 mt-0.5">Institution: {org.dpoh_institution}</p>}
+                          {org.subject_description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.subject_description}</p>}
+                        </div>
+                      )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingLobby ? 'Loading…' : 'No lobbying records found.'}</p>}
+                    </div>
+                  )}
                 </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              {expandedStarmerSections.lobbying && (
-                <div className="px-6 pb-6 space-y-3">
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
-              )}
-            </div>
-
-            {/* Asset Disclosures */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleStarmerSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <TrendingUp className="w-6 h-6 text-blue-600" />
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-800">📈 Asset Disclosures</h2>
-                    <p className="text-sm text-gray-600">Declared asset holdings</p>
-                  </div>
-                </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              {expandedStarmerSections.stockTrades && (
-                <div className="px-6 pb-6 space-y-3">
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Financial Disclosures */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleStarmerSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <TrendingUp className="w-6 h-6 text-purple-600" />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
-                      {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+            {(() => {
+              const discDocs = memberDisclosureData['Keir Starmer'];
+              const isLoadingDisc = !!memberDisclosureLoading['Keir Starmer'];
+              const disc = discDocs?.[0] ?? null;
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleStarmerSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <TrendingUp className="w-6 h-6 text-purple-600" />
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                        {isLoadingDisc && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {disc && !isLoadingDisc && liveBadge(null, 'Annual')}
+                        {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-600">Financial disclosures</p>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.financial ? 'rotate-0' : '-rotate-90'}`} />
                   </div>
+                  {expandedStarmerSections.financial && (
+                    <div className="px-6 pb-6 space-y-3">
+                      {disc ? (
+                        <>
+                          {disc.net_worth && <div className="bg-purple-50 border border-purple-200 rounded-xl p-4"><p className="text-xs text-gray-500 mb-0.5">Declared Net Worth</p><p className="text-2xl font-bold text-purple-700">{disc.net_worth}</p></div>}
+                          {disc.assets?.length > 0 && disc.assets.map((a, i) => (
+                            <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                              <span className="text-sm text-gray-700">{a.type ?? a.description}</span>
+                              <span className="text-sm font-bold text-gray-900">{a.value}</span>
+                            </div>
+                          ))}
+                          {disc.source_url && <a href={disc.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">📄 View official source</a>}
+                        </>
+                      ) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingDisc ? 'Loading…' : 'No financial disclosure records found.'}</p>}
+                    </div>
+                  )}
                 </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedStarmerSections.financial ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              {expandedStarmerSections.financial && (
-                <div className="px-6 pb-6 space-y-4">
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Attendance Record */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -25395,115 +25468,125 @@ function App() {
             {renderPromiseTrackerSection('Anthony Albanese', toggleAlbaneseSection, expandedAlbaneseSections, '#006833')}
 
             {/* Expenses */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleAlbaneseSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <DollarSign className="w-6 h-6 text-orange-600" />
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
-                    <p className="text-sm text-gray-600">Travel, entertainment &amp; flagged spending</p>
-                  </div>
-                </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.expenses ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              {expandedAlbaneseSections.expenses && (
-                <div className="px-6 pb-6 space-y-4">
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-gray-700 text-sm">🚨 Flagged Spending (Live)</h4>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); fetchLeaderExpenses('AU'); }}
-                        className="text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 px-3 py-1 rounded-full font-semibold"
-                      >
-                        {leaderExpensesLoading ? '⏳ Loading…' : '↻ Load Live Data'}
-                      </button>
+            {(() => {
+              const expDocs = memberExpenseData['Anthony Albanese'];
+              const isLoadingExp = !!memberExpenseLoading['Anthony Albanese'];
+              const exp = expDocs?.[0] ?? null;
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleAlbaneseSection('expenses')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-6 h-6 text-orange-600" />
+                      <h2 className="text-xl font-bold text-gray-800">🧾 Expenses</h2>
+                      {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {exp && !isLoadingExp && liveBadge(null, 'Quarterly')}
+                      {coverageBadge('limited', 'Ministers and Senior Officials Only', 'Backbench MPs not included')}
                     </div>
-                    {leaderLiveExpenses['AU'] && leaderLiveExpenses['AU'].length > 0 ? (
-                      <div className="space-y-2">
-                        {leaderLiveExpenses['AU'].map((item, i) => (
-                          <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-3">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-gray-800">{item.title}</p>
-                                <p className="text-xs text-gray-600 mt-0.5">{item.department}</p>
-                                <p className="text-xs text-red-600 font-medium mt-1">{item.explanation}</p>
-                              </div>
-                              <span className="text-sm font-bold text-red-700 flex-shrink-0">{item.amount}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-3 text-center">Press Load Live Data to fetch flagged expenses from the live database.</p>
-                    )}
+                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.expenses ? 'rotate-0' : '-rotate-90'}`} />
                   </div>
+                  {expandedAlbaneseSections.expenses && (
+                    <div className="px-6 pb-6 space-y-4">
+                      {exp ? (
+                        <>
+                          <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                            <p className="text-xs text-gray-500 mb-0.5">{exp.fiscal_year ?? ''}{exp.organization ? ` · ${exp.organization}` : ''}</p>
+                            <p className="text-2xl font-bold text-green-700">A${Number(exp.total_cad ?? exp.total_aud ?? 0).toLocaleString()}</p>
+                            {(exp.period_start || exp.period_end) && <p className="text-xs text-gray-400 mt-0.5">{exp.period_start}{exp.period_start && exp.period_end ? ' – ' : ''}{exp.period_end}</p>}
+                          </div>
+                          {exp.expenses_breakdown && Object.keys(exp.expenses_breakdown).length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-sm font-semibold text-gray-700">Breakdown</p>
+                              {Object.entries(exp.expenses_breakdown).map(([cat, amt], i) => (
+                                <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                  <span className="text-sm text-gray-700">{cat}</span>
+                                  <span className="text-sm font-bold text-gray-900">A${Number(amt).toLocaleString()}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {exp.source_url && <a href={exp.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">📄 View official source</a>}
+                        </>
+                      ) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingExp ? 'Loading…' : 'No expense records found.'}</p>}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Lobbying Activity */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleAlbaneseSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <Users className="w-6 h-6 text-orange-600" />
-                  <div>
-                    <div className="flex items-center gap-2">
+            {(() => {
+              const liveLobby = memberLobbyingData['Anthony Albanese'];
+              const isLoadingLobby = !!memberLobbyingLoading['Anthony Albanese'];
+              const count = liveLobby?.length ?? 0;
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleAlbaneseSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Users className="w-6 h-6 text-orange-600" />
                       <h2 className="text-xl font-bold text-gray-800">🤝 Lobbying Activity</h2>
+                      {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {count > 0 && !isLoadingLobby && <><span className="text-sm text-gray-500 font-normal">{count} meeting{count !== 1 ? 's' : ''}</span>{liveBadge(null, 'Monthly')}</>}
                       {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
                     </div>
-                    <p className="text-sm text-gray-600">Lobbying meetings register</p>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
                   </div>
+                  {expandedAlbaneseSections.lobbying && (
+                    <div className="px-6 pb-6 space-y-3">
+                      {count > 0 ? liveLobby.map((org, idx) => (
+                        <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <p className="font-semibold text-gray-800 text-sm">{org.lobbyist_name}</p>
+                            {org.meeting_date && <span className="text-xs text-gray-400 flex-shrink-0">{org.meeting_date}</span>}
+                          </div>
+                          {org.client_organization && <p className="text-xs text-blue-700 font-medium">{org.client_organization}</p>}
+                          {org.dpoh_institution && <p className="text-xs text-gray-500 mt-0.5">Institution: {org.dpoh_institution}</p>}
+                          {org.subject_description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.subject_description}</p>}
+                        </div>
+                      )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingLobby ? 'Loading…' : 'No lobbying records found.'}</p>}
+                    </div>
+                  )}
                 </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              {expandedAlbaneseSections.lobbying && (
-                <div className="px-6 pb-6 space-y-3">
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
-              )}
-            </div>
-
-            {/* Asset Disclosures */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleAlbaneseSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <TrendingUp className="w-6 h-6 text-blue-600" />
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-800">📈 Asset Disclosures</h2>
-                    <p className="text-sm text-gray-600">Declared asset holdings</p>
-                  </div>
-                </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              {expandedAlbaneseSections.stockTrades && (
-                <div className="px-6 pb-6 space-y-3">
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Financial Disclosures */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleAlbaneseSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <TrendingUp className="w-6 h-6 text-purple-600" />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
-                      {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+            {(() => {
+              const discDocs = memberDisclosureData['Anthony Albanese'];
+              const isLoadingDisc = !!memberDisclosureLoading['Anthony Albanese'];
+              const disc = discDocs?.[0] ?? null;
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleAlbaneseSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <TrendingUp className="w-6 h-6 text-purple-600" />
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
+                        {isLoadingDisc && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {disc && !isLoadingDisc && liveBadge(null, 'Annual')}
+                        {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-600">Financial disclosures</p>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.financial ? 'rotate-0' : '-rotate-90'}`} />
                   </div>
+                  {expandedAlbaneseSections.financial && (
+                    <div className="px-6 pb-6 space-y-3">
+                      {disc ? (
+                        <>
+                          {disc.net_worth && <div className="bg-purple-50 border border-purple-200 rounded-xl p-4"><p className="text-xs text-gray-500 mb-0.5">Declared Net Worth</p><p className="text-2xl font-bold text-purple-700">{disc.net_worth}</p></div>}
+                          {disc.assets?.length > 0 && disc.assets.map((a, i) => (
+                            <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                              <span className="text-sm text-gray-700">{a.type ?? a.description}</span>
+                              <span className="text-sm font-bold text-gray-900">{a.value}</span>
+                            </div>
+                          ))}
+                          {disc.source_url && <a href={disc.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">📄 View official source</a>}
+                        </>
+                      ) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingDisc ? 'Loading…' : 'No financial disclosure records found.'}</p>}
+                    </div>
+                  )}
                 </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedAlbaneseSections.financial ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              {expandedAlbaneseSections.financial && (
-                <div className="px-6 pb-6 space-y-4">
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Attendance Record */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
