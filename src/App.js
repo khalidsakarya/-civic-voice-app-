@@ -2287,6 +2287,8 @@ function App() {
   const [leaderActivityLoading, setLeaderActivityLoading] = useState({});
   const [leaderExecActionsData, setLeaderExecActionsData] = useState({});
   const [leaderExecActionsLoading, setLeaderExecActionsLoading] = useState({});
+  const [trumpCabinetData, setTrumpCabinetData] = useState(null);
+  const [trumpCabinetLoading, setTrumpCabinetLoading] = useState(false);
   const [memberBioData, setMemberBioData] = useState({});
   const [memberBioLoading, setMemberBioLoading] = useState({});
   const [memberCommitteeData, setMemberCommitteeData] = useState({});
@@ -3133,6 +3135,24 @@ function App() {
         setLeaderExecActionsData(prev => ({ ...prev, [name]: [] }));
       } finally {
         setLeaderExecActionsLoading(prev => ({ ...prev, [name]: false }));
+      }
+    })();
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch Trump cabinet from department_heads Firestore collection
+  useEffect(() => {
+    if (view !== 'president-detail' || trumpCabinetData !== null || trumpCabinetLoading) return;
+    setTrumpCabinetLoading(true);
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'department_heads'), where('jurisdiction', '==', 'US')));
+        const docs = snap.docs.map(d => d.data()).sort((a, b) => (a.role ?? a.title ?? '').localeCompare(b.role ?? b.title ?? ''));
+        setTrumpCabinetData(docs);
+      } catch (err) {
+        console.warn('[TrumpCabinet] fetch failed:', err.message);
+        setTrumpCabinetData([]);
+      } finally {
+        setTrumpCabinetLoading(false);
       }
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -15816,16 +15836,6 @@ function App() {
       education: 'B.S. Economics, Wharton School, University of Pennsylvania',
       bio: 'Donald J. Trump is the 47th President of the United States, inaugurated on January 20, 2025. Previously serving as the 45th President from 2017 to 2021, Trump became the first U.S. president elected to non-consecutive terms since Grover Cleveland in 1892. Before entering politics he was a prominent real estate developer and television personality known for The Apprentice.',
       policies: ['Border Security & Immigration', 'Tariffs & Economic Nationalism', 'Energy Independence', 'Deregulation', 'America First Foreign Policy'],
-      cabinet: [
-        { role: 'Vice President', name: 'JD Vance' },
-        { role: 'Secretary of State', name: 'Marco Rubio' },
-        { role: 'Secretary of Defense', name: 'Pete Hegseth' },
-        { role: 'Secretary of the Treasury', name: 'Scott Bessent' },
-        { role: 'Attorney General', name: 'Pam Bondi' },
-        { role: 'White House Chief of Staff', name: 'Susie Wiles' },
-        { role: 'Sec. of Homeland Security', name: 'Kristi Noem' },
-        { role: 'Sec. of Health & Human Services', name: 'RFK Jr.' },
-      ],
       email: 'president@whitehouse.gov',
       phone: '(202) 456-1414',
       attendance: {
@@ -16152,18 +16162,28 @@ function App() {
               {/* Cabinet Members */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div onClick={() => togglePresidentSection('cabinet')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🏛️ Cabinet Members</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-gray-800">🏛️ Cabinet Members</h3>
+                    {trumpCabinetLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                    {trumpCabinetData?.length > 0 && !trumpCabinetLoading && liveBadge(null, 'Live')}
+                  </div>
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.cabinet ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 ${expandedPresidentSections.cabinet ? '' : 'hidden sm:block'}`}>
-                  <div className="space-y-2">
-                    {trump.cabinet.map((c, i) => (
-                      <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                        <h4 className="font-bold text-gray-800">{c.name}</h4>
-                        <p className="text-sm text-indigo-600 font-medium">{c.role}</p>
-                      </div>
-                    ))}
-                  </div>
+                  {trumpCabinetData?.length > 0 ? (
+                    <div className="space-y-2">
+                      {trumpCabinetData.map((c, i) => (
+                        <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                          <h4 className="font-bold text-gray-800">{c.name}</h4>
+                          <p className="text-sm text-indigo-600 font-medium">{c.role ?? c.title}</p>
+                          {c.department && <p className="text-xs text-gray-500 mt-0.5">{c.department}</p>}
+                          {c.confirmed_date && <p className="text-xs text-gray-400 mt-0.5">Confirmed: {c.confirmed_date}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{trumpCabinetLoading ? 'Loading…' : 'No cabinet data available yet.'}</p>
+                  )}
                 </div>
               </div>
 
