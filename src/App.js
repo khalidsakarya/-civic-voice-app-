@@ -1410,7 +1410,7 @@ function App() {
   });
   const [expandedCarneySections, setExpandedCarneySections] = useState({
     activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false, expenses: false,
-    contact: false, bio: false, policies: false, cabinet: false, advisors: false,
+    contact: false, bio: false, policies: false, cabinet: false, advisors: false, termInfo: false,
   });
   const [albaneseVotes, setAlbaneseVotes] = useState(() => {
     const saved = localStorage.getItem('cvAlbaneseVote');
@@ -2293,6 +2293,8 @@ function App() {
   const [carneyCabinetLoading, setCarneyCabinetLoading] = useState(false);
   const [carneyAdvisorsData, setCarneyAdvisorsData] = useState(null);
   const [carneyAdvisorsLoading, setCarneyAdvisorsLoading] = useState(false);
+  const [carneyProfileData, setCarneyProfileData] = useState(null);
+  const [carneyProfileLoading, setCarneyProfileLoading] = useState(false);
   const [memberBioData, setMemberBioData] = useState({});
   const [memberBioLoading, setMemberBioLoading] = useState({});
   const [memberCommitteeData, setMemberCommitteeData] = useState({});
@@ -3199,6 +3201,28 @@ function App() {
         setCarneyAdvisorsData([]);
       } finally {
         setCarneyAdvisorsLoading(false);
+      }
+    })();
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch leader_profile_data sections for Mark Carney (key_policy_areas, term_information, contact_information, senior_advisors)
+  useEffect(() => {
+    if (view !== 'canada-pm-detail' || carneyProfileData !== null || carneyProfileLoading) return;
+    setCarneyProfileLoading(true);
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'leader_profile_data'), where('member_name', '==', 'Mark Carney')));
+        const bySection = {};
+        snap.docs.forEach(d => {
+          const data = d.data();
+          if (data.section) bySection[data.section] = data;
+        });
+        setCarneyProfileData(bySection);
+      } catch (err) {
+        console.warn('[CarneyProfile] fetch failed:', err.message);
+        setCarneyProfileData({});
+      } finally {
+        setCarneyProfileLoading(false);
       }
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -15267,6 +15291,8 @@ function App() {
     };
     const carneyBio = memberBioData['Mark Carney'];
     const carneyBioLoading = !!memberBioLoading['Mark Carney'];
+    const cpd = carneyProfileData ?? {};
+    const cpdLoading = carneyProfileLoading;
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -15630,85 +15656,124 @@ function App() {
               </div>
 
               {/* Contact Information */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.contact ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedCarneySections.contact ? '' : 'hidden sm:block'}`}>
-                  {carneyBio?.email || carneyBio?.phone || carneyBio?.address ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {carneyBio.email && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                          <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
-                          <a href={`mailto:${carneyBio.email}`} className="text-red-600 hover:text-red-800 font-medium break-all">{carneyBio.email}</a>
+              {(() => {
+                const sec = cpd['contact_information'];
+                const hasData = sec && (sec.email || sec.phone || sec.address || sec.website || sec.office_address);
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => toggleCarneySection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
+                        {cpdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {hasData && !cpdLoading && liveBadge(null, 'Live')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.contact ? 'rotate-0' : '-rotate-90'}`} />
+                    </div>
+                    <div className={`px-6 pb-6 ${expandedCarneySections.contact ? '' : 'hidden sm:block'}`}>
+                      {hasData ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {sec.email && (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                              <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
+                              <a href={`mailto:${sec.email}`} className="text-red-600 hover:text-red-800 font-medium break-all">{sec.email}</a>
+                            </div>
+                          )}
+                          {sec.phone && (
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                              <p className="text-sm text-gray-600 mb-2 font-medium">PMO Phone</p>
+                              <a href={`tel:${sec.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{sec.phone}</a>
+                            </div>
+                          )}
+                          {(sec.office_address || sec.address) && (
+                            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
+                              <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
+                              <p className="text-gray-700 text-sm">{sec.office_address ?? sec.address}</p>
+                            </div>
+                          )}
+                          {sec.website && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 md:col-span-2">
+                              <p className="text-sm text-gray-600 mb-2 font-medium">Official Website</p>
+                              <a href={sec.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">{sec.website}</a>
+                            </div>
+                          )}
                         </div>
-                      )}
-                      {carneyBio.phone && (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                          <p className="text-sm text-gray-600 mb-2 font-medium">PMO Phone</p>
-                          <a href={`tel:${carneyBio.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{carneyBio.phone}</a>
-                        </div>
-                      )}
-                      {carneyBio.address && (
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
-                          <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
-                          <p className="text-gray-700 text-sm">{carneyBio.address}</p>
-                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{cpdLoading ? 'Loading…' : 'No contact information available yet.'}</p>
                       )}
                     </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{carneyBioLoading ? 'Loading…' : 'No contact information available yet.'}</p>
-                  )}
-                </div>
-              </div>
+                  </div>
+                );
+              })()}
 
               {/* Key Policy Areas */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.policies ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedCarneySections.policies ? '' : 'hidden sm:block'}`}>
-                  {carneyBio?.policies?.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {carneyBio.policies.map((policy, i) => (
-                        <span key={i} className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-sm font-medium px-3 py-1.5 rounded-full">
-                          <Scale className="w-3.5 h-3.5 flex-shrink-0" />
-                          {policy}
-                        </span>
-                      ))}
+              {(() => {
+                const sec = cpd['key_policy_areas'];
+                const policies = sec?.policies ?? sec?.items ?? [];
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => toggleCarneySection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
+                        {cpdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {policies.length > 0 && !cpdLoading && liveBadge(null, 'Live')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.policies ? 'rotate-0' : '-rotate-90'}`} />
                     </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{carneyBioLoading ? 'Loading…' : 'No policy data available yet.'}</p>
-                  )}
-                </div>
-              </div>
+                    <div className={`px-6 pb-6 ${expandedCarneySections.policies ? '' : 'hidden sm:block'}`}>
+                      {policies.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {policies.map((policy, i) => (
+                            <span key={i} className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                              <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                              {typeof policy === 'string' ? policy : policy.name ?? policy.label ?? JSON.stringify(policy)}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{cpdLoading ? 'Loading…' : 'No policy data available yet.'}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Term Information */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="p-6 flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
-                </div>
-                <div className="px-6 pb-6">
-                  {carneyBio?.term_start || carneyBio?.born || carneyBio?.education ? (
-                    <div className="space-y-3">
-                      {(carneyBio.term_start || carneyBio.pm_number) && (
-                        <div className="grid grid-cols-2 gap-3">
-                          {carneyBio.term_start && <div className="bg-red-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">In Office Since</p><p className="text-lg font-bold text-red-600">{carneyBio.term_start}</p></div>}
-                          {carneyBio.pm_number && <div className="bg-purple-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">PM #</p><p className="text-3xl font-bold text-purple-600">{carneyBio.pm_number}</p></div>}
-                        </div>
-                      )}
-                      <div className="grid grid-cols-2 gap-3">
-                        {carneyBio.born && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Born</p><p className="font-semibold text-gray-800">{carneyBio.born}{carneyBio.birthplace ? `, ${carneyBio.birthplace}` : ''}</p></div>}
-                        {carneyBio.education && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Education</p><p className="font-semibold text-gray-800">{carneyBio.education}</p></div>}
+              {(() => {
+                const sec = cpd['term_information'];
+                const hasData = sec && Object.keys(sec).some(k => k !== 'section' && k !== 'member_name' && sec[k]);
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => toggleCarneySection('termInfo')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
+                        {cpdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {hasData && !cpdLoading && liveBadge(null, 'Live')}
                       </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.termInfo ? 'rotate-0' : '-rotate-90'}`} />
                     </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{carneyBioLoading ? 'Loading…' : 'No term information available yet.'}</p>
-                  )}
-                </div>
-              </div>
+                    <div className={`px-6 pb-6 ${expandedCarneySections.termInfo ? '' : 'hidden sm:block'}`}>
+                      {hasData ? (
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {sec.term_start && <div className="bg-red-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">In Office Since</p><p className="text-base font-bold text-red-600">{sec.term_start}</p></div>}
+                            {sec.pm_number && <div className="bg-purple-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">PM #</p><p className="text-3xl font-bold text-purple-600">{sec.pm_number}</p></div>}
+                            {sec.party && <div className="bg-gray-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">Party</p><p className="text-base font-bold text-gray-700">{sec.party}</p></div>}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {sec.born && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Born</p><p className="font-semibold text-gray-800 text-sm">{sec.born}{sec.birthplace ? `, ${sec.birthplace}` : ''}</p></div>}
+                            {sec.education && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Education</p><p className="font-semibold text-gray-800 text-sm">{sec.education}</p></div>}
+                            {sec.prior_role && <div className="bg-blue-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Prior Role</p><p className="font-semibold text-blue-700 text-sm">{sec.prior_role}</p></div>}
+                            {sec.riding && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Riding</p><p className="font-semibold text-gray-800 text-sm">{sec.riding}</p></div>}
+                          </div>
+                          {sec.source_url && <a href={sec.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{cpdLoading ? 'Loading…' : 'No term information available yet.'}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Recent Activity */}
               {(() => {
@@ -15744,31 +15809,40 @@ function App() {
               })()}
 
               {/* Senior Advisors */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('advisors')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold text-gray-800">🌟 Senior Advisors</h3>
-                    {carneyAdvisorsLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                    {carneyAdvisorsData?.length > 0 && !carneyAdvisorsLoading && liveBadge(null, 'Live')}
-                  </div>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.advisors ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedCarneySections.advisors ? '' : 'hidden sm:block'}`}>
-                  {carneyAdvisorsData?.length > 0 ? (
-                    <div className="space-y-2">
-                      {carneyAdvisorsData.map((advisor, i) => (
-                        <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                          <h4 className="font-bold text-gray-800">{advisor.name}</h4>
-                          <p className="text-sm text-red-600 font-medium mb-1">{advisor.title ?? advisor.role}</p>
-                          {advisor.bio && <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>}
-                        </div>
-                      ))}
+              {(() => {
+                const sec = cpd['senior_advisors'];
+                const isNoSource = sec?.data_status === 'no_structured_source';
+                const advisors = sec?.advisors ?? [];
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => toggleCarneySection('advisors')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">🌟 Senior Advisors</h3>
+                        {cpdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {sec && !cpdLoading && liveBadge(null, 'Live')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.advisors ? 'rotate-0' : '-rotate-90'}`} />
                     </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{carneyAdvisorsLoading ? 'Loading…' : 'No senior advisor data available yet.'}</p>
-                  )}
-                </div>
-              </div>
+                    <div className={`px-6 pb-6 ${expandedCarneySections.advisors ? '' : 'hidden sm:block'}`}>
+                      {isNoSource ? (
+                        <p className="text-sm text-gray-500 italic bg-yellow-50 rounded-lg p-4 border border-yellow-200 text-center">Senior advisor information not publicly available from official sources.</p>
+                      ) : advisors.length > 0 ? (
+                        <div className="space-y-2">
+                          {advisors.map((advisor, i) => (
+                            <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                              <h4 className="font-bold text-gray-800">{advisor.name}</h4>
+                              <p className="text-sm text-red-600 font-medium mb-1">{advisor.title ?? advisor.role}</p>
+                              {advisor.bio && <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{cpdLoading ? 'Loading…' : 'No senior advisor data available yet.'}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Key Government Priorities */}
               {(() => {
