@@ -2289,6 +2289,10 @@ function App() {
   const [leaderExecActionsLoading, setLeaderExecActionsLoading] = useState({});
   const [trumpCabinetData, setTrumpCabinetData] = useState(null);
   const [trumpCabinetLoading, setTrumpCabinetLoading] = useState(false);
+  const [carneyCabinetData, setCarneyCabinetData] = useState(null);
+  const [carneyCabinetLoading, setCarneyCabinetLoading] = useState(false);
+  const [carneyAdvisorsData, setCarneyAdvisorsData] = useState(null);
+  const [carneyAdvisorsLoading, setCarneyAdvisorsLoading] = useState(false);
   const [memberBioData, setMemberBioData] = useState({});
   const [memberBioLoading, setMemberBioLoading] = useState({});
   const [memberCommitteeData, setMemberCommitteeData] = useState({});
@@ -3153,6 +3157,48 @@ function App() {
         setTrumpCabinetData([]);
       } finally {
         setTrumpCabinetLoading(false);
+      }
+    })();
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch bio for Mark Carney from member_bios when PM profile opens
+  useEffect(() => {
+    if (view !== 'canada-pm-detail') return;
+    fetchMemberBio({ name: 'Mark Carney' });
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch Carney cabinet from department_heads where jurisdiction == 'CA'
+  useEffect(() => {
+    if (view !== 'canada-pm-detail' || carneyCabinetData !== null || carneyCabinetLoading) return;
+    setCarneyCabinetLoading(true);
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'department_heads'), where('jurisdiction', '==', 'CA')));
+        const docs = snap.docs.map(d => d.data()).sort((a, b) => (a.role ?? a.title ?? '').localeCompare(b.role ?? b.title ?? ''));
+        setCarneyCabinetData(docs);
+      } catch (err) {
+        console.warn('[CarneyCabinet] fetch failed:', err.message);
+        setCarneyCabinetData([]);
+      } finally {
+        setCarneyCabinetLoading(false);
+      }
+    })();
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch Carney senior advisors from senior_advisors collection
+  useEffect(() => {
+    if (view !== 'canada-pm-detail' || carneyAdvisorsData !== null || carneyAdvisorsLoading) return;
+    setCarneyAdvisorsLoading(true);
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'senior_advisors'), where('member_name', '==', 'Mark Carney')));
+        const docs = snap.docs.map(d => d.data());
+        setCarneyAdvisorsData(docs);
+      } catch (err) {
+        console.warn('[CarneyAdvisors] fetch failed:', err.message);
+        setCarneyAdvisorsData([]);
+      } finally {
+        setCarneyAdvisorsLoading(false);
       }
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -15217,103 +15263,10 @@ function App() {
 
     const carney = {
       name: 'Mark J. Carney',
-      born: 'March 16, 1965',
-      birthplace: 'Fort Smith, Northwest Territories',
-      education: 'BA Economics, Harvard · MA/DPhil Economics, Oxford',
       party: 'Liberal',
-      email: 'pm@pm.gc.ca',
-      phone: '(613) 992-4211',
-      bio: 'Mark Carney is the 24th Prime Minister of Canada and one of the most experienced economic policymakers in the world. Before entering politics, Carney served as Governor of the Bank of Canada (2008–2013) and Governor of the Bank of England (2013–2020), becoming the first non-British national to hold that role. He guided Canada through the 2008 global financial crisis and steered the UK through Brexit uncertainty. Carney won the Liberal Party leadership on March 9, 2025, was sworn in as Prime Minister on March 14, 2025, and led the Liberals to victory in the April 2025 federal election.',
-      policies: ['Economic Sovereignty', 'Housing Affordability', 'Clean Energy Transition', 'Canada–US Relations', 'Indigenous Reconciliation', 'National Defence', 'Trade Diversification'],
-      recentActivity: [
-        { type: 'Economic Policy', date: 'May 2025', title: 'Federal Budget 2025 Tabled', description: 'Introduced a $534.8B federal budget focused on housing investment, clean energy, and defence spending increases to meet NATO commitments.' },
-        { type: 'Trade', date: 'Apr 2025', title: 'Canada–US Trade Summit', description: 'Led bilateral negotiations with the Trump administration to counter tariff threats, securing exemptions for key Canadian exports including automotive and energy sectors.' },
-        { type: 'Housing', date: 'Apr 2025', title: 'Canada Housing Action Plan', description: 'Announced a $15B federal commitment to accelerate housing construction, targeting 500,000 new homes over four years through direct financing and municipal partnerships.' },
-        { type: 'Defence', date: 'Mar 2025', title: 'NATO Defence Spending Commitment', description: 'Pledged to increase Canadian defence spending to 2% of GDP by 2030, committing $8.1B in new military investments including Arctic surveillance and NORAD modernization.' },
-        { type: 'Indigenous', date: 'Mar 2025', title: 'First Nations Infrastructure Fund', description: 'Launched a $3.2B First Nations Infrastructure Fund to address housing, clean water, and community services in Indigenous communities across Canada.' },
-      ],
-      attendance: { percentage: 94, sessionsAttended: 47, totalSessions: 50 },
-      financialDisclosure: {
-        electedYear: 2025,
-        worthWhenElected: 16200000,
-        currentNetWorth: 17400000,
-        percentageIncrease: 7.4,
-        annualSalary: 389000,
-        assets: [
-          { type: 'Investment Portfolio', value: 8200000 },
-          { type: 'Real Estate (Ottawa & London)', value: 5100000 },
-          { type: 'Pension — Bank of England', value: 2400000 },
-          { type: 'Private Equity Holdings', value: 1100000 },
-          { type: 'Savings & Chequing', value: 600000 },
-        ],
-      },
-      stockTrades: [
-        { company: 'Brookfield Asset Management', ticker: 'BAM', type: 'Disclosure', assetType: 'Equity', value: '$1M–$5M', date: 'Mar 2025', conflict: true, conflictReason: 'Carney was Chair of Brookfield Asset Management prior to entering politics' },
-        { company: 'Canadian Natural Resources', ticker: 'CNQ', type: 'Disclosure', assetType: 'Equity', value: '$100K–$500K', date: 'Mar 2025', conflict: false },
-        { company: 'Royal Bank of Canada', ticker: 'RY', type: 'Disclosure', assetType: 'Equity', value: '$250K–$1M', date: 'Mar 2025', conflict: false },
-        { company: 'Shopify Inc.', ticker: 'SHOP', type: 'Disclosure', assetType: 'Equity', value: '$50K–$250K', date: 'Mar 2025', conflict: false },
-      ],
-      lobbying: [
-        { name: 'Canadian Council of Chief Executives', sector: 'Business Advocacy', value: 0, meetings: 6, lastMeeting: 'Apr 2025' },
-        { name: 'Brookfield Asset Management', sector: 'Financial Services', value: 0, meetings: 4, lastMeeting: 'Mar 2025' },
-        { name: 'Canadian Association of Petroleum Producers', sector: 'Energy Industry', value: 0, meetings: 3, lastMeeting: 'Apr 2025' },
-        { name: 'Assembly of First Nations', sector: 'Indigenous Affairs', value: 0, meetings: 8, lastMeeting: 'May 2025' },
-        { name: 'Canadian Home Builders\' Association', sector: 'Housing & Construction', value: 0, meetings: 5, lastMeeting: 'Apr 2025' },
-      ],
-      expenses: {
-        totalTravel: 'CA$142,380',
-        totalEntertainment: 'CA$28,450',
-        flaggedCount: 2,
-        travel: [
-          { description: 'Ottawa → New York (UN Climate Summit)', date: 'Mar 2025', amount: 'CA$18,400', flagged: false },
-          { description: 'Ottawa → Washington D.C. (US Tariff Summit)', date: 'Apr 2025', amount: 'CA$12,200', flagged: false },
-          { description: 'Ottawa → London, Paris, Berlin (Trade Tour)', date: 'May 2025', amount: 'CA$68,750', flagged: true, reason: 'Above PMO travel limit; no prior approval filed' },
-          { description: 'Rideau Cottage private event transport', date: 'Feb 2025', amount: 'CA$3,200', flagged: true, reason: 'Personal use of official vehicle claimed as official expense' },
-          { description: 'Ottawa → Vancouver (Energy Summit)', date: 'Mar 2025', amount: 'CA$8,900', flagged: false },
-        ],
-        entertainment: [
-          { description: 'Official Reception, Parliament Hill (G7 Finance)', date: 'Apr 2025', amount: 'CA$24,500', flagged: false },
-          { description: 'Provincial Premiers Dinner', date: 'Mar 2025', amount: 'CA$6,200', flagged: false },
-          { description: 'PMO Staff Holiday Event', date: 'Dec 2024', amount: 'CA$8,450', flagged: false },
-        ],
-      },
-      cabinet: [
-        { name: 'Chrystia Freeland', role: 'Deputy Prime Minister & Minister of Finance' },
-        { name: 'Mélanie Joly', role: 'Minister of Foreign Affairs' },
-        { name: 'Bill Blair', role: 'Minister of National Defence' },
-        { name: 'Dominic LeBlanc', role: 'Minister of Public Safety' },
-        { name: 'Mark Holland', role: 'Minister of Health' },
-        { name: 'François-Philippe Champagne', role: 'Minister of Industry, Science and Technology' },
-        { name: 'Arif Virani', role: 'Minister of Justice and Attorney General of Canada' },
-        { name: 'Steven Guilbeault', role: 'Minister of Environment and Climate Change' },
-        { name: 'Sean Fraser', role: 'Minister of Housing, Infrastructure and Communities' },
-        { name: 'Jonathan Wilkinson', role: 'Minister of Energy and Natural Resources' },
-        { name: 'Harjit Sajjan', role: 'Minister of International Development' },
-        { name: 'Omar Alghabra', role: 'Minister of Transport' },
-      ],
-      seniorAdvisors: [
-        {
-          name: 'Brian Clow',
-          title: 'Chief of Staff',
-          bio: 'Former Deputy Chief of Staff under PM Trudeau and a long-time senior Liberal strategist, Brian Clow was appointed Chief of Staff by PM Carney to oversee the day-to-day operations of the Prime Minister\'s Office, manage the government\'s legislative agenda, and coordinate across federal departments.',
-        },
-        {
-          name: 'Annie Medaglia',
-          title: 'Deputy Chief of Staff for Policy',
-          bio: 'Veteran federal policy advisor and former senior official at the Privy Council Office, Medaglia serves as Deputy Chief of Staff for Policy, overseeing the development and coordination of the government\'s domestic and economic policy priorities across the PMO and cabinet.',
-        },
-        {
-          name: 'Jeremy Broadhurst',
-          title: 'Principal Secretary',
-          bio: 'National Director of the Liberal Party of Canada and the key strategist behind Carney\'s leadership campaign, Broadhurst serves as Principal Secretary managing the PM\'s parliamentary relationships, party affairs, and political communications.',
-        },
-        {
-          name: 'Ben Chin',
-          title: 'Director of Communications',
-          bio: 'Former communications director at the Bank of Canada who worked alongside Carney during the financial crisis, Ben Chin serves as Director of Communications for the PMO, overseeing the government\'s messaging, media relations, and public affairs strategy.',
-        },
-      ],
     };
+    const carneyBio = memberBioData['Mark Carney'];
+    const carneyBioLoading = !!memberBioLoading['Mark Carney'];
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -15433,11 +15386,18 @@ function App() {
               {/* Biography */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div onClick={() => toggleCarneySection('bio')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">📖 Biography</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-gray-800">📖 Biography</h3>
+                    {carneyBioLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                    {carneyBio?.bio && !carneyBioLoading && liveBadge(null, 'Live')}
+                  </div>
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.bio ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 ${expandedCarneySections.bio ? '' : 'hidden sm:block'}`}>
-                  <p className="text-gray-700 leading-relaxed">{carney.bio}</p>
+                  {carneyBio?.bio
+                    ? <p className="text-gray-700 leading-relaxed">{carneyBio.bio}</p>
+                    : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{carneyBioLoading ? 'Loading…' : 'No biography data available yet.'}</p>
+                  }
                 </div>
               </div>
 
@@ -15645,18 +15605,27 @@ function App() {
               {/* Cabinet Members */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div onClick={() => toggleCarneySection('cabinet')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🏛️ Cabinet Members</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-gray-800">🏛️ Cabinet Members</h3>
+                    {carneyCabinetLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                    {carneyCabinetData?.length > 0 && !carneyCabinetLoading && liveBadge(null, 'Live')}
+                  </div>
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.cabinet ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 ${expandedCarneySections.cabinet ? '' : 'hidden sm:block'}`}>
-                  <div className="space-y-2">
-                    {carney.cabinet.map((c, i) => (
-                      <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                        <h4 className="font-bold text-gray-800">{c.name}</h4>
-                        <p className="text-sm text-red-600 font-medium">{c.role}</p>
-                      </div>
-                    ))}
-                  </div>
+                  {carneyCabinetData?.length > 0 ? (
+                    <div className="space-y-2">
+                      {carneyCabinetData.map((c, i) => (
+                        <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                          <h4 className="font-bold text-gray-800">{c.name}</h4>
+                          <p className="text-sm text-red-600 font-medium">{c.role ?? c.title}</p>
+                          {c.department && <p className="text-xs text-gray-500 mt-0.5">{c.department}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{carneyCabinetLoading ? 'Loading…' : 'No cabinet data available yet.'}</p>
+                  )}
                 </div>
               </div>
 
@@ -15667,20 +15636,30 @@ function App() {
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.contact ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 ${expandedCarneySections.contact ? '' : 'hidden sm:block'}`}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
-                      <a href={`mailto:${carney.email}`} className="text-red-600 hover:text-red-800 font-medium break-all">{carney.email}</a>
+                  {carneyBio?.email || carneyBio?.phone || carneyBio?.address ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {carneyBio.email && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                          <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
+                          <a href={`mailto:${carneyBio.email}`} className="text-red-600 hover:text-red-800 font-medium break-all">{carneyBio.email}</a>
+                        </div>
+                      )}
+                      {carneyBio.phone && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <p className="text-sm text-gray-600 mb-2 font-medium">PMO Phone</p>
+                          <a href={`tel:${carneyBio.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{carneyBio.phone}</a>
+                        </div>
+                      )}
+                      {carneyBio.address && (
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
+                          <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
+                          <p className="text-gray-700 text-sm">{carneyBio.address}</p>
+                        </div>
+                      )}
                     </div>
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-2 font-medium">PMO Phone</p>
-                      <a href={`tel:${carney.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{carney.phone}</a>
-                    </div>
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
-                      <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
-                      <p className="text-gray-700 text-sm">80 Wellington Street, Ottawa, Ontario K1A 0A2</p>
-                    </div>
-                  </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{carneyBioLoading ? 'Loading…' : 'No contact information available yet.'}</p>
+                  )}
                 </div>
               </div>
 
@@ -15691,47 +15670,43 @@ function App() {
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.policies ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 ${expandedCarneySections.policies ? '' : 'hidden sm:block'}`}>
-                  <div className="flex flex-wrap gap-2">
-                    {carney.policies.map((policy, i) => (
-                      <span key={i} className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-sm font-medium px-3 py-1.5 rounded-full">
-                        <Scale className="w-3.5 h-3.5 flex-shrink-0" />
-                        {policy}
-                      </span>
-                    ))}
-                  </div>
+                  {carneyBio?.policies?.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {carneyBio.policies.map((policy, i) => (
+                        <span key={i} className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                          <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                          {policy}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{carneyBioLoading ? 'Loading…' : 'No policy data available yet.'}</p>
+                  )}
                 </div>
               </div>
 
               {/* Term Information */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <div className="p-6 flex items-center justify-between">
                   <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
                 </div>
                 <div className="px-6 pb-6">
-                  <div className="grid grid-cols-3 gap-3 mb-3">
-                    <div className="bg-red-50 p-4 rounded-lg text-center">
-                      <p className="text-sm text-gray-600 mb-1">Current Term</p>
-                      <p className="text-2xl font-bold text-red-600">2025–</p>
+                  {carneyBio?.term_start || carneyBio?.born || carneyBio?.education ? (
+                    <div className="space-y-3">
+                      {(carneyBio.term_start || carneyBio.pm_number) && (
+                        <div className="grid grid-cols-2 gap-3">
+                          {carneyBio.term_start && <div className="bg-red-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">In Office Since</p><p className="text-lg font-bold text-red-600">{carneyBio.term_start}</p></div>}
+                          {carneyBio.pm_number && <div className="bg-purple-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">PM #</p><p className="text-3xl font-bold text-purple-600">{carneyBio.pm_number}</p></div>}
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-3">
+                        {carneyBio.born && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Born</p><p className="font-semibold text-gray-800">{carneyBio.born}{carneyBio.birthplace ? `, ${carneyBio.birthplace}` : ''}</p></div>}
+                        {carneyBio.education && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Education</p><p className="font-semibold text-gray-800">{carneyBio.education}</p></div>}
+                      </div>
                     </div>
-                    <div className="bg-blue-50 p-4 rounded-lg text-center">
-                      <p className="text-sm text-gray-600 mb-1">Prior Role</p>
-                      <p className="text-lg font-bold text-blue-600">BoE Gov</p>
-                    </div>
-                    <div className="bg-purple-50 p-4 rounded-lg text-center">
-                      <p className="text-sm text-gray-600 mb-1">PM #</p>
-                      <p className="text-3xl font-bold text-purple-600">24</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Born</p>
-                      <p className="font-semibold text-gray-800">{carney.born}, {carney.birthplace}</p>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Education</p>
-                      <p className="font-semibold text-gray-800">{carney.education}</p>
-                    </div>
-                  </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{carneyBioLoading ? 'Loading…' : 'No term information available yet.'}</p>
+                  )}
                 </div>
               </div>
 
@@ -15771,19 +15746,27 @@ function App() {
               {/* Senior Advisors */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div onClick={() => toggleCarneySection('advisors')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🌟 Senior Advisors</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-gray-800">🌟 Senior Advisors</h3>
+                    {carneyAdvisorsLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                    {carneyAdvisorsData?.length > 0 && !carneyAdvisorsLoading && liveBadge(null, 'Live')}
+                  </div>
                   <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.advisors ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
                 <div className={`px-6 pb-6 ${expandedCarneySections.advisors ? '' : 'hidden sm:block'}`}>
-                  <div className="space-y-2">
-                    {carney.seniorAdvisors.map((advisor) => (
-                      <div key={advisor.name} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                        <h4 className="font-bold text-gray-800">{advisor.name}</h4>
-                        <p className="text-sm text-red-600 font-medium mb-1">{advisor.title}</p>
-                        <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>
-                      </div>
-                    ))}
-                  </div>
+                  {carneyAdvisorsData?.length > 0 ? (
+                    <div className="space-y-2">
+                      {carneyAdvisorsData.map((advisor, i) => (
+                        <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                          <h4 className="font-bold text-gray-800">{advisor.name}</h4>
+                          <p className="text-sm text-red-600 font-medium mb-1">{advisor.title ?? advisor.role}</p>
+                          {advisor.bio && <p className="text-sm text-gray-600 leading-relaxed">{advisor.bio}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{carneyAdvisorsLoading ? 'Loading…' : 'No senior advisor data available yet.'}</p>
+                  )}
                 </div>
               </div>
 
