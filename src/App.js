@@ -3038,6 +3038,7 @@ function App() {
         const snap = await getDocs(q);
         docs = snap.docs.map(d => d.data());
       }
+      if (key === 'Mike Johnson') console.log(`[MikeJohnson] member_votes: ${docs.length} doc(s)`, docs);
       setMemberVotesData(prev => ({ ...prev, [key]: docs }));
     } catch (err) {
       console.warn('[LiveData] member_votes fetch failed:', err.message);
@@ -3082,6 +3083,7 @@ function App() {
         const snap = await getDocs(q);
         docs = snap.docs.map(d => d.data());
       }
+      if (key === 'Mike Johnson') console.log(`[MikeJohnson] member_attendance: ${docs.length} doc(s)`, docs);
       setMemberAttendanceData(prev => ({ ...prev, [key]: docs }));
     } catch (err) {
       console.warn('[LiveData] member_attendance fetch failed:', err.message);
@@ -3251,6 +3253,7 @@ function App() {
         const snap = await getDocs(q);
         if (!snap.empty) bioDoc = snap.docs[0].data();
       }
+      if (key === 'Mike Johnson') console.log(`[MikeJohnson] member_bios: ${bioDoc ? '1 doc' : '0 docs'}`, bioDoc);
       setMemberBioData(prev => ({ ...prev, [key]: bioDoc || null }));
     } catch (err) {
       console.warn('[LiveData] member_bios fetch failed:', err.message);
@@ -3307,6 +3310,7 @@ function App() {
         const snap = await getDocs(q);
         docs = snap.docs.map(d => d.data());
       }
+      if (key === 'Mike Johnson') console.log(`[MikeJohnson] member_committees: ${docs.length} doc(s)`, docs);
       setMemberCommitteeData(prev => ({ ...prev, [key]: docs }));
     } catch (err) {
       console.warn('[LiveData] member_committees fetch failed:', err.message);
