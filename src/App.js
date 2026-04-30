@@ -22410,7 +22410,7 @@ function App() {
               const oppose = getVC(_auVcId, 'oppose');
               const concerned = getVC(_auVcId, 'concerned');
               const userVote = auMemberVotes[member.name] || null;
-              const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const initials = (member.name || '').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
               const color = getPartyColor(member.party);
               return (
                 <div key={i} className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-amber-400 hover:shadow-xl transition-all cursor-pointer" onClick={() => { setSelectedAuMember(member); setShowAuMemberPanel(true); }}>
@@ -22502,7 +22502,7 @@ function App() {
     const member = enrichAuMember(selectedAuMember);
     const isSen = member.role === 'Senator' || (member.role && member.role.toLowerCase().includes('senator'));
     const partyColor = getPartyColor(member.party);
-    const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2);
+    const initials = (member.name || '').split(' ').map(n => n[0]).join('').slice(0, 2);
     const _auPanelVcId = toVoteId('au-member', member.name);
     const support = getVC(_auPanelVcId, 'support');
     const oppose = getVC(_auPanelVcId, 'oppose');
@@ -26589,7 +26589,7 @@ function App() {
                 const oppose = getVC(_usaVcId, 'oppose');
                 const concerned = getVC(_usaVcId, 'concerned');
                 const userVote = member.userVote || null;
-                const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                const initials = (member.name || '').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                 const color = getPartyColor(member.party);
                 const isSenator = member.district === 'Senator';
                 return (
@@ -26976,7 +26976,7 @@ function App() {
                   const oppose = getVC(_caVcId, 'oppose');
                   const concerned = getVC(_caVcId, 'concerned');
                   const userVote = caMemberVotes[member.name] || null;
-                  const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                  const initials = (member.name || '').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                   const color = getPartyColor(member.party);
                   const yearsInOffice = isSenate
                     ? new Date().getFullYear() - new Date(member.dateAppointed).getFullYear()
@@ -32391,7 +32391,7 @@ function App() {
     const member = enrichCongressMember(selectedMember);
     const isSenator = member.district === 'Senator';
     const partyColor = getPartyColor(member.party);
-    const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2);
+    const initials = (member.name || '').split(' ').map(n => n[0]).join('').slice(0, 2);
     const _congressVcId = toVoteId('congress', member.name);
     const _cSupport = getVC(_congressVcId, 'support');
     const _cOppose = getVC(_congressVcId, 'oppose');
