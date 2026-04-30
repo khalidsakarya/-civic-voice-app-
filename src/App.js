@@ -1454,6 +1454,9 @@ function App() {
   const [auChamber, setAuChamber] = useState('Senate');
   const [auPartyFilter, setAuPartyFilter] = useState('All');
   const [auSearch, setAuSearch] = useState('');
+  const [usaChamber, setUsaChamber] = useState('House');
+  const [usaPartyFilter, setUsaPartyFilter] = useState('All');
+  const [usaSearch, setUsaSearch] = useState('');
   const [auMemberVotes, setAuMemberVotes] = useState(() => { try { return JSON.parse(localStorage.getItem('cvAuMemberVotes') || '{}'); } catch { return {}; } });
   const [expandedAuBills, setExpandedAuBills] = useState({});
   const [expandedCaBills, setExpandedCaBills] = useState({});
@@ -26927,7 +26930,7 @@ function App() {
 
           {/* Legislature (Congress/Parliament) */}
           <div
-            onClick={() => setView(isUSA ? 'chambers' : 'ca-parliament')}
+            onClick={() => { if (isUSA) { setUsaChamber('House'); setUsaPartyFilter('All'); setUsaSearch(''); setView('us-parliament'); } else { setView('ca-parliament'); } }}
             className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
             style={{ animationDelay: '0.1s' }}
           >
@@ -27149,6 +27152,211 @@ function App() {
   };
 
   // Render US Congress Chamber Selection (House vs Senate)
+  const renderCongressParliament = () => {
+    const senators = congressMembers.filter(m => m.district === 'Senator');
+    const reps = congressMembers.filter(m => m.district !== 'Senator');
+    const sourceData = usaChamber === 'Senate' ? senators : reps;
+
+    const US_PARTIES = [...new Set(congressMembers.map(m => m.party))].sort();
+
+    let filtered = sourceData;
+    if (usaPartyFilter !== 'All') {
+      filtered = filtered.filter(m => m.party === usaPartyFilter);
+    }
+    if (usaSearch.trim()) {
+      const q = usaSearch.toLowerCase();
+      filtered = filtered.filter(m =>
+        m.name.toLowerCase().includes(q) ||
+        (m.state || '').toLowerCase().includes(q) ||
+        (m.district || '').toLowerCase().includes(q) ||
+        m.party.toLowerCase().includes(q)
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50 p-4 sm:p-8 animate-fade-in">
+        <div className="max-w-6xl mx-auto">
+          <button
+            onClick={() => { setUsaSearch(''); setUsaPartyFilter('All'); setView('categories'); }}
+            className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
+          >
+            ← Back
+          </button>
+
+          {/* Header */}
+          <div className="mb-6 animate-slide-in">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">🏛️</span>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">U.S. Congress</h1>
+            </div>
+            <p className="text-gray-600 text-base sm:text-lg">Senate (100 senators) · House of Representatives ({reps.length || 435} members)</p>
+            <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-red-600 mt-3 rounded-full" />
+          </div>
+
+          {/* Chamber tab switcher */}
+          <div className="flex gap-3 mb-6">
+            <button
+              onClick={() => { setUsaChamber('Senate'); setUsaPartyFilter('All'); setUsaSearch(''); }}
+              className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${usaChamber === 'Senate' ? 'bg-blue-700 text-white border-blue-700 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-blue-400'}`}
+            >
+              U.S. Senate ({senators.length || 100})
+            </button>
+            <button
+              onClick={() => { setUsaChamber('House'); setUsaPartyFilter('All'); setUsaSearch(''); }}
+              className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${usaChamber === 'House' ? 'bg-red-700 text-white border-red-700 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-red-400'}`}
+            >
+              House of Representatives ({reps.length || 435})
+            </button>
+          </div>
+
+          {/* Party filter pills */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            <button
+              onClick={() => setUsaPartyFilter('All')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${usaPartyFilter === 'All' ? 'bg-gray-700 text-white border-gray-700 shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+            >
+              All
+            </button>
+            {US_PARTIES.map(party => (
+              <button
+                key={party}
+                onClick={() => setUsaPartyFilter(usaPartyFilter === party ? 'All' : party)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${usaPartyFilter === party ? 'text-white shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+                style={usaPartyFilter === party ? { backgroundColor: getPartyColor(party), borderColor: getPartyColor(party) } : {}}
+              >
+                <span style={{ color: usaPartyFilter === party ? 'white' : getPartyColor(party) }} className="w-2 h-2 rounded-full inline-block bg-current" />
+                {party}
+              </button>
+            ))}
+          </div>
+
+          {/* Search */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={usaSearch}
+              onChange={e => setUsaSearch(e.target.value)}
+              placeholder={`Search ${usaChamber === 'Senate' ? 'senators' : 'representatives'} by name, state, or district…`}
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm"
+            />
+          </div>
+
+          {/* Results count */}
+          <p className="text-sm text-gray-500 mb-4">
+            Showing {filtered.length} of {sourceData.length} {usaChamber === 'Senate' ? 'senators' : 'representatives'}
+            {usaPartyFilter !== 'All' && <span> · <span className="font-semibold" style={{ color: getPartyColor(usaPartyFilter) }}>{usaPartyFilter}</span></span>}
+          </p>
+
+          {/* Loading */}
+          {loading && (
+            <div className="text-center py-16">
+              <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4" />
+              <p className="text-gray-500 text-sm">Loading members…</p>
+            </div>
+          )}
+
+          {/* Member cards */}
+          {!loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map((member, i) => {
+                const _usaVcId = toVoteId('congress', member.name);
+                const support = getVC(_usaVcId, 'support');
+                const oppose = getVC(_usaVcId, 'oppose');
+                const concerned = getVC(_usaVcId, 'concerned');
+                const userVote = member.userVote || null;
+                const initials = member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                const color = getPartyColor(member.party);
+                const isSenator = member.district === 'Senator';
+                return (
+                  <div
+                    key={i}
+                    className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-blue-500 hover:shadow-xl transition-all cursor-pointer"
+                    onClick={() => { setSelectedMember(member); setShowMemberPanel(true); }}
+                  >
+                    {/* Avatar */}
+                    <div style={{ backgroundColor: color }} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4">
+                      {initials}
+                    </div>
+
+                    <h3 className="text-xl font-bold text-gray-800 mb-1">{member.name}</h3>
+
+                    {getRoleBadge(member) && <div className="mb-2">{getRoleBadge(member)}</div>}
+
+                    {/* Party badge */}
+                    <div className="mb-3">
+                      <span style={{ backgroundColor: color }} className="text-white text-xs px-2.5 py-1 rounded-full font-semibold">
+                        {member.party}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Globe className="w-4 h-4 flex-shrink-0" />
+                        <span>{member.state}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <MapPin className="w-4 h-4 flex-shrink-0" />
+                        <span>{isSenator ? 'U.S. Senator' : member.district}</span>
+                      </div>
+                      {member.yearsInOffice !== undefined && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Calendar className="w-4 h-4 flex-shrink-0" />
+                          <span>{member.yearsInOffice} {member.yearsInOffice === 1 ? 'year' : 'years'} in office</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* View profile link */}
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <span className="text-blue-600 text-sm font-medium">View Profile →</span>
+                    </div>
+
+                    {/* Vote buttons */}
+                    <div className="flex items-center gap-2 mt-3 flex-wrap" onClick={e => e.stopPropagation()}>
+                      {locInfoBtn()}
+                      <button
+                        onClick={() => requireRegion(() => voteCongressMember(member.name, 'support'))}
+                        className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
+                      >
+                        <ThumbsUp className="w-3 h-3" />
+                        <span>{support.toLocaleString()}</span>
+                      </button>
+                      <button
+                        onClick={() => requireRegion(() => voteCongressMember(member.name, 'concerned'))}
+                        className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'concerned' ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400' : 'text-orange-600 hover:bg-orange-50'}`}
+                      >
+                        <AlertCircle className="w-3 h-3" />
+                        <span>{concerned.toLocaleString()}</span>
+                      </button>
+                      <button
+                        onClick={() => requireRegion(() => voteCongressMember(member.name, 'oppose'))}
+                        className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${userVote === 'oppose' ? 'bg-red-100 text-red-700 ring-1 ring-red-400' : 'text-red-600 hover:bg-red-50'}`}
+                      >
+                        <ThumbsDown className="w-3 h-3" />
+                        <span>{oppose.toLocaleString()}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {!loading && filtered.length === 0 && (
+            <div className="text-center py-16 text-gray-400">
+              <span className="text-5xl mb-4 block">🏛️</span>
+              <p className="font-semibold">No members found</p>
+              <p className="text-sm mt-1">Try adjusting your search or filter</p>
+            </div>
+          )}
+
+          <p className="text-center text-xs text-gray-400 mt-10 pb-4">Illustrative data · member profiles are statistically modelled</p>
+        </div>
+      </div>
+    );
+  };
+
   const renderChambers = () => {
     const senators = congressMembers.filter(m => m.district === 'Senator');
     const representatives = congressMembers.filter(m => m.district !== 'Senator');
@@ -34977,6 +35185,7 @@ function App() {
         {view === 'provincial' && renderProvincial()}
         {view === 'province-detail' && selectedProvince && renderProvinceDetail()}
         {view === 'categories' && renderCategories()}
+        {view === 'us-parliament' && renderCongressParliament()}
         {view === 'chambers' && renderChambers()}
         {view === 'ca-parliament' && renderCaParliament()}
         {view === 'parties' && renderParties()}
