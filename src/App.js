@@ -2293,8 +2293,8 @@ function App() {
   const [carneyCabinetLoading, setCarneyCabinetLoading] = useState(false);
   const [carneyAdvisorsData, setCarneyAdvisorsData] = useState(null);
   const [carneyAdvisorsLoading, setCarneyAdvisorsLoading] = useState(false);
-  const [carneyProfileData, setCarneyProfileData] = useState(null);
-  const [carneyProfileLoading, setCarneyProfileLoading] = useState(false);
+  const [leaderProfileData, setLeaderProfileData] = useState({});
+  const [leaderProfileLoading, setLeaderProfileLoading] = useState({});
   const [memberBioData, setMemberBioData] = useState({});
   const [memberBioLoading, setMemberBioLoading] = useState({});
   const [memberCommitteeData, setMemberCommitteeData] = useState({});
@@ -3205,24 +3205,26 @@ function App() {
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch leader_profile_data sections for Mark Carney (key_policy_areas, term_information, contact_information, senior_advisors)
+  // Fetch leader_profile_data sections for all 4 leader profiles
   useEffect(() => {
-    if (view !== 'canada-pm-detail' || carneyProfileData !== null || carneyProfileLoading) return;
-    setCarneyProfileLoading(true);
+    const leaderViews = { 'canada-pm-detail': 'Mark Carney', 'president-detail': 'Donald Trump', 'uk-pm-detail': 'Keir Starmer', 'albanese-detail': 'Anthony Albanese' };
+    const name = leaderViews[view];
+    if (!name || leaderProfileData[name] !== undefined || leaderProfileLoading[name]) return;
+    setLeaderProfileLoading(prev => ({ ...prev, [name]: true }));
     (async () => {
       try {
-        const snap = await getDocs(query(collection(db, 'leader_profile_data'), where('member_name', '==', 'Mark Carney')));
+        const snap = await getDocs(query(collection(db, 'leader_profile_data'), where('member_name', '==', name)));
         const bySection = {};
         snap.docs.forEach(d => {
           const data = d.data();
           if (data.section) bySection[data.section] = data;
         });
-        setCarneyProfileData(bySection);
+        setLeaderProfileData(prev => ({ ...prev, [name]: bySection }));
       } catch (err) {
-        console.warn('[CarneyProfile] fetch failed:', err.message);
-        setCarneyProfileData({});
+        console.warn('[LeaderProfile] fetch failed:', err.message);
+        setLeaderProfileData(prev => ({ ...prev, [name]: {} }));
       } finally {
-        setCarneyProfileLoading(false);
+        setLeaderProfileLoading(prev => ({ ...prev, [name]: false }));
       }
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -15291,8 +15293,8 @@ function App() {
     };
     const carneyBio = memberBioData['Mark Carney'];
     const carneyBioLoading = !!memberBioLoading['Mark Carney'];
-    const cpd = carneyProfileData ?? {};
-    const cpdLoading = carneyProfileLoading;
+    const cpd = leaderProfileData['Mark Carney'] ?? {};
+    const cpdLoading = !!leaderProfileLoading['Mark Carney'];
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -15882,6 +15884,8 @@ function App() {
   };
 
   const renderPresidentDetail = () => {
+    const tpd = leaderProfileData['Donald Trump'] ?? {};
+    const tpdLoading = !!leaderProfileLoading['Donald Trump'];
     const trump = {
       name: 'Donald J. Trump',
       title: '47th President of the United States',
@@ -16245,79 +16249,102 @@ function App() {
               </div>
 
               {/* Contact Information */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => togglePresidentSection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.contact ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedPresidentSections.contact ? '' : 'hidden sm:block'}`}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
-                      <a href={`mailto:${trump.email}`} className="text-blue-600 hover:text-blue-800 font-medium break-all">{trump.email}</a>
+              {(() => {
+                const sec = tpd['contact_information'];
+                const hasData = sec && (sec.email || sec.phone || sec.office_address);
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => togglePresidentSection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
+                        {tpdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {hasData && !tpdLoading && liveBadge(null, 'Live')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.contact ? 'rotate-0' : '-rotate-90'}`} />
                     </div>
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-2 font-medium">White House Phone</p>
-                      <a href={`tel:${trump.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{trump.phone}</a>
-                    </div>
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
-                      <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
-                      <p className="text-gray-700 text-sm">1600 Pennsylvania Avenue NW, Washington, D.C. 20500</p>
+                    <div className={`px-6 pb-6 ${expandedPresidentSections.contact ? '' : 'hidden sm:block'}`}>
+                      {hasData ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {sec.email && <div className="bg-blue-50 border border-blue-200 rounded-lg p-4"><p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p><a href={`mailto:${sec.email}`} className="text-blue-600 hover:text-blue-800 font-medium break-all">{sec.email}</a></div>}
+                          {sec.phone && <div className="bg-green-50 border border-green-200 rounded-lg p-4"><p className="text-sm text-gray-600 mb-2 font-medium">White House Phone</p><a href={`tel:${sec.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{sec.phone}</a></div>}
+                          {sec.office_address && <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2"><p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p><p className="text-gray-700 text-sm">{sec.office_address}</p></div>}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500 italic">{tpdLoading ? 'Loading…' : 'No contact information available yet.'}</p>
+                      )}
                     </div>
                   </div>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* Key Policy Areas */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => togglePresidentSection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.policies ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedPresidentSections.policies ? '' : 'hidden sm:block'}`}>
-                  <div className="flex flex-wrap gap-2">
-                    {trump.policies.map((policy, i) => (
-                      <span key={i} className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full">
-                        <Scale className="w-3.5 h-3.5 flex-shrink-0" />
-                        {policy}
-                      </span>
-                    ))}
+              {(() => {
+                const sec = tpd['key_policy_areas'];
+                const policies = sec?.policies ?? sec?.items ?? [];
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => togglePresidentSection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
+                        {tpdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {policies.length > 0 && !tpdLoading && liveBadge(null, 'Live')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.policies ? 'rotate-0' : '-rotate-90'}`} />
+                    </div>
+                    <div className={`px-6 pb-6 ${expandedPresidentSections.policies ? '' : 'hidden sm:block'}`}>
+                      {policies.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {policies.map((policy, i) => (
+                            <span key={i} className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                              <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                              {typeof policy === 'string' ? policy : policy.name ?? policy.label ?? JSON.stringify(policy)}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500 italic">{tpdLoading ? 'Loading…' : 'No policy data available yet.'}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* Term Information */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
-                </div>
-                <div className="px-6 pb-6">
-                  <div className="grid grid-cols-3 gap-3 mb-3">
-                    <div className="bg-blue-50 p-4 rounded-lg text-center">
-                      <p className="text-sm text-gray-600 mb-1">Current Term</p>
-                      <p className="text-2xl font-bold text-blue-600">2025–</p>
+              {(() => {
+                const sec = tpd['term_information'];
+                const hasData = sec && Object.keys(sec).some(k => k !== 'section' && k !== 'member_name' && sec[k]);
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => togglePresidentSection('termInfo')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
+                        {tpdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {hasData && !tpdLoading && liveBadge(null, 'Live')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.termInfo ? 'rotate-0' : '-rotate-90'}`} />
                     </div>
-                    <div className="bg-green-50 p-4 rounded-lg text-center">
-                      <p className="text-sm text-gray-600 mb-1">Prior Term</p>
-                      <p className="text-2xl font-bold text-green-600">2017–21</p>
-                    </div>
-                    <div className="bg-purple-50 p-4 rounded-lg text-center">
-                      <p className="text-sm text-gray-600 mb-1">President #</p>
-                      <p className="text-3xl font-bold text-purple-600">47</p>
+                    <div className={`px-6 pb-6 ${expandedPresidentSections.termInfo ? '' : 'hidden sm:block'}`}>
+                      {hasData ? (
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {sec.term_start && <div className="bg-blue-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">In Office Since</p><p className="text-xl font-bold text-blue-600">{sec.term_start}</p></div>}
+                            {sec.president_number && <div className="bg-purple-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">President #</p><p className="text-3xl font-bold text-purple-600">{sec.president_number}</p></div>}
+                            {sec.party && <div className="bg-red-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">Party</p><p className="text-lg font-bold text-red-700">{sec.party}</p></div>}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {sec.born && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Born</p><p className="font-semibold text-gray-800">{sec.born}{sec.birthplace ? `, ${sec.birthplace}` : ''}</p></div>}
+                            {sec.education && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Education</p><p className="font-semibold text-gray-800">{sec.education}</p></div>}
+                            {sec.prior_term && <div className="bg-green-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Prior Term</p><p className="font-semibold text-gray-800">{sec.prior_term}</p></div>}
+                          </div>
+                          {sec.source_url && <a href={sec.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1">📄 Source</a>}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500 italic">{tpdLoading ? 'Loading…' : 'No term information available yet.'}</p>
+                      )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Born</p>
-                      <p className="font-semibold text-gray-800">{trump.born}, {trump.birthplace}</p>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-1">Education</p>
-                      <p className="font-semibold text-gray-800">{trump.education}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* Recent Activity */}
               {(() => {
@@ -16390,6 +16417,8 @@ function App() {
 
   const renderStarmerDetail = () => {
     const partyColor = '#E4003B'; // Labour red
+    const spd = leaderProfileData['Keir Starmer'] ?? {};
+    const spdLoading = !!leaderProfileLoading['Keir Starmer'];
 
     const starmer = {
       name: 'Sir Keir Starmer',
@@ -16764,80 +16793,102 @@ function App() {
             </div>
 
             {/* Contact Information */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleStarmerSection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
-                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedStarmerSections.contact ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              <div className={`px-6 pb-6 ${expandedStarmerSections.contact ? '' : 'hidden sm:block'}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="rounded-lg p-4" style={{ backgroundColor: '#E4003B10', border: '1px solid #E4003B40' }}>
-                    <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
-                    <a href={`mailto:${starmer.email}`} className="font-medium break-all hover:underline" style={{ color: partyColor }}>{starmer.email}</a>
+            {(() => {
+              const sec = spd['contact_information'];
+              const hasData = sec && (sec.email || sec.phone || sec.office_address);
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleStarmerSection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
+                      {spdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {hasData && !spdLoading && liveBadge(null, 'Live')}
+                    </div>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedStarmerSections.contact ? 'rotate-0' : '-rotate-90'}`} />
                   </div>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-sm text-gray-600 mb-2 font-medium">No. 10 Switchboard</p>
-                    <a href={`tel:${starmer.phone}`} className="text-blue-700 hover:text-blue-900 font-medium text-lg">{starmer.phone}</a>
-                  </div>
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 md:col-span-2">
-                    <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
-                    <p className="text-gray-700 text-sm">10 Downing Street, Westminster, London SW1A 2AA, United Kingdom</p>
+                  <div className={`px-6 pb-6 ${expandedStarmerSections.contact ? '' : 'hidden sm:block'}`}>
+                    {hasData ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {sec.email && <div className="rounded-lg p-4" style={{ backgroundColor: '#E4003B10', border: '1px solid #E4003B40' }}><p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p><a href={`mailto:${sec.email}`} className="font-medium break-all hover:underline" style={{ color: partyColor }}>{sec.email}</a></div>}
+                        {sec.phone && <div className="bg-blue-50 border border-blue-200 rounded-lg p-4"><p className="text-sm text-gray-600 mb-2 font-medium">No. 10 Switchboard</p><a href={`tel:${sec.phone}`} className="text-blue-700 hover:text-blue-900 font-medium text-lg">{sec.phone}</a></div>}
+                        {sec.office_address && <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 md:col-span-2"><p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p><p className="text-gray-700 text-sm">{sec.office_address}</p></div>}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">{spdLoading ? 'Loading…' : 'No contact information available yet.'}</p>
+                    )}
                   </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Key Policy Areas */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleStarmerSection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
-                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedStarmerSections.policies ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              <div className={`px-6 pb-6 ${expandedStarmerSections.policies ? '' : 'hidden sm:block'}`}>
-                <div className="flex flex-wrap gap-2">
-                  {starmer.policies.map((policy, i) => (
-                    <span key={i} className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full" style={{ backgroundColor: '#E4003B10', border: '1px solid #E4003B40', color: '#9B0020' }}>
-                      <Scale className="w-3.5 h-3.5 flex-shrink-0" />
-                      {policy}
-                    </span>
-                  ))}
+            {(() => {
+              const sec = spd['key_policy_areas'];
+              const policies = sec?.policies ?? sec?.items ?? [];
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleStarmerSection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
+                      {spdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {policies.length > 0 && !spdLoading && liveBadge(null, 'Live')}
+                    </div>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedStarmerSections.policies ? 'rotate-0' : '-rotate-90'}`} />
+                  </div>
+                  <div className={`px-6 pb-6 ${expandedStarmerSections.policies ? '' : 'hidden sm:block'}`}>
+                    {policies.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {policies.map((policy, i) => (
+                          <span key={i} className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full" style={{ backgroundColor: '#E4003B10', border: '1px solid #E4003B40', color: '#9B0020' }}>
+                            <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                            {typeof policy === 'string' ? policy : policy.name ?? policy.label ?? JSON.stringify(policy)}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">{spdLoading ? 'Loading…' : 'No policy data available yet.'}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Term Information */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleStarmerSection('termInfo')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
-                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedStarmerSections.termInfo ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              <div className={`px-6 pb-6 ${expandedStarmerSections.termInfo ? '' : 'hidden sm:block'}`}>
-                <div className="grid grid-cols-3 gap-3 mb-3">
-                  <div className="p-4 rounded-lg text-center" style={{ backgroundColor: '#E4003B10' }}>
-                    <p className="text-sm text-gray-600 mb-1">Current Term</p>
-                    <p className="text-2xl font-bold" style={{ color: partyColor }}>2024–</p>
+            {(() => {
+              const sec = spd['term_information'];
+              const hasData = sec && Object.keys(sec).some(k => k !== 'section' && k !== 'member_name' && sec[k]);
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleStarmerSection('termInfo')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
+                      {spdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {hasData && !spdLoading && liveBadge(null, 'Live')}
+                    </div>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedStarmerSections.termInfo ? 'rotate-0' : '-rotate-90'}`} />
                   </div>
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
-                    <p className="text-sm text-gray-600 mb-1">Prior Role</p>
-                    <p className="text-lg font-bold text-blue-800">Opp. Leader</p>
-                  </div>
-                  <div className="p-4 rounded-lg text-center" style={{ backgroundColor: '#01216915' }}>
-                    <p className="text-sm text-gray-600 mb-1">PM #</p>
-                    <p className="text-3xl font-bold" style={{ color: '#012169' }}>58</p>
+                  <div className={`px-6 pb-6 ${expandedStarmerSections.termInfo ? '' : 'hidden sm:block'}`}>
+                    {hasData ? (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {sec.term_start && <div className="p-4 rounded-lg text-center" style={{ backgroundColor: '#E4003B10' }}><p className="text-sm text-gray-600 mb-1">In Office Since</p><p className="text-xl font-bold" style={{ color: partyColor }}>{sec.term_start}</p></div>}
+                          {sec.pm_number && <div className="p-4 rounded-lg text-center" style={{ backgroundColor: '#01216915' }}><p className="text-sm text-gray-600 mb-1">PM #</p><p className="text-3xl font-bold" style={{ color: '#012169' }}>{sec.pm_number}</p></div>}
+                          {sec.party && <div className="p-4 rounded-lg text-center" style={{ backgroundColor: '#E4003B10' }}><p className="text-sm text-gray-600 mb-1">Party</p><p className="text-lg font-bold" style={{ color: partyColor }}>{sec.party}</p></div>}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {sec.born && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Born</p><p className="font-semibold text-gray-800">{sec.born}{sec.birthplace ? `, ${sec.birthplace}` : ''}</p></div>}
+                          {sec.education && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Education</p><p className="font-semibold text-gray-800">{sec.education}</p></div>}
+                          {sec.prior_role && <div className="bg-blue-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Prior Role</p><p className="font-semibold text-gray-800">{sec.prior_role}</p></div>}
+                        </div>
+                        {sec.source_url && <a href={sec.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1">📄 Source</a>}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">{spdLoading ? 'Loading…' : 'No term information available yet.'}</p>
+                    )}
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Born</p>
-                    <p className="font-semibold text-gray-800">{starmer.born}, {starmer.birthplace}</p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Education</p>
-                    <p className="font-semibold text-gray-800">{starmer.education}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Recent Activity */}
             {(() => {
@@ -25377,6 +25428,8 @@ function App() {
 
   const renderAlbaneseDetail = () => {
     const partyColor = '#CC0000'; // ALP red
+    const apd = leaderProfileData['Anthony Albanese'] ?? {};
+    const apdLoading = !!leaderProfileLoading['Anthony Albanese'];
 
     const albanese = {
       name: 'Anthony Albanese',
@@ -25742,80 +25795,102 @@ function App() {
             </div>
 
             {/* Contact Information */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleAlbaneseSection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
-                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedAlbaneseSections.contact ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              <div className={`px-6 pb-6 ${expandedAlbaneseSections.contact ? '' : 'hidden sm:block'}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p>
-                    <a href={`mailto:${albanese.email}`} className="text-red-700 hover:text-red-900 font-medium break-all">{albanese.email}</a>
+            {(() => {
+              const sec = apd['contact_information'];
+              const hasData = sec && (sec.email || sec.phone || sec.office_address);
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleAlbaneseSection('contact')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold text-gray-800">📧 Contact Information</h3>
+                      {apdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {hasData && !apdLoading && liveBadge(null, 'Live')}
+                    </div>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedAlbaneseSections.contact ? 'rotate-0' : '-rotate-90'}`} />
                   </div>
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <p className="text-sm text-gray-600 mb-2 font-medium">PMO Phone</p>
-                    <a href={`tel:${albanese.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{albanese.phone}</a>
-                  </div>
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2">
-                    <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
-                    <p className="text-gray-700 text-sm">Parliament House, Canberra ACT 2600, Australia</p>
+                  <div className={`px-6 pb-6 ${expandedAlbaneseSections.contact ? '' : 'hidden sm:block'}`}>
+                    {hasData ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {sec.email && <div className="bg-red-50 border border-red-200 rounded-lg p-4"><p className="text-sm text-gray-600 mb-2 font-medium">Official Email</p><a href={`mailto:${sec.email}`} className="text-red-700 hover:text-red-900 font-medium break-all">{sec.email}</a></div>}
+                        {sec.phone && <div className="bg-green-50 border border-green-200 rounded-lg p-4"><p className="text-sm text-gray-600 mb-2 font-medium">PMO Phone</p><a href={`tel:${sec.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{sec.phone}</a></div>}
+                        {sec.office_address && <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 md:col-span-2"><p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p><p className="text-gray-700 text-sm">{sec.office_address}</p></div>}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">{apdLoading ? 'Loading…' : 'No contact information available yet.'}</p>
+                    )}
                   </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Key Policy Areas */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleAlbaneseSection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
-                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedAlbaneseSections.policies ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              <div className={`px-6 pb-6 ${expandedAlbaneseSections.policies ? '' : 'hidden sm:block'}`}>
-                <div className="flex flex-wrap gap-2">
-                  {albanese.policies.map((policy, i) => (
-                    <span key={i} className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-sm font-medium px-3 py-1.5 rounded-full">
-                      <Scale className="w-3.5 h-3.5 flex-shrink-0" />
-                      {policy}
-                    </span>
-                  ))}
+            {(() => {
+              const sec = apd['key_policy_areas'];
+              const policies = sec?.policies ?? sec?.items ?? [];
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleAlbaneseSection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
+                      {apdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {policies.length > 0 && !apdLoading && liveBadge(null, 'Live')}
+                    </div>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedAlbaneseSections.policies ? 'rotate-0' : '-rotate-90'}`} />
+                  </div>
+                  <div className={`px-6 pb-6 ${expandedAlbaneseSections.policies ? '' : 'hidden sm:block'}`}>
+                    {policies.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {policies.map((policy, i) => (
+                          <span key={i} className="flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-sm font-medium px-3 py-1.5 rounded-full">
+                            <Scale className="w-3.5 h-3.5 flex-shrink-0" />
+                            {typeof policy === 'string' ? policy : policy.name ?? policy.label ?? JSON.stringify(policy)}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">{apdLoading ? 'Loading…' : 'No policy data available yet.'}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Term Information */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div onClick={() => toggleAlbaneseSection('termInfo')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
-                <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedAlbaneseSections.termInfo ? 'rotate-0' : '-rotate-90'}`} />
-              </div>
-              <div className={`px-6 pb-6 ${expandedAlbaneseSections.termInfo ? '' : 'hidden sm:block'}`}>
-                <div className="grid grid-cols-3 gap-3 mb-3">
-                  <div className="bg-red-50 p-4 rounded-lg text-center">
-                    <p className="text-sm text-gray-600 mb-1">Current Term</p>
-                    <p className="text-2xl font-bold text-red-700">2022–</p>
+            {(() => {
+              const sec = apd['term_information'];
+              const hasData = sec && Object.keys(sec).some(k => k !== 'section' && k !== 'member_name' && sec[k]);
+              return (
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div onClick={() => toggleAlbaneseSection('termInfo')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
+                      {apdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {hasData && !apdLoading && liveBadge(null, 'Live')}
+                    </div>
+                    <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedAlbaneseSections.termInfo ? 'rotate-0' : '-rotate-90'}`} />
                   </div>
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
-                    <p className="text-sm text-gray-600 mb-1">Prior Role</p>
-                    <p className="text-lg font-bold text-blue-600">Dep. PM</p>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg text-center">
-                    <p className="text-sm text-gray-600 mb-1">PM #</p>
-                    <p className="text-3xl font-bold text-purple-600">31</p>
+                  <div className={`px-6 pb-6 ${expandedAlbaneseSections.termInfo ? '' : 'hidden sm:block'}`}>
+                    {hasData ? (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {sec.term_start && <div className="bg-red-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">In Office Since</p><p className="text-xl font-bold text-red-700">{sec.term_start}</p></div>}
+                          {sec.pm_number && <div className="bg-purple-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">PM #</p><p className="text-3xl font-bold text-purple-600">{sec.pm_number}</p></div>}
+                          {sec.party && <div className="bg-red-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">Party</p><p className="text-lg font-bold text-red-700">{sec.party}</p></div>}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {sec.born && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Born</p><p className="font-semibold text-gray-800">{sec.born}{sec.birthplace ? `, ${sec.birthplace}` : ''}</p></div>}
+                          {sec.education && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Education</p><p className="font-semibold text-gray-800">{sec.education}</p></div>}
+                          {sec.prior_role && <div className="bg-blue-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Prior Role</p><p className="font-semibold text-gray-800">{sec.prior_role}</p></div>}
+                        </div>
+                        {sec.source_url && <a href={sec.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1">📄 Source</a>}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">{apdLoading ? 'Loading…' : 'No term information available yet.'}</p>
+                    )}
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Born</p>
-                    <p className="font-semibold text-gray-800">{albanese.born}, {albanese.birthplace}</p>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Education</p>
-                    <p className="font-semibold text-gray-800">{albanese.education}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Recent Activity */}
             {(() => {
