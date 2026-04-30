@@ -1457,6 +1457,9 @@ function App() {
   const [usaChamber, setUsaChamber] = useState('House');
   const [usaPartyFilter, setUsaPartyFilter] = useState('All');
   const [usaSearch, setUsaSearch] = useState('');
+  const [usaPageLimit, setUsaPageLimit] = useState(50);
+  const [congressLoading, setCongressLoading] = useState(false);
+  const [congressError, setCongressError] = useState(null);
   const [auMemberVotes, setAuMemberVotes] = useState(() => { try { return JSON.parse(localStorage.getItem('cvAuMemberVotes') || '{}'); } catch { return {}; } });
   const [expandedAuBills, setExpandedAuBills] = useState({});
   const [expandedCaBills, setExpandedCaBills] = useState({});
@@ -3405,6 +3408,8 @@ function App() {
   }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchCongressMembers = async () => {
+    setCongressLoading(true);
+    setCongressError(null);
     try {
       const snap = await getDocs(collection(db, 'congress_members'));
       const savedVotes = JSON.parse(localStorage.getItem('cvCongressVotes') || '{}');
@@ -3412,7 +3417,6 @@ function App() {
         const data = d.data();
         const saved = savedVotes[data.name] || {};
         return {
-          // Core fields from Firestore
           name: data.name || '',
           state: data.state || '',
           district: data.district || data.chamber || '',
@@ -3423,11 +3427,9 @@ function App() {
           phone: data.phone || '',
           committees: data.committees || [],
           bio: data.bio || data.biography || '',
-          // Vote state (from localStorage)
           supportVotes: 0,
           opposeVotes: 0,
           userVote: saved.userVote || null,
-          // Optional fields
           stockTrades: data.stock_trades || data.stockTrades || [],
           votingHistory: data.voting_history || data.votingHistory || [],
           attendance: data.attendance || null,
@@ -3442,7 +3444,10 @@ function App() {
       setCongressMembers(docs);
     } catch (err) {
       console.warn('[Congress] Firestore fetch failed:', err.message);
+      setCongressError(err.message);
       setCongressMembers([]);
+    } finally {
+      setCongressLoading(false);
     }
   };
 
@@ -26506,13 +26511,13 @@ function App() {
           {/* Chamber tab switcher */}
           <div className="flex gap-3 mb-6">
             <button
-              onClick={() => { setUsaChamber('Senate'); setUsaPartyFilter('All'); setUsaSearch(''); }}
+              onClick={() => { setUsaChamber('Senate'); setUsaPartyFilter('All'); setUsaSearch(''); setUsaPageLimit(50); }}
               className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${usaChamber === 'Senate' ? 'bg-blue-700 text-white border-blue-700 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-blue-400'}`}
             >
               U.S. Senate ({senators.length || 100})
             </button>
             <button
-              onClick={() => { setUsaChamber('House'); setUsaPartyFilter('All'); setUsaSearch(''); }}
+              onClick={() => { setUsaChamber('House'); setUsaPartyFilter('All'); setUsaSearch(''); setUsaPageLimit(50); }}
               className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${usaChamber === 'House' ? 'bg-red-700 text-white border-red-700 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-red-400'}`}
             >
               House of Representatives ({reps.length || 435})
@@ -26522,7 +26527,7 @@ function App() {
           {/* Party filter pills */}
           <div className="flex flex-wrap gap-2 mb-6">
             <button
-              onClick={() => setUsaPartyFilter('All')}
+              onClick={() => { setUsaPartyFilter('All'); setUsaPageLimit(50); }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${usaPartyFilter === 'All' ? 'bg-gray-700 text-white border-gray-700 shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
             >
               All
@@ -26530,7 +26535,7 @@ function App() {
             {US_PARTIES.map(party => (
               <button
                 key={party}
-                onClick={() => setUsaPartyFilter(usaPartyFilter === party ? 'All' : party)}
+                onClick={() => { setUsaPartyFilter(usaPartyFilter === party ? 'All' : party); setUsaPageLimit(50); }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${usaPartyFilter === party ? 'text-white shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
                 style={usaPartyFilter === party ? { backgroundColor: getPartyColor(party), borderColor: getPartyColor(party) } : {}}
               >
@@ -26546,7 +26551,7 @@ function App() {
             <input
               type="text"
               value={usaSearch}
-              onChange={e => setUsaSearch(e.target.value)}
+              onChange={e => { setUsaSearch(e.target.value); setUsaPageLimit(50); }}
               placeholder={`Search ${usaChamber === 'Senate' ? 'senators' : 'representatives'} by name, state, or district…`}
               className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm"
             />
@@ -26554,22 +26559,31 @@ function App() {
 
           {/* Results count */}
           <p className="text-sm text-gray-500 mb-4">
-            Showing {filtered.length} of {sourceData.length} {usaChamber === 'Senate' ? 'senators' : 'representatives'}
+            Showing {Math.min(usaPageLimit, filtered.length)} of {filtered.length} {usaChamber === 'Senate' ? 'senators' : 'representatives'}
             {usaPartyFilter !== 'All' && <span> · <span className="font-semibold" style={{ color: getPartyColor(usaPartyFilter) }}>{usaPartyFilter}</span></span>}
           </p>
 
           {/* Loading */}
-          {loading && (
+          {congressLoading && (
             <div className="text-center py-16">
               <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4" />
               <p className="text-gray-500 text-sm">Loading members…</p>
             </div>
           )}
 
+          {/* Error */}
+          {congressError && !congressLoading && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center mb-6">
+              <p className="text-red-700 font-semibold mb-1">Failed to load members</p>
+              <p className="text-red-500 text-sm">{congressError}</p>
+              <button onClick={fetchCongressMembers} className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700">Retry</button>
+            </div>
+          )}
+
           {/* Member cards */}
-          {!loading && (
+          {!congressLoading && !congressError && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filtered.map((member, i) => {
+              {filtered.slice(0, usaPageLimit).map((member, i) => {
                 const _usaVcId = toVoteId('congress', member.name);
                 const support = getVC(_usaVcId, 'support');
                 const oppose = getVC(_usaVcId, 'oppose');
@@ -26653,11 +26667,23 @@ function App() {
             </div>
           )}
 
-          {!loading && filtered.length === 0 && (
+          {!congressLoading && !congressError && filtered.length === 0 && (
             <div className="text-center py-16 text-gray-400">
               <span className="text-5xl mb-4 block">🏛️</span>
               <p className="font-semibold">No members found</p>
               <p className="text-sm mt-1">Try adjusting your search or filter</p>
+            </div>
+          )}
+
+          {/* Load More */}
+          {!congressLoading && !congressError && filtered.length > usaPageLimit && (
+            <div className="text-center mt-8">
+              <button
+                onClick={() => setUsaPageLimit(prev => prev + 50)}
+                className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 shadow-md transition-all"
+              >
+                Load More ({filtered.length - usaPageLimit} remaining)
+              </button>
             </div>
           )}
 
