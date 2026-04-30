@@ -224,12 +224,14 @@ const customStyles = `
   }
 
   .panel-section-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
-    color: #9ca3af;
+    color: #6b7280;
     margin-bottom: 0.5rem;
+    padding-left: 0.625rem;
+    border-left: 3px solid #3b82f6;
   }
 
   @keyframes onboardSlideIn {
@@ -23300,7 +23302,7 @@ function App() {
                 const bioText = liveBio?.bio || liveBio?.biography || member.bio;
                 if (!bioText && !isLoadingBio) return null;
                 return (
-                  <section>
+                  <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                     <p className="panel-section-label flex items-center gap-2">
                       Biography
                       {isLoadingBio && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
@@ -23333,7 +23335,7 @@ function App() {
                 const fallback = member.committees || [];
                 if (!hasLive && !isLoadingCom && !fallback.length) return null;
                 return (
-                  <section>
+                  <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                     <p className="panel-section-label flex items-center gap-2">
                       Committee Assignments
                       {isLoadingCom && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
@@ -23453,7 +23455,7 @@ function App() {
                 if (!hasLiveExp && !isLoadingExp && !fallbackExp) return null;
                 const fmtExp = (r) => { const sym = { CAD: 'CA$', USD: '$', GBP: '£', AUD: 'A$' }; return `${sym[r.currency] || r.currency}${Number(r.amountLocal || 0).toLocaleString()}`; };
                 return (
-                  <section>
+                  <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                     <p className="panel-section-label flex items-center gap-2">
                       Office Expense Reports
                       {isLoadingExp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
@@ -23520,7 +23522,7 @@ function App() {
               </section>
 
               {/* LOBBYING */}
-              <section>
+              <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                 <div className="flex items-center gap-2 mb-2">
                   <p className="panel-section-label" style={{ marginBottom: 0 }}>Lobbying Activity</p>
                   {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
@@ -27654,67 +27656,72 @@ function App() {
     const partyMPs = getPartyMPs();
 
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <button
-              onClick={() => {
-                if (isUSA) {
-                  setSelectedParty(null);
-                  setView('parties');
-                } else {
-                  setSelectedParty(null);
-                  setCaChamber('House');
-                  setView('ca-parliament');
-                }
-              }}
-              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
-            >
-              <span className="sm:hidden">← Back</span>
-              <span className="hidden sm:inline">{isUSA ? '← Back to Parties' : '← Back to MPs'}</span>
-            </button>
-            
-            <h1 className="text-2xl font-bold text-gray-800">{selectedParty?.name}</h1>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50 p-4 sm:p-8 animate-fade-in">
+        <div className="max-w-6xl mx-auto">
+          <button
+            onClick={() => {
+              if (isUSA) {
+                setSelectedParty(null);
+                setView('parties');
+              } else {
+                setSelectedParty(null);
+                setCaChamber('House');
+                setView('ca-parliament');
+              }
+            }}
+            className="mb-4 sm:mb-6 button-primary text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium text-sm sm:text-base shadow-elegant"
+          >
+            ← Back
+          </button>
 
-            <div className="w-20"></div>
+          {/* Header */}
+          <div className="mb-6 animate-slide-in">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">🏛️</span>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 text-shadow">
+                  {isUSA ? (selectedChamber ? `U.S. ${selectedChamber}` : 'U.S. Congress') : 'Parliament'}
+                </h1>
+                <p className="text-gray-600 text-base mt-0.5">{selectedParty?.name}</p>
+              </div>
+            </div>
+            <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-red-600 mt-3 rounded-full" />
           </div>
-        </div>
 
-        <div className="max-w-7xl mx-auto px-4 py-8">
           {loading && (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              <p className="mt-4 text-gray-600">Loading party members...</p>
+            <div className="text-center py-16">
+              <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4"></div>
+              <p className="text-gray-500 text-sm">Loading members…</p>
             </div>
           )}
 
           {!loading && partyMPs.length > 0 && (
             <>
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Search className="w-5 h-5 text-blue-600" />
-                  <h2 className="text-lg font-bold text-gray-800">Search Members</h2>
-                </div>
-
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search by name or riding..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  )}
-                </div>
+              {/* Search */}
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder={isUSA ? 'Search by name, state, or district…' : 'Search by name or riding…'}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                )}
               </div>
+
+              {/* Results count */}
+              <p className="text-sm text-gray-500 mb-4">
+                Showing {partyMPs.length} member{partyMPs.length !== 1 ? 's' : ''}
+                {selectedParty && <span> · <span className="font-semibold" style={{ color: getPartyColor(selectedParty.name) }}>{selectedParty.name}</span></span>}
+              </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {partyMPs.map((mp, index) => (
@@ -27728,84 +27735,90 @@ function App() {
                         setView('member-detail');
                       }
                     }}
-                    className="relative bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
+                    className="relative bg-white rounded-xl shadow-md p-6 cursor-pointer border-2 border-transparent hover:border-blue-500 hover:shadow-xl transition-all"
                   >
                     <button onClick={(e) => handleShare(e, { id: mp.name, title: mp.name, text: `📊 ${mp.name} (${mp.party}, ${mp.state || mp.province || ''}) - ${mp.yearsInOffice} years in office. Support: ${mp.supportVotes} Oppose: ${mp.opposeVotes} - civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === mp.name ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === mp.name ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
-                    <div style={{backgroundColor: getPartyColor(mp.party)}} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4">
-                      {mp.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+
+                    {/* Avatar */}
+                    <div style={{ backgroundColor: getPartyColor(mp.party) }} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4">
+                      {mp.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                     </div>
-                    
-                    <h3 className="text-xl font-bold text-gray-800 mb-3">{mp.name}</h3>
-                    
-                    {getRoleBadge(mp) && (
-                      <div className="mb-3">
-                        {getRoleBadge(mp)}
-                      </div>
-                    )}
+
+                    <h3 className="text-xl font-bold text-gray-800 mb-1">{mp.name}</h3>
+
+                    {getRoleBadge(mp) && <div className="mb-2">{getRoleBadge(mp)}</div>}
+
+                    {/* Party badge */}
+                    <div className="mb-3">
+                      <span style={{ backgroundColor: getPartyColor(mp.party) }} className="text-white text-xs px-2.5 py-1 rounded-full font-semibold">
+                        {mp.party}
+                      </span>
+                    </div>
 
                     {mp.portfolio && (
-                      <p className="text-sm text-gray-600 mb-3 italic">{mp.portfolio}</p>
+                      <p className="text-xs text-gray-500 italic mb-2 truncate">{mp.portfolio}</p>
                     )}
-                    
+
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2 text-gray-600">
-                        <MapPin className="w-4 h-4" />
-                        <span className="truncate">{mp.riding}</span>
+                        <Globe className="w-4 h-4 flex-shrink-0" />
+                        <span>{mp.state || mp.province}</span>
                       </div>
-                      
                       <div className="flex items-center gap-2 text-gray-600">
-                        <Globe className="w-4 h-4" />
-                        <span>{mp.province}</span>
+                        <MapPin className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate">{mp.district === 'Senator' ? 'U.S. Senator' : (mp.district || mp.riding || 'Representative')}</span>
                       </div>
-
-                      {mp.expenses && (
-                        <div className="flex items-center gap-2 text-gray-600 pt-2 border-t">
-                          <DollarSign className="w-4 h-4" />
-                          <span>{formatCurrency(mp.expenses.total)} expenses</span>
-                        </div>
-                      )}
-
-                      {mp.lobbying && (
+                      {mp.yearsInOffice !== undefined && (
                         <div className="flex items-center gap-2 text-gray-600">
-                          <Building2 className="w-4 h-4" />
-                          <span>{formatCurrency(mp.lobbying.totalValue)} lobbying</span>
+                          <Calendar className="w-4 h-4 flex-shrink-0" />
+                          <span>{mp.yearsInOffice} {mp.yearsInOffice === 1 ? 'year' : 'years'} in office</span>
                         </div>
                       )}
+                    </div>
 
-                      {mp.supportVotes !== undefined && (
-                        <div className="flex items-center gap-2 pt-2 border-t flex-wrap" onClick={e => e.stopPropagation()}>
-                          {locInfoBtn()}
-                          <button
-                            onClick={() => requireRegion(() => voteCongressMember(mp.name, 'support'))}
-                            className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${mp.userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
-                          >
-                            <ThumbsUp className="w-3 h-3" />
-                            <span>{mp.supportVotes.toLocaleString()}</span>
-                          </button>
-                          <button
-                            onClick={() => requireRegion(() => voteCongressMember(mp.name, 'concerned'))}
-                            className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${mp.userVote === 'concerned' ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400' : 'text-orange-600 hover:bg-orange-50'}`}
-                          >
-                            <AlertCircle className="w-3 h-3" />
-                            <span>{(mp.concernedVotes ?? 0).toLocaleString()}</span>
-                          </button>
-                          <button
-                            onClick={() => requireRegion(() => voteCongressMember(mp.name, 'oppose'))}
-                            className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${mp.userVote === 'oppose' ? 'bg-red-100 text-red-700 ring-1 ring-red-400' : 'text-red-600 hover:bg-red-50'}`}
-                          >
-                            <ThumbsDown className="w-3 h-3" />
-                            <span>{mp.opposeVotes.toLocaleString()}</span>
-                          </button>
-                        </div>
-                      )}
+                    {/* View profile link */}
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <span className="text-blue-600 text-sm font-medium">View Profile →</span>
                     </div>
-                    
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <span className="text-blue-600 text-sm font-medium">View Full Profile →</span>
-                    </div>
+
+                    {/* Vote buttons */}
+                    {mp.supportVotes !== undefined && (
+                      <div className="flex items-center gap-2 mt-3 flex-wrap" onClick={e => e.stopPropagation()}>
+                        {locInfoBtn()}
+                        <button
+                          onClick={() => requireRegion(() => voteCongressMember(mp.name, 'support'))}
+                          className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${mp.userVote === 'support' ? 'bg-green-100 text-green-700 ring-1 ring-green-400' : 'text-green-600 hover:bg-green-50'}`}
+                        >
+                          <ThumbsUp className="w-3 h-3" />
+                          <span>{mp.supportVotes.toLocaleString()}</span>
+                        </button>
+                        <button
+                          onClick={() => requireRegion(() => voteCongressMember(mp.name, 'concerned'))}
+                          className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${mp.userVote === 'concerned' ? 'bg-orange-100 text-orange-700 ring-1 ring-orange-400' : 'text-orange-600 hover:bg-orange-50'}`}
+                        >
+                          <AlertCircle className="w-3 h-3" />
+                          <span>{(mp.concernedVotes ?? 0).toLocaleString()}</span>
+                        </button>
+                        <button
+                          onClick={() => requireRegion(() => voteCongressMember(mp.name, 'oppose'))}
+                          className={`flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold transition-colors ${mp.userVote === 'oppose' ? 'bg-red-100 text-red-700 ring-1 ring-red-400' : 'text-red-600 hover:bg-red-50'}`}
+                        >
+                          <ThumbsDown className="w-3 h-3" />
+                          <span>{mp.opposeVotes.toLocaleString()}</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
+
+              {partyMPs.length === 0 && (
+                <div className="text-center py-16 text-gray-400">
+                  <span className="text-5xl mb-4 block">🏛️</span>
+                  <p className="font-semibold">No members found</p>
+                  <p className="text-sm mt-1">Try adjusting your search</p>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -32953,8 +32966,8 @@ function App() {
           </div>
 
           {/* ── SCROLLABLE CONTENT ── */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-6 space-y-7">
+          <div className="flex-1 overflow-y-auto bg-gray-50">
+            <div className="p-4 sm:p-6 space-y-4">
 
               {/* BIO */}
               {(() => {
@@ -33036,7 +33049,7 @@ function App() {
 
               {/* CONTACT */}
               {(member.email || member.phone || member.constituencyPhone || member.officeAddress) && (
-                <section>
+                <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                   <p className="panel-section-label">Contact Information</p>
                   <div className="space-y-2">
                     {member.email && (
@@ -33120,7 +33133,7 @@ function App() {
                 const barColor = pct >= 80 ? '#22c55e' : pct >= 60 ? '#eab308' : '#ef4444';
                 const pctColor = pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-yellow-600' : 'text-red-600';
                 return (
-                  <section>
+                  <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                     <div className="flex items-center gap-2 mb-2">
                       <p className="panel-section-label" style={{ marginBottom: 0 }}>Attendance Record</p>
                       {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
@@ -33215,7 +33228,7 @@ function App() {
                   : (member.votingHistory || []);
                 if (!displayVotes.length && !isLoadingVotes) return null;
                 return (
-                  <section>
+                  <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                     <div className="flex items-center gap-2 mb-2">
                       <p className="panel-section-label" style={{ marginBottom: 0 }}>
                         Voting Record &mdash; {displayVotes.length} recent vote{displayVotes.length !== 1 ? 's' : ''}
@@ -33252,7 +33265,7 @@ function App() {
                 const isLoadingTrades = !!memberStockTradeLoading[member.name];
                 const hasLiveTrades = liveTrades && liveTrades.length > 0;
                 return (
-                  <section>
+                  <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                     <div className="flex items-center gap-2 mb-2">
                       <p className="panel-section-label" style={{ marginBottom: 0 }}>Stock Trading Activity</p>
                       {isLoadingTrades && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
@@ -33295,7 +33308,7 @@ function App() {
                 const isLiveDisc = !!liveDisc;
                 const isLoadingDisc = !!memberDisclosureLoading[member.name];
                 return (
-                  <section>
+                  <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                     <div className="flex items-center gap-2 mb-2">
                       <p className="panel-section-label" style={{ marginBottom: 0 }}>Financial Disclosure</p>
                       {isLoadingDisc && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
@@ -33349,7 +33362,7 @@ function App() {
               </section>
 
               {/* CORPORATE CONNECTIONS */}
-              <section>
+              <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                 <div className="flex items-center gap-2 mb-2">
                   <p className="panel-section-label" style={{ marginBottom: 0 }}>Corporate Connections</p>
                   {!!memberCorporateLoading[member.name] && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
