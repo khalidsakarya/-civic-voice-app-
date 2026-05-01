@@ -3419,6 +3419,8 @@ function App() {
         if (firstDoc.name && typeof firstDoc.name === 'object') {
           console.log('[Congress] name object keys:', Object.keys(firstDoc.name));
         }
+        const senateDoc = snap.docs.find(d => d.data().chamber === 'Senate');
+        if (senateDoc) console.log('[Congress] First Senate doc raw fields:', JSON.stringify(senateDoc.data()));
       }
       const savedVotes = JSON.parse(localStorage.getItem('cvCongressVotes') || '{}');
       const docs = snap.docs.map(d => {
@@ -3433,9 +3435,12 @@ function App() {
         return {
           name: resolvedName,
           state: data.state || '',
-          district: data.district || data.chamber || '',
+          chamber: data.chamber || '',
+          district: data.district || '',
           party: data.party || '',
           yearsInOffice: data.years_in_office ?? data.yearsInOffice ?? 0,
+          senatorClass: data.class || data.senator_class || data.senatorClass || '',
+          termEnd: data.term_end || data.termEnd || data.term_end_year || '',
           bioguide_id: data.bioguide_id || data.bioguideId || '',
           email: data.email || '',
           phone: data.phone || '',
@@ -26482,8 +26487,8 @@ function App() {
 
   // Render US Congress Chamber Selection (House vs Senate)
   const renderCongressParliament = () => {
-    const senators = congressMembers.filter(m => m.district === 'Senator');
-    const reps = congressMembers.filter(m => m.district !== 'Senator');
+    const senators = congressMembers.filter(m => m.chamber === 'Senate' || m.district === 'Senator');
+    const reps = congressMembers.filter(m => m.chamber === 'House' || (m.chamber !== 'Senate' && m.district !== 'Senator'));
     const sourceData = usaChamber === 'Senate' ? senators : reps;
 
     const US_PARTIES = [...new Set(congressMembers.map(m => m.party))].sort();
@@ -26605,7 +26610,7 @@ function App() {
                 const userVote = member.userVote || null;
                 const initials = (member.name || '').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                 const color = getPartyColor(member.party);
-                const isSenator = member.district === 'Senator';
+                const isSenator = member.chamber === 'Senate' || member.district === 'Senator';
                 return (
                   <div
                     key={i}
@@ -26637,7 +26642,19 @@ function App() {
                         <MapPin className="w-4 h-4 flex-shrink-0" />
                         <span>{isSenator ? 'U.S. Senator' : member.district}</span>
                       </div>
-                      {member.yearsInOffice !== undefined && (
+                      {isSenator && member.senatorClass && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <span className="w-4 h-4 flex-shrink-0 text-center text-xs font-bold text-gray-400">C</span>
+                          <span>Class {member.senatorClass}</span>
+                        </div>
+                      )}
+                      {isSenator && member.termEnd && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Calendar className="w-4 h-4 flex-shrink-0" />
+                          <span>Term ends {member.termEnd}</span>
+                        </div>
+                      )}
+                      {!isSenator && member.yearsInOffice !== undefined && (
                         <div className="flex items-center gap-2 text-gray-600">
                           <Calendar className="w-4 h-4 flex-shrink-0" />
                           <span>{member.yearsInOffice} {member.yearsInOffice === 1 ? 'year' : 'years'} in office</span>
