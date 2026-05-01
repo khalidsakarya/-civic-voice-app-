@@ -3412,12 +3412,16 @@ function App() {
     setCongressError(null);
     try {
       const snap = await getDocs(collection(db, 'congress_members'));
+      if (snap.docs.length > 0) {
+        console.log('[Congress] First doc raw fields:', JSON.stringify(snap.docs[0].data()));
+      }
       const savedVotes = JSON.parse(localStorage.getItem('cvCongressVotes') || '{}');
       const docs = snap.docs.map(d => {
         const data = d.data();
-        const saved = savedVotes[data.name] || {};
+        const resolvedName = String(data.name || data.full_name || (data.first_name ? data.first_name + ' ' + (data.last_name || '') : '') || '').trim();
+        const saved = savedVotes[resolvedName] || {};
         return {
-          name: data.name || '',
+          name: resolvedName,
           state: data.state || '',
           district: data.district || data.chamber || '',
           party: data.party || '',
