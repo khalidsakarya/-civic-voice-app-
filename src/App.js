@@ -3413,12 +3413,22 @@ function App() {
     try {
       const snap = await getDocs(collection(db, 'congress_members'));
       if (snap.docs.length > 0) {
-        console.log('[Congress] First doc raw fields:', JSON.stringify(snap.docs[0].data()));
+        const firstDoc = snap.docs[0].data();
+        console.log('[Congress] First doc raw fields:', JSON.stringify(firstDoc));
+        console.log('[Congress] name field value:', firstDoc.name, '| type:', typeof firstDoc.name);
+        if (firstDoc.name && typeof firstDoc.name === 'object') {
+          console.log('[Congress] name object keys:', Object.keys(firstDoc.name));
+        }
       }
       const savedVotes = JSON.parse(localStorage.getItem('cvCongressVotes') || '{}');
       const docs = snap.docs.map(d => {
         const data = d.data();
-        const resolvedName = String(data.name || data.full_name || (data.first_name ? data.first_name + ' ' + (data.last_name || '') : '') || '').trim();
+        let resolvedName = '';
+        if (data.name && typeof data.name === 'object') {
+          resolvedName = ((data.name.first || data.name.firstName || '') + ' ' + (data.name.last || data.name.lastName || '')).trim();
+        } else {
+          resolvedName = String(data.name || data.full_name || (data.first_name ? data.first_name + ' ' + (data.last_name || '') : '') || '').trim();
+        }
         const saved = savedVotes[resolvedName] || {};
         return {
           name: resolvedName,
