@@ -3427,7 +3427,7 @@ function App() {
         const data = d.data();
         let resolvedName = '';
         if (data.name && typeof data.name === 'object') {
-          resolvedName = ((data.name.first || data.name.firstName || '') + ' ' + (data.name.last || data.name.lastName || '')).trim();
+          resolvedName = (data.name.official || ((data.name.first || '') + ' ' + (data.name.last || '')).trim() || '').trim();
         } else {
           resolvedName = String(data.name || data.full_name || (data.first_name ? data.first_name + ' ' + (data.last_name || '') : '') || '').trim();
         }
