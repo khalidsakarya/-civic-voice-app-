@@ -26491,7 +26491,8 @@ function App() {
     const reps = congressMembers.filter(m => (m.chamber || '').toLowerCase() === 'house');
     const sourceData = usaChamber === 'Senate' ? senators : reps;
 
-    const US_PARTIES = [...new Set(congressMembers.map(m => m.party))].sort();
+    const US_PARTIES = [...new Set(congressMembers.map(m => m.party))].filter(Boolean).sort();
+    const PARTY_LABELS = { R: 'Republican', D: 'Democrat', I: 'Independent' };
 
     let filtered = sourceData;
     if (usaPartyFilter !== 'All') {
@@ -26559,7 +26560,7 @@ function App() {
                 style={usaPartyFilter === party ? { backgroundColor: getPartyColor(party), borderColor: getPartyColor(party) } : {}}
               >
                 <span style={{ color: usaPartyFilter === party ? 'white' : getPartyColor(party) }} className="w-2 h-2 rounded-full inline-block bg-current" />
-                {party}
+                {PARTY_LABELS[party] || party}
               </button>
             ))}
           </div>
@@ -26579,7 +26580,7 @@ function App() {
           {/* Results count */}
           <p className="text-sm text-gray-500 mb-4">
             Showing {Math.min(usaPageLimit, filtered.length)} of {filtered.length} {usaChamber === 'Senate' ? 'senators' : 'representatives'}
-            {usaPartyFilter !== 'All' && <span> · <span className="font-semibold" style={{ color: getPartyColor(usaPartyFilter) }}>{usaPartyFilter}</span></span>}
+            {usaPartyFilter !== 'All' && <span> · <span className="font-semibold" style={{ color: getPartyColor(usaPartyFilter) }}>{PARTY_LABELS[usaPartyFilter] || usaPartyFilter}</span></span>}
           </p>
 
           {/* Loading */}
