@@ -5574,10 +5574,10 @@ function App() {
     'CSG': '#D97706',
     'PSG': '#7C3AED',
     'Non-affiliated': '#6B7280',
-    // US parties
-    'Democrat': '#2563EB',
-    'Republican': '#DC2626',
-    'Independent': '#7C3AED',
+    // US parties (full names and short codes)
+    'Democrat': '#2563EB',   'D': '#2563EB',
+    'Republican': '#DC2626', 'R': '#DC2626',
+    'Independent': '#7C3AED','I': '#7C3AED',
     // Australian parties
     'Australian Labor Party': '#CC0000',
     'Liberal Party': '#1B5BA5',
@@ -26615,8 +26615,8 @@ function App() {
                 return (
                   <div
                     key={i}
-                    className="relative bg-white rounded-xl shadow-md p-6 border-2 hover:shadow-xl transition-all cursor-pointer"
-                    style={{ borderColor: color }}
+                    className="relative bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition-all cursor-pointer"
+                    style={{ borderLeft: `4px solid ${color}` }}
                     onClick={() => { setSelectedMember(member); setShowMemberPanel(true); }}
                   >
                     {/* Avatar */}
