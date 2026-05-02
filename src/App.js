@@ -26615,7 +26615,8 @@ function App() {
                 return (
                   <div
                     key={i}
-                    className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-blue-500 hover:shadow-xl transition-all cursor-pointer"
+                    className="relative bg-white rounded-xl shadow-md p-6 border-2 hover:shadow-xl transition-all cursor-pointer"
+                    style={{ borderColor: color }}
                     onClick={() => { setSelectedMember(member); setShowMemberPanel(true); }}
                   >
                     {/* Avatar */}
@@ -26630,7 +26631,7 @@ function App() {
                     {/* Party badge */}
                     <div className="mb-3">
                       <span style={{ backgroundColor: color }} className="text-white text-xs px-2.5 py-1 rounded-full font-semibold">
-                        {member.party}
+                        {PARTY_LABELS[member.party] || member.party}
                       </span>
                     </div>
 
