@@ -26487,8 +26487,8 @@ function App() {
 
   // Render US Congress Chamber Selection (House vs Senate)
   const renderCongressParliament = () => {
-    const senators = congressMembers.filter(m => m.chamber === 'Senate' || m.district === 'Senator');
-    const reps = congressMembers.filter(m => m.chamber === 'House' || (m.chamber !== 'Senate' && m.district !== 'Senator'));
+    const senators = congressMembers.filter(m => (m.chamber || '').toLowerCase() === 'senate');
+    const reps = congressMembers.filter(m => (m.chamber || '').toLowerCase() === 'house');
     const sourceData = usaChamber === 'Senate' ? senators : reps;
 
     const US_PARTIES = [...new Set(congressMembers.map(m => m.party))].sort();
@@ -26610,7 +26610,7 @@ function App() {
                 const userVote = member.userVote || null;
                 const initials = (member.name || '').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                 const color = getPartyColor(member.party);
-                const isSenator = member.chamber === 'Senate' || member.district === 'Senator';
+                const isSenator = (member.chamber || '').toLowerCase() === 'senate';
                 return (
                   <div
                     key={i}
