@@ -2932,19 +2932,38 @@ function App() {
   // Fetch US Congress stock trades from Firestore when panel opens
   useEffect(() => {
     if (!showMemberPanel || !selectedMember?.name) return;
-    const name = selectedMember.name;
-    if (memberStockTradeData[name] !== undefined || memberStockTradeLoading[name]) return;
-    setMemberStockTradeLoading(prev => ({ ...prev, [name]: true }));
+    const member = selectedMember;
+    const key = member.name;
+    if (memberStockTradeData[key] !== undefined || memberStockTradeLoading[key]) return;
+    setMemberStockTradeLoading(prev => ({ ...prev, [key]: true }));
     (async () => {
       try {
-        const q = query(collection(db, 'member_stock_trades'), where('member_name', '==', name));
-        const snap = await getDocs(q);
-        setMemberStockTradeData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
+        let docs = [];
+        // 1. bioguide_id
+        if (member.bioguide_id) {
+          const snap = await getDocs(query(collection(db, 'member_stock_trades'), where('bioguide_id', '==', member.bioguide_id)));
+          docs = snap.docs.map(d => d.data());
+        }
+        // 2. "First Last" format
+        if (docs.length === 0) {
+          const snap = await getDocs(query(collection(db, 'member_stock_trades'), where('member_name', '==', key)));
+          docs = snap.docs.map(d => d.data());
+        }
+        // 3. "Last, First" format
+        if (docs.length === 0) {
+          const parts = key.trim().split(/\s+/);
+          if (parts.length >= 2) {
+            const lastFirst = `${parts[parts.length - 1]}, ${parts.slice(0, -1).join(' ')}`;
+            const snap = await getDocs(query(collection(db, 'member_stock_trades'), where('member_name', '==', lastFirst)));
+            docs = snap.docs.map(d => d.data());
+          }
+        }
+        setMemberStockTradeData(prev => ({ ...prev, [key]: docs }));
       } catch (err) {
         console.warn('[LiveData] member_stock_trades fetch failed:', err.message);
-        setMemberStockTradeData(prev => ({ ...prev, [name]: [] }));
+        setMemberStockTradeData(prev => ({ ...prev, [key]: [] }));
       } finally {
-        setMemberStockTradeLoading(prev => ({ ...prev, [name]: false }));
+        setMemberStockTradeLoading(prev => ({ ...prev, [key]: false }));
       }
     })();
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
