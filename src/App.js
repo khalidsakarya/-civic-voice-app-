@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import app, { db } from './firebase';
-import { collection, getDocs, getDoc, query, where, addDoc, setDoc, doc, increment, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, getDoc, query, where, addDoc, setDoc, doc, increment, serverTimestamp, getCountFromServer } from 'firebase/firestore';
 import { logEvent } from './analytics';
-import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell } from 'lucide-react';
+import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell, Loader2 } from 'lucide-react';
 import { BarChart, Bar, AreaChart, Area, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './App.css';
 
@@ -740,12 +740,13 @@ const UK_DEPT_HEADS_QUERY_NAMES = {
 };
 
 // --- EXECUTIVE ORDERS DATA -----------------------------------------------
+// Curated in-app sample — NOT a live Federal Register feed. UI labels it as such.
 // Source: Federal Register API  https://www.federalregister.gov/api/v1/documents
 // Live endpoint: GET /api/v1/documents?conditions[type]=PRESDOCU&conditions[presidential_document_type]=executive_order&per_page=10&order=newest
 // Field mapping: executive_order_number->number, document_number->docNumber,
 //   signing_date->signingDate, publication_date->publicationDate, abstract->description,
 //   html_url->sourceUrl  (summary/pros/cons are app-added editorial content)
-// To replace with live data: fetch the endpoint, map fields, merge with editorial content
+// TODO: migrate to scheduled fetch + Firestore; president identity → `leaders` or `us_executive` snapshot doc.
 const executiveOrders = [
   {
     number: 'EO 14160', docNumber: '2025-01998', title: 'Protecting the Meaning and Value of American Citizenship',
@@ -849,7 +850,8 @@ const executiveOrders = [
   },
 ];
 
-// --- BILLS AWAITING SIGNATURE DATA ------------------------------------------
+// --- BILLS AWAITING PRESIDENTIAL ACTION (EDITORIAL SAMPLE) -------------------
+// Tracked in-app sample — NOT a live Congress.gov feed. UI labels it as such.
 // Source: Congress.gov API  https://api.congress.gov/v3
 // Live endpoint: GET /v3/bill/119?sort=updateDate+desc&limit=20&api_key=YOUR_KEY
 // Field mapping: type+number->number, type->billType, number->billNumber,
@@ -906,10 +908,10 @@ const awaitingBills = [
   {
     id: 'HR485', billType: 'hr', billNumber: '485', congress: '119', number: 'H.R. 485', title: 'Protection of Women and Girls in Sports Act',
     passedDate: 'January 14, 2025', actionDate: '2025-01-14', chamber: 'House',
-    status: 'Passed Both Chambers — Awaiting Signature', statusCode: 'PRES_ACTION', statusColor: 'green',
+    status: 'Passed Both Chambers — Awaiting presidential action', statusCode: 'PRES_ACTION', statusColor: 'green',
     sourceUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/485',
     description: 'Prohibits transgender athletes who were assigned male at birth from competing in women\'s sports categories at schools and colleges that receive federal funding.',
-    summary: 'This bill amends Title IX of the Education Amendments of 1972 to define "sex" as biological sex for the purposes of athletic programs. Schools receiving federal funding would be prohibited from allowing transgender women (born male) to compete in female sports categories. Compliance would be enforced through withdrawal of federal funding. The bill passed both chambers largely along party lines and awaits presidential signature.',
+    summary: 'This bill amends Title IX of the Education Amendments of 1972 to define "sex" as biological sex for the purposes of athletic programs. Schools receiving federal funding would be prohibited from allowing transgender women (born male) to compete in female sports categories. Compliance would be enforced through withdrawal of federal funding. The bill passed both chambers largely along party lines and is with the President for action (signature, veto, or presentment outcomes per the Constitution).',
     pros: ['Protects competitive fairness for biological female athletes in school sports', 'Provides clear federal guidance that schools can follow consistently', 'Addresses concerns about physical differences affecting competition outcomes'],
     cons: ['Excludes transgender girls who have transitioned early and may have no physiological advantage', 'Major medical and sports organizations support case-by-case evaluation rather than blanket bans', 'Targets a very small population (0.6% of youth identify as transgender)', 'Could expose LGBTQ+ youth to increased bullying and mental health harm'],
     support: 0, oppose: 0,
@@ -948,6 +950,82 @@ const awaitingBills = [
     support: 0, oppose: 0,
   },
 ];
+
+/** Merge key for editorial rows bundled with live Congress.gov desk scan */
+const editorialPendingPresidentBillByKey = new Map(
+  awaitingBills.map((b) => [`${b.billType}-${b.billNumber}`, b])
+);
+
+/** Default US Congress number for Congress.gov (Jan 3 rollover). */
+function getCurrentUsCongressNumber(d = new Date()) {
+  const y = d.getFullYear();
+  const base = 117 + Math.floor((y - 2021) / 2);
+  const jan3 = new Date(y, 0, 3);
+  return d < jan3 ? base - 1 : base;
+}
+
+function formatActionDateUs(iso) {
+  if (!iso || typeof iso !== 'string') return '—';
+  const t = Date.parse(`${iso}T12:00:00`);
+  if (Number.isNaN(t)) return iso;
+  return new Date(t).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function congressOrdinalLabel(congress) {
+  const c = parseInt(String(congress), 10);
+  if (!Number.isFinite(c)) return 'U.S. Congress';
+  const v = c % 100;
+  let suf = 'th';
+  if (v < 11 || v > 13) {
+    const m = c % 10;
+    if (m === 1) suf = 'st';
+    else if (m === 2) suf = 'nd';
+    else if (m === 3) suf = 'rd';
+  }
+  return `${c}${suf} Congress`;
+}
+
+/** Map /api/congress-pending-president row + optional editorial into president-bill card shape */
+function enrichPresidentDeskBillFromApi(row) {
+  const billType = (row.billType || '').toLowerCase();
+  const billNumber = String(row.billNumber ?? '');
+  const ed = editorialPendingPresidentBillByKey.get(`${billType}-${billNumber}`) || null;
+  const id =
+    billType === 'hr' ? `HR${billNumber}` :
+    billType === 's' ? `S${billNumber}` :
+    billType === 'hjres' ? `HJRES${billNumber}` :
+    billType === 'sjres' ? `SJRES${billNumber}` :
+    `${billType}${billNumber}`.toUpperCase();
+  const number =
+    billType === 'hr' ? `H.R. ${billNumber}` :
+    billType === 's' ? `S. ${billNumber}` :
+    billType === 'hjres' ? `H.J.Res. ${billNumber}` :
+    billType === 'sjres' ? `S.J.Res. ${billNumber}` :
+    `${billNumber}`;
+  const latest = row.latestActionText || '';
+  return {
+    id,
+    billType,
+    billNumber,
+    congress: String(row.congress ?? getCurrentUsCongressNumber()),
+    number,
+    title: row.title || 'Untitled measure',
+    passedDate: formatActionDateUs(row.actionDate),
+    actionDate: row.actionDate || '',
+    chamber: row.originChamber || '—',
+    status: latest.slice(0, 220) + (latest.length > 220 ? '…' : ''),
+    statusCode: 'LIVE_CONGRESS',
+    statusColor: 'green',
+    sourceUrl: row.sourceUrl || 'https://www.congress.gov/',
+    description: ed?.description || latest || 'See Congress.gov for full status and text.',
+    summary: ed?.summary || `${row.title || 'Bill'}\n\nLatest action (Congress.gov): ${latest || '—'}`,
+    pros: Array.isArray(ed?.pros) ? ed.pros : [],
+    cons: Array.isArray(ed?.cons) ? ed.cons : [],
+    support: typeof ed?.support === 'number' ? ed.support : 0,
+    oppose: typeof ed?.oppose === 'number' ? ed.oppose : 0,
+    liveFromCongressGov: true,
+  };
+}
 
 
 const SENATORS_DATA = [
@@ -1377,6 +1455,11 @@ function App() {
     const saved = localStorage.getItem('cvPresidentBillVotes');
     return saved ? JSON.parse(saved) : {};
   });
+  /** null = before first load for this visit; array = live or merged rows */
+  const [presidentDeskBills, setPresidentDeskBills] = useState(null);
+  const [presidentDeskBillsSource, setPresidentDeskBillsSource] = useState(null);
+  const [presidentDeskBillsLoading, setPresidentDeskBillsLoading] = useState(false);
+  const [presidentDeskBillsError, setPresidentDeskBillsError] = useState(null);
   const [eoVotes, setEoVotes] = useState(() => {
     const saved = localStorage.getItem('cvEOVotes');
     return saved ? JSON.parse(saved) : {};
@@ -2299,6 +2382,9 @@ function App() {
   const [leaderExecActionsLoading, setLeaderExecActionsLoading] = useState({});
   const [trumpCabinetData, setTrumpCabinetData] = useState(null);
   const [trumpCabinetLoading, setTrumpCabinetLoading] = useState(false);
+  /** US `department_heads` roster size for executive hub cards (Firestore-backed; null = not loaded). */
+  const [usCabinetRosterCount, setUsCabinetRosterCount] = useState(null);
+  const [usCabinetRosterLoading, setUsCabinetRosterLoading] = useState(false);
   const [carneyCabinetData, setCarneyCabinetData] = useState(null);
   const [carneyCabinetLoading, setCarneyCabinetLoading] = useState(false);
   const [carneyAdvisorsData, setCarneyAdvisorsData] = useState(null);
@@ -5553,13 +5639,16 @@ function App() {
     fetchDeptVotes(entry.country, deptName);
   }, [view, selectedMinistry, selectedDepartment, selectedUkDepartment, selectedAuDepartment]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch election data from Firestore when Election Tracker is open
+  // Fetch election data when Election Tracker is open, or prefetch US rows for executive-branch views
   useEffect(() => {
-    if (view !== 'election-tracker') return;
+    const usExecPrefetch =
+      selectedCountry?.type === 'usa' &&
+      ['categories', 'president-executive', 'president-detail'].includes(view);
+    if (view !== 'election-tracker' && !usExecPrefetch) return;
     const isUSA = selectedCountry?.type === 'usa';
     const isAU  = selectedCountry?.type === 'australia';
     const isUK  = selectedCountry?.type === 'uk';
-    const countryCode = isUSA ? 'US' : isAU ? 'AU' : isUK ? 'UK' : 'CA';
+    const countryCode = usExecPrefetch ? 'US' : (isUSA ? 'US' : isAU ? 'AU' : isUK ? 'UK' : 'CA');
     if (electionsData[countryCode] !== undefined || electionsLoading[countryCode]) return;
     setElectionsLoading(prev => ({ ...prev, [countryCode]: true }));
     (async () => {
@@ -5587,6 +5676,68 @@ function App() {
       }
     })();
   }, [view, selectedCountry]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // US cabinet roster count (department_heads) for categories / president hub — aligns UI with Firestore
+  useEffect(() => {
+    if (selectedCountry?.type !== 'usa') {
+      setUsCabinetRosterCount((c) => (c !== null ? null : c));
+      return;
+    }
+    if (!['categories', 'president-executive', 'president-detail'].includes(view)) return;
+    if (usCabinetRosterCount !== null || usCabinetRosterLoading) return;
+    setUsCabinetRosterLoading(true);
+    (async () => {
+      try {
+        const q = query(collection(db, 'department_heads'), where('jurisdiction', '==', 'US'));
+        const snap = await getCountFromServer(q);
+        setUsCabinetRosterCount(snap.data().count);
+      } catch (err) {
+        console.warn('[USCabinetRosterCount] fetch failed:', err.message);
+        setUsCabinetRosterCount(-1);
+      } finally {
+        setUsCabinetRosterLoading(false);
+      }
+    })();
+  }, [view, selectedCountry?.type]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Bills awaiting presidential action — live Congress.gov via /api (server holds CONGRESS_API_KEY). Fallback: curated sample + amber notice.
+  // Future: paginate + cache in Firestore (scheduled job) for deeper coverage and API quota.
+  useEffect(() => {
+    if (view !== 'bills-awaiting-signature') return undefined;
+    let cancelled = false;
+    const congress = getCurrentUsCongressNumber();
+    setPresidentDeskBills(null);
+    setPresidentDeskBillsSource(null);
+    setPresidentDeskBillsError(null);
+    setPresidentDeskBillsLoading(true);
+    (async () => {
+      try {
+        const res = await fetch(`/api/congress-pending-president?congress=${congress}`);
+        const data = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        if (!res.ok) {
+          setPresidentDeskBills(awaitingBills.map((b) => ({ ...b, liveFromCongressGov: false })));
+          setPresidentDeskBillsSource('sample');
+          setPresidentDeskBillsError(data.message || `Congress bills API returned ${res.status}. Using curated sample.`);
+          return;
+        }
+        const raw = Array.isArray(data.bills) ? data.bills : [];
+        const enriched = raw.map(enrichPresidentDeskBillFromApi);
+        setPresidentDeskBills(enriched);
+        setPresidentDeskBillsSource(data.source === 'live' ? 'live' : 'sample');
+        setPresidentDeskBillsError(data.source === 'live' ? null : (data.message || null));
+      } catch (err) {
+        if (cancelled) return;
+        console.warn('[PresidentDeskBills] fetch failed:', err.message);
+        setPresidentDeskBills(awaitingBills.map((b) => ({ ...b, liveFromCongressGov: false })));
+        setPresidentDeskBillsSource('sample');
+        setPresidentDeskBillsError('Could not load live list (network or missing /api route). Showing curated sample.');
+      } finally {
+        if (!cancelled) setPresidentDeskBillsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [view]);
 
   // Auto-fetch foreign aid data from Firestore when Waste Tracker opens
   useEffect(() => {
@@ -15114,12 +15265,17 @@ function App() {
               onClick={() => setView('president-executive')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
             >
-              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to President &amp; Executive Branch</span>
+              <span className="sm:hidden">← Back</span>              <span className="hidden sm:inline">← Back to President &amp; Executive Branch</span>
             </button>
           </div>
         </div>
 
         <div className="max-w-6xl mx-auto px-4 py-4 md:py-8">
+
+          <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-950 leading-relaxed">
+            <p className="font-semibold text-amber-900 mb-1">Editorial / illustrative profile</p>
+            <p>Biography, financial figures, attendance, and meeting counts below are <span className="font-medium">not verified live government data</span>. Treat as discussion scaffolding until this view reads from Firestore (<span className="font-medium">leaders</span> / curated executive snapshot) or another audited pipeline.</p>
+          </div>
 
           {/* Profile card */}
           <div className="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
@@ -19086,7 +19242,9 @@ function App() {
             <div className="flex items-center justify-between text-sm text-gray-500">
               <span>PM · Keir Starmer</span>
               <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Keir Starmer']?.length ?? 5}</span>
+                {(controversiesData['Keir Starmer']?.length ?? 0) > 0 && (
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Keir Starmer'].length}</span>
+                )}
                 <ChevronRight className="w-5 h-5" style={{ color: '#C8102E' }} />
               </div>
             </div>
@@ -25316,10 +25474,21 @@ function App() {
             ← Back
           </button>
 
-          <div className="mb-8 animate-slide-in">
+          <div className="mb-6 animate-slide-in">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">President &amp; Executive Branch</h1>
-            <p className="text-gray-600 text-base sm:text-lg">The White House, Cabinet &amp; Executive Branch leadership</p>
+            <p className="text-gray-600 text-base sm:text-lg">The White House, president profile, cabinet roster, and related navigation</p>
             <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
+          </div>
+
+          <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-800 leading-relaxed">
+            <p className="font-semibold text-slate-900 mb-1">Not a live intelligence feed</p>
+            <p className="text-slate-700">
+              The president line is an <span className="font-medium">editorial in-app label</span> until wired to Firestore (e.g. leaders / executive snapshot).
+              {usCabinetRosterCount != null && usCabinetRosterCount >= 0 && (
+                <span> Cabinet-related <span className="font-medium">department_heads</span> (US): <span className="font-medium">{usCabinetRosterCount}</span> record{usCabinetRosterCount === 1 ? '' : 's'}.</span>
+              )}
+              {' '}Executive orders and the <span className="font-medium">bills awaiting presidential action</span> entry below are <span className="font-medium">curated samples</span> with real document links — not exhaustive Federal Register or Congress.gov pulls.
+            </p>
           </div>
 
           {/* President Card */}
@@ -25332,8 +25501,8 @@ function App() {
                 DT
               </div>
               <div className="text-left">
-                <p className="font-bold text-gray-800 text-base">Donald J. Trump</p>
-                <p className="text-xs text-gray-500 mt-0.5">47th President of the United States · Republican · In office since January 20, 2025</p>
+                <p className="font-bold text-gray-800 text-base">Donald J. Trump <span className="text-[10px] font-normal text-amber-800 bg-amber-50 border border-amber-100 rounded px-1 py-0.5 align-middle">editorial</span></p>
+                <p className="text-xs text-gray-500 mt-0.5">47th President of the United States · Republican · In office since January 20, 2025 — verify against White House / NARA primary sources</p>
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -25350,8 +25519,8 @@ function App() {
                   <FileText className="w-5 h-5 text-red-600" />
                 </div>
                 <div className="text-left">
-                  <p className="font-bold text-gray-800 text-base">Recent Executive Orders</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{executiveOrders.length} executive orders signed in 2025</p>
+                  <p className="font-bold text-gray-800 text-base">Executive Orders <span className="text-[10px] font-semibold text-slate-500">(curated sample)</span></p>
+                  <p className="text-xs text-gray-500 mt-0.5">{executiveOrders.length} items in app dataset · each row links to Federal Register where noted — not a full EO feed</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -25359,7 +25528,7 @@ function App() {
 
           </div>
 
-          {/* Bills Awaiting Signature — navigation button */}
+          {/* Bills awaiting presidential action — navigation button */}
           <div className="mt-4">
             <button
               onClick={() => setView('bills-awaiting-signature')}
@@ -25370,8 +25539,8 @@ function App() {
                   <Scale className="w-5 h-5 text-blue-600" />
                 </div>
                 <div className="text-left">
-                  <p className="font-bold text-gray-800 text-base">Bills Awaiting Signature</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{awaitingBills.length} bills pending presidential action</p>
+                  <p className="font-bold text-gray-800 text-base">Bills Awaiting Presidential Action <span className="text-[10px] font-semibold text-slate-500">(live when API set)</span></p>
+                  <p className="text-xs text-gray-500 mt-0.5">Congress.gov when the server API is configured; otherwise a curated sample with links</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-blue-500 flex-shrink-0" />
@@ -26205,11 +26374,22 @@ function App() {
                 <Crown className="w-10 h-10 sm:w-12 sm:h-12" />
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">President &amp; Executive</h2>
-              <p className="text-gray-600 mb-3 text-sm sm:text-base">The White House, Cabinet &amp; Executive Branch</p>
+              <p className="text-gray-600 mb-2 text-sm sm:text-base">White House, president profile, and cabinet roster (official heads from Firestore when synced)</p>
+              {(usCabinetRosterLoading || usCabinetRosterCount != null) && (
+                <p className="text-[11px] text-gray-500 mb-3 leading-snug">
+                  {usCabinetRosterLoading
+                    ? 'Loading cabinet roster count…'
+                    : usCabinetRosterCount === -1
+                      ? 'Cabinet roster count unavailable.'
+                      : `${usCabinetRosterCount} department head record${usCabinetRosterCount === 1 ? '' : 's'} (US) in Firestore.`}
+                </p>
+              )}
               <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>47th President · Donald Trump</span>
-                <div className="flex items-center gap-2">
-                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Donald Trump']?.length ?? 5}</span>
+                <span className="leading-snug">Editorial profile: 47th President · Donald J. Trump <span className="text-gray-400">(pending leaders API)</span></span>
+                <div className="flex items-center gap-2 shrink-0">
+                  {(controversiesData['Donald Trump']?.length ?? 0) > 0 && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Donald Trump'].length}</span>
+                  )}
                   <ChevronRight className="w-5 h-5" />
                 </div>
               </div>
@@ -26231,7 +26411,9 @@ function App() {
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <span>24th Prime Minister · Mark Carney</span>
                 <div className="flex items-center gap-2">
-                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Mark Carney']?.length ?? 5}</span>
+                  {(controversiesData['Mark Carney']?.length ?? 0) > 0 && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Mark Carney'].length}</span>
+                  )}
                   <ChevronRight className="w-5 h-5" />
                 </div>
               </div>
@@ -27755,10 +27937,15 @@ function App() {
           ← Back
         </button>
 
-        <div className="mb-8 animate-slide-in">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">Recent Executive Orders</h1>
-          <p className="text-gray-600 text-base sm:text-lg">{executiveOrders.length} orders signed in 2025 · tap any order to read and vote</p>
+        <div className="mb-4 animate-slide-in">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">Executive orders <span className="text-base font-semibold text-slate-500">(curated sample)</span></h1>
+          <p className="text-gray-600 text-base sm:text-lg">{executiveOrders.length} items in this app dataset · tap to read summary and vote (votes are in-app only)</p>
           <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
+        </div>
+
+        <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-800 leading-relaxed">
+          <p className="font-semibold text-slate-900 mb-1">Not a Federal Register mirror</p>
+          <p className="text-slate-700">Dates and titles follow the linked documents where present. This list is a <span className="font-medium">small curated sample</span>, not every executive order for any calendar year.</p>
         </div>
 
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -27855,6 +28042,7 @@ function App() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
                   <h3 className="font-bold text-gray-800 mb-2">Summary</h3>
                   <p className="text-gray-700">{selectedEO.summary}</p>
+                  <p className="text-xs text-slate-600 mt-3 border-t border-blue-200 pt-3">Curated in-app sample; confirm full text and signing facts on the linked Federal Register document. Support/oppose totals are community votes in this app only.</p>
                 </div>
 
                 <div className="border-t pt-6">
@@ -27960,7 +28148,12 @@ function App() {
     </div>
   );
 
-  const renderBillsAwaitingSignature = () => (
+  const renderBillsAwaitingPresidentialAction = () => {
+    const showLoading = presidentDeskBillsLoading && presidentDeskBills === null;
+    const deskRows = presidentDeskBills !== null ? presidentDeskBills : awaitingBills;
+    const isLive = presidentDeskBillsSource === 'live';
+    const congressN = getCurrentUsCongressNumber();
+    return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-5xl mx-auto">
         <button
@@ -27970,14 +28163,66 @@ function App() {
           ← Back
         </button>
 
-        <div className="mb-8 animate-slide-in">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">Bills Awaiting Signature</h1>
-          <p className="text-gray-600 text-base sm:text-lg">{awaitingBills.length} bills pending presidential action · tap any bill to read and vote</p>
+        <div className="mb-4 animate-slide-in">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">
+            Bills Awaiting Presidential Action
+            <span className="text-base font-semibold text-slate-500">
+              {isLive ? ' (live · Congress.gov)' : ' (curated sample)'}
+            </span>
+          </h1>
+          <p className="text-gray-600 text-base sm:text-lg">
+            {showLoading
+              ? `Loading measures from Congress.gov (${congressOrdinalLabel(congressN)})…`
+              : isLive
+                ? `${deskRows.length} measure${deskRows.length === 1 ? '' : 's'} whose latest action matches presentation or delivery to the President for presidential action (last scan). Tap for detail; votes are in-app only.`
+                : `${deskRows.length} items in curated sample · tap to read and vote (votes are in-app only)`}
+          </p>
           <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
         </div>
 
+        {presidentDeskBillsError && (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-950">
+            {presidentDeskBillsError}
+          </div>
+        )}
+
+        <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-800 leading-relaxed">
+          {isLive ? (
+            <>
+              <p className="font-semibold text-slate-900 mb-1">Live legislative status (filtered)</p>
+              <p className="text-slate-700">
+                Data comes from the <span className="font-medium">Congress.gov API</span> (Library of Congress). We include bills and joint resolutions where the <span className="font-medium">latest action text</span> indicates presentation or delivery to the President — i.e. with the President for possible action (signature, veto, presentment outcomes, or timing after adjournment), not merely “awaiting a signature.” Rows whose latest action already shows enactment, signing, or veto are excluded.
+                Always confirm timing and text on the official bill page.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-semibold text-slate-900 mb-1">Sample or offline mode</p>
+              <p className="text-slate-700">
+                Either the live API is not configured, the request failed, or you are on local <code className="text-[11px] bg-slate-100 px-1 rounded">npm start</code> without <code className="text-[11px] bg-slate-100 px-1 rounded">vercel dev</code>.
+                For production, set <span className="font-medium">CONGRESS_API_KEY</span> on Vercel and deploy; use <span className="font-medium">vercel dev</span> locally to exercise <span className="font-medium">/api/congress-pending-president</span>.
+              </p>
+            </>
+          )}
+        </div>
+
+        {showLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-slate-600 gap-3">
+            <Loader2 className="w-10 h-10 animate-spin text-blue-600" aria-hidden />
+            <p className="text-sm">Fetching recent Congress.gov status…</p>
+          </div>
+        ) : (
+          <>
+            {deskRows.length === 0 && (
+              <div className="rounded-lg border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-600">
+                <p className="mb-2 font-medium text-slate-800">No matching measures in this scan</p>
+                <p className="mb-4">The API returned zero bills whose <em>latest</em> action text matches presentation or delivery to the President for presidential action (within the bill types and recency window we query).</p>
+                <a href="https://www.congress.gov/legislation" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Search legislation on Congress.gov →</a>
+              </div>
+            )}
+            {deskRows.length > 0 && (
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {awaitingBills.map((bill) => {
+          {deskRows.map((bill) => {
             const votes = presidentBillVotes[bill.id] || { support: bill.support, oppose: bill.oppose, userVote: null };
             const total = votes.support + votes.oppose;
             const pct = total > 0 ? Math.round((votes.support / total) * 100) : 0;
@@ -27988,13 +28233,14 @@ function App() {
               red:    { badge: 'bg-red-50 border-red-200 text-red-700' },
             };
             const sc = statusColors[bill.statusColor] || statusColors.blue;
+            const shareText = (bill.summary || bill.description || bill.title || '').slice(0, 500);
             return (
               <div
                 key={bill.id}
                 onClick={() => setSelectedPresidentBill(bill)}
                 className="relative bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all"
               >
-                <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.number}: ${bill.title}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+                <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.number}: ${bill.title}`, text: shareText, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <span className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full flex-shrink-0">{bill.number}</span>
                   <span className="text-xs text-gray-400 flex-shrink-0">{bill.passedDate}</span>
@@ -28022,9 +28268,12 @@ function App() {
             );
           })}
         </div>
+            )}
+          </>
+        )}
       </div>
 
-      {/* Bill Detail Modal — styled as Canadian bill detail */}
+      {/* Bill detail modal (bills awaiting presidential action) */}
       {selectedPresidentBill && (() => {
         const votes = presidentBillVotes[selectedPresidentBill.id] || { support: selectedPresidentBill.support, oppose: selectedPresidentBill.oppose, userVote: null };
         const statusColors = {
@@ -28065,7 +28314,7 @@ function App() {
                     {selectedPresidentBill.status}
                   </span>
                   <span className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full">
-                    119th Congress
+                    {congressOrdinalLabel(selectedPresidentBill.congress)}
                   </span>
                 </div>
 
@@ -28078,13 +28327,18 @@ function App() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5" />
-                    <span>Passed: {selectedPresidentBill.passedDate}</span>
+                    <span>{selectedPresidentBill.liveFromCongressGov ? 'Latest action date' : 'Passed'}: {selectedPresidentBill.passedDate}</span>
                   </div>
                 </div>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
                   <h3 className="font-bold text-gray-800 mb-2">Summary</h3>
-                  <p className="text-gray-700">{selectedPresidentBill.summary}</p>
+                  <p className="text-gray-700 whitespace-pre-line">{selectedPresidentBill.summary}</p>
+                  <p className="text-xs text-slate-600 mt-3 border-t border-blue-200 pt-3">
+                    {selectedPresidentBill.liveFromCongressGov
+                      ? 'Live status line from Congress.gov API; confirm full text and timing on the bill page. Support/oppose totals are community votes in this app only.'
+                      : 'Curated sample; confirm current status and text on Congress.gov. Support/oppose totals are community votes in this app only.'}
+                  </p>
                 </div>
 
                 <div className="border-t pt-6">
@@ -28132,6 +28386,7 @@ function App() {
                 </div>
               </div>
 
+              {Array.isArray(selectedPresidentBill.pros) && selectedPresidentBill.pros.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                 <div className="flex items-center gap-3 mb-4">
                   <ThumbsUp className="w-6 h-6 text-green-600" />
@@ -28148,7 +28403,9 @@ function App() {
                   ))}
                 </div>
               </div>
+              )}
 
+              {Array.isArray(selectedPresidentBill.cons) && selectedPresidentBill.cons.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <ThumbsDown className="w-6 h-6 text-red-600" />
@@ -28165,12 +28422,14 @@ function App() {
                   ))}
                 </div>
               </div>
+              )}
             </div>
           </div>
         );
       })()}
     </div>
-  );
+    );
+  };
 
   const renderCaTaxCalculator = () => {
     const fmt = (n) => new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(n);
@@ -31553,7 +31812,9 @@ function App() {
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <span>31st PM · Anthony Albanese</span>
                 <div className="flex items-center gap-2">
-                  <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Anthony Albanese']?.length ?? 5}</span>
+                  {(controversiesData['Anthony Albanese']?.length ?? 0) > 0 && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Anthony Albanese'].length}</span>
+                  )}
                   <ChevronRight className="w-5 h-5 text-amber-600" />
                 </div>
               </div>
@@ -34611,7 +34872,7 @@ function App() {
       {view === 'president-executive' && renderPresidentExecutive()}
       {view === 'president-detail' && renderPresidentDetail()}
       {view === 'executive-orders' && renderExecutiveOrders()}
-      {view === 'bills-awaiting-signature' && renderBillsAwaitingSignature()}
+      {view === 'bills-awaiting-signature' && renderBillsAwaitingPresidentialAction()}
       {view === 'laws-search' && renderLawsSearch()}
       {view === 'us-laws-search' && renderLawsSearch()}
       {view === 'money-usa' && renderFinancialDashboard()}
