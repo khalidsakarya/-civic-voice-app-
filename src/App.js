@@ -2881,9 +2881,18 @@ function App() {
       fetchGovStatsData(cc);
       fetchMacroGovernmentStats(cc);
     } else if (budgetViews[view]) {
-      fetchBudgetData(budgetViews[view]);
+      const cc = budgetViews[view];
+      fetchBudgetData(cc);
+      fetchAnalyticsData(cc);
+      fetchMacroGovernmentStats(cc);
     }
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Prefetch US budget_data on federal categories so hub cards can show live totals.
+  useEffect(() => {
+    if (view !== 'categories' || selectedCountry?.type !== 'usa') return;
+    fetchBudgetData('US');
+  }, [view, selectedCountry?.type]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Analytics: search query (1-second debounce) ─────────────────────────────
   useEffect(() => {
@@ -16551,6 +16560,18 @@ function App() {
     }
   };
 
+  /** Prefer newest budget_data doc when multiple rows match a jurisdiction. */
+  const pickLatestBudgetDoc = (docs) => {
+    if (!Array.isArray(docs) || docs.length === 0) return null;
+    const parseTs = (r) => {
+      const s = r.last_updated || r.generatedAt || null;
+      if (!s) return 0;
+      const x = new Date(s).getTime();
+      return Number.isFinite(x) ? x : 0;
+    };
+    return [...docs].sort((a, b) => parseTs(b) - parseTs(a))[0];
+  };
+
   const mapFirestoreBillToUK = (fb) => ({
     id: fb.id || fb.sourceId,
     number: fb.sourceId || fb.id,
@@ -21010,7 +21031,7 @@ function App() {
     // Live Firestore data for Overview tab
     const budgetCC = isUSA ? 'US' : isAustralia ? 'AU' : isUK ? 'UK' : 'CA';
     const fsDocs = budgetFirestoreData[budgetCC] || [];
-    const fsDoc = fsDocs.length > 0 ? fsDocs[0] : null;
+    const fsDoc = pickLatestBudgetDoc(fsDocs);
     const hasLiveOverview = !!fsDoc;
     const fmtBudgetVal = (val) => {
       if (val == null) return null;
@@ -21022,10 +21043,71 @@ function App() {
       return `${sym}${v.toLocaleString()}`;
     };
     const liveTotalBudget = fsDoc ? fmtBudgetVal(fsDoc.totalGovtExpenditureUSD) : null;
-    const liveFiscalYear  = fsDoc?.fiscalYear ?? null;
+    const liveFiscalYear  = (isUSA && fsDoc?.budgetFunctions?.fiscalYear != null)
+      ? `FY${fsDoc.budgetFunctions.fiscalYear}`
+      : (fsDoc?.fiscalYear != null ? `FY${fsDoc.fiscalYear}` : null);
     const liveGdpPct      = fsDoc?.govtExpenditurePctOfGDP ?? null;
 
-    const unknownEntry = data.flowData.find(d => d.name === 'Unknown & Undisclosed');
+    // US Money Flow: prefer USAspending budget functions from engine / budget_data
+    const usBudgetFnFlow = (() => {
+      if (!isUSA || !fsDoc?.budgetFunctions?.functions?.length) return null;
+      const bf = fsDoc.budgetFunctions;
+      const fns = bf.functions;
+      const total = typeof bf.total === 'number' && bf.total > 0
+        ? bf.total
+        : fns.reduce((s, x) => s + (Number(x.amount) || 0), 0);
+      if (!(total > 0)) return null;
+      const sorted = [...fns].sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0));
+      const TOP = 7;
+      const palette = ['#15803d', '#1d4ed8', '#6d28d9', '#c2410c', '#0e7490', '#a16207', '#4f46e5', '#475569'];
+      const fmtUSD = (n) => {
+        if (n >= 1e12) return `$${(n / 1e12).toFixed(2)}T`;
+        if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
+        if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
+        return `$${Math.round(n).toLocaleString()}`;
+      };
+      const rows = sorted.slice(0, TOP).map((r, i) => {
+        const amt = Number(r.amount) || 0;
+        const pct = r.percentage != null && !isNaN(Number(r.percentage))
+          ? Number(r.percentage)
+          : (total > 0 ? (amt / total) * 100 : 0);
+        return {
+          name: r.name || 'Other',
+          value: Math.max(0, Math.round(pct * 10) / 10),
+          amount: fmtUSD(amt),
+          color: palette[i % palette.length],
+          description: 'USAspending budget function (federal spending by functional classification). Not the same as cabinet operating budgets.',
+        };
+      });
+      const rest = sorted.slice(TOP);
+      const restAmt = rest.reduce((s, x) => s + (Number(x.amount) || 0), 0);
+      if (restAmt > 0) {
+        const pct = (restAmt / total) * 100;
+        rows.push({
+          name: `Other functions (${rest.length})`,
+          value: Math.max(0, Math.round(pct * 10) / 10),
+          amount: fmtUSD(restAmt),
+          color: palette[TOP % palette.length],
+          description: 'Remaining budget functions aggregated for readability.',
+        });
+      }
+      const pctSum = rows.reduce((s, r) => s + r.value, 0);
+      if (pctSum > 0 && Math.abs(pctSum - 100) > 1) {
+        const k = 100 / pctSum;
+        rows.forEach((r) => { r.value = Math.round(r.value * k * 10) / 10; });
+      }
+      const fy = bf.fiscalYear != null ? String(bf.fiscalYear) : '';
+      const period = bf.period != null ? String(bf.period) : '';
+      const meta = `USAspending.gov — budget functions — FY${fy}${period ? ` — period ${period}/12` : ''}. Shares reflect functional obligations in this extract; see civic-voice-engine budgetAnalyticsFetcher.`;
+      return { rows, meta };
+    })();
+    const flowDataEffective = usBudgetFnFlow?.rows?.length ? usBudgetFnFlow.rows : data.flowData;
+    const flowDataIsLiveUsa = !!(isUSA && usBudgetFnFlow?.rows?.length);
+    const flowDataSourceNote = flowDataIsLiveUsa
+      ? usBudgetFnFlow.meta
+      : (isUSA ? 'Illustrative categories for orientation only — sync budget_data (USAspending budget functions) for the live breakdown.' : null);
+
+    const unknownEntry = flowDataEffective.find(d => /unknown|undisclosed|undistribut/i.test(String(d.name || '')));
     const unknownAboveThreshold = unknownEntry && unknownEntry.value > 10;
 
     // ── Spending breakdown helpers ──
@@ -21074,7 +21156,10 @@ function App() {
       const hasFlag     = flagAdmin || flagConsult;
       return (
         <div className="mt-4 mb-5">
-          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">How This Budget Is Actually Spent</h4>
+          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">How This Budget Is Actually Spent</h4>
+          <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1.5 mb-3 leading-snug">
+            Illustrative modeled split (deterministic from program id for layout) — not sub-accounts from Treasury or USAspending.
+          </p>
           {hasFlag && (
             <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3">
               <span className="text-red-500 font-bold flex-shrink-0">🚩</span>
@@ -21138,7 +21223,11 @@ function App() {
               <h1 className={`font-bold text-gray-800 ${isWide ? 'text-3xl lg:text-4xl xl:text-5xl' : 'text-3xl'}`}>Where the Money Goes</h1>
             </div>
             <p className={`text-gray-600 ${isWide ? 'text-lg lg:text-xl' : 'text-lg'}`}>{data.countryName} — Financial Transparency Dashboard</p>
-            <p className={`text-gray-400 mt-1 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>Source: {data.source}</p>
+            <p className={`text-gray-400 mt-1 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>
+              Source: {Array.isArray(fsDoc?.dataSources) && fsDoc.dataSources.length > 0
+                ? `${data.source} · ${fsDoc.dataSources.slice(0, 3).join(' · ')}`
+                : data.source}
+            </p>
           </div>
 
           {/* Firestore Last Updated */}
@@ -21228,6 +21317,12 @@ function App() {
                         <p className="text-base text-gray-500 mt-3">{liveFiscalYear || data.fiscalYear} · {data.currency}</p>
                         <p className="text-sm text-gray-400 mt-1">{data.fiscalYearDetail}</p>
                       </div>
+                      {isUSA && hasLiveOverview && fsDoc?.totalGovtExpenditureUSD != null && (
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs text-slate-800 leading-relaxed">
+                          <span className="font-semibold text-slate-900">Headline total: </span>
+                          Implied scale from World Bank (GDP × general government expenditure % of GDP), same methodology as civic-voice-engine budget analytics — not a single OMB outlays line. Money Flow uses USAspending budget functions when present in budget_data.
+                        </div>
+                      )}
                       <div className="bg-white border-2 border-gray-200 rounded-2xl p-5">
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Efficiency Score</p>
                         <p className="text-2xl font-bold text-gray-500 mt-2">Not available</p>
@@ -21271,18 +21366,21 @@ function App() {
                   {isOpen && key === 'money-flow' && (
                     <div className="border-t border-gray-100 px-4 pb-6 pt-5">
                       <p className="text-lg font-bold text-gray-800 mb-1">Budget Allocation</p>
-                      <p className="text-sm text-gray-500 mb-4">{data.totalBudget} · {data.fiscalYear}</p>
+                      <p className="text-sm text-gray-500 mb-2">{(liveTotalBudget || data.totalBudget)} · {liveFiscalYear || data.fiscalYear}</p>
+                      {flowDataSourceNote && (
+                        <p className={`text-[11px] leading-snug mb-3 rounded-lg px-2 py-1.5 border ${flowDataIsLiveUsa ? 'border-green-200 bg-green-50 text-green-950' : 'border-amber-200 bg-amber-50 text-amber-950'}`}>{flowDataSourceNote}</p>
+                      )}
                       <ResponsiveContainer width="100%" height={300}>
                         <RechartsPie>
-                          <Pie data={data.flowData} cx="50%" cy="50%" outerRadius={105} innerRadius={45} dataKey="value" paddingAngle={2}>
-                            {data.flowData.map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
+                          <Pie data={flowDataEffective} cx="50%" cy="50%" outerRadius={105} innerRadius={45} dataKey="value" paddingAngle={2}>
+                            {flowDataEffective.map((entry, idx) => <Cell key={idx} fill={entry.color} />)}
                           </Pie>
                           <Tooltip formatter={(value, name, props) => [`${value}%  ·  ${props.payload.amount}`, name]} contentStyle={{ borderRadius: '8px', fontSize: '12px', border: '1px solid #e5e7eb' }} />
                           <Legend formatter={(value) => <span style={{ fontSize: '12px', color: '#374151' }}>{value}</span>} />
                         </RechartsPie>
                       </ResponsiveContainer>
                       <div className="mt-5 space-y-3">
-                        {data.flowData.map((item, idx) => (
+                        {flowDataEffective.map((item, idx) => (
                           <div key={idx} className="bg-gray-50 rounded-xl p-4">
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-2 min-w-0">
@@ -21458,6 +21556,15 @@ function App() {
                 <p className={`text-gray-500 mt-3 ${isWide ? 'text-base lg:text-lg' : 'text-base'}`}>{data.currency} · {liveFiscalYear || data.fiscalYear} · {data.fiscalYearDetail}</p>
               </div>
 
+              {isUSA && hasLiveOverview && fsDoc?.totalGovtExpenditureUSD != null && (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm text-slate-800 mb-6 leading-relaxed">
+                  <p className="font-semibold text-slate-900 mb-1">How this headline total is defined</p>
+                  <p className="text-slate-700">
+                    The hero figure is implied general-government expenditure in USD: World Bank nominal GDP × general government final consumption &amp; expenditure (% of GDP), built in civic-voice-engine budgetAnalyticsFetcher. It is a macro envelope comparable to “all federal scale” narratives, not a single OMB outlays table line. The Money Flow tab uses USAspending budget functions from the same Firestore doc when available.
+                  </p>
+                </div>
+              )}
+
               {/* Fiscal Year + Department + GDP/Efficiency — 3-col grid */}
               <div className={`grid grid-cols-1 gap-6 mb-6 ${isWide ? 'md:grid-cols-2 xl:grid-cols-3' : 'md:grid-cols-2'}`}>
                 <div className={`bg-white rounded-xl shadow-md flex items-start gap-4 ${isWide ? 'p-6 lg:p-8' : 'p-6'}`}>
@@ -21533,11 +21640,18 @@ function App() {
               {/* Pie chart */}
               <div className={`bg-white rounded-xl shadow-md mb-6 xl:mb-0 ${isWide ? 'p-6 lg:p-8' : 'p-6'}`}>
                 <h2 className={`font-bold text-gray-800 mb-1 ${isWide ? 'text-xl lg:text-2xl' : 'text-xl'}`}>Budget Allocation by Category</h2>
-                <p className={`text-gray-500 mb-4 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>{data.currency} · {data.fiscalYear} · {data.totalBudget} total</p>
+                <p className={`text-gray-500 mb-4 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>
+                  {data.currency} · {liveFiscalYear || data.fiscalYear} · {(liveTotalBudget || data.totalBudget)} total
+                </p>
+                {flowDataSourceNote && (
+                  <div className={`mb-4 rounded-lg border px-3 py-2 text-xs leading-relaxed ${flowDataIsLiveUsa ? 'border-green-200 bg-green-50 text-green-950' : 'border-amber-200 bg-amber-50 text-amber-950'}`}>
+                    {flowDataSourceNote}
+                  </div>
+                )}
                 <ResponsiveContainer width="100%" height={380}>
                   <RechartsPie>
                     <Pie
-                      data={data.flowData}
+                      data={flowDataEffective}
                       cx="50%"
                       cy="50%"
                       outerRadius={130}
@@ -21545,7 +21659,7 @@ function App() {
                       dataKey="value"
                       paddingAngle={2}
                     >
-                      {data.flowData.map((entry, idx) => (
+                      {flowDataEffective.map((entry, idx) => (
                         <Cell key={idx} fill={entry.color} />
                       ))}
                     </Pie>
@@ -21588,7 +21702,7 @@ function App() {
                   <p className={`text-gray-500 ${isWide ? 'text-sm lg:text-base' : 'text-sm'}`}>All figures in {data.currency} · {data.fiscalYear}</p>
                 </div>
                 <div className="divide-y divide-gray-100">
-                  {data.flowData.map((item, idx) => (
+                  {flowDataEffective.map((item, idx) => (
                     <div key={idx} className="px-6 py-5">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-3 min-w-0">
@@ -21598,7 +21712,7 @@ function App() {
                           ></span>
                           <div className="min-w-0">
                             <span className="font-semibold text-gray-800">{item.name}</span>
-                            {item.name === 'Unknown & Undisclosed' && unknownAboveThreshold && (
+                            {/unknown|undisclosed|undistribut/i.test(String(item.name || '')) && unknownAboveThreshold && (
                               <span className="ml-2 inline-flex items-center gap-1 bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full">
                                 <AlertCircle className="w-3 h-3 flex-shrink-0" />
                                 Above threshold
@@ -21633,6 +21747,11 @@ function App() {
               <p className={`text-gray-500 mb-2 ${isWide ? 'xl:col-span-2 text-sm lg:text-base' : 'text-sm'}`}>
                 Top 10 federal spending programs — tap any card to see details.
               </p>
+              {isUSA && (
+                <p className={`text-xs text-slate-600 mb-3 ${isWide ? 'xl:col-span-2' : ''} rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 leading-relaxed`}>
+                  Cards summarize major programs in plain language; figures are editorially curated, not streamed line-by-line from Treasury. In-card “How This Budget Is Actually Spent” bars are <span className="font-semibold">illustrative modeled splits</span> (see note on each expansion).
+                </p>
+              )}
               {data.programs.map((prog) => {
                 const isOpen = selectedProgram === prog.id;
                 return (
@@ -21770,6 +21889,24 @@ function App() {
             const liveDocs = Array.isArray(auditFindingsData?.[jurisdiction]) ? auditFindingsData[jurisdiction] : undefined;
             const isLoadingAudit = !!(auditFindingsLoading?.[jurisdiction]);
             const findings = liveDocs || [];
+            const auditFromLive = findings.length > 0;
+            const auditSummary = auditFromLive
+              ? {
+                  total: findings.length,
+                  resolved: findings.filter(f => f.status === 'resolved').length,
+                  open: findings.filter(f => f.status === 'open').length,
+                  critical: findings.filter(f => f.severity === 'critical').length,
+                  source: 'live',
+                }
+              : (data?.audit && data.audit.totalFindings != null
+                  ? {
+                      total: data.audit.totalFindings,
+                      resolved: data.audit.resolved ?? 0,
+                      open: data.audit.open ?? 0,
+                      critical: null,
+                      source: 'curated',
+                    }
+                  : { total: 0, resolved: 0, open: 0, critical: 0, source: 'none' });
             const severityStyles = {
               critical: { badge: 'bg-red-100 text-red-700',      border: 'border-red-400'    },
               high:     { badge: 'bg-orange-100 text-orange-700', border: 'border-orange-300' },
@@ -21785,23 +21922,28 @@ function App() {
 
             return (
               <div>
+                {auditSummary.source === 'curated' && (
+                  <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950 leading-relaxed">
+                    Summary counts below are <span className="font-semibold">curated public-reporting totals</span> for context until itemized rows load from the <span className="font-semibold">audit_findings</span> collection. Open/resolved mix is illustrative, not a live GAO query.
+                  </div>
+                )}
                 {/* Summary bar */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
                   <div className={`bg-white rounded-xl shadow-sm text-center border border-gray-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
-                    <p className={`font-black text-gray-900 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{findings.length}</p>
+                    <p className={`font-black text-gray-900 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{auditSummary.total}</p>
                     <p className={`text-gray-400 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Total Findings</p>
                   </div>
                   <div className={`bg-green-50 rounded-xl shadow-sm text-center border border-green-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
-                    <p className={`font-black text-green-700 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{findings.filter(f => f.status === 'resolved').length}</p>
+                    <p className={`font-black text-green-700 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{auditSummary.resolved}</p>
                     <p className={`text-green-600 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Resolved</p>
                   </div>
                   <div className={`bg-red-50 rounded-xl shadow-sm text-center border border-red-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
-                    <p className={`font-black text-red-600 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{findings.filter(f => f.status === 'open').length}</p>
+                    <p className={`font-black text-red-600 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{auditSummary.open}</p>
                     <p className={`text-red-500 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Open</p>
                   </div>
                   <div className={`bg-blue-50 rounded-xl shadow-sm text-center border border-blue-100 ${isWide ? 'p-4 lg:p-6' : 'p-4'}`}>
-                    <p className={`font-black text-blue-700 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{findings.filter(f => f.severity === 'critical').length}</p>
-                    <p className={`text-blue-500 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>Critical</p>
+                    <p className={`font-black text-blue-700 ${isWide ? 'text-3xl lg:text-4xl' : 'text-3xl'}`}>{auditSummary.critical === null ? '—' : auditSummary.critical}</p>
+                    <p className={`text-blue-500 mt-1 font-medium uppercase tracking-wide ${isWide ? 'text-xs lg:text-sm' : 'text-xs'}`}>{auditSummary.critical === null ? 'Critical (live feed)' : 'Critical'}</p>
                   </div>
                 </div>
 
@@ -21813,14 +21955,17 @@ function App() {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {isLoadingAudit && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching live data…</span>}
-                    {!isLoadingAudit && findings.length > 0 && liveBadge(findings[0]?.last_updated, 'Annual')}
+                    {!isLoadingAudit && auditFromLive && liveBadge(findings[0]?.last_updated, 'Annual')}
                   </div>
                 </div>
 
                 {/* Findings list */}
                 {findings.length === 0 && !isLoadingAudit ? (
-                  <div className="bg-gray-50 rounded-xl p-10 text-center border border-gray-200">
-                    <p className="text-gray-400 text-sm">No official audit findings available yet.</p>
+                  <div className="bg-gray-50 rounded-xl p-10 text-center border border-gray-200 space-y-2">
+                    <p className="text-gray-600 text-sm font-medium">No itemized audit rows in Firestore yet.</p>
+                    <p className="text-gray-400 text-xs leading-relaxed max-w-md mx-auto">
+                      When the engine publishes documents to <span className="font-semibold">audit_findings</span> for this country, each finding appears here with severity and links. The summary tiles above use live data or, if empty, the curated dashboard totals.
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -26250,12 +26395,29 @@ function App() {
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Where the Money Goes</h2>
             <p className="text-gray-600 mb-3 text-sm sm:text-base">
               {isUSA
-                ? 'Financial transparency: how $6.75T in federal spending reaches citizens'
+                ? (() => {
+                    const usDoc = pickLatestBudgetDoc(budgetFirestoreData['US']);
+                    const v = Number(usDoc?.totalGovtExpenditureUSD);
+                    if (usDoc && !isNaN(v) && v > 0) {
+                      const f = v >= 1e12 ? `$${(v / 1e12).toFixed(2)}T` : v >= 1e9 ? `$${(v / 1e9).toFixed(1)}B` : `$${Math.round(v).toLocaleString()}`;
+                      return `Financial transparency: headline scale ${f} (World Bank macro envelope — see dashboard for methodology)`;
+                    }
+                    return 'Financial transparency: federal spending overview (syncs from budget_data when available)';
+                  })()
                 : 'Financial transparency: how $534.8B in federal spending reaches citizens'
               }
             </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span className="font-medium">{isUSA ? 'FY 2024' : 'FY 2024-25'} · Overview</span>
+              <span className="font-medium">
+                {isUSA
+                  ? (() => {
+                      const usDoc = pickLatestBudgetDoc(budgetFirestoreData['US']);
+                      const fy = usDoc?.budgetFunctions?.fiscalYear ?? usDoc?.fiscalYear;
+                      return fy != null ? `FY ${fy}` : 'FY —';
+                    })()
+                  : 'FY 2024-25'}
+                {' '}· Overview
+              </span>
               <ChevronRight className="w-5 h-5 text-emerald-600" />
             </div>
           </div>
