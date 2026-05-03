@@ -5428,17 +5428,20 @@ function App() {
             _loaded:           true,
             currency:          data.currency ?? null,
             budget_authority:  data.budget_authority ?? null,
-            obligations:       data.obligations ?? null,
+            // US cabinet module: never surface obligations/outlays/remaining_balance — they mix
+            // federal-wide flows with operating appropriations (misleading). Engine sets null + classification.
+            obligations:       jur === 'US' ? null : (data.obligations ?? null),
             total_allocated:   data.budget_authority ?? null,
             total_budget:      data.budget_authority ?? null,
-            total_spent:       data.obligations ?? null,
+            total_spent:       jur === 'US' ? null : (data.obligations ?? null),
             fiscal_year:       data.fiscal_year ?? null,
-            outlays:           data.outlays ?? null,
-            remaining_balance: data.remaining_balance ?? null,
+            outlays:           jur === 'US' ? null : (data.outlays ?? null),
+            remaining_balance: jur === 'US' ? null : (data.remaining_balance ?? null),
             last_updated:      data.last_updated ?? null,
             employee_count:    data.employees_count ?? null,
             grants_given:      Array.isArray(data.grants) ? data.grants : [],
             internal_spending: Array.isArray(data.internal_spending) ? data.internal_spending : [],
+            financial_classification: jur === 'US' ? (data.financial_classification ?? null) : null,
           };
           const existing = budgetUpdates[key];
           const chosen = pickBetterBudget(existing, newBudgetEntry);
@@ -5862,6 +5865,25 @@ function App() {
     };
   };
 
+  /** Fallback classification copy when Firestore predates `financial_classification` on US federal_departments. */
+  const US_CABINET_FINANCIAL_FALLBACK = {
+    budget_authority: {
+      metric_key: 'budget_authority',
+      type: 'operating_appropriation',
+      scope: 'department_level',
+      display_label: null,
+      exclusions: [
+        'Mandatory / entitlement spending and trust-fund flows in national totals only.',
+        'Federal-wide payment and settlement activity attributed to USAspending toptier codes.',
+      ],
+      source_transparency:
+        'USAspending.gov; discretionary totals aligned with CRS-style enacted caps in civic-voice-engine `departmentBudgetsFetcher.js` (`ENACTED_CAPS`, P.L. 119-4 and CRS primers per agency). Re-run `federalDepartmentNormalizer` for structured `financial_classification` on each doc.',
+    },
+    obligations: { metric_key: 'obligations', presented: false, type: 'managed_financial_activity', scope: 'federal_level', reason: 'Excluded from this cabinet view — not operating appropriation.' },
+    outlays: { metric_key: 'outlays', presented: false, type: 'managed_financial_activity', scope: 'federal_level', reason: 'Excluded from this cabinet view.' },
+    remaining_balance: { metric_key: 'remaining_balance', presented: false, type: 'cash_balance', scope: 'federal_level', reason: 'Not U.S. Treasury General Account (TGA) cash; not shown here.' },
+  };
+
   // US Departments rendering (similar to ministries)
   const renderDepartments = () => {
     const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
@@ -5883,19 +5905,18 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">🏛️ US Federal Departments</h2>
-            <p className="text-gray-600 mb-3">15 cabinet departments — figures from USAspending, adjusted to a <span className="font-semibold text-gray-800">discretionary-style budget authority</span> for major agencies so totals match what Congress appropriates, not bank-wide payment flows (which is why Treasury is not trillions here).</p>
-            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-              <span className="font-semibold">Why “Spent” disappeared for some departments:</span>{' '}
-              USAspending “obligations” for a few toptier agencies (especially Treasury) include government-wide activity. Where that number is not comparable to the budget figure, we hide it so the screen stays honest — use <span className="font-medium">Budget authority</span> and the grant/program sections below for money you can reason about.
-            </div>
+            <p className="text-gray-600 mb-3">
+              This screen shows only <span className="font-semibold text-gray-800">cabinet-level operating appropriations (discretionary scope)</span> and related grant-program rollups.
+              It does <span className="font-semibold">not</span> show USAspending obligations/outlays (those mix federal-wide managed financial activity) and does <span className="font-semibold">not</span> show Treasury General Account cash — those belong in dedicated federal-wide modules.
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
                 <p className="text-sm text-gray-600">Total Departments</p>
                 <p className="text-2xl font-bold text-blue-600">{usDepartments.length}</p>
               </div>
               <div className="bg-white rounded-lg p-4 border-2 border-green-300">
-                <p className="text-sm text-gray-600">Combined budget authority</p>
-                <p className="text-xs text-gray-500 mt-0.5">Sum of department figures above — not all federal spending</p>
+                <p className="text-sm text-gray-600">Combined operating appropriations</p>
+                <p className="text-xs text-gray-500 mt-0.5">Discretionary-style totals only — not all federal outlays</p>
                 {combinedBudget > 0 ? <p className="text-2xl font-bold text-green-600 mt-1">{fmtB(combinedBudget)}</p> : <p className="text-sm font-medium text-gray-400 italic mt-1">Official data loading</p>}
               </div>
               <div className="bg-white rounded-lg p-4 border-2 border-purple-300">
@@ -5909,10 +5930,11 @@ function App() {
             {usDepartments.map(dept => {
               const bd = deptBudgetData[`US:${dept.name}`];
               const hd = deptHeadsData[`US:${dept.name}`];
-              const hasLiveBudget = bd && (bd.budget_authority != null || bd.obligations != null || bd.fiscal_year);
+              const hasLiveBudget = bd && (bd.budget_authority != null || bd.fiscal_year);
               const hasLiveHead = hd && hd.name;
               const hasLive = hasLiveBudget || hasLiveHead;
               const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
+              const fyLabelShort = bd?.fiscal_year != null ? `FY${bd.fiscal_year} Operating Appropriation` : 'Operating Appropriation (discretionary)';
               return (
                 <div
                   key={dept.id}
@@ -5933,16 +5955,11 @@ function App() {
                     <p className="text-xs text-gray-400 italic mb-3">{hd?._loaded ? 'No data available' : 'Official data loading'}</p>
                   )}
                   <p className="text-gray-700 mb-4">{dept.description}</p>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="bg-green-50 rounded p-2">
-                      <p className="text-xs text-gray-600 leading-tight">Budget authority</p>
+                      <p className="text-[10px] uppercase tracking-wide text-gray-500 leading-tight">{fyLabelShort}</p>
+                      <p className="text-[10px] text-gray-500 leading-tight mb-1">(discretionary scope)</p>
                       {hasLiveBudget && bd.budget_authority != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.budget_authority)}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data' : 'Loading…'}</p>}
-                    </div>
-                    <div className="bg-blue-50 rounded p-2">
-                      <p className="text-xs text-gray-600 leading-tight">Obligations</p>
-                      {hasLiveBudget && bd.obligations != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.obligations)}</p>
-                        : hasLiveBudget && bd._loaded && bd.budget_authority != null ? <p className="text-xs font-medium text-amber-800 leading-snug">Not shown — not comparable to budget here</p>
-                        : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data' : 'Loading…'}</p>}
                     </div>
                     <div className="bg-purple-50 rounded p-2">
                       <p className="text-xs text-gray-600">Fiscal year</p>
@@ -5985,6 +6002,10 @@ function App() {
       setSelectedDepartment(updated);
     };
 
+    const usDeptBudgetKey = 'US:' + selectedDepartment.name;
+    const usDeptBudget = deptBudgetData[usDeptBudgetKey];
+    const usDeptFY = usDeptBudget?.fiscal_year != null ? String(usDeptBudget.fiscal_year) : null;
+
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm">
@@ -6010,18 +6031,24 @@ function App() {
             {deptInfoBar(deptBudgetData[`US:${selectedDepartment.name}`]?.last_updated)}
 
             <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800">
-              <span className="font-semibold">How to read these numbers:</span>{' '}
-              <span className="text-slate-700">“Budget authority” is a discretionary-style total for major cabinets (aligned with enacted appropriations), not every dollar that touches the agency in USAspending. Obligations/outlays are hidden when they would read as trillions for a cabinet department — that usually means the API is tagging government-wide payments to the agency, not its operating budget.</span>
+              <span className="font-semibold">Data classification:</span>{' '}
+              <span className="text-slate-700">
+                Cabinet pages show <span className="font-medium">department-level operating appropriation (discretionary scope)</span> only.
+                USAspending obligations, outlays, and residual balance fields are <span className="font-medium">not</span> shown here because they routinely aggregate <span className="font-medium">federal-wide managed financial activity</span> under the same toptier code — not the department&apos;s enacted operating budget.
+                U.S. Treasury General Account (TGA) cash is dynamic (fluctuates daily) and belongs in a federal cash module, not on this card.
+              </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
-                  <h3 className="text-lg font-bold text-gray-800">Budget authority</h3>
+                  <h3 className="text-lg font-bold text-gray-800 leading-tight">
+                    {usDeptFY ? `FY${usDeptFY} Operating Appropriation (Discretionary)` : 'Operating Appropriation (Discretionary)'}
+                  </h3>
                   {deptBudgetData[`US:${selectedDepartment.name}`]?.budget_authority != null && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0 ml-auto" />}
                 </div>
-                <p className="text-xs text-gray-600 mb-1">Discretionary-style (FY), engine-capped where needed</p>
+                <p className="text-xs text-gray-600 mb-1">CRS-aligned discretionary-style total (engine caps where needed). Excludes mandatory, trust-fund, and federal-wide pass-through totals.</p>
                 {(() => { const _bd = deptBudgetData[`US:${selectedDepartment.name}`]; const raw = _bd?.budget_authority; if (raw == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; const v = Number(raw); const fmt = v >= 1e12 ? `$${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
 
@@ -6030,7 +6057,7 @@ function App() {
                   <TrendingUp className="w-8 h-8 text-blue-600" />
                   <h3 className="text-lg font-bold text-gray-800">Grant programs (CFDA)</h3>
                 </div>
-                <p className="text-xs text-gray-600 mb-1">Largest formula/project grants in the FY window</p>
+                <p className="text-xs text-gray-600 mb-1">Largest formula/project grants in the FY window. Department-tagged award rollup — not full mandatory spending.</p>
                 {(() => {
                   const _bd = deptBudgetData[`US:${selectedDepartment.name}`];
                   const gf = Array.isArray(_bd?.grants_given) ? _bd.grants_given : [];
@@ -6057,38 +6084,74 @@ function App() {
               </div>
             </div>
 
-            {/* Live Budget Detail */}
+            {/* Live Budget Detail — US cabinet: operating appropriation + classification only */}
             {(() => {
               const _bKey = 'US:' + selectedDepartment.name;
               const _bLoading = !!deptBudgetLoading[_bKey];
               const _bData = deptBudgetData[_bKey];
-              const _hasData = _bData?._loaded && (_bData.budget_authority != null || _bData.obligations != null || _bData.outlays != null || _bData.remaining_balance != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
+              const _hasData = _bData?._loaded && (_bData.budget_authority != null || _bData.fiscal_year || (_bData.programs && _bData.programs.length > 0));
               const _sym = _bData?.currency === 'GBP' ? '£' : _bData?.currency === 'AUD' ? 'A$' : _bData?.currency === 'CAD' ? 'CA$' : '$';
               const _fmt = (v) => { if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (typeof v !== 'number' || isNaN(v)) return ''; if (v >= 1e12) return `${_sym}${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `${_sym}${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `${_sym}${(v/1e6).toFixed(1)}M`; return `${_sym}${v.toLocaleString()}`; };
+              const _fcKey = `us_fc_${selectedDepartment.id}`;
+              const _fcOpen = !!expandedSections[_fcKey];
+              const rawFc = _bData?.financial_classification;
+              const mergeFc = (k) => ({ ...US_CABINET_FINANCIAL_FALLBACK[k], ...(rawFc && typeof rawFc[k] === 'object' && rawFc[k] ? rawFc[k] : {}) });
+              const baFc = mergeFc('budget_authority');
+              const oblFc = mergeFc('obligations');
+              const outFc = mergeFc('outlays');
+              const remFc = mergeFc('remaining_balance');
+              const _baTitle = baFc.display_label || (_bData?.fiscal_year ? `FY${_bData.fiscal_year} Operating Appropriation (Discretionary)` : 'Operating Appropriation (Discretionary)');
               if (_bLoading) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2" /><p className="text-gray-400 text-sm">Loading budget data…</p></div>;
               if (!_bLoading && _bData !== undefined && !_hasData) return <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"><p className="text-gray-400 text-sm">No official budget data available yet.</p></div>;
               if (!_hasData) return null;
               return (
                 <div className="mb-6 bg-white rounded-xl border border-gray-200 p-6">
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-2 mb-4 flex-wrap">
                     <TrendingUp className="w-5 h-5 text-green-600" />
-                    <h3 className="text-lg font-bold text-gray-800">Budget Detail</h3>
+                    <h3 className="text-lg font-bold text-gray-800">Operating appropriation (classified)</h3>
                     <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0" />
                     {budgetValidBadge(budgetValidationData[_bKey])}
-                    {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
+                    {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">FY{_bData.fiscal_year}</span>}
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_bData.budget_authority != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Budget authority (discretionary-style)</p><p className="text-2xl font-bold text-green-700">{_fmt(_bData.budget_authority)}</p></div>}
-                    {_bData.obligations != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Obligations (USAspending)</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.obligations)}</p><p className="text-[10px] text-gray-500 mt-1">Shown only when comparable to the budget figure above.</p></div>}
-                    {_bData.obligations == null && _bData.budget_authority != null && (
-                      <div className="bg-amber-50 rounded-lg p-4 border border-amber-200 sm:col-span-2">
-                        <p className="text-xs font-semibold text-amber-900 mb-1">Obligations not shown</p>
-                        <p className="text-xs text-amber-950 leading-relaxed">USAspending obligation totals for this agency were far larger than the discretionary-style budget authority (often because the agency processes payments for the whole government). Showing that number next to the budget would read like “trillions for Treasury” — misleading — so it is omitted.</p>
+                  <div className="grid grid-cols-1 gap-4 mb-4">
+                    {_bData.budget_authority != null && (
+                      <div className="bg-green-50 rounded-lg p-4 border border-green-100">
+                        <p className="text-xs text-gray-500 mb-1">{_baTitle}</p>
+                        <p className="text-2xl font-bold text-green-700">{_fmt(_bData.budget_authority)}</p>
+                        <p className="text-[10px] text-gray-600 mt-2 space-x-2">
+                          <span className="font-semibold">type:</span> {baFc.type || 'operating_appropriation'}
+                          <span className="mx-1">·</span>
+                          <span className="font-semibold">scope:</span> {baFc.scope || 'department_level'}
+                        </p>
                       </div>
                     )}
-                    {_bData.outlays != null && <div className="bg-blue-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Outlays (USAspending)</p><p className="text-2xl font-bold text-blue-700">{_fmt(_bData.outlays)}</p></div>}
-                    {_bData.remaining_balance != null && <div className="bg-purple-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Remaining balance</p><p className="text-2xl font-bold text-purple-700">{_fmt(_bData.remaining_balance)}</p></div>}
                   </div>
+                  <button type="button" onClick={() => toggleSection(_fcKey)} className="w-full flex items-center justify-between gap-2 text-left rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-100 mb-2">
+                    <span>Classification &amp; source transparency</span>
+                    {_fcOpen ? <ChevronDown className="w-5 h-5 shrink-0 text-slate-500" /> : <ChevronRight className="w-5 h-5 shrink-0 text-slate-500" />}
+                  </button>
+                  {_fcOpen && (
+                    <div className="mb-4 rounded-lg border border-slate-200 bg-white px-4 py-3 text-xs text-slate-700 space-y-3">
+                      {Array.isArray(baFc.exclusions) && baFc.exclusions.length > 0 && (
+                        <div>
+                          <p className="font-semibold text-slate-900 mb-1">Exclusions (what this figure is not)</p>
+                          <ul className="list-disc pl-4 space-y-1">{baFc.exclusions.map((ex, i) => <li key={i}>{ex}</li>)}</ul>
+                        </div>
+                      )}
+                      {baFc.source_transparency && (
+                        <div>
+                          <p className="font-semibold text-slate-900 mb-1">Source transparency</p>
+                          <p className="leading-relaxed">{baFc.source_transparency}</p>
+                        </div>
+                      )}
+                      <div className="rounded border border-amber-100 bg-amber-50 px-3 py-2 text-amber-950">
+                        <p className="font-semibold mb-1">Not shown on this page</p>
+                        <p className="leading-relaxed"><span className="font-medium">Obligations</span> ({oblFc.type || 'managed_financial_activity'}, {oblFc.scope || 'federal_level'}): {oblFc.reason}</p>
+                        <p className="leading-relaxed mt-1"><span className="font-medium">Outlays</span> ({outFc.type || 'managed_financial_activity'}, {outFc.scope || 'federal_level'}): {outFc.reason}</p>
+                        <p className="leading-relaxed mt-1"><span className="font-medium">Prior “remaining balance” field</span> ({remFc.type || 'cash_balance'}): {remFc.reason} For government-wide cash, see <span className="font-medium">U.S. cash balance (Treasury General Account — dynamic)</span> in a federal module; balance fluctuates daily.</p>
+                      </div>
+                    </div>
+                  )}
                   {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
                 </div>
               );
