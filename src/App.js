@@ -32910,7 +32910,7 @@ function App() {
                               <div className="flex items-start justify-between gap-2">
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center gap-2 mb-0.5">
-                                    <p className="text-sm font-bold text-gray-800 truncate">{trade.company || trade.asset_name || trade.assetName || trade.ticker || 'Unknown'}</p>
+                                    <p className="text-sm font-bold text-gray-800 truncate">{trade.company_name || trade.companyName || trade.company || trade.name || trade.security_name || trade.asset_name || trade.assetName || trade.ticker || 'Unknown'}</p>
                                     {trade.ticker && <span className="text-xs font-mono bg-white text-gray-600 px-1.5 py-0.5 rounded border border-gray-300 flex-shrink-0">{trade.ticker}</span>}
                                   </div>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
