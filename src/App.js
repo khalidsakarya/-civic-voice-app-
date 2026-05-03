@@ -32848,42 +32848,58 @@ function App() {
 
               {/* STOCK TRADES */}
               {(() => {
-                const liveTrades = memberStockTradeData[member.name];
+                const tradeDocs = memberStockTradeData[member.name];
                 const isLoadingTrades = !!memberStockTradeLoading[member.name];
-                const hasLiveTrades = liveTrades && liveTrades.length > 0;
+                const hasDocs = tradeDocs && tradeDocs.length > 0;
+                const allTrades = hasDocs ? tradeDocs.flatMap(doc => doc.parsed_trades || []) : [];
+                const hasParsedTrades = allTrades.length > 0;
+                const hasFilingsOnly = hasDocs && !hasParsedTrades;
+                const isSell = (type) => { const t = (type || '').toLowerCase(); return t.includes('sale') || t.includes('sell') || t === 's'; };
                 return (
                   <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                     <div className="flex items-center gap-2 mb-2">
                       <p className="panel-section-label" style={{ marginBottom: 0 }}>Stock Trading Activity</p>
                       {isLoadingTrades && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {hasLiveTrades && !isLoadingTrades && liveBadge(null, 'Weekly')}
+                      {hasParsedTrades && !isLoadingTrades && liveBadge(null, 'Weekly')}
                       {coverageBadge('limited', 'US House and Senate STOCK Act filings', 'International equivalents not included')}
                     </div>
-                    {hasLiveTrades ? (
+                    {hasParsedTrades ? (
                       <div className="space-y-2">
-                        {liveTrades.map((trade, i) => (
-                          <div key={i} className={`p-3 rounded-lg border ${trade.transactionType === 'Sale' || trade.transactionType === 'Sale (Full)' ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-bold text-gray-800">{trade.assetName || trade.stockName || trade.ticker}</p>
-                                <div className="flex flex-wrap gap-1.5 mt-1">
-                                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${trade.transactionType === 'Sale' || trade.transactionType === 'Sale (Full)' ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'}`}>
-                                    {trade.transactionType || 'Unknown'}
-                                  </span>
-                                  {trade.amount && <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">{trade.amount}</span>}
+                        {allTrades.map((trade, i) => {
+                          const sell = isSell(trade.transaction_type || trade.transactionType);
+                          return (
+                            <div key={i} className={`p-3 rounded-lg border ${sell ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2 mb-0.5">
+                                    <p className="text-sm font-bold text-gray-800 truncate">{trade.company || trade.asset_name || trade.assetName || trade.ticker || 'Unknown'}</p>
+                                    {trade.ticker && <span className="text-xs font-mono bg-white text-gray-600 px-1.5 py-0.5 rounded border border-gray-300 flex-shrink-0">{trade.ticker}</span>}
+                                  </div>
+                                  <div className="flex flex-wrap gap-1.5 mt-1">
+                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sell ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'}`}>
+                                      {sell ? 'Sell' : 'Buy'}
+                                    </span>
+                                    {(trade.amount || trade.amount_range) && (
+                                      <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">{trade.amount || trade.amount_range}</span>
+                                    )}
+                                    {(trade.asset_type || trade.assetType) && (
+                                      <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">{trade.asset_type || trade.assetType}</span>
+                                    )}
+                                  </div>
+                                  {(trade.transaction_date || trade.transactionDate) && (
+                                    <p className="text-xs text-gray-500 mt-1">{trade.transaction_date || trade.transactionDate}</p>
+                                  )}
                                 </div>
-                                {trade.transactionDate && <p className="text-xs text-gray-500 mt-1">Filed: {trade.transactionDate}</p>}
                               </div>
-                              {trade.documentUrl && (
-                                <a href={trade.documentUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-800 font-medium flex-shrink-0 underline">View Filing</a>
-                              )}
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
-                    ) : (
-                      <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                    )}
+                    ) : hasFilingsOnly ? (
+                      <p className="text-sm text-amber-700 bg-amber-50 rounded-lg p-3 border border-amber-200 text-center">Filing available — trade details being processed</p>
+                    ) : !isLoadingTrades ? (
+                      <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">No stock trades reported under STOCK Act filings</p>
+                    ) : null}
                   </section>
                 );
               })()}
