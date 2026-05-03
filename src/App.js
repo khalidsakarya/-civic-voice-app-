@@ -6036,10 +6036,14 @@ function App() {
       try { const dt = d?.toDate ? d.toDate() : new Date(d); return isNaN(dt.getTime()) ? null : dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }); } catch { return null; }
     };
     const ds = fmtDate(lastUpdated);
+    const label = ds ? `Updated: ${ds}` : 'Official Source';
+    const tooltip = freq ? `${label} · Refreshed: ${freq}` : label;
     return (
-      <span className={`inline-flex flex-col items-center bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-bold leading-tight ${extraClass}`}>
-        <span className="whitespace-nowrap">{ds ? `Updated: ${ds}` : 'Official Source'}</span>
-        {freq && <span className="font-normal text-green-100 whitespace-nowrap" style={{fontSize:'0.6rem'}}>{freq}</span>}
+      <span tabIndex={0} className={`relative inline-flex items-center group cursor-default focus:outline-none ${extraClass}`}>
+        <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+        <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity z-50">
+          {tooltip}
+        </span>
       </span>
     );
   };
@@ -6054,7 +6058,7 @@ function App() {
       <div className="flex items-center gap-2 flex-wrap text-xs bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-5">
         <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
         <span className="font-medium text-green-700">Data from official sources</span>
-        {ds && <><span className="text-gray-300">·</span><span className="text-gray-600">Updated: {ds}</span></>}
+        {lastUpdated && liveBadge(lastUpdated, 'Quarterly')}
         <span className="text-gray-300">·</span>
         <span className="text-gray-500">Budget &amp; Grants: Quarterly</span>
         <span className="text-gray-300">·</span>
@@ -17021,9 +17025,7 @@ function App() {
               <span>Sponsored by <strong className="text-gray-700">{bill.sponsor}</strong></span>
               <span>· Introduced {bill.dateIntroduced}</span>
               <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> {bill.chamber}</span>
-              {bill.last_updated && (
-                <span className="text-gray-400 ml-auto">Updated {timeAgo(bill.last_updated)}</span>
-              )}
+              {bill.last_updated && liveBadge(bill.last_updated, 'Weekly', 'ml-auto')}
             </div>
           </div>
 
@@ -26179,10 +26181,7 @@ function App() {
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold text-white" style={{ background: rankBadgeColor }}>
                     {rankPos === 1 ? '🥇' : rankPos === 2 ? '🥈' : rankPos === 3 ? '🥉' : '🏅'} {rankLabel}
                   </span>
-                  {/* Last updated */}
-                  {last_updated && (
-                    <span className="text-xs text-gray-400">Updated {last_updated}</span>
-                  )}
+                  {last_updated && liveBadge(last_updated, 'Monthly')}
                 </div>
               </div>
             </div>
@@ -28843,9 +28842,7 @@ function App() {
                           <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
                           <div className="flex items-center justify-between gap-2">
                             {bill.sponsor && <p className="text-sm sm:text-[13px] text-gray-500 font-bold sm:font-normal">Sponsor: <strong>{bill.sponsor}</strong></p>}
-                            {bill.last_updated && (
-                              <span className="text-xs text-gray-400 shrink-0">Updated {timeAgo(bill.last_updated)}</span>
-                            )}
+                            {bill.last_updated && liveBadge(bill.last_updated, 'Weekly', 'shrink-0')}
                           </div>
                         </div>
 
@@ -29604,9 +29601,7 @@ function App() {
             <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2 leading-snug">{bill.shortTitle}</h3>
             <div className="flex items-center justify-between gap-2">
               <p className="text-sm sm:text-[13px] text-gray-500 font-bold sm:font-normal">Introduced by <strong>{bill.sponsor}</strong> · {bill.dateIntroduced}</p>
-              {bill.last_updated && (
-                <span className="text-xs text-gray-400 shrink-0">Updated {timeAgo(bill.last_updated)}</span>
-              )}
+              {bill.last_updated && liveBadge(bill.last_updated, 'Weekly', 'shrink-0')}
             </div>
           </div>
 
