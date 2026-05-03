@@ -6495,8 +6495,8 @@ function App() {
                     ) : (
                       <div className="space-y-3">
                         {grantsGiven.map((g, i) => {
-                          const name = g.recipient || g.program_name || g.program || g.name || '—';
-                          const sub = g.recipient && g.program_name ? g.program_name : null;
+                          const name = g.purpose || g.program_name || g.name || g.recipient || '—';
+                          const sub = g.recipient && (g.purpose || g.program_name) ? (g.purpose || g.program_name) : null;
                           return (
                             <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
                               <div className="flex-1 min-w-0">
@@ -18847,7 +18847,7 @@ function App() {
                         {grantsGiven.map((g, i) => (
                           <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{g.recipient || g.program_name || g.name || '—'}</p>
+                              <p className="font-semibold text-gray-800 text-sm">{g.purpose || g.program_name || g.name || g.recipient || '—'}</p>
                               {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
                             </div>
                             <div className="text-right shrink-0">
@@ -31174,7 +31174,7 @@ function App() {
                         {grantsGiven.map((g, i) => (
                           <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{g.recipient || g.program_name || g.name || '—'}</p>
+                              <p className="font-semibold text-gray-800 text-sm">{g.purpose || g.program_name || g.name || g.recipient || '—'}</p>
                               {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
                             </div>
                             <div className="text-right shrink-0">
@@ -32004,7 +32004,7 @@ function App() {
                         {grantsGiven.map((g, i) => (
                           <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{g.recipient || g.program_name || g.name || '—'}</p>
+                              <p className="font-semibold text-gray-800 text-sm">{g.purpose || g.program_name || g.name || g.recipient || '—'}</p>
                               {g.program && <p className="text-xs text-gray-500 mt-1">{g.program}</p>}
                             </div>
                             <div className="text-right shrink-0">
