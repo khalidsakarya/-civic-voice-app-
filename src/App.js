@@ -2940,7 +2940,12 @@ function App() {
       try {
         let docs = [];
         const debug = key === 'Mike Kelly';
-        if (debug) console.log(`[StockTrades:MikeKelly] starting fetch — bioguide_id: ${member.bioguide_id || '(none)'}, name: "${key}"`);
+        const parts = key.trim().split(/\s+/);
+        const firstName = parts.slice(0, -1).join(' ');
+        const lastName = parts[parts.length - 1];
+        const lastFirst = `${lastName}, ${firstName}`;
+        const lastHonFirst = `${lastName}, Hon.. ${firstName}`;
+        if (debug) console.log(`[StockTrades:MikeKelly] starting fetch — bioguide_id: ${member.bioguide_id || '(none)'}, formats: "${key}" / "${lastFirst}" / "${lastHonFirst}"`);
         // 1. bioguide_id
         if (member.bioguide_id) {
           const snap = await getDocs(query(collection(db, 'member_stock_trades'), where('bioguide_id', '==', member.bioguide_id)));
@@ -2954,14 +2959,22 @@ function App() {
           if (debug) console.log(`[StockTrades:MikeKelly] member_name="${key}" → ${snap.docs.length} result(s)`);
         }
         // 3. "Last, First" format
-        if (docs.length === 0) {
-          const parts = key.trim().split(/\s+/);
-          if (parts.length >= 2) {
-            const lastFirst = `${parts[parts.length - 1]}, ${parts.slice(0, -1).join(' ')}`;
-            const snap = await getDocs(query(collection(db, 'member_stock_trades'), where('member_name', '==', lastFirst)));
-            docs = snap.docs.map(d => d.data());
-            if (debug) console.log(`[StockTrades:MikeKelly] member_name="${lastFirst}" → ${snap.docs.length} result(s)`);
-          }
+        if (docs.length === 0 && parts.length >= 2) {
+          const snap = await getDocs(query(collection(db, 'member_stock_trades'), where('member_name', '==', lastFirst)));
+          docs = snap.docs.map(d => d.data());
+          if (debug) console.log(`[StockTrades:MikeKelly] member_name="${lastFirst}" → ${snap.docs.length} result(s)`);
+        }
+        // 4. "Last, Hon.. First" format
+        if (docs.length === 0 && parts.length >= 2) {
+          const snap = await getDocs(query(collection(db, 'member_stock_trades'), where('member_name', '==', lastHonFirst)));
+          docs = snap.docs.map(d => d.data());
+          if (debug) console.log(`[StockTrades:MikeKelly] member_name="${lastHonFirst}" → ${snap.docs.length} result(s)`);
+        }
+        // 5. first_name + last_name fields
+        if (docs.length === 0 && parts.length >= 2) {
+          const snap = await getDocs(query(collection(db, 'member_stock_trades'), where('last_name', '==', lastName), where('first_name', '==', firstName)));
+          docs = snap.docs.map(d => d.data());
+          if (debug) console.log(`[StockTrades:MikeKelly] last_name="${lastName}" + first_name="${firstName}" → ${snap.docs.length} result(s)`);
         }
         if (debug) console.log(`[StockTrades:MikeKelly] final: ${docs.length} doc(s)`, docs);
         setMemberStockTradeData(prev => ({ ...prev, [key]: docs }));
