@@ -2939,15 +2939,19 @@ function App() {
     (async () => {
       try {
         let docs = [];
+        const debug = key === 'Mike Kelly';
+        if (debug) console.log(`[StockTrades:MikeKelly] starting fetch — bioguide_id: ${member.bioguide_id || '(none)'}, name: "${key}"`);
         // 1. bioguide_id
         if (member.bioguide_id) {
           const snap = await getDocs(query(collection(db, 'member_stock_trades'), where('bioguide_id', '==', member.bioguide_id)));
           docs = snap.docs.map(d => d.data());
+          if (debug) console.log(`[StockTrades:MikeKelly] bioguide_id="${member.bioguide_id}" → ${snap.docs.length} result(s)`);
         }
         // 2. "First Last" format
         if (docs.length === 0) {
           const snap = await getDocs(query(collection(db, 'member_stock_trades'), where('member_name', '==', key)));
           docs = snap.docs.map(d => d.data());
+          if (debug) console.log(`[StockTrades:MikeKelly] member_name="${key}" → ${snap.docs.length} result(s)`);
         }
         // 3. "Last, First" format
         if (docs.length === 0) {
@@ -2956,8 +2960,10 @@ function App() {
             const lastFirst = `${parts[parts.length - 1]}, ${parts.slice(0, -1).join(' ')}`;
             const snap = await getDocs(query(collection(db, 'member_stock_trades'), where('member_name', '==', lastFirst)));
             docs = snap.docs.map(d => d.data());
+            if (debug) console.log(`[StockTrades:MikeKelly] member_name="${lastFirst}" → ${snap.docs.length} result(s)`);
           }
         }
+        if (debug) console.log(`[StockTrades:MikeKelly] final: ${docs.length} doc(s)`, docs);
         setMemberStockTradeData(prev => ({ ...prev, [key]: docs }));
       } catch (err) {
         console.warn('[LiveData] member_stock_trades fetch failed:', err.message);
