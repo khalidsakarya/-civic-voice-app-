@@ -850,111 +850,8 @@ const executiveOrders = [
   },
 ];
 
-// --- BILLS AWAITING PRESIDENTIAL ACTION (EDITORIAL SAMPLE) -------------------
-// Tracked in-app sample — NOT a live Congress.gov feed. UI labels it as such.
-// Source: Congress.gov API  https://api.congress.gov/v3
-// Live endpoint: GET /v3/bill/119?sort=updateDate+desc&limit=20&api_key=YOUR_KEY
-// Field mapping: type+number->number, type->billType, number->billNumber,
-//   congress->congress, title->title, latestAction.actionDate->actionDate,
-//   originChamber->chamber, latestAction.text->status (derived), url->sourceUrl
-//   (description/summary/pros/cons/statusColor are app-added editorial content)
-// To replace with live data: fetch /v3/bill/119, filter by latestAction status,
-//   map fields, merge with editorial content keyed by billType+billNumber
-const awaitingBills = [
-  {
-    id: 'HR1', billType: 'hr', billNumber: '1', congress: '119', number: 'H.R. 1', title: 'One Big Beautiful Bill Act',
-    passedDate: 'May 22, 2025', actionDate: '2025-05-22', chamber: 'House',
-    status: 'Passed House — Pending Senate', statusCode: 'PASS_BACK', statusColor: 'blue',
-    sourceUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/1',
-    description: 'Sweeping reconciliation bill extending Trump-era tax cuts, boosting border security funding, cutting federal spending, and raising the debt ceiling.',
-    summary: 'The flagship legislative priority of the Trump administration, this reconciliation bill extends the 2017 Tax Cuts and Jobs Act tax rates beyond their 2025 expiration, adds $150B in new border and defense spending, cuts $1.5T in federal spending over 10 years (including Medicaid and SNAP reductions), eliminates clean energy credits from the Inflation Reduction Act, and raises the debt ceiling by $4T. Passed the House 215–214, it faces significant opposition in the Senate from both Democrats and moderate Republicans concerned about the Medicaid cuts.',
-    pros: ['Prevents large tax increases when TCJA expires, maintaining current rates for most Americans', 'Delivers significant border security funding aligned with voter mandate', 'Meaningful reduction in federal deficit over 10-year window', 'Streamlines and simplifies several overlapping federal programs'],
-    cons: ['CBO estimates 10–14 million people would lose Medicaid coverage', 'Adds an estimated $3.8T to national debt over 10 years per nonpartisan analysts', 'Eliminates clean energy tax credits, harming renewable industry growth', 'Very narrow House margin signals deep Republican divisions on spending cuts'],
-    support: 0, oppose: 0,
-  },
-  {
-    id: 'HR22', billType: 'hr', billNumber: '22', congress: '119', number: 'H.R. 22', title: 'SAVE Act (Safeguard American Voter Eligibility)',
-    passedDate: 'April 10, 2025', actionDate: '2025-04-10', chamber: 'House',
-    status: 'Passed House — Pending Senate', statusCode: 'PASS_BACK', statusColor: 'blue',
-    sourceUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/22',
-    description: 'Requires individuals to provide documentary proof of U.S. citizenship — such as a passport or birth certificate — when registering to vote in federal elections.',
-    summary: 'The SAVE Act amends the National Voter Registration Act to require documentary proof of citizenship (passport, birth certificate, or similar document) when registering to vote in federal elections. Supporters argue it prevents non-citizen voting; opponents argue non-citizen voting is already illegal, rare, and that the bill will disenfranchise millions of eligible citizens who lack ready access to such documents — particularly the elderly, low-income, and minority voters.',
-    pros: ['Adds a verification layer to ensure only eligible citizens vote in federal elections', 'Addresses public concern about election integrity', 'Aligns federal voter registration with some state-level requirements already in place'],
-    cons: ['Non-citizen voting in federal elections is already illegal and exceedingly rare', 'An estimated 21 million eligible citizens lack ready access to proof-of-citizenship documents', 'Disproportionately burdens elderly, low-income, rural, and minority voters', 'Creates an additional bureaucratic step that suppresses overall voter participation'],
-    support: 0, oppose: 0,
-  },
-  {
-    id: 'HR1526', billType: 'hr', billNumber: '1526', congress: '119', number: 'H.R. 1526', title: 'No Rogue Rulings Act',
-    passedDate: 'April 24, 2025', actionDate: '2025-04-24', chamber: 'House',
-    status: 'Passed House — Pending Senate', statusCode: 'PASS_BACK', statusColor: 'blue',
-    sourceUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/1526',
-    description: 'Limits the authority of individual federal district court judges to issue nationwide injunctions blocking presidential executive orders or federal policies.',
-    summary: 'This bill restricts the power of single district court judges to block federal laws or executive orders nationwide. Under the bill, injunctions issued by district courts would apply only to the specific parties in the case and the jurisdiction of that court. The legislation is directly motivated by dozens of nationwide injunctions blocking Trump\'s executive orders. Supporters say it restores the proper scope of judicial power; opponents argue it strips courts of an essential check on executive overreach.',
-    pros: ['Prevents single unelected judges from unilaterally halting national policy', 'Encourages circuit splits that allow the Supreme Court to resolve disagreements properly', 'Restores the traditional, narrower scope of district court injunctive power'],
-    cons: ['Weakens the judiciary\'s ability to check unconstitutional executive actions quickly', 'Courts have issued nationwide injunctions for over 150 years as an accepted practice', 'Could leave millions of people unprotected from illegal policies while cases are litigated', 'Primarily motivated by blocking rulings against the Trump administration'],
-    support: 0, oppose: 0,
-  },
-  {
-    id: 'S321', billType: 's', billNumber: '321', congress: '119', number: 'S. 321', title: 'GENIUS Act (Stablecoin Regulation)',
-    passedDate: 'May 19, 2025', actionDate: '2025-05-19', chamber: 'Senate',
-    status: 'Passed Senate — Pending House', statusCode: 'PASS_OVER:HOUSE', statusColor: 'purple',
-    sourceUrl: 'https://www.congress.gov/bill/119th-congress/senate-bill/321',
-    description: 'Establishes the first federal regulatory framework for payment stablecoins, requiring issuers to hold 1:1 reserves in U.S. dollars or Treasury securities.',
-    summary: 'The Guiding and Establishing National Innovation for U.S. Stablecoins (GENIUS) Act creates a licensing and oversight regime for stablecoin issuers. It requires 1:1 backing with liquid assets (cash or short-term Treasuries), mandates monthly reserve disclosures, prohibits algorithmic stablecoins, and gives the OCC and state regulators joint oversight. The bill passed the Senate 66–32 in bipartisan fashion, representing Congress\'s first major crypto legislation.',
-    pros: ['Provides legal clarity that U.S. crypto businesses urgently need to invest and grow', 'Protects consumers with mandatory reserve requirements preventing FTX-style collapses', 'Bipartisan 66-vote Senate passage signals broad consensus', 'Could cement dollar dominance in the digital asset era globally'],
-    cons: ['Critics say reserves requirement is insufficient without stronger audit mechanisms', 'Some Democrats argue the bill was weakened by lobbying from crypto industry donors', 'Could entrench large stablecoin issuers at the expense of smaller competitors', 'Preempts some state consumer protection laws'],
-    support: 0, oppose: 0,
-  },
-  {
-    id: 'HR485', billType: 'hr', billNumber: '485', congress: '119', number: 'H.R. 485', title: 'Protection of Women and Girls in Sports Act',
-    passedDate: 'January 14, 2025', actionDate: '2025-01-14', chamber: 'House',
-    status: 'Passed Both Chambers — Awaiting presidential action', statusCode: 'PRES_ACTION', statusColor: 'green',
-    sourceUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/485',
-    description: 'Prohibits transgender athletes who were assigned male at birth from competing in women\'s sports categories at schools and colleges that receive federal funding.',
-    summary: 'This bill amends Title IX of the Education Amendments of 1972 to define "sex" as biological sex for the purposes of athletic programs. Schools receiving federal funding would be prohibited from allowing transgender women (born male) to compete in female sports categories. Compliance would be enforced through withdrawal of federal funding. The bill passed both chambers largely along party lines and is with the President for action (signature, veto, or presentment outcomes per the Constitution).',
-    pros: ['Protects competitive fairness for biological female athletes in school sports', 'Provides clear federal guidance that schools can follow consistently', 'Addresses concerns about physical differences affecting competition outcomes'],
-    cons: ['Excludes transgender girls who have transitioned early and may have no physiological advantage', 'Major medical and sports organizations support case-by-case evaluation rather than blanket bans', 'Targets a very small population (0.6% of youth identify as transgender)', 'Could expose LGBTQ+ youth to increased bullying and mental health harm'],
-    support: 0, oppose: 0,
-  },
-  {
-    id: 'HR2018', billType: 'hr', billNumber: '2018', congress: '119', number: 'H.R. 2018', title: 'No Taxpayer Funding for Abortion Act',
-    passedDate: 'March 27, 2025', actionDate: '2025-03-27', chamber: 'House',
-    status: 'Passed House — Pending Senate', statusCode: 'PASS_BACK', statusColor: 'blue',
-    sourceUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/2018',
-    description: 'Permanently codifies the Hyde Amendment into statutory law, banning the use of federal funds for abortion services across all federal programs including Medicaid.',
-    summary: 'The Hyde Amendment has been a temporary budget rider since 1976, renewed annually by Congress. This bill would make it permanent law, banning federal funding of abortion through Medicaid, the Federal Employees Health Benefits Program, and other federal insurance programs except in cases of rape, incest, or life endangerment. It also extends restrictions to the ACA marketplace. Passed largely along party lines in the House; faces a 60-vote filibuster threshold in the Senate.',
-    pros: ['Reflects the principle that taxpayers should not be required to fund a procedure many find morally objectionable', 'Makes permanent a budget policy that has been enacted continuously for nearly 50 years', 'Provides stable long-term policy certainty instead of annual rider uncertainty'],
-    cons: ['Disproportionately affects low-income women on Medicaid who cannot afford private alternatives', 'Overrides the decision of women and their doctors on a personal medical matter', 'Effectively creates a two-tiered system where only wealthy women can access abortion services', 'Will face filibuster and is unlikely to pass the Senate without rule changes'],
-    support: 0, oppose: 0,
-  },
-  {
-    id: 'S870', billType: 's', billNumber: '870', congress: '119', number: 'S. 870', title: 'DOGE Enabling and Accountability Act',
-    passedDate: 'March 5, 2025', actionDate: '2025-03-05', chamber: 'Senate',
-    status: 'Passed Senate — Pending House', statusCode: 'PASS_OVER:HOUSE', statusColor: 'purple',
-    sourceUrl: 'https://www.congress.gov/bill/119th-congress/senate-bill/870',
-    description: 'Formally establishes the Department of Government Efficiency (DOGE) as a statutory advisory body with defined oversight authority and mandatory transparency reporting.',
-    summary: 'This bill formally creates the Department of Government Efficiency (DOGE) as a statutory body in the executive branch, setting legal boundaries on its authority. It requires DOGE to publicly report all spending cuts it recommends, obtain Congressional notification before implementing cost reductions above $50M, and submit quarterly reports to Congress. It also requires DOGE personnel to comply with federal ethics laws and conflict-of-interest disclosures. Supporters say it legitimizes DOGE; opponents say it validates an unconstitutional structure led by Elon Musk.',
-    pros: ['Provides legal authorization and accountability framework for a currently informal body', 'Requires transparency reporting that makes DOGE activities subject to public scrutiny', 'Congressional notification thresholds add oversight to prevent unilateral spending cuts', 'Addresses concerns about the constitutional legitimacy of DOGE\'s current structure'],
-    cons: ['Formally empowers a body controlled by a private billionaire with massive government contracts', 'Ethics and conflict-of-interest concerns regarding Musk\'s companies (SpaceX, Tesla, Starlink) remain', 'Critics argue DOGE has caused significant harm to federal agencies with little accountability so far', 'Many legal scholars argue its current activities are already unconstitutional regardless of legislation'],
-    support: 0, oppose: 0,
-  },
-  {
-    id: 'HR1100', billType: 'hr', billNumber: '1100', congress: '119', number: 'H.R. 1100', title: 'Restoring Education Standards and Trust Act',
-    passedDate: 'April 3, 2025', actionDate: '2025-04-03', chamber: 'House',
-    status: 'Passed House — Pending Senate', statusCode: 'PASS_BACK', statusColor: 'blue',
-    sourceUrl: 'https://www.congress.gov/bill/119th-congress/house-bill/1100',
-    description: 'Prohibits federally funded schools from using curricula that teaches Critical Race Theory or mandatory DEI training for students or staff.',
-    summary: 'This bill conditions federal K-12 and higher education funding on schools certifying they do not use curricula the bill defines as "discriminatory" — including materials framed around Critical Race Theory, mandatory DEI training, and certain historical frameworks. Schools found in violation would face funding clawbacks. Supporters say it ensures parents\' rights over curriculum; critics say its vague language would ban legitimate history instruction and chill academic freedom.',
-    pros: ['Responds to parent concerns about age-inappropriate or politically partisan material in schools', 'Reinforces parental rights over children\'s education content', 'Prevents use of taxpayer dollars to fund divisive ideological programs in schools'],
-    cons: ['Vague definition of prohibited content could prohibit teaching of accurate U.S. history including slavery and civil rights', 'Creates federal micromanagement of local school curriculum decisions', 'Chilling effect on teachers leads to self-censorship even for lawful subjects', 'Experts note CRT is a graduate-level legal framework not taught in K-12 schools'],
-    support: 0, oppose: 0,
-  },
-];
-
-/** Merge key for editorial rows bundled with live Congress.gov desk scan */
-const editorialPendingPresidentBillByKey = new Map(
-  awaitingBills.map((b) => [`${b.billType}-${b.billNumber}`, b])
-);
+const CONGRESS_LIVE_BILLS_UNAVAILABLE = 'Live Congress.gov data is unavailable. Configure CONGRESS_API_KEY on the server and redeploy.';
+const CONGRESS_LIVE_BILLS_EMPTY = 'No bills are currently identified as awaiting presidential action in the live Congress.gov scan.';
 
 /** Default US Congress number for Congress.gov (Jan 3 rollover). */
 function getCurrentUsCongressNumber(d = new Date()) {
@@ -985,11 +882,10 @@ function congressOrdinalLabel(congress) {
   return `${c}${suf} Congress`;
 }
 
-/** Map /api/congress-pending-president row + optional editorial into president-bill card shape */
+/** Map /api/congress-pending-president row into president-bill card shape (live API only; no curated merge). */
 function enrichPresidentDeskBillFromApi(row) {
   const billType = (row.billType || '').toLowerCase();
   const billNumber = String(row.billNumber ?? '');
-  const ed = editorialPendingPresidentBillByKey.get(`${billType}-${billNumber}`) || null;
   const id =
     billType === 'hr' ? `HR${billNumber}` :
     billType === 's' ? `S${billNumber}` :
@@ -1017,13 +913,12 @@ function enrichPresidentDeskBillFromApi(row) {
     statusCode: 'LIVE_CONGRESS',
     statusColor: 'green',
     sourceUrl: row.sourceUrl || 'https://www.congress.gov/',
-    description: ed?.description || latest || 'See Congress.gov for full status and text.',
-    summary: ed?.summary || `${row.title || 'Bill'}\n\nLatest action (Congress.gov): ${latest || '—'}`,
-    pros: Array.isArray(ed?.pros) ? ed.pros : [],
-    cons: Array.isArray(ed?.cons) ? ed.cons : [],
-    support: typeof ed?.support === 'number' ? ed.support : 0,
-    oppose: typeof ed?.oppose === 'number' ? ed.oppose : 0,
-    liveFromCongressGov: true,
+    description: latest || 'See Congress.gov for full status and text.',
+    summary: `${row.title || 'Bill'}\n\nLatest action (Congress.gov): ${latest || '—'}`,
+    pros: [],
+    cons: [],
+    support: 0,
+    oppose: 0,
   };
 }
 
@@ -5700,12 +5595,12 @@ function App() {
     })();
   }, [view, selectedCountry?.type]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Bills awaiting presidential action — live Congress.gov via /api (server holds CONGRESS_API_KEY). Fallback: curated sample + amber notice.
-  // Future: paginate + cache in Firestore (scheduled job) for deeper coverage and API quota.
+  // Bills awaiting presidential action — live-only via /api/congress-pending-president (CONGRESS_API_KEY on server). No curated fallback.
   useEffect(() => {
     if (view !== 'bills-awaiting-signature') return undefined;
     let cancelled = false;
     const congress = getCurrentUsCongressNumber();
+    setSelectedPresidentBill(null);
     setPresidentDeskBills(null);
     setPresidentDeskBillsSource(null);
     setPresidentDeskBillsError(null);
@@ -5716,22 +5611,29 @@ function App() {
         const data = await res.json().catch(() => ({}));
         if (cancelled) return;
         if (!res.ok) {
-          setPresidentDeskBills(awaitingBills.map((b) => ({ ...b, liveFromCongressGov: false })));
-          setPresidentDeskBillsSource('sample');
-          setPresidentDeskBillsError(data.message || `Congress bills API returned ${res.status}. Using curated sample.`);
+          setPresidentDeskBills(null);
+          setPresidentDeskBillsSource(null);
+          setPresidentDeskBillsError(CONGRESS_LIVE_BILLS_UNAVAILABLE);
+          if (data.message) console.warn('[PresidentDeskBills]', data.message);
+          return;
+        }
+        if (data.source !== 'live') {
+          setPresidentDeskBills(null);
+          setPresidentDeskBillsSource(null);
+          setPresidentDeskBillsError(CONGRESS_LIVE_BILLS_UNAVAILABLE);
           return;
         }
         const raw = Array.isArray(data.bills) ? data.bills : [];
         const enriched = raw.map(enrichPresidentDeskBillFromApi);
         setPresidentDeskBills(enriched);
-        setPresidentDeskBillsSource(data.source === 'live' ? 'live' : 'sample');
-        setPresidentDeskBillsError(data.source === 'live' ? null : (data.message || null));
+        setPresidentDeskBillsSource('live');
+        setPresidentDeskBillsError(null);
       } catch (err) {
         if (cancelled) return;
         console.warn('[PresidentDeskBills] fetch failed:', err.message);
-        setPresidentDeskBills(awaitingBills.map((b) => ({ ...b, liveFromCongressGov: false })));
-        setPresidentDeskBillsSource('sample');
-        setPresidentDeskBillsError('Could not load live list (network or missing /api route). Showing curated sample.');
+        setPresidentDeskBills(null);
+        setPresidentDeskBillsSource(null);
+        setPresidentDeskBillsError(CONGRESS_LIVE_BILLS_UNAVAILABLE);
       } finally {
         if (!cancelled) setPresidentDeskBillsLoading(false);
       }
@@ -25487,7 +25389,7 @@ function App() {
               {usCabinetRosterCount != null && usCabinetRosterCount >= 0 && (
                 <span> Cabinet-related <span className="font-medium">department_heads</span> (US): <span className="font-medium">{usCabinetRosterCount}</span> record{usCabinetRosterCount === 1 ? '' : 's'}.</span>
               )}
-              {' '}Executive orders and the <span className="font-medium">bills awaiting presidential action</span> entry below are <span className="font-medium">curated samples</span> with real document links — not exhaustive Federal Register or Congress.gov pulls.
+              {' '}Executive orders below are a <span className="font-medium">curated sample</span> with Federal Register links. <span className="font-medium">Bills Awaiting Presidential Action</span> is <span className="font-medium">live-only</span> (Congress.gov API); there is no offline list in the app.
             </p>
           </div>
 
@@ -25539,8 +25441,8 @@ function App() {
                   <Scale className="w-5 h-5 text-blue-600" />
                 </div>
                 <div className="text-left">
-                  <p className="font-bold text-gray-800 text-base">Bills Awaiting Presidential Action <span className="text-[10px] font-semibold text-slate-500">(live when API set)</span></p>
-                  <p className="text-xs text-gray-500 mt-0.5">Congress.gov when the server API is configured; otherwise a curated sample with links</p>
+                  <p className="font-bold text-gray-800 text-base">Bills Awaiting Presidential Action</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Live Congress.gov list only — requires CONGRESS_API_KEY on the server (see deploy docs)</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-blue-500 flex-shrink-0" />
@@ -28149,10 +28051,61 @@ function App() {
   );
 
   const renderBillsAwaitingPresidentialAction = () => {
-    const showLoading = presidentDeskBillsLoading && presidentDeskBills === null;
-    const deskRows = presidentDeskBills !== null ? presidentDeskBills : awaitingBills;
-    const isLive = presidentDeskBillsSource === 'live';
+    const showLoading = presidentDeskBillsLoading;
+    const liveCongressReady = !presidentDeskBillsLoading
+      && presidentDeskBillsSource === 'live'
+      && Array.isArray(presidentDeskBills)
+      && !presidentDeskBillsError;
+    const hasFetchError = !presidentDeskBillsLoading && !!presidentDeskBillsError;
+    const deskRows = liveCongressReady ? presidentDeskBills : [];
     const congressN = getCurrentUsCongressNumber();
+
+    const renderBillCard = (bill) => {
+      const votes = presidentBillVotes[bill.id] || { support: bill.support, oppose: bill.oppose, userVote: null };
+      const total = votes.support + votes.oppose;
+      const pct = total > 0 ? Math.round((votes.support / total) * 100) : 0;
+      const statusColors = {
+        green:  { badge: 'bg-green-50 border-green-200 text-green-700' },
+        blue:   { badge: 'bg-blue-50 border-blue-200 text-blue-700' },
+        purple: { badge: 'bg-purple-50 border-purple-200 text-purple-700' },
+        red:    { badge: 'bg-red-50 border-red-200 text-red-700' },
+      };
+      const sc = statusColors[bill.statusColor] || statusColors.blue;
+      const shareText = (bill.summary || bill.description || bill.title || '').slice(0, 500);
+      return (
+        <div
+          key={bill.id}
+          onClick={() => setSelectedPresidentBill(bill)}
+          className="relative bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all"
+        >
+          <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.number}: ${bill.title}`, text: shareText, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <span className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full flex-shrink-0">{bill.number}</span>
+            <span className="text-xs text-gray-400 flex-shrink-0">{bill.passedDate}</span>
+          </div>
+          <h3 className="text-sm font-bold text-gray-800 mb-1.5 leading-snug">{bill.title}</h3>
+          <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full border mb-2 ${sc.badge}`}>{bill.status}</span>
+          <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{bill.description}</p>
+          {total > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+              </div>
+              <span className="text-xs text-gray-400">{pct}% support</span>
+            </div>
+          )}
+          <a
+            href={bill.sourceUrl} target="_blank" rel="noopener noreferrer"
+            onClick={e => e.stopPropagation()}
+            className="mt-2.5 flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors"
+          >
+            <Globe className="w-3 h-3 flex-shrink-0" />
+            Source: congress.gov
+          </a>
+        </div>
+      );
+    };
+
     return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-5xl mx-auto">
@@ -28163,118 +28116,62 @@ function App() {
           ← Back
         </button>
 
-        <div className="mb-4 animate-slide-in">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">
-            Bills Awaiting Presidential Action
-            <span className="text-base font-semibold text-slate-500">
-              {isLive ? ' (live · Congress.gov)' : ' (curated sample)'}
-            </span>
+        <div className="mb-4 animate-slide-in flex flex-wrap items-baseline gap-x-3 gap-y-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">
+            {showLoading ? 'Loading…' : hasFetchError ? 'Live Congress.gov unavailable' : 'Bills Awaiting Presidential Action'}
           </h1>
-          <p className="text-gray-600 text-base sm:text-lg">
-            {showLoading
-              ? `Loading measures from Congress.gov (${congressOrdinalLabel(congressN)})…`
-              : isLive
-                ? `${deskRows.length} measure${deskRows.length === 1 ? '' : 's'} whose latest action matches presentation or delivery to the President for presidential action (last scan). Tap for detail; votes are in-app only.`
-                : `${deskRows.length} items in curated sample · tap to read and vote (votes are in-app only)`}
-          </p>
-          <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
+          {liveCongressReady && (
+            <span className="inline-flex items-center rounded-full border border-green-600 bg-green-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-green-800">
+              Live · Congress.gov
+            </span>
+          )}
+          <div className="w-full text-gray-600 text-base sm:text-lg mt-1">
+            {showLoading && `Loading live data from Congress.gov (${congressOrdinalLabel(congressN)})…`}
+            {liveCongressReady && deskRows.length > 0 && (
+              <span>{deskRows.length} measure{deskRows.length === 1 ? '' : 's'} from the latest Congress.gov scan (latest action indicates presentation or delivery to the President). Tap a row for detail. In-app votes are not official.</span>
+            )}
+            {liveCongressReady && deskRows.length === 0 && (
+              <span>
+                {CONGRESS_LIVE_BILLS_EMPTY}{' '}
+                <a href="https://www.congress.gov/legislation" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline whitespace-nowrap">Search Congress.gov</a>
+              </span>
+            )}
+            {hasFetchError && (
+              <span className="text-slate-700">This screen is live-only. No static or curated bills are shown.</span>
+            )}
+          </div>
+          <div className="w-full h-px bg-gradient-to-r from-blue-500/40 to-transparent mt-2 max-w-md" />
         </div>
 
-        {presidentDeskBillsError && (
-          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-950">
-            {presidentDeskBillsError}
+        {hasFetchError && (
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-950">
+            <p className="font-semibold text-red-900 mb-1">Cannot load live bills</p>
+            <p>{presidentDeskBillsError}</p>
           </div>
         )}
 
-        <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-800 leading-relaxed">
-          {isLive ? (
-            <>
-              <p className="font-semibold text-slate-900 mb-1">Live legislative status (filtered)</p>
-              <p className="text-slate-700">
-                Data comes from the <span className="font-medium">Congress.gov API</span> (Library of Congress). We include bills and joint resolutions where the <span className="font-medium">latest action text</span> indicates presentation or delivery to the President — i.e. with the President for possible action (signature, veto, presentment outcomes, or timing after adjournment), not merely “awaiting a signature.” Rows whose latest action already shows enactment, signing, or veto are excluded.
-                Always confirm timing and text on the official bill page.
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="font-semibold text-slate-900 mb-1">Sample or offline mode</p>
-              <p className="text-slate-700">
-                Either the live API is not configured, the request failed, or you are on local <code className="text-[11px] bg-slate-100 px-1 rounded">npm start</code> without <code className="text-[11px] bg-slate-100 px-1 rounded">vercel dev</code>.
-                For production, set <span className="font-medium">CONGRESS_API_KEY</span> on Vercel and deploy; use <span className="font-medium">vercel dev</span> locally to exercise <span className="font-medium">/api/congress-pending-president</span>.
-              </p>
-            </>
-          )}
-        </div>
+        {liveCongressReady && (
+          <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-800 leading-relaxed">
+            <p className="font-semibold text-slate-900 mb-1">How this list is built</p>
+            <p className="text-slate-700">
+              Data comes from the <span className="font-medium">Congress.gov API</span> (Library of Congress) via this app&apos;s server route. Only bills and joint resolutions whose <span className="font-medium">latest action text</span> matches presentation or delivery to the President are included. Confirm full text and timing on each bill&apos;s official page.
+            </p>
+          </div>
+        )}
 
         {showLoading ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-600 gap-3">
             <Loader2 className="w-10 h-10 animate-spin text-blue-600" aria-hidden />
-            <p className="text-sm">Fetching recent Congress.gov status…</p>
+            <p className="text-sm">Contacting Congress.gov…</p>
           </div>
-        ) : (
-          <>
-            {deskRows.length === 0 && (
-              <div className="rounded-lg border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-600">
-                <p className="mb-2 font-medium text-slate-800">No matching measures in this scan</p>
-                <p className="mb-4">The API returned zero bills whose <em>latest</em> action text matches presentation or delivery to the President for presidential action (within the bill types and recency window we query).</p>
-                <a href="https://www.congress.gov/legislation" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Search legislation on Congress.gov →</a>
-              </div>
-            )}
-            {deskRows.length > 0 && (
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {deskRows.map((bill) => {
-            const votes = presidentBillVotes[bill.id] || { support: bill.support, oppose: bill.oppose, userVote: null };
-            const total = votes.support + votes.oppose;
-            const pct = total > 0 ? Math.round((votes.support / total) * 100) : 0;
-            const statusColors = {
-              green:  { badge: 'bg-green-50 border-green-200 text-green-700' },
-              blue:   { badge: 'bg-blue-50 border-blue-200 text-blue-700' },
-              purple: { badge: 'bg-purple-50 border-purple-200 text-purple-700' },
-              red:    { badge: 'bg-red-50 border-red-200 text-red-700' },
-            };
-            const sc = statusColors[bill.statusColor] || statusColors.blue;
-            const shareText = (bill.summary || bill.description || bill.title || '').slice(0, 500);
-            return (
-              <div
-                key={bill.id}
-                onClick={() => setSelectedPresidentBill(bill)}
-                className="relative bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all"
-              >
-                <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.number}: ${bill.title}`, text: shareText, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <span className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full flex-shrink-0">{bill.number}</span>
-                  <span className="text-xs text-gray-400 flex-shrink-0">{bill.passedDate}</span>
-                </div>
-                <h3 className="text-sm font-bold text-gray-800 mb-1.5 leading-snug">{bill.title}</h3>
-                <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full border mb-2 ${sc.badge}`}>{bill.status}</span>
-                <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{bill.description}</p>
-                {total > 0 && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-gray-100 rounded-full h-1.5">
-                      <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
-                    </div>
-                    <span className="text-xs text-gray-400">{pct}% support</span>
-                  </div>
-                )}
-                <a
-                  href={bill.sourceUrl} target="_blank" rel="noopener noreferrer"
-                  onClick={e => e.stopPropagation()}
-                  className="mt-2.5 flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors"
-                >
-                  <Globe className="w-3 h-3 flex-shrink-0" />
-                  Source: congress.gov
-                </a>
-              </div>
-            );
-          })}
-        </div>
-            )}
-          </>
-        )}
+        ) : liveCongressReady && deskRows.length > 0 ? (
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {deskRows.map(renderBillCard)}
+          </div>
+        ) : null}
       </div>
 
-      {/* Bill detail modal (bills awaiting presidential action) */}
-      {selectedPresidentBill && (() => {
+      {selectedPresidentBill && liveCongressReady && deskRows.length > 0 && (() => {
         const votes = presidentBillVotes[selectedPresidentBill.id] || { support: selectedPresidentBill.support, oppose: selectedPresidentBill.oppose, userVote: null };
         const statusColors = {
           green:  'bg-green-100 text-green-800',
@@ -28284,7 +28181,6 @@ function App() {
         };
         return (
           <div className="fixed inset-0 z-[60] overflow-y-auto bg-gray-50">
-            {/* Sticky header bar */}
             <div className="bg-white shadow-sm sticky top-0 z-10">
               <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
                 <button
@@ -28304,7 +28200,6 @@ function App() {
             </div>
 
             <div className="max-w-6xl mx-auto px-4 py-8">
-              {/* Main card */}
               <div className="bg-white rounded-lg shadow-md p-8 mb-6">
                 <div className="flex items-center gap-3 mb-4 flex-wrap">
                   <span className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-lg font-bold">
@@ -28315,6 +28210,9 @@ function App() {
                   </span>
                   <span className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full">
                     {congressOrdinalLabel(selectedPresidentBill.congress)}
+                  </span>
+                  <span className="inline-flex items-center rounded-full border border-green-600 bg-green-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-green-800">
+                    Live · Congress.gov
                   </span>
                 </div>
 
@@ -28327,7 +28225,7 @@ function App() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5" />
-                    <span>{selectedPresidentBill.liveFromCongressGov ? 'Latest action date' : 'Passed'}: {selectedPresidentBill.passedDate}</span>
+                    <span>Latest action date: {selectedPresidentBill.passedDate}</span>
                   </div>
                 </div>
 
@@ -28335,9 +28233,7 @@ function App() {
                   <h3 className="font-bold text-gray-800 mb-2">Summary</h3>
                   <p className="text-gray-700 whitespace-pre-line">{selectedPresidentBill.summary}</p>
                   <p className="text-xs text-slate-600 mt-3 border-t border-blue-200 pt-3">
-                    {selectedPresidentBill.liveFromCongressGov
-                      ? 'Live status line from Congress.gov API; confirm full text and timing on the bill page. Support/oppose totals are community votes in this app only.'
-                      : 'Curated sample; confirm current status and text on Congress.gov. Support/oppose totals are community votes in this app only.'}
+                    Text above is derived from the Congress.gov API response (title and latest action). Confirm the full enrolled text and status on Congress.gov. Support/oppose totals are in-app community votes only.
                   </p>
                 </div>
 
@@ -28361,6 +28257,7 @@ function App() {
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
+                        type="button"
                         onClick={() => requireRegion(() => votePresidentBill(selectedPresidentBill.id, 'support'))}
                         className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
                       >
@@ -28368,6 +28265,7 @@ function App() {
                         <span>{votes.userVote === 'support' ? 'Supporting' : 'Support This Bill'}</span>
                       </button>
                       <button
+                        type="button"
                         onClick={() => requireRegion(() => votePresidentBill(selectedPresidentBill.id, 'concerned'))}
                         className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'concerned' ? 'bg-orange-600 text-white' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'}`}
                       >
@@ -28375,6 +28273,7 @@ function App() {
                         <span>{votes.userVote === 'concerned' ? 'Concerned' : 'Concerned'}</span>
                       </button>
                       <button
+                        type="button"
                         onClick={() => requireRegion(() => votePresidentBill(selectedPresidentBill.id, 'oppose'))}
                         className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
                       >
