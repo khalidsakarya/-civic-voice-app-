@@ -5883,15 +5883,20 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">🏛️ US Federal Departments</h2>
-            <p className="text-gray-600 mb-4">15 Cabinet-level executive departments managing federal operations</p>
+            <p className="text-gray-600 mb-3">15 cabinet departments — figures from USAspending, adjusted to a <span className="font-semibold text-gray-800">discretionary-style budget authority</span> for major agencies so totals match what Congress appropriates, not bank-wide payment flows (which is why Treasury is not trillions here).</p>
+            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              <span className="font-semibold">Why “Spent” disappeared for some departments:</span>{' '}
+              USAspending “obligations” for a few toptier agencies (especially Treasury) include government-wide activity. Where that number is not comparable to the budget figure, we hide it so the screen stays honest — use <span className="font-medium">Budget authority</span> and the grant/program sections below for money you can reason about.
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
                 <p className="text-sm text-gray-600">Total Departments</p>
                 <p className="text-2xl font-bold text-blue-600">{usDepartments.length}</p>
               </div>
               <div className="bg-white rounded-lg p-4 border-2 border-green-300">
-                <p className="text-sm text-gray-600">Combined Budget</p>
-                {combinedBudget > 0 ? <p className="text-2xl font-bold text-green-600">{fmtB(combinedBudget)}</p> : <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>}
+                <p className="text-sm text-gray-600">Combined budget authority</p>
+                <p className="text-xs text-gray-500 mt-0.5">Sum of department figures above — not all federal spending</p>
+                {combinedBudget > 0 ? <p className="text-2xl font-bold text-green-600 mt-1">{fmtB(combinedBudget)}</p> : <p className="text-sm font-medium text-gray-400 italic mt-1">Official data loading</p>}
               </div>
               <div className="bg-white rounded-lg p-4 border-2 border-purple-300">
                 <p className="text-sm text-gray-600">Total Employees</p>
@@ -5930,16 +5935,18 @@ function App() {
                   <p className="text-gray-700 mb-4">{dept.description}</p>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="bg-green-50 rounded p-2">
-                      <p className="text-xs text-gray-600">Budget</p>
-                      {hasLiveBudget && bd.budget_authority != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.budget_authority)}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
+                      <p className="text-xs text-gray-600 leading-tight">Budget authority</p>
+                      {hasLiveBudget && bd.budget_authority != null ? <p className="text-sm font-bold text-green-600">{fmtB(bd.budget_authority)}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data' : 'Loading…'}</p>}
                     </div>
                     <div className="bg-blue-50 rounded p-2">
-                      <p className="text-xs text-gray-600">Spent</p>
-                      {hasLiveBudget && bd.obligations != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.obligations)}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
+                      <p className="text-xs text-gray-600 leading-tight">Obligations</p>
+                      {hasLiveBudget && bd.obligations != null ? <p className="text-sm font-bold text-blue-600">{fmtB(bd.obligations)}</p>
+                        : hasLiveBudget && bd._loaded && bd.budget_authority != null ? <p className="text-xs font-medium text-amber-800 leading-snug">Not shown — not comparable to budget here</p>
+                        : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data' : 'Loading…'}</p>}
                     </div>
                     <div className="bg-purple-50 rounded p-2">
-                      <p className="text-xs text-gray-600">Fiscal Year</p>
-                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data available' : 'Official data loading'}</p>}
+                      <p className="text-xs text-gray-600">Fiscal year</p>
+                      {hasLiveBudget && bd.fiscal_year ? <p className="text-sm font-bold text-purple-600">{bd.fiscal_year}</p> : <p className="text-xs font-medium text-gray-400 italic">{bd?._loaded ? 'No data' : 'Loading…'}</p>}
                     </div>
                   </div>
                 </div>
@@ -6002,22 +6009,42 @@ function App() {
             <p className="text-gray-600 mb-4">{selectedDepartment.description}</p>
             {deptInfoBar(deptBudgetData[`US:${selectedDepartment.name}`]?.last_updated)}
 
+            <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800">
+              <span className="font-semibold">How to read these numbers:</span>{' '}
+              <span className="text-slate-700">“Budget authority” is a discretionary-style total for major cabinets (aligned with enacted appropriations), not every dollar that touches the agency in USAspending. Obligations/outlays are hidden when they would read as trillions for a cabinet department — that usually means the API is tagging government-wide payments to the agency, not its operating budget.</span>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
                 <div className="flex items-center gap-3 mb-2">
                   <DollarSign className="w-8 h-8 text-green-600" />
-                  <h3 className="text-lg font-bold text-gray-800">Annual Budget</h3>
+                  <h3 className="text-lg font-bold text-gray-800">Budget authority</h3>
                   {deptBudgetData[`US:${selectedDepartment.name}`]?.budget_authority != null && <span className="w-2 h-2 rounded-full bg-green-500 inline-block flex-shrink-0 ml-auto" />}
                 </div>
+                <p className="text-xs text-gray-600 mb-1">Discretionary-style (FY), engine-capped where needed</p>
                 {(() => { const _bd = deptBudgetData[`US:${selectedDepartment.name}`]; const raw = _bd?.budget_authority; if (raw == null) return <p className="text-sm text-gray-400 italic">{_bd?._loaded ? 'No data available' : 'Official data loading'}</p>; const v = Number(raw); const fmt = v >= 1e12 ? `$${(v/1e12).toFixed(1)}T` : v >= 1e9 ? `$${(v/1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v/1e6).toFixed(1)}M` : `$${v.toLocaleString()}`; return <p className="text-2xl font-bold text-green-700">{fmt}</p>; })()}
               </div>
 
               <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
                 <div className="flex items-center gap-3 mb-2">
                   <TrendingUp className="w-8 h-8 text-blue-600" />
-                  <h3 className="text-lg font-bold text-gray-800">Grants Given</h3>
+                  <h3 className="text-lg font-bold text-gray-800">Grant programs (CFDA)</h3>
                 </div>
-                <p className="text-sm text-gray-400 italic">Official data loading</p>
+                <p className="text-xs text-gray-600 mb-1">Largest formula/project grants in the FY window</p>
+                {(() => {
+                  const _bd = deptBudgetData[`US:${selectedDepartment.name}`];
+                  const gf = Array.isArray(_bd?.grants_given) ? _bd.grants_given : [];
+                  if (!_bd?._loaded) return <p className="text-sm text-gray-400 italic">Official data loading</p>;
+                  if (gf.length === 0) return <p className="text-sm text-gray-500">No CFDA rollup in dataset yet.</p>;
+                  const total = gf.reduce((s, g) => s + (Number(g?.amount) || 0), 0);
+                  const fmt = (v) => { if (!v) return '$0'; if (v >= 1e12) return `$${(v/1e12).toFixed(2)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
+                  return (
+                    <>
+                      <p className="text-2xl font-bold text-blue-700">{fmt(total)}</p>
+                      <p className="text-xs text-gray-600 mt-1">Across top {gf.length} programs listed below</p>
+                    </>
+                  );
+                })()}
               </div>
 
               <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-6">
@@ -6051,10 +6078,16 @@ function App() {
                     {_bData.fiscal_year && <span className="text-xs text-gray-500 ml-auto">{_bData.fiscal_year}</span>}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    {_bData.budget_authority != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Budget Authority</p><p className="text-2xl font-bold text-green-700">{_fmt(_bData.budget_authority)}</p></div>}
-                    {_bData.obligations != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Obligations</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.obligations)}</p></div>}
-                    {_bData.outlays != null && <div className="bg-blue-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Outlays</p><p className="text-2xl font-bold text-blue-700">{_fmt(_bData.outlays)}</p></div>}
-                    {_bData.remaining_balance != null && <div className="bg-purple-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Remaining Balance</p><p className="text-2xl font-bold text-purple-700">{_fmt(_bData.remaining_balance)}</p></div>}
+                    {_bData.budget_authority != null && <div className="bg-green-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Budget authority (discretionary-style)</p><p className="text-2xl font-bold text-green-700">{_fmt(_bData.budget_authority)}</p></div>}
+                    {_bData.obligations != null && <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Obligations (USAspending)</p><p className="text-2xl font-bold text-orange-700">{_fmt(_bData.obligations)}</p><p className="text-[10px] text-gray-500 mt-1">Shown only when comparable to the budget figure above.</p></div>}
+                    {_bData.obligations == null && _bData.budget_authority != null && (
+                      <div className="bg-amber-50 rounded-lg p-4 border border-amber-200 sm:col-span-2">
+                        <p className="text-xs font-semibold text-amber-900 mb-1">Obligations not shown</p>
+                        <p className="text-xs text-amber-950 leading-relaxed">USAspending obligation totals for this agency were far larger than the discretionary-style budget authority (often because the agency processes payments for the whole government). Showing that number next to the budget would read like “trillions for Treasury” — misleading — so it is omitted.</p>
+                      </div>
+                    )}
+                    {_bData.outlays != null && <div className="bg-blue-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Outlays (USAspending)</p><p className="text-2xl font-bold text-blue-700">{_fmt(_bData.outlays)}</p></div>}
+                    {_bData.remaining_balance != null && <div className="bg-purple-50 rounded-lg p-4"><p className="text-xs text-gray-500 mb-1">Remaining balance</p><p className="text-2xl font-bold text-purple-700">{_fmt(_bData.remaining_balance)}</p></div>}
                   </div>
                   {_bData.programs && _bData.programs.length > 0 && <div><p className="text-sm font-semibold text-gray-700 mb-2">Key Programs</p><div className="flex flex-wrap gap-2">{_bData.programs.map((p, i) => <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">{p}</span>)}</div></div>}
                 </div>
