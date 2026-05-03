@@ -6267,6 +6267,9 @@ function App() {
 
   // US Departments rendering (similar to ministries)
   const renderDepartments = () => {
+    const fmtB = (v) => { if (v == null) return null; if (typeof v === 'string') { const n = Number(v); if (!isNaN(n) && v.trim() !== '') v = n; else return v; } if (v >= 1e12) return `$${(v/1e12).toFixed(1)}T`; if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`; return `$${v.toLocaleString()}`; };
+    const combinedBudget = usDepartments.reduce((sum, d) => { const ba = deptBudgetData[`US:${d.name}`]?.budget_authority; return sum + (typeof ba === 'number' ? ba : 0); }, 0);
+    const totalEmployees = usDepartments.reduce((sum, d) => { const ec = deptBudgetData[`US:${d.name}`]?.employee_count; return sum + (typeof ec === 'number' ? ec : 0); }, 0);
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
@@ -6291,11 +6294,11 @@ function App() {
               </div>
               <div className="bg-white rounded-lg p-4 border-2 border-green-300">
                 <p className="text-sm text-gray-600">Combined Budget</p>
-                <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>
+                {combinedBudget > 0 ? <p className="text-2xl font-bold text-green-600">{fmtB(combinedBudget)}</p> : <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>}
               </div>
               <div className="bg-white rounded-lg p-4 border-2 border-purple-300">
                 <p className="text-sm text-gray-600">Total Employees</p>
-                <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>
+                {totalEmployees > 0 ? <p className="text-2xl font-bold text-purple-600">{totalEmployees.toLocaleString()}</p> : <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>}
               </div>
             </div>
           </div>
