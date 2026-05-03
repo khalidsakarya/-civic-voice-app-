@@ -1523,7 +1523,6 @@ function App() {
   const [congressMembers, setCongressMembers] = useState([]);
   const [usBills, setUsBills] = useState([]);
   const [usDepartments, setUsDepartments] = useState([]);
-  const [usAnalyticsData, setUsAnalyticsData] = useState(null);
   const [liveContracts, setLiveContracts] = useState({});
   const [contractsFetchedJurisdictions, setContractsFetchedJurisdictions] = useState({});
   const [courtJustices, setCourtJustices] = useState({});
@@ -2282,6 +2281,9 @@ function App() {
   const [govStatsData, setGovStatsData] = useState({});
   const [govStatsLastUpdated, setGovStatsLastUpdated] = useState({});
   const [govStatsLoading, setGovStatsLoading] = useState({});
+  /** Latest doc per country from `government_stats` (engine govStatsFetcher / quarterly upload). */
+  const [macroGovStats, setMacroGovStats] = useState({});
+  const [macroGovStatsLoading, setMacroGovStatsLoading] = useState({});
   // -- Member profile live data from Firestore
   const [memberDisclosureData, setMemberDisclosureData] = useState({});
   const [memberDisclosureLoading, setMemberDisclosureLoading] = useState({});
@@ -2761,7 +2763,6 @@ function App() {
     fetchLaws();
     fetchCongressMembers();
     initializeUSDepartments();
-    initializeUSAnalytics();
     initializeUSBills();
     initializeUSLaws();
     initializeAuBills();
@@ -2878,6 +2879,7 @@ function App() {
       fetchAnalyticsData(cc);
       fetchBudgetData(cc);
       fetchGovStatsData(cc);
+      fetchMacroGovernmentStats(cc);
     } else if (budgetViews[view]) {
       fetchBudgetData(budgetViews[view]);
     }
@@ -3511,449 +3513,27 @@ function App() {
 
   
   const initializeUSDepartments = () => {
-    // 15 US Cabinet Departments with grant data
+    // Identity + UX only — budgets/grants come from Firestore `federal_departments` (engine pipeline).
     const departments = [
-      {
-        id: 1,
-        name: 'Department of State',
-        secretary: '',
-        budget: '$58.1 Billion',
-        budgetRaw: 58100000000,
-        grants: '$42.3 Billion',
-        employees: 77243,
-        description: 'Advancing U.S. foreign policy and diplomacy worldwide',
-        responsibilities: ['Foreign affairs', 'Diplomacy', 'International development', 'Consular services'],
-        grantsDetail: [
-          { recipient: 'USAID - Global Health Programs', amount: '$8.2 Billion', purpose: 'HIV/AIDS prevention and global health initiatives', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'United Nations Operations', amount: '$3.5 Billion', purpose: 'UN peacekeeping and humanitarian missions', date: 'January 2025', type: 'grant' },
-          { recipient: 'NATO Allied Support', amount: '$2.8 Billion', purpose: 'Military cooperation and defense partnerships', date: 'December 2024', type: 'grant' },
-          { recipient: 'Middle East Partnership Initiative', amount: '$1.9 Billion', purpose: 'Democracy and economic development in MENA region', date: 'November 2024', type: 'grant' },
-          { recipient: 'Millennium Challenge Corporation', amount: '$1.2 Billion', purpose: 'Economic growth in developing countries', date: 'October 2024', type: 'grant' }
-        ],
-        approveVotes: 3421,
-        disapproveVotes: 2876,
-        userVote: null
-      },
-      {
-        id: 2,
-        name: 'Department of the Treasury',
-        secretary: '',
-        budget: '$7.9 Trillion',
-        budgetRaw: 7900000000000,
-        grants: '$890 Billion',
-        employees: 87336,
-        description: 'Managing federal finances, economic policy, and debt obligations',
-        responsibilities: ['Economic policy', 'Tax collection (IRS)', 'Federal debt management', 'Currency production'],
-        grantsDetail: [
-          { recipient: 'Federal Debt Interest Payments', amount: '$658 Billion', purpose: 'Interest on $34 trillion national debt', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'Community Development Financial Institutions', amount: '$85 Billion', purpose: 'Loans to underserved communities', date: 'January 2025', type: 'grant' },
-          { recipient: 'Emergency Rental Assistance Program', amount: '$48 Billion', purpose: 'COVID-19 rental assistance', date: 'December 2024', type: 'grant' },
-          { recipient: 'Small Business Administration Loans', amount: '$42 Billion', purpose: 'Small business financing and disaster relief', date: 'November 2024', type: 'grant' },
-          { recipient: 'State and Local Fiscal Recovery', amount: '$35 Billion', purpose: 'Infrastructure and public services funding', date: 'October 2024', type: 'grant' }
-        ],
-        approveVotes: 2945,
-        disapproveVotes: 3821,
-        userVote: null
-      },
-      {
-        id: 3,
-        name: 'Department of Defense',
-        secretary: '',
-        budget: '$842 Billion',
-        budgetRaw: 842000000000,
-        grants: '$420 Billion',
-        employees: 2870000,
-        description: 'National defense and military operations worldwide',
-        responsibilities: ['Military operations', 'National security', 'Defense research', 'Veterans support'],
-        grantsDetail: [
-          { recipient: 'Lockheed Martin Corporation', amount: '$75 Billion', purpose: 'F-35 fighter jets, missiles, and defense systems', date: 'Ongoing 2024', type: 'contract' },
-          { recipient: 'Boeing Defense & Space', amount: '$24 Billion', purpose: 'Aircraft, satellites, and missile defense', date: 'January 2025', type: 'contract' },
-          { recipient: 'Raytheon Technologies', amount: '$17 Billion', purpose: 'Missiles, radar systems, and cybersecurity', date: 'December 2024', type: 'contract' },
-          { recipient: 'Northrop Grumman', amount: '$13 Billion', purpose: 'B-21 Stealth Bomber and space systems', date: 'November 2024', type: 'contract' },
-          { recipient: 'General Dynamics', amount: '$11 Billion', purpose: 'Submarines, tanks, and combat systems', date: 'October 2024', type: 'contract' },
-          { recipient: 'BAE Systems USA', amount: '$8.5 Billion', purpose: 'Armored vehicles and naval systems', date: 'September 2024', type: 'contract' },
-          { recipient: 'L3Harris Technologies', amount: '$6.2 Billion', purpose: 'Communications and electronic warfare', date: 'August 2024', type: 'contract' }
-        ],
-        approveVotes: 4235,
-        disapproveVotes: 2102,
-        userVote: null
-      },
-      {
-        id: 4,
-        name: 'Department of Justice',
-        secretary: '',
-        budget: '$37.5 Billion',
-        budgetRaw: 37500000000,
-        grants: '$15.2 Billion',
-        employees: 115259,
-        description: 'Federal law enforcement and administration of justice',
-        responsibilities: ['FBI operations', 'Federal prosecutions', 'Civil rights enforcement', 'Prison system'],
-        grantsDetail: [
-          { recipient: 'FBI Operations & Investigations', amount: '$5.8 Billion', purpose: 'Federal law enforcement and counterterrorism', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'State and Local Law Enforcement Grants', amount: '$3.2 Billion', purpose: 'Police equipment and training programs', date: 'January 2025', type: 'grant' },
-          { recipient: 'Violence Against Women Programs', amount: '$1.8 Billion', purpose: 'Domestic violence prevention and victim services', date: 'December 2024', type: 'grant' },
-          { recipient: 'Drug Enforcement Administration', amount: '$1.5 Billion', purpose: 'Combat drug trafficking and opioid crisis', date: 'November 2024', type: 'grant' },
-          { recipient: 'Legal Aid for Low-Income Defendants', amount: '$850 Million', purpose: 'Public defender services nationwide', date: 'October 2024', type: 'grant' }
-        ],
-        approveVotes: 3156,
-        disapproveVotes: 2734,
-        userVote: null
-      },
-      {
-        id: 5,
-        name: 'Department of Health and Human Services',
-        secretary: '',
-        budget: '$1.7 Trillion',
-        budgetRaw: 1700000000000,
-        grants: '$1.2 Trillion',
-        employees: 83212,
-        description: 'Healthcare, medical research, and social services',
-        responsibilities: ['Medicare & Medicaid', 'CDC operations', 'NIH medical research', 'Food and drug safety'],
-        grantsDetail: [
-          { recipient: 'Medicare Payments to Healthcare Providers', amount: '$850 Billion', purpose: 'Healthcare for 65+ million seniors', date: 'Ongoing 2024', type: 'contract' },
-          { recipient: 'Medicaid State Programs', amount: '$  Billion', purpose: 'Healthcare for low-income Americans', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'National Institutes of Health (NIH)', amount: '$48 Billion', purpose: 'Medical research and clinical trials', date: 'January 2025', type: 'grant' },
-          { recipient: 'Centers for Disease Control (CDC)', amount: '$12 Billion', purpose: 'Disease prevention and public health', date: 'December 2024', type: 'grant' },
-          { recipient: 'Johns Hopkins University Medical Research', amount: '$3.2 Billion', purpose: 'Cancer and infectious disease research', date: 'November 2024', type: 'grant' },
-          { recipient: 'Mayo Clinic Research Programs', amount: '$1.8 Billion', purpose: 'Clinical research and medical innovation', date: 'October 2024', type: 'grant' }
-        ],
-        approveVotes: 3892,
-        disapproveVotes: 2456,
-        userVote: null
-      },
-      {
-        id: 6,
-        name: 'Department of Education',
-        secretary: '',
-        budget: '$79.6 Billion',
-        budgetRaw: 79600000000,
-        grants: '$68.2 Billion',
-        employees: 4400,
-        description: 'Federal education policy and student financial aid',
-        responsibilities: ['Student loans', 'K-12 grants', 'Higher education funding', 'Education research'],
-        grantsDetail: [
-          { recipient: 'Pell Grants for College Students', amount: '$28.2 Billion', purpose: 'Financial aid for 6.5 million low-income students', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'Title I Grants to Schools', amount: '$18.4 Billion', purpose: 'Support for low-income K-12 schools', date: 'January 2025', type: 'grant' },
-          { recipient: 'Special Education (IDEA)', amount: '$14.2 Billion', purpose: 'Services for students with disabilities', date: 'December 2024', type: 'grant' },
-          { recipient: 'Head Start Early Childhood Programs', amount: '$11.9 Billion', purpose: 'Preschool for low-income children', date: 'November 2024', type: 'grant' },
-          { recipient: 'Community Colleges of America', amount: '$4.5 Billion', purpose: 'Workforce training and technical education', date: 'October 2024', type: 'grant' }
-        ],
-        approveVotes: 3234,
-        disapproveVotes: 2987,
-        userVote: null
-      },
-      {
-        id: 7,
-        name: 'Department of Veterans Affairs',
-        secretary: '',
-        budget: '$301 Billion',
-        budgetRaw: 301000000000,
-        grants: '$125 Billion',
-        employees: 412892,
-        description: 'Healthcare and benefits for military veterans',
-        responsibilities: ['VA hospitals', 'Disability compensation', 'GI Bill education', 'Veterans pensions'],
-        grantsDetail: [
-          { recipient: 'VA Medical Centers Nationwide', amount: '$85 Billion', purpose: 'Healthcare for 9 million veterans', date: 'Ongoing 2024', type: 'contract' },
-          { recipient: 'Disability Compensation Payments', amount: '$118 Billion', purpose: 'Monthly payments to 5.2 million disabled veterans', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'GI Bill Education Benefits', amount: '$14.5 Billion', purpose: 'College tuition for veterans and families', date: 'January 2025', type: 'grant' },
-          { recipient: 'Homeless Veterans Support Programs', amount: '$2.8 Billion', purpose: 'Housing and job training for homeless vets', date: 'December 2024', type: 'grant' },
-          { recipient: 'Veterans Crisis Line & Mental Health', amount: '$1.9 Billion', purpose: 'PTSD treatment and suicide prevention', date: 'November 2024', type: 'grant' }
-        ],
-        approveVotes: 4892,
-        disapproveVotes: 1245,
-        userVote: null
-      },
-      {
-        id: 8,
-        name: 'Department of Homeland Security',
-        secretary: '',
-        budget: '$60.3 Billion',
-        budgetRaw: 60300000000,
-        grants: '$22.4 Billion',
-        employees: 260000,
-        description: 'Border security, immigration, and disaster response',
-        responsibilities: ['Border protection', 'TSA airport security', 'FEMA disaster relief', 'Secret Service'],
-        grantsDetail: [
-          { recipient: 'FEMA Disaster Relief Fund', amount: '$12.3 Billion', purpose: 'Hurricane, wildfire, and flood recovery', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'Customs and Border Protection', amount: '$5.8 Billion', purpose: 'Border wall, agents, and technology', date: 'January 2025', type: 'contract' },
-          { recipient: 'State Homeland Security Grants', amount: '$3.2 Billion', purpose: 'State and local emergency preparedness', date: 'December 2024', type: 'grant' },
-          { recipient: 'Immigration and Customs Enforcement', amount: '$2.1 Billion', purpose: 'Immigration enforcement and detention', date: 'November 2024', type: 'grant' },
-          { recipient: 'Cybersecurity and Infrastructure Security Agency', amount: '$1.8 Billion', purpose: 'Protect critical infrastructure from cyber attacks', date: 'October 2024', type: 'grant' }
-        ],
-        approveVotes: 2934,
-        disapproveVotes: 3421,
-        userVote: null
-      },
-      {
-        id: 9,
-        name: 'Department of Transportation',
-        secretary: '',
-        budget: '$108 Billion',
-        budgetRaw: 108000000000,
-        grants: '$78.5 Billion',
-        employees: 55100,
-        description: 'Infrastructure, highways, aviation, and public transit',
-        responsibilities: ['Highway funding', 'FAA aviation safety', 'Public transit', 'Rail infrastructure'],
-        grantsDetail: [
-          { recipient: 'State Highway Infrastructure Grants', amount: '$52.5 Billion', purpose: 'Road, bridge, and highway construction', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'Federal Transit Administration', amount: '$18.2 Billion', purpose: 'Subway, bus, and light rail systems', date: 'January 2025', type: 'grant' },
-          { recipient: 'Amtrak National Rail Service', amount: '$4.9 Billion', purpose: 'Passenger rail operations and upgrades', date: 'December 2024', type: 'grant' },
-          { recipient: 'Airport Improvement Program', amount: '$3.8 Billion', purpose: 'Runway and terminal modernization', date: 'November 2024', type: 'grant' },
-          { recipient: 'Port Infrastructure Development', amount: '$2.4 Billion', purpose: 'Seaport upgrades and cargo capacity', date: 'October 2024', type: 'grant' }
-        ],
-        approveVotes: 3567,
-        disapproveVotes: 2234,
-        userVote: null
-      },
-      {
-        id: 10,
-        name: 'Department of Energy',
-        secretary: '',
-        budget: '$45.8 Billion',
-        budgetRaw: 45800000000,
-        grants: '$28.3 Billion',
-        employees: 16500,
-        description: 'Energy policy, nuclear security, and scientific research',
-        responsibilities: ['Nuclear weapons', 'Energy research', 'Grid modernization', 'National labs'],
-        grantsDetail: [
-          { recipient: 'National Nuclear Security Administration', amount: '$21.4 Billion', purpose: 'Nuclear weapons maintenance and security', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'Clean Energy Investment Tax Credits', amount: '$12.8 Billion', purpose: 'Solar, wind, and renewable energy projects', date: 'January 2025', type: 'grant' },
-          { recipient: 'Lawrence Livermore National Laboratory', amount: '$2.9 Billion', purpose: 'Nuclear fusion and weapons research', date: 'December 2024', type: 'contract' },
-          { recipient: 'Brookhaven National Laboratory', amount: '$1.8 Billion', purpose: 'Particle physics and energy science', date: 'November 2024', type: 'contract' },
-          { recipient: 'Electric Vehicle Charging Infrastructure', amount: '$1.5 Billion', purpose: 'EV charging stations nationwide', date: 'October 2024', type: 'contract' }
-        ],
-        approveVotes: 3234,
-        disapproveVotes: 2567,
-        userVote: null
-      },
-      {
-        id: 11,
-        name: 'Department of Agriculture',
-        secretary: '',
-        budget: '$151 Billion',
-        budgetRaw: 151000000000,
-        grants: '$124 Billion',
-        employees: 100000,
-        description: 'Farm policy, food safety, and nutrition programs',
-        responsibilities: ['Farm subsidies', 'Food stamps (SNAP)', 'Rural development', 'Food safety inspection'],
-        grantsDetail: [
-          { recipient: 'SNAP Food Assistance Program', amount: '$113 Billion', purpose: 'Food stamps for 42 million low-income Americans', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'Farm Subsidies and Crop Insurance', amount: '$28.5 Billion', purpose: 'Income support for farmers', date: 'January 2025', type: 'grant' },
-          { recipient: 'School Lunch and Breakfast Programs', amount: '$20.3 Billion', purpose: 'Free meals for 30 million students', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'Rural Development Grants', amount: '$3.8 Billion', purpose: 'Infrastructure in rural communities', date: 'December 2024', type: 'grant' },
-          { recipient: 'Conservation Reserve Program', amount: '$2.2 Billion', purpose: 'Pay farmers to protect environmentally sensitive land', date: 'November 2024', type: 'grant' }
-        ],
-        approveVotes: 3421,
-        disapproveVotes: 2678,
-        userVote: null
-      },
-      {
-        id: 12,
-        name: 'Department of Housing and Urban Development',
-        secretary: '',
-        budget: '$73.4 Billion',
-        budgetRaw: 73400000000,
-        grants: '$58.9 Billion',
-        employees: 7500,
-        description: 'Affordable housing and community development',
-        responsibilities: ['Public housing', 'Rent assistance', 'Homelessness programs', 'Fair housing enforcement'],
-        grantsDetail: [
-          { recipient: 'Section 8 Housing Choice Vouchers', amount: '$31.5 Billion', purpose: 'Rent assistance for 2.3 million low-income families', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'Public Housing Operating Fund', amount: '$8.2 Billion', purpose: 'Maintain 1 million public housing units', date: 'January 2025', type: 'grant' },
-          { recipient: 'Community Development Block Grants', amount: '$5.4 Billion', purpose: 'Local infrastructure and housing projects', date: 'December 2024', type: 'grant' },
-          { recipient: 'Homeless Assistance Grants', amount: '$3.6 Billion', purpose: 'Emergency shelters and transitional housing', date: 'November 2024', type: 'grant' },
-          { recipient: 'FHA Mortgage Insurance Program', amount: '$2.8 Billion', purpose: 'First-time homebuyer assistance', date: 'October 2024', type: 'grant' }
-        ],
-        approveVotes: 3234,
-        disapproveVotes: 2892,
-        userVote: null
-      },
-      {
-        id: 13,
-        name: 'Department of the Interior',
-        secretary: '',
-        budget: '$18.5 Billion',
-        budgetRaw: 18500000000,
-        grants: '$8.9 Billion',
-        employees: 70000,
-        description: 'National parks, public lands, and natural resources',
-        responsibilities: ['National Parks Service', 'Bureau of Land Management', 'U.S. Geological Survey', 'Indian Affairs'],
-        grantsDetail: [
-          { recipient: 'National Park Service Operations', amount: '$3.8 Billion', purpose: 'Maintain 423 national park sites', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'Bureau of Indian Affairs', amount: '$3.2 Billion', purpose: 'Services for 574 federally recognized tribes', date: 'January 2025', type: 'grant' },
-          { recipient: 'Land and Water Conservation Fund', amount: '$1.9 Billion', purpose: 'Acquire and protect public lands', date: 'December 2024', type: 'grant' },
-          { recipient: 'U.S. Geological Survey Research', amount: '$1.4 Billion', purpose: 'Earthquake monitoring and natural resource mapping', date: 'November 2024', type: 'grant' },
-          { recipient: 'Wildlife Restoration Programs', amount: '$850 Million', purpose: 'Endangered species protection', date: 'October 2024', type: 'grant' }
-        ],
-        approveVotes: 3678,
-        disapproveVotes: 2145,
-        userVote: null
-      },
-      {
-        id: 14,
-        name: 'Department of Labor',
-        secretary: '',
-        budget: '$14.2 Billion',
-        budgetRaw: 14200000000,
-        grants: '$8.7 Billion',
-        employees: 17347,
-        description: 'Workers\' rights, unemployment insurance, and job training',
-        responsibilities: ['OSHA safety enforcement', 'Unemployment insurance', 'Wage and hour standards', 'Job training programs'],
-        grantsDetail: [
-          { recipient: 'State Unemployment Insurance Programs', amount: '$4.2 Billion', purpose: 'Administer unemployment benefits', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'Workforce Innovation and Opportunity Act', amount: '$2.8 Billion', purpose: 'Job training for displaced workers', date: 'January 2025', type: 'grant' },
-          { recipient: 'OSHA Workplace Safety Enforcement', amount: '$685 Million', purpose: 'Prevent workplace injuries and deaths', date: 'December 2024', type: 'grant' },
-          { recipient: 'Apprenticeship Programs', amount: '$425 Million', purpose: 'Skilled trades training', date: 'November 2024', type: 'grant' },
-          { recipient: 'Mine Safety and Health Administration', amount: '$385 Million', purpose: 'Coal and metal mine safety inspections', date: 'October 2024', type: 'grant' }
-        ],
-        approveVotes: 3156,
-        disapproveVotes: 2734,
-        userVote: null
-      },
-      {
-        id: 15,
-        name: 'Department of Commerce',
-        secretary: '',
-        budget: '$12.3 Billion',
-        budgetRaw: 12300000000,
-        grants: '$7.8 Billion',
-        employees: 48593,
-        description: 'Economic growth, trade, and technology development',
-        responsibilities: ['Census Bureau', 'Patent office', 'NOAA weather service', 'International trade'],
-        grantsDetail: [
-          { recipient: 'NOAA Weather and Climate Services', amount: '$6.9 Billion', purpose: 'Weather forecasting and climate research', date: 'Ongoing 2024', type: 'grant' },
-          { recipient: 'Census Bureau Operations', amount: '$1.6 Billion', purpose: 'Population data collection and analysis', date: 'January 2025', type: 'grant' },
-          { recipient: 'Economic Development Administration', amount: '$850 Million', purpose: 'Grants for economically distressed communities', date: 'December 2024', type: 'grant' },
-          { recipient: 'National Institute of Standards & Technology', amount: '$625 Million', purpose: 'Measurement science and technology standards', date: 'November 2024', type: 'grant' },
-          { recipient: 'Minority Business Development Agency', amount: '$115 Million', purpose: 'Support minority-owned businesses', date: 'October 2024', type: 'grant' }
-        ],
-        approveVotes: 3045,
-        disapproveVotes: 2567,
-        userVote: null
-      }
+      { id: 1, name: 'Department of State', secretary: '', description: 'Advancing U.S. foreign policy and diplomacy worldwide', responsibilities: ['Foreign affairs', 'Diplomacy', 'International development', 'Consular services'], approveVotes: 3421, disapproveVotes: 2876, userVote: null },
+      { id: 2, name: 'Department of the Treasury', secretary: '', description: 'Managing federal finances, economic policy, and debt obligations', responsibilities: ['Economic policy', 'Tax collection (IRS)', 'Federal debt management', 'Currency production'], approveVotes: 2945, disapproveVotes: 3821, userVote: null },
+      { id: 3, name: 'Department of Defense', secretary: '', description: 'National defense and military operations worldwide', responsibilities: ['Military operations', 'National security', 'Defense research', 'Veterans support'], approveVotes: 4235, disapproveVotes: 2102, userVote: null },
+      { id: 4, name: 'Department of Justice', secretary: '', description: 'Federal law enforcement and administration of justice', responsibilities: ['FBI operations', 'Federal prosecutions', 'Civil rights enforcement', 'Prison system'], approveVotes: 3156, disapproveVotes: 2734, userVote: null },
+      { id: 5, name: 'Department of Health and Human Services', secretary: '', description: 'Healthcare, medical research, and social services', responsibilities: ['Medicare & Medicaid', 'CDC operations', 'NIH medical research', 'Food and drug safety'], approveVotes: 3892, disapproveVotes: 2456, userVote: null },
+      { id: 6, name: 'Department of Education', secretary: '', description: 'Federal education policy and student financial aid', responsibilities: ['Student loans', 'K-12 grants', 'Higher education funding', 'Education research'], approveVotes: 3234, disapproveVotes: 2987, userVote: null },
+      { id: 7, name: 'Department of Veterans Affairs', secretary: '', description: 'Healthcare and benefits for military veterans', responsibilities: ['VA hospitals', 'Disability compensation', 'GI Bill education', 'Veterans pensions'], approveVotes: 4892, disapproveVotes: 1245, userVote: null },
+      { id: 8, name: 'Department of Homeland Security', secretary: '', description: 'Border security, immigration, and disaster response', responsibilities: ['Border protection', 'TSA airport security', 'FEMA disaster relief', 'Secret Service'], approveVotes: 2934, disapproveVotes: 3421, userVote: null },
+      { id: 9, name: 'Department of Transportation', secretary: '', description: 'Infrastructure, highways, aviation, and public transit', responsibilities: ['Highway funding', 'FAA aviation safety', 'Public transit', 'Rail infrastructure'], approveVotes: 3567, disapproveVotes: 2234, userVote: null },
+      { id: 10, name: 'Department of Energy', secretary: '', description: 'Energy policy, nuclear security, and scientific research', responsibilities: ['Nuclear weapons', 'Energy research', 'Grid modernization', 'National labs'], approveVotes: 3234, disapproveVotes: 2567, userVote: null },
+      { id: 11, name: 'Department of Agriculture', secretary: '', description: 'Farm policy, food safety, and nutrition programs', responsibilities: ['Farm subsidies', 'Food stamps (SNAP)', 'Rural development', 'Food safety inspection'], approveVotes: 3421, disapproveVotes: 2678, userVote: null },
+      { id: 12, name: 'Department of Housing and Urban Development', secretary: '', description: 'Affordable housing and community development', responsibilities: ['Public housing', 'Rent assistance', 'Homelessness programs', 'Fair housing enforcement'], approveVotes: 3234, disapproveVotes: 2892, userVote: null },
+      { id: 13, name: 'Department of the Interior', secretary: '', description: 'National parks, public lands, and natural resources', responsibilities: ['National Parks Service', 'Bureau of Land Management', 'U.S. Geological Survey', 'Indian Affairs'], approveVotes: 3678, disapproveVotes: 2145, userVote: null },
+      { id: 14, name: 'Department of Labor', secretary: '', description: "Workers' rights, unemployment insurance, and job training", responsibilities: ['OSHA safety enforcement', 'Unemployment insurance', 'Wage and hour standards', 'Job training programs'], approveVotes: 3156, disapproveVotes: 2734, userVote: null },
+      { id: 15, name: 'Department of Commerce', secretary: '', description: 'Economic growth, trade, and technology development', responsibilities: ['Census Bureau', 'Patent office', 'NOAA weather service', 'International trade'], approveVotes: 3045, disapproveVotes: 2567, userVote: null },
     ];
-    
     setUsDepartments(departments);
   };
-  
-  const initializeUSAnalytics = () => {
-    const analyticsData = {
-      // Federal Revenue Sources (FY 2024 - $4.9 Trillion total revenue)
-      revenue: [
-        { source: 'Individual Income Tax', amount: 2400, percentage: 49 },
-        { source: 'Payroll Taxes (SS/Medicare)', amount: 1700, percentage: 35 },
-        { source: 'Corporate Income Tax', amount: 530, percentage: 11 },
-        { source: 'Customs & Excise Taxes', amount: 155, percentage: 3 },
-        { source: 'Estate & Gift Taxes', amount: 45, percentage: 1 },
-        { source: 'Other Revenue', amount: 70, percentage: 1 }
-      ],
-      
-      // Federal Spending Categories (FY 2024 - $6.5 Trillion total spending)
-      spending: [
-        { category: 'Social Security', amount: 1350, percentage: 21 },
-        { category: 'Medicare', amount: 839, percentage: 13 },
-        { category: 'Defense (DOD)', amount: 842, percentage: 13 },
-        { category: 'Interest on National Debt', amount: 658, percentage: 10 },
-        { category: 'Medicaid', amount: 616, percentage: 9 },
-        { category: 'Income Security (SNAP, Unemployment)', amount: 505, percentage: 8 },
-        { category: 'Veterans Benefits', amount: 301, percentage: 5 },
-        { category: 'Education & Training', amount: 305, percentage: 5 },
-        { category: 'Transportation', amount: 108, percentage: 2 },
-        { category: 'Health Research & Services', amount: 92, percentage: 1 },
-        { category: 'Agriculture', amount: 151, percentage: 2 },
-        { category: 'International Affairs', amount: 58, percentage: 1 },
-        { category: 'Science & Technology', amount: 45, percentage: 1 },
-        { category: 'Energy & Environment', amount: 64, percentage: 1 },
-        { category: 'Other Spending', amount: 566, percentage: 9 }
-      ],
-      
-      // Budget Deficit History (2014-2024, in billions)
-      deficitHistory: [
-        { year: 2014, deficit: -485 },
-        { year: 2015, deficit: -438 },
-        { year: 2016, deficit: -585 },
-        { year: 2017, deficit: -665 },
-        { year: 2018, deficit: -779 },
-        { year: 2019, deficit: -984 },
-        { year: 2020, deficit: -3132 }, // COVID-19
-        { year: 2021, deficit: -2772 }, // COVID-19
-        { year: 2022, deficit: -1375 },
-        { year: 2023, deficit: -1695 },
-        { year: 2024, deficit: -1700 }
-      ],
-      
-      // National Debt History (2014-2024, in trillions)
-      debtHistory: [
-        { year: 2014, debt: 17.8 },
-        { year: 2015, debt: 18.2 },
-        { year: 2016, debt: 19.6 },
-        { year: 2017, debt: 20.2 },
-        { year: 2018, debt: 21.5 },
-        { year: 2019, debt: 22.7 },
-        { year: 2020, debt: 27.7 },
-        { year: 2021, debt: 28.4 },
-        { year: 2022, debt: 30.9 },
-        { year: 2023, debt: 33.2 },
-        { year: 2024, debt: 34.5 }
-      ],
-      
-      // Unemployment Rate Trends (2020-2024, monthly average %)
-      unemploymentTrends: [
-        { year: 2020, rate: 8.1, context: 'COVID-19 Pandemic' },
-        { year: 2021, rate: 5.4, context: 'Economic Recovery' },
-        { year: 2022, rate: 3.6, context: 'Strong Job Market' },
-        { year: 2023, rate: 3.7, context: 'Stable Employment' },
-        { year: 2024, rate: 4.1, context: 'Current Rate' }
-      ],
-      
-      // US Government Loans to Foreign Governments (Active loans, in billions)
-      foreignLoans: [
-        { country: 'Ukraine', amount: 61.4, purpose: 'Economic stabilization and reconstruction', status: 'Active' },
-        { country: 'Pakistan', amount: 6.8, purpose: 'Economic development', status: 'Active' },
-        { country: 'Iraq', amount: 4.5, purpose: 'Infrastructure reconstruction', status: 'Active' },
-        { country: 'Colombia', amount: 3.2, purpose: 'Counter-narcotics and security', status: 'Active' },
-        { country: 'Philippines', amount: 2.1, purpose: 'Infrastructure development', status: 'Active' },
-        { country: 'Tunisia', amount: 1.8, purpose: 'Economic reform support', status: 'Active' },
-        { country: 'Lebanon', amount: 1.5, purpose: 'Economic assistance', status: 'Active' },
-        { country: 'Jordan', amount: 2.6, purpose: 'Budget support and development', status: 'Active' }
-      ],
-      
-      // Grant Spending by Department (FY 2024, in billions)
-      grantsByDepartment: [
-        { department: 'Health & Human Services', grants: 1200, percentage: 45 },
-        { department: 'Education', grants: 68, percentage: 3 },
-        { department: 'Defense', grants: 420, percentage: 16 },
-        { department: 'Veterans Affairs', grants: 125, percentage: 5 },
-        { department: 'Treasury', grants: 890, percentage: 33 },
-        { department: 'Transportation', grants: 78, percentage: 3 },
-        { department: 'Agriculture', grants: 124, percentage: 5 },
-        { department: 'Housing & Urban Development', grants: 59, percentage: 2 },
-        { department: 'Energy', grants: 28, percentage: 1 },
-        { department: 'Homeland Security', grants: 22, percentage: 1 },
-        { department: 'State Department', grants: 42, percentage: 2 },
-        { department: 'Labor', grants: 9, percentage: 0.3 },
-        { department: 'Interior', grants: 9, percentage: 0.3 },
-        { department: 'Justice', grants: 15, percentage: 0.6 },
-        { department: 'Commerce', grants: 8, percentage: 0.3 }
-      ],
-      
-      // Department Spending Trends (2020-2024, select departments, in billions)
-      departmentTrends: [
-        { year: 2020, defense: 714, hhs: 1495, education: 102, veterans: 220 },
-        { year: 2021, defense: 753, hhs: 1622, education: 238, veterans: 240 },
-        { year: 2022, defense: 766, hhs: 1639, education: 79, veterans: 273 },
-        { year: 2023, defense: 816, hhs: 1686, education: 90, veterans: 296 },
-        { year: 2024, defense: 842, hhs: 1700, education: 79, veterans: 301 }
-      ]
-    };
-    
-    setUsAnalyticsData(analyticsData);
-  };
-  
-  
 
-
-  
   const initializeUSBills = () => {
     const bills = [
       {
@@ -5790,6 +5370,25 @@ function App() {
         // so existing detail-page and list-card code keeps working without changes.
         const budgetUpdates = {};
         const headsUpdates = {};
+        const tsMillis = (iso) => {
+          if (!iso) return 0;
+          const t = new Date(iso).getTime();
+          return Number.isFinite(t) ? t : 0;
+        };
+        /** Prefer freshest `last_updated`; on tie prefer smaller budget_authority (avoids picking inflated duplicates). */
+        const pickBetterBudget = (a, b) => {
+          if (!a) return b;
+          const ta = tsMillis(a.last_updated);
+          const tb = tsMillis(b.last_updated);
+          if (tb > ta) return b;
+          if (tb < ta) return a;
+          const baA = a.budget_authority;
+          const baB = b.budget_authority;
+          if (typeof baA === 'number' && typeof baB === 'number' && baA !== baB) {
+            return baB < baA ? b : a;
+          }
+          return b;
+        };
         docs.forEach(data => {
           // The bilingual department name may be in 'name', 'department_name', or the doc ID.
           const rawName = data.name || data.department_name || data.id;
@@ -5842,21 +5441,19 @@ function App() {
             internal_spending: Array.isArray(data.internal_spending) ? data.internal_spending : [],
           };
           const existing = budgetUpdates[key];
-          const existingBA = existing?.budget_authority ?? null;
-          const newBA = newBudgetEntry.budget_authority;
-          // Keep the doc with the highest budget_authority; prefer non-null over null.
-          if (!existing || (newBA != null && (existingBA == null || newBA > existingBA))) {
+          const chosen = pickBetterBudget(existing, newBudgetEntry);
+          if (chosen === newBudgetEntry) {
+            if (existing) {
+              console.log(`[FederalDepts] key="${key}" duplicate: chose doc id="${data.id}" budget_authority=${newBudgetEntry.budget_authority} (was ${existing?.budget_authority})`);
+            }
             budgetUpdates[key] = newBudgetEntry;
-            if (existing) console.log(`[FederalDepts] key="${key}" duplicate: replacing budget_authority=${existingBA} with ${newBA}`);
-          } else {
-            console.log(`[FederalDepts] key="${key}" duplicate: keeping existing budget_authority=${existingBA}, skipping doc id="${data.id}" (budget_authority=${newBA})`);
+            headsUpdates[key] = {
+              _loaded: true,
+              name:    data.leader_name  ?? null,
+              title:   data.leader_title ?? null,
+              party:   data.political_party ?? null,
+            };
           }
-          headsUpdates[key] = {
-            _loaded: true,
-            name:    data.leader_name  ?? null,
-            title:   data.leader_title ?? null,
-            party:   data.political_party ?? null,
-          };
         });
         if (jur === 'CA') {
           console.log('[FederalDepts] All CA budget keys:', Object.keys(budgetUpdates));
@@ -6657,6 +6254,17 @@ function App() {
     const isLoading = !!govStatsLoading[d.cc];
     const liveStats = govStatsData[d.cc] || {};
     const isLive = Object.keys(liveStats).length > 0;
+    const macro = macroGovStats[d.cc];
+    const macroLoading = !!macroGovStatsLoading[d.cc];
+    const fmtUsdMacro = (n) => {
+      if (n == null || typeof n !== 'number' || !Number.isFinite(n)) return null;
+      const sign = n < 0 ? '−' : '';
+      const x = Math.abs(n);
+      if (x >= 1e12) return `${sign}$${(x / 1e12).toFixed(2)}T`;
+      if (x >= 1e9) return `${sign}$${(x / 1e9).toFixed(1)}B`;
+      if (x >= 1e6) return `${sign}$${(x / 1e6).toFixed(1)}M`;
+      return `${sign}$${x.toLocaleString()}`;
+    };
     const sectionDefs = [
       { key: 'economic',  label: 'Economic',  Icon: TrendingUp,  color: 'blue'   },
       { key: 'safety',    label: 'Safety',    Icon: AlertCircle, color: 'red'    },
@@ -6706,6 +6314,61 @@ function App() {
             <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-4">
               {liveBadge(govStatsLastUpdated[d.cc], 'Monthly')}
               Last updated: {govStatsLastUpdated[d.cc]?.toLocaleString()}
+            </div>
+          )}
+
+          {macroLoading && (
+            <div className="flex items-center gap-2 text-xs text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 mb-4">
+              <div className="w-3 h-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+              Loading quarterly fiscal snapshot…
+            </div>
+          )}
+          {!macroLoading && macro && (macro.revenue?.totalUSD != null || macro.spending?.totalUSD != null || macro.deficitSurplus?.cashBalanceUSD != null || macro.nationalDebt?.totalUSD != null) && (
+            <div className="mb-4 rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-white p-4 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <h2 className="text-sm font-bold text-indigo-950">National fiscal snapshot</h2>
+                <span className="text-xs font-medium text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
+                  Engine · government_stats{macro.year != null ? ` · ${macro.year}${macro.quarter ? ` ${macro.quarter}` : ''}` : ''}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                {macro.revenue?.totalUSD != null && (
+                  <div className="bg-white/80 rounded-lg p-2 border border-indigo-100">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-500">Revenue</p>
+                    <p className="text-sm font-bold text-gray-900">{fmtUsdMacro(macro.revenue.totalUSD)}</p>
+                    <p className="text-[10px] text-gray-400 truncate">{macro.revenue?.source || 'WB / national'}</p>
+                  </div>
+                )}
+                {macro.spending?.totalUSD != null && (
+                  <div className="bg-white/80 rounded-lg p-2 border border-indigo-100">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-500">Spending</p>
+                    <p className="text-sm font-bold text-gray-900">{fmtUsdMacro(macro.spending.totalUSD)}</p>
+                    <p className="text-[10px] text-gray-400 truncate">{macro.spending?.source?.slice(0, 40) || '—'}</p>
+                  </div>
+                )}
+                {macro.deficitSurplus?.cashBalanceUSD != null && (
+                  <div className="bg-white/80 rounded-lg p-2 border border-indigo-100">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-500">Net lend/borrow</p>
+                    <p className={`text-sm font-bold ${macro.deficitSurplus.cashBalanceUSD < 0 ? 'text-red-700' : 'text-green-700'}`}>
+                      {fmtUsdMacro(macro.deficitSurplus.cashBalanceUSD)}
+                    </p>
+                    <p className="text-[10px] text-gray-400">WB deficit/surplus</p>
+                  </div>
+                )}
+                {macro.nationalDebt?.totalUSD != null && (
+                  <div className="bg-white/80 rounded-lg p-2 border border-indigo-100">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-500">Central gov debt</p>
+                    <p className="text-sm font-bold text-gray-900">{fmtUsdMacro(macro.nationalDebt.totalUSD)}</p>
+                    <p className="text-[10px] text-gray-400">% GDP → USD</p>
+                  </div>
+                )}
+              </div>
+              {typeof macro.plainLanguageSummary === 'string' && macro.plainLanguageSummary.trim() && (
+                <p className="mt-3 text-xs text-gray-700 leading-relaxed border-t border-indigo-100 pt-3">
+                  {macro.plainLanguageSummary.trim().slice(0, 500)}
+                  {macro.plainLanguageSummary.trim().length > 500 ? '…' : ''}
+                </p>
+              )}
             </div>
           )}
 
@@ -16655,6 +16318,37 @@ function App() {
       console.warn('[GovStats] Firestore fetch failed:', err.message);
     } finally {
       setGovStatsLoading(prev => ({ ...prev, [country]: false }));
+    }
+  };
+
+  const fetchMacroGovernmentStats = async (country) => {
+    setMacroGovStatsLoading(prev => ({ ...prev, [country]: true }));
+    try {
+      const snap = await getDocs(query(collection(db, 'government_stats'), where('country', '==', country)));
+      if (snap.empty) {
+        setMacroGovStats(prev => ({ ...prev, [country]: null }));
+        return;
+      }
+      const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const parseTs = (r) => {
+        const s = r.last_updated || r.processedAt || null;
+        if (!s) return 0;
+        const x = new Date(s).getTime();
+        return Number.isFinite(x) ? x : 0;
+      };
+      rows.sort((a, b) => {
+        const dy = (b.year || 0) - (a.year || 0);
+        if (dy !== 0) return dy;
+        const dq = String(b.quarter || '').localeCompare(String(a.quarter || ''));
+        if (dq !== 0) return dq;
+        return parseTs(b) - parseTs(a);
+      });
+      setMacroGovStats(prev => ({ ...prev, [country]: rows[0] }));
+    } catch (err) {
+      console.warn('[MacroGovStats] Firestore fetch failed:', err.message);
+      setMacroGovStats(prev => ({ ...prev, [country]: null }));
+    } finally {
+      setMacroGovStatsLoading(prev => ({ ...prev, [country]: false }));
     }
   };
 
