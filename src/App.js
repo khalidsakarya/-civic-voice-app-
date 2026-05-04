@@ -1378,6 +1378,8 @@ function App() {
   const [signedLawsSource, setSignedLawsSource] = useState(null);
   const [signedLawsLoading, setSignedLawsLoading] = useState(false);
   const [signedLawsError, setSignedLawsError] = useState(null);
+  /** Set with live response only; used for empty-state diagnostics */
+  const [signedLawsScan, setSignedLawsScan] = useState(null);
   const [eoVotes, setEoVotes] = useState(() => {
     const saved = localStorage.getItem('cvEOVotes');
     return saved ? JSON.parse(saved) : {};
@@ -5627,6 +5629,7 @@ function App() {
     setSignedLawsBills(null);
     setSignedLawsSource(null);
     setSignedLawsError(null);
+    setSignedLawsScan(null);
     setSignedLawsLoading(true);
     (async () => {
       try {
@@ -5636,6 +5639,7 @@ function App() {
         if (data.source === 'error' && data.error === 'missing_api_key') {
           setSignedLawsBills(null);
           setSignedLawsSource(null);
+          setSignedLawsScan(null);
           setSignedLawsError(CONGRESS_SIGNED_LAWS_UNAVAILABLE);
           console.warn('[SignedLawsBills] server reported missing_api_key (set CONGRESS_API_KEY on Vercel, not REACT_APP_*)');
           return;
@@ -5645,6 +5649,7 @@ function App() {
         if (!res.ok) {
           setSignedLawsBills(null);
           setSignedLawsSource(null);
+          setSignedLawsScan(null);
           setSignedLawsError(CONGRESS_SIGNED_LAWS_UNAVAILABLE);
           if (data.message) console.warn('[SignedLawsBills]', data.message);
           return;
@@ -5652,6 +5657,7 @@ function App() {
         if (data.source !== 'live') {
           setSignedLawsBills(null);
           setSignedLawsSource(null);
+          setSignedLawsScan(null);
           setSignedLawsError(
             responseLooksLikeHtml || data.source === undefined
               ? CONGRESS_SIGNED_LAWS_NEEDS_API_HOST
@@ -5663,12 +5669,14 @@ function App() {
         const enriched = raw.map(enrichSignedLawFromApi);
         setSignedLawsBills(enriched);
         setSignedLawsSource('live');
+        setSignedLawsScan(data.scan && typeof data.scan === 'object' ? data.scan : null);
         setSignedLawsError(null);
       } catch (err) {
         if (cancelled) return;
         console.warn('[SignedLawsBills] fetch failed:', err.message);
         setSignedLawsBills(null);
         setSignedLawsSource(null);
+        setSignedLawsScan(null);
         setSignedLawsError(CONGRESS_SIGNED_LAWS_UNAVAILABLE);
       } finally {
         if (!cancelled) setSignedLawsLoading(false);
@@ -28168,6 +28176,11 @@ function App() {
             {liveCongressReady && deskRows.length === 0 && (
               <span>
                 {CONGRESS_SIGNED_LAWS_EMPTY}{' '}
+                {signedLawsScan && typeof signedLawsScan.billRowsExamined === 'number' && (
+                  <span className="block mt-2 text-sm text-slate-600">
+                    (Congress.gov scan: {signedLawsScan.billRowsExamined.toLocaleString()} recent bill list entries checked across HR, S, HJRES, SJRES — up to {signedLawsScan.pagesPerBillType || '?'} pages × {signedLawsScan.billPageLimit || 250} per type; none matched signed/enacted wording in that window.)
+                  </span>
+                )}
                 <a href="https://www.congress.gov/legislation" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline whitespace-nowrap">Search Congress.gov</a>
               </span>
             )}

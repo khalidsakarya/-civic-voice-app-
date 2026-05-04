@@ -60,10 +60,14 @@ function isSignedOrEnactedLaw(latestText) {
   if (lower.includes('veto message')) return false;
   return (
     /\bsigned by (the )?president\b/i.test(latestText)
+    || /\bapproved by (the )?president\b/i.test(latestText)
     || /\bbecame public law\b/i.test(latestText)
     || /\bbecame private law\b/i.test(latestText)
     || /\bpublic law no\.?\b/i.test(lower)
     || /\bbecame law\b/i.test(lower)
+    || /\bpassed over (the )?president'?s veto\b/i.test(latestText)
+    || /\boverride of (the )?president'?s veto\b/i.test(latestText)
+    || /\bjoint resolution passed over (the )?president'?s veto\b/i.test(latestText)
   );
 }
 
@@ -72,27 +76,46 @@ function lawStatusLabelFromLatest(latestText) {
   const lower = latestText.toLowerCase();
   if (/\bbecame public law\b/i.test(latestText) || /\bpublic law no\.?\b/i.test(lower)) return 'Became Public Law';
   if (/\bbecame private law\b/i.test(latestText)) return 'Became Private Law';
-  if (/\bsigned by (the )?president\b/i.test(lower)) return 'Signed by President';
+  if (/\bsigned by (the )?president\b/i.test(lower) || /\bapproved by (the )?president\b/i.test(lower)) return 'Signed by President';
+  if (/\bpassed over (the )?president'?s veto\b/i.test(latestText) || /\boverride of (the )?president'?s veto\b/i.test(latestText)) return 'Enacted (veto overridden)';
   if (/\bbecame law\b/i.test(lower)) return 'Became Law';
   return 'Signed or enacted';
 }
 
-async function fetchBillList(congress, billType, apiKey) {
+const BILL_PAGE_LIMIT = 250;
+const BILL_PAGES_PER_TYPE = 4; // up to 1000 rows per bill type (updateDate sort misses older laws otherwise)
+
+async function fetchBillListPage(congress, billType, apiKey, offset) {
   const url = new URL(`https://api.congress.gov/v3/bill/${congress}/${billType}`);
   url.searchParams.set('format', 'json');
-  url.searchParams.set('limit', '250');
+  url.searchParams.set('limit', String(BILL_PAGE_LIMIT));
+  url.searchParams.set('offset', String(offset));
   url.searchParams.set('sort', 'updateDate+desc');
   url.searchParams.set('api_key', apiKey);
   const res = await fetch(url);
-  dbg(`Congress.gov bill/${congress}/${billType}: HTTP ${res.status}`);
+  dbg(`Congress.gov bill/${congress}/${billType} offset=${offset}: HTTP ${res.status}`);
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
     throw new Error(`${billType} list ${res.status}: ${errText.slice(0, 200)}`);
   }
   const data = await res.json();
-  const bills = Array.isArray(data.bills) ? data.bills : [];
-  dbg(`Congress.gov bill/${congress}/${billType}: list rows from API (before filter) = ${bills.length}`);
-  return bills;
+  return Array.isArray(data.bills) ? data.bills : [];
+}
+
+/** Merge paginated bill list rows (dedupe by type+number; keeps first-seen = most recently updated). */
+async function fetchBillListAllPages(congress, billType, apiKey) {
+  const byKey = new Map();
+  for (let p = 0; p < BILL_PAGES_PER_TYPE; p += 1) {
+    const offset = p * BILL_PAGE_LIMIT;
+    const page = await fetchBillListPage(congress, billType, apiKey, offset);
+    dbg(`Congress.gov bill/${congress}/${billType} offset=${offset}: rows this page = ${page.length}`);
+    for (const item of page) {
+      const key = `${String(item.type || item.billType || '').toLowerCase()}-${item.number}`;
+      if (!byKey.has(key)) byKey.set(key, item);
+    }
+    if (page.length < BILL_PAGE_LIMIT) break;
+  }
+  return Array.from(byKey.values());
 }
 
 function mapItem(congress, item) {
@@ -148,27 +171,35 @@ async function handler(req, res) {
 
   const types = ['hr', 's', 'hjres', 'sjres'];
   try {
-    const lists = await Promise.all(types.map((t) => fetchBillList(congress, t, apiKey)));
+    const lists = await Promise.all(types.map((t) => fetchBillListAllPages(congress, t, apiKey)));
+    let rowsExamined = 0;
     const seen = new Set();
     const out = [];
     for (const list of lists) {
+      rowsExamined += list.length;
       for (const item of list) {
         const la = item.latestAction || {};
-        const text = la.text || '';
+        const text = (la.text != null && String(la.text)) || '';
         if (!isSignedOrEnactedLaw(text)) continue;
-        const key = `${String(item.type || '').toLowerCase()}-${item.number}`;
+        const key = `${String(item.type || item.billType || '').toLowerCase()}-${item.number}`;
         if (seen.has(key)) continue;
         seen.add(key);
         out.push(mapItem(congress, item));
       }
     }
     out.sort((a, b) => String(b.actionDate).localeCompare(String(a.actionDate)));
-    dbg(`signed-law rows after filter: ${out.length}`);
+    dbg(`bill rows examined (deduped across types): ${rowsExamined}; signed-law matches: ${out.length}`);
     return res.status(200).json({
       source: 'live',
       congress,
       fetchedAt: new Date().toISOString(),
       bills: out,
+      scan: {
+        billRowsExamined: rowsExamined,
+        pagesPerBillType: BILL_PAGES_PER_TYPE,
+        billPageLimit: BILL_PAGE_LIMIT,
+        signedLawMatches: out.length,
+      },
     });
   } catch (e) {
     dbg('upstream exception:', e.message || String(e));
