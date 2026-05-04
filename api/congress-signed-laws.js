@@ -3,8 +3,17 @@
  * (Congress.gov API v3). Excludes bills only presented/delivered to the President.
  * Requires CONGRESS_API_KEY (never commit; not REACT_APP_*).
  *
+ * Deploy checklist: (1) File must live at repo `api/congress-signed-laws.js` (Vercel project root).
+ * (2) Client calls `/api/congress-signed-laws`. (3) Set CONGRESS_API_KEY in Vercel env — not REACT_APP_*.
+ * (4) Redeploy after env changes. (5) Local: `npx vercel dev`, not `npm start` alone.
+ *
  * @see https://github.com/LibraryOfCongress/api.congress.gov/blob/main/Documentation/BillEndpoint.md
  */
+
+/** TEMP debug logs — remove or gate after incident (never log API key value). */
+function dbg(...args) {
+  console.log('[congress-signed-laws]', ...args);
+}
 
 function congressPathSegment(congress) {
   const c = parseInt(String(congress), 10);
@@ -75,12 +84,15 @@ async function fetchBillList(congress, billType, apiKey) {
   url.searchParams.set('sort', 'updateDate+desc');
   url.searchParams.set('api_key', apiKey);
   const res = await fetch(url);
+  dbg(`Congress.gov bill/${congress}/${billType}: HTTP ${res.status}`);
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
     throw new Error(`${billType} list ${res.status}: ${errText.slice(0, 200)}`);
   }
   const data = await res.json();
-  return Array.isArray(data.bills) ? data.bills : [];
+  const bills = Array.isArray(data.bills) ? data.bills : [];
+  dbg(`Congress.gov bill/${congress}/${billType}: list rows from API (before filter) = ${bills.length}`);
+  return bills;
 }
 
 function mapItem(congress, item) {
@@ -113,17 +125,22 @@ async function handler(req, res) {
     return res.status(405).json({ error: 'method_not_allowed' });
   }
 
+  dbg(`route invoked: ${req.method} ${req.url || ''}`);
+
   const apiKey = process.env.CONGRESS_API_KEY;
   const qCongress = parseInt(String(req.query.congress || ''), 10);
   const congress = Number.isFinite(qCongress) && qCongress >= 1 && qCongress <= 150
     ? qCongress
     : 119;
 
+  dbg(`congress query resolved to: ${congress}`);
+  dbg(`CONGRESS_API_KEY present: ${apiKey ? 'yes' : 'no'}`);
+
   if (!apiKey) {
-    return res.status(503).json({
-      error: 'no_key',
-      message: 'Set CONGRESS_API_KEY in Vercel (or .env for vercel dev). Request a free key at https://api.congress.gov/sign-up/',
-      source: 'unavailable',
+    dbg('abort: missing_api_key (returning JSON error body, HTTP 200)');
+    return res.status(200).json({
+      source: 'error',
+      error: 'missing_api_key',
       bills: [],
       congress,
     });
@@ -146,6 +163,7 @@ async function handler(req, res) {
       }
     }
     out.sort((a, b) => String(b.actionDate).localeCompare(String(a.actionDate)));
+    dbg(`signed-law rows after filter: ${out.length}`);
     return res.status(200).json({
       source: 'live',
       congress,
@@ -153,6 +171,7 @@ async function handler(req, res) {
       bills: out,
     });
   } catch (e) {
+    dbg('upstream exception:', e.message || String(e));
     return res.status(502).json({
       error: 'upstream',
       message: e.message || 'Congress.gov request failed',

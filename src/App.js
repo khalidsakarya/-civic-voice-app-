@@ -5633,6 +5633,13 @@ function App() {
         const res = await fetch(`/api/congress-signed-laws?congress=${congress}`);
         const data = await res.json().catch(() => ({}));
         if (cancelled) return;
+        if (data.source === 'error' && data.error === 'missing_api_key') {
+          setSignedLawsBills(null);
+          setSignedLawsSource(null);
+          setSignedLawsError(CONGRESS_SIGNED_LAWS_UNAVAILABLE);
+          console.warn('[SignedLawsBills] server reported missing_api_key (set CONGRESS_API_KEY on Vercel, not REACT_APP_*)');
+          return;
+        }
         const contentType = (res.headers.get('content-type') || '').toLowerCase();
         const responseLooksLikeHtml = contentType.includes('text/html');
         if (!res.ok) {
