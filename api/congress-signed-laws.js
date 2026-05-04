@@ -83,7 +83,8 @@ function lawStatusLabelFromLatest(latestText) {
 }
 
 const BILL_PAGE_LIMIT = 250;
-const BILL_PAGES_PER_TYPE = 4; // up to 1000 rows per bill type (updateDate sort misses older laws otherwise)
+/** Keep low enough to finish within Vercel default function timeout (~10s) on Hobby. */
+const BILL_PAGES_PER_TYPE = 2; // 500 rows per bill type; raise on Pro + higher maxDuration if needed
 
 async function fetchBillListPage(congress, billType, apiKey, offset) {
   const url = new URL(`https://api.congress.gov/v3/bill/${congress}/${billType}`);
@@ -137,78 +138,93 @@ function mapItem(congress, item) {
   };
 }
 
-async function handler(req, res) {
+function json(res, status, body) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    return res.status(204).end();
-  }
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'method_not_allowed' });
-  }
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('X-Civic-Route', 'congress-signed-laws');
+  return res.status(status).json(body);
+}
 
-  dbg(`route invoked: ${req.method} ${req.url || ''}`);
-
-  const apiKey = process.env.CONGRESS_API_KEY;
-  const qCongress = parseInt(String(req.query.congress || ''), 10);
-  const congress = Number.isFinite(qCongress) && qCongress >= 1 && qCongress <= 150
-    ? qCongress
-    : 119;
-
-  dbg(`congress query resolved to: ${congress}`);
-  dbg(`CONGRESS_API_KEY present: ${apiKey ? 'yes' : 'no'}`);
-
-  if (!apiKey) {
-    dbg('abort: missing_api_key (returning JSON error body, HTTP 200)');
-    return res.status(200).json({
-      source: 'error',
-      error: 'missing_api_key',
-      bills: [],
-      congress,
-    });
-  }
-
-  const types = ['hr', 's', 'hjres', 'sjres'];
+async function handler(req, res) {
   try {
-    const lists = await Promise.all(types.map((t) => fetchBillListAllPages(congress, t, apiKey)));
-    let rowsExamined = 0;
-    const seen = new Set();
-    const out = [];
-    for (const list of lists) {
-      rowsExamined += list.length;
-      for (const item of list) {
-        const la = item.latestAction || {};
-        const text = (la.text != null && String(la.text)) || '';
-        if (!isSignedOrEnactedLaw(text)) continue;
-        const key = `${String(item.type || item.billType || '').toLowerCase()}-${item.number}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        out.push(mapItem(congress, item));
-      }
+    if (req.method === 'OPTIONS') {
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      return res.status(204).end();
     }
-    out.sort((a, b) => String(b.actionDate).localeCompare(String(a.actionDate)));
-    dbg(`bill rows examined (deduped across types): ${rowsExamined}; signed-law matches: ${out.length}`);
-    return res.status(200).json({
-      source: 'live',
-      congress,
-      fetchedAt: new Date().toISOString(),
-      bills: out,
-      scan: {
-        billRowsExamined: rowsExamined,
-        pagesPerBillType: BILL_PAGES_PER_TYPE,
-        billPageLimit: BILL_PAGE_LIMIT,
-        signedLawMatches: out.length,
-      },
-    });
-  } catch (e) {
-    dbg('upstream exception:', e.message || String(e));
-    return res.status(502).json({
-      error: 'upstream',
-      message: e.message || 'Congress.gov request failed',
-      source: 'unavailable',
+    if (req.method !== 'GET') {
+      return json(res, 405, { source: 'error', error: 'method_not_allowed' });
+    }
+
+    dbg(`route invoked: ${req.method} ${req.url || ''}`);
+
+    const apiKey = process.env.CONGRESS_API_KEY;
+    const qCongress = parseInt(String(req.query.congress || ''), 10);
+    const congress = Number.isFinite(qCongress) && qCongress >= 1 && qCongress <= 150
+      ? qCongress
+      : 119;
+
+    dbg(`congress query resolved to: ${congress}`);
+    dbg(`CONGRESS_API_KEY present: ${apiKey ? 'yes' : 'no'}`);
+
+    if (!apiKey) {
+      dbg('abort: missing_api_key (returning JSON error body, HTTP 200)');
+      return json(res, 200, {
+        source: 'error',
+        error: 'missing_api_key',
+        bills: [],
+        congress,
+      });
+    }
+
+    const types = ['hr', 's', 'hjres', 'sjres'];
+    try {
+      const lists = await Promise.all(types.map((t) => fetchBillListAllPages(congress, t, apiKey)));
+      let rowsExamined = 0;
+      const seen = new Set();
+      const out = [];
+      for (const list of lists) {
+        rowsExamined += list.length;
+        for (const item of list) {
+          const la = item.latestAction || {};
+          const text = (la.text != null && String(la.text)) || '';
+          if (!isSignedOrEnactedLaw(text)) continue;
+          const key = `${String(item.type || item.billType || '').toLowerCase()}-${item.number}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push(mapItem(congress, item));
+        }
+      }
+      out.sort((a, b) => String(b.actionDate).localeCompare(String(a.actionDate)));
+      dbg(`bill rows examined (deduped across types): ${rowsExamined}; signed-law matches: ${out.length}`);
+      return json(res, 200, {
+        source: 'live',
+        congress,
+        fetchedAt: new Date().toISOString(),
+        bills: out,
+        scan: {
+          billRowsExamined: rowsExamined,
+          pagesPerBillType: BILL_PAGES_PER_TYPE,
+          billPageLimit: BILL_PAGE_LIMIT,
+          signedLawMatches: out.length,
+        },
+      });
+    } catch (e) {
+      dbg('upstream exception:', e.message || String(e));
+      return json(res, 502, {
+        source: 'error',
+        error: 'upstream',
+        message: e.message || 'Congress.gov request failed',
+        bills: [],
+        congress,
+      });
+    }
+  } catch (fatal) {
+    dbg('fatal handler error:', fatal && fatal.message ? fatal.message : String(fatal));
+    return json(res, 500, {
+      source: 'error',
+      error: 'handler_exception',
       bills: [],
-      congress,
     });
   }
 }

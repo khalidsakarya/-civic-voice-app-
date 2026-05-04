@@ -5632,45 +5632,82 @@ function App() {
     setSignedLawsScan(null);
     setSignedLawsLoading(true);
     (async () => {
+      const apiUrl = `/api/congress-signed-laws?congress=${congress}`;
       try {
-        const res = await fetch(`/api/congress-signed-laws?congress=${congress}`);
-        const data = await res.json().catch(() => ({}));
+        const res = await fetch(apiUrl, { credentials: 'same-origin', cache: 'no-store' });
+        const rawText = await res.text();
         if (cancelled) return;
-        if (data.source === 'error' && data.error === 'missing_api_key') {
+
+        const trimmed = (rawText || '').trim();
+        const looksLikeHtml = /^<!DOCTYPE|^<html[\s>]/i.test(trimmed) || (trimmed.startsWith('<') && trimmed.includes('<html'));
+
+        let data = {};
+        if (!looksLikeHtml && trimmed) {
+          try {
+            data = JSON.parse(trimmed);
+          } catch (parseErr) {
+            console.warn('[SignedLawsBills] JSON parse failed', parseErr?.message, 'status=', res.status, 'content-type=', res.headers.get('content-type'), 'bodyLen=', trimmed.length);
+            setSignedLawsBills(null);
+            setSignedLawsSource(null);
+            setSignedLawsScan(null);
+            setSignedLawsError(CONGRESS_SIGNED_LAWS_UNAVAILABLE);
+            return;
+          }
+        }
+
+        const sourceNorm = typeof data.source === 'string' ? data.source.trim().toLowerCase() : '';
+        const contentType = (res.headers.get('content-type') || '').toLowerCase();
+        const responseLooksLikeHtml = looksLikeHtml || contentType.includes('text/html');
+
+        if (!res.ok || sourceNorm !== 'live') {
+          console.warn('[SignedLawsBills]', {
+            url: apiUrl,
+            ok: res.ok,
+            status: res.status,
+            contentType,
+            source: data.source,
+            error: data.error,
+            bodySnippet: trimmed.slice(0, 160),
+          });
+        }
+
+        if (sourceNorm === 'error' && data.error === 'missing_api_key') {
           setSignedLawsBills(null);
           setSignedLawsSource(null);
           setSignedLawsScan(null);
           setSignedLawsError(CONGRESS_SIGNED_LAWS_UNAVAILABLE);
-          console.warn('[SignedLawsBills] server reported missing_api_key (set CONGRESS_API_KEY on Vercel, not REACT_APP_*)');
+          console.warn('[SignedLawsBills] missing_api_key — set CONGRESS_API_KEY on this Vercel project (Production), exact name, redeploy. Not REACT_APP_*.');
           return;
         }
-        const contentType = (res.headers.get('content-type') || '').toLowerCase();
-        const responseLooksLikeHtml = contentType.includes('text/html');
+
         if (!res.ok) {
           setSignedLawsBills(null);
           setSignedLawsSource(null);
           setSignedLawsScan(null);
-          setSignedLawsError(CONGRESS_SIGNED_LAWS_UNAVAILABLE);
-          if (data.message) console.warn('[SignedLawsBills]', data.message);
+          const routeMissing = res.status === 404 || responseLooksLikeHtml;
+          setSignedLawsError(routeMissing ? CONGRESS_SIGNED_LAWS_NEEDS_API_HOST : CONGRESS_SIGNED_LAWS_UNAVAILABLE);
+          if (data.message) console.warn('[SignedLawsBills] upstream message:', data.message);
           return;
         }
-        if (data.source !== 'live') {
-          setSignedLawsBills(null);
-          setSignedLawsSource(null);
-          setSignedLawsScan(null);
-          setSignedLawsError(
-            responseLooksLikeHtml || data.source === undefined
-              ? CONGRESS_SIGNED_LAWS_NEEDS_API_HOST
-              : CONGRESS_SIGNED_LAWS_UNAVAILABLE,
-          );
+
+        if (sourceNorm === 'live') {
+          const raw = Array.isArray(data.bills) ? data.bills : [];
+          const enriched = raw.map(enrichSignedLawFromApi);
+          setSignedLawsBills(enriched);
+          setSignedLawsSource('live');
+          setSignedLawsScan(data.scan && typeof data.scan === 'object' ? data.scan : null);
+          setSignedLawsError(null);
           return;
         }
-        const raw = Array.isArray(data.bills) ? data.bills : [];
-        const enriched = raw.map(enrichSignedLawFromApi);
-        setSignedLawsBills(enriched);
-        setSignedLawsSource('live');
-        setSignedLawsScan(data.scan && typeof data.scan === 'object' ? data.scan : null);
-        setSignedLawsError(null);
+
+        setSignedLawsBills(null);
+        setSignedLawsSource(null);
+        setSignedLawsScan(null);
+        setSignedLawsError(
+          responseLooksLikeHtml || sourceNorm === '' || data.source === undefined
+            ? CONGRESS_SIGNED_LAWS_NEEDS_API_HOST
+            : CONGRESS_SIGNED_LAWS_UNAVAILABLE,
+        );
       } catch (err) {
         if (cancelled) return;
         console.warn('[SignedLawsBills] fetch failed:', err.message);

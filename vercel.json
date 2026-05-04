@@ -1,5 +1,16 @@
 {
+  "functions": {
+    "api/congress-signed-laws.js": {
+      "maxDuration": 60
+    }
+  },
   "headers": [
+    {
+      "source": "/api/congress-signed-laws",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }
+      ]
+    },
     {
       "source": "/service-worker.js",
       "headers": [
