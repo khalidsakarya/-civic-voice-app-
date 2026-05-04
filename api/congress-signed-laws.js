@@ -1,10 +1,7 @@
 /**
- * Vercel serverless: bills whose latest action indicates presentation or delivery to the President
- * for presidential action (Congress.gov API v3). Outcomes (signature, veto, presentment, adjournment
- * timing) are not implied—caller UI should stay legally broad.
- * Requires CONGRESS_API_KEY in project env (never commit; not REACT_APP_*).
- *
- * Future: paginate + cache via Firestore (scheduled job) to avoid missing older presented bills and to stay within API limits.
+ * Vercel serverless: bills whose latest action indicates presidential signature or enactment
+ * (Congress.gov API v3). Excludes bills only presented/delivered to the President.
+ * Requires CONGRESS_API_KEY (never commit; not REACT_APP_*).
  *
  * @see https://github.com/LibraryOfCongress/api.congress.gov/blob/main/Documentation/BillEndpoint.md
  */
@@ -45,21 +42,30 @@ function buildCongressGovUrl(congress, typeUpper, number) {
   return `https://www.congress.gov/bill/${seg}/${slug}/${n}`;
 }
 
-function isAwaitingPresidentialAction(latestText) {
+/** Latest action indicates signature or enactment (not merely sent to the President). */
+function isSignedOrEnactedLaw(latestText) {
   if (!latestText || typeof latestText !== 'string') return false;
   const lower = latestText.toLowerCase();
-  if (lower.includes('became public law') || lower.includes('became private law')) return false;
-  if (lower.includes('signed by the president') || lower.includes('signed by president')) return false;
   if (lower.includes('vetoed by the president') || lower.includes('vetoed by president')) return false;
-  if (lower.includes('veto message') && lower.includes('chamber')) return false;
+  if (lower.includes('pocket veto')) return false;
+  if (lower.includes('veto message')) return false;
   return (
-    /\bpresented to the president\b/i.test(latestText)
-    || /\bpresented to president\b/i.test(latestText)
-    || /\bdelivered to the president\b/i.test(latestText)
-    || /\bdelivered to president\b/i.test(latestText)
-    || /\bpresident'?s desk\b/i.test(latestText)
-    || /\bawaiting presidential signature\b/i.test(latestText)
+    /\bsigned by (the )?president\b/i.test(latestText)
+    || /\bbecame public law\b/i.test(latestText)
+    || /\bbecame private law\b/i.test(latestText)
+    || /\bpublic law no\.?\b/i.test(lower)
+    || /\bbecame law\b/i.test(lower)
   );
+}
+
+function lawStatusLabelFromLatest(latestText) {
+  if (!latestText || typeof latestText !== 'string') return 'Enacted';
+  const lower = latestText.toLowerCase();
+  if (/\bbecame public law\b/i.test(latestText) || /\bpublic law no\.?\b/i.test(lower)) return 'Became Public Law';
+  if (/\bbecame private law\b/i.test(latestText)) return 'Became Private Law';
+  if (/\bsigned by (the )?president\b/i.test(lower)) return 'Signed by President';
+  if (/\bbecame law\b/i.test(lower)) return 'Became Law';
+  return 'Signed or enacted';
 }
 
 async function fetchBillList(congress, billType, apiKey) {
@@ -92,6 +98,7 @@ function mapItem(congress, item) {
     actionDate,
     originChamber: item.originChamber || '',
     sourceUrl: buildCongressGovUrl(congress, type, number),
+    lawStatusLabel: lawStatusLabelFromLatest(text),
   };
 }
 
@@ -131,7 +138,7 @@ async function handler(req, res) {
       for (const item of list) {
         const la = item.latestAction || {};
         const text = la.text || '';
-        if (!isAwaitingPresidentialAction(text)) continue;
+        if (!isSignedOrEnactedLaw(text)) continue;
         const key = `${String(item.type || '').toLowerCase()}-${item.number}`;
         if (seen.has(key)) continue;
         seen.add(key);

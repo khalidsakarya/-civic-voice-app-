@@ -850,10 +850,19 @@ const executiveOrders = [
   },
 ];
 
-const CONGRESS_LIVE_BILLS_UNAVAILABLE = 'Live Congress.gov data is unavailable. Configure CONGRESS_API_KEY on the server and redeploy.';
-const CONGRESS_LIVE_BILLS_EMPTY = 'No bills are currently identified as awaiting presidential action in the live Congress.gov scan.';
+const CONGRESS_SIGNED_LAWS_UNAVAILABLE = 'Live Congress.gov signed-law data is unavailable. Configure CONGRESS_API_KEY on the server and redeploy.';
+const CONGRESS_SIGNED_LAWS_EMPTY = 'No bills are currently identified as signed by the President or enacted as public law in the live Congress.gov scan.';
 /** CRA `npm start` (or static hosting) does not run /api — response is usually HTML, not JSON. */
-const CONGRESS_LIVE_BILLS_NEEDS_API_HOST = 'This screen needs the server route /api/congress-pending-president. Run npx vercel dev locally (with CONGRESS_API_KEY in .env.local), or deploy on Vercel with CONGRESS_API_KEY set. Using only npm start will not load live bills.';
+const CONGRESS_SIGNED_LAWS_NEEDS_API_HOST = 'This screen needs the server route /api/congress-signed-laws. Run npx vercel dev locally (with CONGRESS_API_KEY in .env.local), or deploy on Vercel with CONGRESS_API_KEY set. Using only npm start will not load live signed-law data.';
+const SIGNED_LAW_VOTES_DISCLAIMER = 'Votes are civic feedback only and are not submitted to Congress or the White House.';
+
+/**
+ * Optional editorial plain-language content keyed by bill id (e.g. "HR1234", "S56").
+ * Merged only when the key matches a live Congress.gov row. Do not use for sample lists.
+ */
+const SIGNED_LAW_EDITORIAL_BY_BILL_KEY = {
+  // Example: 'HR1': { summary: '…', pros: ['…'], cons: ['…'] },
+};
 
 /** Default US Congress number for Congress.gov (Jan 3 rollover). */
 function getCurrentUsCongressNumber(d = new Date()) {
@@ -884,8 +893,8 @@ function congressOrdinalLabel(congress) {
   return `${c}${suf} Congress`;
 }
 
-/** Map /api/congress-pending-president row into president-bill card shape (live API only; no curated merge). */
-function enrichPresidentDeskBillFromApi(row) {
+/** Map /api/congress-signed-laws row into card shape; merge editorial overlay when keyed. */
+function enrichSignedLawFromApi(row) {
   const billType = (row.billType || '').toLowerCase();
   const billNumber = String(row.billNumber ?? '');
   const id =
@@ -901,24 +910,31 @@ function enrichPresidentDeskBillFromApi(row) {
     billType === 'sjres' ? `S.J.Res. ${billNumber}` :
     `${billNumber}`;
   const latest = row.latestActionText || '';
+  const officialTitle = row.title || 'Untitled measure';
+  const ed = SIGNED_LAW_EDITORIAL_BY_BILL_KEY[id];
+  const hasEditorialSummary = ed && typeof ed.summary === 'string' && ed.summary.trim().length > 0;
+  const pros = ed && Array.isArray(ed.pros) ? ed.pros : [];
+  const cons = ed && Array.isArray(ed.cons) ? ed.cons : [];
   return {
     id,
     billType,
     billNumber,
     congress: String(row.congress ?? getCurrentUsCongressNumber()),
     number,
-    title: row.title || 'Untitled measure',
+    title: officialTitle,
+    officialTitle,
+    latestActionText: latest,
     passedDate: formatActionDateUs(row.actionDate),
     actionDate: row.actionDate || '',
     chamber: row.originChamber || '—',
-    status: latest.slice(0, 220) + (latest.length > 220 ? '…' : ''),
-    statusCode: 'LIVE_CONGRESS',
+    status: row.lawStatusLabel || 'Signed or enacted',
     statusColor: 'green',
     sourceUrl: row.sourceUrl || 'https://www.congress.gov/',
-    description: latest || 'See Congress.gov for full status and text.',
-    summary: `${row.title || 'Bill'}\n\nLatest action (Congress.gov): ${latest || '—'}`,
-    pros: [],
-    cons: [],
+    description: latest ? `${latest.slice(0, 220)}${latest.length > 220 ? '…' : ''}` : 'See Congress.gov for full text.',
+    summary: hasEditorialSummary ? ed.summary.trim() : 'Summary pending review',
+    hasEditorialSummary,
+    pros,
+    cons,
     support: 0,
     oppose: 0,
   };
@@ -1321,7 +1337,7 @@ function App() {
   const CV_VOTES_VERSION = '3';
   if (localStorage.getItem('cv_votes_version') !== CV_VOTES_VERSION) {
     const VOTE_KEYS = [
-      'cvPresidentVote', 'cvPresidentBillVotes', 'cvEOVotes',
+      'cvPresidentVote', 'cvPresidentBillVotes', 'cvSignedLawBillVotes', 'cvEOVotes',
       'cvPMVote', 'cvAlbaneseVote', 'cvStarmerVote',
       'cvUkMpVotes', 'cvUkLordVotes', 'cvUkJusticeVotes',
       'cvCaMemberVotes', 'cvSenatorVotes', 'cvAuMemberVotes',
@@ -1347,16 +1363,21 @@ function App() {
     return saved ? JSON.parse(saved) : { support: 0, oppose: 0, concerned: 0, userVote: null };
   });
   const [selectedEO, setSelectedEO] = useState(null);
-  const [selectedPresidentBill, setSelectedPresidentBill] = useState(null);
-  const [presidentBillVotes, setPresidentBillVotes] = useState(() => {
-    const saved = localStorage.getItem('cvPresidentBillVotes');
-    return saved ? JSON.parse(saved) : {};
+  const [selectedSignedLawBill, setSelectedSignedLawBill] = useState(null);
+  const [signedLawBillVotes, setSignedLawBillVotes] = useState(() => {
+    try {
+      let raw = localStorage.getItem('cvSignedLawBillVotes');
+      if (!raw) raw = localStorage.getItem('cvPresidentBillVotes');
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
   });
-  /** null = before first load for this visit; array = live or merged rows */
-  const [presidentDeskBills, setPresidentDeskBills] = useState(null);
-  const [presidentDeskBillsSource, setPresidentDeskBillsSource] = useState(null);
-  const [presidentDeskBillsLoading, setPresidentDeskBillsLoading] = useState(false);
-  const [presidentDeskBillsError, setPresidentDeskBillsError] = useState(null);
+  /** null = before first load for this visit; array = live rows only */
+  const [signedLawsBills, setSignedLawsBills] = useState(null);
+  const [signedLawsSource, setSignedLawsSource] = useState(null);
+  const [signedLawsLoading, setSignedLawsLoading] = useState(false);
+  const [signedLawsError, setSignedLawsError] = useState(null);
   const [eoVotes, setEoVotes] = useState(() => {
     const saved = localStorage.getItem('cvEOVotes');
     return saved ? JSON.parse(saved) : {};
@@ -4734,11 +4755,11 @@ function App() {
     if (newVote === 'concerned') storeConcernedRegion('congress', memberName);
   };
 
-  const votePresidentBill = (billId, vote) => {
+  const voteSignedLawBill = (billId, vote) => {
     logEvent('vote_bill', { country: 'US', itemId: String(billId) });
-    const pbCur = presidentBillVotes[billId] || { support: 0, oppose: 0, concerned: 0, userVote: null };
-    submitVote(toVoteId('us-president-bill', billId), 'US', pbCur.userVote, pbCur.userVote === vote ? null : vote);
-    setPresidentBillVotes(prev => {
+    const pbCur = signedLawBillVotes[billId] || { support: 0, oppose: 0, concerned: 0, userVote: null };
+    submitVote(toVoteId('us-signed-law', billId), 'US', pbCur.userVote, pbCur.userVote === vote ? null : vote);
+    setSignedLawBillVotes(prev => {
       const current = prev[billId] || { support: 0, oppose: 0, concerned: 0, userVote: null };
       const newVote = current.userVote === vote ? null : vote;
       let support = current.support;
@@ -4751,8 +4772,8 @@ function App() {
       if (newVote === 'oppose')  oppose++;
       if (newVote === 'concerned') concerned++;
       const next = { ...prev, [billId]: { support, oppose, concerned, userVote: newVote } };
-      localStorage.setItem('cvPresidentBillVotes', JSON.stringify(next));
-      if (newVote === 'concerned') storeConcernedRegion('us-president-bill', billId);
+      localStorage.setItem('cvSignedLawBillVotes', JSON.stringify(next));
+      if (newVote === 'concerned') storeConcernedRegion('us-signed-law', billId);
       return next;
     });
   };
@@ -5597,53 +5618,53 @@ function App() {
     })();
   }, [view, selectedCountry?.type]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Bills awaiting presidential action — live-only via /api/congress-pending-president (CONGRESS_API_KEY on server). No curated fallback.
+  // Bills signed by the President / recently enacted — live-only via /api/congress-signed-laws (CONGRESS_API_KEY on server). No sample fallback.
   useEffect(() => {
-    if (view !== 'bills-awaiting-signature') return undefined;
+    if (view !== 'bills-signed-laws') return undefined;
     let cancelled = false;
     const congress = getCurrentUsCongressNumber();
-    setSelectedPresidentBill(null);
-    setPresidentDeskBills(null);
-    setPresidentDeskBillsSource(null);
-    setPresidentDeskBillsError(null);
-    setPresidentDeskBillsLoading(true);
+    setSelectedSignedLawBill(null);
+    setSignedLawsBills(null);
+    setSignedLawsSource(null);
+    setSignedLawsError(null);
+    setSignedLawsLoading(true);
     (async () => {
       try {
-        const res = await fetch(`/api/congress-pending-president?congress=${congress}`);
+        const res = await fetch(`/api/congress-signed-laws?congress=${congress}`);
         const data = await res.json().catch(() => ({}));
         if (cancelled) return;
         const contentType = (res.headers.get('content-type') || '').toLowerCase();
         const responseLooksLikeHtml = contentType.includes('text/html');
         if (!res.ok) {
-          setPresidentDeskBills(null);
-          setPresidentDeskBillsSource(null);
-          setPresidentDeskBillsError(CONGRESS_LIVE_BILLS_UNAVAILABLE);
-          if (data.message) console.warn('[PresidentDeskBills]', data.message);
+          setSignedLawsBills(null);
+          setSignedLawsSource(null);
+          setSignedLawsError(CONGRESS_SIGNED_LAWS_UNAVAILABLE);
+          if (data.message) console.warn('[SignedLawsBills]', data.message);
           return;
         }
         if (data.source !== 'live') {
-          setPresidentDeskBills(null);
-          setPresidentDeskBillsSource(null);
-          setPresidentDeskBillsError(
+          setSignedLawsBills(null);
+          setSignedLawsSource(null);
+          setSignedLawsError(
             responseLooksLikeHtml || data.source === undefined
-              ? CONGRESS_LIVE_BILLS_NEEDS_API_HOST
-              : CONGRESS_LIVE_BILLS_UNAVAILABLE,
+              ? CONGRESS_SIGNED_LAWS_NEEDS_API_HOST
+              : CONGRESS_SIGNED_LAWS_UNAVAILABLE,
           );
           return;
         }
         const raw = Array.isArray(data.bills) ? data.bills : [];
-        const enriched = raw.map(enrichPresidentDeskBillFromApi);
-        setPresidentDeskBills(enriched);
-        setPresidentDeskBillsSource('live');
-        setPresidentDeskBillsError(null);
+        const enriched = raw.map(enrichSignedLawFromApi);
+        setSignedLawsBills(enriched);
+        setSignedLawsSource('live');
+        setSignedLawsError(null);
       } catch (err) {
         if (cancelled) return;
-        console.warn('[PresidentDeskBills] fetch failed:', err.message);
-        setPresidentDeskBills(null);
-        setPresidentDeskBillsSource(null);
-        setPresidentDeskBillsError(CONGRESS_LIVE_BILLS_UNAVAILABLE);
+        console.warn('[SignedLawsBills] fetch failed:', err.message);
+        setSignedLawsBills(null);
+        setSignedLawsSource(null);
+        setSignedLawsError(CONGRESS_SIGNED_LAWS_UNAVAILABLE);
       } finally {
-        if (!cancelled) setPresidentDeskBillsLoading(false);
+        if (!cancelled) setSignedLawsLoading(false);
       }
     })();
     return () => { cancelled = true; };
@@ -25397,7 +25418,7 @@ function App() {
               {usCabinetRosterCount != null && usCabinetRosterCount >= 0 && (
                 <span> Cabinet-related <span className="font-medium">department_heads</span> (US): <span className="font-medium">{usCabinetRosterCount}</span> record{usCabinetRosterCount === 1 ? '' : 's'}.</span>
               )}
-              {' '}Executive orders below are a <span className="font-medium">curated sample</span> with Federal Register links. <span className="font-medium">Bills Awaiting Presidential Action</span> is <span className="font-medium">live-only</span> (Congress.gov API); there is no offline list in the app.
+              {' '}Executive orders below are a <span className="font-medium">curated sample</span> with Federal Register links. <span className="font-medium">Bills Signed by the President</span> uses <span className="font-medium">live-only</span> Congress.gov data (signed or enacted laws); there is no offline list in the app.
             </p>
           </div>
 
@@ -25438,10 +25459,10 @@ function App() {
 
           </div>
 
-          {/* Bills awaiting presidential action — navigation button */}
+          {/* Recently signed / enacted laws — navigation button */}
           <div className="mt-4">
             <button
-              onClick={() => setView('bills-awaiting-signature')}
+              onClick={() => setView('bills-signed-laws')}
               className="w-full flex items-center justify-between gap-4 bg-white border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all rounded-2xl px-6 py-4 shadow-sm"
             >
               <div className="flex items-center gap-3">
@@ -25449,8 +25470,8 @@ function App() {
                   <Scale className="w-5 h-5 text-blue-600" />
                 </div>
                 <div className="text-left">
-                  <p className="font-bold text-gray-800 text-base">Bills Awaiting Presidential Action</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Live Congress.gov list only — requires CONGRESS_API_KEY on the server (see deploy docs)</p>
+                  <p className="font-bold text-gray-800 text-base">Bills Signed by the President</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Recently approved laws · live Congress.gov only — requires CONGRESS_API_KEY on the server</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-blue-500 flex-shrink-0" />
@@ -28058,20 +28079,19 @@ function App() {
     </div>
   );
 
-  const renderBillsAwaitingPresidentialAction = () => {
-    const showLoading = presidentDeskBillsLoading;
-    const liveCongressReady = !presidentDeskBillsLoading
-      && presidentDeskBillsSource === 'live'
-      && Array.isArray(presidentDeskBills)
-      && !presidentDeskBillsError;
-    const hasFetchError = !presidentDeskBillsLoading && !!presidentDeskBillsError;
-    const deskRows = liveCongressReady ? presidentDeskBills : [];
+  const renderBillsSignedByPresident = () => {
+    const showLoading = signedLawsLoading;
+    const liveCongressReady = !signedLawsLoading
+      && signedLawsSource === 'live'
+      && Array.isArray(signedLawsBills)
+      && !signedLawsError;
+    const hasFetchError = !signedLawsLoading && !!signedLawsError;
+    const deskRows = liveCongressReady ? signedLawsBills : [];
     const congressN = getCurrentUsCongressNumber();
 
     const renderBillCard = (bill) => {
-      const votes = presidentBillVotes[bill.id] || { support: bill.support, oppose: bill.oppose, userVote: null };
-      const total = votes.support + votes.oppose;
-      const pct = total > 0 ? Math.round((votes.support / total) * 100) : 0;
+      const votes = signedLawBillVotes[bill.id] || { support: bill.support, oppose: bill.oppose, concerned: 0, userVote: null };
+      const voteTotal = votes.support + votes.oppose + (votes.concerned || 0);
       const statusColors = {
         green:  { badge: 'bg-green-50 border-green-200 text-green-700' },
         blue:   { badge: 'bg-blue-50 border-blue-200 text-blue-700' },
@@ -28083,24 +28103,21 @@ function App() {
       return (
         <div
           key={bill.id}
-          onClick={() => setSelectedPresidentBill(bill)}
+          onClick={() => setSelectedSignedLawBill(bill)}
           className="relative bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all"
         >
           <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.number}: ${bill.title}`, text: shareText, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
           <div className="flex items-start justify-between gap-2 mb-2">
             <span className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full flex-shrink-0">{bill.number}</span>
-            <span className="text-xs text-gray-400 flex-shrink-0">{bill.passedDate}</span>
+            <span className="text-xs text-gray-500 flex-shrink-0 text-right">Signed / enacted<br /><span className="text-gray-400">{bill.passedDate}</span></span>
           </div>
           <h3 className="text-sm font-bold text-gray-800 mb-1.5 leading-snug">{bill.title}</h3>
           <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full border mb-2 ${sc.badge}`}>{bill.status}</span>
-          <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{bill.description}</p>
-          {total > 0 && (
-            <div className="flex items-center gap-2">
-              <div className="flex-1 bg-gray-100 rounded-full h-1.5">
-                <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
-              </div>
-              <span className="text-xs text-gray-400">{pct}% support</span>
-            </div>
+          <p className="text-xs text-gray-600 leading-relaxed mb-3 line-clamp-3">{bill.summary}</p>
+          {voteTotal > 0 && (
+            <p className="text-[11px] text-gray-400 mb-1">
+              In-app: {votes.support} support · {votes.concerned || 0} concern · {votes.oppose} oppose
+            </p>
           )}
           <a
             href={bill.sourceUrl} target="_blank" rel="noopener noreferrer"
@@ -28108,7 +28125,7 @@ function App() {
             className="mt-2.5 flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors"
           >
             <Globe className="w-3 h-3 flex-shrink-0" />
-            Source: congress.gov
+            Source: Congress.gov
           </a>
         </div>
       );
@@ -28126,7 +28143,7 @@ function App() {
 
         <div className="mb-4 animate-slide-in flex flex-wrap items-baseline gap-x-3 gap-y-2">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">
-            {showLoading ? 'Loading…' : hasFetchError ? 'Live Congress.gov unavailable' : 'Bills Awaiting Presidential Action'}
+            {showLoading ? 'Loading…' : hasFetchError ? 'Signed laws unavailable' : 'Bills Signed by the President'}
           </h1>
           {liveCongressReady && (
             <span className="inline-flex items-center rounded-full border border-green-600 bg-green-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-green-800">
@@ -28134,18 +28151,21 @@ function App() {
             </span>
           )}
           <div className="w-full text-gray-600 text-base sm:text-lg mt-1">
-            {showLoading && `Loading live data from Congress.gov (${congressOrdinalLabel(congressN)})…`}
+            {!showLoading && !hasFetchError && (
+              <p className="text-slate-600 text-base font-medium">Recently approved laws</p>
+            )}
+            {showLoading && `Loading signed and enacted measures from Congress.gov (${congressOrdinalLabel(congressN)})…`}
             {liveCongressReady && deskRows.length > 0 && (
-              <span>{deskRows.length} measure{deskRows.length === 1 ? '' : 's'} from the latest Congress.gov scan (latest action indicates presentation or delivery to the President). Tap a row for detail. In-app votes are not official.</span>
+              <span>{deskRows.length} measure{deskRows.length === 1 ? '' : 's'} whose latest action indicates presidential signature or enactment as law. Tap a row for a short summary and civic feedback.</span>
             )}
             {liveCongressReady && deskRows.length === 0 && (
               <span>
-                {CONGRESS_LIVE_BILLS_EMPTY}{' '}
+                {CONGRESS_SIGNED_LAWS_EMPTY}{' '}
                 <a href="https://www.congress.gov/legislation" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline whitespace-nowrap">Search Congress.gov</a>
               </span>
             )}
             {hasFetchError && (
-              <span className="text-slate-700">This screen is live-only. No static or curated bills are shown.</span>
+              <span className="text-slate-700">This screen shows live Congress.gov data only. No sample laws are listed here.</span>
             )}
           </div>
           <div className="w-full h-px bg-gradient-to-r from-blue-500/40 to-transparent mt-2 max-w-md" />
@@ -28153,8 +28173,8 @@ function App() {
 
         {hasFetchError && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-950">
-            <p className="font-semibold text-red-900 mb-1">Cannot load live bills</p>
-            <p>{presidentDeskBillsError}</p>
+            <p className="font-semibold text-red-900 mb-1">Cannot load signed-law list</p>
+            <p>{signedLawsError}</p>
           </div>
         )}
 
@@ -28162,7 +28182,7 @@ function App() {
           <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-800 leading-relaxed">
             <p className="font-semibold text-slate-900 mb-1">How this list is built</p>
             <p className="text-slate-700">
-              Data comes from the <span className="font-medium">Congress.gov API</span> (Library of Congress) via this app&apos;s server route. Only bills and joint resolutions whose <span className="font-medium">latest action text</span> matches presentation or delivery to the President are included. Confirm full text and timing on each bill&apos;s official page.
+              Data comes from the <span className="font-medium">Congress.gov API</span> via this app&apos;s server route. Only bills and joint resolutions whose <span className="font-medium">latest action</span> indicates the President signed the measure or it became public/private law are included — not bills merely pending at the White House. Confirm full text and public law number on Congress.gov.
             </p>
           </div>
         )}
@@ -28179,8 +28199,8 @@ function App() {
         ) : null}
       </div>
 
-      {selectedPresidentBill && liveCongressReady && deskRows.length > 0 && (() => {
-        const votes = presidentBillVotes[selectedPresidentBill.id] || { support: selectedPresidentBill.support, oppose: selectedPresidentBill.oppose, userVote: null };
+      {selectedSignedLawBill && liveCongressReady && deskRows.length > 0 && (() => {
+        const votes = signedLawBillVotes[selectedSignedLawBill.id] || { support: selectedSignedLawBill.support, oppose: selectedSignedLawBill.oppose, concerned: 0, userVote: null };
         const statusColors = {
           green:  'bg-green-100 text-green-800',
           blue:   'bg-blue-100 text-blue-800',
@@ -28192,17 +28212,17 @@ function App() {
             <div className="bg-white shadow-sm sticky top-0 z-10">
               <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
                 <button
-                  onClick={() => setSelectedPresidentBill(null)}
+                  onClick={() => setSelectedSignedLawBill(null)}
                   className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
                 >
                   ← Back
                 </button>
                 <a
-                  href={selectedPresidentBill.sourceUrl} target="_blank" rel="noopener noreferrer"
+                  href={selectedSignedLawBill.sourceUrl} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors"
                 >
                   <Globe className="w-3.5 h-3.5" />
-                  Source: congress.gov
+                  Source: Congress.gov
                 </a>
               </div>
             </div>
@@ -28211,48 +28231,60 @@ function App() {
               <div className="bg-white rounded-lg shadow-md p-8 mb-6">
                 <div className="flex items-center gap-3 mb-4 flex-wrap">
                   <span className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-lg font-bold">
-                    {selectedPresidentBill.number}
+                    {selectedSignedLawBill.number}
                   </span>
-                  <span className={`px-4 py-2 rounded-full font-medium ${statusColors[selectedPresidentBill.statusColor] || statusColors.blue}`}>
-                    {selectedPresidentBill.status}
+                  <span className={`px-4 py-2 rounded-full font-medium ${statusColors[selectedSignedLawBill.statusColor] || statusColors.blue}`}>
+                    {selectedSignedLawBill.status}
                   </span>
                   <span className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full">
-                    {congressOrdinalLabel(selectedPresidentBill.congress)}
+                    {congressOrdinalLabel(selectedSignedLawBill.congress)}
                   </span>
                   <span className="inline-flex items-center rounded-full border border-green-600 bg-green-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-green-800">
                     Live · Congress.gov
                   </span>
                 </div>
 
-                <h1 className="text-3xl font-bold text-gray-800 mb-4">{selectedPresidentBill.title}</h1>
+                <h1 className="text-3xl font-bold text-gray-800 mb-4">{selectedSignedLawBill.title}</h1>
 
                 <div className="flex items-center gap-6 text-gray-600 mb-6 flex-wrap">
                   <div className="flex items-center gap-2">
                     <Building2 className="w-5 h-5" />
-                    <span>Originated in {selectedPresidentBill.chamber}</span>
+                    <span>Originated in {selectedSignedLawBill.chamber}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5" />
-                    <span>Latest action date: {selectedPresidentBill.passedDate}</span>
+                    <span>Signed / enacted (latest action date): {selectedSignedLawBill.passedDate}</span>
                   </div>
                 </div>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-                  <h3 className="font-bold text-gray-800 mb-2">Summary</h3>
-                  <p className="text-gray-700 whitespace-pre-line">{selectedPresidentBill.summary}</p>
+                  <h3 className="font-bold text-gray-800 mb-2">Plain-language summary</h3>
+                  <p className="text-gray-700 whitespace-pre-line">{selectedSignedLawBill.summary}</p>
+                  <div className="text-sm text-slate-700 mt-4 border-t border-blue-200 pt-4 space-y-2">
+                    <p className="font-semibold text-slate-900">Congress.gov baseline</p>
+                    <p className="text-slate-800"><span className="font-medium">Official title:</span> {selectedSignedLawBill.officialTitle}</p>
+                    <p className="text-slate-600"><span className="font-medium">Latest action:</span> {selectedSignedLawBill.latestActionText || '—'}</p>
+                  </div>
                   <p className="text-xs text-slate-600 mt-3 border-t border-blue-200 pt-3">
-                    Text above is derived from the Congress.gov API response (title and latest action). Confirm the full enrolled text and status on Congress.gov. Support/oppose totals are in-app community votes only.
+                    Confirm enrolled text, public law number, and effective dates on Congress.gov. Editorial summaries and arguments appear only when added in-app for that bill.
                   </p>
                 </div>
 
                 <div className="border-t pt-6">
                   <div className="flex items-center justify-between flex-wrap gap-4">
-                    <div className="flex gap-8">
+                    <div className="flex gap-6 sm:gap-8 flex-wrap">
                       <div className="flex items-center gap-3">
                         <ThumbsUp className="w-6 h-6 text-green-600" />
                         <div>
                           <div className="text-2xl font-bold text-gray-800">{votes.support.toLocaleString()}</div>
                           <div className="text-sm text-gray-600">Support</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <AlertCircle className="w-6 h-6 text-orange-600" />
+                        <div>
+                          <div className="text-2xl font-bold text-gray-800">{(votes.concerned || 0).toLocaleString()}</div>
+                          <div className="text-sm text-gray-600">Concern</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -28263,44 +28295,47 @@ function App() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <button
-                        type="button"
-                        onClick={() => requireRegion(() => votePresidentBill(selectedPresidentBill.id, 'support'))}
-                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
-                      >
-                        <ThumbsUp className="w-5 h-5" />
-                        <span>{votes.userVote === 'support' ? 'Supporting' : 'Support This Bill'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => requireRegion(() => votePresidentBill(selectedPresidentBill.id, 'concerned'))}
-                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'concerned' ? 'bg-orange-600 text-white' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'}`}
-                      >
-                        <AlertCircle className="w-5 h-5" />
-                        <span>{votes.userVote === 'concerned' ? 'Concerned' : 'Concerned'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => requireRegion(() => votePresidentBill(selectedPresidentBill.id, 'oppose'))}
-                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
-                      >
-                        <ThumbsDown className="w-5 h-5" />
-                        <span>{votes.userVote === 'oppose' ? 'Opposing' : 'Oppose This Bill'}</span>
-                      </button>
+                    <div className="flex flex-col w-full sm:w-auto gap-3">
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <button
+                          type="button"
+                          onClick={() => requireRegion(() => voteSignedLawBill(selectedSignedLawBill.id, 'support'))}
+                          className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
+                        >
+                          <ThumbsUp className="w-5 h-5" />
+                          <span>{votes.userVote === 'support' ? 'Supporting' : 'Support'}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => requireRegion(() => voteSignedLawBill(selectedSignedLawBill.id, 'concerned'))}
+                          className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'concerned' ? 'bg-orange-600 text-white' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'}`}
+                        >
+                          <AlertCircle className="w-5 h-5" />
+                          <span>{votes.userVote === 'concerned' ? 'Concern' : 'Concern'}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => requireRegion(() => voteSignedLawBill(selectedSignedLawBill.id, 'oppose'))}
+                          className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${votes.userVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
+                        >
+                          <ThumbsDown className="w-5 h-5" />
+                          <span>{votes.userVote === 'oppose' ? 'Opposing' : 'Oppose'}</span>
+                        </button>
+                      </div>
+                      <p className="text-xs text-slate-600 max-w-xl">{SIGNED_LAW_VOTES_DISCLAIMER}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {Array.isArray(selectedPresidentBill.pros) && selectedPresidentBill.pros.length > 0 && (
+              {Array.isArray(selectedSignedLawBill.pros) && selectedSignedLawBill.pros.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                 <div className="flex items-center gap-3 mb-4">
                   <ThumbsUp className="w-6 h-6 text-green-600" />
-                  <h2 className="text-2xl font-bold text-gray-800">Arguments in Favor</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">Arguments in favor</h2>
                 </div>
                 <div className="space-y-4">
-                  {selectedPresidentBill.pros.map((pro, i) => (
+                  {selectedSignedLawBill.pros.map((pro, i) => (
                     <div key={i} className="bg-green-50 border border-green-200 rounded-lg p-4">
                       <div className="flex items-start gap-3">
                         <div className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5 text-sm font-bold">{i + 1}</div>
@@ -28312,14 +28347,14 @@ function App() {
               </div>
               )}
 
-              {Array.isArray(selectedPresidentBill.cons) && selectedPresidentBill.cons.length > 0 && (
+              {Array.isArray(selectedSignedLawBill.cons) && selectedSignedLawBill.cons.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <ThumbsDown className="w-6 h-6 text-red-600" />
-                  <h2 className="text-2xl font-bold text-gray-800">Arguments Against</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">Arguments against</h2>
                 </div>
                 <div className="space-y-4">
-                  {selectedPresidentBill.cons.map((con, i) => (
+                  {selectedSignedLawBill.cons.map((con, i) => (
                     <div key={i} className="bg-red-50 border border-red-200 rounded-lg p-4">
                       <div className="flex items-start gap-3">
                         <div className="bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5 text-sm font-bold">{i + 1}</div>
@@ -34779,7 +34814,7 @@ function App() {
       {view === 'president-executive' && renderPresidentExecutive()}
       {view === 'president-detail' && renderPresidentDetail()}
       {view === 'executive-orders' && renderExecutiveOrders()}
-      {view === 'bills-awaiting-signature' && renderBillsAwaitingPresidentialAction()}
+      {view === 'bills-signed-laws' && renderBillsSignedByPresident()}
       {view === 'laws-search' && renderLawsSearch()}
       {view === 'us-laws-search' && renderLawsSearch()}
       {view === 'money-usa' && renderFinancialDashboard()}
