@@ -852,6 +852,8 @@ const executiveOrders = [
 
 const CONGRESS_LIVE_BILLS_UNAVAILABLE = 'Live Congress.gov data is unavailable. Configure CONGRESS_API_KEY on the server and redeploy.';
 const CONGRESS_LIVE_BILLS_EMPTY = 'No bills are currently identified as awaiting presidential action in the live Congress.gov scan.';
+/** CRA `npm start` (or static hosting) does not run /api — response is usually HTML, not JSON. */
+const CONGRESS_LIVE_BILLS_NEEDS_API_HOST = 'This screen needs the server route /api/congress-pending-president. Run npx vercel dev locally (with CONGRESS_API_KEY in .env.local), or deploy on Vercel with CONGRESS_API_KEY set. Using only npm start will not load live bills.';
 
 /** Default US Congress number for Congress.gov (Jan 3 rollover). */
 function getCurrentUsCongressNumber(d = new Date()) {
@@ -5610,6 +5612,8 @@ function App() {
         const res = await fetch(`/api/congress-pending-president?congress=${congress}`);
         const data = await res.json().catch(() => ({}));
         if (cancelled) return;
+        const contentType = (res.headers.get('content-type') || '').toLowerCase();
+        const responseLooksLikeHtml = contentType.includes('text/html');
         if (!res.ok) {
           setPresidentDeskBills(null);
           setPresidentDeskBillsSource(null);
@@ -5620,7 +5624,11 @@ function App() {
         if (data.source !== 'live') {
           setPresidentDeskBills(null);
           setPresidentDeskBillsSource(null);
-          setPresidentDeskBillsError(CONGRESS_LIVE_BILLS_UNAVAILABLE);
+          setPresidentDeskBillsError(
+            responseLooksLikeHtml || data.source === undefined
+              ? CONGRESS_LIVE_BILLS_NEEDS_API_HOST
+              : CONGRESS_LIVE_BILLS_UNAVAILABLE,
+          );
           return;
         }
         const raw = Array.isArray(data.bills) ? data.bills : [];

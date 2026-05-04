@@ -116,7 +116,7 @@ async function handler(req, res) {
     return res.status(503).json({
       error: 'no_key',
       message: 'Set CONGRESS_API_KEY in Vercel (or .env for vercel dev). Request a free key at https://api.congress.gov/sign-up/',
-      source: 'sample',
+      source: 'unavailable',
       bills: [],
       congress,
     });
@@ -149,7 +149,7 @@ async function handler(req, res) {
     return res.status(502).json({
       error: 'upstream',
       message: e.message || 'Congress.gov request failed',
-      source: 'sample',
+      source: 'unavailable',
       bills: [],
       congress,
     });
