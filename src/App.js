@@ -851,6 +851,8 @@ const executiveOrders = [
 ];
 
 const CONGRESS_SIGNED_LAWS_UNAVAILABLE = 'Live Congress.gov signed-law data is unavailable. Configure CONGRESS_API_KEY on the server and redeploy.';
+/** Server returned missing_api_key — not the same as upstream or missing route */
+const CONGRESS_SIGNED_LAWS_MISSING_KEY = 'This deployment has no Congress.gov API key. In Vercel → this project → Settings → Environment Variables, add CONGRESS_API_KEY (exact name, not REACT_APP_*) for Production, then redeploy.';
 const CONGRESS_SIGNED_LAWS_EMPTY = 'No bills are currently identified as signed by the President or enacted as public law in the live Congress.gov scan.';
 /** CRA `npm start` (or static hosting) does not run /api — response is usually HTML, not JSON. */
 const CONGRESS_SIGNED_LAWS_NEEDS_API_HOST = 'This screen needs the server route /api/congress-signed-laws. Run npx vercel dev locally (with CONGRESS_API_KEY in .env.local), or deploy on Vercel with CONGRESS_API_KEY set. Using only npm start will not load live signed-law data.';
@@ -1378,6 +1380,8 @@ function App() {
   const [signedLawsSource, setSignedLawsSource] = useState(null);
   const [signedLawsLoading, setSignedLawsLoading] = useState(false);
   const [signedLawsError, setSignedLawsError] = useState(null);
+  /** `missing_api_key` | `needs_route` | `upstream` | `generic` — drives error headline */
+  const [signedLawsFailureKind, setSignedLawsFailureKind] = useState(null);
   /** Set with live response only; used for empty-state diagnostics */
   const [signedLawsScan, setSignedLawsScan] = useState(null);
   const [eoVotes, setEoVotes] = useState(() => {
@@ -5629,6 +5633,7 @@ function App() {
     setSignedLawsBills(null);
     setSignedLawsSource(null);
     setSignedLawsError(null);
+    setSignedLawsFailureKind(null);
     setSignedLawsScan(null);
     setSignedLawsLoading(true);
     (async () => {
@@ -5650,6 +5655,7 @@ function App() {
             setSignedLawsBills(null);
             setSignedLawsSource(null);
             setSignedLawsScan(null);
+            setSignedLawsFailureKind('generic');
             setSignedLawsError(CONGRESS_SIGNED_LAWS_UNAVAILABLE);
             return;
           }
@@ -5675,7 +5681,8 @@ function App() {
           setSignedLawsBills(null);
           setSignedLawsSource(null);
           setSignedLawsScan(null);
-          setSignedLawsError(CONGRESS_SIGNED_LAWS_UNAVAILABLE);
+          setSignedLawsFailureKind('missing_api_key');
+          setSignedLawsError(CONGRESS_SIGNED_LAWS_MISSING_KEY);
           console.warn('[SignedLawsBills] missing_api_key — set CONGRESS_API_KEY on this Vercel project (Production), exact name, redeploy. Not REACT_APP_*.');
           return;
         }
@@ -5685,6 +5692,7 @@ function App() {
           setSignedLawsSource(null);
           setSignedLawsScan(null);
           const routeMissing = res.status === 404 || responseLooksLikeHtml;
+          setSignedLawsFailureKind(routeMissing ? 'needs_route' : (data.error === 'upstream' ? 'upstream' : 'generic'));
           setSignedLawsError(routeMissing ? CONGRESS_SIGNED_LAWS_NEEDS_API_HOST : CONGRESS_SIGNED_LAWS_UNAVAILABLE);
           if (data.message) console.warn('[SignedLawsBills] upstream message:', data.message);
           return;
@@ -5697,14 +5705,17 @@ function App() {
           setSignedLawsSource('live');
           setSignedLawsScan(data.scan && typeof data.scan === 'object' ? data.scan : null);
           setSignedLawsError(null);
+          setSignedLawsFailureKind(null);
           return;
         }
 
         setSignedLawsBills(null);
         setSignedLawsSource(null);
         setSignedLawsScan(null);
+        const kind = responseLooksLikeHtml || sourceNorm === '' || data.source === undefined ? 'needs_route' : 'generic';
+        setSignedLawsFailureKind(kind);
         setSignedLawsError(
-          responseLooksLikeHtml || sourceNorm === '' || data.source === undefined
+          kind === 'needs_route'
             ? CONGRESS_SIGNED_LAWS_NEEDS_API_HOST
             : CONGRESS_SIGNED_LAWS_UNAVAILABLE,
         );
@@ -5714,6 +5725,7 @@ function App() {
         setSignedLawsBills(null);
         setSignedLawsSource(null);
         setSignedLawsScan(null);
+        setSignedLawsFailureKind('generic');
         setSignedLawsError(CONGRESS_SIGNED_LAWS_UNAVAILABLE);
       } finally {
         if (!cancelled) setSignedLawsLoading(false);
@@ -28195,7 +28207,15 @@ function App() {
 
         <div className="mb-4 animate-slide-in flex flex-wrap items-baseline gap-x-3 gap-y-2">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">
-            {showLoading ? 'Loading…' : hasFetchError ? 'Signed laws unavailable' : 'Bills Signed by the President'}
+            {showLoading
+              ? 'Loading…'
+              : hasFetchError
+                ? (signedLawsFailureKind === 'missing_api_key'
+                  ? 'Congress.gov API key missing'
+                  : signedLawsFailureKind === 'needs_route'
+                    ? 'Signed laws API not available on this host'
+                    : 'Signed laws unavailable')
+                : 'Bills Signed by the President'}
           </h1>
           {liveCongressReady && (
             <span className="inline-flex items-center rounded-full border border-green-600 bg-green-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-green-800">
@@ -28230,7 +28250,13 @@ function App() {
 
         {hasFetchError && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-950">
-            <p className="font-semibold text-red-900 mb-1">Cannot load signed-law list</p>
+            <p className="font-semibold text-red-900 mb-1">
+              {signedLawsFailureKind === 'missing_api_key'
+                ? 'Add CONGRESS_API_KEY on Vercel (Production)'
+                : signedLawsFailureKind === 'needs_route'
+                  ? 'Server route not reachable from this host'
+                  : 'Cannot load signed-law list'}
+            </p>
             <p>{signedLawsError}</p>
           </div>
         )}
