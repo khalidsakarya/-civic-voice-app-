@@ -739,15 +739,13 @@ const UK_DEPT_HEADS_QUERY_NAMES = {
   'Ministry of Justice':                        'Department for Courts and Legal Services',
 };
 
-// --- EXECUTIVE ORDERS DATA -----------------------------------------------
-// Curated in-app sample — NOT a live Federal Register feed. UI labels it as such.
-// Source: Federal Register API  https://www.federalregister.gov/api/v1/documents
-// Live endpoint: GET /api/v1/documents?conditions[type]=PRESDOCU&conditions[presidential_document_type]=executive_order&per_page=10&order=newest
-// Field mapping: executive_order_number->number, document_number->docNumber,
-//   signing_date->signingDate, publication_date->publicationDate, abstract->description,
-//   html_url->sourceUrl  (summary/pros/cons are app-added editorial content)
-// TODO: migrate to scheduled fetch + Firestore; president identity → `leaders` or `us_executive` snapshot doc.
-const executiveOrders = [
+// --- EXECUTIVE ORDERS (DEMO FALLBACK ONLY) --------------------------------
+// Production loads `executive_orders` from Firestore (monthly engine sync from Federal Register).
+// Enable static demo list only with REACT_APP_EXECUTIVE_ORDERS_DEMO_MODE=true.
+// Demo mapping reference: Federal Register API https://www.federalregister.gov/api/v1/documents
+const EXECUTIVE_ORDERS_DEMO_MODE = process.env.REACT_APP_EXECUTIVE_ORDERS_DEMO_MODE === 'true';
+
+const EXECUTIVE_ORDERS_DEMO_DATA = [
   {
     number: 'EO 14160', docNumber: '2025-01998', title: 'Protecting the Meaning and Value of American Citizenship',
     signingDate: '2025-01-20', publicationDate: '2025-01-22', date: 'January 20, 2025',
@@ -849,6 +847,59 @@ const executiveOrders = [
     support: 0, oppose: 0,
   },
 ];
+
+const executiveOrdersDemoSample = EXECUTIVE_ORDERS_DEMO_DATA.map((eo) => ({ ...eo, id: eo.number }));
+
+function formatExecutiveOrderDisplayDate(iso) {
+  if (!iso || typeof iso !== 'string') return '—';
+  const t = Date.parse(`${iso}T12:00:00`);
+  if (Number.isNaN(t)) return iso;
+  return new Date(t).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+function mapFirestoreExecutiveOrderDoc(docSnap) {
+  const d = docSnap.data();
+  const id = docSnap.id;
+  const signingIso = d.signingDate || '';
+  const pubIso = d.publicationDate || '';
+  const lf = d.lastFetchedAt;
+  let lastFetchedAtMs = null;
+  if (lf && typeof lf.toMillis === 'function') lastFetchedAtMs = lf.toMillis();
+  else if (lf && typeof lf.seconds === 'number') lastFetchedAtMs = lf.seconds * 1000;
+  const abstractText = typeof d.abstract === 'string' ? d.abstract.trim() : '';
+  const editorialSummary = typeof d.plainLanguageSummary === 'string' ? d.plainLanguageSummary.trim() : '';
+  return {
+    id,
+    number: d.eoNumber ? `EO ${d.eoNumber}` : `FR ${d.documentNumber || ''}`,
+    docNumber: d.documentNumber || '',
+    title: d.title || 'Untitled',
+    signingDate: signingIso,
+    publicationDate: pubIso,
+    date: formatExecutiveOrderDisplayDate(signingIso || pubIso),
+    sourceUrl: d.sourceUrl || '',
+    pdfUrl: d.pdfUrl || '',
+    citation: d.citation || '',
+    president: d.president || 'Donald J. Trump',
+    description: abstractText
+      ? `${abstractText.slice(0, 220)}${abstractText.length > 220 ? '…' : ''}`
+      : `Executive order · ${d.documentNumber || ''}`,
+    summary: editorialSummary || abstractText || '',
+    summaryIsEditorial: Boolean(editorialSummary && d.summaryType === 'ai_assisted_editorial'),
+    summaryType: d.summaryType || null,
+    summaryReviewed: d.summaryReviewed === true,
+    plainLanguageSummary: editorialSummary || null,
+    pros: Array.isArray(d.argumentsFor) ? d.argumentsFor : [],
+    cons: Array.isArray(d.argumentsAgainst) ? d.argumentsAgainst : [],
+    support: 0,
+    oppose: 0,
+    dataStatus: d.dataStatus,
+    lastFetchedAtMs,
+    lastFetchedAtLabel: lastFetchedAtMs ? new Date(lastFetchedAtMs).toLocaleString('en-US') : null,
+  };
+}
+
+const EO_VOTES_DISCLAIMER = 'Votes are civic feedback only and are not submitted to the White House or Federal Register.';
+const EXECUTIVE_ORDERS_EMPTY_MESSAGE = 'Executive order data has not been synced yet. Monthly sync loads official Federal Register metadata into Firestore (engine job).';
 
 const CONGRESS_SIGNED_LAWS_UNAVAILABLE = 'Live Congress.gov signed-law data is unavailable. Configure CONGRESS_API_KEY on the server and redeploy.';
 /** Server returned missing_api_key — not the same as upstream or missing route */
@@ -1384,6 +1435,11 @@ function App() {
   const [signedLawsFailureKind, setSignedLawsFailureKind] = useState(null);
   /** Set with live response only; used for empty-state diagnostics */
   const [signedLawsScan, setSignedLawsScan] = useState(null);
+  const [usExecutiveOrders, setUsExecutiveOrders] = useState([]);
+  const [usExecutiveOrdersLoading, setUsExecutiveOrdersLoading] = useState(false);
+  /** `firestore` | `demo` | null */
+  const [usExecutiveOrdersSource, setUsExecutiveOrdersSource] = useState(null);
+  const [usExecutiveOrdersLastSyncedMs, setUsExecutiveOrdersLastSyncedMs] = useState(null);
   const [eoVotes, setEoVotes] = useState(() => {
     const saved = localStorage.getItem('cvEOVotes');
     return saved ? JSON.parse(saved) : {};
@@ -5729,6 +5785,47 @@ function App() {
         setSignedLawsError(CONGRESS_SIGNED_LAWS_UNAVAILABLE);
       } finally {
         if (!cancelled) setSignedLawsLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [view]);
+
+  // US executive orders — Firestore `executive_orders` (monthly engine sync); demo array only if REACT_APP_EXECUTIVE_ORDERS_DEMO_MODE=true
+  useEffect(() => {
+    if (view !== 'executive-orders') return undefined;
+    if (EXECUTIVE_ORDERS_DEMO_MODE) {
+      setUsExecutiveOrders(executiveOrdersDemoSample);
+      setUsExecutiveOrdersLoading(false);
+      setUsExecutiveOrdersSource('demo');
+      setUsExecutiveOrdersLastSyncedMs(null);
+      return undefined;
+    }
+    let cancelled = false;
+    setUsExecutiveOrdersLoading(true);
+    setUsExecutiveOrdersSource(null);
+    setUsExecutiveOrdersLastSyncedMs(null);
+    (async () => {
+      try {
+        const q = query(collection(db, 'executive_orders'), where('jurisdiction', '==', 'US'));
+        const snap = await getDocs(q);
+        if (cancelled) return;
+        const rows = snap.docs.map(mapFirestoreExecutiveOrderDoc);
+        rows.sort((a, b) => String(b.signingDate || b.publicationDate || '').localeCompare(String(a.signingDate || a.publicationDate || '')));
+        let maxMs = null;
+        for (const r of rows) {
+          if (r.lastFetchedAtMs != null && (maxMs == null || r.lastFetchedAtMs > maxMs)) maxMs = r.lastFetchedAtMs;
+        }
+        setUsExecutiveOrders(rows);
+        setUsExecutiveOrdersSource(rows.length ? 'firestore' : null);
+        setUsExecutiveOrdersLastSyncedMs(maxMs);
+      } catch (err) {
+        console.warn('[ExecutiveOrders] Firestore fetch failed:', err.message);
+        if (!cancelled) {
+          setUsExecutiveOrders([]);
+          setUsExecutiveOrdersSource(null);
+        }
+      } finally {
+        if (!cancelled) setUsExecutiveOrdersLoading(false);
       }
     })();
     return () => { cancelled = true; };
@@ -25514,8 +25611,12 @@ function App() {
                   <FileText className="w-5 h-5 text-red-600" />
                 </div>
                 <div className="text-left">
-                  <p className="font-bold text-gray-800 text-base">Executive Orders <span className="text-[10px] font-semibold text-slate-500">(curated sample)</span></p>
-                  <p className="text-xs text-gray-500 mt-0.5">{executiveOrders.length} items in app dataset · each row links to Federal Register where noted — not a full EO feed</p>
+                  <p className="font-bold text-gray-800 text-base">Executive Orders</p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {EXECUTIVE_ORDERS_DEMO_MODE
+                      ? `${executiveOrdersDemoSample.length} demo items · enable live Firestore list by turning off demo mode`
+                      : 'Official index synced monthly from the Federal Register into Firestore · open for titles, dates, and source links'}
+                  </p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -27922,7 +28023,17 @@ function App() {
     </div>
   );
 
-  const renderExecutiveOrders = () => (
+  const renderExecutiveOrders = () => {
+    const list = usExecutiveOrders;
+    const isDemo = usExecutiveOrdersSource === 'demo';
+    const isFirestore = usExecutiveOrdersSource === 'firestore';
+    const loading = usExecutiveOrdersLoading;
+    const showEmpty = !loading && !isDemo && list.length === 0;
+    const lastSyncLabel = usExecutiveOrdersLastSyncedMs
+      ? new Date(usExecutiveOrdersLastSyncedMs).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+      : null;
+
+    return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-5xl mx-auto">
         <button
@@ -27933,41 +28044,83 @@ function App() {
         </button>
 
         <div className="mb-4 animate-slide-in">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">Executive orders <span className="text-base font-semibold text-slate-500">(curated sample)</span></h1>
-          <p className="text-gray-600 text-base sm:text-lg">{executiveOrders.length} items in this app dataset · tap to read summary and vote (votes are in-app only)</p>
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Executive orders</h1>
+            {isDemo && (
+              <span className="text-xs font-semibold text-amber-800 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-full">Demo sample</span>
+            )}
+            {isFirestore && list.length > 0 && (
+              <>
+                <span className="text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded-full">Updated monthly from Federal Register</span>
+                <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">Official source data · Federal Register</span>
+              </>
+            )}
+          </div>
+          <p className="text-gray-600 text-base sm:text-lg">
+            {loading && 'Loading executive orders…'}
+            {!loading && isDemo && `${list.length} demo items · tap for detail and in-app voting only`}
+            {!loading && isFirestore && list.length > 0 && `${list.length} orders · tap for detail and in-app voting`}
+            {showEmpty && 'No orders found in Firestore for this view.'}
+          </p>
+          {lastSyncLabel && isFirestore && (
+            <p className="text-sm text-slate-600 mt-1">Monthly refresh · dataset last ingested {lastSyncLabel}</p>
+          )}
           <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
         </div>
 
-        <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-800 leading-relaxed">
-          <p className="font-semibold text-slate-900 mb-1">Not a Federal Register mirror</p>
-          <p className="text-slate-700">Dates and titles follow the linked documents where present. This list is a <span className="font-medium">small curated sample</span>, not every executive order for any calendar year.</p>
-        </div>
+        {isDemo && (
+          <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-950 leading-relaxed">
+            <p className="font-semibold mb-1">Demo mode</p>
+            <p>You are viewing static sample rows because <code className="font-mono bg-amber-100 px-1 rounded">REACT_APP_EXECUTIVE_ORDERS_DEMO_MODE=true</code>. Production uses Firestore only.</p>
+          </div>
+        )}
+
+        {!isDemo && isFirestore && list.length > 0 && (
+          <div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-xs text-slate-800 leading-relaxed">
+            <p className="font-semibold text-slate-900 mb-1">Official Federal Register metadata</p>
+            <p className="text-slate-700">EO number, title, dates, and links are loaded from our engine sync of the Federal Register into Firestore. Any plain-language summary or arguments below marked Civic Voice are editorial, not government text.</p>
+          </div>
+        )}
+
+        {showEmpty && (
+          <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700">
+            <p className="font-medium text-slate-900 mb-1">No executive orders in Firestore yet</p>
+            <p>{EXECUTIVE_ORDERS_EMPTY_MESSAGE}</p>
+          </div>
+        )}
 
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {executiveOrders.map((eo) => {
-            const votes = eoVotes[eo.number] || { support: eo.support, oppose: eo.oppose, userVote: null };
-            const total = votes.support + votes.oppose;
-            const pct = total > 0 ? Math.round((votes.support / total) * 100) : 0;
+          {!loading && list.map((eo) => {
+            const voteKey = eo.id;
+            const votes = eoVotes[voteKey] || eoVotes[eo.number] || { support: eo.support, oppose: eo.oppose, concerned: 0, userVote: null };
+            const twoWay = votes.support + votes.oppose;
+            const pct = twoWay > 0 ? Math.round((votes.support / twoWay) * 100) : 0;
+            const voteTotal = votes.support + votes.oppose + (votes.concerned || 0);
             return (
               <div
-                key={eo.number}
+                key={voteKey}
                 onClick={() => setSelectedEO(eo)}
                 className="relative bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-red-300 transition-all"
               >
-                <button onClick={(e) => handleShare(e, { id: eo.number, title: `Executive Order ${eo.number}: ${eo.title}`, text: `📋 EO ${eo.number}: ${eo.title} signed ${eo.date} - civic-voice-app.vercel.app`, url: eo.sourceUrl || window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === eo.number ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === eo.number ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+                <button onClick={(e) => handleShare(e, { id: voteKey, title: `Executive Order ${eo.number}: ${eo.title}`, text: `📋 ${eo.number}: ${eo.title} signed ${eo.date} - civic-voice-app.vercel.app`, url: eo.sourceUrl || window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === voteKey ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === voteKey ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full flex-shrink-0">{eo.number}</span>
                   <span className="text-xs text-gray-400 flex-shrink-0">{eo.date}</span>
                 </div>
                 <h3 className="text-sm font-bold text-gray-800 mb-2 leading-snug">{eo.title}</h3>
                 <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{eo.description}</p>
-                {total > 0 && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-gray-100 rounded-full h-1.5">
-                      <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                {voteTotal > 0 && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                        <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: pct >= 50 ? '#22c55e' : '#ef4444' }} />
+                      </div>
+                      <span className="text-xs text-gray-400">{pct}% support</span>
                     </div>
-                    <span className="text-xs text-gray-400">{pct}% support</span>
-                  </div>
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      In-app: {votes.support} support · {votes.concerned || 0} concern · {votes.oppose} oppose
+                    </p>
+                  </>
                 )}
                 <a
                   href={eo.sourceUrl} target="_blank" rel="noopener noreferrer"
@@ -27975,7 +28128,7 @@ function App() {
                   className="mt-2.5 flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition-colors"
                 >
                   <Globe className="w-3 h-3 flex-shrink-0" />
-                  Source: federalregister.gov
+                  {isFirestore ? 'Official source · federalregister.gov' : 'Source link · federalregister.gov'}
                 </a>
               </div>
             );
@@ -27985,31 +28138,47 @@ function App() {
 
       {/* EO Detail Modal */}
       {selectedEO && (() => {
-        const votes = eoVotes[selectedEO.number] || { support: selectedEO.support, oppose: selectedEO.oppose, userVote: null };
+        const vk = selectedEO.id;
+        const votes = eoVotes[vk] || eoVotes[selectedEO.number] || { support: selectedEO.support, oppose: selectedEO.oppose, concerned: 0, userVote: null };
+        const showPros = Array.isArray(selectedEO.pros) && selectedEO.pros.length > 0;
+        const showCons = Array.isArray(selectedEO.cons) && selectedEO.cons.length > 0;
+        const editorialArgsLabel = isDemo ? 'Sample editorial arguments (demo — not Federal Register)' : 'Civic Voice editorial — not Federal Register content';
         return (
           <div className="fixed inset-0 z-[60] overflow-y-auto bg-gray-50">
             <div className="bg-white shadow-sm">
               <div className="max-w-6xl mx-auto px-4 py-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <button
                     onClick={() => setSelectedEO(null)}
                     className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
                   >
                     ← Back
                   </button>
-                  <a
-                    href={selectedEO.sourceUrl} target="_blank" rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4 text-sm"
-                  >
-                    Source: federalregister.gov
-                  </a>
+                  <div className="flex flex-wrap items-center gap-3 mb-4 text-sm">
+                    {selectedEO.sourceUrl ? (
+                      <a
+                        href={selectedEO.sourceUrl} target="_blank" rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+                      >
+                        Official HTML · Federal Register
+                      </a>
+                    ) : null}
+                    {selectedEO.pdfUrl ? (
+                      <a
+                        href={selectedEO.pdfUrl} target="_blank" rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
+                      >
+                        PDF
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             </div>
 
             <div className="max-w-6xl mx-auto px-4 py-8">
               <div className="bg-white rounded-lg shadow-md p-8 mb-6">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex flex-wrap items-center gap-3 mb-4">
                   <span className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-lg font-bold">
                     {selectedEO.number}
                   </span>
@@ -28023,31 +28192,55 @@ function App() {
 
                 <h1 className="text-3xl font-bold text-gray-800 mb-4">{selectedEO.title}</h1>
 
-                <div className="flex items-center gap-6 text-gray-600 mb-6">
+                {selectedEO.citation ? (
+                  <p className="text-sm text-slate-600 mb-4 font-mono">{selectedEO.citation}</p>
+                ) : null}
+
+                <div className="flex flex-wrap items-center gap-6 text-gray-600 mb-6">
                   <div className="flex items-center gap-2">
                     <Users className="w-5 h-5" />
-                    <span>President Donald J. Trump</span>
+                    <span>{selectedEO.president || 'President'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5" />
                     <span>Signed: {selectedEO.date}</span>
                   </div>
+                  {selectedEO.publicationDate && selectedEO.publicationDate !== selectedEO.signingDate ? (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-slate-500">Published (FR):</span>
+                      <span>{formatExecutiveOrderDisplayDate(selectedEO.publicationDate)}</span>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
                   <h3 className="font-bold text-gray-800 mb-2">Summary</h3>
-                  <p className="text-gray-700">{selectedEO.summary}</p>
-                  <p className="text-xs text-slate-600 mt-3 border-t border-blue-200 pt-3">Curated in-app sample; confirm full text and signing facts on the linked Federal Register document. Support/oppose totals are community votes in this app only.</p>
+                  {selectedEO.summaryIsEditorial ? (
+                    <p className="text-xs font-semibold text-amber-900 bg-amber-100/80 border border-amber-200 rounded px-2 py-1.5 mb-2 inline-block">
+                      Civic Voice · AI-assisted editorial{selectedEO.summaryReviewed ? ' · reviewed' : ' · not reviewed'} — not Federal Register wording
+                    </p>
+                  ) : selectedEO.summary ? (
+                    <p className="text-xs font-semibold text-slate-700 mb-2">Federal Register abstract (official source text)</p>
+                  ) : null}
+                  <p className="text-gray-700 whitespace-pre-wrap">{selectedEO.summary || 'No summary or abstract is stored for this order yet. Use the official document link for the full text.'}</p>
+                  <p className="text-xs text-slate-600 mt-3 border-t border-blue-200 pt-3">Confirm signing facts and full text on the Federal Register. Vote totals below are community feedback in this app only.</p>
                 </div>
 
                 <div className="border-t pt-6">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-4">
                     <div className="flex gap-8">
                       <div className="flex items-center gap-3">
                         <ThumbsUp className="w-6 h-6 text-green-600" />
                         <div>
                           <div className="text-2xl font-bold text-gray-800">{votes.support.toLocaleString()}</div>
                           <div className="text-sm text-gray-600">Support</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <AlertCircle className="w-6 h-6 text-orange-500" />
+                        <div>
+                          <div className="text-2xl font-bold text-gray-800">{(votes.concerned || 0).toLocaleString()}</div>
+                          <div className="text-sm text-gray-600">Concern</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -28059,10 +28252,10 @@ function App() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3 items-center">
+                    <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-center">
                       {locInfoBtn()}
                       <button
-                        onClick={() => requireRegion(() => voteEO(selectedEO.number, 'support'))}
+                        onClick={() => requireRegion(() => voteEO(vk, 'support'))}
                         className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
                           votes.userVote === 'support'
                             ? 'bg-green-600 text-white'
@@ -28073,7 +28266,7 @@ function App() {
                         <span className="text-sm sm:text-base">{votes.userVote === 'support' ? 'Supporting' : 'Support This Order'}</span>
                       </button>
                       <button
-                        onClick={() => requireRegion(() => voteEO(selectedEO.number, 'concerned'))}
+                        onClick={() => requireRegion(() => voteEO(vk, 'concerned'))}
                         className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
                           votes.userVote === 'concerned'
                             ? 'bg-orange-600 text-white'
@@ -28084,7 +28277,7 @@ function App() {
                         <span className="text-sm sm:text-base">{votes.userVote === 'concerned' ? 'Concerned' : 'Concerned'}</span>
                       </button>
                       <button
-                        onClick={() => requireRegion(() => voteEO(selectedEO.number, 'oppose'))}
+                        onClick={() => requireRegion(() => voteEO(vk, 'oppose'))}
                         className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${
                           votes.userVote === 'oppose'
                             ? 'bg-red-600 text-white'
@@ -28096,14 +28289,17 @@ function App() {
                       </button>
                     </div>
                   </div>
+                  <p className="text-xs text-slate-500 mt-2">{EO_VOTES_DISCLAIMER}</p>
                 </div>
               </div>
 
+              {showPros && (
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-1">
                   <ThumbsUp className="w-6 h-6 text-green-600" />
-                  <h2 className="text-2xl font-bold text-gray-800">Arguments in Favor</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">Arguments in favor</h2>
                 </div>
+                <p className="text-xs text-slate-600 mb-4">{editorialArgsLabel}</p>
                 <div className="space-y-4">
                   {selectedEO.pros.map((pro, index) => (
                     <div key={index} className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -28117,12 +28313,15 @@ function App() {
                   ))}
                 </div>
               </div>
+              )}
 
+              {showCons && (
               <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-1">
                   <ThumbsDown className="w-6 h-6 text-red-600" />
-                  <h2 className="text-2xl font-bold text-gray-800">Arguments Against</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">Arguments against</h2>
                 </div>
+                <p className="text-xs text-slate-600 mb-4">{editorialArgsLabel}</p>
                 <div className="space-y-4">
                   {selectedEO.cons.map((con, index) => (
                     <div key={index} className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -28136,12 +28335,14 @@ function App() {
                   ))}
                 </div>
               </div>
+              )}
             </div>
           </div>
         );
       })()}
     </div>
-  );
+    );
+  };
 
   const renderBillsSignedByPresident = () => {
     const showLoading = signedLawsLoading;
