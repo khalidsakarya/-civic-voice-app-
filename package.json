@@ -19,6 +19,7 @@
     "start": "react-scripts start",
     "build": "REACT_APP_VERSION=$npm_package_version react-scripts build",
     "sync:us-executive-orders": "node engine/sync-us-executive-orders.cjs",
+    "audit:executive-actions": "node engine/audit-firestore-executive-actions.cjs",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

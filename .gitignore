@@ -15,6 +15,11 @@
 .DS_Store
 .env.local
 .env.development.local
+
+# Firebase Admin SDK private keys (sync script / CI — never commit)
+firebase-admin-key.json
+service-account.json
+*-firebase-adminsdk*.json
 .env.test.local
 .env.production.local
 

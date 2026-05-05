@@ -1,10 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import app, { db } from './firebase';
+import { EXECUTIVE_ACTIONS_COLLECTION } from './constants/firestoreCollections';
+import { formatExecutiveOrderDisplayDate } from './utils/executiveOrderDates';
+import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
+import {
+  FEDERAL_REGISTER_SOURCE_NAME,
+  isExecutiveOrderDoc,
+  matchesUsExecutiveOrdersPresident,
+} from './constants/executiveOrderDocumentTypes';
 import { collection, getDocs, getDoc, query, where, addDoc, setDoc, doc, increment, serverTimestamp, getCountFromServer } from 'firebase/firestore';
 import { logEvent } from './analytics';
 import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell, Loader2 } from 'lucide-react';
 import { BarChart, Bar, AreaChart, Area, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './App.css';
+import { ExecutiveActionsFirestoreDebugPanel } from './dev/ExecutiveActionsFirestoreDebugPanel';
 
 // Custom CSS for animations and enhanced styling
 const customStyles = `
@@ -740,7 +749,7 @@ const UK_DEPT_HEADS_QUERY_NAMES = {
 };
 
 // --- EXECUTIVE ORDERS (DEMO FALLBACK ONLY) --------------------------------
-// Production loads `executive_orders` from Firestore (monthly engine sync from Federal Register).
+// Production loads Executive Orders from Firestore `executive_actions` (Federal Register rows filtered to EO types only).
 // Enable static demo list only with REACT_APP_EXECUTIVE_ORDERS_DEMO_MODE=true.
 // Demo mapping reference: Federal Register API https://www.federalregister.gov/api/v1/documents
 const EXECUTIVE_ORDERS_DEMO_MODE = process.env.REACT_APP_EXECUTIVE_ORDERS_DEMO_MODE === 'true';
@@ -850,56 +859,9 @@ const EXECUTIVE_ORDERS_DEMO_DATA = [
 
 const executiveOrdersDemoSample = EXECUTIVE_ORDERS_DEMO_DATA.map((eo) => ({ ...eo, id: eo.number }));
 
-function formatExecutiveOrderDisplayDate(iso) {
-  if (!iso || typeof iso !== 'string') return '—';
-  const t = Date.parse(`${iso}T12:00:00`);
-  if (Number.isNaN(t)) return iso;
-  return new Date(t).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-}
-
-function mapFirestoreExecutiveOrderDoc(docSnap) {
-  const d = docSnap.data();
-  const id = docSnap.id;
-  const signingIso = d.signingDate || '';
-  const pubIso = d.publicationDate || '';
-  const lf = d.lastFetchedAt;
-  let lastFetchedAtMs = null;
-  if (lf && typeof lf.toMillis === 'function') lastFetchedAtMs = lf.toMillis();
-  else if (lf && typeof lf.seconds === 'number') lastFetchedAtMs = lf.seconds * 1000;
-  const abstractText = typeof d.abstract === 'string' ? d.abstract.trim() : '';
-  const editorialSummary = typeof d.plainLanguageSummary === 'string' ? d.plainLanguageSummary.trim() : '';
-  return {
-    id,
-    number: d.eoNumber ? `EO ${d.eoNumber}` : `FR ${d.documentNumber || ''}`,
-    docNumber: d.documentNumber || '',
-    title: d.title || 'Untitled',
-    signingDate: signingIso,
-    publicationDate: pubIso,
-    date: formatExecutiveOrderDisplayDate(signingIso || pubIso),
-    sourceUrl: d.sourceUrl || '',
-    pdfUrl: d.pdfUrl || '',
-    citation: d.citation || '',
-    president: d.president || 'Donald J. Trump',
-    description: abstractText
-      ? `${abstractText.slice(0, 220)}${abstractText.length > 220 ? '…' : ''}`
-      : `Executive order · ${d.documentNumber || ''}`,
-    summary: editorialSummary || abstractText || '',
-    summaryIsEditorial: Boolean(editorialSummary && d.summaryType === 'ai_assisted_editorial'),
-    summaryType: d.summaryType || null,
-    summaryReviewed: d.summaryReviewed === true,
-    plainLanguageSummary: editorialSummary || null,
-    pros: Array.isArray(d.argumentsFor) ? d.argumentsFor : [],
-    cons: Array.isArray(d.argumentsAgainst) ? d.argumentsAgainst : [],
-    support: 0,
-    oppose: 0,
-    dataStatus: d.dataStatus,
-    lastFetchedAtMs,
-    lastFetchedAtLabel: lastFetchedAtMs ? new Date(lastFetchedAtMs).toLocaleString('en-US') : null,
-  };
-}
-
 const EO_VOTES_DISCLAIMER = 'Votes are civic feedback only and are not submitted to the White House or Federal Register.';
-const EXECUTIVE_ORDERS_EMPTY_MESSAGE = 'Executive order data has not been synced yet. Monthly sync loads official Federal Register metadata into Firestore (engine job).';
+const EXECUTIVE_ORDERS_EMPTY_MESSAGE =
+  'No Executive Order documents matched in Firestore. The list reads collection executive_actions (Federal Register, U.S., current president) and includes only types classified as Executive Order — not proclamations or memoranda.';
 
 const CONGRESS_SIGNED_LAWS_UNAVAILABLE = 'Live Congress.gov signed-law data is unavailable. Configure CONGRESS_API_KEY on the server and redeploy.';
 /** Server returned missing_api_key — not the same as upstream or missing route */
@@ -5790,7 +5752,7 @@ function App() {
     return () => { cancelled = true; };
   }, [view]);
 
-  // US executive orders — Firestore `executive_orders` (monthly engine sync); demo array only if REACT_APP_EXECUTIVE_ORDERS_DEMO_MODE=true
+  // US executive orders — Firestore executive_actions (FR-backed, EO type only); demo array only if REACT_APP_EXECUTIVE_ORDERS_DEMO_MODE=true
   useEffect(() => {
     if (view !== 'executive-orders') return undefined;
     if (EXECUTIVE_ORDERS_DEMO_MODE) {
@@ -5806,10 +5768,19 @@ function App() {
     setUsExecutiveOrdersLastSyncedMs(null);
     (async () => {
       try {
-        const q = query(collection(db, 'executive_orders'), where('jurisdiction', '==', 'US'));
+        const q = query(
+          collection(db, EXECUTIVE_ACTIONS_COLLECTION),
+          where('jurisdiction', '==', 'US'),
+          where('source_name', '==', FEDERAL_REGISTER_SOURCE_NAME),
+        );
         const snap = await getDocs(q);
         if (cancelled) return;
-        const rows = snap.docs.map(mapFirestoreExecutiveOrderDoc);
+        const rows = snap.docs
+          .filter((docSnap) => {
+            const d = docSnap.data();
+            return matchesUsExecutiveOrdersPresident(d) && isExecutiveOrderDoc(d);
+          })
+          .map(mapExecutiveActionsOrderDoc);
         rows.sort((a, b) => String(b.signingDate || b.publicationDate || '').localeCompare(String(a.signingDate || a.publicationDate || '')));
         let maxMs = null;
         for (const r of rows) {
@@ -25615,7 +25586,7 @@ function App() {
                   <p className="text-xs text-gray-500 mt-0.5">
                     {EXECUTIVE_ORDERS_DEMO_MODE
                       ? `${executiveOrdersDemoSample.length} demo items · enable live Firestore list by turning off demo mode`
-                      : 'Official index synced monthly from the Federal Register into Firestore · open for titles, dates, and source links'}
+                      : 'Federal Register executive orders from Firestore (executive_actions) · open for titles, dates, and source links'}
                   </p>
                 </div>
               </div>
@@ -28063,7 +28034,7 @@ function App() {
             {showEmpty && 'No orders found in Firestore for this view.'}
           </p>
           {lastSyncLabel && isFirestore && (
-            <p className="text-sm text-slate-600 mt-1">Monthly refresh · dataset last ingested {lastSyncLabel}</p>
+            <p className="text-sm text-slate-600 mt-1">Latest Federal Register row updated {lastSyncLabel}</p>
           )}
           <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
         </div>
@@ -28078,7 +28049,12 @@ function App() {
         {!isDemo && isFirestore && list.length > 0 && (
           <div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-xs text-slate-800 leading-relaxed">
             <p className="font-semibold text-slate-900 mb-1">Official Federal Register metadata</p>
-            <p className="text-slate-700">EO number, title, dates, and links are loaded from our engine sync of the Federal Register into Firestore. Any plain-language summary or arguments below marked Civic Voice are editorial, not government text.</p>
+            <p className="text-slate-700">
+              Rows come from Firestore <code className="text-[11px] bg-white/90 px-1 rounded border border-emerald-100">executive_actions</code> with{' '}
+              <span className="font-medium">source_name</span> Federal Register, U.S. jurisdiction, and document{' '}
+              <span className="font-medium">type</span> Executive Order only (proclamations and other presidential document types are excluded). Links use{' '}
+              <span className="font-medium">source_url</span>. Plain-language summaries or arguments labeled Civic Voice are editorial.
+            </p>
           </div>
         )}
 
@@ -28108,7 +28084,10 @@ function App() {
                   <span className="text-xs text-gray-400 flex-shrink-0">{eo.date}</span>
                 </div>
                 <h3 className="text-sm font-bold text-gray-800 mb-2 leading-snug">{eo.title}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{eo.description}</p>
+                {(eo.description || '').trim() &&
+                  (eo.description || '').trim() !== (eo.title || '').trim() && (
+                  <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">{eo.description}</p>
+                )}
                 {voteTotal > 0 && (
                   <>
                     <div className="flex items-center gap-2">
@@ -28191,6 +28170,13 @@ function App() {
                 </div>
 
                 <h1 className="text-3xl font-bold text-gray-800 mb-4">{selectedEO.title}</h1>
+
+                {selectedEO.frDocumentType ? (
+                  <p className="text-xs text-slate-600 mb-3">
+                    Federal Register document type:{' '}
+                    <span className="font-semibold text-slate-800">{selectedEO.frDocumentType}</span>
+                  </p>
+                ) : null}
 
                 {selectedEO.citation ? (
                   <p className="text-sm text-slate-600 mb-4 font-mono">{selectedEO.citation}</p>
@@ -35021,6 +35007,8 @@ function App() {
   return (
     <div className={`App smooth-scroll pb-10${darkMode ? ' dark' : ''}`}>
       <style>{customStyles}</style>
+
+      <ExecutiveActionsFirestoreDebugPanel />
 
       {showInstallBanner && (
         <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-white border border-blue-200 rounded-2xl shadow-2xl p-4 flex items-center gap-3 z-[200] animate-fade-in">

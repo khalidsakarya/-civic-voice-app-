@@ -1,6 +1,9 @@
 /**
  * Monthly (or on-demand) sync: U.S. executive orders from the Federal Register API → Firestore `executive_orders`.
  *
+ * Firestore target: same GCP project as the web app (`src/firebase.js` → projectId). Client SDK uses the web API key;
+ * this script MUST use Firebase Admin + a service account for that project (never embed private keys in React).
+ *
  * Prerequisites:
  *   npm install firebase-admin   (devDependency in this repo)
  *
@@ -19,10 +22,37 @@
  *   DETAIL_DELAY_MS=40                        — Delay between Federal Register detail requests
  */
 
+const fs = require('fs');
+const path = require('path');
 const admin = require('firebase-admin');
 
+/** If env is unset, use a service-account JSON file in the project root (local dev only). */
+function resolveCredentialsFromDisk() {
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.FIREBASE_SERVICE_ACCOUNT_JSON) return;
+  const root = path.join(__dirname, '..');
+  const candidates = [
+    'firebase-admin-key.json',
+    'service-account.json',
+    'civic-voice-5ea94-firebase-adminsdk.json',
+  ];
+  for (const name of candidates) {
+    const p = path.join(root, name);
+    if (fs.existsSync(p)) {
+      process.env.GOOGLE_APPLICATION_CREDENTIALS = p;
+      console.log('[sync-eo] Using GOOGLE_APPLICATION_CREDENTIALS from file:', p);
+      return;
+    }
+  }
+}
+
+/** Must match `projectId` in `src/firebase.js` — Admin writes go to this project's Firestore. */
+const APP_FIREBASE_PROJECT_ID = 'civic-voice-5ea94';
+
+/** Default must match `src/constants/firestoreCollections.js` (`EXECUTIVE_ORDERS_COLLECTION`). Override only with care. */
+const DEFAULT_EXECUTIVE_ORDERS_COLLECTION = 'executive_orders';
+
 const LIST_URL = 'https://www.federalregister.gov/api/v1/documents.json';
-const COLLECTION = process.env.FIRESTORE_COLLECTION || 'executive_orders';
+const COLLECTION = process.env.FIRESTORE_COLLECTION || DEFAULT_EXECUTIVE_ORDERS_COLLECTION;
 const PRESIDENT_SLUG = process.env.PRESIDENT_SLUG || 'donald-trump';
 const PRESIDENT_NAME = process.env.PRESIDENT_DISPLAY_NAME || 'Donald J. Trump';
 const MAX_DETAIL_FETCHES = parseInt(process.env.MAX_DETAIL_FETCHES || '0', 10);
@@ -32,11 +62,23 @@ function initFirebase() {
   if (admin.apps.length) return;
   if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
     const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-    admin.initializeApp({ credential: admin.credential.cert(sa) });
+    if (sa.project_id && sa.project_id !== APP_FIREBASE_PROJECT_ID) {
+      console.error(
+        `[sync-eo] Service account project_id "${sa.project_id}" does not match app project "${APP_FIREBASE_PROJECT_ID}" (see src/firebase.js). Use a key from the same Firebase/GCP project.`,
+      );
+      process.exit(1);
+    }
+    admin.initializeApp({
+      credential: admin.credential.cert(sa),
+      projectId: APP_FIREBASE_PROJECT_ID,
+    });
     return;
   }
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    admin.initializeApp();
+    admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
+      projectId: APP_FIREBASE_PROJECT_ID,
+    });
     return;
   }
   console.error('[sync-eo] Set GOOGLE_APPLICATION_CREDENTIALS or FIREBASE_SERVICE_ACCOUNT_JSON');
@@ -102,6 +144,7 @@ function sleep(ms) {
 }
 
 async function main() {
+  resolveCredentialsFromDisk();
   initFirebase();
   const db = admin.firestore();
 
