@@ -114,9 +114,9 @@ Without one of these, the script exits immediately with:
 
 - **`REACT_APP_EXECUTIVE_ORDERS_DEMO_MODE`** — Must be **unset** or not equal to the string `true` for production so the app loads Firestore instead of the bundled demo list. Set only deliberately for demos (value must be exactly `true`; anything else uses Firestore).
 
-### Debug: `executive_actions` type audit (client read-only)
+### Debug: Firestore inspector (client read-only)
 
-In **development** (`npm start`) a **“FR types (debug)”** control is available. To show the same panel in a production build temporarily, set **`REACT_APP_EXECUTIVE_ACTIONS_DEBUG=true`** and rebuild. It only runs `getDocs` (read) on the public Firestore client — no service account, no writes.
+In **development** (`npm start`) a **“Firestore”** floating control opens a read-only debugger: pick a **collection**, add **equality** filters, set a **limit**, inspect **distinct values** for any field (dot paths allowed), and view **sample documents**. For temporary use on a production build, set **`REACT_APP_FIRESTORE_DEBUG=true`** and rebuild. **`REACT_APP_EXECUTIVE_ACTIONS_DEBUG=true`** still enables the same panel (backward compatible). Only `getDocs` — no Admin keys, no writes.
 
 ### Scheduled sync
 
