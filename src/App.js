@@ -2450,6 +2450,8 @@ function App() {
   const [usLiveData, setUsLiveData] = useState(false);
   const [usFirestoreBills, setUsFirestoreBills] = useState([]);
   const [usFirestoreLoading, setUsFirestoreLoading] = useState(false);
+  const [usPresidentBills, setUsPresidentBills] = useState([]);
+  const [usPresidentBillsLoading, setUsPresidentBillsLoading] = useState(false);
   const [auLiveData, setAuLiveData] = useState(false);
   const [auFirestoreBills, setAuFirestoreBills] = useState([]);
   const [auFirestoreLoading, setAuFirestoreLoading] = useState(false);
@@ -3484,6 +3486,24 @@ function App() {
         setCarneyCabinetData([]);
       } finally {
         setCarneyCabinetLoading(false);
+      }
+    })();
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch US bills for president profile inline signed-bills section
+  useEffect(() => {
+    if (view !== 'president-detail') return;
+    if (usPresidentBills.length > 0 || usPresidentBillsLoading) return;
+    setUsPresidentBillsLoading(true);
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'bills'), where('jurisdiction', '==', 'US')));
+        setUsPresidentBills(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (err) {
+        console.warn('[PresidentBills] fetch failed:', err.message);
+        setUsPresidentBills([]);
+      } finally {
+        setUsPresidentBillsLoading(false);
       }
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -5572,6 +5592,8 @@ function App() {
     cabinet: false,
     advisors: false,
     contact: false,
+    signedBills: false,
+    termInfo: false,
   });
 
   const togglePresidentSection = (section) => {
@@ -15923,6 +15945,75 @@ function App() {
                   </div>
                 );
               })()}
+
+              {/* Bills Signed into Law */}
+              {(() => {
+                const signedBills = usPresidentBills.filter(fb => {
+                  const s = (fb.status || '').toLowerCase();
+                  return s.includes('signed') || s.includes('enacted') || s.includes('became law') || s.includes('law');
+                });
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => togglePresidentSection('signedBills')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-gray-800">✅ Bills Signed into Law</h3>
+                        {usPresidentBillsLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Loading…</span>}
+                        {signedBills.length > 0 && !usPresidentBillsLoading && liveBadge(null, 'Weekly')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedPresidentSections.signedBills ? 'rotate-0' : '-rotate-90'}`} />
+                    </div>
+                    {expandedPresidentSections.signedBills && (
+                      <div className="px-6 pb-6 space-y-3">
+                        {signedBills.length > 0 ? signedBills.map((fb, i) => {
+                          const pros = Array.isArray(fb.argumentsFor) ? fb.argumentsFor : [];
+                          const cons = Array.isArray(fb.argumentsAgainst) ? fb.argumentsAgainst : [];
+                          const summary = fb.plainLanguageSummary || fb.summary || fb.description || '';
+                          const signedDate = fb.actionDate || fb.introducedDate || '';
+                          const billNum = fb.sourceId || fb.id || '';
+                          const score = fb.citizenImpactScore;
+                          return (
+                            <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {billNum && <span className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">{billNum}</span>}
+                                  <span className="text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">Signed into Law</span>
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  {typeof score === 'number' && <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${score >= 60 ? 'bg-green-100 text-green-700' : score >= 40 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>Impact {score}/100</span>}
+                                  {signedDate && <span className="text-xs text-gray-400">{signedDate}</span>}
+                                </div>
+                              </div>
+                              <p className="font-semibold text-gray-800 text-sm mb-1 leading-snug">{fb.title || 'Untitled Bill'}</p>
+                              {summary && <p className="text-xs text-gray-600 leading-relaxed mb-2 line-clamp-3">{summary}</p>}
+                              {(pros.length > 0 || cons.length > 0) && (
+                                <div className="grid grid-cols-2 gap-2 mt-2">
+                                  {pros.length > 0 && (
+                                    <div className="bg-green-50 rounded-lg p-2">
+                                      <p className="text-xs font-semibold text-green-700 mb-1">In favor</p>
+                                      {pros.slice(0, 2).map((p, j) => <p key={j} className="text-xs text-green-800 leading-tight">• {p}</p>)}
+                                    </div>
+                                  )}
+                                  {cons.length > 0 && (
+                                    <div className="bg-red-50 rounded-lg p-2">
+                                      <p className="text-xs font-semibold text-red-700 mb-1">Concerns</p>
+                                      {cons.slice(0, 2).map((c, j) => <p key={j} className="text-xs text-red-800 leading-tight">• {c}</p>)}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              {(fb.url || fb.sourceUrl) && <a href={fb.url || fb.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-2 flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors"><Globe className="w-3 h-3 flex-shrink-0" />Source: congress.gov</a>}
+                            </div>
+                          );
+                        }) : (
+                          <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">
+                            {usPresidentBillsLoading ? 'Loading…' : 'No signed legislation data available yet.'}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
           </div>
         </div>
       </div>
@@ -25749,7 +25840,7 @@ function App() {
                 </div>
                 <div className="text-left">
                   <p className="font-bold text-gray-800 text-base">Bills Signed by the President</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Recently approved laws · live Congress.gov only — requires CONGRESS_API_KEY on the server</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Recently approved laws · live from Firestore</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-blue-500 flex-shrink-0" />
@@ -28524,7 +28615,6 @@ function App() {
         </div>
       );
     };
-
     return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-5xl mx-auto">
