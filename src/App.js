@@ -871,8 +871,14 @@ const CONGRESS_SIGNED_LAWS_EMPTY = 'No bills are currently identified as signed 
 const CONGRESS_SIGNED_LAWS_NEEDS_API_HOST = 'This screen needs the server route /api/congress-signed-laws. Run npx vercel dev locally (with CONGRESS_API_KEY in .env.local), or deploy on Vercel with CONGRESS_API_KEY set. Using only npm start will not load live signed-law data.';
 const SIGNED_LAW_VOTES_DISCLAIMER = 'Votes are civic feedback only and are not submitted to Congress or the White House.';
 const FIRESTORE_SIGNED_LAWS_EMPTY = 'No matching bills found in Firestore yet.';
-const APPROVED_ENACTED_BILLS_SUBTITLE =
-  'Firestore records with AI summaries and civic feedback. Some records may be passed by Congress but not yet signed unless labeled.';
+/** Signed-into-law hub: strict 119th Congress + enacted signals only */
+const SIGNED_LAWS_TARGET_CONGRESS = 119;
+const US_119_DOC_ID_PREFIX = 'us-119-';
+const SIGNED_INTO_LAW_PAGE_TITLE = 'Bills Signed into Law';
+const SIGNED_INTO_LAW_PAGE_SUBTITLE =
+  'Current 119th Congress records from Firestore, sourced from Congress.gov.';
+const SIGNED_INTO_LAW_SOURCE_BADGE = 'Cached official source · Congress.gov';
+const SUMMARY_PENDING_ENRICHMENT = 'Summary pending enrichment.';
 
 /**
  * Optional editorial plain-language content keyed by bill id (e.g. "HR1234", "S56").
@@ -978,16 +984,51 @@ function getFirestoreBillLatestActionString(fb) {
   return '';
 }
 
-/** Include in “signed laws” view if status or latest action indicates enacted / passed both / signed */
-function firestoreBillMatchesSignedLawView(fb) {
+function parseCongressNumberFromBill(fb) {
+  const c = fb.congress;
+  if (c == null) return null;
+  if (typeof c === 'number' && Number.isFinite(c)) return c;
+  const s = String(c).trim();
+  if (/^\d+$/.test(s)) return parseInt(s, 10);
+  return null;
+}
+
+/** 119th Congress only: field congress or document id prefix `us-119-` */
+function isSignedLawsCongress119Record(fb, docId) {
+  const id = String(docId || fb.__docId || '').trim();
+  if (id.startsWith(US_119_DOC_ID_PREFIX)) return true;
+  const n = parseCongressNumberFromBill(fb);
+  return n === SIGNED_LAWS_TARGET_CONGRESS;
+}
+
+function getSignedIntoLawPositiveSignals(fb) {
   const st = normalizeUsBillStatusField(fb.status);
-  const latest = getFirestoreBillLatestActionString(fb).toLowerCase();
-  if (st === 'signed_into_law' || st === 'became_public_law' || st === 'passed_both') return true;
-  if (latest.includes('signed by president')) return true;
-  if (latest.includes('became public law')) return true;
-  if (latest.includes('public law')) return true;
-  if (latest.includes('became law')) return true;
-  return false;
+  const rawStatus = String(fb.status || '').trim();
+  const latest = getFirestoreBillLatestActionString(fb);
+
+  const signedIntoLawStatus =
+    st === 'signed_into_law' ||
+    /^signed\s+into\s+law$/i.test(rawStatus);
+
+  const latestEnacted =
+    /signed\s+by\s+president/i.test(latest) ||
+    /became\s+public\s+law/i.test(latest) ||
+    /\bpublic\s+law\b/i.test(latest);
+
+  return { signedIntoLawStatus, latestEnacted, st, rawStatus, latest };
+}
+
+/**
+ * Strict signed-into-law list: US + 119th Congress + signed/enacted signals only.
+ * Intermediate labels (committee, passed one chamber, passed both, in progress) are excluded
+ * unless `latestAction` contains one of the enactment phrases (so enrolled bills still qualify).
+ */
+function firestoreBillMatchesSignedLawView(fb, docId) {
+  if (!isSignedLawsCongress119Record(fb, docId)) return false;
+
+  const { signedIntoLawStatus, latestEnacted, st } = getSignedIntoLawPositiveSignals(fb);
+  if (st === 'failed') return false;
+  return signedIntoLawStatus || latestEnacted;
 }
 
 function uniqStringList(arr) {
@@ -1003,36 +1044,35 @@ function uniqStringList(arr) {
 }
 
 /**
- * Exact UI labels — do not label passed_both as signed unless evidence says so.
- * @returns {{ label: string, statusColor: 'green'|'blue'|'slate' }}
+ * Card badges — honest enacted labels only (no “passed both” on this screen).
+ * @returns {{ label: string, statusColor: 'green'|'slate' }}
  */
 function getFirestoreSignedLawDisplayMeta(fb) {
-  const latestLower = getFirestoreBillLatestActionString(fb).toLowerCase();
+  const latest = getFirestoreBillLatestActionString(fb);
   const st = normalizeUsBillStatusField(fb.status);
 
-  if (latestLower.includes('signed by president')) {
+  if (/signed\s+by\s+president/i.test(latest) || st === 'signed_into_law') {
     return { label: 'Signed by President', statusColor: 'green' };
   }
-  if (st === 'became_public_law' || latestLower.includes('became public law')) {
+  if (
+    st === 'became_public_law' ||
+    /became\s+public\s+law/i.test(latest) ||
+    /\bpublic\s+law\b/i.test(latest)
+  ) {
     return { label: 'Became Public Law', statusColor: 'green' };
-  }
-  if (latestLower.includes('public law')) {
-    return { label: 'Became Public Law', statusColor: 'green' };
-  }
-  if (latestLower.includes('became law')) {
-    return { label: 'Became Public Law', statusColor: 'green' };
-  }
-  if (st === 'signed_into_law') {
-    return { label: 'Signed by President', statusColor: 'green' };
-  }
-  if (st === 'passed_both') {
-    return { label: 'Passed Both Chambers', statusColor: 'blue' };
   }
   const raw = String(fb.status || '').trim();
   return {
     label: raw ? `Other status: ${raw}` : 'Other status',
     statusColor: 'slate',
   };
+}
+
+function getFirestorePlainLanguageSummaryOnly(fb) {
+  const v = fb.plainLanguageSummary ?? fb.plain_language_summary;
+  if (v == null) return null;
+  const t = String(v).trim();
+  return t.length ? t : null;
 }
 
 function parseBillSortTimeMs(fb) {
@@ -1080,28 +1120,28 @@ function sourceLinkLabelFromUrl(url) {
 
 function mapFirestoreDataToSignedLawDeskRow(fb) {
   const { label, statusColor } = getFirestoreSignedLawDisplayMeta(fb);
-  const summary =
-    fb.plainLanguageSummary ||
-    fb.plain_language_summary ||
-    fb.aiSummary ||
-    fb.civicSummary ||
-    fb.summary ||
-    '';
-  const summaryStr = String(summary || '').trim();
-  const pros = uniqStringList([...(fb.argumentsFor || []), ...(fb.pros || [])]);
-  const cons = uniqStringList([...(fb.argumentsAgainst || []), ...(fb.cons || [])]);
+  const plain = getFirestorePlainLanguageSummaryOnly(fb);
+  const pendingSummary = plain == null;
+  const summaryDisplay = pendingSummary ? SUMMARY_PENDING_ENRICHMENT : plain;
+
+  const pros = Array.isArray(fb.argumentsFor) ? uniqStringList(fb.argumentsFor) : [];
+  const cons = Array.isArray(fb.argumentsAgainst) ? uniqStringList(fb.argumentsAgainst) : [];
+
   const id = String(fb.id || fb.sourceId || fb.__docId || '').trim() || 'unknown';
   const number = fb.sourceId || fb.billNumber || fb.bill_number || id;
   const sourceUrl = fb.sourceUrl || fb.source_url || fb.url || 'https://www.congress.gov/';
   const latestActionText = getFirestoreBillLatestActionString(fb);
   const passedDate = formatFirestoreBillActionDate(fb);
-  const isPassedOnly = label === 'Passed Both Chambers';
+  const descriptionPreview = pendingSummary
+    ? SUMMARY_PENDING_ENRICHMENT
+    : `${plain.slice(0, 220)}${plain.length > 220 ? '…' : ''}`;
+
   return {
     id,
     number: typeof number === 'string' || typeof number === 'number' ? String(number) : id,
     billType: '',
     billNumber: String(fb.billNumber || fb.bill_number || ''),
-    congress: String(fb.congress ?? getCurrentUsCongressNumber()),
+    congress: String(parseCongressNumberFromBill(fb) ?? SIGNED_LAWS_TARGET_CONGRESS),
     title: fb.title || 'Untitled measure',
     officialTitle: fb.title || 'Untitled measure',
     latestActionText,
@@ -1113,16 +1153,17 @@ function mapFirestoreDataToSignedLawDeskRow(fb) {
     displayLabel: label,
     sourceUrl,
     sourceLinkLabel: sourceLinkLabelFromUrl(sourceUrl),
-    description: summaryStr ? `${summaryStr.slice(0, 220)}${summaryStr.length > 220 ? '…' : ''}` : latestActionText.slice(0, 220),
-    summary: summaryStr || latestActionText || 'No summary stored for this bill yet.',
-    hasEditorialSummary: summaryStr.length > 0,
+    description: descriptionPreview,
+    summary: summaryDisplay,
+    summaryPendingEnrichment: pendingSummary,
+    hasEditorialSummary: !pendingSummary,
     pros,
     cons,
     support: 0,
     oppose: 0,
     sortDateMs: parseBillSortTimeMs(fb),
-    cardDateCaptionTop: isPassedOnly ? 'Passed both chambers' : 'Signed / enacted',
-    detailDateHeading: isPassedOnly ? 'Latest action date' : 'Signed / enacted (latest action date)',
+    cardDateCaptionTop: 'Signed into law',
+    detailDateHeading: 'Signed into law (latest action date)',
     rawFirestoreStatus: fb.status || '',
   };
 }
@@ -5831,7 +5872,7 @@ function App() {
         const snap = await getDocs(q);
         if (cancelled) return;
         const raw = snap.docs.map((d) => ({ ...d.data(), __docId: d.id }));
-        const filtered = raw.filter(firestoreBillMatchesSignedLawView);
+        const filtered = raw.filter((fb) => firestoreBillMatchesSignedLawView(fb, fb.__docId));
         const mapped = filtered
           .map(mapFirestoreDataToSignedLawDeskRow)
           .sort((a, b) => (b.sortDateMs || 0) - (a.sortDateMs || 0));
@@ -28439,9 +28480,6 @@ function App() {
       && !signedLawsError;
     const hasFetchError = !signedLawsLoading && !!signedLawsError;
     const deskRows = firestoreReady ? signedLawsBills : [];
-    const includePassedChambers = deskRows.some((b) => b.displayLabel === 'Passed Both Chambers');
-    const pageTitle = includePassedChambers ? 'Approved & Enacted Bills' : 'Bills Signed by the President';
-    const congressN = getCurrentUsCongressNumber();
 
     const renderBillCard = (bill) => {
       const votes = signedLawBillVotes[bill.id] || { support: bill.support, oppose: bill.oppose, concerned: 0, userVote: null };
@@ -28454,8 +28492,8 @@ function App() {
         slate:  { badge: 'bg-slate-50 border-slate-200 text-slate-700' },
       };
       const sc = statusColors[bill.statusColor] || statusColors.slate;
-      const shareText = (bill.summary || bill.description || bill.title || '').slice(0, 500);
-      const dateTop = bill.cardDateCaptionTop || 'Signed / enacted';
+      const shareText = `${bill.title || ''}\n\n${bill.summary || ''}`.trim().slice(0, 500);
+      const dateTop = bill.cardDateCaptionTop || 'Signed into law';
       return (
         <div
           key={bill.id}
@@ -28499,24 +28537,21 @@ function App() {
 
         <div className="mb-4 animate-slide-in flex flex-wrap items-baseline gap-x-3 gap-y-2">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">
-            {showLoading ? 'Loading…' : hasFetchError ? 'Could not load bills' : pageTitle}
+            {showLoading ? 'Loading…' : hasFetchError ? 'Could not load bills' : SIGNED_INTO_LAW_PAGE_TITLE}
           </h1>
           {firestoreReady && (
-            <span className="inline-flex items-center rounded-full border border-violet-600 bg-violet-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-violet-900">
-              Firestore
+            <span className="inline-flex items-center rounded-full border border-sky-600 bg-sky-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-sky-900">
+              {SIGNED_INTO_LAW_SOURCE_BADGE}
             </span>
           )}
           <div className="w-full text-gray-600 text-base sm:text-lg mt-1">
-            {!showLoading && !hasFetchError && includePassedChambers && (
-              <p className="text-slate-600 text-base font-medium">{APPROVED_ENACTED_BILLS_SUBTITLE}</p>
+            {!showLoading && !hasFetchError && (
+              <p className="text-slate-600 text-base font-medium">{SIGNED_INTO_LAW_PAGE_SUBTITLE}</p>
             )}
-            {!showLoading && !hasFetchError && !includePassedChambers && (
-              <p className="text-slate-600 text-base font-medium">Recently approved laws</p>
-            )}
-            {showLoading && `Loading U.S. bills from Firestore (${congressOrdinalLabel(congressN)})…`}
+            {showLoading && `Loading ${congressOrdinalLabel(SIGNED_LAWS_TARGET_CONGRESS)} bills from Firestore…`}
             {firestoreReady && deskRows.length > 0 && (
               <span className="block mt-1">
-                {deskRows.length} bill{deskRows.length === 1 ? '' : 's'} from Firestore with signed, enacted, or passed-both status. Tap a card for AI summaries and civic feedback.
+                {deskRows.length} signed-into-law measure{deskRows.length === 1 ? '' : 's'} from this Congress ({congressOrdinalLabel(SIGNED_LAWS_TARGET_CONGRESS)}). Tap a card for details and civic feedback.
               </span>
             )}
             {firestoreReady && deskRows.length === 0 && (
@@ -28540,10 +28575,12 @@ function App() {
           <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-800 leading-relaxed">
             <p className="font-semibold text-slate-900 mb-1">How this list is built</p>
             <p className="text-slate-700">
-              Bills come from the <span className="font-medium">Firestore</span>{' '}
-              <code className="text-[11px] bg-slate-100 px-1 rounded">bills</code> collection (
-              <span className="font-medium">jurisdiction == US</span>
-              ), including AI summaries and arguments already stored on each record. Congress.gov may be used later to refresh or verify listings — it does not block this page.
+              Includes only <span className="font-medium">{congressOrdinalLabel(SIGNED_LAWS_TARGET_CONGRESS)}</span> documents from{' '}
+              <code className="text-[11px] bg-slate-100 px-1 rounded">bills</code> (
+              <span className="font-medium">jurisdiction == US</span>,{' '}
+              <span className="font-medium">congress == {SIGNED_LAWS_TARGET_CONGRESS}</span> or id prefix{' '}
+              <code className="text-[11px] bg-slate-100 px-1 rounded">{US_119_DOC_ID_PREFIX}</code>
+              ) whose status or latest action indicates the bill was signed into law or became public law. Committee-only or in-progress bills are excluded.
             </p>
           </div>
         )}
@@ -28607,8 +28644,8 @@ function App() {
                   <span className="bg-gray-100 text-gray-700 px-4 py-2 rounded-full">
                     {congressOrdinalLabel(selectedSignedLawBill.congress)}
                   </span>
-                  <span className="inline-flex items-center rounded-full border border-violet-600 bg-violet-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-violet-900">
-                    Firestore
+                  <span className="inline-flex items-center rounded-full border border-sky-600 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-900">
+                    {SIGNED_INTO_LAW_SOURCE_BADGE}
                   </span>
                 </div>
 
@@ -28627,14 +28664,23 @@ function App() {
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
                   <h3 className="font-bold text-gray-800 mb-2">Plain-language summary</h3>
-                  <p className="text-gray-700 whitespace-pre-line">{selectedSignedLawBill.summary}</p>
+                  <p
+                    className={`whitespace-pre-line ${
+                      selectedSignedLawBill.summaryPendingEnrichment
+                        ? 'text-slate-600 italic'
+                        : 'text-gray-700'
+                    }`}
+                  >
+                    {selectedSignedLawBill.summary}
+                  </p>
                   <div className="text-sm text-slate-700 mt-4 border-t border-blue-200 pt-4 space-y-2">
                     <p className="font-semibold text-slate-900">Bill record</p>
                     <p className="text-slate-800"><span className="font-medium">Title:</span> {selectedSignedLawBill.officialTitle}</p>
                     <p className="text-slate-600"><span className="font-medium">Latest action:</span> {selectedSignedLawBill.latestActionText || '—'}</p>
                   </div>
                   <p className="text-xs text-slate-600 mt-3 border-t border-blue-200 pt-3">
-                    Summaries and arguments come from Firestore on this bill. Confirm enrolled text and any public law number with official sources when needed.
+                    When present, the summary above uses <span className="font-medium">plainLanguageSummary</span> from Firestore. Arguments below appear only when{' '}
+                    <span className="font-medium">argumentsFor</span> / <span className="font-medium">argumentsAgainst</span> exist on the record.
                   </p>
                 </div>
 
