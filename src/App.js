@@ -15745,17 +15745,6 @@ function App() {
                 );
               })()}
 
-              {/* Attendance Record */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => togglePresidentSection('attendance')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <h3 className="text-xl font-bold text-gray-800">📈 Attendance Record</h3>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.attendance ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedPresidentSections.attendance ? '' : 'hidden sm:block'}`}>
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-                </div>
-              </div>
-
               {/* Cabinet Members */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div onClick={() => togglePresidentSection('cabinet')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
@@ -15809,75 +15798,6 @@ function App() {
                         </div>
                       ) : (
                         <p className="text-sm text-gray-500 italic">{tpdLoading ? 'Loading…' : 'No contact information available yet.'}</p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Key Policy Areas */}
-              {(() => {
-                const sec = tpd['key_policy_areas'];
-                const policies = sec?.policies ?? sec?.items ?? [];
-                return (
-                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div onClick={() => togglePresidentSection('policies')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-bold text-gray-800">📋 Key Policy Areas</h3>
-                        {tpdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                        {policies.length > 0 && !tpdLoading && liveBadge(null, 'Live')}
-                      </div>
-                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.policies ? 'rotate-0' : '-rotate-90'}`} />
-                    </div>
-                    <div className={`px-6 pb-6 ${expandedPresidentSections.policies ? '' : 'hidden sm:block'}`}>
-                      {policies.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {policies.map((policy, i) => (
-                            <span key={i} className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full">
-                              <Scale className="w-3.5 h-3.5 flex-shrink-0" />
-                              {typeof policy === 'string' ? policy : policy.name ?? policy.label ?? JSON.stringify(policy)}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-500 italic">{tpdLoading ? 'Loading…' : 'No policy data available yet.'}</p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Term Information */}
-              {(() => {
-                const sec = tpd['term_information'];
-                const hasData = sec && Object.keys(sec).some(k => k !== 'section' && k !== 'member_name' && sec[k]);
-                return (
-                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div onClick={() => togglePresidentSection('termInfo')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-bold text-gray-800">🗓️ Term Information</h3>
-                        {tpdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                        {hasData && !tpdLoading && liveBadge(null, 'Live')}
-                      </div>
-                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.termInfo ? 'rotate-0' : '-rotate-90'}`} />
-                    </div>
-                    <div className={`px-6 pb-6 ${expandedPresidentSections.termInfo ? '' : 'hidden sm:block'}`}>
-                      {hasData ? (
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {sec.term_start && <div className="bg-blue-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">In Office Since</p><p className="text-xl font-bold text-blue-600">{sec.term_start}</p></div>}
-                            {sec.president_number && <div className="bg-purple-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">President #</p><p className="text-3xl font-bold text-purple-600">{sec.president_number}</p></div>}
-                            {sec.party && <div className="bg-red-50 p-4 rounded-lg text-center"><p className="text-sm text-gray-600 mb-1">Party</p><p className="text-lg font-bold text-red-700">{sec.party}</p></div>}
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {sec.born && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Born</p><p className="font-semibold text-gray-800">{sec.born}{sec.birthplace ? `, ${sec.birthplace}` : ''}</p></div>}
-                            {sec.education && <div className="bg-gray-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Education</p><p className="font-semibold text-gray-800">{sec.education}</p></div>}
-                            {sec.prior_term && <div className="bg-green-50 p-3 rounded-lg"><p className="text-sm text-gray-600 mb-1">Prior Term</p><p className="font-semibold text-gray-800">{sec.prior_term}</p></div>}
-                          </div>
-                          {sec.source_url && <a href={sec.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1">📄 Source</a>}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-gray-500 italic">{tpdLoading ? 'Loading…' : 'No term information available yet.'}</p>
                       )}
                     </div>
                   </div>
