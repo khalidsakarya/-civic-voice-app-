@@ -15758,30 +15758,32 @@ function App() {
 
               {/* Cabinet Members */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => togglePresidentSection('cabinet')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <div onClick={() => togglePresidentSection('cabinet')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
                   <div className="flex items-center gap-2">
                     <h3 className="text-xl font-bold text-gray-800">🏛️ Cabinet Members</h3>
                     {trumpCabinetLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                     {trumpCabinetData?.length > 0 && !trumpCabinetLoading && liveBadge(null, 'Live')}
                   </div>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.cabinet ? 'rotate-0' : '-rotate-90'}`} />
+                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedPresidentSections.cabinet ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                <div className={`px-6 pb-6 ${expandedPresidentSections.cabinet ? '' : 'hidden sm:block'}`}>
-                  {trumpCabinetData?.length > 0 ? (
-                    <div className="space-y-2">
-                      {trumpCabinetData.map((c, i) => (
-                        <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                          <h4 className="font-bold text-gray-800">{c.name}</h4>
-                          <p className="text-sm text-indigo-600 font-medium">{c.role ?? c.title}</p>
-                          {c.department && <p className="text-xs text-gray-500 mt-0.5">{c.department}</p>}
-                          {c.confirmed_date && <p className="text-xs text-gray-400 mt-0.5">Confirmed: {c.confirmed_date}</p>}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{trumpCabinetLoading ? 'Loading…' : 'No cabinet data available yet.'}</p>
-                  )}
-                </div>
+                {expandedPresidentSections.cabinet && (
+                  <div className="px-6 pb-6">
+                    {trumpCabinetData?.length > 0 ? (
+                      <div className="space-y-2">
+                        {trumpCabinetData.map((c, i) => (
+                          <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                            <h4 className="font-bold text-gray-800">{c.name}</h4>
+                            <p className="text-sm text-indigo-600 font-medium">{c.role ?? c.title}</p>
+                            {c.department && <p className="text-xs text-gray-500 mt-0.5">{c.department}</p>}
+                            {c.confirmed_date && <p className="text-xs text-gray-400 mt-0.5">Confirmed: {c.confirmed_date}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{trumpCabinetLoading ? 'Loading…' : 'No cabinet data available yet.'}</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Contact Information */}
@@ -15921,27 +15923,29 @@ function App() {
                 const isLoading = !!leaderExecActionsLoading['Donald Trump'];
                 return (
                   <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div onClick={() => togglePresidentSection('keyDecisions')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                    <div onClick={() => togglePresidentSection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
                       <div className="flex items-center gap-2">
                         <h3 className="text-xl font-bold text-gray-800">⚖️ Key Executive Actions</h3>
                         {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                         {acts?.length > 0 && !isLoading && liveBadge(null, 'Live')}
                       </div>
-                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedPresidentSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedPresidentSections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
                     </div>
-                    <div className={`px-6 pb-6 space-y-3 ${expandedPresidentSections.keyDecisions ? '' : 'hidden sm:block'}`}>
-                      {acts?.length > 0 ? acts.map((item, i) => (
-                        <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            {item.type && <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 flex-shrink-0">{item.type}</span>}
-                            {item.date && <span className="text-xs text-gray-400 flex-shrink-0">{item.date}</span>}
+                    {expandedPresidentSections.keyDecisions && (
+                      <div className="px-6 pb-6 space-y-3">
+                        {acts?.length > 0 ? acts.map((item, i) => (
+                          <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              {item.type && <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 flex-shrink-0">{item.type}</span>}
+                              {item.date && <span className="text-xs text-gray-400 flex-shrink-0">{item.date}</span>}
+                            </div>
+                            {item.title && <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>}
+                            {item.description && <p className="text-xs text-gray-600 leading-relaxed">{item.description}</p>}
+                            {item.source_url && <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
                           </div>
-                          {item.title && <p className="font-semibold text-gray-800 text-sm mb-1">{item.title}</p>}
-                          {item.description && <p className="text-xs text-gray-600 leading-relaxed">{item.description}</p>}
-                          {item.source_url && <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
-                        </div>
-                      )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoading ? 'Loading…' : 'No executive actions data available yet.'}</p>}
-                    </div>
+                        )) : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoading ? 'Loading…' : 'No executive actions data available yet.'}</p>}
+                      </div>
+                    )}
                   </div>
                 );
               })()}
