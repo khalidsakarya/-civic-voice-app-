@@ -7128,7 +7128,10 @@ function App() {
               <div className="bg-white rounded-lg shadow-sm p-10 text-center text-gray-500">Official data loading</div>
             ) : (
               <div className="space-y-3">
-                {cases.map((c, i) => {
+                {[...cases].sort((a, b) => {
+                  const ts = (c) => { const d = c.date_decided || c.date_argued || c.date; if (!d) return 0; try { const dt = d.toDate ? d.toDate() : new Date(d); return isNaN(dt.getTime()) ? 0 : dt.getTime(); } catch { return 0; } };
+                  return ts(b) - ts(a);
+                }).map((c, i) => {
                   const caseKey  = c.id || `${jur}-${i}`;
                   const status   = getStatus(c);
                   const isOpen   = !!courtExpandedCase[caseKey];
