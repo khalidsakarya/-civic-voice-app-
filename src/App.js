@@ -3398,6 +3398,7 @@ function App() {
         const q = query(collection(db, 'member_votes'), where('politician_slug', '==', slug));
         const snap = await getDocs(q);
         docs = snap.docs.map(d => d.data());
+        if (docs.length > 0) console.log(`[MemberVotes] CA slug="${slug}" — ${docs.length} doc(s). Sample keys:`, Object.keys(docs[0]), '\nSample doc:', docs[0]);
       }
       if (key === 'Mike Johnson') console.log(`[MikeJohnson] member_votes: ${docs.length} doc(s)`, docs);
       setMemberVotesData(prev => ({ ...prev, [key]: docs }));
@@ -31301,13 +31302,21 @@ function App() {
           const isLiveVotes = liveDocs && liveDocs.length > 0;
           const isLoadingVotes = !!memberVotesLoading[selectedMember.name];
           const displayVotes = isLiveVotes
-            ? liveDocs.map(d => ({
-                bill: d.bill || d.bill_number || null,
-                title: d.description || d.title || d.subject || d.motion || '',
-                vote: d.ballot || d.vote || d.member_vote || '',
-                date: d.date,
-                result: d.result || d.passed || null,
-              }))
+            ? liveDocs.map(d => {
+                // openparliament.ca stores data in a nested `vote` object; backends may also flatten it
+                const voteObj = d.vote && typeof d.vote === 'object' && !d.vote.toDate ? d.vote : null;
+                // description can be a {en, fr} multilingual object or a plain string
+                const rawDesc = d.description ?? voteObj?.description ?? d.title ?? d.subject ?? d.motion ?? '';
+                const title = rawDesc && typeof rawDesc === 'object' ? (rawDesc.en || rawDesc.fr || '') : String(rawDesc || '');
+                // ballot is the member's individual vote; result is the overall vote outcome
+                const vote = d.ballot ?? d.member_vote ?? d.vote_value ?? d.choice ?? '';
+                // date may be at top level or nested; handle Firestore Timestamps
+                const rawDate = d.date ?? voteObj?.date ?? '';
+                const dateStr = rawDate?.toDate ? rawDate.toDate().toLocaleDateString('en-CA') : String(rawDate || '');
+                const result = d.result ?? voteObj?.result ?? (typeof d.passed === 'boolean' ? (d.passed ? 'Passed' : 'Failed') : null);
+                const bill = d.bill_number ?? d.bill ?? voteObj?.bill_number ?? null;
+                return { bill, title, vote, date: dateStr, result };
+              })
             : (selectedMember.votingHistory || []);
           if (!displayVotes.length && !isLoadingVotes) return null;
           return (
