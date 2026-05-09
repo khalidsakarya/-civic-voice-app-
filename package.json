@@ -21,6 +21,9 @@
     "sync:us-executive-orders": "node engine/sync-us-executive-orders.cjs",
     "audit:executive-actions": "node engine/audit-firestore-executive-actions.cjs",
     "audit:firestore-bills": "node engine/audit-firestore-bills.cjs",
+    "audit:firestore-inventory": "node engine/audit-firestore-inventory.cjs",
+    "seed:subnational-jurisdictions": "node engine/seed-subnational-jurisdictions.cjs",
+    "validate:subnational-jurisdictions": "node engine/validate-subnational-jurisdictions.cjs",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -45,6 +48,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
     "autoprefixer": "^10.4.24",
+    "dotenv": "^17.3.1",
     "firebase-admin": "^13.8.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.3.0"

@@ -7,7 +7,14 @@ import {
   where,
 } from 'firebase/firestore';
 import { db } from '../firebase';
-import { EXECUTIVE_ACTIONS_COLLECTION } from '../constants/firestoreCollections';
+import {
+  EXECUTIVE_ACTIONS_COLLECTION,
+  SUBNATIONAL_JURISDICTIONS_COLLECTION,
+} from '../constants/firestoreCollections';
+import {
+  fetchSubnationalJurisdictions,
+  SUBNATIONAL_JURISDICTION_EXPECTED_COUNTS,
+} from '../firestore/fetchSubnationalJurisdictions';
 import { FEDERAL_REGISTER_SOURCE_NAME } from '../constants/executiveOrderDocumentTypes';
 import { X, Database } from 'lucide-react';
 
@@ -120,6 +127,7 @@ function pickBillDebugValue(data, field) {
 /** Known collections from docs/DATA_CONTRACTS.md — free text still allowed */
 const COLLECTION_PRESETS = [
   EXECUTIVE_ACTIONS_COLLECTION,
+  SUBNATIONAL_JURISDICTIONS_COLLECTION,
   'federal_departments',
   'department_expenses',
   'budget_data',
@@ -191,6 +199,8 @@ function aggregateDistinct(rows, fieldPath) {
 
 export function FirestoreDebugPanel() {
   const [open, setOpen] = useState(false);
+  const [subnationalCheckLoading, setSubnationalCheckLoading] = useState(false);
+  const [subnationalCheckResult, setSubnationalCheckResult] = useState(null);
   const [collectionName, setCollectionName] = useState(EXECUTIVE_ACTIONS_COLLECTION);
   const [fetchCap, setFetchCap] = useState(DEFAULT_LIMIT);
   /** equality filters: field + raw string value */
@@ -268,6 +278,29 @@ export function FirestoreDebugPanel() {
       setLoading(false);
     }
   }, [collectionName, fetchCap, filters]);
+
+  const runSubnationalCountCheck = useCallback(async () => {
+    setSubnationalCheckLoading(true);
+    setSubnationalCheckResult(null);
+    const codes = Object.keys(SUBNATIONAL_JURISDICTION_EXPECTED_COUNTS);
+    const byCode = {};
+    let allOk = true;
+    try {
+      for (const code of codes) {
+        const list = await fetchSubnationalJurisdictions(code);
+        const n = list.length;
+        const exp = SUBNATIONAL_JURISDICTION_EXPECTED_COUNTS[code];
+        const ok = n === exp;
+        if (!ok) allOk = false;
+        byCode[code] = { count: n, expected: exp, ok };
+      }
+      setSubnationalCheckResult({ byCode, allOk });
+    } catch (e) {
+      setSubnationalCheckResult({ error: e?.message || String(e) });
+    } finally {
+      setSubnationalCheckLoading(false);
+    }
+  }, []);
 
   const addFilterRow = () => {
     setFilters((f) => [...f, { field: '', value: '' }]);
@@ -378,6 +411,50 @@ export function FirestoreDebugPanel() {
                 >
                   bills (jurisdiction == US)
                 </button>
+              </div>
+
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 px-3 py-2.5 text-xs space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <span className="font-semibold text-emerald-900">subnational_jurisdictions</span>
+                    <span className="text-emerald-800/80"> — read helper check (</span>
+                    <code className="text-[10px]">fetchSubnationalJurisdictions</code>
+                    <span className="text-emerald-800/80">)</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={runSubnationalCountCheck}
+                    disabled={subnationalCheckLoading}
+                    className="px-2.5 py-1 rounded-md bg-emerald-800 text-white text-[11px] font-semibold hover:bg-emerald-900 disabled:opacity-50"
+                  >
+                    {subnationalCheckLoading ? 'Loading…' : 'Verify US/CA/AU/UK counts'}
+                  </button>
+                </div>
+                {subnationalCheckResult && subnationalCheckResult.error && (
+                  <p className="text-red-800">{subnationalCheckResult.error}</p>
+                )}
+                {subnationalCheckResult && subnationalCheckResult.byCode && (
+                  <ul className="font-mono text-[11px] text-emerald-950 space-y-0.5">
+                    {Object.entries(subnationalCheckResult.byCode).map(([code, v]) => (
+                      <li key={code}>
+                        {code}: {v.count} / {v.expected} {v.ok ? '✓' : '✗'}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {subnationalCheckResult && subnationalCheckResult.byCode && (
+                  <p
+                    className={
+                      subnationalCheckResult.allOk
+                        ? 'font-semibold text-emerald-900'
+                        : 'font-semibold text-amber-900'
+                    }
+                  >
+                    {subnationalCheckResult.allOk
+                      ? 'All counts match seed (51 / 13 / 8 / 13).'
+                      : 'One or more counts differ — check rules, seed, or network.'}
+                  </p>
+                )}
               </div>
 
               <div className="grid sm:grid-cols-2 gap-3">

@@ -15,6 +15,23 @@ import { BarChart, Bar, AreaChart, Area, PieChart as RechartsPie, Pie, Cell, XAx
 import './App.css';
 import { FirestoreDebugPanel } from './dev/FirestoreDebugPanel';
 
+/** Canadian province/territory display names shared by voting location gate and `getRegionCountry` (see docs/SUBNATIONAL_DATA_MODEL.md). */
+const CANADA_PROVINCE_TERRITORY_NAMES_REGION_GATE = [
+  'Alberta',
+  'British Columbia',
+  'Manitoba',
+  'New Brunswick',
+  'Newfoundland and Labrador',
+  'Northwest Territories',
+  'Nova Scotia',
+  'Nunavut',
+  'Ontario',
+  'Prince Edward Island',
+  'Quebec',
+  'Saskatchewan',
+  'Yukon',
+];
+
 // Custom CSS for animations and enhanced styling
 const customStyles = `
   @keyframes fadeIn {
@@ -874,6 +891,8 @@ const FIRESTORE_SIGNED_LAWS_EMPTY = 'No matching bills found in Firestore yet.';
 /** Signed-into-law hub: strict 119th Congress + enacted signals only */
 const SIGNED_LAWS_TARGET_CONGRESS = 119;
 const US_119_DOC_ID_PREFIX = 'us-119-';
+/** Hide legacy bills: require activity on/after Jan 20, 2025 when dates exist (UTC). */
+const US_SIGNED_LAWS_DATE_CUTOFF_MS = Date.UTC(2025, 0, 20);
 const SIGNED_INTO_LAW_PAGE_TITLE = 'Bills Signed into Law';
 const SIGNED_INTO_LAW_PAGE_SUBTITLE =
   'Current 119th Congress records from Firestore, sourced from Congress.gov.';
@@ -1001,6 +1020,26 @@ function isSignedLawsCongress119Record(fb, docId) {
   return n === SIGNED_LAWS_TARGET_CONGRESS;
 }
 
+/** Drop pre–Jan 20 2025 rows when any comparable date is present; keeps undated 119th docs. */
+function billPassesSignedLawsRecencyGate(fb) {
+  const stamps = [];
+  const pushDay = (v) => {
+    if (v == null || typeof v !== 'string') return;
+    const iso = v.includes('T') ? v : `${v}T12:00:00.000Z`;
+    const t = Date.parse(iso);
+    if (!Number.isNaN(t)) stamps.push(t);
+  };
+  const la = fb.latestAction ?? fb.latest_action;
+  if (la && typeof la === 'object' && la.actionDate) pushDay(la.actionDate);
+  pushDay(fb.introducedDate);
+  if (fb.last_updated != null) {
+    const t = Date.parse(String(fb.last_updated));
+    if (!Number.isNaN(t)) stamps.push(t);
+  }
+  if (stamps.length === 0) return true;
+  return stamps.some((ms) => ms >= US_SIGNED_LAWS_DATE_CUTOFF_MS);
+}
+
 function getSignedIntoLawPositiveSignals(fb) {
   const st = normalizeUsBillStatusField(fb.status);
   const rawStatus = String(fb.status || '').trim();
@@ -1025,6 +1064,7 @@ function getSignedIntoLawPositiveSignals(fb) {
  */
 function firestoreBillMatchesSignedLawView(fb, docId) {
   if (!isSignedLawsCongress119Record(fb, docId)) return false;
+  if (!billPassesSignedLawsRecencyGate(fb)) return false;
 
   const { signedIntoLawStatus, latestEnacted, st } = getSignedIntoLawPositiveSignals(fb);
   if (st === 'failed') return false;
@@ -1044,24 +1084,49 @@ function uniqStringList(arr) {
 }
 
 /**
- * Card badges — honest enacted labels only (no “passed both” on this screen).
- * @returns {{ label: string, statusColor: 'green'|'slate' }}
+ * Honest legislative status for signed-laws cards (Firestore-backed; no fabrication).
+ * @returns {{ label: string, statusColor: 'green'|'blue'|'amber'|'slate' }}
  */
 function getFirestoreSignedLawDisplayMeta(fb) {
   const latest = getFirestoreBillLatestActionString(fb);
   const st = normalizeUsBillStatusField(fb.status);
+  const raw = String(fb.status || '').trim();
+  const rawLower = raw.toLowerCase();
 
-  if (/signed\s+by\s+president/i.test(latest) || st === 'signed_into_law') {
-    return { label: 'Signed by President', statusColor: 'green' };
+  const enactedLatest =
+    /signed\s+by\s+president/i.test(latest) ||
+    /became\s+public\s+law/i.test(latest) ||
+    /\bpublic\s+law\b/i.test(latest);
+
+  if (enactedLatest || st === 'signed_into_law' || /^signed\s+into\s+law$/i.test(raw)) {
+    return { label: 'Signed into Law', statusColor: 'green' };
+  }
+  if (st === 'became_public_law') {
+    return { label: 'Signed into Law', statusColor: 'green' };
+  }
+  if (st === 'passed_both' || rawLower.includes('passed both')) {
+    return { label: 'Passed Both Chambers', statusColor: 'blue' };
   }
   if (
-    st === 'became_public_law' ||
-    /became\s+public\s+law/i.test(latest) ||
-    /\bpublic\s+law\b/i.test(latest)
+    st === 'passed_house' ||
+    (rawLower.includes('passed house') && !rawLower.includes('passed senate'))
   ) {
-    return { label: 'Became Public Law', statusColor: 'green' };
+    return { label: 'Passed House', statusColor: 'blue' };
   }
-  const raw = String(fb.status || '').trim();
+  if (st === 'passed_senate' || rawLower.includes('passed senate')) {
+    return { label: 'Passed Senate', statusColor: 'blue' };
+  }
+  if (
+    st === 'referred_to_committee' ||
+    rawLower.includes('referred to committee') ||
+    rawLower.includes('in committee') ||
+    st === 'in_committee'
+  ) {
+    return { label: 'Referred to Committee', statusColor: 'slate' };
+  }
+  if (st === 'in_progress' || rawLower.includes('in progress')) {
+    return { label: 'In Progress', statusColor: 'amber' };
+  }
   return {
     label: raw ? `Other status: ${raw}` : 'Other status',
     statusColor: 'slate',
@@ -5417,8 +5482,7 @@ function App() {
   // ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
   const getRegionCountry = (region) => {
     if (!region) return null;
-    const canadaRegions = ['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland and Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon'];
-    return canadaRegions.includes(region) ? 'canada' : 'usa';
+    return CANADA_PROVINCE_TERRITORY_NAMES_REGION_GATE.includes(region) ? 'canada' : 'usa';
   };
 
   const timeAgo = (isoString) => {
@@ -5877,7 +5941,7 @@ function App() {
     })();
   }, [view, selectedCountry?.type]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Bills signed by the President — Firestore `bills` (US) with AI summaries; Congress.gov API reserved for future sync.
+  // Bills signed into law — reads Firestore `bills` only (no static lists; Congress.gov API not used here).
   useEffect(() => {
     if (view !== 'bills-signed-laws') return undefined;
     let cancelled = false;
@@ -28507,6 +28571,7 @@ function App() {
         blue:   { badge: 'bg-blue-50 border-blue-200 text-blue-700' },
         purple: { badge: 'bg-purple-50 border-purple-200 text-purple-700' },
         red:    { badge: 'bg-red-50 border-red-200 text-red-700' },
+        amber:  { badge: 'bg-amber-50 border-amber-200 text-amber-900' },
         slate:  { badge: 'bg-slate-50 border-slate-200 text-slate-700' },
       };
       const sc = statusColors[bill.statusColor] || statusColors.slate;
@@ -28626,6 +28691,7 @@ function App() {
           blue:   'bg-blue-100 text-blue-800',
           purple: 'bg-purple-100 text-purple-800',
           red:    'bg-red-100 text-red-800',
+          amber:  'bg-amber-100 text-amber-900',
           slate:  'bg-slate-100 text-slate-800',
         };
         const dateHeading = selectedSignedLawBill.detailDateHeading || 'Signed / enacted (latest action date)';
@@ -34838,9 +34904,8 @@ function App() {
   };
 
   const renderLocationGateModal = () => {
-    const canadaProvinces = ['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland and Labrador','Northwest Territories','Nova Scotia','Nunavut','Ontario','Prince Edward Island','Quebec','Saskatchewan','Yukon'];
     const usStates = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
-    const options = manualRegionType === 'canada' ? canadaProvinces : usStates;
+    const options = manualRegionType === 'canada' ? CANADA_PROVINCE_TERRITORY_NAMES_REGION_GATE : usStates;
     return (
       <div
         className="fixed inset-0 z-[60] flex items-center justify-center panel-backdrop"
