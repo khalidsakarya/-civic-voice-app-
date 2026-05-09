@@ -31220,37 +31220,46 @@ function App() {
         })()}
 
         {/* MP CONTACT INFORMATION */}
-        {selectedMember.email && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              📧 Contact Your Representative
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Email Address</p>
-                <a href={`mailto:${selectedMember.email}`} className="text-blue-600 hover:text-blue-800 font-medium break-all">
-                  {selectedMember.email}
-                </a>
-              </div>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Parliament Office</p>
-                <a href={`tel:${selectedMember.phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">
-                  {selectedMember.phone}
-                </a>
-              </div>
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Constituency Office</p>
-                <a href={`tel:${selectedMember.constituencyPhone}`} className="text-purple-600 hover:text-purple-800 font-medium text-lg">
-                  {selectedMember.constituencyPhone}
-                </a>
-              </div>
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Office Address</p>
-                <p className="text-gray-700 text-sm">{selectedMember.officeAddress?.parliament}</p>
+        {(() => {
+          const liveBio = memberBioData[selectedMember.name];
+          const realPhone = liveBio?.phone || null;
+          const email = liveBio?.email || selectedMember.email;
+          const officialUrl = liveBio?.url ||
+            `https://www.ourcommons.ca/Members/en/search?searchText=${encodeURIComponent(selectedMember.name)}`;
+          if (!email && !realPhone) return null;
+          return (
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                📧 Contact Your Representative
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {email && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-gray-600 mb-2 font-medium">Email Address</p>
+                    <a href={`mailto:${email}`} className="text-blue-600 hover:text-blue-800 font-medium break-all">
+                      {email}
+                    </a>
+                  </div>
+                )}
+                {realPhone ? (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-sm text-gray-600 mb-2 font-medium">Parliament Office</p>
+                    <a href={`tel:${realPhone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">
+                      {realPhone}
+                    </a>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <p className="text-sm text-gray-600 mb-2 font-medium">Phone</p>
+                    <a href={officialUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-medium text-sm">
+                      Contact via official website →
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* MP COMMITTEES */}
         {(() => {
