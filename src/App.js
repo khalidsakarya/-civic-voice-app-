@@ -31428,8 +31428,6 @@ function App() {
           const liveExp = memberExpenseData[selectedMember.name];
           const isLoadingExp = !!memberExpenseLoading[selectedMember.name];
           const hasLiveExp = liveExp && liveExp.length > 0;
-          const fallbackExp = selectedMember.expenses;
-          if (!hasLiveExp && !isLoadingExp && !fallbackExp) return null;
           const fmtExp = (r) => { const sym = { CAD: 'CA$', USD: '$', GBP: '£', AUD: 'A$' }; return `${sym[r.currency] || r.currency}${Number(r.amountLocal || 0).toLocaleString()}`; };
           return (
             <div className="bg-white rounded-lg shadow-md mb-6">
@@ -31443,7 +31441,6 @@ function App() {
                       {hasLiveExp && !isLoadingExp && liveBadge(liveExp?.[0]?.last_updated, 'Monthly')}
                       {coverageBadge('limited', 'Ministers and Senior Officials Only', 'Backbench MPs not included')}
                     </h2>
-                    {!hasLiveExp && fallbackExp && <p className="text-sm text-gray-600">{formatCurrency(fallbackExp.total)} total ({fallbackExp.year})</p>}
                     {hasLiveExp && <p className="text-sm text-gray-600">{liveExp.length} records from official disclosure</p>}
                   </div>
                 </div>
@@ -31470,20 +31467,9 @@ function App() {
                         </div>
                       ))}
                     </div>
-                  ) : fallbackExp ? (
-                    <div className="space-y-3">
-                      {Object.entries(fallbackExp.breakdown).map(([category, amount]) => (
-                        <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-gray-700 font-medium">{category}</span>
-                          <span className="text-gray-900 font-bold">{formatCurrency(amount)}</span>
-                        </div>
-                      ))}
-                      <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border-2 border-green-200 mt-4">
-                        <span className="text-gray-800 font-bold">TOTAL EXPENSES</span>
-                        <span className="text-green-700 font-bold text-xl">{formatCurrency(fallbackExp.total)}</span>
-                      </div>
-                    </div>
-                  ) : null}
+                  ) : (
+                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">Official expense data not yet available.</p>
+                  )}
                 </div>
               )}
             </div>
