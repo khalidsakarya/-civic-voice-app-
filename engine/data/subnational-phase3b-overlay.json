@@ -1,0 +1,83 @@
+{
+  "_comment": "Phase 3B curated overlay — leadership & legislatures from official/government sources (batch 1). Omit population here for US states (PEP via Census in enrich). _sources is documentation only (not merged to Firestore).",
+  "US-CA": {
+    "leader_name": "Gavin Newsom",
+    "leader_party": "Democratic Party",
+    "leader_since": "2019-01-07",
+    "officialWebsite": "https://www.gov.ca.gov/",
+    "legislatureWebsite": "https://www.legislature.ca.gov/",
+    "_sources": "Governor Gavin Newsom sworn 2019-01-07 — gov.ca.gov (May 2026)."
+  },
+  "US-TX": {
+    "leader_name": "Greg Abbott",
+    "leader_party": "Republican Party",
+    "leader_since": "2015-01-20",
+    "officialWebsite": "https://gov.texas.gov/",
+    "legislatureWebsite": "https://capitol.texas.gov/",
+    "_sources": "Governor Greg Abbott — gov.texas.gov news/office listings (May 2026)."
+  },
+  "US-NY": {
+    "leader_name": "Kathy Hochul",
+    "leader_party": "Democratic Party",
+    "leader_since": "2021-08-24",
+    "officialWebsite": "https://www.governor.ny.gov/",
+    "legislatureWebsite": "https://www.nysenate.gov/",
+    "_sources": "Governor Kathy Hochul — governor.ny.gov/about (May 2026)."
+  },
+  "US-FL": {
+    "leader_name": "Ron DeSantis",
+    "leader_party": "Republican Party",
+    "leader_since": "2019-01-08",
+    "officialWebsite": "https://www.flgov.gov/",
+    "legislatureWebsite": "https://www.flsenate.gov/",
+    "_sources": "Governor Ron DeSantis — flgov.gov / executive branch listings (May 2026)."
+  },
+  "CA-ON": {
+    "leader_name": "Doug Ford",
+    "leader_party": "Progressive Conservative Party of Ontario",
+    "leader_since": "2018-06-29",
+    "officialWebsite": "https://www.premier.gov.on.ca/",
+    "legislatureWebsite": "https://www.ola.org/",
+    "_sources": "Premier Doug Ford — Ontario Premier office / Legislative Assembly of Ontario (May 2026)."
+  },
+  "CA-QC": {
+    "leader_name": "Christine Fréchette",
+    "leader_party": "Coalition Avenir Québec",
+    "leader_since": "2026-04-15",
+    "officialWebsite": "https://www.premier-ministre.gouv.qc.ca/",
+    "legislatureWebsite": "https://www.assnat.qc.ca/",
+    "_sources": "Premier Christine Fréchette sworn following CAQ leadership — CBC News / gouv.qc.ca premier ministre (April 2026)."
+  },
+  "AU-NSW": {
+    "leader_name": "Chris Minns",
+    "leader_party": "Australian Labor Party",
+    "leader_since": "2023-03-28",
+    "officialWebsite": "https://www.nsw.gov.au/",
+    "legislatureWebsite": "https://www.parliament.nsw.gov.au/",
+    "_sources": "Premier Chris Minns — NSW Government premier pages (May 2026)."
+  },
+  "AU-VIC": {
+    "leader_name": "Jacinta Allan",
+    "leader_party": "Australian Labor Party",
+    "leader_since": "2023-09-27",
+    "officialWebsite": "https://www.premier.vic.gov.au/",
+    "legislatureWebsite": "https://www.parliament.vic.gov.au/",
+    "_sources": "Premier Jacinta Allan — vic.gov.au premier (May 2026)."
+  },
+  "UK-SCT": {
+    "leader_name": "John Swinney",
+    "leader_party": "Scottish National Party",
+    "leader_since": "2024-05-08",
+    "officialWebsite": "https://www.gov.scot/",
+    "legislatureWebsite": "https://www.parliament.scot/",
+    "_sources": "First Minister John Swinney sworn 2024-05-08 — gov.scot / BBC Scotland (May 2026)."
+  },
+  "UK-WLS": {
+    "leader_name": "Eluned Morgan",
+    "leader_party": "Welsh Labour",
+    "leader_since": "2024-08-06",
+    "officialWebsite": "https://www.gov.wales/",
+    "legislatureWebsite": "https://www.senedd.wales/",
+    "_sources": "First Minister Eluned Morgan sworn 2024-08-06 — GOV.WALES / BBC Wales (May 2026)."
+  }
+}

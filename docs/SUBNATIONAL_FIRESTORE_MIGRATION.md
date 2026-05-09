@@ -231,6 +231,213 @@ Script must support a default **dry-run** mode that reports:
 
 ---
 
+### Phase 3B — First enrichment batch (proposal only)
+
+**Status:** **`engine/enrich-subnational-jurisdictions-phase3b.cjs`** is implemented (dry-run default; **`--write`** merge-only). Curated overlay: **`engine/data/subnational-phase3b-overlay.json`** (optional; see **`subnational-phase3b-overlay.sample.json`**). Report: **`docs/SUBNATIONAL_JURISDICTIONS_PHASE3B_ENRICHMENT_REPORT.md`**. Optional **`--no-census`** disables U.S. Census population API. **App UI unchanged.**
+
+**Commands:** `npm run enrich:subnational-jurisdictions:phase3b` from **`civic-voice-app`** or **`civic-voice-engine`** (see each `package.json`).
+
+#### Implementation acceptance criteria (Phase 3B)
+
+When implementation is approved, the enrichment pipeline **must**:
+
+| Requirement | Detail |
+|-------------|--------|
+| **Dry-run by default** | Running the script with no write flag performs **zero Firestore mutations**; prints or writes a report only. |
+| **Merge-only writes** | When writes are enabled later, use **`set(..., { merge: true })`** (or equivalent) per document — **no replace/delete** of documents or unrelated fields. |
+| **No deletes** | Never delete documents or clear wholesale field maps as part of enrichment. |
+| **Preserve existing fields** | Only Phase 3B–approved keys are updated; all other keys on existing docs remain untouched. |
+| **Validate 85 records** | Post-condition (validator): **`subnational_jurisdictions`** still has exactly **85** documents (same expectation as seed validation unless a future change is explicitly approved). |
+| **Per-field reporting** | Report, per document or aggregated: which Phase 3B fields were **filled**, **skipped** (intentional), or **missing** (gap / error). |
+| **Validation report before UI migration** | Generate markdown report under **`docs/`** — **`SUBNATIONAL_JURISDICTIONS_PHASE3B_ENRICHMENT_REPORT.md`** (enrichment dry-run/write summary); **review before any app UI migration** tied to Phase 3B fields. |
+
+**Goal:** Merge a **minimal** set of fields into existing `subnational_jurisdictions/{id}` documents so the engine can later power thin reads (population line + head of government + canonical URLs) ahead of full parity.
+
+**Batch fields (this proposal):**
+
+| Field | Notes |
+|-------|--------|
+| `population_raw` | Numeric estimate (integer recommended); document vintage separately when implementing (`population_as_of` optional extension). |
+| `population_display` | Human-readable string derived from `population_raw` (consistent locale/format rules in engine). |
+| `leader_name` | Current head of executive government for that jurisdiction (Governor / Premier / Chief Minister / First Minister / Mayor for DC per seed `leaderTitle`). |
+| `leader_party` | Full party label as shown on official source (short codes deferred to a later batch). |
+| `leader_since` | ISO `YYYY-MM-DD` preferred when official source gives a date; otherwise curated display string with documented exception flag — decide one convention before implement. |
+| `officialWebsite` | Already in seed (often `null`); Phase 3B proposes **backfilling** chief executive / portal URL where an authoritative single URL exists. |
+| `legislatureWebsite` | **New** field — canonical homepage URL for the **primary statute-making parliament/assembly** for that jurisdiction (state legislature; provincial parliament; UK national legislatures; AU state parliament). Merge-safe alongside existing `legislatureName`. |
+
+**Explicitly out of scope for Phase 3B:** UK regional GDP/councils/facts; `legislature_party_breakdown`; deputy leaders; flags.
+
+---
+
+#### United States (`country === 'US'`, 51 docs incl. DC)
+
+| Question | Proposal |
+|----------|-----------|
+| **1. Best source** | **Population:** U.S. Census Bureau **Population Estimates Program (PEP)** — state-level annual estimates (API or published CSV series). **Leadership:** No single federal JSON roster; use **each state’s official governor site** (or governor-hosted `.gov` bio) as **documented source of truth**, optionally cross-checked against **National Governors Association** public listings (human-readable; not a substitute legal record). **DC:** Executive URL from **mayor.dc.gov** pattern; legislature concept maps to **Council of the District of Columbia**. **Websites:** Primary **executive** portal per state + **legislature** canonical domain (often `state.XX.us` / `capitol.state.XX.us` patterns — verify per state). |
+| **2. Automated vs curated** | **Population:** **Automatable** from Census PEP with pinned vintage + series ID in manifest. **Leader fields + URLs:** **Mostly curated** — maintain `engine/data/subnational-us-leadership.csv` (or YAML) keyed by `US-XX` with `source_url` per row; optional future assist from Wikidata **not** trusted for v1 automation without audit. |
+| **3. Refresh frequency** | Population: **Annual** (PEP release cycle). Leadership / URLs: **Quarterly** minimum; **Ad hoc** after inaugurations / special elections. |
+| **4. Reliable enough for v1?** | **Population:** **Yes**, subject to correct series choice (resident vs estimate basis documented). **Leadership:** **Yes for product v1** if governance is **curated + sourced URLs**, not unsupervised scrape-only. |
+| **5. Engine script name** | **`engine/enrich-subnational-jurisdictions-phase3b.cjs`** (npm script e.g. `enrich:subnational-jurisdictions:phase3b`; dry-run default, `--write` gated like seed script). |
+| **6. Validation checks** | Count **51** US docs touched or intentionally skipped with logged reason; `population_raw` strictly positive; `population_display` non-empty when raw set; `leader_name` non-empty for all non-exception docs (exceptions require explicit allowlist); `leader_since` parseable if claiming ISO rule; `officialWebsite` / `legislatureWebsite` must be `http(s)` URLs when present; no deletes; merge-only diff preview in dry-run. |
+
+---
+
+#### Canada (`country === 'CA'`, 13 docs)
+
+| Question | Proposal |
+|----------|-----------|
+| **1. Best source** | **Population:** **Statistics Canada** official population estimates (provincial/territorial totals — relevant table / StatCan Web Data Service subject to chosen table ID). **Leadership:** **Premier** identity and party from each province’s **Lieutenant Governor / Office of the Premier** official pages or **official parliamentary roster** with executive listing (source varies by province). **Websites:** Provincial **cabinet/premier** portal + **legislature** domain (e.g. `*.assembly.ca`, `*.gov.nl.ca`, etc.). |
+| **2. Automated vs curated** | **Population:** **Automatable** from StatCan with documented table + geography code mapping to `CA-XX`. **Leadership + URLs:** **Hybrid** — stable URLs **curated**; names/parties refreshed via **semi-manual** CSV keyed by `CA-XX` unless/until a province exposes stable JSON (rare nationally). |
+| **3. Refresh frequency** | Population: **Quarterly–annual** depending on StatCan series chosen. Leadership: **Quarterly** + **event-driven** after elections. |
+| **4. Reliable enough for v1?** | **Population:** **Yes** with explicit vintage. **Leadership:** **Yes** under **curated roster + official source URL per row** (same standard as US). |
+| **5. Engine script name** | Same **`engine/enrich-subnational-jurisdictions-phase3b.cjs`** (country-filter flag or internal branching). |
+| **6. Validation checks** | Count **13** CA docs; same numeric/URL rules as US; **NL/QC** alias consistency unchanged (`aliases` untouched by this batch unless approved); French characters allowed in `leader_party` / names with UTF-8 normalization rule documented. |
+
+---
+
+#### Australia (`country === 'AU'`, 8 docs)
+
+| Question | Proposal |
+|----------|-----------|
+| **1. Best source** | **Population:** **Australian Bureau of Statistics (ABS)** — Estimated Resident Population by state/territory (catalogue table / API per ABS product chosen). **Leadership:** **Premier / Chief Minister** from each jurisdiction’s **official parliament or government** site (NSW `nsw.gov.au`, ACT ACT Assembly pages, etc.). **Websites:** State **government** portal + **parliament** site (`parliament.*`, `.gov.au` patterns per jurisdiction). |
+| **2. Automated vs curated** | **Population:** **Automatable** from ABS with catalogue reference per release. **Leadership + URLs:** **Curated CSV** keyed by `AU-XX`; ABS does not publish unified executive roster for all eight in one API. |
+| **3. Refresh frequency** | Population: **Quarterly** (ABS ERP cadence). Leadership: **Quarterly** + event-driven. |
+| **4. Reliable enough for v1?** | **Population:** **Yes** with catalogue vintage. **Leadership:** **Yes** under curated official sourcing (same bar as US/CA). |
+| **5. Engine script name** | **`engine/enrich-subnational-jurisdictions-phase3b.cjs`**. |
+| **6. Validation checks** | Exactly **8** AU docs; `population_raw` within plausible bands vs national totals (sanity sum optional warning); URLs must resolve to `.gov.au` or documented canonical parliament domains where policy requires. |
+
+---
+
+#### United Kingdom (`country === 'UK'`, 13 docs — nations + England regions)
+
+| Question | Proposal |
+|----------|-----------|
+| **1. Best source** | **Population:** **Office for National Statistics (ONS)** mid-year population estimates — map **nations** (`UK-SCT`, `UK-WLS`, `UK-NIR`, `UK-ENG`) from national-level tables; map **`UK-ENG-*`** English regions from **official regional population series** (ITL/NUTS-aligned geography — exact geography codes fixed at implementation time). **Leadership:** **First Minister / PM context** for devolved nations from **UK Parliament / GOV.UK / Scottish Government / Welsh Government / Northern Ireland Executive** official pages; **England (`UK-ENG`)** row — **UK Prime Minister as head of UK Government** *or* leave executive fields **blank / N/A** with documented rule (product must choose — neither is a perfect “England-only governor”). **Regional rows (`UK-ENG-*`):** **Mayors / combined authorities** where they exist — fragmentary; Phase 3B proposes **`leader_*` optional** for regions unless officially sourced (often **blank at v1** acceptable). **officialWebsite / legislatureWebsite:** Scotland/Wales/NI legislatures (`parliament.scot`, `senedd.wales`, `niassembly.gov.uk`); **England nation row:** Parliament **`parliament.uk`**; **English regions:** combined-authority or regional partnership sites **only when official** — otherwise leave websites null and retain seed `legislatureName` text only. |
+| **2. Automated vs curated** | **Population (nations + regions):** **Automatable** from ONS downloads/API subject to geography mapping QA. **Leadership:** **Curated** for nations; **regions mostly curated or omitted** in batch 1 to avoid wrong inference. **URLs:** **Curated** minimal known-good set. |
+| **3. Refresh frequency** | Population: **Annual** (ONS MYE cycle). Leadership (nations): **Monthly–quarterly**. Regions: **Annual** population only unless mayor roster curated. |
+| **4. Reliable enough for v1?** | **Population:** **Yes** for nations + ITL regions once geography codes validated. **Leadership:** **Yes for devolved nations + England row** only under explicit product rule for `UK-ENG`; **regions:** **Partially** — acceptable v1 if `leader_*` allowed empty while population filled. **No GDP/councils in this batch** per scope. |
+| **5. Engine script name** | **`engine/enrich-subnational-jurisdictions-phase3b.cjs`**. |
+| **6. Validation checks** | **13** UK docs expected; population sanity vs published UK total optional warning; **YOR / EE** alias docs unchanged unless enrichment explicitly merges aliases (default **do not touch** `aliases`); URLs whitelist or manual review list; **England regions**: allow `leader_name` null with logged “intentional gap” unless curator supplies mayor from official CA page. |
+
+---
+
+#### Cross-cutting validation (all countries)
+
+- Aligns with **Implementation acceptance criteria** above: dry-run default; **`--write`** merge-only when enabled; **no deletes**; **preserve** non-target fields.
+- Extend **`validate-subnational-jurisdictions.cjs`** or add **`validate-subnational-jurisdictions-phase3b.cjs`** to assert:
+  - **Doc count** still **85** (or document intentional exclusion).
+  - Required Phase 3B fields present per **policy matrix** (e.g. population mandatory for all 85; `leader_name` mandatory US/CA/AU + UK nations; regions exempt unless curated).
+  - `population_display` ↔ `population_raw` consistency (regenerate display from raw in validator to detect drift).
+  - Unique URLs where uniqueness expected (optional soft warning on duplicates).
+  - Emit **`docs/…VALIDATION_REPORT.md`** for stakeholder review **before** Phase 4 UI work on Phase 3B fields.
+
+---
+
+## Engine enrichment requirements for full UI parity
+
+**Purpose:** Define how each proposed Firestore field should be sourced when moving **beyond** the current static seed (identity + capital + generic titles). This section does **not** authorize writes; it is an engineering plan only.
+
+**Scope:** Same collection **`subnational_jurisdictions`** — add merge-safe fields as the engine proves reliable sources.
+
+**Legend — refresh frequency:**
+
+| Tag | Meaning |
+|-----|---------|
+| **Daily / weekly** | Changes often enough that automation pays off (elections, reshuffles). |
+| **Monthly / quarterly** | Leadership bios / portfolios drift; stats revised on official cycles. |
+| **Annual** | Boundary-stable reference or slow-changing aggregates. |
+| **One-off / manual** | No durable official feed; human verification per release. |
+
+**Legend — v1 parity:**
+
+| Tag | Meaning |
+|-----|---------|
+| **v1** | Needed before dropping hardcoded **leader / legislature strip / population** content for US states, CA provinces, AU states/territories (the main provincial hubs). |
+| **v1 UK** | Needed only if UK **rich region cards** (`englandRegions`-style) must come from Firestore instead of staying hardcoded longer. |
+| **Later** | Nice-to-have or safely derivable client-side until product insists on server truth. |
+
+---
+
+### Leadership (`leader_*`)
+
+| Field | Official fetch? | Source (if any) | Otherwise | Refresh | v1 |
+|-------|-----------------|-------------------|-----------|---------|-----|
+| `leader_name` | **Partial** | **US:** No single federal API for all governors/mayors; **CA:** No national machine-readable “all premiers” API; **AU:** Parliament/state sites differ; **UK nations:** GOV.UK / devolved sites publish office-holders but not one unified JSON feed for all rows in our catalog. **UK England regions:** Regional mayors (where they exist) appear on combined-authority / MOUA sites — fragmented. | **Curated:** Snapshot from each jurisdiction’s **official executive branch** page (state.gov.ca-like, governor.ky.gov, etc.) with `source_url` captured per doc or per ingest batch. Optional assist: **Wikidata** SPARQL (`P1308` head of government, etc.) — *not* primary legal source; use only as staging with human spot-check. | **Weekly–monthly** (more often during elections). | **v1** |
+| `leader_party` | **Partial** | Same fragmentation as above; party affiliation is usually stated on the same official bios. | **Curated** alongside `leader_name` from the same official page; Wikidata `P102` as secondary hint only. | **Weekly–monthly** | **v1** |
+| `leader_party_short` | **No** (derived) | — | **Derived in engine** from `leader_party` via a small normalization map per country, or **manual** where abbreviations are ambiguous. | With leader refresh | **v1** |
+| `leader_since` | **Partial** | Official bios often state “sworn in” dates; not always structured. | **Curated** ISO date or display string from official source; Wikidata `P580` / start time as hint. | **Monthly** | **v1** |
+| `leader_bio` | **Often no** single API | Few jurisdictions expose long bios as structured open data. | **Curated:** Short neutral summary based on **official bio text** (fair-use length / original summary — legal/product to confirm). Avoid copyrighted paste. **Alternative:** Store `leader_bio_source_url` only and let app truncate — product decision. | **Quarterly** or on leadership change | **v1** (content strategy TBD) |
+
+---
+
+### Deputy / lieutenant (`deputy_leader_*`)
+
+| Field | Official fetch? | Source (if any) | Otherwise | Refresh | v1 |
+|-------|-----------------|-------------------|-----------|---------|-----|
+| `deputy_leader_title` | **Partial** | Titling is consistent enough (**Lieutenant Governor**, **Deputy Premier**, **Deputy Chief Minister**) but varies (AZ transitioning Lt Gov, etc.). | **Curated** from official org charts; can default from `jurisdictionType` + country rules where stable. | **Monthly** | **v1** |
+| `deputy_leader_name` | **Partial** | Listed on official sites with governors/premiers. | **Curated** same pipeline as `leader_name`. | **Weekly–monthly** | **v1** |
+| `deputy_leader_party` | **Partial** | Same as leader. | **Curated**. | **Weekly–monthly** | **v1** |
+| `deputy_leader_since` | **Partial** | Same as `leader_since`. | **Curated**. | **Monthly** | **Later** (UI tolerates blank more easily than head of government). |
+| `deputy_leader_bio` | **Often no** | Rarely structured APIs. | **Curated** short summary from official source or **omit** until v2. | **Quarterly** | **Later** |
+
+---
+
+### Demographics
+
+| Field | Official fetch? | Source (if any) | Otherwise | Refresh | v1 |
+|-------|-----------------|-------------------|-----------|---------|-----|
+| `population_display` | **Yes** (derived) | **US:** U.S. Census Bureau **Population Estimates Program** (PEP) — API/datasets; **CA:** Statistics Canada tables (CANSIM / StatCan API); **AU:** ABS National, state and territory population; **UK:** ONS mid-year population estimates (nations / English regions NUTS)—datasets more often than a single “gaming-friendly” API. | Format human-readable string in engine (`formatPopulation`). | **Annual** (official estimates cadence) | **v1** |
+| `population_raw` | **Yes** | Same sources as above — store numeric estimate + vintage metadata (`population_as_of` optional future field). | — | **Annual** | **v1** |
+
+---
+
+### Legislature (`legislature_total_seats`, `legislature_party_breakdown`)
+
+| Field | Official fetch? | Source (if any) | Otherwise | Refresh | v1 |
+|-------|-----------------|-------------------|-----------|---------|-----|
+| `legislature_total_seats` | **Partial** | **US:** Chamber sizes are constitutional/rule-based — can be **stable constants** in engine config per state + chamber split if UI merges chambers; **CA/AU/UK:** Parliamentary websites publish seat counts; **UK England regions:** Not one legislature per region — current UI uses **illustrative** “total seats” per region; **not** a single official number from Westminster for “North East England councils aggregate”. | **Hybrid:** Official fixed integers where legislatures are real (state/provincial parliaments); **curated** methodology note for UK regional illustrative rows if those rows remain in Firestore. | **Annual** or on electoral reform | **v1** for US/CA/AU real legislatures; **v1 UK** only if replacing illustrative regional legislature widget |
+| `legislature_party_breakdown[]` | **Partial** | **US:** **Open States** (openstates.org) — REST API / bulk data for state legislatures, party counts vary by coverage and chamber model — validate per state. Some states require SOS JSON/HTML scrape. **CA:** Legislative Assembly / House sites sometimes publish party standings (often HTML). **AU:** State parliament “numbers” pages. **UK Westminster:** data.parliament.uk APIs — applies to **UK-wide** MPs, **not** English region cards as currently designed. **UK regions:** Party aggregates in app are **editorial/illustrative** — no one official feed. | **Primary:** Open States + verification pass for US; **manual/semi-automated** scrape with tests for CA/AU; **curated** JSON for UK illustrative regional rows if product keeps them. | **Weekly during sessions**; **monthly** otherwise | **v1** US/CA/AU; **Later** or **curated-only** for UK regional illustrative |
+
+---
+
+### Optional media
+
+| Field | Official fetch? | Source (if any) | Otherwise | Refresh | v1 |
+|-------|-----------------|-------------------|-----------|---------|-----|
+| `flag_commons_filename` | **Semi** | **Wikimedia Commons** — filenames follow predictable patterns for many flags; **Wikidata** `P41` links to flag image. Not a government API. | **Curated** filename string per doc; engine does **not** hotlink without license review (Commons is generally OK with attribution policy). | **Rare** | **Later** (app already builds URLs from a static map keyed by name). |
+| `flag_image_url` | **Semi** | Derived `https://commons.wikimedia.org/wiki/Special:FilePath/{filename}` or stable CDN copy **if** hosting policy allows. | **Curated URL** if using official state-hosted SVGs (some states publish open SVGs). | **Rare** | **Later** |
+
+---
+
+### UK regional extras (rich cards only)
+
+Only required if Firestore must replace **`englandRegions`**-style content. Official statistics exist for subsets; narrative/council lists do not.
+
+| Field | Official fetch? | Source (if any) | Otherwise | Refresh | v1 |
+|-------|-----------------|-------------------|-----------|---------|-----|
+| `emoji` | **No** | — | **Curated** (presentational; not government data). | **One-off** | **v1 UK** |
+| `area_display` | **Partial** | **ONS** geographic areas / standard area measurements for ITL/NUTS regions (check current geography standard post-Brexit). | Format from dataset; **curated** label if mixing units. | **Annual** | **v1 UK** |
+| `gdp_per_capita_display` | **Partial** | **ONS** regional gross value added (GVA) / GDP-style metrics — tables and APIs via **Nomis** / ONS Open Geography / downloadable datasets; verify metric definition matches UI copy (GVA vs GDP, current vs constant prices). | **Curated** display string + numeric backing optional. | **Annual** (ONS publication cycle) | **v1 UK** |
+| `gdp_total_display` | **Partial** | Same ONS regional accounts family — aggregate regional GVA/GDP. | Same as above. | **Annual** | **v1 UK** |
+| `unemployment_display` | **Partial** | **ONS** regional labour market statistics (APS/Jobs workforce jobs — pick one definition and stick to it). | **Curated** formatting; document rate definition in `source_url`. | **Quarterly** | **v1 UK** |
+| `main_cities` | **Partial** | No single authoritative ordered “main cities” API; ONS/places datasets list settlements but **ranking** is editorial. | **Curated** array of strings; optionally cross-check against official boundary factsheets. | **Annual / manual** | **v1 UK** |
+| `economic_sectors` | **Partial** | ONS industry-by-region tables exist but are coarse; **percentage shares** in current UI are simplified. | **Curated** structured array `{ name, share_display, trend }` — treat as **derived/editorial** unless replaced by chart-from-data later. | **Annual** | **Later** |
+| `key_facts` | **No** | Facts could be **inspired by** official regional profiles but wording is narrative. | **Curated** bullet strings; maintain provenance notes internally. | **Manual** | **Later** |
+| `sub_mayors` | **Partial** | Combined Authority / mayoral election pages (**gov.uk**, CA sites) for named mayors where applicable; incomplete for regions without mayors. | **Curated** array of objects; empty array where none. | **On election cycle** | **v1 UK** (if mayor bands stay in UI) |
+| `councils` | **Partial** | **GOV.UK** Find your local council / local authority lists; boundary datasets — merging “population + leader + party” per council is **multi-step** and often **HTML**. | **Curated** array or **defer** keeping councils hardcoded until a dedicated council ingest exists (still **no new collection** — nested array only). | **Annual / manual** | **Later** |
+
+---
+
+### Implementation notes (engine)
+
+1. **Single merge pipeline:** Treat enrichment as **`dataStatus: engine_enriched`** (or similar) with `last_updated` per field group if needed — exact schema approval before writes.
+2. **Provenance:** Every automated pull should record **`source_name` + `source_url`** (or batch manifest URL) consistent with existing seed discipline.
+3. **No new collection:** Large nested arrays (`legislature_party_breakdown`, `councils`) stay **inside** the jurisdiction document; monitor Firestore doc size (1 MiB limit).
+4. **UK split:** Consider enriching **`UK-ENG-*`** rows first for stats-only migration while **narrative** fields remain curated or stay in-app until ONS-backed copy exists.
+5. **Rate limits / ToS:** Open States, ONS, Census, StatCan, ABS — comply with each provider’s terms; prefer bulk downloads where offered.
+
+---
+
 ## Phase 4 — App migration
 
 **Status:** After Firestore is populated.
