@@ -6171,14 +6171,14 @@ function App() {
   };
 
   const getVoteIcon = (vote) => {
-    if (vote === 'For') return <CheckCircle className="w-5 h-5 text-green-600" />;
-    if (vote === 'Against') return <XCircle className="w-5 h-5 text-red-600" />;
+    if (vote === 'For' || vote === 'Yes' || vote === 'Yea') return <CheckCircle className="w-5 h-5 text-green-600" />;
+    if (vote === 'Against' || vote === 'No' || vote === 'Nay') return <XCircle className="w-5 h-5 text-red-600" />;
     return <MinusCircle className="w-5 h-5 text-gray-600" />;
   };
 
   const getVoteColor = (vote) => {
-    if (vote === 'For') return 'bg-green-50 border-green-200';
-    if (vote === 'Against') return 'bg-red-50 border-red-200';
+    if (vote === 'For' || vote === 'Yes' || vote === 'Yea') return 'bg-green-50 border-green-200';
+    if (vote === 'Against' || vote === 'No' || vote === 'Nay') return 'bg-red-50 border-red-200';
     return 'bg-gray-50 border-gray-200';
   };
 
@@ -31292,7 +31292,13 @@ function App() {
           const isLiveVotes = liveDocs && liveDocs.length > 0;
           const isLoadingVotes = !!memberVotesLoading[selectedMember.name];
           const displayVotes = isLiveVotes
-            ? liveDocs.map(d => ({ bill: d.bill, title: d.title, vote: d.vote, date: d.date, description: d.description }))
+            ? liveDocs.map(d => ({
+                bill: d.bill || d.bill_number || null,
+                title: d.description || d.title || d.subject || d.motion || '',
+                vote: d.ballot || d.vote || d.member_vote || '',
+                date: d.date,
+                result: d.result || d.passed || null,
+              }))
             : (selectedMember.votingHistory || []);
           if (!displayVotes.length && !isLoadingVotes) return null;
           return (
@@ -31317,22 +31323,35 @@ function App() {
 
               {expandedSections.voting && (
                 <div className="px-6 pb-6 space-y-4">
-                  {displayVotes.map((vote, index) => (
-                    <div key={index} className={`border rounded-lg p-4 ${getVoteColor(vote.vote)}`}>
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          {getVoteIcon(vote.vote)}
-                          <span className="font-bold text-gray-800">{vote.vote}</span>
+                  {displayVotes.map((vote, index) => {
+                    const resultStr = typeof vote.result === 'boolean'
+                      ? (vote.result ? 'Passed' : 'Failed')
+                      : (vote.result || '');
+                    const resultPassed = resultStr.toLowerCase().includes('pass') || resultStr.toLowerCase() === 'agreed to';
+                    const resultFailed = resultStr.toLowerCase().includes('fail') || resultStr.toLowerCase().includes('reject') || resultStr.toLowerCase() === 'negatived';
+                    return (
+                      <div key={index} className={`border rounded-lg p-4 ${getVoteColor(vote.vote)}`}>
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            {getVoteIcon(vote.vote)}
+                            <span className="font-bold text-gray-800">{vote.vote || 'Unknown'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {resultStr && (
+                              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${resultPassed ? 'bg-green-100 text-green-700' : resultFailed ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>
+                                {resultStr}
+                              </span>
+                            )}
+                            <div className="flex items-center gap-1 text-sm text-gray-600">
+                              <Calendar className="w-4 h-4" />
+                              <span>{vote.date}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Calendar className="w-4 h-4" />
-                          <span>{vote.date}</span>
-                        </div>
+                        <h3 className="font-semibold text-gray-800 mb-1">{vote.bill ? `${vote.bill}: ` : ''}{vote.title}</h3>
                       </div>
-                      <h3 className="font-semibold text-gray-800 mb-1">{vote.bill ? `${vote.bill}: ` : ''}{vote.title}</h3>
-                      <p className="text-sm text-gray-600">{vote.description}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
