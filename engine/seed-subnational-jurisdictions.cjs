@@ -446,7 +446,13 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error('[seed] Fatal:', err);
-  process.exit(1);
-});
+module.exports = {
+  buildUsCanadaAustraliaUkSeed,
+};
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('[seed] Fatal:', err);
+    process.exit(1);
+  });
+}

@@ -1,0 +1,12 @@
+{
+  "_comment": "Rename to subnational-phase3b-overlay.json and fill. Omit keys you do not set. Do not invent leadership.",
+  "US-CA": {
+    "leader_name": "Gavin Newsom",
+    "leader_party": "Democratic Party",
+    "leader_since": "2019-01-07",
+    "officialWebsite": "https://www.gov.ca.gov/",
+    "legislatureWebsite": "https://www.assembly.ca.gov/",
+    "population_raw": 39538223,
+    "population_display": "39.5M"
+  }
+}

@@ -11,7 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { tryGetFirestore, describeCredentialSource } = require('./firebase-admin-init.cjs');
+const { tryGetFirestore, describeCredentialSource, formatPlaceholderCredentialMessage } = require('./firebase-admin-init.cjs');
 
 const PROJECT_ID = 'civic-voice-5ea94';
 const COLLECTION = 'subnational_jurisdictions';
@@ -59,9 +59,11 @@ function validateDoc(id, data) {
 async function main() {
   const db = tryGetFirestore();
   if (!db) {
+    const pm = formatPlaceholderCredentialMessage();
     console.error(
       '[validate] No Firebase credentials. Run from civic-voice-engine with scheduler .env, or set GOOGLE_APPLICATION_CREDENTIALS / FIREBASE_* vars.',
     );
+    if (pm) console.error(`[validate] ${pm}`);
     process.exit(1);
   }
   console.log('[validate] Auth:', describeCredentialSource());

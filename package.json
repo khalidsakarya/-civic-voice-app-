@@ -24,6 +24,7 @@
     "audit:firestore-inventory": "node engine/audit-firestore-inventory.cjs",
     "seed:subnational-jurisdictions": "node engine/seed-subnational-jurisdictions.cjs",
     "validate:subnational-jurisdictions": "node engine/validate-subnational-jurisdictions.cjs",
+    "enrich:subnational-jurisdictions:phase3b": "node engine/enrich-subnational-jurisdictions-phase3b.cjs",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
