@@ -2,7 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import app, { db } from './firebase';
 import { EXECUTIVE_ACTIONS_COLLECTION } from './constants/firestoreCollections';
 import { fetchSubnationalJurisdictions } from './firestore/fetchSubnationalJurisdictions';
-import { abbreviationFromExplorerFlagCode, mergeProvincialExplorerRow } from './utils/mergeProvincialExplorerFirestore';
+import {
+  AU_EXPLORER_REQUIRED_ABBR,
+  abbreviationFromExplorerFlagCode,
+  mergeAustralianExplorerRow,
+  mergeProvincialExplorerRow,
+} from './utils/mergeProvincialExplorerFirestore';
 import { formatExecutiveOrderDisplayDate } from './utils/executiveOrderDates';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
 import {
@@ -1726,6 +1731,10 @@ function App() {
   const locationGateSubnationalFetchDoneRef = useRef(false);
   const provincialExplorerFirestoreFetchDoneRef = useRef(false);
   const provincialExplorerMapsAppliedRef = useRef(null);
+  /** Australian states/territories explorer: map keyed by abbreviation (`null` = hardcoded only). */
+  const [auExplorerFirestoreByAbbr, setAuExplorerFirestoreByAbbr] = useState(null);
+  const auExplorerFirestoreFetchDoneRef = useRef(false);
+  const auExplorerMapsAppliedRef = useRef(null);
   const [pmVotes, setPmVotes] = useState(() => {
     const saved = localStorage.getItem('cvPMVote');
     return saved ? JSON.parse(saved) : { support: 0, oppose: 0, concerned: 0, userVote: null };
@@ -3165,6 +3174,38 @@ function App() {
         setProvincialExplorerFirestoreByAbbr({ us: usMap, ca: caMap });
       }
       provincialExplorerFirestoreFetchDoneRef.current = true;
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Australian state/territory explorer: Firestore overlay (8 jurisdictions by abbreviation).
+  useEffect(() => {
+    if (auExplorerFirestoreFetchDoneRef.current) return;
+    let cancelled = false;
+    (async () => {
+      const auRows = await fetchSubnationalJurisdictions('AU');
+      if (cancelled) return;
+      if (auRows.length !== 8) {
+        if (!cancelled) setAuExplorerFirestoreByAbbr(null);
+        auExplorerFirestoreFetchDoneRef.current = true;
+        return;
+      }
+      const map = {};
+      auRows.forEach((r) => {
+        map[String(r.abbreviation).toUpperCase()] = r;
+      });
+      for (let i = 0; i < AU_EXPLORER_REQUIRED_ABBR.length; i += 1) {
+        const ab = AU_EXPLORER_REQUIRED_ABBR[i];
+        if (!map[ab]) {
+          if (!cancelled) setAuExplorerFirestoreByAbbr(null);
+          auExplorerFirestoreFetchDoneRef.current = true;
+          return;
+        }
+      }
+      if (!cancelled) setAuExplorerFirestoreByAbbr(map);
+      auExplorerFirestoreFetchDoneRef.current = true;
     })();
     return () => {
       cancelled = true;
@@ -23563,8 +23604,24 @@ function App() {
       },
     ];
 
-    return states.map(s => ({ ...s, flagUrl: flagUrl(s.name) }));
+    const fsMap = auExplorerFirestoreByAbbr;
+    return states
+      .map((s) => {
+        const abbr = String(s.abbr).toUpperCase();
+        const fsRow = fsMap?.[abbr];
+        return mergeAustralianExplorerRow(s, fsRow);
+      })
+      .map((s) => ({ ...s, flagUrl: flagUrl(s.name) }));
   };
+
+  useEffect(() => {
+    if (!auExplorerFirestoreByAbbr) return;
+    if (auExplorerMapsAppliedRef.current === auExplorerFirestoreByAbbr) return;
+    auExplorerMapsAppliedRef.current = auExplorerFirestoreByAbbr;
+    if (view !== 'au-state-detail' || !selectedAuState?.name) return;
+    const fresh = getAustralianStateData().find((x) => x.name === selectedAuState.name);
+    if (fresh) setSelectedAuState(fresh);
+  }, [auExplorerFirestoreByAbbr]);
 
   const renderAustralianStates = () => {
     const states = getAustralianStateData();
@@ -23606,12 +23663,12 @@ function App() {
                 >
                   <img
                     src={item.flagUrl}
-                    alt={`Flag of ${item.name}`}
+                    alt={`Flag of ${item.displayName || item.name}`}
                     className="w-14 h-9 sm:w-24 sm:h-16 object-cover rounded shadow-sm flex-shrink-0 border border-gray-100"
                     onError={(e) => { e.target.style.display = 'none'; }}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-800 text-sm sm:text-base leading-tight truncate">{item.name}</p>
+                    <p className="font-bold text-gray-800 text-sm sm:text-base leading-tight truncate">{item.displayName || item.name}</p>
                     <p className="text-gray-500 text-xs sm:text-sm truncate">{item.leaderTitle}: {item.leader}</p>
                   </div>
                   <span className={`text-xs sm:text-sm font-bold px-2 py-0.5 sm:px-3 sm:py-1 rounded-full flex-shrink-0 ${badgeClass}`}>
@@ -23640,6 +23697,7 @@ function App() {
   const renderAustralianStateDetail = () => {
     if (!selectedAuState) return null;
     const item = selectedAuState;
+    const displayLabel = item.displayName || item.name;
     const leg = item.legislature;
 
     const getInitials = (name) => {
@@ -23745,7 +23803,7 @@ function App() {
             </button>
             {/* Share — shown inline on mobile, hidden on sm+ (reappears in hero column below) */}
             <button
-              onClick={(e) => handleShare(e, { id: 'au-state-' + item.name, title: item.name, text: `🇦🇺 ${item.name} — ${item.leaderTitle}: ${item.leader} (${item.party}) since ${item.since} - civic-voice-app.vercel.app`, url: window.location.href })}
+              onClick={(e) => handleShare(e, { id: 'au-state-' + item.name, title: displayLabel, text: `🇦🇺 ${displayLabel} — ${item.leaderTitle}: ${item.leader} (${item.party}) since ${item.since} - civic-voice-app.vercel.app`, url: window.location.href })}
               className="sm:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
               style={{ background: copiedShareId === 'au-state-' + item.name ? '#00843D' : 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
               aria-label="Share"
@@ -23763,7 +23821,7 @@ function App() {
                 <div className="relative">
                   <div className="absolute -inset-1 sm:-inset-1.5 rounded-xl sm:rounded-2xl opacity-40" style={{ background: 'linear-gradient(135deg, #C8A400 0%, transparent 60%)' }} />
                   <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border-2 border-white/20 w-[104px] h-[67px] sm:w-[148px] sm:h-[96px]" style={{ boxShadow: '0 8px 28px rgba(0,0,0,0.5)' }}>
-                    <img src={item.flagUrl} alt={`Flag of ${item.name}`} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                    <img src={item.flagUrl} alt={`Flag of ${displayLabel}`} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
                   </div>
                 </div>
                 <span className="text-xs font-black tracking-[0.2em]" style={{ color: '#C8A400' }}>{item.abbr}</span>
@@ -23772,7 +23830,7 @@ function App() {
               {/* Title block */}
               <div className="flex-1 text-center sm:text-left">
                 <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-1 sm:mb-3" style={{ color: '#C8A400' }}>Australian State &amp; Territory</p>
-                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2 sm:mb-4">{item.name}</h1>
+                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2 sm:mb-4">{displayLabel}</h1>
                 <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center sm:justify-start">
                   <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
                     🏛 <span className="ml-0.5">Capital: <strong className="text-white">{item.capital}</strong></span>
@@ -23789,7 +23847,7 @@ function App() {
               {/* Share button — desktop only (mobile share is in nav bar above) */}
               <div className="hidden sm:flex flex-shrink-0 self-end">
                 <button
-                  onClick={(e) => handleShare(e, { id: 'au-state-' + item.name, title: item.name, text: `🇦🇺 ${item.name} — ${item.leaderTitle}: ${item.leader} (${item.party}) since ${item.since} - civic-voice-app.vercel.app`, url: window.location.href })}
+                  onClick={(e) => handleShare(e, { id: 'au-state-' + item.name, title: displayLabel, text: `🇦🇺 ${displayLabel} — ${item.leaderTitle}: ${item.leader} (${item.party}) since ${item.since} - civic-voice-app.vercel.app`, url: window.location.href })}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
                   style={{ background: copiedShareId === 'au-state-' + item.name ? '#00843D' : 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
                   aria-label="Share"
