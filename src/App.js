@@ -2627,6 +2627,7 @@ function App() {
   const [memberDisclosureLoading, setMemberDisclosureLoading] = useState({});
   const [memberLobbyingData, setMemberLobbyingData] = useState({});
   const [memberLobbyingLoading, setMemberLobbyingLoading] = useState({});
+  const [lobbyShowAll, setLobbyShowAll] = useState(false);
   const [memberVotesData, setMemberVotesData] = useState({});
   const [memberVotesLoading, setMemberVotesLoading] = useState({});
   const [memberAttendanceData, setMemberAttendanceData] = useState({});
@@ -3613,10 +3614,11 @@ function App() {
     fetchMemberVotes(selectedMember);
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch voting records when Canadian MP detail opens
+  // Fetch voting records when Canadian MP detail opens; reset lobbying show-more
   useEffect(() => {
     if (view !== 'member-detail' || !selectedMember?.name) return;
     fetchMemberVotes(selectedMember);
+    setLobbyShowAll(false);
   }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch voting records when UK MP detail opens
@@ -31791,12 +31793,16 @@ function App() {
           const liveLobbyDocs = memberLobbyingData[selectedMember.name];
           const isLiveLobby = liveLobbyDocs && liveLobbyDocs.length > 0;
           const isLoadingLobby = !!memberLobbyingLoading[selectedMember.name];
+          const LOBBY_PAGE = 10;
+          const visibleDocs = isLiveLobby ? (lobbyShowAll ? liveLobbyDocs : liveLobbyDocs.slice(0, LOBBY_PAGE)) : [];
+          const hasMore = isLiveLobby && liveLobbyDocs.length > LOBBY_PAGE;
+          const fmtDate = (v) => { if (!v) return ''; if (v?.toDate) return v.toDate().toLocaleDateString('en-CA'); return String(v); };
           return (
             <div className="bg-white rounded-lg shadow-md mb-6">
               <div onClick={() => toggleSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
                 <div className="flex items-center gap-3">
                   <Building2 className="w-6 h-6 text-red-600" />
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
                     {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                     {isLiveLobby && !isLoadingLobby && liveBadge(null, 'Monthly')}
@@ -31808,24 +31814,49 @@ function App() {
               {expandedSections.lobbying && (
                 <div className="px-6 pb-6">
                   {isLiveLobby ? (
-                    <div className="space-y-4">
-                      {liveLobbyDocs.map((org, idx) => (
-                        <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            <h3 className="font-bold text-gray-800 text-sm">{org.registrant}</h3>
-                            {org.date && <span className="text-xs text-gray-400 flex-shrink-0">{org.date}</span>}
+                    <>
+                      <div className="space-y-4">
+                        {visibleDocs.map((org, idx) => (
+                          <div key={idx} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <h3 className="font-bold text-gray-800 text-sm leading-snug">{org.registrant || '—'}</h3>
+                              {org.meeting_date && (
+                                <span className="text-xs text-gray-400 flex-shrink-0 bg-white border border-gray-200 rounded px-1.5 py-0.5">{fmtDate(org.meeting_date)}</span>
+                              )}
+                            </div>
+                            {org.client && (
+                              <p className="text-xs font-semibold text-blue-700 mb-1">🏢 {org.client}</p>
+                            )}
+                            {org.dpoh_institution && (
+                              <p className="text-xs text-purple-700 font-medium mb-1">🏛 {org.dpoh_institution}</p>
+                            )}
+                            {org.lobbyist_name && (
+                              <p className="text-xs text-gray-500 mb-1">Lobbyist: {org.lobbyist_name}</p>
+                            )}
+                            {Array.isArray(org.issues) && org.issues.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mb-2">
+                                {org.issues.map((iss, ii) => (
+                                  <span key={ii} className="text-xs bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full">{iss}</span>
+                                ))}
+                              </div>
+                            )}
+                            {org.description && (
+                              <p className="text-xs text-gray-600 leading-relaxed">{org.description}</p>
+                            )}
                           </div>
-                          {org.title && <p className="text-xs font-medium text-gray-700 mb-0.5">{org.title}</p>}
-                          {org.client && <p className="text-xs text-blue-700 font-medium">{org.client}</p>}
-                          {org.filing_period && <p className="text-xs text-gray-400 mt-0.5">Period: {org.filing_period}</p>}
-                          {org.issues?.length > 0 && <div className="flex flex-wrap gap-1 mt-1">{org.issues.map((iss, ii) => <span key={ii} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{iss}</span>)}</div>}
-                          {org.description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.description}</p>}
-                          {org.source_url && <a href={org.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                      {hasMore && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setLobbyShowAll(v => !v); }}
+                          className="mt-4 w-full text-sm text-blue-600 hover:text-blue-800 font-medium py-2 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                        >
+                          {lobbyShowAll ? `Show less` : `Show all ${liveLobbyDocs.length} meetings`}
+                        </button>
+                      )}
+                    </>
                   ) : (
-                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">No registered lobbying meetings on record.</p>
                   )}
                 </div>
               )}
