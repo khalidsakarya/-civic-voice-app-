@@ -15,6 +15,11 @@
  * Other countries: population and leadership must come from overlay; missing values are reported as
  * `needs_manual_review` (never invented).
  *
+ * `leader_party_short`: optional badge-style label; **only populated when confident** — US from
+ * `leader_party` (D/R/I); CA/UK via curated per-doc maps; AU via conservative regex on
+ * `leader_party`. Overlay key `leader_party_short` overrides when present. Consensus territories
+ * (e.g. CA-NT, CA-NU) omit party and short.
+ *
  * Auth: same as seed/validate (`firebase-admin-init.cjs`, scheduler .env).
  */
 
@@ -40,10 +45,94 @@ const PHASE3B_FIELDS = [
   'population_display',
   'leader_name',
   'leader_party',
+  'leader_party_short',
   'leader_since',
   'officialWebsite',
   'legislatureWebsite',
 ];
+
+/** Curated short labels keyed by doc id — CA parties vary by province; keep in sync with overlay `leader_party`. */
+const CA_LEADER_PARTY_SHORT_BY_DOC = {
+  'CA-AB': 'UCP',
+  'CA-BC': 'NDP',
+  'CA-MB': 'NDP',
+  'CA-NB': 'Lib',
+  'CA-NL': 'Lib',
+  'CA-NS': 'PC',
+  'CA-PE': 'PC',
+  'CA-SK': 'Sask. Party',
+  'CA-YT': 'Lib',
+  'CA-ON': 'PC',
+  'CA-QC': 'CAQ',
+};
+
+/** Curated short labels for UK nation rows in overlay (regions not listed). */
+const UK_LEADER_PARTY_SHORT_BY_DOC = {
+  'UK-NIR': 'SF',
+  'UK-ENG': 'Labour',
+  'UK-SCT': 'SNP',
+  'UK-WLS': 'Labour',
+};
+
+function effectiveLeaderParty(patch, data) {
+  const fromPatch = normalizeScalar(patch.leader_party);
+  if (fromPatch !== undefined && fromPatch !== null && String(fromPatch).trim() !== '') {
+    return fromPatch;
+  }
+  return normalizeScalar(data.leader_party);
+}
+
+function deriveUsLeaderPartyShort(partyStr) {
+  if (partyStr === undefined || partyStr === null) return null;
+  const p = String(partyStr).toLowerCase();
+  if (p.includes('democratic')) return 'D';
+  if (p.includes('republican')) return 'R';
+  if (p.includes('independent')) return 'I';
+  return null;
+}
+
+/** Conservative AU mappings only where party names are unambiguous in overlay. */
+function deriveAuLeaderPartyShort(partyStr) {
+  if (partyStr === undefined || partyStr === null) return null;
+  const t = String(partyStr).trim();
+  if (/australian labor party/i.test(t)) return 'ALP';
+  if (/liberal national party/i.test(t)) return 'LNP';
+  if (/country liberal party/i.test(t)) return 'CLP';
+  if (/national party of australia/i.test(t)) return 'National';
+  if (/^greens$/i.test(t) || /australian greens/i.test(t)) return 'Greens';
+  if (/^liberal party$/i.test(t)) return 'Liberal';
+  if (/liberal party of australia/i.test(t)) return 'Liberal';
+  return null;
+}
+
+/**
+ * @returns {({ value: string, provenance: string } | null)}
+ */
+function deriveLeaderPartyShort(docId, country, patch, data) {
+  if (country === 'US') {
+    const s = deriveUsLeaderPartyShort(effectiveLeaderParty(patch, data));
+    if (s) return { value: s, provenance: 'derived_us_leader_party' };
+    return null;
+  }
+  if (country === 'CA') {
+    if (Object.prototype.hasOwnProperty.call(CA_LEADER_PARTY_SHORT_BY_DOC, docId)) {
+      return { value: CA_LEADER_PARTY_SHORT_BY_DOC[docId], provenance: 'curated_ca_doc_map' };
+    }
+    return null;
+  }
+  if (country === 'AU') {
+    const s = deriveAuLeaderPartyShort(effectiveLeaderParty(patch, data));
+    if (s) return { value: s, provenance: 'derived_au_leader_party' };
+    return null;
+  }
+  if (country === 'UK') {
+    if (Object.prototype.hasOwnProperty.call(UK_LEADER_PARTY_SHORT_BY_DOC, docId)) {
+      return { value: UK_LEADER_PARTY_SHORT_BY_DOC[docId], provenance: 'curated_uk_doc_map' };
+    }
+    return null;
+  }
+  return null;
+}
 
 /** U.S. Census FIPS (2-digit) → postal abbreviation. */
 const FIPS_TO_ABBR = {
@@ -287,11 +376,27 @@ function buildProposedPatch(docId, data, overlayRow, censusRow, opts) {
     }
   }
 
+  if (!Object.prototype.hasOwnProperty.call(patch, 'leader_party_short')) {
+    const derived = deriveLeaderPartyShort(docId, country, patch, data);
+    if (derived) {
+      patch.leader_party_short = derived.value;
+      prov.leader_party_short = derived.provenance;
+    }
+  }
+
   return { patch, prov };
 }
 
 function classifyField(field, existingVal, proposedVal, country, ctx) {
-  const { censusHasRow, overlayHasField, censusFailed, censusDisabled } = ctx;
+  const {
+    censusHasRow,
+    overlayHasField,
+    censusFailed,
+    censusDisabled,
+    docId,
+    patch,
+    leaderPartyExisting,
+  } = ctx;
 
   const hasProposed =
     proposedVal !== undefined &&
@@ -301,6 +406,47 @@ function classifyField(field, existingVal, proposedVal, country, ctx) {
   if (hasProposed) {
     if (valuesEqual(existingVal, proposedVal)) return { status: 'unchanged', detail: 'already matches' };
     return { status: 'would_write', detail: 'new or different value' };
+  }
+
+  if (field === 'leader_party_short') {
+    if (overlayHasField) {
+      return { status: 'skipped', detail: 'overlay key present but no usable value' };
+    }
+    const effParty = effectiveLeaderParty(patch || {}, { leader_party: leaderPartyExisting });
+    if (!effParty) {
+      if (docId === 'CA-NT' || docId === 'CA-NU') {
+        return { status: 'skipped', detail: 'consensus government; no partisan leader_party' };
+      }
+      if (country === 'UK' && !Object.prototype.hasOwnProperty.call(UK_LEADER_PARTY_SHORT_BY_DOC, docId)) {
+        return { status: 'skipped', detail: 'no overlay leader_party — short omitted (optional for this doc)' };
+      }
+      return { status: 'needs_manual_review', detail: 'leader_party missing; cannot derive short' };
+    }
+    if (country === 'US') {
+      return {
+        status: 'needs_manual_review',
+        detail: 'US leader_party not mapped to D/R/I — adjust overlay or add leader_party_short',
+      };
+    }
+    if (country === 'CA') {
+      return {
+        status: 'needs_manual_review',
+        detail: 'CA doc not in curated short map; add leader_party_short to overlay when confident',
+      };
+    }
+    if (country === 'AU') {
+      return {
+        status: 'needs_manual_review',
+        detail: 'AU leader_party did not match safe short-label patterns',
+      };
+    }
+    if (country === 'UK') {
+      return {
+        status: 'needs_manual_review',
+        detail: 'UK doc not in curated short map; add leader_party_short to overlay when confident',
+      };
+    }
+    return { status: 'needs_manual_review', detail: 'no leader_party_short rule for country' };
   }
 
   if (field === 'population_raw' || field === 'population_display') {
@@ -423,6 +569,7 @@ async function main() {
   const perDoc = [];
   const agg = {
     would_write_fields: 0,
+    leader_party_short_would_write: 0,
     unchanged_fields: 0,
     needs_manual_review_fields: 0,
     skipped_fields: 0,
@@ -460,10 +607,14 @@ async function main() {
         overlayHasField,
         censusFailed: !!censusError,
         censusDisabled: !useCensus,
+        docId: id,
+        patch,
+        leaderPartyExisting: data.leader_party,
       });
 
       if (cl.status === 'would_write') {
         agg.would_write_fields++;
+        if (field === 'leader_party_short') agg.leader_party_short_would_write++;
         docWouldWrite = true;
       } else if (cl.status === 'unchanged') agg.unchanged_fields++;
       else if (cl.status === 'needs_manual_review') agg.needs_manual_review_fields++;
@@ -537,6 +688,7 @@ async function main() {
   console.log('\n=== Summary ===');
   console.log(`Documents processed: ${docs.length}${firestoreSkipped ? ' (local seed baseline)' : ''}`);
   console.log(`Field outcomes — would_write: ${agg.would_write_fields}, unchanged: ${agg.unchanged_fields}, needs_manual_review: ${agg.needs_manual_review_fields}, skipped: ${agg.skipped_fields}`);
+  console.log(`leader_party_short — fields that would_write: ${agg.leader_party_short_would_write}`);
   console.log(`Documents with at least one would_write field: ${agg.docs_with_writes}`);
   if (firestoreSkipped) {
     console.log(
@@ -589,6 +741,7 @@ function buildMarkdownReport(ctx) {
     '| Metric | Count |',
     '|--------|-------|',
     `| Fields that would update / updated | ${agg.would_write_fields} |`,
+    `| … of which \`leader_party_short\` | ${agg.leader_party_short_would_write ?? 0} |`,
     `| Fields unchanged (already equal) | ${agg.unchanged_fields} |`,
     `| Fields needs_manual_review | ${agg.needs_manual_review_fields} |`,
     `| Fields skipped (other) | ${agg.skipped_fields} |`,
@@ -634,6 +787,7 @@ function buildMarkdownReport(ctx) {
     '- Merge-only `set(..., { merge: true })`; no document deletes.',
     '- Only Phase 3B fields are considered; other keys preserved.',
     '- Leadership and non-US population are **not** invented; use `engine/data/subnational-phase3b-overlay.json` for curated official values.',
+    '- `leader_party_short` is optional: filled from overlay, else US D/R/I derivation, CA/UK curated doc maps, AU conservative patterns — omit when not confident.',
     '- Review **needs_manual_review** before relying on data in the app.',
     '',
   );

@@ -260,10 +260,13 @@ When implementation is approved, the enrichment pipeline **must**:
 | `population_raw` | Numeric estimate (integer recommended); document vintage separately when implementing (`population_as_of` optional extension). |
 | `population_display` | Human-readable string derived from `population_raw` (consistent locale/format rules in engine). |
 | `leader_name` | Current head of executive government for that jurisdiction (Governor / Premier / Chief Minister / First Minister / Mayor for DC per seed `leaderTitle`). |
-| `leader_party` | Full party label as shown on official source (short codes deferred to a later batch). |
+| `leader_party` | Full party label as shown on official source. |
+| `leader_party_short` | Optional badge-length label (e.g. US **D**/**R**/**I**; CA/UK **curated per doc id** in engine maps aligned with overlay; AU **conservative** pattern match on `leader_party`). **Only merged when confident** — omit for consensus territories (e.g. CA-NT, CA-NU) or UK regions without overlay leadership. Overlay key overrides derivation. Reduces future reliance on hardcoded UI `partyShort` maps; **does not** remove those maps in Phase 3B. |
 | `leader_since` | ISO `YYYY-MM-DD` preferred when official source gives a date; otherwise curated display string with documented exception flag — decide one convention before implement. |
 | `officialWebsite` | Already in seed (often `null`); Phase 3B proposes **backfilling** chief executive / portal URL where an authoritative single URL exists. |
 | `legislatureWebsite` | **New** field — canonical homepage URL for the **primary statute-making parliament/assembly** for that jurisdiction (state legislature; provincial parliament; UK national legislatures; AU state parliament). Merge-safe alongside existing `legislatureName`. |
+
+**`leader_party_short` (Phase 3B proposal):** US — deterministic from overlay `leader_party` (`Democratic` → **D**, `Republican` → **R**, `Independent` → **I**). Canada — **per-`docId` curated map** in `enrich-subnational-jurisdictions-phase3b.cjs` (province naming varies; map must stay aligned with overlay when premierships change). Australia — **regex-only** where unambiguous (e.g. Australian Labor Party → **ALP**, Liberal National Party → **LNP**, Country Liberal Party → **CLP**, bare **Liberal Party** → **Liberal**). UK — **curated map** for nation rows present in overlay (`UK-NIR`, `UK-ENG`, `UK-SCT`, `UK-WLS`). Explicit **`leader_party_short` in overlay JSON** overrides engine derivation when set.
 
 **Explicitly out of scope for Phase 3B:** UK regional GDP/councils/facts; `legislature_party_breakdown`; deputy leaders; flags.
 
