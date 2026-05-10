@@ -13027,7 +13027,7 @@ function App() {
     const subtitle = isUSA
       ? 'Select a state to view Governor and Lieutenant Governor'
       : 'Select a province or territory to view Premier details';
-    const leaderTitle = isUSA ? 'Governor' : 'Premier';
+    const defaultLeaderTitle = isUSA ? 'Governor' : 'Premier';
 
     const partyColors = {
       'PC': 'bg-blue-100 text-blue-800', 'NDP': 'bg-orange-100 text-orange-800',
@@ -13058,6 +13058,10 @@ function App() {
             {items.map((item, index) => {
               const partyBadgeClass = partyColors[item.partyShort] || 'bg-gray-100 text-gray-700';
               const leaderName = isUSA ? item.governor : item.premier;
+              const rowLeaderTitle =
+                typeof item.leaderTitle === 'string' && item.leaderTitle.trim()
+                  ? item.leaderTitle.trim()
+                  : defaultLeaderTitle;
               return (
                 <button
                   key={item.name}
@@ -13075,7 +13079,7 @@ function App() {
                   {/* Name + leader */}
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-gray-800 text-sm leading-tight truncate">{item.displayName || item.name}</p>
-                    <p className="text-gray-500 text-xs truncate">{leaderTitle}: {leaderName}</p>
+                    <p className="text-gray-500 text-xs truncate">{rowLeaderTitle}: {leaderName}</p>
                   </div>
                   {/* Party badge */}
                   <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${partyBadgeClass}`}>
@@ -13213,7 +13217,11 @@ function App() {
     const item = selectedProvince;
     const displayLabel = item.displayName || item.name;
     const isUSA = selectedCountry?.type === 'usa';
-    const leaderTitle = isUSA ? 'Governor' : 'Premier';
+    const defaultLeaderTitle = isUSA ? 'Governor' : 'Premier';
+    const leaderTitle =
+      typeof item.leaderTitle === 'string' && item.leaderTitle.trim()
+        ? item.leaderTitle.trim()
+        : defaultLeaderTitle;
     const leaderName  = isUSA ? item.governor : item.premier;
     const leaderParty = isUSA ? item.govParty  : item.party;
     const deputyTitle = item.ltGovTitle || 'Lieutenant Governor';
@@ -13327,11 +13335,15 @@ function App() {
           {/* Legislature Seat Distribution */}
           {(() => {
             const leg = getLegislatureData(item.name, isUSA);
+            const legislatureLabel =
+              typeof item.legislatureName === 'string' && item.legislatureName.trim()
+                ? item.legislatureName.trim()
+                : leg.name;
             return (
               <div className="mt-6 bg-white rounded-2xl shadow-elegant overflow-hidden">
                 <div className="px-5 pt-5 pb-2">
                   <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Legislature Composition</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">{leg.name} &nbsp;·&nbsp; {leg.totalSeats} total seats</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{legislatureLabel} &nbsp;·&nbsp; {leg.totalSeats} total seats</p>
                 </div>
                 {/* Mobile: compact party stat squares */}
                 <div className="sm:hidden px-4 pt-2 pb-4 grid grid-cols-2 gap-1.5">
@@ -20516,6 +20528,10 @@ function App() {
       'south-west':      { name: 'Regional Councils', totalSeats: 1600, parties: [{ name: 'Lib Dem', seats: 420, color: '#FAA61A' }, { name: 'Conservative', seats: 580, color: ukNavy }, { name: 'Labour', seats: 380, color: ukRed }, { name: 'Green', seats: 115, color: '#00843D' }, { name: 'Others', seats: 105, color: '#6B7280' }] },
     };
     const leg = legislatureByRegion[r.id] || { name: 'Regional Councils', totalSeats: 0, parties: [] };
+    const legislatureLabel =
+      typeof r.legislatureName === 'string' && r.legislatureName.trim()
+        ? r.legislatureName.trim()
+        : leg.name;
 
     const getInitials = (name) => {
       if (!name || name === 'No Regional Mayor') return '?';
@@ -20696,7 +20712,7 @@ function App() {
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0" style={{ background: 'rgba(1,33,105,0.1)' }}>🏛</div>
               <div>
-                <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">{leg.name}</p>
+                <p className="text-xs text-gray-400 font-medium leading-none mb-0.5">{legislatureLabel}</p>
                 <p className="text-sm font-bold text-gray-900 leading-tight">{leg.totalSeats} seats</p>
               </div>
             </div>
@@ -20758,7 +20774,7 @@ function App() {
                       </RechartsPie>
                     </ResponsiveContainer>
                   </div>
-                  <p className="text-xs font-semibold text-gray-600 mt-2 text-center">{leg.name}</p>
+                  <p className="text-xs font-semibold text-gray-600 mt-2 text-center">{legislatureLabel}</p>
                   <p className="text-xs text-gray-400 text-center">{leg.totalSeats} total seats</p>
                 </div>
                 {/* Desktop: progress bars */}

@@ -64,6 +64,18 @@ export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
   if (fsRow.officialWebsite) out.officialWebsite = fsRow.officialWebsite;
   if (fsRow.legislatureWebsite) out.legislatureWebsite = String(fsRow.legislatureWebsite);
 
+  const fsLt =
+    fsRow.leaderTitle != null && String(fsRow.leaderTitle).trim()
+      ? String(fsRow.leaderTitle).trim()
+      : '';
+  if (fsLt) out.leaderTitle = fsLt;
+
+  const fsLegName =
+    fsRow.legislatureName != null && String(fsRow.legislatureName).trim()
+      ? String(fsRow.legislatureName).trim()
+      : '';
+  if (fsLegName) out.legislatureName = fsLegName;
+
   return out;
 }
 
@@ -133,6 +145,20 @@ export function mergeAustralianExplorerRow(hardcoded, fsRow) {
 
   if (fsRow.officialWebsite) out.officialWebsite = fsRow.officialWebsite;
   if (fsRow.legislatureWebsite) out.legislatureWebsite = String(fsRow.legislatureWebsite);
+
+  const fsLt =
+    fsRow.leaderTitle != null && String(fsRow.leaderTitle).trim()
+      ? String(fsRow.leaderTitle).trim()
+      : '';
+  if (fsLt) out.leaderTitle = fsLt;
+
+  const fsLegName =
+    fsRow.legislatureName != null && String(fsRow.legislatureName).trim()
+      ? String(fsRow.legislatureName).trim()
+      : '';
+  if (fsLegName && out.legislature && typeof out.legislature === 'object') {
+    out.legislature = { ...out.legislature, name: fsLegName };
+  }
 
   return out;
 }
@@ -260,6 +286,18 @@ export function mergeUkEnglandRegionRow(hardcoded, fsRow) {
 
   if (fsRow.officialWebsite) out.officialWebsite = fsRow.officialWebsite;
   if (fsRow.legislatureWebsite) out.legislatureWebsite = String(fsRow.legislatureWebsite);
+
+  const fsLt =
+    fsRow.leaderTitle != null && String(fsRow.leaderTitle).trim()
+      ? String(fsRow.leaderTitle).trim()
+      : '';
+  if (fsLt) out.leaderTitle = fsLt;
+
+  const fsLegName =
+    fsRow.legislatureName != null && String(fsRow.legislatureName).trim()
+      ? String(fsRow.legislatureName).trim()
+      : '';
+  if (fsLegName) out.legislatureName = fsLegName;
 
   return out;
 }
