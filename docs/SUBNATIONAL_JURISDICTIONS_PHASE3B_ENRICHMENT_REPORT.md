@@ -1,7 +1,7 @@
 # subnational_jurisdictions — Phase 3B enrichment report
 
-Generated: 2026-05-09T23:58:50.708Z
-Mode: **DRY-RUN**
+Generated: 2026-05-10T00:37:17.855Z
+Mode: **WRITE (merge-only)**
 **Firestore:** live documents read for comparison.
 US Census fetch: enabled
 Census jurisdictions mapped: 51
