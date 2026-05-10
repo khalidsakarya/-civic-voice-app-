@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import app, { db } from './firebase';
 import { EXECUTIVE_ACTIONS_COLLECTION } from './constants/firestoreCollections';
 import { fetchSubnationalJurisdictions } from './firestore/fetchSubnationalJurisdictions';
+import { abbreviationFromExplorerFlagCode, mergeProvincialExplorerRow } from './utils/mergeProvincialExplorerFirestore';
 import { formatExecutiveOrderDisplayDate } from './utils/executiveOrderDates';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
 import {
@@ -1718,9 +1719,13 @@ function App() {
   /** Firestore-backed `{ value, label }[]` for location gate only; null = use legacy fallback strings. */
   const [locationGateUsPairs, setLocationGateUsPairs] = useState(null);
   const [locationGateCaPairs, setLocationGateCaPairs] = useState(null);
+  /** Provincial/state explorer: Firestore maps keyed by postal abbreviation (`null` = use hardcoded only). */
+  const [provincialExplorerFirestoreByAbbr, setProvincialExplorerFirestoreByAbbr] = useState(null);
   const pendingVoteRef = useRef(null);
   /** Avoid repeating Firestore reads when the location gate is opened multiple times per session. */
   const locationGateSubnationalFetchDoneRef = useRef(false);
+  const provincialExplorerFirestoreFetchDoneRef = useRef(false);
+  const provincialExplorerMapsAppliedRef = useRef(null);
   const [pmVotes, setPmVotes] = useState(() => {
     const saved = localStorage.getItem('cvPMVote');
     return saved ? JSON.parse(saved) : { support: 0, oppose: 0, concerned: 0, userVote: null };
@@ -3131,6 +3136,40 @@ function App() {
       cancelled = true;
     };
   }, [showLocationGate]);
+
+  // Provincial / state explorer: Firestore identity + enriched fields overlaid on hardcoded rows.
+  useEffect(() => {
+    if (provincialExplorerFirestoreFetchDoneRef.current) return;
+    let cancelled = false;
+    (async () => {
+      const [usRows, caRows] = await Promise.all([
+        fetchSubnationalJurisdictions('US'),
+        fetchSubnationalJurisdictions('CA'),
+      ]);
+      if (cancelled) return;
+      const usStatesOnly = usRows.filter((r) => String(r.abbreviation).toUpperCase() !== 'DC');
+      if (usStatesOnly.length !== 50 || caRows.length !== 13) {
+        if (!cancelled) setProvincialExplorerFirestoreByAbbr(null);
+        provincialExplorerFirestoreFetchDoneRef.current = true;
+        return;
+      }
+      const usMap = {};
+      usStatesOnly.forEach((r) => {
+        usMap[String(r.abbreviation).toUpperCase()] = r;
+      });
+      const caMap = {};
+      caRows.forEach((r) => {
+        caMap[String(r.abbreviation).toUpperCase()] = r;
+      });
+      if (!cancelled) {
+        setProvincialExplorerFirestoreByAbbr({ us: usMap, ca: caMap });
+      }
+      provincialExplorerFirestoreFetchDoneRef.current = true;
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Global keyboard shortcut: Cmd/Ctrl+K to open search
   useEffect(() => {
@@ -12876,10 +12915,32 @@ function App() {
       },
     ];
 
-    const cp = canadaProvinces.map(p => ({ ...p, flagUrl: flagUrl(p.name) }));
-    const us = usStates.map(s => ({ ...s, flagUrl: flagUrl(s.name) }));
+    const fsMaps = provincialExplorerFirestoreByAbbr;
+    const overlayRow = (row, countryKey) => {
+      const abbr = abbreviationFromExplorerFlagCode(row.flagCode);
+      const fsRow = abbr && fsMaps?.[countryKey]?.[abbr];
+      return mergeProvincialExplorerRow(row, fsRow, countryKey === 'us');
+    };
+
+    const cp = canadaProvinces
+      .map((p) => overlayRow(p, 'ca'))
+      .map((p) => ({ ...p, flagUrl: flagUrl(p.name) }));
+    const us = usStates
+      .map((s) => overlayRow(s, 'us'))
+      .map((s) => ({ ...s, flagUrl: flagUrl(s.name) }));
     return { canadaProvinces: cp, usStates: us };
   };
+
+  useEffect(() => {
+    if (!provincialExplorerFirestoreByAbbr) return;
+    if (provincialExplorerMapsAppliedRef.current === provincialExplorerFirestoreByAbbr) return;
+    provincialExplorerMapsAppliedRef.current = provincialExplorerFirestoreByAbbr;
+    if (view !== 'province-detail' || !selectedProvince?.name) return;
+    const isUSA = selectedCountry?.type === 'usa';
+    const { canadaProvinces, usStates } = getProvincialData();
+    const fresh = (isUSA ? usStates : canadaProvinces).find((x) => x.name === selectedProvince.name);
+    if (fresh) setSelectedProvince(fresh);
+  }, [provincialExplorerFirestoreByAbbr]);
 
   const renderProvincial = () => {
     const isUSA = selectedCountry?.type === 'usa';
@@ -12937,7 +12998,7 @@ function App() {
                   />
                   {/* Name + leader */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-800 text-sm leading-tight truncate">{item.name}</p>
+                    <p className="font-bold text-gray-800 text-sm leading-tight truncate">{item.displayName || item.name}</p>
                     <p className="text-gray-500 text-xs truncate">{leaderTitle}: {leaderName}</p>
                   </div>
                   {/* Party badge */}
@@ -13074,6 +13135,7 @@ function App() {
   const renderProvinceDetail = () => {
     if (!selectedProvince) return null;
     const item = selectedProvince;
+    const displayLabel = item.displayName || item.name;
     const isUSA = selectedCountry?.type === 'usa';
     const leaderTitle = isUSA ? 'Governor' : 'Premier';
     const leaderName  = isUSA ? item.governor : item.premier;
@@ -13116,7 +13178,7 @@ function App() {
             <div className="h-36 sm:h-48 overflow-hidden relative bg-gray-100">
               <img
                 src={item.flagUrl}
-                alt={`Flag of ${item.name}`}
+                alt={`Flag of ${displayLabel}`}
                 className="w-full h-full object-cover"
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
@@ -13124,8 +13186,8 @@ function App() {
             </div>
             <div className="p-5">
               <div className="flex items-start justify-between gap-2">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{item.name}</h1>
-                <button onClick={(e) => handleShare(e, { id: 'province-' + item.name, title: item.name, text: `📍 ${item.name} — ${leaderTitle}: ${leaderName} (${leaderParty}) since ${item.since} - civic-voice-app.vercel.app`, url: window.location.href })} className={`flex-shrink-0 p-2 rounded-lg transition-colors ${copiedShareId === 'province-' + item.name ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === 'province-' + item.name ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{displayLabel}</h1>
+                <button onClick={(e) => handleShare(e, { id: 'province-' + item.name, title: displayLabel, text: `📍 ${displayLabel} — ${leaderTitle}: ${leaderName} (${leaderParty}) since ${item.since} - civic-voice-app.vercel.app`, url: window.location.href })} className={`flex-shrink-0 p-2 rounded-lg transition-colors ${copiedShareId === 'province-' + item.name ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === 'province-' + item.name ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
               </div>
               <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2 text-sm text-gray-500">
                 <span>Capital: <strong className="text-gray-700">{item.capital}</strong></span>
