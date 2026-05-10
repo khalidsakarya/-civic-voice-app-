@@ -7,6 +7,9 @@ import {
   abbreviationFromExplorerFlagCode,
   mergeAustralianExplorerRow,
   mergeProvincialExplorerRow,
+  UK_FIRESTORE_REQUIRED_IDS,
+  findUkEnglandRegionFirestoreRow,
+  mergeUkEnglandRegionRow,
 } from './utils/mergeProvincialExplorerFirestore';
 import { formatExecutiveOrderDisplayDate } from './utils/executiveOrderDates';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
@@ -1735,6 +1738,10 @@ function App() {
   const [auExplorerFirestoreByAbbr, setAuExplorerFirestoreByAbbr] = useState(null);
   const auExplorerFirestoreFetchDoneRef = useRef(false);
   const auExplorerMapsAppliedRef = useRef(null);
+  /** UK England regions explorer: full `country === UK` row set when all 13 seeded docs present (`null` = hardcoded only). */
+  const [ukExplorerFirestoreRows, setUkExplorerFirestoreRows] = useState(null);
+  const ukExplorerFirestoreFetchDoneRef = useRef(false);
+  const ukExplorerMapsAppliedRef = useRef(null);
   const [pmVotes, setPmVotes] = useState(() => {
     const saved = localStorage.getItem('cvPMVote');
     return saved ? JSON.parse(saved) : { support: 0, oppose: 0, concerned: 0, userVote: null };
@@ -3206,6 +3213,34 @@ function App() {
       }
       if (!cancelled) setAuExplorerFirestoreByAbbr(map);
       auExplorerFirestoreFetchDoneRef.current = true;
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // UK England regions explorer: overlay when Firestore has exactly 13 UK jurisdictions (4 nations + 9 regions).
+  useEffect(() => {
+    if (ukExplorerFirestoreFetchDoneRef.current) return;
+    let cancelled = false;
+    (async () => {
+      const ukRows = await fetchSubnationalJurisdictions('UK');
+      if (cancelled) return;
+      if (!Array.isArray(ukRows) || ukRows.length !== 13) {
+        if (!cancelled) setUkExplorerFirestoreRows(null);
+        ukExplorerFirestoreFetchDoneRef.current = true;
+        return;
+      }
+      const byId = new Set(ukRows.map((r) => (r && r.id != null ? String(r.id) : '')));
+      for (let i = 0; i < UK_FIRESTORE_REQUIRED_IDS.length; i += 1) {
+        if (!byId.has(UK_FIRESTORE_REQUIRED_IDS[i])) {
+          if (!cancelled) setUkExplorerFirestoreRows(null);
+          ukExplorerFirestoreFetchDoneRef.current = true;
+          return;
+        }
+      }
+      if (!cancelled) setUkExplorerFirestoreRows(ukRows);
+      ukExplorerFirestoreFetchDoneRef.current = true;
     })();
     return () => {
       cancelled = true;
@@ -20329,8 +20364,32 @@ function App() {
     },
   ];
 
+  const getEnglandRegionsExplorerRows = () => {
+    const rows = ukExplorerFirestoreRows;
+    if (!rows || !Array.isArray(rows) || rows.length !== 13) return englandRegions;
+    const byId = {};
+    for (let i = 0; i < rows.length; i += 1) {
+      const row = rows[i];
+      if (row && row.id) byId[String(row.id)] = row;
+    }
+    return englandRegions.map((region) => {
+      const fsRow = findUkEnglandRegionFirestoreRow(region, byId, rows);
+      return mergeUkEnglandRegionRow(region, fsRow);
+    });
+  };
+
+  useEffect(() => {
+    if (!ukExplorerFirestoreRows) return;
+    if (ukExplorerMapsAppliedRef.current === ukExplorerFirestoreRows) return;
+    ukExplorerMapsAppliedRef.current = ukExplorerFirestoreRows;
+    if (view !== 'uk-region-detail' || !selectedUkRegion?.id) return;
+    const fresh = getEnglandRegionsExplorerRows().find((x) => x.id === selectedUkRegion.id);
+    if (fresh) setSelectedUkRegion(fresh);
+  }, [ukExplorerFirestoreRows]);
+
   const renderUKRegions = () => {
-    const totalPop = englandRegions.reduce((s, r) => s + r.populationRaw, 0);
+    const regions = getEnglandRegionsExplorerRows();
+    const totalPop = regions.reduce((s, r) => s + r.populationRaw, 0);
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Sticky header */}
@@ -20373,7 +20432,7 @@ function App() {
 
           {/* Region cards grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-            {englandRegions.map((region, i) => (
+            {regions.map((region, i) => (
               <div
                 key={region.id}
                 onClick={() => { setSelectedUkRegion(region); setView('uk-region-detail'); }}
@@ -20389,8 +20448,8 @@ function App() {
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">{region.emoji}</span>
                       <div>
-                        <h3 className="font-black text-gray-800 text-base leading-tight">{region.name}</h3>
-                        <span className="text-xs font-bold text-gray-400">{region.abbr}</span>
+                        <h3 className="font-black text-gray-800 text-base leading-tight">{region.displayName || region.name}</h3>
+                        <span className="text-xs font-bold text-gray-400">{region.subnationalAbbreviation || region.abbr}</span>
                       </div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0 mt-1" />
@@ -20442,6 +20501,7 @@ function App() {
   const renderUKRegionDetail = () => {
     if (!selectedUkRegion) return null;
     const r = selectedUkRegion;
+    const ukRegionLabel = r.displayName || r.name;
     const ukRed = '#C8102E', ukNavy = '#012169';
 
     const legislatureByRegion = {
@@ -20562,7 +20622,7 @@ function App() {
               ← England Regions
             </button>
             <button
-              onClick={(e) => handleShare(e, { id: 'uk-region-' + r.id, title: r.name, text: `🏴󠁧󠁢󠁥󠁮󠁧󠁿 ${r.name} — ${r.leaderTitle}: ${r.hasRegionalMayor ? r.leader : 'No Regional Mayor'} - civic-voice-app.vercel.app`, url: window.location.href })}
+              onClick={(e) => handleShare(e, { id: 'uk-region-' + r.id, title: ukRegionLabel, text: `🏴󠁧󠁢󠁥󠁮󠁧󠁿 ${ukRegionLabel} — ${r.leaderTitle}: ${r.hasRegionalMayor ? r.leader : 'No Regional Mayor'} - civic-voice-app.vercel.app`, url: window.location.href })}
               className="sm:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
               style={{ background: copiedShareId === 'uk-region-' + r.id ? '#00843D' : 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
               aria-label="Share"
@@ -20581,13 +20641,13 @@ function App() {
                     {r.emoji}
                   </div>
                 </div>
-                <span className="text-xs font-black tracking-[0.2em]" style={{ color: '#FF9999' }}>{r.abbr}</span>
+                <span className="text-xs font-black tracking-[0.2em]" style={{ color: '#FF9999' }}>{r.subnationalAbbreviation || r.abbr}</span>
               </div>
 
               {/* Title block */}
               <div className="flex-1 text-center sm:text-left">
                 <p className="text-[11px] font-bold uppercase tracking-[0.22em] mb-1 sm:mb-3" style={{ color: '#FF9999' }}>England · Statistical Region</p>
-                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2 sm:mb-4">{r.name}</h1>
+                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-2 sm:mb-4">{ukRegionLabel}</h1>
                 <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center sm:justify-start">
                   <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
                     🏛 <span className="ml-0.5">Capital: <strong className="text-white">{r.capital || r.cities[0]}</strong></span>
@@ -20606,7 +20666,7 @@ function App() {
               {/* Share button desktop */}
               <div className="hidden sm:flex flex-shrink-0 self-end">
                 <button
-                  onClick={(e) => handleShare(e, { id: 'uk-region-' + r.id, title: r.name, text: `🏴󠁧󠁢󠁥󠁮󠁧󠁿 ${r.name} — ${r.leaderTitle}: ${r.hasRegionalMayor ? r.leader : 'No Regional Mayor'} - civic-voice-app.vercel.app`, url: window.location.href })}
+                  onClick={(e) => handleShare(e, { id: 'uk-region-' + r.id, title: ukRegionLabel, text: `🏴󠁧󠁢󠁥󠁮󠁧󠁿 ${ukRegionLabel} — ${r.leaderTitle}: ${r.hasRegionalMayor ? r.leader : 'No Regional Mayor'} - civic-voice-app.vercel.app`, url: window.location.href })}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
                   style={{ background: copiedShareId === 'uk-region-' + r.id ? '#00843D' : 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)' }}
                   aria-label="Share"
@@ -20788,6 +20848,7 @@ function App() {
   const renderUkEconomicModal = () => {
     if (!selectedUkRegion || !showUkEconomicModal) return null;
     const r = selectedUkRegion;
+    const ukRegionLabel = r.displayName || r.name;
     const ukRed = '#C8102E', ukNavy = '#012169';
 
     let h = 5381;
@@ -20846,11 +20907,11 @@ function App() {
       const ukAvg  = [4.5, 3.7, 4.2, 4.4][i];
       return {
         year: String(yr),
-        [r.name]: parseFloat((uBase * mult + rngf(-0.3, 0.3, 70 + i, 2)).toFixed(1)),
+        [ukRegionLabel]: parseFloat((uBase * mult + rngf(-0.3, 0.3, 70 + i, 2)).toFixed(1)),
         'UK Average': ukAvg,
       };
     });
-    const unempKeys = [r.name, 'UK Average'];
+    const unempKeys = [ukRegionLabel, 'UK Average'];
 
     // Chart 5: GVA Growth
     const gvaBase = rngf(1.2, 4.8, 80);
@@ -20929,7 +20990,7 @@ function App() {
             </button>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>England Region · Economic &amp; Social Data</p>
-              <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{r.name}</h1>
+              <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{ukRegionLabel}</h1>
             </div>
           </div>
         </div>
@@ -21186,6 +21247,7 @@ function App() {
   const renderUkTaxExemptModal = () => {
     if (!selectedUkRegion || !showUkTaxExemptModal) return null;
     const r = selectedUkRegion;
+    const ukRegionLabel = r.displayName || r.name;
     const ukRed = '#C8102E', ukNavy = '#012169';
 
     let h = 5381;
@@ -21240,7 +21302,7 @@ function App() {
             </button>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#fca5a5' }}>England Region · Tax Exempt Companies</p>
-              <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{r.name}</h1>
+              <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{ukRegionLabel}</h1>
             </div>
           </div>
         </div>
@@ -21291,6 +21353,7 @@ function App() {
   const renderUkGrantsModal = () => {
     if (!selectedUkRegion || !showUkGrantsModal) return null;
     const r = selectedUkRegion;
+    const ukRegionLabel = r.displayName || r.name;
     const ukRed = '#C8102E', ukNavy = '#012169';
 
     let h = 5381;
@@ -21351,7 +21414,7 @@ function App() {
             </button>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#86efac' }}>England Region · Grants Given</p>
-              <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{r.name}</h1>
+              <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{ukRegionLabel}</h1>
             </div>
           </div>
         </div>
