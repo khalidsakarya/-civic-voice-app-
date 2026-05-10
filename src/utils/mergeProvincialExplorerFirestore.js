@@ -1,5 +1,6 @@
 /**
  * Provincial/state explorer — merge helpers for Firestore `subnational_jurisdictions`.
+ * When present, `leader_party_short` overrides badge text (`partyShort`); otherwise hardcoded values remain.
  */
 
 /** @param {string} partyStr @param {string} fallback */
@@ -43,13 +44,21 @@ export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
     fsRow.leader_party != null && String(fsRow.leader_party).trim()
       ? String(fsRow.leader_party).trim()
       : '';
+  const fsPartyShort =
+    fsRow.leader_party_short != null && String(fsRow.leader_party_short).trim()
+      ? String(fsRow.leader_party_short).trim()
+      : '';
+
   if (lp) {
     if (isUSA) {
       out.govParty = lp;
-      out.partyShort = usPartyShortFromLeaderParty(lp, hardcoded.partyShort);
+      out.partyShort = fsPartyShort || usPartyShortFromLeaderParty(lp, hardcoded.partyShort);
     } else {
       out.party = lp;
+      if (fsPartyShort) out.partyShort = fsPartyShort;
     }
+  } else if (fsPartyShort) {
+    out.partyShort = fsPartyShort;
   }
 
   if (fsRow.id) out.subnationalId = fsRow.id;
@@ -159,6 +168,12 @@ export function mergeAustralianExplorerRow(hardcoded, fsRow) {
   if (fsLegName && out.legislature && typeof out.legislature === 'object') {
     out.legislature = { ...out.legislature, name: fsLegName };
   }
+
+  const fsPartyShort =
+    fsRow.leader_party_short != null && String(fsRow.leader_party_short).trim()
+      ? String(fsRow.leader_party_short).trim()
+      : '';
+  if (fsPartyShort) out.partyShort = fsPartyShort;
 
   return out;
 }

@@ -25,6 +25,7 @@ import { SUBNATIONAL_JURISDICTIONS_COLLECTION } from '../constants/firestoreColl
  * @property {string} population_display
  * @property {string} leader_name
  * @property {string} leader_party
+ * @property {string} leader_party_short
  * @property {string} source_name
  * @property {string} source_url
  * @property {string} last_updated
@@ -87,6 +88,8 @@ function normalizeRecord(docId, raw) {
       raw.population_display != null ? String(raw.population_display) : '',
     leader_name: raw.leader_name != null ? String(raw.leader_name) : '',
     leader_party: raw.leader_party != null ? String(raw.leader_party) : '',
+    leader_party_short:
+      raw.leader_party_short != null ? String(raw.leader_party_short) : '',
     source_name: raw.source_name != null ? String(raw.source_name) : '',
     source_url: raw.source_url != null ? String(raw.source_url) : '',
     last_updated:
