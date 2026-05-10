@@ -1,6 +1,6 @@
 # subnational_jurisdictions — Phase 3B enrichment report
 
-Generated: 2026-05-10T15:35:19.059Z
+Generated: 2026-05-10T15:59:12.433Z
 Mode: **WRITE (merge-only)**
 **Firestore:** live documents read for comparison.
 US Census fetch: enabled
@@ -11,12 +11,12 @@ Firestore credential hint: GOOGLE_APPLICATION_CREDENTIALS
 
 | Metric | Count |
 |--------|-------|
-| Fields that would update / updated | 74 |
-| … of which `leader_party_short` | 74 |
-| Fields unchanged (already equal) | 480 |
+| Fields that would update / updated | 0 |
+| … of which `leader_party_short` | 0 |
+| Fields unchanged (already equal) | 554 |
 | Fields needs_manual_review | 115 |
 | Fields skipped (other) | 11 |
-| Documents with ≥1 write | 74 |
+| Documents with ≥1 write | 0 |
 | Total documents read | 85 (expected 85) |
 
 ## Dry-run merge preview (flat patches)
@@ -25,80 +25,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Doc ID | Keys to merge |
 |--------|----------------|
-| `AU-ACT` | leader_party_short |
-| `AU-NSW` | leader_party_short |
-| `AU-NT` | leader_party_short |
-| `AU-QLD` | leader_party_short |
-| `AU-SA` | leader_party_short |
-| `AU-TAS` | leader_party_short |
-| `AU-VIC` | leader_party_short |
-| `AU-WA` | leader_party_short |
-| `CA-AB` | leader_party_short |
-| `CA-BC` | leader_party_short |
-| `CA-MB` | leader_party_short |
-| `CA-NB` | leader_party_short |
-| `CA-NL` | leader_party_short |
-| `CA-NS` | leader_party_short |
-| `CA-ON` | leader_party_short |
-| `CA-PE` | leader_party_short |
-| `CA-QC` | leader_party_short |
-| `CA-SK` | leader_party_short |
-| `CA-YT` | leader_party_short |
-| `UK-ENG` | leader_party_short |
-| `UK-NIR` | leader_party_short |
-| `UK-SCT` | leader_party_short |
-| `UK-WLS` | leader_party_short |
-| `US-AK` | leader_party_short |
-| `US-AL` | leader_party_short |
-| `US-AR` | leader_party_short |
-| `US-AZ` | leader_party_short |
-| `US-CA` | leader_party_short |
-| `US-CO` | leader_party_short |
-| `US-CT` | leader_party_short |
-| `US-DC` | leader_party_short |
-| `US-DE` | leader_party_short |
-| `US-FL` | leader_party_short |
-| `US-GA` | leader_party_short |
-| `US-HI` | leader_party_short |
-| `US-IA` | leader_party_short |
-| `US-ID` | leader_party_short |
-| `US-IL` | leader_party_short |
-| `US-IN` | leader_party_short |
-| `US-KS` | leader_party_short |
-| `US-KY` | leader_party_short |
-| `US-LA` | leader_party_short |
-| `US-MA` | leader_party_short |
-| `US-MD` | leader_party_short |
-| `US-ME` | leader_party_short |
-| `US-MI` | leader_party_short |
-| `US-MN` | leader_party_short |
-| `US-MO` | leader_party_short |
-| `US-MS` | leader_party_short |
-| `US-MT` | leader_party_short |
-| `US-NC` | leader_party_short |
-| `US-ND` | leader_party_short |
-| `US-NE` | leader_party_short |
-| `US-NH` | leader_party_short |
-| `US-NJ` | leader_party_short |
-| `US-NM` | leader_party_short |
-| `US-NV` | leader_party_short |
-| `US-NY` | leader_party_short |
-| `US-OH` | leader_party_short |
-| `US-OK` | leader_party_short |
-| `US-OR` | leader_party_short |
-| `US-PA` | leader_party_short |
-| `US-RI` | leader_party_short |
-| `US-SC` | leader_party_short |
-| `US-SD` | leader_party_short |
-| `US-TN` | leader_party_short |
-| `US-TX` | leader_party_short |
-| `US-UT` | leader_party_short |
-| `US-VA` | leader_party_short |
-| `US-VT` | leader_party_short |
-| `US-WA` | leader_party_short |
-| `US-WI` | leader_party_short |
-| `US-WV` | leader_party_short |
-| `US-WY` | leader_party_short |
+| *(none)* | |
 
 ## Per-document field status
 
@@ -112,7 +39,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Andrew Barr" | "Andrew Barr" |
 | leader_party | unchanged | already matches | overlay | "Australian Labor Party" | "Australian Labor Party" |
-| leader_party_short | would_write | new or different value | derived_au_leader_party | (missing) | "ALP" |
+| leader_party_short | unchanged | already matches | derived_au_leader_party | "ALP" | "ALP" |
 | leader_since | unchanged | already matches | overlay | "2014-12-11" | "2014-12-11" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.act.gov.au/" | "https://www.act.gov.au/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.parliament.act.gov.au/" | "https://www.parliament.act.gov.au/" |
@@ -125,7 +52,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Chris Minns" | "Chris Minns" |
 | leader_party | unchanged | already matches | overlay | "Australian Labor Party" | "Australian Labor Party" |
-| leader_party_short | would_write | new or different value | derived_au_leader_party | (missing) | "ALP" |
+| leader_party_short | unchanged | already matches | derived_au_leader_party | "ALP" | "ALP" |
 | leader_since | unchanged | already matches | overlay | "2023-03-28" | "2023-03-28" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.nsw.gov.au/" | "https://www.nsw.gov.au/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.parliament.nsw.gov.au/" | "https://www.parliament.nsw.gov.au/" |
@@ -138,7 +65,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Lia Finocchiaro" | "Lia Finocchiaro" |
 | leader_party | unchanged | already matches | overlay | "Country Liberal Party" | "Country Liberal Party" |
-| leader_party_short | would_write | new or different value | derived_au_leader_party | (missing) | "CLP" |
+| leader_party_short | unchanged | already matches | derived_au_leader_party | "CLP" | "CLP" |
 | leader_since | unchanged | already matches | overlay | "2024-08-28" | "2024-08-28" |
 | officialWebsite | unchanged | already matches | overlay | "https://nt.gov.au/" | "https://nt.gov.au/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://parliament.nt.gov.au/" | "https://parliament.nt.gov.au/" |
@@ -151,7 +78,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "David Crisafulli" | "David Crisafulli" |
 | leader_party | unchanged | already matches | overlay | "Liberal National Party of Queensland" | "Liberal National Party of Queensland" |
-| leader_party_short | would_write | new or different value | derived_au_leader_party | (missing) | "LNP" |
+| leader_party_short | unchanged | already matches | derived_au_leader_party | "LNP" | "LNP" |
 | leader_since | unchanged | already matches | overlay | "2024-11-01" | "2024-11-01" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.qld.gov.au/about/leadership… | "https://www.qld.gov.au/about/leadership… |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.parliament.qld.gov.au/" | "https://www.parliament.qld.gov.au/" |
@@ -164,7 +91,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Peter Malinauskas" | "Peter Malinauskas" |
 | leader_party | unchanged | already matches | overlay | "Australian Labor Party" | "Australian Labor Party" |
-| leader_party_short | would_write | new or different value | derived_au_leader_party | (missing) | "ALP" |
+| leader_party_short | unchanged | already matches | derived_au_leader_party | "ALP" | "ALP" |
 | leader_since | unchanged | already matches | overlay | "2022-03-21" | "2022-03-21" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.premier.sa.gov.au/" | "https://www.premier.sa.gov.au/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.parliament.sa.gov.au/" | "https://www.parliament.sa.gov.au/" |
@@ -177,7 +104,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Jeremy Rockliff" | "Jeremy Rockliff" |
 | leader_party | unchanged | already matches | overlay | "Liberal Party" | "Liberal Party" |
-| leader_party_short | would_write | new or different value | derived_au_leader_party | (missing) | "Liberal" |
+| leader_party_short | unchanged | already matches | derived_au_leader_party | "Liberal" | "Liberal" |
 | leader_since | unchanged | already matches | overlay | "2022-04-08" | "2022-04-08" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.premier.tas.gov.au/" | "https://www.premier.tas.gov.au/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.parliament.tas.gov.au/" | "https://www.parliament.tas.gov.au/" |
@@ -190,7 +117,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Jacinta Allan" | "Jacinta Allan" |
 | leader_party | unchanged | already matches | overlay | "Australian Labor Party" | "Australian Labor Party" |
-| leader_party_short | would_write | new or different value | derived_au_leader_party | (missing) | "ALP" |
+| leader_party_short | unchanged | already matches | derived_au_leader_party | "ALP" | "ALP" |
 | leader_since | unchanged | already matches | overlay | "2023-09-27" | "2023-09-27" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.premier.vic.gov.au/" | "https://www.premier.vic.gov.au/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.parliament.vic.gov.au/" | "https://www.parliament.vic.gov.au/" |
@@ -203,7 +130,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Roger Cook" | "Roger Cook" |
 | leader_party | unchanged | already matches | overlay | "Australian Labor Party" | "Australian Labor Party" |
-| leader_party_short | would_write | new or different value | derived_au_leader_party | (missing) | "ALP" |
+| leader_party_short | unchanged | already matches | derived_au_leader_party | "ALP" | "ALP" |
 | leader_since | unchanged | already matches | overlay | "2023-06-08" | "2023-06-08" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.wa.gov.au/government/premie… | "https://www.wa.gov.au/government/premie… |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.parliament.wa.gov.au/" | "https://www.parliament.wa.gov.au/" |
@@ -216,7 +143,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Danielle Smith" | "Danielle Smith" |
 | leader_party | unchanged | already matches | overlay | "United Conservative Party" | "United Conservative Party" |
-| leader_party_short | would_write | new or different value | curated_ca_doc_map | (missing) | "UCP" |
+| leader_party_short | unchanged | already matches | curated_ca_doc_map | "UCP" | "UCP" |
 | leader_since | unchanged | already matches | overlay | "2022-10-11" | "2022-10-11" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.alberta.ca/premier" | "https://www.alberta.ca/premier" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.assembly.ab.ca/" | "https://www.assembly.ab.ca/" |
@@ -229,7 +156,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "David Eby" | "David Eby" |
 | leader_party | unchanged | already matches | overlay | "British Columbia New Democratic Party" | "British Columbia New Democratic Party" |
-| leader_party_short | would_write | new or different value | curated_ca_doc_map | (missing) | "NDP" |
+| leader_party_short | unchanged | already matches | curated_ca_doc_map | "NDP" | "NDP" |
 | leader_since | unchanged | already matches | overlay | "2022-11-18" | "2022-11-18" |
 | officialWebsite | unchanged | already matches | overlay | "https://www2.gov.bc.ca/gov/content/gove… | "https://www2.gov.bc.ca/gov/content/gove… |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.leg.bc.ca/" | "https://www.leg.bc.ca/" |
@@ -242,7 +169,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Wab Kinew" | "Wab Kinew" |
 | leader_party | unchanged | already matches | overlay | "New Democratic Party of Manitoba" | "New Democratic Party of Manitoba" |
-| leader_party_short | would_write | new or different value | curated_ca_doc_map | (missing) | "NDP" |
+| leader_party_short | unchanged | already matches | curated_ca_doc_map | "NDP" | "NDP" |
 | leader_since | unchanged | already matches | overlay | "2023-10-18" | "2023-10-18" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.gov.mb.ca/minister/premier/… | "https://www.gov.mb.ca/minister/premier/… |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.gov.mb.ca/legislature/" | "https://www.gov.mb.ca/legislature/" |
@@ -255,7 +182,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Susan Holt" | "Susan Holt" |
 | leader_party | unchanged | already matches | overlay | "New Brunswick Liberal Association" | "New Brunswick Liberal Association" |
-| leader_party_short | would_write | new or different value | curated_ca_doc_map | (missing) | "Lib" |
+| leader_party_short | unchanged | already matches | curated_ca_doc_map | "Lib" | "Lib" |
 | leader_since | unchanged | already matches | overlay | "2024-11-02" | "2024-11-02" |
 | officialWebsite | unchanged | already matches | overlay | "https://gnb.ca/en/org/office-of-the-pre… | "https://gnb.ca/en/org/office-of-the-pre… |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.gnb.ca/legis/" | "https://www.gnb.ca/legis/" |
@@ -268,7 +195,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Andrew Furey" | "Andrew Furey" |
 | leader_party | unchanged | already matches | overlay | "Liberal Party of Newfoundland and Labra… | "Liberal Party of Newfoundland and Labra… |
-| leader_party_short | would_write | new or different value | curated_ca_doc_map | (missing) | "Lib" |
+| leader_party_short | unchanged | already matches | curated_ca_doc_map | "Lib" | "Lib" |
 | leader_since | unchanged | already matches | overlay | "2020-08-19" | "2020-08-19" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.premier.gov.nl.ca/" | "https://www.premier.gov.nl.ca/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.assembly.nl.ca/" | "https://www.assembly.nl.ca/" |
@@ -281,7 +208,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Tim Houston" | "Tim Houston" |
 | leader_party | unchanged | already matches | overlay | "Progressive Conservative Association of… | "Progressive Conservative Association of… |
-| leader_party_short | would_write | new or different value | curated_ca_doc_map | (missing) | "PC" |
+| leader_party_short | unchanged | already matches | curated_ca_doc_map | "PC" | "PC" |
 | leader_since | unchanged | already matches | overlay | "2021-08-31" | "2021-08-31" |
 | officialWebsite | unchanged | already matches | overlay | "https://premier.novascotia.ca/" | "https://premier.novascotia.ca/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://nslegislature.ca/" | "https://nslegislature.ca/" |
@@ -320,7 +247,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Doug Ford" | "Doug Ford" |
 | leader_party | unchanged | already matches | overlay | "Progressive Conservative Party of Ontar… | "Progressive Conservative Party of Ontar… |
-| leader_party_short | would_write | new or different value | curated_ca_doc_map | (missing) | "PC" |
+| leader_party_short | unchanged | already matches | curated_ca_doc_map | "PC" | "PC" |
 | leader_since | unchanged | already matches | overlay | "2018-06-29" | "2018-06-29" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.premier.gov.on.ca/" | "https://www.premier.gov.on.ca/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.ola.org/" | "https://www.ola.org/" |
@@ -333,7 +260,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Dennis King" | "Dennis King" |
 | leader_party | unchanged | already matches | overlay | "Progressive Conservative Party of Princ… | "Progressive Conservative Party of Princ… |
-| leader_party_short | would_write | new or different value | curated_ca_doc_map | (missing) | "PC" |
+| leader_party_short | unchanged | already matches | curated_ca_doc_map | "PC" | "PC" |
 | leader_since | unchanged | already matches | overlay | "2019-06-13" | "2019-06-13" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.princeedwardisland.ca/en/to… | "https://www.princeedwardisland.ca/en/to… |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.assembly.pe.ca/" | "https://www.assembly.pe.ca/" |
@@ -346,7 +273,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Christine Fréchette" | "Christine Fréchette" |
 | leader_party | unchanged | already matches | overlay | "Coalition Avenir Québec" | "Coalition Avenir Québec" |
-| leader_party_short | would_write | new or different value | curated_ca_doc_map | (missing) | "CAQ" |
+| leader_party_short | unchanged | already matches | curated_ca_doc_map | "CAQ" | "CAQ" |
 | leader_since | unchanged | already matches | overlay | "2026-04-15" | "2026-04-15" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.premier-ministre.gouv.qc.ca… | "https://www.premier-ministre.gouv.qc.ca… |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.assnat.qc.ca/" | "https://www.assnat.qc.ca/" |
@@ -359,7 +286,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Scott Moe" | "Scott Moe" |
 | leader_party | unchanged | already matches | overlay | "Saskatchewan Party" | "Saskatchewan Party" |
-| leader_party_short | would_write | new or different value | curated_ca_doc_map | (missing) | "Sask. Party" |
+| leader_party_short | unchanged | already matches | curated_ca_doc_map | "Sask. Party" | "Sask. Party" |
 | leader_since | unchanged | already matches | overlay | "2018-02-02" | "2018-02-02" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.saskatchewan.ca/government/… | "https://www.saskatchewan.ca/government/… |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.legassembly.sk.ca/" | "https://www.legassembly.sk.ca/" |
@@ -372,7 +299,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Ranj Pillai" | "Ranj Pillai" |
 | leader_party | unchanged | already matches | overlay | "Yukon Liberal Party" | "Yukon Liberal Party" |
-| leader_party_short | would_write | new or different value | curated_ca_doc_map | (missing) | "Lib" |
+| leader_party_short | unchanged | already matches | curated_ca_doc_map | "Lib" | "Lib" |
 | leader_since | unchanged | already matches | overlay | "2023-01-14" | "2023-01-14" |
 | officialWebsite | unchanged | already matches | overlay | "https://yukon.ca/en/your-government/yuk… | "https://yukon.ca/en/your-government/yuk… |
 | legislatureWebsite | unchanged | already matches | overlay | "https://yukonassembly.ca/" | "https://yukonassembly.ca/" |
@@ -385,7 +312,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Keir Starmer" | "Keir Starmer" |
 | leader_party | unchanged | already matches | overlay | "Labour Party" | "Labour Party" |
-| leader_party_short | would_write | new or different value | curated_uk_doc_map | (missing) | "Labour" |
+| leader_party_short | unchanged | already matches | curated_uk_doc_map | "Labour" | "Labour" |
 | leader_since | unchanged | already matches | overlay | "2024-07-05" | "2024-07-05" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.gov.uk/" | "https://www.gov.uk/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.parliament.uk/" | "https://www.parliament.uk/" |
@@ -515,7 +442,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Michelle O'Neill" | "Michelle O'Neill" |
 | leader_party | unchanged | already matches | overlay | "Sinn Féin" | "Sinn Féin" |
-| leader_party_short | would_write | new or different value | curated_uk_doc_map | (missing) | "SF" |
+| leader_party_short | unchanged | already matches | curated_uk_doc_map | "SF" | "SF" |
 | leader_since | unchanged | already matches | overlay | "2024-02-03" | "2024-02-03" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.executiveoffice-ni.gov.uk/" | "https://www.executiveoffice-ni.gov.uk/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.niassembly.gov.uk/" | "https://www.niassembly.gov.uk/" |
@@ -528,7 +455,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "John Swinney" | "John Swinney" |
 | leader_party | unchanged | already matches | overlay | "Scottish National Party" | "Scottish National Party" |
-| leader_party_short | would_write | new or different value | curated_uk_doc_map | (missing) | "SNP" |
+| leader_party_short | unchanged | already matches | curated_uk_doc_map | "SNP" | "SNP" |
 | leader_since | unchanged | already matches | overlay | "2024-05-08" | "2024-05-08" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.gov.scot/" | "https://www.gov.scot/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.parliament.scot/" | "https://www.parliament.scot/" |
@@ -541,7 +468,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | needs_manual_review | non-US population not automated in Phase 3B — add overlay | — | (missing) |  |
 | leader_name | unchanged | already matches | overlay | "Eluned Morgan" | "Eluned Morgan" |
 | leader_party | unchanged | already matches | overlay | "Welsh Labour" | "Welsh Labour" |
-| leader_party_short | would_write | new or different value | curated_uk_doc_map | (missing) | "Labour" |
+| leader_party_short | unchanged | already matches | curated_uk_doc_map | "Labour" | "Labour" |
 | leader_since | unchanged | already matches | overlay | "2024-08-06" | "2024-08-06" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.gov.wales/" | "https://www.gov.wales/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.senedd.wales/" | "https://www.senedd.wales/" |
@@ -554,7 +481,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "733K" | "733K" |
 | leader_name | unchanged | already matches | overlay | "Mike Dunleavy" | "Mike Dunleavy" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2018-12-03" | "2018-12-03" |
 | officialWebsite | unchanged | already matches | overlay | "https://gov.alaska.gov/" | "https://gov.alaska.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.akleg.gov/" | "https://www.akleg.gov/" |
@@ -567,7 +494,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "5.04M" | "5.04M" |
 | leader_name | unchanged | already matches | overlay | "Kay Ivey" | "Kay Ivey" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2017-04-10" | "2017-04-10" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.governor.alabama.gov/" | "https://www.governor.alabama.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://alison.legislature.state.al.us/… | "https://alison.legislature.state.al.us/… |
@@ -580,7 +507,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "3.03M" | "3.03M" |
 | leader_name | unchanged | already matches | overlay | "Sarah Huckabee Sanders" | "Sarah Huckabee Sanders" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2023-01-10" | "2023-01-10" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.arkansas.gov/" | "https://governor.arkansas.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.arkansas.gov/legislature/" | "https://www.arkansas.gov/legislature/" |
@@ -593,7 +520,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "7.28M" | "7.28M" |
 | leader_name | unchanged | already matches | overlay | "Katie Hobbs" | "Katie Hobbs" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2023-01-02" | "2023-01-02" |
 | officialWebsite | unchanged | already matches | overlay | "https://azgovernor.gov/" | "https://azgovernor.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.azleg.gov/" | "https://www.azleg.gov/" |
@@ -606,7 +533,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "39.24M" | "39.24M" |
 | leader_name | unchanged | already matches | overlay | "Gavin Newsom" | "Gavin Newsom" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2019-01-07" | "2019-01-07" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.gov.ca.gov/" | "https://www.gov.ca.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.legislature.ca.gov/" | "https://www.legislature.ca.gov/" |
@@ -619,7 +546,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "5.81M" | "5.81M" |
 | leader_name | unchanged | already matches | overlay | "Jared Polis" | "Jared Polis" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2019-01-08" | "2019-01-08" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.colorado.gov/governor/" | "https://www.colorado.gov/governor/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://leg.colorado.gov/" | "https://leg.colorado.gov/" |
@@ -632,7 +559,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "3.61M" | "3.61M" |
 | leader_name | unchanged | already matches | overlay | "Ned Lamont" | "Ned Lamont" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2019-01-09" | "2019-01-09" |
 | officialWebsite | unchanged | already matches | overlay | "https://portal.ct.gov/governor" | "https://portal.ct.gov/governor" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.cga.ct.gov/" | "https://www.cga.ct.gov/" |
@@ -645,7 +572,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "670K" | "670K" |
 | leader_name | unchanged | already matches | overlay | "Muriel Bowser" | "Muriel Bowser" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2015-01-02" | "2015-01-02" |
 | officialWebsite | unchanged | already matches | overlay | "https://mayor.dc.gov/" | "https://mayor.dc.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://dccouncil.gov/" | "https://dccouncil.gov/" |
@@ -658,7 +585,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "1.00M" | "1.00M" |
 | leader_name | unchanged | already matches | overlay | "Matt Meyer" | "Matt Meyer" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2025-01-21" | "2025-01-21" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.delaware.gov/" | "https://governor.delaware.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://legis.delaware.gov/" | "https://legis.delaware.gov/" |
@@ -671,7 +598,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "21.78M" | "21.78M" |
 | leader_name | unchanged | already matches | overlay | "Ron DeSantis" | "Ron DeSantis" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2019-01-08" | "2019-01-08" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.flgov.gov/" | "https://www.flgov.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.flsenate.gov/" | "https://www.flsenate.gov/" |
@@ -684,7 +611,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "10.80M" | "10.80M" |
 | leader_name | unchanged | already matches | overlay | "Brian Kemp" | "Brian Kemp" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2019-01-14" | "2019-01-14" |
 | officialWebsite | unchanged | already matches | overlay | "https://gov.georgia.gov/" | "https://gov.georgia.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.legis.ga.gov/" | "https://www.legis.ga.gov/" |
@@ -697,7 +624,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "1.44M" | "1.44M" |
 | leader_name | unchanged | already matches | overlay | "Josh Green" | "Josh Green" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2022-12-05" | "2022-12-05" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.hawaii.gov/" | "https://governor.hawaii.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.capitol.hawaii.gov/" | "https://www.capitol.hawaii.gov/" |
@@ -710,7 +637,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "3.19M" | "3.19M" |
 | leader_name | unchanged | already matches | overlay | "Kim Reynolds" | "Kim Reynolds" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2017-05-24" | "2017-05-24" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.iowa.gov/" | "https://governor.iowa.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.legis.iowa.gov/" | "https://www.legis.iowa.gov/" |
@@ -723,7 +650,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "1.90M" | "1.90M" |
 | leader_name | unchanged | already matches | overlay | "Brad Little" | "Brad Little" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2019-01-07" | "2019-01-07" |
 | officialWebsite | unchanged | already matches | overlay | "https://gov.idaho.gov/" | "https://gov.idaho.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://legislature.idaho.gov/" | "https://legislature.idaho.gov/" |
@@ -736,7 +663,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "12.67M" | "12.67M" |
 | leader_name | unchanged | already matches | overlay | "J.B. Pritzker" | "J.B. Pritzker" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2019-01-14" | "2019-01-14" |
 | officialWebsite | unchanged | already matches | overlay | "https://www2.illinois.gov/sites/gov/" | "https://www2.illinois.gov/sites/gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.ilga.gov/" | "https://www.ilga.gov/" |
@@ -749,7 +676,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "6.81M" | "6.81M" |
 | leader_name | unchanged | already matches | overlay | "Mike Braun" | "Mike Braun" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2025-01-13" | "2025-01-13" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.in.gov/governor/" | "https://www.in.gov/governor/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://iga.in.gov/" | "https://iga.in.gov/" |
@@ -762,7 +689,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "2.93M" | "2.93M" |
 | leader_name | unchanged | already matches | overlay | "Laura Kelly" | "Laura Kelly" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2019-01-14" | "2019-01-14" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.kansas.gov/" | "https://governor.kansas.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.kslegislature.gov/" | "https://www.kslegislature.gov/" |
@@ -775,7 +702,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "4.51M" | "4.51M" |
 | leader_name | unchanged | already matches | overlay | "Andy Beshear" | "Andy Beshear" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2019-12-10" | "2019-12-10" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.ky.gov/" | "https://governor.ky.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://legislature.ky.gov/" | "https://legislature.ky.gov/" |
@@ -788,7 +715,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "4.62M" | "4.62M" |
 | leader_name | unchanged | already matches | overlay | "Jeff Landry" | "Jeff Landry" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2024-01-08" | "2024-01-08" |
 | officialWebsite | unchanged | already matches | overlay | "https://gov.louisiana.gov/" | "https://gov.louisiana.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://legislature.la.gov/" | "https://legislature.la.gov/" |
@@ -801,7 +728,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "6.98M" | "6.98M" |
 | leader_name | unchanged | already matches | overlay | "Maura Healey" | "Maura Healey" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2023-01-05" | "2023-01-05" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.mass.gov/orgs/office-of-the… | "https://www.mass.gov/orgs/office-of-the… |
 | legislatureWebsite | unchanged | already matches | overlay | "https://malegislature.gov/" | "https://malegislature.gov/" |
@@ -814,7 +741,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "6.17M" | "6.17M" |
 | leader_name | unchanged | already matches | overlay | "Wes Moore" | "Wes Moore" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2023-01-18" | "2023-01-18" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.maryland.gov/" | "https://governor.maryland.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://mgaleg.maryland.gov/" | "https://mgaleg.maryland.gov/" |
@@ -827,7 +754,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "1.37M" | "1.37M" |
 | leader_name | unchanged | already matches | overlay | "Janet Mills" | "Janet Mills" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2019-01-02" | "2019-01-02" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.maine.gov/governor/" | "https://www.maine.gov/governor/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://legislature.maine.gov/" | "https://legislature.maine.gov/" |
@@ -840,7 +767,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "10.05M" | "10.05M" |
 | leader_name | unchanged | already matches | overlay | "Gretchen Whitmer" | "Gretchen Whitmer" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2019-01-01" | "2019-01-01" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.michigan.gov/governor/" | "https://www.michigan.gov/governor/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.legislature.mi.gov/" | "https://www.legislature.mi.gov/" |
@@ -853,7 +780,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "5.71M" | "5.71M" |
 | leader_name | unchanged | already matches | overlay | "Tim Walz" | "Tim Walz" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2019-01-07" | "2019-01-07" |
 | officialWebsite | unchanged | already matches | overlay | "https://mn.gov/governor/" | "https://mn.gov/governor/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.leg.mn.gov/" | "https://www.leg.mn.gov/" |
@@ -866,7 +793,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "6.17M" | "6.17M" |
 | leader_name | unchanged | already matches | overlay | "Mike Kehoe" | "Mike Kehoe" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2025-01-13" | "2025-01-13" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.mo.gov/" | "https://governor.mo.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.mo.gov/government/legislati… | "https://www.mo.gov/government/legislati… |
@@ -879,7 +806,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "2.95M" | "2.95M" |
 | leader_name | unchanged | already matches | overlay | "Tate Reeves" | "Tate Reeves" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2020-01-14" | "2020-01-14" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.ms.gov/" | "https://governor.ms.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.legislature.ms.gov/" | "https://www.legislature.ms.gov/" |
@@ -892,7 +819,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "1.10M" | "1.10M" |
 | leader_name | unchanged | already matches | overlay | "Greg Gianforte" | "Greg Gianforte" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2021-01-04" | "2021-01-04" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.mt.gov/" | "https://governor.mt.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://leg.mt.gov/" | "https://leg.mt.gov/" |
@@ -905,7 +832,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "10.55M" | "10.55M" |
 | leader_name | unchanged | already matches | overlay | "Josh Stein" | "Josh Stein" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2025-01-01" | "2025-01-01" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.nc.gov/" | "https://governor.nc.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.ncleg.gov/" | "https://www.ncleg.gov/" |
@@ -918,7 +845,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "775K" | "775K" |
 | leader_name | unchanged | already matches | overlay | "Kelly Armstrong" | "Kelly Armstrong" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2024-12-15" | "2024-12-15" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.governor.nd.gov/" | "https://www.governor.nd.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.ndlegis.gov/" | "https://www.ndlegis.gov/" |
@@ -931,7 +858,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "1.96M" | "1.96M" |
 | leader_name | unchanged | already matches | overlay | "Jim Pillen" | "Jim Pillen" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2023-01-05" | "2023-01-05" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.nebraska.gov/" | "https://governor.nebraska.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://nebraskalegislature.gov/" | "https://nebraskalegislature.gov/" |
@@ -944,7 +871,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "1.39M" | "1.39M" |
 | leader_name | unchanged | already matches | overlay | "Kelly Ayotte" | "Kelly Ayotte" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2025-01-08" | "2025-01-08" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.governor.nh.gov/" | "https://www.governor.nh.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.gencourt.state.nh.us/" | "https://www.gencourt.state.nh.us/" |
@@ -957,7 +884,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "9.27M" | "9.27M" |
 | leader_name | unchanged | already matches | overlay | "Mikie Sherrill" | "Mikie Sherrill" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2026-01-20" | "2026-01-20" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.nj.gov/governor/" | "https://www.nj.gov/governor/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.njleg.state.nj.us/" | "https://www.njleg.state.nj.us/" |
@@ -970,7 +897,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "2.12M" | "2.12M" |
 | leader_name | unchanged | already matches | overlay | "Michelle Lujan Grisham" | "Michelle Lujan Grisham" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2019-01-01" | "2019-01-01" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.governor.state.nm.us/" | "https://www.governor.state.nm.us/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.nmlegis.gov/" | "https://www.nmlegis.gov/" |
@@ -983,7 +910,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "3.14M" | "3.14M" |
 | leader_name | unchanged | already matches | overlay | "Joe Lombardo" | "Joe Lombardo" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2023-01-02" | "2023-01-02" |
 | officialWebsite | unchanged | already matches | overlay | "https://gov.nv.gov/" | "https://gov.nv.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.leg.state.nv.us/" | "https://www.leg.state.nv.us/" |
@@ -996,7 +923,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "19.84M" | "19.84M" |
 | leader_name | unchanged | already matches | overlay | "Kathy Hochul" | "Kathy Hochul" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2021-08-24" | "2021-08-24" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.governor.ny.gov/" | "https://www.governor.ny.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.nysenate.gov/" | "https://www.nysenate.gov/" |
@@ -1009,7 +936,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "11.78M" | "11.78M" |
 | leader_name | unchanged | already matches | overlay | "Mike DeWine" | "Mike DeWine" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2019-01-14" | "2019-01-14" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.ohio.gov/" | "https://governor.ohio.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.legislature.ohio.gov/" | "https://www.legislature.ohio.gov/" |
@@ -1022,7 +949,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "3.99M" | "3.99M" |
 | leader_name | unchanged | already matches | overlay | "Kevin Stitt" | "Kevin Stitt" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2019-01-14" | "2019-01-14" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.oklahoma.gov/governor.html" | "https://www.oklahoma.gov/governor.html" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.oklegislature.gov/" | "https://www.oklegislature.gov/" |
@@ -1035,7 +962,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "4.25M" | "4.25M" |
 | leader_name | unchanged | already matches | overlay | "Tina Kotek" | "Tina Kotek" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2023-01-09" | "2023-01-09" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.oregon.gov/gov/" | "https://www.oregon.gov/gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.oregonlegislature.gov/" | "https://www.oregonlegislature.gov/" |
@@ -1048,7 +975,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "12.96M" | "12.96M" |
 | leader_name | unchanged | already matches | overlay | "Josh Shapiro" | "Josh Shapiro" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2023-01-17" | "2023-01-17" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.governor.pa.gov/" | "https://www.governor.pa.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.palegis.us/" | "https://www.palegis.us/" |
@@ -1061,7 +988,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "1.10M" | "1.10M" |
 | leader_name | unchanged | already matches | overlay | "Daniel McKee" | "Daniel McKee" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2021-03-02" | "2021-03-02" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.ri.gov/" | "https://governor.ri.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.rilin.state.ri.us/" | "https://www.rilin.state.ri.us/" |
@@ -1074,7 +1001,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "5.19M" | "5.19M" |
 | leader_name | unchanged | already matches | overlay | "Henry McMaster" | "Henry McMaster" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2017-01-24" | "2017-01-24" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.sc.gov/" | "https://governor.sc.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.scstatehouse.gov/" | "https://www.scstatehouse.gov/" |
@@ -1087,7 +1014,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "895K" | "895K" |
 | leader_name | unchanged | already matches | overlay | "Larry Rhoden" | "Larry Rhoden" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2025-01-25" | "2025-01-25" |
 | officialWebsite | unchanged | already matches | overlay | "https://sd.gov/governor/" | "https://sd.gov/governor/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://sdlegislature.gov/" | "https://sdlegislature.gov/" |
@@ -1100,7 +1027,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "6.98M" | "6.98M" |
 | leader_name | unchanged | already matches | overlay | "Bill Lee" | "Bill Lee" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2019-01-15" | "2019-01-15" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.tn.gov/governor/" | "https://www.tn.gov/governor/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://wapp.capitol.tn.gov/" | "https://wapp.capitol.tn.gov/" |
@@ -1113,7 +1040,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "29.53M" | "29.53M" |
 | leader_name | unchanged | already matches | overlay | "Greg Abbott" | "Greg Abbott" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2015-01-20" | "2015-01-20" |
 | officialWebsite | unchanged | already matches | overlay | "https://gov.texas.gov/" | "https://gov.texas.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://capitol.texas.gov/" | "https://capitol.texas.gov/" |
@@ -1126,7 +1053,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "3.34M" | "3.34M" |
 | leader_name | unchanged | already matches | overlay | "Spencer Cox" | "Spencer Cox" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2021-01-04" | "2021-01-04" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.utah.gov/" | "https://governor.utah.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://le.utah.gov/" | "https://le.utah.gov/" |
@@ -1139,7 +1066,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "8.64M" | "8.64M" |
 | leader_name | unchanged | already matches | overlay | "Abigail Spanberger" | "Abigail Spanberger" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2026-01-17" | "2026-01-17" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.governor.virginia.gov/" | "https://www.governor.virginia.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://virginiageneralassembly.gov/" | "https://virginiageneralassembly.gov/" |
@@ -1152,7 +1079,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "646K" | "646K" |
 | leader_name | unchanged | already matches | overlay | "Phil Scott" | "Phil Scott" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2017-01-05" | "2017-01-05" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.vermont.gov/" | "https://governor.vermont.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://legislature.vermont.gov/" | "https://legislature.vermont.gov/" |
@@ -1165,7 +1092,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "7.74M" | "7.74M" |
 | leader_name | unchanged | already matches | overlay | "Bob Ferguson" | "Bob Ferguson" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2025-01-13" | "2025-01-13" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.governor.wa.gov/" | "https://www.governor.wa.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://leg.wa.gov/" | "https://leg.wa.gov/" |
@@ -1178,7 +1105,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "5.90M" | "5.90M" |
 | leader_name | unchanged | already matches | overlay | "Tony Evers" | "Tony Evers" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "D" | "D" |
 | leader_since | unchanged | already matches | overlay | "2019-01-07" | "2019-01-07" |
 | officialWebsite | unchanged | already matches | overlay | "https://www.evers.wi.gov/" | "https://www.evers.wi.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://docs.legis.wisconsin.gov/" | "https://docs.legis.wisconsin.gov/" |
@@ -1191,7 +1118,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "1.78M" | "1.78M" |
 | leader_name | unchanged | already matches | overlay | "Patrick Morrisey" | "Patrick Morrisey" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2025-01-13" | "2025-01-13" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.wv.gov/" | "https://governor.wv.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.wvlegislature.gov/" | "https://www.wvlegislature.gov/" |
@@ -1204,7 +1131,7 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 | population_display | unchanged | already matches | census_api | "579K" | "579K" |
 | leader_name | unchanged | already matches | overlay | "Mark Gordon" | "Mark Gordon" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
-| leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
+| leader_party_short | unchanged | already matches | derived_us_leader_party | "R" | "R" |
 | leader_since | unchanged | already matches | overlay | "2019-01-07" | "2019-01-07" |
 | officialWebsite | unchanged | already matches | overlay | "https://governor.wyo.gov/" | "https://governor.wyo.gov/" |
 | legislatureWebsite | unchanged | already matches | overlay | "https://www.wyoleg.gov/" | "https://www.wyoleg.gov/" |
