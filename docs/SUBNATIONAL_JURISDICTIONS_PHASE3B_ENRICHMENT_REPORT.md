@@ -1,10 +1,10 @@
 # subnational_jurisdictions — Phase 3B enrichment report
 
-Generated: 2026-05-10T15:17:12.012Z
-Mode: **DRY-RUN**
+Generated: 2026-05-10T15:35:19.059Z
+Mode: **WRITE (merge-only)**
 **Firestore:** live documents read for comparison.
-US Census fetch: disabled
-Census jurisdictions mapped: 0
+US Census fetch: enabled
+Census jurisdictions mapped: 51
 Firestore credential hint: GOOGLE_APPLICATION_CREDENTIALS
 
 ## Aggregate field outcomes
@@ -13,8 +13,8 @@ Firestore credential hint: GOOGLE_APPLICATION_CREDENTIALS
 |--------|-------|
 | Fields that would update / updated | 74 |
 | … of which `leader_party_short` | 74 |
-| Fields unchanged (already equal) | 378 |
-| Fields needs_manual_review | 217 |
+| Fields unchanged (already equal) | 480 |
+| Fields needs_manual_review | 115 |
 | Fields skipped (other) | 11 |
 | Documents with ≥1 write | 74 |
 | Total documents read | 85 (expected 85) |
@@ -550,8 +550,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 732673 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "733K" |  |
+| population_raw | unchanged | already matches | census_api | 732673 | 732673 |
+| population_display | unchanged | already matches | census_api | "733K" | "733K" |
 | leader_name | unchanged | already matches | overlay | "Mike Dunleavy" | "Mike Dunleavy" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -563,8 +563,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 5039877 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "5.04M" |  |
+| population_raw | unchanged | already matches | census_api | 5039877 | 5039877 |
+| population_display | unchanged | already matches | census_api | "5.04M" | "5.04M" |
 | leader_name | unchanged | already matches | overlay | "Kay Ivey" | "Kay Ivey" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -576,8 +576,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 3025891 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "3.03M" |  |
+| population_raw | unchanged | already matches | census_api | 3025891 | 3025891 |
+| population_display | unchanged | already matches | census_api | "3.03M" | "3.03M" |
 | leader_name | unchanged | already matches | overlay | "Sarah Huckabee Sanders" | "Sarah Huckabee Sanders" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -589,8 +589,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 7276316 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "7.28M" |  |
+| population_raw | unchanged | already matches | census_api | 7276316 | 7276316 |
+| population_display | unchanged | already matches | census_api | "7.28M" | "7.28M" |
 | leader_name | unchanged | already matches | overlay | "Katie Hobbs" | "Katie Hobbs" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -602,8 +602,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 39237836 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "39.24M" |  |
+| population_raw | unchanged | already matches | census_api | 39237836 | 39237836 |
+| population_display | unchanged | already matches | census_api | "39.24M" | "39.24M" |
 | leader_name | unchanged | already matches | overlay | "Gavin Newsom" | "Gavin Newsom" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -615,8 +615,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 5812069 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "5.81M" |  |
+| population_raw | unchanged | already matches | census_api | 5812069 | 5812069 |
+| population_display | unchanged | already matches | census_api | "5.81M" | "5.81M" |
 | leader_name | unchanged | already matches | overlay | "Jared Polis" | "Jared Polis" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -628,8 +628,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 3605597 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "3.61M" |  |
+| population_raw | unchanged | already matches | census_api | 3605597 | 3605597 |
+| population_display | unchanged | already matches | census_api | "3.61M" | "3.61M" |
 | leader_name | unchanged | already matches | overlay | "Ned Lamont" | "Ned Lamont" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -641,8 +641,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 670050 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "670K" |  |
+| population_raw | unchanged | already matches | census_api | 670050 | 670050 |
+| population_display | unchanged | already matches | census_api | "670K" | "670K" |
 | leader_name | unchanged | already matches | overlay | "Muriel Bowser" | "Muriel Bowser" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -654,8 +654,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 1003384 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "1.00M" |  |
+| population_raw | unchanged | already matches | census_api | 1003384 | 1003384 |
+| population_display | unchanged | already matches | census_api | "1.00M" | "1.00M" |
 | leader_name | unchanged | already matches | overlay | "Matt Meyer" | "Matt Meyer" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -667,8 +667,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 21781128 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "21.78M" |  |
+| population_raw | unchanged | already matches | census_api | 21781128 | 21781128 |
+| population_display | unchanged | already matches | census_api | "21.78M" | "21.78M" |
 | leader_name | unchanged | already matches | overlay | "Ron DeSantis" | "Ron DeSantis" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -680,8 +680,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 10799566 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "10.80M" |  |
+| population_raw | unchanged | already matches | census_api | 10799566 | 10799566 |
+| population_display | unchanged | already matches | census_api | "10.80M" | "10.80M" |
 | leader_name | unchanged | already matches | overlay | "Brian Kemp" | "Brian Kemp" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -693,8 +693,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 1441553 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "1.44M" |  |
+| population_raw | unchanged | already matches | census_api | 1441553 | 1441553 |
+| population_display | unchanged | already matches | census_api | "1.44M" | "1.44M" |
 | leader_name | unchanged | already matches | overlay | "Josh Green" | "Josh Green" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -706,8 +706,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 3193079 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "3.19M" |  |
+| population_raw | unchanged | already matches | census_api | 3193079 | 3193079 |
+| population_display | unchanged | already matches | census_api | "3.19M" | "3.19M" |
 | leader_name | unchanged | already matches | overlay | "Kim Reynolds" | "Kim Reynolds" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -719,8 +719,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 1900923 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "1.90M" |  |
+| population_raw | unchanged | already matches | census_api | 1900923 | 1900923 |
+| population_display | unchanged | already matches | census_api | "1.90M" | "1.90M" |
 | leader_name | unchanged | already matches | overlay | "Brad Little" | "Brad Little" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -732,8 +732,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 12671469 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "12.67M" |  |
+| population_raw | unchanged | already matches | census_api | 12671469 | 12671469 |
+| population_display | unchanged | already matches | census_api | "12.67M" | "12.67M" |
 | leader_name | unchanged | already matches | overlay | "J.B. Pritzker" | "J.B. Pritzker" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -745,8 +745,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 6805985 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "6.81M" |  |
+| population_raw | unchanged | already matches | census_api | 6805985 | 6805985 |
+| population_display | unchanged | already matches | census_api | "6.81M" | "6.81M" |
 | leader_name | unchanged | already matches | overlay | "Mike Braun" | "Mike Braun" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -758,8 +758,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 2934582 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "2.93M" |  |
+| population_raw | unchanged | already matches | census_api | 2934582 | 2934582 |
+| population_display | unchanged | already matches | census_api | "2.93M" | "2.93M" |
 | leader_name | unchanged | already matches | overlay | "Laura Kelly" | "Laura Kelly" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -771,8 +771,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 4509394 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "4.51M" |  |
+| population_raw | unchanged | already matches | census_api | 4509394 | 4509394 |
+| population_display | unchanged | already matches | census_api | "4.51M" | "4.51M" |
 | leader_name | unchanged | already matches | overlay | "Andy Beshear" | "Andy Beshear" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -784,8 +784,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 4624047 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "4.62M" |  |
+| population_raw | unchanged | already matches | census_api | 4624047 | 4624047 |
+| population_display | unchanged | already matches | census_api | "4.62M" | "4.62M" |
 | leader_name | unchanged | already matches | overlay | "Jeff Landry" | "Jeff Landry" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -797,8 +797,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 6984723 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "6.98M" |  |
+| population_raw | unchanged | already matches | census_api | 6984723 | 6984723 |
+| population_display | unchanged | already matches | census_api | "6.98M" | "6.98M" |
 | leader_name | unchanged | already matches | overlay | "Maura Healey" | "Maura Healey" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -810,8 +810,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 6165129 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "6.17M" |  |
+| population_raw | unchanged | already matches | census_api | 6165129 | 6165129 |
+| population_display | unchanged | already matches | census_api | "6.17M" | "6.17M" |
 | leader_name | unchanged | already matches | overlay | "Wes Moore" | "Wes Moore" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -823,8 +823,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 1372247 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "1.37M" |  |
+| population_raw | unchanged | already matches | census_api | 1372247 | 1372247 |
+| population_display | unchanged | already matches | census_api | "1.37M" | "1.37M" |
 | leader_name | unchanged | already matches | overlay | "Janet Mills" | "Janet Mills" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -836,8 +836,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 10050811 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "10.05M" |  |
+| population_raw | unchanged | already matches | census_api | 10050811 | 10050811 |
+| population_display | unchanged | already matches | census_api | "10.05M" | "10.05M" |
 | leader_name | unchanged | already matches | overlay | "Gretchen Whitmer" | "Gretchen Whitmer" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -849,8 +849,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 5707390 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "5.71M" |  |
+| population_raw | unchanged | already matches | census_api | 5707390 | 5707390 |
+| population_display | unchanged | already matches | census_api | "5.71M" | "5.71M" |
 | leader_name | unchanged | already matches | overlay | "Tim Walz" | "Tim Walz" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -862,8 +862,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 6168187 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "6.17M" |  |
+| population_raw | unchanged | already matches | census_api | 6168187 | 6168187 |
+| population_display | unchanged | already matches | census_api | "6.17M" | "6.17M" |
 | leader_name | unchanged | already matches | overlay | "Mike Kehoe" | "Mike Kehoe" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -875,8 +875,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 2949965 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "2.95M" |  |
+| population_raw | unchanged | already matches | census_api | 2949965 | 2949965 |
+| population_display | unchanged | already matches | census_api | "2.95M" | "2.95M" |
 | leader_name | unchanged | already matches | overlay | "Tate Reeves" | "Tate Reeves" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -888,8 +888,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 1104271 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "1.10M" |  |
+| population_raw | unchanged | already matches | census_api | 1104271 | 1104271 |
+| population_display | unchanged | already matches | census_api | "1.10M" | "1.10M" |
 | leader_name | unchanged | already matches | overlay | "Greg Gianforte" | "Greg Gianforte" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -901,8 +901,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 10551162 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "10.55M" |  |
+| population_raw | unchanged | already matches | census_api | 10551162 | 10551162 |
+| population_display | unchanged | already matches | census_api | "10.55M" | "10.55M" |
 | leader_name | unchanged | already matches | overlay | "Josh Stein" | "Josh Stein" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -914,8 +914,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 774948 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "775K" |  |
+| population_raw | unchanged | already matches | census_api | 774948 | 774948 |
+| population_display | unchanged | already matches | census_api | "775K" | "775K" |
 | leader_name | unchanged | already matches | overlay | "Kelly Armstrong" | "Kelly Armstrong" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -927,8 +927,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 1963692 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "1.96M" |  |
+| population_raw | unchanged | already matches | census_api | 1963692 | 1963692 |
+| population_display | unchanged | already matches | census_api | "1.96M" | "1.96M" |
 | leader_name | unchanged | already matches | overlay | "Jim Pillen" | "Jim Pillen" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -940,8 +940,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 1388992 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "1.39M" |  |
+| population_raw | unchanged | already matches | census_api | 1388992 | 1388992 |
+| population_display | unchanged | already matches | census_api | "1.39M" | "1.39M" |
 | leader_name | unchanged | already matches | overlay | "Kelly Ayotte" | "Kelly Ayotte" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -953,8 +953,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 9267130 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "9.27M" |  |
+| population_raw | unchanged | already matches | census_api | 9267130 | 9267130 |
+| population_display | unchanged | already matches | census_api | "9.27M" | "9.27M" |
 | leader_name | unchanged | already matches | overlay | "Mikie Sherrill" | "Mikie Sherrill" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -966,8 +966,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 2115877 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "2.12M" |  |
+| population_raw | unchanged | already matches | census_api | 2115877 | 2115877 |
+| population_display | unchanged | already matches | census_api | "2.12M" | "2.12M" |
 | leader_name | unchanged | already matches | overlay | "Michelle Lujan Grisham" | "Michelle Lujan Grisham" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -979,8 +979,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 3143991 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "3.14M" |  |
+| population_raw | unchanged | already matches | census_api | 3143991 | 3143991 |
+| population_display | unchanged | already matches | census_api | "3.14M" | "3.14M" |
 | leader_name | unchanged | already matches | overlay | "Joe Lombardo" | "Joe Lombardo" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -992,8 +992,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 19835913 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "19.84M" |  |
+| population_raw | unchanged | already matches | census_api | 19835913 | 19835913 |
+| population_display | unchanged | already matches | census_api | "19.84M" | "19.84M" |
 | leader_name | unchanged | already matches | overlay | "Kathy Hochul" | "Kathy Hochul" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -1005,8 +1005,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 11780017 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "11.78M" |  |
+| population_raw | unchanged | already matches | census_api | 11780017 | 11780017 |
+| population_display | unchanged | already matches | census_api | "11.78M" | "11.78M" |
 | leader_name | unchanged | already matches | overlay | "Mike DeWine" | "Mike DeWine" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -1018,8 +1018,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 3986639 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "3.99M" |  |
+| population_raw | unchanged | already matches | census_api | 3986639 | 3986639 |
+| population_display | unchanged | already matches | census_api | "3.99M" | "3.99M" |
 | leader_name | unchanged | already matches | overlay | "Kevin Stitt" | "Kevin Stitt" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -1031,8 +1031,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 4246155 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "4.25M" |  |
+| population_raw | unchanged | already matches | census_api | 4246155 | 4246155 |
+| population_display | unchanged | already matches | census_api | "4.25M" | "4.25M" |
 | leader_name | unchanged | already matches | overlay | "Tina Kotek" | "Tina Kotek" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -1044,8 +1044,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 12964056 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "12.96M" |  |
+| population_raw | unchanged | already matches | census_api | 12964056 | 12964056 |
+| population_display | unchanged | already matches | census_api | "12.96M" | "12.96M" |
 | leader_name | unchanged | already matches | overlay | "Josh Shapiro" | "Josh Shapiro" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -1057,8 +1057,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 1095610 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "1.10M" |  |
+| population_raw | unchanged | already matches | census_api | 1095610 | 1095610 |
+| population_display | unchanged | already matches | census_api | "1.10M" | "1.10M" |
 | leader_name | unchanged | already matches | overlay | "Daniel McKee" | "Daniel McKee" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -1070,8 +1070,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 5190705 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "5.19M" |  |
+| population_raw | unchanged | already matches | census_api | 5190705 | 5190705 |
+| population_display | unchanged | already matches | census_api | "5.19M" | "5.19M" |
 | leader_name | unchanged | already matches | overlay | "Henry McMaster" | "Henry McMaster" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -1083,8 +1083,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 895376 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "895K" |  |
+| population_raw | unchanged | already matches | census_api | 895376 | 895376 |
+| population_display | unchanged | already matches | census_api | "895K" | "895K" |
 | leader_name | unchanged | already matches | overlay | "Larry Rhoden" | "Larry Rhoden" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -1096,8 +1096,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 6975218 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "6.98M" |  |
+| population_raw | unchanged | already matches | census_api | 6975218 | 6975218 |
+| population_display | unchanged | already matches | census_api | "6.98M" | "6.98M" |
 | leader_name | unchanged | already matches | overlay | "Bill Lee" | "Bill Lee" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -1109,8 +1109,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 29527941 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "29.53M" |  |
+| population_raw | unchanged | already matches | census_api | 29527941 | 29527941 |
+| population_display | unchanged | already matches | census_api | "29.53M" | "29.53M" |
 | leader_name | unchanged | already matches | overlay | "Greg Abbott" | "Greg Abbott" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -1122,8 +1122,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 3337975 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "3.34M" |  |
+| population_raw | unchanged | already matches | census_api | 3337975 | 3337975 |
+| population_display | unchanged | already matches | census_api | "3.34M" | "3.34M" |
 | leader_name | unchanged | already matches | overlay | "Spencer Cox" | "Spencer Cox" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -1135,8 +1135,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 8642274 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "8.64M" |  |
+| population_raw | unchanged | already matches | census_api | 8642274 | 8642274 |
+| population_display | unchanged | already matches | census_api | "8.64M" | "8.64M" |
 | leader_name | unchanged | already matches | overlay | "Abigail Spanberger" | "Abigail Spanberger" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -1148,8 +1148,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 645570 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "646K" |  |
+| population_raw | unchanged | already matches | census_api | 645570 | 645570 |
+| population_display | unchanged | already matches | census_api | "646K" | "646K" |
 | leader_name | unchanged | already matches | overlay | "Phil Scott" | "Phil Scott" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -1161,8 +1161,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 7738692 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "7.74M" |  |
+| population_raw | unchanged | already matches | census_api | 7738692 | 7738692 |
+| population_display | unchanged | already matches | census_api | "7.74M" | "7.74M" |
 | leader_name | unchanged | already matches | overlay | "Bob Ferguson" | "Bob Ferguson" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -1174,8 +1174,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 5895908 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "5.90M" |  |
+| population_raw | unchanged | already matches | census_api | 5895908 | 5895908 |
+| population_display | unchanged | already matches | census_api | "5.90M" | "5.90M" |
 | leader_name | unchanged | already matches | overlay | "Tony Evers" | "Tony Evers" |
 | leader_party | unchanged | already matches | overlay | "Democratic Party" | "Democratic Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "D" |
@@ -1187,8 +1187,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 1782959 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "1.78M" |  |
+| population_raw | unchanged | already matches | census_api | 1782959 | 1782959 |
+| population_display | unchanged | already matches | census_api | "1.78M" | "1.78M" |
 | leader_name | unchanged | already matches | overlay | "Patrick Morrisey" | "Patrick Morrisey" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
@@ -1200,8 +1200,8 @@ Only keys that differ from current Firestore values. Empty table if nothing to c
 
 | Field | Status | Detail | Source | Current | Proposed |
 |-------|--------|--------|--------|---------|----------|
-| population_raw | needs_manual_review | Census disabled; add overlay or omit --no-census | — | 578803 |  |
-| population_display | needs_manual_review | Census disabled; add overlay or omit --no-census | — | "579K" |  |
+| population_raw | unchanged | already matches | census_api | 578803 | 578803 |
+| population_display | unchanged | already matches | census_api | "579K" | "579K" |
 | leader_name | unchanged | already matches | overlay | "Mark Gordon" | "Mark Gordon" |
 | leader_party | unchanged | already matches | overlay | "Republican Party" | "Republican Party" |
 | leader_party_short | would_write | new or different value | derived_us_leader_party | (missing) | "R" |
