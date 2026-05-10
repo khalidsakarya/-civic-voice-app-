@@ -1,5 +1,155 @@
 {
-  "_comment": "Phase 3B curated overlay — leadership & legislatures from official/government sources (batch 1). Omit population here for US states (PEP via Census in enrich). _sources is documentation only (not merged to Firestore).",
+  "_comment": "Phase 3B curated overlay - leadership and sites from official portals where possible. US governors and inauguration dates cross-checked against Ballotpedia current governors list. US population omitted (Census PEP in enrich). Non-US population omitted pending StatCan/ABS/ONS pulls. UK England regions (UK-ENG-*) not filled yet. _sources is documentation-only.",
+  "CA-AB": {
+    "leader_name": "Danielle Smith",
+    "leader_party": "United Conservative Party",
+    "leader_since": "2022-10-11",
+    "officialWebsite": "https://www.alberta.ca/premier",
+    "legislatureWebsite": "https://www.assembly.ab.ca/",
+    "_sources": "Alberta Premier — alberta.ca; legislature assembly.ab.ca (May 2026)."
+  },
+  "CA-BC": {
+    "leader_name": "David Eby",
+    "leader_party": "British Columbia New Democratic Party",
+    "leader_since": "2022-11-18",
+    "officialWebsite": "https://www2.gov.bc.ca/gov/content/government/premier",
+    "legislatureWebsite": "https://www.leg.bc.ca/",
+    "_sources": "Premier David Eby — gov.bc.ca office of the premier (May 2026)."
+  },
+  "CA-MB": {
+    "leader_name": "Wab Kinew",
+    "leader_party": "New Democratic Party of Manitoba",
+    "leader_since": "2023-10-18",
+    "officialWebsite": "https://www.gov.mb.ca/minister/premier/",
+    "legislatureWebsite": "https://www.gov.mb.ca/legislature/",
+    "_sources": "Premier Wab Kinew sworn Oct 2023 — gov.mb.ca premier (May 2026)."
+  },
+  "CA-NB": {
+    "leader_name": "Susan Holt",
+    "leader_party": "New Brunswick Liberal Association",
+    "leader_since": "2024-11-02",
+    "officialWebsite": "https://gnb.ca/en/org/office-of-the-premier.html",
+    "legislatureWebsite": "https://www.gnb.ca/legis/",
+    "_sources": "Premier Susan Holt sworn Nov 2 2024 — gnb.ca office of the premier / CBC (May 2026)."
+  },
+  "CA-NL": {
+    "leader_name": "Andrew Furey",
+    "leader_party": "Liberal Party of Newfoundland and Labrador",
+    "leader_since": "2020-08-19",
+    "officialWebsite": "https://www.premier.gov.nl.ca/",
+    "legislatureWebsite": "https://www.assembly.nl.ca/",
+    "_sources": "Premier Andrew Furey — premier.gov.nl.ca (May 2026)."
+  },
+  "CA-NS": {
+    "leader_name": "Tim Houston",
+    "leader_party": "Progressive Conservative Association of Nova Scotia",
+    "leader_since": "2021-08-31",
+    "officialWebsite": "https://premier.novascotia.ca/",
+    "legislatureWebsite": "https://nslegislature.ca/",
+    "_sources": "Premier Tim Houston — premier.novascotia.ca (May 2026)."
+  },
+  "CA-NT": {
+    "leader_name": "R.J. Simpson",
+    "leader_since": "2023-12-08",
+    "officialWebsite": "https://www.gov.nt.ca/",
+    "legislatureWebsite": "https://www.ntassembly.ca/",
+    "_sources": "Premier R.J. Simpson — Northwest Territories consensus government; gov.nt.ca / ntassembly.ca (May 2026). No partisan affiliation."
+  },
+  "CA-NU": {
+    "leader_name": "John Main",
+    "leader_since": "2025-11-20",
+    "officialWebsite": "https://www.premier.gov.nu.ca/",
+    "legislatureWebsite": "https://assembly.nu.ca/",
+    "_sources": "Premier John Main — sworn 2025-11-20; Leadership Forum 2025-11-18 (premier.gov.nu.ca About the Premier). Consensus government; no partisan affiliation."
+  },
+  "CA-PE": {
+    "leader_name": "Dennis King",
+    "leader_party": "Progressive Conservative Party of Prince Edward Island",
+    "leader_since": "2019-06-13",
+    "officialWebsite": "https://www.princeedwardisland.ca/en/topic/premier",
+    "legislatureWebsite": "https://www.assembly.pe.ca/",
+    "_sources": "Premier Dennis King — princeedwardisland.ca premier (May 2026)."
+  },
+  "CA-SK": {
+    "leader_name": "Scott Moe",
+    "leader_party": "Saskatchewan Party",
+    "leader_since": "2018-02-02",
+    "officialWebsite": "https://www.saskatchewan.ca/government/premier",
+    "legislatureWebsite": "https://www.legassembly.sk.ca/",
+    "_sources": "Premier Scott Moe — saskatchewan.ca/government/premier (May 2026)."
+  },
+  "CA-YT": {
+    "leader_name": "Ranj Pillai",
+    "leader_party": "Yukon Liberal Party",
+    "leader_since": "2023-01-14",
+    "officialWebsite": "https://yukon.ca/en/your-government/yukon-premier",
+    "legislatureWebsite": "https://yukonassembly.ca/",
+    "_sources": "Premier Ranj Pillai — yukon.ca (May 2026)."
+  },
+  "AU-QLD": {
+    "leader_name": "David Crisafulli",
+    "leader_party": "Liberal National Party of Queensland",
+    "leader_since": "2024-11-01",
+    "officialWebsite": "https://www.qld.gov.au/about/leadership-government-government/premier-minister",
+    "legislatureWebsite": "https://www.parliament.qld.gov.au/",
+    "_sources": "Premier David Crisafulli — Queensland Government / ABC News (Nov 2024 change of government)."
+  },
+  "AU-WA": {
+    "leader_name": "Roger Cook",
+    "leader_party": "Australian Labor Party",
+    "leader_since": "2023-06-08",
+    "officialWebsite": "https://www.wa.gov.au/government/premier-state-government",
+    "legislatureWebsite": "https://www.parliament.wa.gov.au/",
+    "_sources": "Premier Roger Cook — wa.gov.au (May 2026)."
+  },
+  "AU-SA": {
+    "leader_name": "Peter Malinauskas",
+    "leader_party": "Australian Labor Party",
+    "leader_since": "2022-03-21",
+    "officialWebsite": "https://www.premier.sa.gov.au/",
+    "legislatureWebsite": "https://www.parliament.sa.gov.au/",
+    "_sources": "Premier Peter Malinauskas — premier.sa.gov.au (May 2026)."
+  },
+  "AU-TAS": {
+    "leader_name": "Jeremy Rockliff",
+    "leader_party": "Liberal Party",
+    "leader_since": "2022-04-08",
+    "officialWebsite": "https://www.premier.tas.gov.au/",
+    "legislatureWebsite": "https://www.parliament.tas.gov.au/",
+    "_sources": "Premier Jeremy Rockliff — premier.tas.gov.au (May 2026)."
+  },
+  "AU-ACT": {
+    "leader_name": "Andrew Barr",
+    "leader_party": "Australian Labor Party",
+    "leader_since": "2014-12-11",
+    "officialWebsite": "https://www.act.gov.au/",
+    "legislatureWebsite": "https://www.parliament.act.gov.au/",
+    "_sources": "Chief Minister Andrew Barr — ACT Government (May 2026)."
+  },
+  "AU-NT": {
+    "leader_name": "Lia Finocchiaro",
+    "leader_party": "Country Liberal Party",
+    "leader_since": "2024-08-28",
+    "officialWebsite": "https://nt.gov.au/",
+    "legislatureWebsite": "https://parliament.nt.gov.au/",
+    "_sources": "Chief Minister Lia Finocchiaro — NT Government; sworn Aug 2024 post-election — ABC News / nt.gov.au (May 2026)."
+  },
+  "UK-NIR": {
+    "leader_name": "Michelle O'Neill",
+    "leader_party": "Sinn Féin",
+    "leader_since": "2024-02-03",
+    "officialWebsite": "https://www.executiveoffice-ni.gov.uk/",
+    "legislatureWebsite": "https://www.niassembly.gov.uk/",
+    "_sources": "First Minister Michelle O'Neill — Northern Ireland Executive / NI Assembly (Stormont restoration Feb 2024)."
+  },
+  "UK-ENG": {
+    "leader_name": "Keir Starmer",
+    "leader_party": "Labour Party",
+    "leader_since": "2024-07-05",
+    "officialWebsite": "https://www.gov.uk/",
+    "legislatureWebsite": "https://www.parliament.uk/",
+    "_sources": "Prime Minister of the UK (England uses Westminster government) — gov.uk / parliament.uk (May 2026)."
+  },
   "US-CA": {
     "leader_name": "Gavin Newsom",
     "leader_party": "Democratic Party",
@@ -14,7 +164,7 @@
     "leader_since": "2015-01-20",
     "officialWebsite": "https://gov.texas.gov/",
     "legislatureWebsite": "https://capitol.texas.gov/",
-    "_sources": "Governor Greg Abbott — gov.texas.gov news/office listings (May 2026)."
+    "_sources": "Governor Greg Abbott — gov.texas.gov (May 2026)."
   },
   "US-NY": {
     "leader_name": "Kathy Hochul",
@@ -30,7 +180,7 @@
     "leader_since": "2019-01-08",
     "officialWebsite": "https://www.flgov.gov/",
     "legislatureWebsite": "https://www.flsenate.gov/",
-    "_sources": "Governor Ron DeSantis — flgov.gov / executive branch listings (May 2026)."
+    "_sources": "Governor Ron DeSantis — flgov.gov (May 2026)."
   },
   "CA-ON": {
     "leader_name": "Doug Ford",
@@ -40,21 +190,13 @@
     "legislatureWebsite": "https://www.ola.org/",
     "_sources": "Premier Doug Ford — Ontario Premier office / Legislative Assembly of Ontario (May 2026)."
   },
-  "CA-QC": {
-    "leader_name": "Christine Fréchette",
-    "leader_party": "Coalition Avenir Québec",
-    "leader_since": "2026-04-15",
-    "officialWebsite": "https://www.premier-ministre.gouv.qc.ca/",
-    "legislatureWebsite": "https://www.assnat.qc.ca/",
-    "_sources": "Premier Christine Fréchette sworn following CAQ leadership — CBC News / gouv.qc.ca premier ministre (April 2026)."
-  },
   "AU-NSW": {
     "leader_name": "Chris Minns",
     "leader_party": "Australian Labor Party",
     "leader_since": "2023-03-28",
     "officialWebsite": "https://www.nsw.gov.au/",
     "legislatureWebsite": "https://www.parliament.nsw.gov.au/",
-    "_sources": "Premier Chris Minns — NSW Government premier pages (May 2026)."
+    "_sources": "Premier Chris Minns — NSW Government (May 2026)."
   },
   "AU-VIC": {
     "leader_name": "Jacinta Allan",
@@ -70,7 +212,7 @@
     "leader_since": "2024-05-08",
     "officialWebsite": "https://www.gov.scot/",
     "legislatureWebsite": "https://www.parliament.scot/",
-    "_sources": "First Minister John Swinney sworn 2024-05-08 — gov.scot / BBC Scotland (May 2026)."
+    "_sources": "First Minister John Swinney sworn 2024-05-08 — gov.scot (May 2026)."
   },
   "UK-WLS": {
     "leader_name": "Eluned Morgan",
@@ -78,6 +220,390 @@
     "leader_since": "2024-08-06",
     "officialWebsite": "https://www.gov.wales/",
     "legislatureWebsite": "https://www.senedd.wales/",
-    "_sources": "First Minister Eluned Morgan sworn 2024-08-06 — GOV.WALES / BBC Wales (May 2026)."
+    "_sources": "First Minister Eluned Morgan sworn 2024-08-06 — GOV.WALES (May 2026)."
+  },
+  "US-AL": {
+    "leader_name": "Kay Ivey",
+    "leader_party": "Republican Party",
+    "leader_since": "2017-04-10",
+    "officialWebsite": "https://www.governor.alabama.gov/",
+    "legislatureWebsite": "https://alison.legislature.state.al.us/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-AK": {
+    "leader_name": "Mike Dunleavy",
+    "leader_party": "Republican Party",
+    "leader_since": "2018-12-03",
+    "officialWebsite": "https://gov.alaska.gov/",
+    "legislatureWebsite": "https://www.akleg.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-AZ": {
+    "leader_name": "Katie Hobbs",
+    "leader_party": "Democratic Party",
+    "leader_since": "2023-01-02",
+    "officialWebsite": "https://azgovernor.gov/",
+    "legislatureWebsite": "https://www.azleg.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-AR": {
+    "leader_name": "Sarah Huckabee Sanders",
+    "leader_party": "Republican Party",
+    "leader_since": "2023-01-10",
+    "officialWebsite": "https://governor.arkansas.gov/",
+    "legislatureWebsite": "https://www.arkansas.gov/legislature/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-CO": {
+    "leader_name": "Jared Polis",
+    "leader_party": "Democratic Party",
+    "leader_since": "2019-01-08",
+    "officialWebsite": "https://www.colorado.gov/governor/",
+    "legislatureWebsite": "https://leg.colorado.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-CT": {
+    "leader_name": "Ned Lamont",
+    "leader_party": "Democratic Party",
+    "leader_since": "2019-01-09",
+    "officialWebsite": "https://portal.ct.gov/governor",
+    "legislatureWebsite": "https://www.cga.ct.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-DE": {
+    "leader_name": "Matt Meyer",
+    "leader_party": "Democratic Party",
+    "leader_since": "2025-01-21",
+    "officialWebsite": "https://governor.delaware.gov/",
+    "legislatureWebsite": "https://legis.delaware.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-GA": {
+    "leader_name": "Brian Kemp",
+    "leader_party": "Republican Party",
+    "leader_since": "2019-01-14",
+    "officialWebsite": "https://gov.georgia.gov/",
+    "legislatureWebsite": "https://www.legis.ga.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-HI": {
+    "leader_name": "Josh Green",
+    "leader_party": "Democratic Party",
+    "leader_since": "2022-12-05",
+    "officialWebsite": "https://governor.hawaii.gov/",
+    "legislatureWebsite": "https://www.capitol.hawaii.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-ID": {
+    "leader_name": "Brad Little",
+    "leader_party": "Republican Party",
+    "leader_since": "2019-01-07",
+    "officialWebsite": "https://gov.idaho.gov/",
+    "legislatureWebsite": "https://legislature.idaho.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-IL": {
+    "leader_name": "J.B. Pritzker",
+    "leader_party": "Democratic Party",
+    "leader_since": "2019-01-14",
+    "officialWebsite": "https://www2.illinois.gov/sites/gov/",
+    "legislatureWebsite": "https://www.ilga.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-IN": {
+    "leader_name": "Mike Braun",
+    "leader_party": "Republican Party",
+    "leader_since": "2025-01-13",
+    "officialWebsite": "https://www.in.gov/governor/",
+    "legislatureWebsite": "https://iga.in.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-IA": {
+    "leader_name": "Kim Reynolds",
+    "leader_party": "Republican Party",
+    "leader_since": "2017-05-24",
+    "officialWebsite": "https://governor.iowa.gov/",
+    "legislatureWebsite": "https://www.legis.iowa.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-KS": {
+    "leader_name": "Laura Kelly",
+    "leader_party": "Democratic Party",
+    "leader_since": "2019-01-14",
+    "officialWebsite": "https://governor.kansas.gov/",
+    "legislatureWebsite": "https://www.kslegislature.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-KY": {
+    "leader_name": "Andy Beshear",
+    "leader_party": "Democratic Party",
+    "leader_since": "2019-12-10",
+    "officialWebsite": "https://governor.ky.gov/",
+    "legislatureWebsite": "https://legislature.ky.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-LA": {
+    "leader_name": "Jeff Landry",
+    "leader_party": "Republican Party",
+    "leader_since": "2024-01-08",
+    "officialWebsite": "https://gov.louisiana.gov/",
+    "legislatureWebsite": "https://legislature.la.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-ME": {
+    "leader_name": "Janet Mills",
+    "leader_party": "Democratic Party",
+    "leader_since": "2019-01-02",
+    "officialWebsite": "https://www.maine.gov/governor/",
+    "legislatureWebsite": "https://legislature.maine.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-MD": {
+    "leader_name": "Wes Moore",
+    "leader_party": "Democratic Party",
+    "leader_since": "2023-01-18",
+    "officialWebsite": "https://governor.maryland.gov/",
+    "legislatureWebsite": "https://mgaleg.maryland.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-MA": {
+    "leader_name": "Maura Healey",
+    "leader_party": "Democratic Party",
+    "leader_since": "2023-01-05",
+    "officialWebsite": "https://www.mass.gov/orgs/office-of-the-governor",
+    "legislatureWebsite": "https://malegislature.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-MI": {
+    "leader_name": "Gretchen Whitmer",
+    "leader_party": "Democratic Party",
+    "leader_since": "2019-01-01",
+    "officialWebsite": "https://www.michigan.gov/governor/",
+    "legislatureWebsite": "https://www.legislature.mi.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-MN": {
+    "leader_name": "Tim Walz",
+    "leader_party": "Democratic Party",
+    "leader_since": "2019-01-07",
+    "officialWebsite": "https://mn.gov/governor/",
+    "legislatureWebsite": "https://www.leg.mn.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-MS": {
+    "leader_name": "Tate Reeves",
+    "leader_party": "Republican Party",
+    "leader_since": "2020-01-14",
+    "officialWebsite": "https://governor.ms.gov/",
+    "legislatureWebsite": "https://www.legislature.ms.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-MO": {
+    "leader_name": "Mike Kehoe",
+    "leader_party": "Republican Party",
+    "leader_since": "2025-01-13",
+    "officialWebsite": "https://governor.mo.gov/",
+    "legislatureWebsite": "https://www.mo.gov/government/legislative-branch/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-MT": {
+    "leader_name": "Greg Gianforte",
+    "leader_party": "Republican Party",
+    "leader_since": "2021-01-04",
+    "officialWebsite": "https://governor.mt.gov/",
+    "legislatureWebsite": "https://leg.mt.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-NE": {
+    "leader_name": "Jim Pillen",
+    "leader_party": "Republican Party",
+    "leader_since": "2023-01-05",
+    "officialWebsite": "https://governor.nebraska.gov/",
+    "legislatureWebsite": "https://nebraskalegislature.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-NV": {
+    "leader_name": "Joe Lombardo",
+    "leader_party": "Republican Party",
+    "leader_since": "2023-01-02",
+    "officialWebsite": "https://gov.nv.gov/",
+    "legislatureWebsite": "https://www.leg.state.nv.us/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-NH": {
+    "leader_name": "Kelly Ayotte",
+    "leader_party": "Republican Party",
+    "leader_since": "2025-01-08",
+    "officialWebsite": "https://www.governor.nh.gov/",
+    "legislatureWebsite": "https://www.gencourt.state.nh.us/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-NJ": {
+    "leader_name": "Mikie Sherrill",
+    "leader_party": "Democratic Party",
+    "leader_since": "2026-01-20",
+    "officialWebsite": "https://www.nj.gov/governor/",
+    "legislatureWebsite": "https://www.njleg.state.nj.us/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-NM": {
+    "leader_name": "Michelle Lujan Grisham",
+    "leader_party": "Democratic Party",
+    "leader_since": "2019-01-01",
+    "officialWebsite": "https://www.governor.state.nm.us/",
+    "legislatureWebsite": "https://www.nmlegis.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-NC": {
+    "leader_name": "Josh Stein",
+    "leader_party": "Democratic Party",
+    "leader_since": "2025-01-01",
+    "officialWebsite": "https://governor.nc.gov/",
+    "legislatureWebsite": "https://www.ncleg.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-ND": {
+    "leader_name": "Kelly Armstrong",
+    "leader_party": "Republican Party",
+    "leader_since": "2024-12-15",
+    "officialWebsite": "https://www.governor.nd.gov/",
+    "legislatureWebsite": "https://www.ndlegis.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-OH": {
+    "leader_name": "Mike DeWine",
+    "leader_party": "Republican Party",
+    "leader_since": "2019-01-14",
+    "officialWebsite": "https://governor.ohio.gov/",
+    "legislatureWebsite": "https://www.legislature.ohio.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-OK": {
+    "leader_name": "Kevin Stitt",
+    "leader_party": "Republican Party",
+    "leader_since": "2019-01-14",
+    "officialWebsite": "https://www.oklahoma.gov/governor.html",
+    "legislatureWebsite": "https://www.oklegislature.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-OR": {
+    "leader_name": "Tina Kotek",
+    "leader_party": "Democratic Party",
+    "leader_since": "2023-01-09",
+    "officialWebsite": "https://www.oregon.gov/gov/",
+    "legislatureWebsite": "https://www.oregonlegislature.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-PA": {
+    "leader_name": "Josh Shapiro",
+    "leader_party": "Democratic Party",
+    "leader_since": "2023-01-17",
+    "officialWebsite": "https://www.governor.pa.gov/",
+    "legislatureWebsite": "https://www.palegis.us/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-RI": {
+    "leader_name": "Daniel McKee",
+    "leader_party": "Democratic Party",
+    "leader_since": "2021-03-02",
+    "officialWebsite": "https://governor.ri.gov/",
+    "legislatureWebsite": "https://www.rilin.state.ri.us/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-SC": {
+    "leader_name": "Henry McMaster",
+    "leader_party": "Republican Party",
+    "leader_since": "2017-01-24",
+    "officialWebsite": "https://governor.sc.gov/",
+    "legislatureWebsite": "https://www.scstatehouse.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-SD": {
+    "leader_name": "Larry Rhoden",
+    "leader_party": "Republican Party",
+    "leader_since": "2025-01-25",
+    "officialWebsite": "https://sd.gov/governor/",
+    "legislatureWebsite": "https://sdlegislature.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-TN": {
+    "leader_name": "Bill Lee",
+    "leader_party": "Republican Party",
+    "leader_since": "2019-01-15",
+    "officialWebsite": "https://www.tn.gov/governor/",
+    "legislatureWebsite": "https://wapp.capitol.tn.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-UT": {
+    "leader_name": "Spencer Cox",
+    "leader_party": "Republican Party",
+    "leader_since": "2021-01-04",
+    "officialWebsite": "https://governor.utah.gov/",
+    "legislatureWebsite": "https://le.utah.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-VT": {
+    "leader_name": "Phil Scott",
+    "leader_party": "Republican Party",
+    "leader_since": "2017-01-05",
+    "officialWebsite": "https://governor.vermont.gov/",
+    "legislatureWebsite": "https://legislature.vermont.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-VA": {
+    "leader_name": "Abigail Spanberger",
+    "leader_party": "Democratic Party",
+    "leader_since": "2026-01-17",
+    "officialWebsite": "https://www.governor.virginia.gov/",
+    "legislatureWebsite": "https://virginiageneralassembly.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-WA": {
+    "leader_name": "Bob Ferguson",
+    "leader_party": "Democratic Party",
+    "leader_since": "2025-01-13",
+    "officialWebsite": "https://www.governor.wa.gov/",
+    "legislatureWebsite": "https://leg.wa.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-WV": {
+    "leader_name": "Patrick Morrisey",
+    "leader_party": "Republican Party",
+    "leader_since": "2025-01-13",
+    "officialWebsite": "https://governor.wv.gov/",
+    "legislatureWebsite": "https://www.wvlegislature.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-WI": {
+    "leader_name": "Tony Evers",
+    "leader_party": "Democratic Party",
+    "leader_since": "2019-01-07",
+    "officialWebsite": "https://www.evers.wi.gov/",
+    "legislatureWebsite": "https://docs.legis.wisconsin.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-WY": {
+    "leader_name": "Mark Gordon",
+    "leader_party": "Republican Party",
+    "leader_since": "2019-01-07",
+    "officialWebsite": "https://governor.wyo.gov/",
+    "legislatureWebsite": "https://www.wyoleg.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "US-DC": {
+    "leader_name": "Muriel Bowser",
+    "leader_party": "Democratic Party",
+    "leader_since": "2015-01-02",
+    "officialWebsite": "https://mayor.dc.gov/",
+    "legislatureWebsite": "https://dccouncil.gov/",
+    "_sources": "Governor roster & inauguration dates: Ballotpedia List of current governors (US); legislature URLs: official state legislative portals."
+  },
+  "CA-QC": {
+    "leader_name": "Christine Fréchette",
+    "leader_party": "Coalition Avenir Québec",
+    "leader_since": "2026-04-15",
+    "officialWebsite": "https://www.premier-ministre.gouv.qc.ca/",
+    "legislatureWebsite": "https://www.assnat.qc.ca/",
+    "_sources": "Premier Christine Fréchette sworn 2026-04-15 per CBC/CTV April 2026 coverage; confirm live at premier-ministre.gouv.qc.ca before write."
   }
 }
