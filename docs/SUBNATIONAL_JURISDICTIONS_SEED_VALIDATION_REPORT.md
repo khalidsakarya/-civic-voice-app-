@@ -1,6 +1,6 @@
 # subnational_jurisdictions — seed validation report
 
-Generated: 2026-05-08T22:40:27.652Z
+Generated: 2026-05-10T00:46:54.091Z
 Project: `civic-voice-5ea94`
 Collection: `subnational_jurisdictions`
 Credential mode (hint): GOOGLE_APPLICATION_CREDENTIALS
