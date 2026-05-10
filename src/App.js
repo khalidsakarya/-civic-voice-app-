@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import app, { db } from './firebase';
 import { EXECUTIVE_ACTIONS_COLLECTION } from './constants/firestoreCollections';
+import { fetchSubnationalJurisdictions } from './firestore/fetchSubnationalJurisdictions';
 import { formatExecutiveOrderDisplayDate } from './utils/executiveOrderDates';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
 import {
@@ -31,6 +32,12 @@ const CANADA_PROVINCE_TERRITORY_NAMES_REGION_GATE = [
   'Saskatchewan',
   'Yukon',
 ];
+
+/** US state display names for voting location gate manual dropdown (50 states; excludes DC — matches legacy gate). */
+const LOCATION_GATE_US_STATE_NAMES_FALLBACK = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
+
+/** Province/territory codes in same order as CANADA_PROVINCE_TERRITORY_NAMES_REGION_GATE (for Firestore ordering). */
+const CANADA_LOCATION_GATE_ORDER_ABBR = ['AB','BC','MB','NB','NL','NT','NS','NU','ON','PE','QC','SK','YT'];
 
 // Custom CSS for animations and enhanced styling
 const customStyles = `
@@ -1708,7 +1715,12 @@ function App() {
   const [regionManualMode, setRegionManualMode] = useState(false);
   const [manualRegionType, setManualRegionType] = useState('canada');
   const [manualRegionValue, setManualRegionValue] = useState('');
+  /** Firestore-backed `{ value, label }[]` for location gate only; null = use legacy fallback strings. */
+  const [locationGateUsPairs, setLocationGateUsPairs] = useState(null);
+  const [locationGateCaPairs, setLocationGateCaPairs] = useState(null);
   const pendingVoteRef = useRef(null);
+  /** Avoid repeating Firestore reads when the location gate is opened multiple times per session. */
+  const locationGateSubnationalFetchDoneRef = useRef(false);
   const [pmVotes, setPmVotes] = useState(() => {
     const saved = localStorage.getItem('cvPMVote');
     return saved ? JSON.parse(saved) : { support: 0, oppose: 0, concerned: 0, userVote: null };
@@ -3050,6 +3062,76 @@ function App() {
     }
   ]);
   
+  // Location gate: optional Firestore-backed US/CA dropdown labels (values stay legacy strings for storage + getRegionCountry).
+  useEffect(() => {
+    if (!showLocationGate || locationGateSubnationalFetchDoneRef.current) return;
+    let cancelled = false;
+    (async () => {
+      const [usRows, caRows] = await Promise.all([
+        fetchSubnationalJurisdictions('US'),
+        fetchSubnationalJurisdictions('CA'),
+      ]);
+      if (cancelled) return;
+      const usNoDc = usRows.filter((r) => String(r.abbreviation).toUpperCase() !== 'DC');
+      if (usNoDc.length !== 50 || caRows.length !== 13) {
+        if (!cancelled) {
+          setLocationGateUsPairs(null);
+          setLocationGateCaPairs(null);
+        }
+        locationGateSubnationalFetchDoneRef.current = true;
+        return;
+      }
+      const norm = (s) => String(s).trim().toLowerCase();
+      const usByName = new Map(usNoDc.map((r) => [norm(r.name), r]));
+      const findUsRec = (legacyValue) => {
+        const byKey = usByName.get(norm(legacyValue));
+        if (byKey) return byKey;
+        return (
+          usNoDc.find(
+            (r) => r.name.localeCompare(legacyValue, 'en', { sensitivity: 'base' }) === 0,
+          ) || null
+        );
+      };
+      const usPairs = [];
+      for (const value of LOCATION_GATE_US_STATE_NAMES_FALLBACK) {
+        const rec = findUsRec(value);
+        if (!rec) {
+          if (!cancelled) {
+            setLocationGateUsPairs(null);
+            setLocationGateCaPairs(null);
+          }
+          locationGateSubnationalFetchDoneRef.current = true;
+          return;
+        }
+        usPairs.push({ value, label: rec.name });
+      }
+      const caByAbbr = new Map(caRows.map((r) => [String(r.abbreviation).toUpperCase(), r]));
+      const caPairs = [];
+      for (let i = 0; i < CANADA_LOCATION_GATE_ORDER_ABBR.length; i += 1) {
+        const abbr = CANADA_LOCATION_GATE_ORDER_ABBR[i];
+        const legacyValue = CANADA_PROVINCE_TERRITORY_NAMES_REGION_GATE[i];
+        const rec = caByAbbr.get(abbr);
+        if (!rec || legacyValue == null) {
+          if (!cancelled) {
+            setLocationGateUsPairs(null);
+            setLocationGateCaPairs(null);
+          }
+          locationGateSubnationalFetchDoneRef.current = true;
+          return;
+        }
+        caPairs.push({ value: legacyValue, label: rec.name });
+      }
+      if (!cancelled) {
+        setLocationGateUsPairs(usPairs);
+        setLocationGateCaPairs(caPairs);
+      }
+      locationGateSubnationalFetchDoneRef.current = true;
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [showLocationGate]);
+
   // Global keyboard shortcut: Cmd/Ctrl+K to open search
   useEffect(() => {
     const handler = (e) => {
@@ -5483,7 +5565,10 @@ function App() {
   // ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
   const getRegionCountry = (region) => {
     if (!region) return null;
-    return CANADA_PROVINCE_TERRITORY_NAMES_REGION_GATE.includes(region) ? 'canada' : 'usa';
+    if (CANADA_PROVINCE_TERRITORY_NAMES_REGION_GATE.includes(region)) return 'canada';
+    // Alias used in some sources / Firestore display strings (gate stores legacy "Newfoundland and Labrador").
+    if (region === 'Newfoundland & Labrador') return 'canada';
+    return 'usa';
   };
 
   const timeAgo = (isoString) => {
@@ -34927,8 +35012,12 @@ function App() {
   };
 
   const renderLocationGateModal = () => {
-    const usStates = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
-    const options = manualRegionType === 'canada' ? CANADA_PROVINCE_TERRITORY_NAMES_REGION_GATE : usStates;
+    const usFallbackPairs = LOCATION_GATE_US_STATE_NAMES_FALLBACK.map((v) => ({ value: v, label: v }));
+    const caFallbackPairs = CANADA_PROVINCE_TERRITORY_NAMES_REGION_GATE.map((v) => ({ value: v, label: v }));
+    const optionsPairs =
+      manualRegionType === 'canada'
+        ? (locationGateCaPairs ?? caFallbackPairs)
+        : (locationGateUsPairs ?? usFallbackPairs);
     return (
       <div
         className="fixed inset-0 z-[60] flex items-center justify-center panel-backdrop"
@@ -35011,7 +35100,9 @@ function App() {
                   className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm text-gray-800 mb-3 focus:outline-none focus:border-blue-500"
                 >
                   <option value="">Select {manualRegionType === 'canada' ? 'province / territory' : 'state'}…</option>
-                  {options.map(o => <option key={o} value={o}>{o}</option>)}
+                  {optionsPairs.map(({ value, label }) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
                 </select>
                 <button
                   onClick={handleRegionManualConfirm}
