@@ -26576,6 +26576,7 @@ function App() {
   };
 
   const renderSearchOverlay = () => {
+    try {
     // Build search index from all available data
     const q = globalSearchQuery.trim().toLowerCase();
 
@@ -26707,19 +26708,22 @@ function App() {
       });
     });
 
-    // Court Cases — from state + fallback
-    const caCases = canadaSupremeCourt?.cases || [];
-    const usCases = usSupremeCourt?.recentCases || usSupremeCourt?.cases || [];
-    const ukCases = ukSupremeCourt?.recentDecisions || ukSupremeCourt?.cases || [];
+    // Court Cases — from courtCases state (keyed by jurisdiction)
+    const caCases = courtCases['CA'] || [];
+    const usCases = courtCases['US'] || [];
+    const ukCases = courtCases['UK'] || [];
 
     caCases.forEach(c => {
-      allItems.push({ id: `case-ca-${c.id||c.name}`, category: 'Court Cases', flag: '🇨🇦', name: c.name || c.title, type: 'CA Supreme Court', desc: c.summary || c.description || '', nav: () => { setSelectedCase(c); setView('case-detail'); } });
+      const cname = c.title || c.name || c.case_name || '';
+      allItems.push({ id: `case-ca-${c.id || cname}`, category: 'Court Cases', flag: '🇨🇦', name: cname, type: 'CA Supreme Court', desc: c.summary || c.description || '', nav: () => setView('supreme-court') });
     });
     usCases.forEach(c => {
-      allItems.push({ id: `case-us-${c.id||c.name}`, category: 'Court Cases', flag: '🇺🇸', name: c.name || c.title, type: 'US Supreme Court', desc: c.summary || c.description || '', nav: () => setView('us-supreme-court') });
+      const cname = c.title || c.name || c.case_name || '';
+      allItems.push({ id: `case-us-${c.id || cname}`, category: 'Court Cases', flag: '🇺🇸', name: cname, type: 'US Supreme Court', desc: c.summary || c.description || '', nav: () => setView('us-supreme-court') });
     });
     ukCases.forEach(c => {
-      allItems.push({ id: `case-uk-${c.id||c.name}`, category: 'Court Cases', flag: '🇬🇧', name: c.name || c.title, type: 'UK Supreme Court', desc: c.summary || c.description || '', nav: () => setView('uk-supreme-court') });
+      const cname = c.title || c.name || c.case_name || '';
+      allItems.push({ id: `case-uk-${c.id || cname}`, category: 'Court Cases', flag: '🇬🇧', name: cname, type: 'UK Supreme Court', desc: c.summary || c.description || '', nav: () => setView('uk-supreme-court') });
     });
 
     // Add fallbacks for any category with 0 results after filtering
@@ -26867,6 +26871,27 @@ function App() {
         </div>
       </div>
     );
+    } catch (err) {
+      console.error('[SearchOverlay] render error:', err);
+      return (
+        <div className="fixed inset-0 z-[300] flex flex-col items-center justify-center" style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
+          onClick={() => { setShowGlobalSearch(false); setGlobalSearchQuery(''); }}>
+          <div className="w-full max-w-2xl mx-auto px-4" onClick={e => e.stopPropagation()}>
+            <div className="relative flex items-center">
+              <span className="absolute left-4 text-gray-400 text-xl">🔍</span>
+              <input autoFocus type="text" value={globalSearchQuery}
+                onChange={e => setGlobalSearchQuery(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Escape') { setShowGlobalSearch(false); setGlobalSearchQuery(''); } }}
+                placeholder="Search politicians, bills, departments, court cases..."
+                className="w-full pl-12 pr-12 py-4 rounded-2xl text-lg font-medium outline-none"
+                style={{ background: 'rgba(255,255,255,0.97)', color: '#111', boxShadow: '0 8px 40px rgba(0,0,0,0.5)' }} />
+              <button onClick={() => { setShowGlobalSearch(false); setGlobalSearchQuery(''); }} className="absolute right-4 text-gray-400 hover:text-gray-600 text-xl font-bold">✕</button>
+            </div>
+            <p className="text-white text-center text-sm mt-4 opacity-60">Search unavailable — please try again.</p>
+          </div>
+        </div>
+      );
+    }
   };
 
   const renderTransparencyBanner = (countryCode) => {
