@@ -1639,6 +1639,35 @@ const ANOMALY_DATA = {
   ],
 };
 
+/** Firestore `expense_anomalies` summary slice → Waste Tracker red-flag row shape (matches hardcoded ANOMALY_DATA fields used by the UI). */
+function mapExpenseSummaryScandalToWasteUi(a) {
+  return {
+    id: a.id ?? `fs-${String(a.headline || '').slice(0, 48)}`,
+    headline: a.headline || '—',
+    leader_name: a.person || '—',
+    leader_title: a.anomalyType || '',
+    scandal_score: a.scandalScore ?? 0,
+    category: a.anomalyType,
+    explanation: '',
+    amount: undefined,
+    date: '',
+  };
+}
+
+/** Firestore `expense_leaderboard` top10 row → Waste Tracker leaderboard row shape (matches LEADERBOARD_FALLBACK). */
+function mapExpenseLeaderboardRowToWasteUi(r) {
+  const pct = r.trendPercent != null ? Math.abs(Math.round(r.trendPercent)) : 0;
+  const trend = r.trend === 'up' ? 'up' : 'down';
+  return {
+    name: r.person || '—',
+    title: r.role || '',
+    totalExpenses: r.totalExpenses ?? 0,
+    wasteScore: r.wasteScore ?? 0,
+    trend,
+    changePercent: pct,
+  };
+}
+
 function App() {
   // ── VOTE DATA VERSION GATE ────────────────────────────────────────────────
   // Bump CV_VOTES_VERSION whenever vote counts are reset so every user gets
@@ -2557,6 +2586,10 @@ function App() {
   const [wasteReport, setWasteReport] = useState(null);
   const [wasteLoading, setWasteLoading] = useState(false);
   const [wasteLiveData, setWasteLiveData] = useState(false);
+  /** null = not loaded for current fetch cycle; [] = loaded empty (use hardcoded anomaly fallback); non-empty = Firestore-backed */
+  const [wasteAnomaliesFirestore, setWasteAnomaliesFirestore] = useState(null);
+  /** null = not loaded; [] = empty doc (use LEADERBOARD_FALLBACK); non-empty = Firestore-backed */
+  const [wasteLeaderboardFirestore, setWasteLeaderboardFirestore] = useState(null);
   const [wasteSeverityFilter, setWasteSeverityFilter] = useState('All');
   const [wasteCategoryFilter, setWasteCategoryFilter] = useState('All');
   const [compareLeaderAIdx, setCompareLeaderAIdx] = useState(-1);
@@ -3345,6 +3378,8 @@ function App() {
       setWasteReport(null);
       setCompareLeaderAIdx(-1);
       setCompareLeaderBIdx(-1);
+      setWasteAnomaliesFirestore(null);
+      setWasteLeaderboardFirestore(null);
     }
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -10053,7 +10088,12 @@ function App() {
     const rosterMap = { CA: rosterCA, US: rosterUS, UK: rosterUK, AU: rosterAU };
     const roster = rosterMap[country] || rosterCA;
 
-    const sortedAnomalies = [...(ANOMALY_DATA[country] || ANOMALY_DATA.CA)].sort((a, b) => (b.scandal_score || 0) - (a.scandal_score || 0));
+    const fallbackAnomalies = [...(ANOMALY_DATA[country] || ANOMALY_DATA.CA)].sort((a, b) => (b.scandal_score || 0) - (a.scandal_score || 0));
+    const fsAnomaliesSorted =
+      Array.isArray(wasteAnomaliesFirestore) && wasteAnomaliesFirestore.length > 0
+        ? [...wasteAnomaliesFirestore].map(mapExpenseSummaryScandalToWasteUi).sort((a, b) => (b.scandal_score || 0) - (a.scandal_score || 0))
+        : [];
+    const sortedAnomalies = fsAnomaliesSorted.length > 0 ? fsAnomaliesSorted : fallbackAnomalies;
     const top3Anomalies = sortedAnomalies.slice(0, 3);
 
     return (
@@ -10217,7 +10257,12 @@ function App() {
 
           {/* Expense Leaderboard */}
           {(() => {
-            const rows = LEADERBOARD_FALLBACK[country] || LEADERBOARD_FALLBACK.CA;
+            const fbRows = LEADERBOARD_FALLBACK[country] || LEADERBOARD_FALLBACK.CA;
+            const fsRows =
+              Array.isArray(wasteLeaderboardFirestore) && wasteLeaderboardFirestore.length > 0
+                ? wasteLeaderboardFirestore.map(mapExpenseLeaderboardRowToWasteUi)
+                : [];
+            const rows = fsRows.length > 0 ? fsRows : fbRows;
             const medalEmoji = ['🥇', '🥈', '🥉'];
             return (
               <div className="rounded-2xl border border-orange-700/40 mb-6 overflow-hidden" style={{ background: 'rgba(0,0,0,0.55)' }}>
@@ -17203,7 +17248,7 @@ function App() {
     }
   };
 
-  // Auto-fetch flagged_expenses + waste_reports when Waste Tracker opens (same queries as manual "Load Live Data"; client reads only).
+  // Auto-fetch flagged_expenses + waste_reports + expense anomaly summary + expense leaderboard when Waste Tracker opens (client reads only).
   useEffect(() => {
     if (view !== 'waste-tracker') return;
     const isUSA = selectedCountry?.type === 'usa';
@@ -17211,7 +17256,31 @@ function App() {
     const isUK = selectedCountry?.type === 'uk';
     const countryCode = isUSA ? 'US' : isAU ? 'AU' : isUK ? 'UK' : 'CA';
     setWasteLiveData(true);
+    setWasteAnomaliesFirestore(null);
+    setWasteLeaderboardFirestore(null);
     fetchWasteData(countryCode);
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const [summarySnap, lbSnap] = await Promise.all([
+          getDoc(doc(db, 'expense_anomalies', `_summary_${countryCode}`)),
+          getDoc(doc(db, 'expense_leaderboard', countryCode)),
+        ]);
+        if (cancelled) return;
+        const rawAnomalies = summarySnap.exists() ? (summarySnap.data().topScandals || []) : [];
+        const rawLb = lbSnap.exists() ? (lbSnap.data().top10 || []) : [];
+        setWasteAnomaliesFirestore(Array.isArray(rawAnomalies) ? rawAnomalies : []);
+        setWasteLeaderboardFirestore(Array.isArray(rawLb) ? rawLb : []);
+      } catch (err) {
+        console.warn('[WasteTracker] expense_anomalies / expense_leaderboard fetch failed:', err.message);
+        if (!cancelled) {
+          setWasteAnomaliesFirestore([]);
+          setWasteLeaderboardFirestore([]);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
   }, [view, selectedCountry]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // -- Analytics & Budget Firestore fetch functions
