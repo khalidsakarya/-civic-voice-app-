@@ -17203,6 +17203,17 @@ function App() {
     }
   };
 
+  // Auto-fetch flagged_expenses + waste_reports when Waste Tracker opens (same queries as manual "Load Live Data"; client reads only).
+  useEffect(() => {
+    if (view !== 'waste-tracker') return;
+    const isUSA = selectedCountry?.type === 'usa';
+    const isAU = selectedCountry?.type === 'australia';
+    const isUK = selectedCountry?.type === 'uk';
+    const countryCode = isUSA ? 'US' : isAU ? 'AU' : isUK ? 'UK' : 'CA';
+    setWasteLiveData(true);
+    fetchWasteData(countryCode);
+  }, [view, selectedCountry]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // -- Analytics & Budget Firestore fetch functions
   const fetchAnalyticsData = async (country) => {
     setAnalyticsLoading(prev => ({ ...prev, [country]: true }));
