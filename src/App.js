@@ -1668,6 +1668,13 @@ function mapExpenseLeaderboardRowToWasteUi(r) {
   };
 }
 
+/** Hub/card subtitle from cached `government_contracts` rows (`liveContracts[jur]`). Undefined = fetch not done for that jurisdiction yet. */
+function governmentContractsHubSubtitle(rows) {
+  if (rows === undefined) return 'Government contract records';
+  const n = rows.length;
+  return `${n} contract record${n === 1 ? '' : 's'}`;
+}
+
 function App() {
   // ── VOTE DATA VERSION GATE ────────────────────────────────────────────────
   // Bump CV_VOTES_VERSION whenever vote counts are reset so every user gets
@@ -6079,10 +6086,17 @@ function App() {
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch government_contracts from Firestore when a contracts page opens
+  // Fetch government_contracts when contracts views open, or prefetch on CA/US/UK/AU hub screens (read-only; same query as contracts lists).
   useEffect(() => {
-    const viewMap = { 'contracts': 'CA', 'us-contracts': 'US', 'uk-contracts': 'UK', 'au-contracts': 'AU' };
-    const jurisdiction = viewMap[view];
+    const contractViews = { contracts: 'CA', 'us-contracts': 'US', 'uk-contracts': 'UK', 'au-contracts': 'AU' };
+    let jurisdiction = contractViews[view] || null;
+    if (!jurisdiction && view === 'categories') {
+      jurisdiction = selectedCountry?.type === 'usa' ? 'US' : 'CA';
+    } else if (!jurisdiction && view === 'uk-national') {
+      jurisdiction = 'UK';
+    } else if (!jurisdiction && view === 'au-categories') {
+      jurisdiction = 'AU';
+    }
     if (!jurisdiction) return;
     if (contractsFetchedJurisdictions[jurisdiction]) return;
     setContractsFetchedJurisdictions(prev => ({ ...prev, [jurisdiction]: true }));
@@ -6096,7 +6110,7 @@ function App() {
         setLiveContracts(prev => ({ ...prev, [jurisdiction]: [] }));
       }
     })();
-  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [view, selectedCountry]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-load flagged expenses and vote counts when a department/ministry detail page opens
   useEffect(() => {
@@ -6478,7 +6492,7 @@ function App() {
   const categories = [
     { id: 1, name: 'Federal Parliament', icon: <Globe className="w-6 h-6" />, count: mps.length || 338, type: 'parliament' },
     { id: 2, name: 'Latest Laws & Regulations', icon: <FileText className="w-6 h-6" />, count: laws.length || 12, type: 'laws' },
-    { id: 3, name: 'Government Contracts', icon: <DollarSign className="w-6 h-6" />, count: (liveContracts.CA?.length ?? 0) || 15, type: 'contracts' }
+    { id: 3, name: 'Government Contracts', icon: <DollarSign className="w-6 h-6" />, count: liveContracts.CA === undefined ? null : liveContracts.CA.length, type: 'contracts' }
   ];
 
   const getAnalyticsData = () => {
@@ -19987,7 +20001,7 @@ function App() {
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Contracts</h2>
             <p className="text-gray-600 mb-3 text-sm sm:text-base">Major public procurement contracts — defence, infrastructure &amp; services</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>15 Major Contracts · £92B+</span>
+              <span>{governmentContractsHubSubtitle(liveContracts.UK)}</span>
               <ChevronRight className="w-5 h-5" style={{ color: '#C8102E' }} />
             </div>
           </div>
@@ -27244,7 +27258,7 @@ function App() {
               }
             </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{isUSA ? (liveContracts.US?.length ?? 0) : (liveContracts.CA?.length ?? 0)} Contracts</span>
+              <span>{governmentContractsHubSubtitle(isUSA ? liveContracts.US : liveContracts.CA)}</span>
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
@@ -32809,7 +32823,7 @@ function App() {
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Contracts</h2>
               <p className="text-gray-600 mb-3 text-sm sm:text-base">Federal procurement — follow the taxpayer money across defence, infrastructure &amp; technology</p>
               <div className="flex items-center justify-between text-sm text-gray-500">
-                <span className="font-medium">15 Major Contracts · A$149B+</span>
+                <span className="font-medium">{governmentContractsHubSubtitle(liveContracts.AU)}</span>
                 <ChevronRight className="w-5 h-5 text-rose-700" />
               </div>
             </div>
