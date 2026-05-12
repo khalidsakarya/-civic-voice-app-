@@ -266,6 +266,90 @@ export function mergeAustralianExplorerRow(hardcoded, fsRow) {
   return out;
 }
 
+/**
+ * Australian explorer row with Firestore as the primary source: each UI field prefers
+ * normalized `subnational_jurisdictions` values; the hardcoded seed row fills only gaps.
+ *
+ * @param {Record<string, unknown>} fsRow
+ * @param {Record<string, unknown>} hardcoded
+ */
+export function buildAustralianExplorerRowFromFirestoreWithHardcodedFallback(
+  fsRow,
+  hardcoded,
+) {
+  if (!hardcoded) return hardcoded;
+  if (!fsRow || typeof fsRow !== 'object') return { ...hardcoded };
+
+  const ts = trimString;
+
+  const abbrFs =
+    fsRow.abbreviation != null && String(fsRow.abbreviation).trim()
+      ? String(fsRow.abbreviation).trim().toUpperCase()
+      : '';
+  const abbr = abbrFs || String(hardcoded.abbr || '').toUpperCase();
+
+  const out = {
+    name: ts(fsRow.name) || String(hardcoded.name || ''),
+    abbr,
+    capital: ts(fsRow.capital) || String(hardcoded.capital || ''),
+    population:
+      fsRow.population_display != null && String(fsRow.population_display).trim()
+        ? String(fsRow.population_display).trim()
+        : String(hardcoded.population || ''),
+    leader: ts(fsRow.leader_name) || String(hardcoded.leader || ''),
+    leaderTitle: ts(fsRow.leaderTitle) || String(hardcoded.leaderTitle || ''),
+    party: ts(fsRow.leader_party) || String(hardcoded.party || ''),
+    partyShort:
+      ts(fsRow.leader_party_short) || String(hardcoded.partyShort || ''),
+    since: ts(fsRow.leader_since) || String(hardcoded.since || ''),
+    bio: ts(fsRow.leader_bio) || String(hardcoded.bio || ''),
+    deputyTitle: ts(fsRow.deputy_leader_title) || String(hardcoded.deputyTitle || ''),
+    deputy: ts(fsRow.deputy_leader_name) || String(hardcoded.deputy || ''),
+    deputyParty: ts(fsRow.deputy_leader_party) || String(hardcoded.deputyParty || ''),
+    deputySince: ts(fsRow.deputy_leader_since) || String(hardcoded.deputySince || ''),
+    deputyBio: ts(fsRow.deputy_leader_bio) || String(hardcoded.deputyBio || ''),
+  };
+
+  if (fsRow.id) out.subnationalId = fsRow.id;
+  if (fsRow.country) out.subnationalCountry = fsRow.country;
+  if (fsRow.jurisdictionType) out.jurisdictionType = fsRow.jurisdictionType;
+
+  const dn = ts(fsRow.name);
+  out.displayName = dn || String(hardcoded.displayName || hardcoded.name || '');
+  out.subnationalAbbreviation =
+    abbrFs || String(hardcoded.subnationalAbbreviation || hardcoded.abbr || '').toUpperCase();
+
+  if (fsRow.officialWebsite !== undefined && fsRow.officialWebsite !== null) {
+    out.officialWebsite = fsRow.officialWebsite;
+  } else if (hardcoded.officialWebsite !== undefined) {
+    out.officialWebsite = hardcoded.officialWebsite;
+  }
+
+  const legWs = ts(fsRow.legislatureWebsite);
+  if (legWs) out.legislatureWebsite = legWs;
+  else if (hardcoded.legislatureWebsite) out.legislatureWebsite = hardcoded.legislatureWebsite;
+
+  const legFs = buildLegislatureFromSubnationalFirestore(fsRow);
+  if (legFs && legFs.parties && legFs.parties.length) {
+    out.legislature = legFs;
+  } else if (hardcoded.legislature && typeof hardcoded.legislature === 'object') {
+    out.legislature = { ...hardcoded.legislature };
+    const fsLegName = ts(fsRow.legislatureName);
+    if (fsLegName) {
+      out.legislature = { ...out.legislature, name: fsLegName };
+    }
+  }
+
+  const flagFs = ts(fsRow.flagUrl);
+  if (flagFs) out.flagUrl = flagFs;
+
+  if (out.legislature === undefined && hardcoded.legislature) {
+    out.legislature = { ...hardcoded.legislature };
+  }
+
+  return out;
+}
+
 /** Document ids expected for `country === 'UK'` (4 nations + 9 England regions) — matches seed layout. */
 export const UK_FIRESTORE_REQUIRED_IDS = Object.freeze([
   'UK-SCT',

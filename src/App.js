@@ -5,6 +5,7 @@ import { fetchSubnationalJurisdictions } from './firestore/fetchSubnationalJuris
 import {
   AU_EXPLORER_REQUIRED_ABBR,
   abbreviationFromExplorerFlagCode,
+  buildAustralianExplorerRowFromFirestoreWithHardcodedFallback,
   mergeAustralianExplorerRow,
   mergeProvincialExplorerRow,
   UK_FIRESTORE_REQUIRED_IDS,
@@ -23829,13 +23830,40 @@ function App() {
     ];
 
     const fsMap = auExplorerFirestoreByAbbr;
+    const auFsComplete =
+      fsMap &&
+      AU_EXPLORER_REQUIRED_ABBR.every((ab) => {
+        const row = fsMap[ab];
+        return row && typeof row === 'object';
+      });
+
+    const applyAuFlagFallback = (s) => ({
+      ...s,
+      flagUrl:
+        typeof s.flagUrl === 'string' && s.flagUrl.trim()
+          ? s.flagUrl.trim()
+          : flagUrl(s.name),
+    });
+
+    if (auFsComplete) {
+      return AU_EXPLORER_REQUIRED_ABBR.map((ab) => {
+        const fsRow = fsMap[ab];
+        const hard = states.find((st) => String(st.abbr).toUpperCase() === ab);
+        return hard
+          ? buildAustralianExplorerRowFromFirestoreWithHardcodedFallback(fsRow, hard)
+          : null;
+      })
+        .filter(Boolean)
+        .map(applyAuFlagFallback);
+    }
+
     return states
       .map((s) => {
         const abbr = String(s.abbr).toUpperCase();
         const fsRow = fsMap?.[abbr];
         return mergeAustralianExplorerRow(s, fsRow);
       })
-      .map((s) => ({ ...s, flagUrl: (typeof s.flagUrl === 'string' && s.flagUrl.trim() ? s.flagUrl.trim() : flagUrl(s.name)) }));
+      .map(applyAuFlagFallback);
   };
 
   useEffect(() => {
