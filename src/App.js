@@ -19824,7 +19824,13 @@ function App() {
     ],
   });
 
-  const renderUKNational = () => (
+  const renderUKNational = () => {
+    const _ukNationById = {};
+    if (Array.isArray(ukExplorerFirestoreRows)) {
+      ukExplorerFirestoreRows.forEach((r) => { if (r && r.id) _ukNationById[r.id] = r; });
+    }
+    const _nationFs = (id) => _ukNationById[id] || {};
+    return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-6xl mx-auto">
         <button
@@ -20052,9 +20058,40 @@ function App() {
           </div>
 
         </div>
+
+        {/* Devolved Governments */}
+        <div className="mt-8 sm:mt-10">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-700 mb-4">Devolved Governments</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            {[
+              { fsId: 'UK-SCT', flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', name: 'Scotland', leader: 'John Swinney', leaderTitle: 'First Minister', party: 'Scottish National Party', assembly: 'Scottish Parliament', capital: 'Edinburgh' },
+              { fsId: 'UK-WLS', flag: '🏴󠁧󠁢󠁷󠁬󠁳󠁿', name: 'Wales', leader: 'Eluned Morgan', leaderTitle: 'First Minister', party: 'Welsh Labour', assembly: 'Senedd Cymru', capital: 'Cardiff' },
+              { fsId: 'UK-NIR', flag: '🇬🇧', name: 'Northern Ireland', leader: "Michelle O'Neill", leaderTitle: 'First Minister', party: 'Sinn Féin', assembly: 'Northern Ireland Assembly', capital: 'Belfast' },
+            ].map((nation) => {
+              const fs = _nationFs(nation.fsId);
+              return (
+                <div key={nation.fsId} className="bg-white rounded-xl shadow-md p-5 sm:p-6 border-2 border-gray-100 hover:border-red-200 transition-all">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="text-3xl">{nation.flag}</span>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800">{nation.name}</h3>
+                      <p className="text-xs text-gray-500">{fs.legislatureName || nation.assembly}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 text-sm">
+                    <div><span className="text-gray-500">{fs.leaderTitle || nation.leaderTitle}: </span><span className="font-semibold text-gray-800">{fs.leader_name || nation.leader}</span></div>
+                    <div><span className="text-gray-500">Party: </span><span className="font-semibold text-gray-800">{fs.leader_party || nation.party}</span></div>
+                    <div><span className="text-gray-500">Capital: </span><span className="font-semibold text-gray-800">{fs.capital || nation.capital}</span></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
-  );
+    );
+  };
 
   const englandRegions = [
     {
