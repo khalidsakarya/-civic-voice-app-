@@ -3,6 +3,47 @@
  * When present, `leader_party_short` overrides badge text (`partyShort`); otherwise hardcoded values remain.
  */
 
+/** @param {unknown} v */
+function trimString(v) {
+  if (v == null) return '';
+  const s = String(v).trim();
+  return s;
+}
+
+/**
+ * @param {Record<string, unknown>} fsRow
+ * @returns {{ name: string, totalSeats: number, parties: { name: string, seats: number, color: string }[] } | null}
+ */
+export function buildLegislatureFromSubnationalFirestore(fsRow) {
+  if (!fsRow || typeof fsRow !== 'object') return null;
+  const rawBreakdown = fsRow.legislature_party_breakdown;
+  if (!Array.isArray(rawBreakdown) || rawBreakdown.length === 0) return null;
+
+  const parties = [];
+  for (let i = 0; i < rawBreakdown.length; i += 1) {
+    const entry = rawBreakdown[i];
+    if (!entry || typeof entry !== 'object') continue;
+    const o = /** @type {Record<string, unknown>} */ (entry);
+    const seats = Number(o.seats);
+    if (!Number.isFinite(seats) || seats < 0) continue;
+    const name = trimString(o.name || o.party || o.label);
+    if (!name) continue;
+    const colorRaw = trimString(o.color);
+    const color = colorRaw || '#6B7280';
+    parties.push({ name, seats: Math.round(seats), color });
+  }
+  if (!parties.length) return null;
+
+  const totalFromDoc = Number(fsRow.legislature_total_seats);
+  const summed = parties.reduce((s, p) => s + p.seats, 0);
+  const totalSeats =
+    Number.isFinite(totalFromDoc) && totalFromDoc > 0 ? Math.round(totalFromDoc) : summed;
+  if (!totalSeats) return null;
+
+  const legName = trimString(fsRow.legislatureName) || 'Legislature';
+  return { name: legName, totalSeats, parties };
+}
+
 /** @param {string} partyStr @param {string} fallback */
 export function usPartyShortFromLeaderParty(partyStr, fallback) {
   const u = (partyStr || '').toLowerCase();
@@ -85,6 +126,29 @@ export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
       : '';
   if (fsLegName) out.legislatureName = fsLegName;
 
+  const flagFs = trimString(fsRow.flagUrl);
+  if (flagFs) out.flagUrl = flagFs;
+
+  const bioFs = trimString(fsRow.leader_bio);
+  if (bioFs) out.bio = bioFs;
+
+  const sinceFs = trimString(fsRow.leader_since);
+  if (sinceFs) out.since = sinceFs;
+
+  const dlt = trimString(fsRow.deputy_leader_title);
+  if (dlt) out.ltGovTitle = dlt;
+  const dln = trimString(fsRow.deputy_leader_name);
+  if (dln) out.ltGovernor = dln;
+  const dlp = trimString(fsRow.deputy_leader_party);
+  if (dlp) out.ltGovParty = dlp;
+  const dls = trimString(fsRow.deputy_leader_since);
+  if (dls) out.ltGovSince = dls;
+  const dlb = trimString(fsRow.deputy_leader_bio);
+  if (dlb) out.ltGovBio = dlb;
+
+  const legFs = buildLegislatureFromSubnationalFirestore(fsRow);
+  if (legFs) out.legislature = legFs;
+
   return out;
 }
 
@@ -165,7 +229,31 @@ export function mergeAustralianExplorerRow(hardcoded, fsRow) {
     fsRow.legislatureName != null && String(fsRow.legislatureName).trim()
       ? String(fsRow.legislatureName).trim()
       : '';
-  if (fsLegName && out.legislature && typeof out.legislature === 'object') {
+
+  const flagFs = trimString(fsRow.flagUrl);
+  if (flagFs) out.flagUrl = flagFs;
+
+  const bioFs = trimString(fsRow.leader_bio);
+  if (bioFs) out.bio = bioFs;
+
+  const sinceFs = trimString(fsRow.leader_since);
+  if (sinceFs) out.since = sinceFs;
+
+  const dlt = trimString(fsRow.deputy_leader_title);
+  if (dlt) out.deputyTitle = dlt;
+  const dln = trimString(fsRow.deputy_leader_name);
+  if (dln) out.deputy = dln;
+  const dlp = trimString(fsRow.deputy_leader_party);
+  if (dlp) out.deputyParty = dlp;
+  const dls = trimString(fsRow.deputy_leader_since);
+  if (dls) out.deputySince = dls;
+  const dlb = trimString(fsRow.deputy_leader_bio);
+  if (dlb) out.deputyBio = dlb;
+
+  const legFs = buildLegislatureFromSubnationalFirestore(fsRow);
+  if (legFs) {
+    out.legislature = legFs;
+  } else if (fsLegName && out.legislature && typeof out.legislature === 'object') {
     out.legislature = { ...out.legislature, name: fsLegName };
   }
 
@@ -313,6 +401,17 @@ export function mergeUkEnglandRegionRow(hardcoded, fsRow) {
       ? String(fsRow.legislatureName).trim()
       : '';
   if (fsLegName) out.legislatureName = fsLegName;
+
+  const bioFs = trimString(fsRow.leader_bio);
+  if (bioFs) out.leaderBio = bioFs;
+
+  if (mayor) {
+    const sinceFs = trimString(fsRow.leader_since);
+    if (sinceFs) out.leaderSince = sinceFs;
+  }
+
+  const legFs = buildLegislatureFromSubnationalFirestore(fsRow);
+  if (legFs) out.legislature = legFs;
 
   return out;
 }

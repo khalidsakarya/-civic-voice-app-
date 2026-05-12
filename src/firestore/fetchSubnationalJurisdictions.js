@@ -26,6 +26,16 @@ import { SUBNATIONAL_JURISDICTIONS_COLLECTION } from '../constants/firestoreColl
  * @property {string} leader_name
  * @property {string} leader_party
  * @property {string} leader_party_short
+ * @property {string=} leader_bio
+ * @property {string=} leader_since
+ * @property {string=} deputy_leader_title
+ * @property {string=} deputy_leader_name
+ * @property {string=} deputy_leader_party
+ * @property {string=} deputy_leader_since
+ * @property {string=} deputy_leader_bio
+ * @property {number=} legislature_total_seats
+ * @property {unknown[]=} legislature_party_breakdown
+ * @property {string=} flagUrl
  * @property {string} source_name
  * @property {string} source_url
  * @property {string} last_updated
@@ -64,7 +74,14 @@ function normalizeRecord(docId, raw) {
     ? aliasesRaw.map((a) => (a == null ? '' : String(a))).filter(Boolean)
     : [];
 
-  return {
+  const optTrim = (v) => {
+    if (v == null) return '';
+    const s = String(v).trim();
+    return s;
+  };
+
+  /** @type {Record<string, unknown>} */
+  const rec = {
     id: typeof raw.id === 'string' && raw.id ? raw.id : docId,
     country: raw.country != null ? String(raw.country) : '',
     countryName: raw.countryName != null ? String(raw.countryName) : '',
@@ -96,6 +113,35 @@ function normalizeRecord(docId, raw) {
       raw.last_updated != null ? String(raw.last_updated) : '',
     dataStatus: raw.dataStatus != null ? String(raw.dataStatus) : '',
   };
+
+  const lb = optTrim(raw.leader_bio);
+  if (lb) rec.leader_bio = lb;
+  const ls = optTrim(raw.leader_since);
+  if (ls) rec.leader_since = ls;
+  const dlt = optTrim(raw.deputy_leader_title);
+  if (dlt) rec.deputy_leader_title = dlt;
+  const dln = optTrim(raw.deputy_leader_name);
+  if (dln) rec.deputy_leader_name = dln;
+  const dlp = optTrim(raw.deputy_leader_party);
+  if (dlp) rec.deputy_leader_party = dlp;
+  const dls = optTrim(raw.deputy_leader_since);
+  if (dls) rec.deputy_leader_since = dls;
+  const dlb = optTrim(raw.deputy_leader_bio);
+  if (dlb) rec.deputy_leader_bio = dlb;
+
+  const totalSeatsRaw = Number(raw.legislature_total_seats);
+  if (Number.isFinite(totalSeatsRaw) && totalSeatsRaw > 0) {
+    rec.legislature_total_seats = Math.round(totalSeatsRaw);
+  }
+
+  if (Array.isArray(raw.legislature_party_breakdown) && raw.legislature_party_breakdown.length) {
+    rec.legislature_party_breakdown = raw.legislature_party_breakdown.slice();
+  }
+
+  const flagFromDoc = optTrim(raw.flagUrl) || optTrim(raw.flag_url);
+  if (flagFromDoc) rec.flagUrl = flagFromDoc;
+
+  return /** @type {SubnationalJurisdictionRecord} */ (rec);
 }
 
 /**

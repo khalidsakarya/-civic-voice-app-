@@ -13061,10 +13061,10 @@ function App() {
 
     const cp = canadaProvinces
       .map((p) => overlayRow(p, 'ca'))
-      .map((p) => ({ ...p, flagUrl: flagUrl(p.name) }));
+      .map((p) => ({ ...p, flagUrl: (typeof p.flagUrl === 'string' && p.flagUrl.trim() ? p.flagUrl.trim() : flagUrl(p.name)) }));
     const us = usStates
       .map((s) => overlayRow(s, 'us'))
-      .map((s) => ({ ...s, flagUrl: flagUrl(s.name) }));
+      .map((s) => ({ ...s, flagUrl: (typeof s.flagUrl === 'string' && s.flagUrl.trim() ? s.flagUrl.trim() : flagUrl(s.name)) }));
     return { canadaProvinces: cp, usStates: us };
   };
 
@@ -13395,7 +13395,13 @@ function App() {
 
           {/* Legislature Seat Distribution */}
           {(() => {
-            const leg = getLegislatureData(item.name, isUSA);
+            const leg =
+              item.legislature &&
+              item.legislature.parties &&
+              Array.isArray(item.legislature.parties) &&
+              item.legislature.parties.length
+                ? item.legislature
+                : getLegislatureData(item.name, isUSA);
             const legislatureLabel =
               typeof item.legislatureName === 'string' && item.legislatureName.trim()
                 ? item.legislatureName.trim()
@@ -20653,14 +20659,20 @@ function App() {
       'north-east':      { name: 'Combined Authority Councils', totalSeats: 650,  parties: [{ name: 'Labour', seats: 430, color: ukRed }, { name: 'Conservative', seats: 95, color: ukNavy }, { name: 'Lib Dem', seats: 55, color: '#FAA61A' }, { name: 'Independent', seats: 70, color: '#6B7280' }] },
       'north-west':      { name: 'Regional Councils', totalSeats: 1800, parties: [{ name: 'Labour', seats: 1080, color: ukRed }, { name: 'Conservative', seats: 380, color: ukNavy }, { name: 'Lib Dem', seats: 170, color: '#FAA61A' }, { name: 'Green', seats: 85, color: '#00843D' }, { name: 'Others', seats: 85, color: '#6B7280' }] },
       'yorkshire':       { name: 'Regional Councils', totalSeats: 1400, parties: [{ name: 'Labour', seats: 770, color: ukRed }, { name: 'Conservative', seats: 390, color: ukNavy }, { name: 'Lib Dem', seats: 115, color: '#FAA61A' }, { name: 'Green', seats: 60, color: '#00843D' }, { name: 'Others', seats: 65, color: '#6B7280' }] },
-      'east-midlands':   { name: 'Regional Councils', totalSeats: 1350, parties: [{ name: 'Labour', seats: 610, color: ukRed }, { name: 'Conservative', seats: 510, color: ukNavy }, { name: 'Lib Dem', seats: 115, color: '#FAA61A' }, { name: 'Green', seats: 55, color: '#00843D' }, { name: 'Others', seats: 60, color: '#6B7280' }] },
+      'east-midlands':   { name: 'Regional Councils', totalSeats: 1350, parties: [{ name: 'Labour', seats: 610, color: ukNavy }, { name: 'Conservative', seats: 510, color: ukNavy }, { name: 'Lib Dem', seats: 115, color: '#FAA61A' }, { name: 'Green', seats: 55, color: '#00843D' }, { name: 'Others', seats: 60, color: '#6B7280' }] },
       'west-midlands':   { name: 'Combined Authority Councils', totalSeats: 1050, parties: [{ name: 'Labour', seats: 640, color: ukRed }, { name: 'Conservative', seats: 295, color: ukNavy }, { name: 'Lib Dem', seats: 55, color: '#FAA61A' }, { name: 'Green', seats: 35, color: '#00843D' }, { name: 'Others', seats: 25, color: '#6B7280' }] },
       'east-of-england': { name: 'Regional Councils', totalSeats: 1700, parties: [{ name: 'Conservative', seats: 700, color: ukNavy }, { name: 'Labour', seats: 470, color: ukRed }, { name: 'Lib Dem', seats: 310, color: '#FAA61A' }, { name: 'Green', seats: 115, color: '#00843D' }, { name: 'Others', seats: 105, color: '#6B7280' }] },
       'london':          { name: 'London Assembly (GLA)', totalSeats: 25, parties: [{ name: 'Labour', seats: 11, color: ukRed }, { name: 'Conservative', seats: 8, color: ukNavy }, { name: 'Green', seats: 2, color: '#00843D' }, { name: 'Lib Dem', seats: 2, color: '#FAA61A' }, { name: 'Reform UK', seats: 2, color: '#12B6CF' }] },
       'south-east':      { name: 'Regional Councils', totalSeats: 2200, parties: [{ name: 'Conservative', seats: 920, color: ukNavy }, { name: 'Labour', seats: 470, color: ukRed }, { name: 'Lib Dem', seats: 510, color: '#FAA61A' }, { name: 'Green', seats: 175, color: '#00843D' }, { name: 'Others', seats: 125, color: '#6B7280' }] },
       'south-west':      { name: 'Regional Councils', totalSeats: 1600, parties: [{ name: 'Lib Dem', seats: 420, color: '#FAA61A' }, { name: 'Conservative', seats: 580, color: ukNavy }, { name: 'Labour', seats: 380, color: ukRed }, { name: 'Green', seats: 115, color: '#00843D' }, { name: 'Others', seats: 105, color: '#6B7280' }] },
     };
-    const leg = legislatureByRegion[r.id] || { name: 'Regional Councils', totalSeats: 0, parties: [] };
+    const leg =
+      r.legislature &&
+      r.legislature.parties &&
+      Array.isArray(r.legislature.parties) &&
+      r.legislature.parties.length
+        ? r.legislature
+        : legislatureByRegion[r.id] || { name: 'Regional Councils', totalSeats: 0, parties: [] };
     const legislatureLabel =
       typeof r.legislatureName === 'string' && r.legislatureName.trim()
         ? r.legislatureName.trim()
@@ -23823,7 +23835,7 @@ function App() {
         const fsRow = fsMap?.[abbr];
         return mergeAustralianExplorerRow(s, fsRow);
       })
-      .map((s) => ({ ...s, flagUrl: flagUrl(s.name) }));
+      .map((s) => ({ ...s, flagUrl: (typeof s.flagUrl === 'string' && s.flagUrl.trim() ? s.flagUrl.trim() : flagUrl(s.name)) }));
   };
 
   useEffect(() => {
