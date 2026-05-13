@@ -12551,7 +12551,6 @@ function App() {
       {
         name: 'Ontario', capital: 'Toronto', flagCode: 'ca-on', population: '14.9M',
         premier: 'Doug Ford', party: 'Progressive Conservative', partyShort: 'PC', since: '2018',
-        bio: 'Former businessman and Toronto city councillor Doug Ford won the 2018 election on a populist anti-establishment platform. He has focused on transit and highway infrastructure, cutting development red tape, and reducing business costs, while navigating controversies over greenbelt land-use decisions.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Edith Dumont', ltGovParty: 'Crown Representative', ltGovSince: '2023',
         ltGovBio: 'Edith Dumont was appointed Lieutenant Governor of Ontario in 2023, becoming the first francophone woman to hold the position. A senior public servant and linguist, she has championed French language rights and cultural diversity throughout Ontario.',
@@ -12559,7 +12558,6 @@ function App() {
       {
         name: 'Quebec', capital: 'Quebec City', flagCode: 'ca-qc', population: '8.8M',
         premier: 'François Legault', party: 'Coalition Avenir Québec', partyShort: 'CAQ', since: '2018',
-        bio: 'Former airline executive and co-founder of Air Transat, François Legault founded the CAQ party advocating Quebec nationalism and economic modernisation. He has focused on protecting the French language, moderating immigration, and reducing government bureaucracy.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Manon Jeannotte', ltGovParty: 'Crown Representative', ltGovSince: '2022',
         ltGovBio: 'Manon Jeannotte was appointed Lieutenant Governor of Quebec in 2022. A community leader with a background in philanthropy and civic engagement, she brings a deep commitment to Quebec\'s cultural heritage and social fabric to the vice-regal role.',
@@ -12567,7 +12565,6 @@ function App() {
       {
         name: 'British Columbia', capital: 'Victoria', flagCode: 'ca-bc', population: '5.3M',
         premier: 'David Eby', party: 'New Democratic Party', partyShort: 'NDP', since: '2022',
-        bio: 'Former civil liberties lawyer and housing minister David Eby succeeded John Horgan as Premier in 2022. He has pursued aggressive housing supply policies and significant mental health system investment to address BC\'s affordability and homelessness crises.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Janet Austin', ltGovParty: 'Crown Representative', ltGovSince: '2018',
         ltGovBio: 'Janet Austin was appointed Lieutenant Governor of British Columbia in 2018. A former YWCA CEO and long-time community leader, she has championed reconciliation with Indigenous peoples and promoted volunteerism and civic engagement across the province.',
@@ -12575,7 +12572,6 @@ function App() {
       {
         name: 'Alberta', capital: 'Edmonton', flagCode: 'ca-ab', population: '4.6M',
         premier: 'Danielle Smith', party: 'United Conservative Party', partyShort: 'UCP', since: '2022',
-        bio: 'Former radio host and Wildrose Party leader Danielle Smith won the UCP leadership in 2022 and the 2023 provincial election. She has championed provincial autonomy, oil and gas development, and the Alberta Sovereignty Act to resist federal carbon and firearms policies.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Salma Lakhani', ltGovParty: 'Crown Representative', ltGovSince: '2020',
         ltGovBio: 'Salma Lakhani was appointed Lieutenant Governor of Alberta in 2020, becoming the first Muslim and first South Asian person to hold the position. A physician and philanthropist, she has championed diversity, healthcare advancement, and charitable giving across Alberta.',
@@ -12583,7 +12579,6 @@ function App() {
       {
         name: 'Saskatchewan', capital: 'Regina', flagCode: 'ca-sk', population: '1.2M',
         premier: 'Scott Moe', party: 'Saskatchewan Party', partyShort: 'Sask. Party', since: '2018',
-        bio: 'Former farmer and legislative assemblyman Scott Moe has championed Saskatchewan\'s resource industries. He has been a vocal opponent of the federal carbon tax and has worked to assert provincial jurisdiction over natural resources and agriculture.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Russell Mirasty', ltGovParty: 'Crown Representative', ltGovSince: '2019',
         ltGovBio: 'Russell Mirasty was appointed Lieutenant Governor of Saskatchewan in 2019, the first person of Cree heritage to hold the position. A former Royal Canadian Mounted Police officer, he has focused on reconciliation and celebrating Saskatchewan\'s Indigenous cultures.',
@@ -12591,7 +12586,6 @@ function App() {
       {
         name: 'Manitoba', capital: 'Winnipeg', flagCode: 'ca-mb', population: '1.4M',
         premier: 'Wab Kinew', party: 'New Democratic Party', partyShort: 'NDP', since: '2023',
-        bio: 'Manitoba\'s first First Nations Premier, Wab Kinew is a former journalist, author, and musician. He has focused on reconciliation with Indigenous communities, healthcare improvements, addressing high violent crime rates, and expanding early childhood education.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Anita Neville', ltGovParty: 'Crown Representative', ltGovSince: '2021',
         ltGovBio: 'Anita Neville was appointed Lieutenant Governor of Manitoba in 2021. A former Member of Parliament and long-time advocate for Jewish and Indigenous communities, she has focused on reconciliation, social justice, and community service in her vice-regal role.',
@@ -12599,7 +12593,6 @@ function App() {
       {
         name: 'Nova Scotia', capital: 'Halifax', flagCode: 'ca-ns', population: '1.0M',
         premier: 'Tim Houston', party: 'Progressive Conservative', partyShort: 'PC', since: '2021',
-        bio: 'Former financial advisor and MLA Tim Houston led the Progressive Conservatives to a surprise majority in 2021. He has prioritised addressing Nova Scotia\'s acute healthcare worker shortage, tackling the housing affordability crisis, and growing the provincial economy.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Arthur J. LeBlanc', ltGovParty: 'Crown Representative', ltGovSince: '2017',
         ltGovBio: 'Arthur J. LeBlanc was appointed Lieutenant Governor of Nova Scotia in 2017. A former lawyer and community leader, he has focused on promoting volunteerism, recognising civic contributions, and representing the Crown with dignity and approachability throughout the province.',
@@ -12607,7 +12600,6 @@ function App() {
       {
         name: 'New Brunswick', capital: 'Fredericton', flagCode: 'ca-nb', population: '820K',
         premier: 'Susan Holt', party: 'Liberal', partyShort: 'Liberal', since: '2024',
-        bio: 'Susan Holt became the first female Premier of New Brunswick after leading the Liberals to victory in 2024. She has focused on affordability for families, improving healthcare access, and creating economic opportunities to retain young New Brunswickers.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Brenda L. Murphy', ltGovParty: 'Crown Representative', ltGovSince: '2019',
         ltGovBio: 'Brenda L. Murphy was appointed Lieutenant Governor of New Brunswick in 2019. A long-time community leader and former business executive, she has championed literacy, early childhood development, and volunteerism across New Brunswick.',
@@ -12615,7 +12607,6 @@ function App() {
       {
         name: 'Newfoundland & Labrador', capital: "St. John's", flagCode: 'ca-nl', population: '530K',
         premier: 'Andrew Furey', party: 'Liberal', partyShort: 'Liberal', since: '2020',
-        bio: 'Hand surgeon and community leader Andrew Furey became Premier in 2020 after Dwight Ball resigned. He has navigated significant fiscal challenges while pursuing economic diversification beyond offshore oil and the fisheries, including a major green hydrogen project.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Judy Foote', ltGovParty: 'Crown Representative', ltGovSince: '2018',
         ltGovBio: 'Judy Foote was appointed Lieutenant Governor of Newfoundland and Labrador in 2018. A former federal Cabinet minister and long-time public servant, she has brought extensive governance experience and a deep connection to the province\'s communities to the vice-regal role.',
@@ -12623,7 +12614,6 @@ function App() {
       {
         name: 'Prince Edward Island', capital: 'Charlottetown', flagCode: 'ca-pe', population: '170K',
         premier: 'Dennis King', party: 'Progressive Conservative', partyShort: 'PC', since: '2019',
-        bio: 'Former sports broadcaster and journalist Dennis King has led both minority and majority PC governments in PEI. He has focused on managing the province\'s rapid population growth, healthcare capacity, and housing affordability.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Antoinette Perry', ltGovParty: 'Crown Representative', ltGovSince: '2022',
         ltGovBio: 'Antoinette Perry was appointed Lieutenant Governor of Prince Edward Island in 2022. A prominent educator and community advocate, she has focused on youth engagement, cultural recognition, and strengthening civic participation in Canada\'s smallest province.',
@@ -12631,7 +12621,6 @@ function App() {
       {
         name: 'Northwest Territories', capital: 'Yellowknife', flagCode: 'ca-nt', population: '45K',
         premier: 'R.J. Simpson', party: 'Consensus Government', partyShort: 'Consensus', since: '2023',
-        bio: 'Operating under a consensus (non-partisan) model, R.J. Simpson was selected Premier by the Legislative Assembly in 2023. He has focused on resource development, infrastructure investment, and the governance challenges facing Canada\'s vast Northwest Territories.',
         ltGovTitle: 'Commissioner',
         ltGovernor: 'Jodie Ferris', ltGovParty: 'Federal Appointee', ltGovSince: '2021',
         ltGovBio: 'Jodie Ferris serves as Commissioner of the Northwest Territories, a role analogous to Lieutenant Governor in the provinces. She works closely with territorial and Indigenous governments to support the NWT\'s unique consensus-based governance model and northern priorities.',
@@ -12639,7 +12628,6 @@ function App() {
       {
         name: 'Yukon', capital: 'Whitehorse', flagCode: 'ca-yt', population: '43K',
         premier: 'Ranj Pillai', party: 'Liberal', partyShort: 'Liberal', since: '2023',
-        bio: 'Former Minister of Economic Development Ranj Pillai became Yukon\'s Premier in 2023. He has focused on strengthening Indigenous government partnerships, attracting critical mineral investment, and addressing the territory\'s housing shortage.',
         ltGovTitle: 'Commissioner',
         ltGovernor: 'Angélique Bernard', ltGovParty: 'Federal Appointee', ltGovSince: '2020',
         ltGovBio: 'Angélique Bernard serves as Commissioner of Yukon, appointed in 2020. A former university president and academic leader, she has championed education, reconciliation with Yukon First Nations, and the territory\'s vibrant arts and cultural communities.',
@@ -12647,7 +12635,6 @@ function App() {
       {
         name: 'Nunavut', capital: 'Iqaluit', flagCode: 'ca-nu', population: '40K',
         premier: 'P.J. Akeeagok', party: 'Consensus Government', partyShort: 'Consensus', since: '2021',
-        bio: 'Experienced Inuit leader and former President of the Qikiqtani Inuit Association, P.J. Akeeagok leads Nunavut under the consensus model. He has focused on improving housing and food security for the predominantly Inuit population.',
         ltGovTitle: 'Commissioner',
         ltGovernor: 'Eva Aariak', ltGovParty: 'Federal Appointee', ltGovSince: '2020',
         ltGovBio: 'Eva Aariak serves as Commissioner of Nunavut, appointed in 2020. A former Premier of Nunavut and fluent Inuktitut speaker, she has been a lifelong champion for Inuit culture, language preservation, and the territory\'s distinctive consensus governance structure.',
@@ -12658,7 +12645,6 @@ function App() {
       {
         name: 'Alabama', capital: 'Montgomery', flagCode: 'us-al',
         governor: 'Kay Ivey', govParty: 'Republican', partyShort: 'R', since: '2017',
-        bio: 'Kay Ivey assumed the governorship in 2017 following Robert Bentley\'s resignation and won election in her own right in 2018. She has focused on economic development, workforce training, and education reform, overseeing major manufacturing investments in Alabama.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Will Ainsworth', ltGovParty: 'R', ltGovSince: '2019',
         ltGovBio: 'Former state legislator and businessman Will Ainsworth was elected Lieutenant Governor in 2018. He has been a conservative voice on agriculture, education, and economic development, and is widely seen as a leading future candidate for governor.',
@@ -12666,7 +12652,6 @@ function App() {
       {
         name: 'Alaska', capital: 'Juneau', flagCode: 'us-ak',
         governor: 'Mike Dunleavy', govParty: 'Republican', partyShort: 'R', since: '2018',
-        bio: 'Former state senator Mike Dunleavy won the governorship on a platform of fiscal restraint and resource development. He has managed Alaska\'s volatile oil-dependent budget while supporting expanded energy production and opposing federal land restrictions.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Nancy Dahlstrom', ltGovParty: 'R', ltGovSince: '2018',
         ltGovBio: 'Former state legislator and federal agency official Nancy Dahlstrom serves as Alaska\'s Lieutenant Governor. She has focused on public safety, elections administration, and supporting Alaska\'s resource-dependent communities.',
@@ -12674,7 +12659,6 @@ function App() {
       {
         name: 'Arizona', capital: 'Phoenix', flagCode: 'us-az',
         governor: 'Katie Hobbs', govParty: 'Democrat', partyShort: 'D', since: '2023',
-        bio: 'Former Secretary of State Katie Hobbs narrowly defeated Kari Lake in the 2022 gubernatorial race. She has focused on reproductive rights, water conservation, and economic development in one of the nation\'s fastest-growing states.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: '— (position being established)', ltGovParty: '', ltGovSince: '',
         ltGovBio: 'Arizona voters approved creating a Lieutenant Governor position in 2022 via Proposition 131. The first Lt. Governor is expected to take office following the 2026 election cycle.',
@@ -12682,7 +12666,6 @@ function App() {
       {
         name: 'Arkansas', capital: 'Little Rock', flagCode: 'us-ar',
         governor: 'Sarah Huckabee Sanders', govParty: 'Republican', partyShort: 'R', since: '2023',
-        bio: 'Former White House Press Secretary Sarah Huckabee Sanders became the first female governor of Arkansas. She has pursued education reform including school choice, income tax cuts, and positioned Arkansas as a conservative governance model.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Leslie Rutledge', ltGovParty: 'R', ltGovSince: '2023',
         ltGovBio: 'Former Attorney General Leslie Rutledge brought extensive legal and policy experience to the Lieutenant Governor role. She has championed conservative legal principles, consumer protection, and serves as a key partner in the Sanders administration.',
@@ -12690,7 +12673,6 @@ function App() {
       {
         name: 'California', capital: 'Sacramento', flagCode: 'us-ca',
         governor: 'Gavin Newsom', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        bio: 'Former Mayor of San Francisco Gavin Newsom has championed progressive policies including universal healthcare expansion and nation-leading climate action. He is a prominent national Democratic voice widely mentioned as a future presidential candidate.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Eleni Kounalakis', ltGovParty: 'D', ltGovSince: '2019',
         ltGovBio: 'Former real estate executive and U.S. Ambassador to Hungary Eleni Kounalakis became the first woman elected Lt. Governor of California. She has focused on international trade, climate policy, higher education, and expanding California\'s global economic partnerships.',
@@ -12698,7 +12680,6 @@ function App() {
       {
         name: 'Colorado', capital: 'Denver', flagCode: 'us-co',
         governor: 'Jared Polis', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        bio: 'Tech entrepreneur and former congressman Jared Polis became the first openly gay man elected governor in U.S. history. He has pursued free universal preschool, a carbon-free electricity grid, and economic opportunity throughout Colorado.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Dianne Primavera', ltGovParty: 'D', ltGovSince: '2019',
         ltGovBio: 'Former state legislator and cancer survivor advocate Dianne Primavera has focused on healthcare access and public health as Lieutenant Governor. She has been a strong voice for rural communities and Colorado\'s cancer prevention programs.',
@@ -12706,7 +12687,6 @@ function App() {
       {
         name: 'Connecticut', capital: 'Hartford', flagCode: 'us-ct',
         governor: 'Ned Lamont', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        bio: 'Businessman and entrepreneur Ned Lamont brought private-sector experience to Connecticut\'s government. He has focused on fiscal responsibility, economic competitiveness, transit improvements, and guided the state through the COVID-19 pandemic.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Susan Bysiewicz', ltGovParty: 'D', ltGovSince: '2019',
         ltGovBio: 'Former Secretary of State and state legislator Susan Bysiewicz brings decades of public service experience to the Lieutenant Governor role. She has focused on workforce development, voting rights, and economic opportunity across Connecticut.',
@@ -12714,7 +12694,6 @@ function App() {
       {
         name: 'Delaware', capital: 'Dover', flagCode: 'us-de',
         governor: 'Matt Meyer', govParty: 'Democrat', partyShort: 'D', since: '2025',
-        bio: 'Former New Castle County Executive Matt Meyer won the 2024 gubernatorial election. He has focused on economic development, public safety improvements, and environmental protection in his early term.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Kyle Evans Gay', ltGovParty: 'D', ltGovSince: '2025',
         ltGovBio: 'Kyle Evans Gay was elected Lieutenant Governor of Delaware in the 2024 election alongside Matt Meyer. A community leader and advocate, she has focused on expanding opportunity and equity for Delaware families.',
@@ -12722,7 +12701,6 @@ function App() {
       {
         name: 'Florida', capital: 'Tallahassee', flagCode: 'us-fl',
         governor: 'Ron DeSantis', govParty: 'Republican', partyShort: 'R', since: '2019',
-        bio: 'Former naval officer and U.S. Representative Ron DeSantis has pursued an aggressive conservative agenda, opposing COVID-19 mandates and restricting DEI programs. He became a major national Republican figure after a 2024 presidential run.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Jeanette Nuñez', ltGovParty: 'R', ltGovSince: '2019',
         ltGovBio: 'Former U.S. Representative Jeanette Nuñez is the first Latina elected to statewide office in Florida. She has been a prominent Hispanic voice for the Republican Party, focused on economic development and international relations with Latin America.',
@@ -12730,7 +12708,6 @@ function App() {
       {
         name: 'Georgia', capital: 'Atlanta', flagCode: 'us-ga',
         governor: 'Brian Kemp', govParty: 'Republican', partyShort: 'R', since: '2019',
-        bio: 'Former Secretary of State Brian Kemp gained national attention for certifying Georgia\'s 2020 presidential election results despite intense pressure. He has focused on economic development, attracting major manufacturing investment, and disaster preparedness.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Burt Jones', ltGovParty: 'R', ltGovSince: '2023',
         ltGovBio: 'Former state senator Burt Jones was elected Lieutenant Governor in 2022. He has focused on public safety, small business support, and conservative economic policies, and serves as President of the Georgia State Senate.',
@@ -12738,7 +12715,6 @@ function App() {
       {
         name: 'Hawaii', capital: 'Honolulu', flagCode: 'us-hi',
         governor: 'Josh Green', govParty: 'Democrat', partyShort: 'D', since: '2022',
-        bio: 'Emergency room physician Josh Green brought a healthcare-centred perspective to the governorship. He faced the devastating 2023 Lahaina wildfire and has focused on disaster preparedness, housing affordability, and accelerating Hawaii\'s clean energy transition.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Sylvia Luke', ltGovParty: 'D', ltGovSince: '2022',
         ltGovBio: 'Former state House Finance Chair Sylvia Luke brings deep budget and fiscal policy expertise to the Lieutenant Governor role. She has focused on economic recovery, affordable housing, and healthcare affordability throughout the Hawaiian islands.',
@@ -12746,7 +12722,6 @@ function App() {
       {
         name: 'Idaho', capital: 'Boise', flagCode: 'us-id',
         governor: 'Brad Little', govParty: 'Republican', partyShort: 'R', since: '2019',
-        bio: 'Former rancher and state senator Brad Little has promoted Idaho\'s agricultural economy while managing the state\'s rapid population growth. He has focused on education funding, property tax relief, and maintaining a business-friendly environment.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Scott Bedke', ltGovParty: 'R', ltGovSince: '2023',
         ltGovBio: 'Former Speaker of the Idaho House Scott Bedke was elected Lieutenant Governor in 2022. He has focused on education, agriculture, and maintaining Idaho\'s business-friendly regulatory environment.',
@@ -12754,7 +12729,6 @@ function App() {
       {
         name: 'Illinois', capital: 'Springfield', flagCode: 'us-il',
         governor: 'JB Pritzker', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        bio: 'Billionaire entrepreneur JB Pritzker has pursued a progressive agenda including cannabis legalisation, minimum wage increases, and expanded social services. He is a major Democratic Party fundraiser frequently mentioned as a future national candidate.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Juliana Stratton', ltGovParty: 'D', ltGovSince: '2019',
         ltGovBio: 'Former state legislator Juliana Stratton is Illinois\'s first African American woman elected to statewide office. She has focused on criminal justice reform, mental health services, and expanding opportunities for underserved communities across Illinois.',
@@ -12762,7 +12736,6 @@ function App() {
       {
         name: 'Indiana', capital: 'Indianapolis', flagCode: 'us-in',
         governor: 'Mike Braun', govParty: 'Republican', partyShort: 'R', since: '2025',
-        bio: 'Former U.S. Senator and businessman Mike Braun won the 2024 gubernatorial election succeeding term-limited Eric Holcomb. A fiscal conservative, he has prioritised streamlining state government and positioning Indiana as a top business destination.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Micah Beckwith', ltGovParty: 'R', ltGovSince: '2025',
         ltGovBio: 'Micah Beckwith was elected Lieutenant Governor of Indiana in 2024. A conservative pastor and activist, he has been an outspoken advocate for religious liberty, parental rights in education, and conservative social values.',
@@ -12770,7 +12743,6 @@ function App() {
       {
         name: 'Iowa', capital: 'Des Moines', flagCode: 'us-ia',
         governor: 'Kim Reynolds', govParty: 'Republican', partyShort: 'R', since: '2017',
-        bio: 'Kim Reynolds became the first woman elected Iowa governor in her own right. She has championed education savings accounts, major income tax reductions, and conservative social legislation while growing Iowa\'s economy.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Adam Gregg', ltGovParty: 'R', ltGovSince: '2017',
         ltGovBio: 'Former public defender and state courts administrator Adam Gregg has served as Iowa\'s Lieutenant Governor since 2017. He has focused on criminal justice, public safety, and Iowa\'s judicial system alongside Governor Reynolds.',
@@ -12778,7 +12750,6 @@ function App() {
       {
         name: 'Kansas', capital: 'Topeka', flagCode: 'us-ks',
         governor: 'Laura Kelly', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        bio: 'Former state senator Laura Kelly has served two terms as a pragmatic Democratic governor in a deeply Republican state. She expanded Medicaid, invested in economic development, and emphasised bipartisan fiscal responsibility.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'David Toland', ltGovParty: 'D', ltGovSince: '2019',
         ltGovBio: 'Former economic development official David Toland has focused on rural revitalisation and economic opportunity as Lieutenant Governor. He has worked to attract businesses and investment to underserved rural Kansas communities.',
@@ -12786,7 +12757,6 @@ function App() {
       {
         name: 'Kentucky', capital: 'Frankfort', flagCode: 'us-ky',
         governor: 'Andy Beshear', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        bio: 'Son of former Governor Steve Beshear, Andy Beshear has been a rare Democrat winning repeatedly in an increasingly Republican state. He has attracted major EV manufacturing investment and led the state through devastating floods and tornados.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Jacqueline Coleman', ltGovParty: 'D', ltGovSince: '2019',
         ltGovBio: 'Former teacher and education advocate Jacqueline Coleman has made early childhood education her central mission as Lieutenant Governor. She has championed expanded childcare access, read-aloud programmes, and workforce development across Kentucky.',
@@ -12794,7 +12764,6 @@ function App() {
       {
         name: 'Louisiana', capital: 'Baton Rouge', flagCode: 'us-la',
         governor: 'Jeff Landry', govParty: 'Republican', partyShort: 'R', since: '2024',
-        bio: 'Former state Attorney General Jeff Landry won the 2023 gubernatorial election, succeeding Democrat John Bel Edwards. He has pursued an aggressive conservative agenda including criminal justice changes and education reform.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Billy Nungesser', ltGovParty: 'R', ltGovSince: '2016',
         ltGovBio: 'Former Plaquemines Parish President Billy Nungesser has served as Louisiana\'s Lieutenant Governor since 2016, focusing on coastal restoration, tourism promotion, and supporting Louisiana\'s fishing and cultural industries.',
@@ -12802,7 +12771,6 @@ function App() {
       {
         name: 'Maine', capital: 'Augusta', flagCode: 'us-me',
         governor: 'Janet Mills', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        bio: 'Former state Attorney General Janet Mills made history as Maine\'s first female governor. She has focused on healthcare access, combating opioid addiction, climate resiliency, and rural economic development.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'None (position does not exist)', ltGovParty: '', ltGovSince: '',
         ltGovBio: 'Maine does not have a Lieutenant Governor. The President of the Maine Senate serves as first in the line of succession to the Governor.',
@@ -12810,7 +12778,6 @@ function App() {
       {
         name: 'Maryland', capital: 'Annapolis', flagCode: 'us-md',
         governor: 'Wes Moore', govParty: 'Democrat', partyShort: 'D', since: '2023',
-        bio: 'Author, combat veteran, and nonprofit executive Wes Moore made history as Maryland\'s first Black governor. He has focused on economic equity, workforce development, public safety reform, and strengthening Maryland\'s economy.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Aruna Miller', ltGovParty: 'D', ltGovSince: '2023',
         ltGovBio: 'Former civil engineer and state legislator Aruna Miller became the first South Asian Lieutenant Governor in Maryland history. She has focused on infrastructure, workforce development, and expanding immigrant integration and civic engagement programmes.',
@@ -12818,7 +12785,6 @@ function App() {
       {
         name: 'Massachusetts', capital: 'Boston', flagCode: 'us-ma',
         governor: 'Maura Healey', govParty: 'Democrat', partyShort: 'D', since: '2023',
-        bio: 'Former state Attorney General Maura Healey made history as the first openly LGBTQ+ person elected governor of Massachusetts. She has focused on housing production, healthcare affordability, climate infrastructure, and early education access.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Kim Driscoll', ltGovParty: 'D', ltGovSince: '2023',
         ltGovBio: 'Former Mayor of Salem Kim Driscoll was elected Lieutenant Governor in 2022. A respected municipal leader with a decade of executive experience, she has focused on housing production, economic development, and building resilient communities.',
@@ -12826,7 +12792,6 @@ function App() {
       {
         name: 'Michigan', capital: 'Lansing', flagCode: 'us-mi',
         governor: 'Gretchen Whitmer', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        bio: 'Former state Senate minority leader Gretchen Whitmer gained national prominence during the COVID-19 pandemic. She has focused on infrastructure investment, reproductive rights, and attracting clean energy and EV manufacturing jobs to Michigan.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Garlin Gilchrist II', ltGovParty: 'D', ltGovSince: '2019',
         ltGovBio: 'Former director of Detroit\'s Office of Digital Equity Garlin Gilchrist II is Michigan\'s first African American Lieutenant Governor. He has focused on technology, innovation, economic equity, and workforce development across the state.',
@@ -12834,7 +12799,6 @@ function App() {
       {
         name: 'Minnesota', capital: 'Saint Paul', flagCode: 'us-mn',
         governor: 'Tim Walz', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        bio: 'Former high school teacher, football coach, and U.S. Representative Tim Walz rose to national prominence as Kamala Harris\'s 2024 vice presidential running mate. He has championed free school meals, cannabis legalisation, and expanding social programs in Minnesota.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Peggy Flanagan', ltGovParty: 'D', ltGovSince: '2019',
         ltGovBio: 'Former state legislator and citizen of the White Earth Band of Ojibwe, Peggy Flanagan is one of the highest-ranking Native American women elected to statewide office in U.S. history. She has championed early childhood education and Indigenous rights.',
@@ -12842,7 +12806,6 @@ function App() {
       {
         name: 'Mississippi', capital: 'Jackson', flagCode: 'us-ms',
         governor: 'Tate Reeves', govParty: 'Republican', partyShort: 'R', since: '2020',
-        bio: 'Former Lieutenant Governor Tate Reeves has pursued conservative fiscal policies and social legislation. He has focused on workforce development and attracting manufacturing jobs to one of the nation\'s most economically challenged states.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Delbert Hosemann', ltGovParty: 'R', ltGovSince: '2020',
         ltGovBio: 'Former Secretary of State Delbert Hosemann serves as Mississippi\'s Lieutenant Governor and Senate President Pro Tempore. He has focused on election integrity, education funding, and a reputation for pragmatic, bipartisan governance.',
@@ -12850,7 +12813,6 @@ function App() {
       {
         name: 'Missouri', capital: 'Jefferson City', flagCode: 'us-mo',
         governor: 'Mike Kehoe', govParty: 'Republican', partyShort: 'R', since: '2025',
-        bio: 'Former state Senate President Pro Tem Mike Kehoe won the 2024 gubernatorial election. A business-focused Republican, he has prioritised economic development, reducing government spending, and infrastructure investment.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'David Wasinger', ltGovParty: 'R', ltGovSince: '2025',
         ltGovBio: 'David Wasinger was elected Lieutenant Governor of Missouri in 2024. A lawyer and community leader, he has focused on economic development and conservative governance as part of the Kehoe administration.',
@@ -12858,7 +12820,6 @@ function App() {
       {
         name: 'Montana', capital: 'Helena', flagCode: 'us-mt',
         governor: 'Greg Gianforte', govParty: 'Republican', partyShort: 'R', since: '2021',
-        bio: 'Tech entrepreneur Greg Gianforte became Montana\'s first Republican governor in 16 years. He has pursued conservative land management, economic development, and innovation policies while navigating significant population growth.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Kristen Juras', ltGovParty: 'R', ltGovSince: '2021',
         ltGovBio: 'Former law professor and legal scholar Kristen Juras serves as Montana\'s Lieutenant Governor. She has focused on regulatory reform, property rights, and Montana\'s distinctive natural resource and ranching economy.',
@@ -12866,7 +12827,6 @@ function App() {
       {
         name: 'Nebraska', capital: 'Lincoln', flagCode: 'us-ne',
         governor: 'Jim Pillen', govParty: 'Republican', partyShort: 'R', since: '2023',
-        bio: 'Swine producer and former University of Nebraska Board of Regents member Jim Pillen won the 2022 gubernatorial election. He has focused on property tax relief, supporting agriculture and rural communities, and conservative fiscal management.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Joe Kelly', ltGovParty: 'R', ltGovSince: '2023',
         ltGovBio: 'Former state senator Joe Kelly was elected Lieutenant Governor of Nebraska in 2022. He has focused on agriculture, rural community development, and conservative fiscal policies alongside Governor Pillen.',
@@ -12874,7 +12834,6 @@ function App() {
       {
         name: 'Nevada', capital: 'Carson City', flagCode: 'us-nv',
         governor: 'Joe Lombardo', govParty: 'Republican', partyShort: 'R', since: '2023',
-        bio: 'Former Las Vegas Metropolitan Police Sheriff Joe Lombardo brought a law enforcement perspective to the governorship. He has focused on public safety, workforce development, and economic diversification beyond gaming and hospitality.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Stavros Anthony', ltGovParty: 'R', ltGovSince: '2023',
         ltGovBio: 'Former Las Vegas City Councilman and law enforcement officer Stavros Anthony was elected Lieutenant Governor in 2022. He has focused on public safety, veterans\' affairs, and economic development across Nevada.',
@@ -12882,7 +12841,6 @@ function App() {
       {
         name: 'New Hampshire', capital: 'Concord', flagCode: 'us-nh',
         governor: 'Kelly Ayotte', govParty: 'Republican', partyShort: 'R', since: '2025',
-        bio: 'Former U.S. Senator and state Attorney General Kelly Ayotte won the 2024 gubernatorial election. A moderate Republican, she has focused on economic competitiveness, public safety, and housing affordability.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'None (position does not exist)', ltGovParty: '', ltGovSince: '',
         ltGovBio: 'New Hampshire does not have a Lieutenant Governor. The President of the New Hampshire Senate serves as first in the line of succession to the Governor.',
@@ -12890,7 +12848,6 @@ function App() {
       {
         name: 'New Jersey', capital: 'Trenton', flagCode: 'us-nj',
         governor: 'Phil Murphy', govParty: 'Democrat', partyShort: 'D', since: '2018',
-        bio: 'Former Goldman Sachs executive and U.S. Ambassador Phil Murphy pursued a progressive agenda including cannabis legalisation, minimum wage increases, and expanded social programs. He served through January 2026 following the November 2025 election.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Tahesha Way', ltGovParty: 'D', ltGovSince: '2023',
         ltGovBio: 'Former Secretary of State Tahesha Way became Lieutenant Governor following the death of Sheila Oliver. She has focused on voter access, civic engagement, and community empowerment across New Jersey.',
@@ -12898,7 +12855,6 @@ function App() {
       {
         name: 'New Mexico', capital: 'Santa Fe', flagCode: 'us-nm',
         governor: 'Michelle Lujan Grisham', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        bio: 'Former U.S. Representative Michelle Lujan Grisham has focused on early childhood education, renewable energy, and economic diversification. She has been a prominent national voice on immigration and border security.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Howie Morales', ltGovParty: 'D', ltGovSince: '2019',
         ltGovBio: 'Former state senator and educator Howie Morales is New Mexico\'s Lieutenant Governor and one of the few Hispanic people to hold the role in decades. He has focused on rural community development, education equity, and economic opportunity in underserved New Mexico communities.',
@@ -12906,7 +12862,6 @@ function App() {
       {
         name: 'New York', capital: 'Albany', flagCode: 'us-ny',
         governor: 'Kathy Hochul', govParty: 'Democrat', partyShort: 'D', since: '2021',
-        bio: 'Former congresswoman and Lt. Governor Kathy Hochul became New York\'s first female governor when Andrew Cuomo resigned in 2021. She has focused on housing production, public safety, healthcare, and managing New York\'s complex state budget.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Antonio Delgado', ltGovParty: 'D', ltGovSince: '2023',
         ltGovBio: 'Former U.S. Representative Antonio Delgado was selected as Lieutenant Governor following Brian Benjamin\'s resignation. He has focused on economic development, rural upstate New York, and expanding access to affordable housing across the state.',
@@ -12914,7 +12869,6 @@ function App() {
       {
         name: 'North Carolina', capital: 'Raleigh', flagCode: 'us-nc',
         governor: 'Josh Stein', govParty: 'Democrat', partyShort: 'D', since: '2025',
-        bio: 'Former state Attorney General Josh Stein won the 2024 gubernatorial election amid Hurricane Helene\'s devastating impact on western North Carolina. He has made disaster recovery a top priority alongside education reform and economic opportunity.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Rachel Hunt', ltGovParty: 'D', ltGovSince: '2025',
         ltGovBio: 'Rachel Hunt was elected Lieutenant Governor of North Carolina in 2024 alongside Josh Stein. A community and business leader, she has focused on expanding educational access and economic opportunity for North Carolina families.',
@@ -12922,7 +12876,6 @@ function App() {
       {
         name: 'North Dakota', capital: 'Bismarck', flagCode: 'us-nd',
         governor: 'Kelly Armstrong', govParty: 'Republican', partyShort: 'R', since: '2025',
-        bio: 'Former U.S. Representative Kelly Armstrong won the 2024 gubernatorial election. He has focused on North Dakota\'s energy and agricultural economy, conservative fiscal management, and reducing regulatory burdens.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Michelle Strinden', ltGovParty: 'R', ltGovSince: '2025',
         ltGovBio: 'Michelle Strinden was elected Lieutenant Governor of North Dakota in 2024. She has focused on workforce development and supporting North Dakota\'s energy, agricultural, and small business sectors.',
@@ -12930,7 +12883,6 @@ function App() {
       {
         name: 'Ohio', capital: 'Columbus', flagCode: 'us-oh',
         governor: 'Mike DeWine', govParty: 'Republican', partyShort: 'R', since: '2019',
-        bio: 'Veteran Republican politician Mike DeWine has served Ohio in various capacities for decades. He has focused on public health, law enforcement, and economic development including attracting major semiconductor manufacturing.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Jon Husted', ltGovParty: 'R', ltGovSince: '2019',
         ltGovBio: 'Former Speaker of the Ohio House and Secretary of State Jon Husted brings extensive legislative and administrative experience to the role. He has focused on technology, innovation, and workforce development as part of Ohio\'s semiconductor and clean energy push.',
@@ -12938,7 +12890,6 @@ function App() {
       {
         name: 'Oklahoma', capital: 'Oklahoma City', flagCode: 'us-ok',
         governor: 'Kevin Stitt', govParty: 'Republican', partyShort: 'R', since: '2019',
-        bio: 'Businessman Kevin Stitt has pursued conservative economic and social policies while developing Oklahoma\'s economy. He has had notable legal conflicts with the state\'s tribal nations over gaming compacts and criminal jurisdiction.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Matt Pinnell', ltGovParty: 'R', ltGovSince: '2019',
         ltGovBio: 'Former state Republican Party chairman Matt Pinnell was elected Lieutenant Governor in 2018. He has focused on tourism development, craft beer and spirits industry promotion, and Oklahoma\'s economic and cultural assets.',
@@ -12946,7 +12897,6 @@ function App() {
       {
         name: 'Oregon', capital: 'Salem', flagCode: 'us-or',
         governor: 'Tina Kotek', govParty: 'Democrat', partyShort: 'D', since: '2023',
-        bio: 'Former Speaker of the Oregon House Tina Kotek has made housing production the centrepiece of her governorship. She reversed controversial drug decriminalisation and invested in mental health resources to address Oregon\'s homelessness crisis.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'None (position does not exist)', ltGovParty: '', ltGovSince: '',
         ltGovBio: 'Oregon does not have a Lieutenant Governor. The Secretary of State serves as the first in the line of succession to the Governor.',
@@ -12954,7 +12904,6 @@ function App() {
       {
         name: 'Pennsylvania', capital: 'Harrisburg', flagCode: 'us-pa',
         governor: 'Josh Shapiro', govParty: 'Democrat', partyShort: 'D', since: '2023',
-        bio: 'Former state Attorney General Josh Shapiro is widely considered one of the Democratic Party\'s most prominent rising stars. He has focused on economic development, worker protections, education investment, and infrastructure in the key battleground state.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Austin Davis', ltGovParty: 'D', ltGovSince: '2023',
         ltGovBio: 'Former state representative Austin Davis became Pennsylvania\'s first Black Lieutenant Governor. He has focused on economic equity, criminal justice reform, and community investment in historically underserved Pennsylvania communities.',
@@ -12962,7 +12911,6 @@ function App() {
       {
         name: 'Rhode Island', capital: 'Providence', flagCode: 'us-ri',
         governor: 'Dan McKee', govParty: 'Democrat', partyShort: 'D', since: '2021',
-        bio: 'Former Mayor of Cumberland Dan McKee assumed the governorship when Gina Raimondo became U.S. Secretary of Commerce and won the 2022 election in his own right. He has focused on economic recovery and education reform.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Sabina Matos', ltGovParty: 'D', ltGovSince: '2021',
         ltGovBio: 'Former Providence City Council President Sabina Matos was appointed Lieutenant Governor when McKee became Governor. She has focused on economic development, workforce training, and community engagement across Rhode Island.',
@@ -12970,7 +12918,6 @@ function App() {
       {
         name: 'South Carolina', capital: 'Columbia', flagCode: 'us-sc',
         governor: 'Henry McMaster', govParty: 'Republican', partyShort: 'R', since: '2017',
-        bio: 'Former state Attorney General Henry McMaster assumed the governorship when Nikki Haley became U.S. Ambassador to the UN. A staunch Trump ally, he has focused on economic development, school choice, and conservative policy priorities.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Pamela Evette', ltGovParty: 'R', ltGovSince: '2019',
         ltGovBio: 'Former businesswoman Pamela Evette was elected Lieutenant Governor in 2018, becoming the first woman to hold the position. She has focused on economic development, workforce training, and supporting South Carolina\'s growing manufacturing sector.',
@@ -12978,7 +12925,6 @@ function App() {
       {
         name: 'South Dakota', capital: 'Pierre', flagCode: 'us-sd',
         governor: 'Kristi Noem', govParty: 'Republican', partyShort: 'R', since: '2019',
-        bio: 'Former U.S. Representative Kristi Noem became a national conservative figure by opposing COVID-19 lockdowns. She has focused on individual freedom, Second Amendment rights, and South Dakota\'s agricultural economy.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Larry Rhoden', ltGovParty: 'R', ltGovSince: '2019',
         ltGovBio: 'Former state senator and cattle rancher Larry Rhoden was elected Lieutenant Governor in 2018. He has focused on agriculture, rural communities, and South Dakota\'s cattle industry alongside Governor Noem.',
@@ -12986,7 +12932,6 @@ function App() {
       {
         name: 'Tennessee', capital: 'Nashville', flagCode: 'us-tn',
         governor: 'Bill Lee', govParty: 'Republican', partyShort: 'R', since: '2019',
-        bio: 'Businessman Bill Lee won the 2018 governorship without prior political experience. He has focused on education reform, economic development, and maintaining Tennessee\'s no-income-tax status. The Lieutenant Governor role is held by the Senate Speaker.',
         ltGovTitle: 'Lieutenant Governor / Senate Speaker',
         ltGovernor: 'Randy McNally', ltGovParty: 'R', ltGovSince: '2017',
         ltGovBio: 'State Senate Speaker Randy McNally serves as Tennessee\'s Lieutenant Governor under the state\'s legislative structure. The veteran Republican legislator has focused on fiscal conservatism, economic development, and healthcare for Tennessee\'s senior citizens.',
@@ -12994,7 +12939,6 @@ function App() {
       {
         name: 'Texas', capital: 'Austin', flagCode: 'us-tx',
         governor: 'Greg Abbott', govParty: 'Republican', partyShort: 'R', since: '2015',
-        bio: 'Former Texas Supreme Court Justice and state Attorney General Greg Abbott has championed conservative immigration, abortion, and gun rights policies. He directed Operation Lone Star and managed major crises including the 2021 winter storm.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Dan Patrick', ltGovParty: 'R', ltGovSince: '2015',
         ltGovBio: 'Former radio host and state senator Dan Patrick has served as Texas\'s Lieutenant Governor since 2015, wielding considerable power as Senate President. He has championed conservative social legislation, property tax relief, and aggressive border security measures.',
@@ -13002,7 +12946,6 @@ function App() {
       {
         name: 'Utah', capital: 'Salt Lake City', flagCode: 'us-ut',
         governor: 'Spencer Cox', govParty: 'Republican', partyShort: 'R', since: '2021',
-        bio: 'Former Lieutenant Governor Spencer Cox has promoted civil dialogue and bridging political divides. He has focused on water conservation, housing affordability, and economic development in one of America\'s fastest-growing states.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Deidre Henderson', ltGovParty: 'R', ltGovSince: '2021',
         ltGovBio: 'Former state senator Deidre Henderson was elected Lieutenant Governor in 2020. She has focused on digital government services, government transparency, and supporting Utah\'s diverse and rapidly growing communities.',
@@ -13010,7 +12953,6 @@ function App() {
       {
         name: 'Vermont', capital: 'Montpelier', flagCode: 'us-vt',
         governor: 'Phil Scott', govParty: 'Republican', partyShort: 'R', since: '2017',
-        bio: 'Former race car driver and businessman Phil Scott is a popular moderate Republican governor in one of the most Democratic states. He has focused on economic development, opioid treatment, and environmental protection, often breaking with national Republicans.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'David Zuckerman', ltGovParty: 'D', ltGovSince: '2023',
         ltGovBio: 'Progressive farmer and former state senator David Zuckerman was elected Lieutenant Governor in 2022. He has focused on climate action, affordable housing, agricultural sustainability, and Vermont\'s transition to a green economy.',
@@ -13018,7 +12960,6 @@ function App() {
       {
         name: 'Virginia', capital: 'Richmond', flagCode: 'us-va',
         governor: 'Glenn Youngkin', govParty: 'Republican', partyShort: 'R', since: '2022',
-        bio: 'Former private equity executive Glenn Youngkin won a 2021 upset focused on parental rights in education. Constitutionally limited to one four-year term, he has focused on education, economic development, and public safety.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Winsome Earle-Sears', ltGovParty: 'R', ltGovSince: '2022',
         ltGovBio: 'Former Marine and state delegate Winsome Earle-Sears made history as Virginia\'s first woman and first Black person elected Lieutenant Governor. She has been a prominent conservative voice on education reform and Second Amendment rights.',
@@ -13026,7 +12967,6 @@ function App() {
       {
         name: 'Washington', capital: 'Olympia', flagCode: 'us-wa',
         governor: 'Bob Ferguson', govParty: 'Democrat', partyShort: 'D', since: '2025',
-        bio: 'Former state Attorney General Bob Ferguson won the 2024 gubernatorial election, succeeding Jay Inslee. Known for legal battles against federal policies, he has continued that approach while focusing on housing, climate action, and public safety.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Denny Heck', ltGovParty: 'D', ltGovSince: '2021',
         ltGovBio: 'Former U.S. Representative Denny Heck was elected Washington\'s Lieutenant Governor in 2020. He has focused on civic engagement, fostering legislative-executive cooperation, and Washington\'s innovation-driven economy.',
@@ -13034,7 +12974,6 @@ function App() {
       {
         name: 'West Virginia', capital: 'Charleston', flagCode: 'us-wv',
         governor: 'Patrick Morrisey', govParty: 'Republican', partyShort: 'R', since: '2025',
-        bio: 'Former U.S. Representative Patrick Morrisey won the 2024 gubernatorial election. He has focused on energy production, economic diversification, and reducing the federal regulatory footprint in West Virginia.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: '— (Senate President serves)', ltGovParty: '', ltGovSince: '',
         ltGovBio: 'West Virginia does not have a separately elected Lieutenant Governor. The President of the West Virginia Senate serves as first in the line of succession to the Governor.',
@@ -13042,7 +12981,6 @@ function App() {
       {
         name: 'Wisconsin', capital: 'Madison', flagCode: 'us-wi',
         governor: 'Tony Evers', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        bio: 'Former state school superintendent Tony Evers has been a pragmatic Democratic governor navigating a Republican-controlled legislature. He has used his veto power extensively to protect education and healthcare spending.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Sara Rodriguez', ltGovParty: 'D', ltGovSince: '2023',
         ltGovBio: 'Former state senator and healthcare professional Sara Rodriguez was elected Lieutenant Governor in 2022. She has focused on healthcare access, workforce development, and protecting Wisconsin\'s democratic institutions.',
@@ -13050,7 +12988,6 @@ function App() {
       {
         name: 'Wyoming', capital: 'Cheyenne', flagCode: 'us-wy',
         governor: 'Mark Gordon', govParty: 'Republican', partyShort: 'R', since: '2019',
-        bio: 'Former rancher and state Treasurer Mark Gordon has focused on managing Wyoming\'s budget amid declining coal revenues while diversifying the state\'s energy economy including nuclear and hydrogen projects.',
         ltGovTitle: 'Lieutenant Governor',
         ltGovernor: 'Jennings', ltGovParty: 'R', ltGovSince: '2019',
         ltGovBio: 'Wyoming\'s Lieutenant Governor has focused on economic development and supporting the state\'s ranching and energy industries alongside Governor Gordon.',
