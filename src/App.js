@@ -7,8 +7,11 @@ import {
   abbreviationFromExplorerFlagCode,
   buildAustralianExplorerRowFromFirestoreWithHardcodedFallback,
   buildProvincialExplorerRowFromFirestoreWithHardcodedFallback,
+  buildUkEnglandRegionRowFromFirestoreWithHardcodedFallback,
   mergeAustralianExplorerRow,
   mergeProvincialExplorerRow,
+  UK_EXPLORER_APP_REGION_IDS,
+  UK_APP_REGION_ID_TO_FIRESTORE_ID,
   UK_FIRESTORE_REQUIRED_IDS,
   findUkEnglandRegionFirestoreRow,
   mergeUkEnglandRegionRow,
@@ -20568,6 +20571,23 @@ function App() {
     for (let i = 0; i < rows.length; i += 1) {
       const row = rows[i];
       if (row && row.id) byId[String(row.id)] = row;
+    }
+    let englandFsComplete = true;
+    for (let i = 0; i < UK_EXPLORER_APP_REGION_IDS.length; i += 1) {
+      const appId = UK_EXPLORER_APP_REGION_IDS[i];
+      const fsId = UK_APP_REGION_ID_TO_FIRESTORE_ID[appId];
+      if (!fsId || !byId[fsId]) {
+        englandFsComplete = false;
+        break;
+      }
+    }
+    if (englandFsComplete) {
+      return UK_EXPLORER_APP_REGION_IDS.map((appId) => {
+        const fsId = UK_APP_REGION_ID_TO_FIRESTORE_ID[appId];
+        const fsRow = byId[fsId];
+        const hard = englandRegions.find((r) => r.id === appId);
+        return buildUkEnglandRegionRowFromFirestoreWithHardcodedFallback(fsRow, hard);
+      });
     }
     return englandRegions.map((region) => {
       const fsRow = findUkEnglandRegionFirestoreRow(region, byId, rows);

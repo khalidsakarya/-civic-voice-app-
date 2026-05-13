@@ -485,6 +485,89 @@ export const UK_APP_REGION_ID_TO_FIRESTORE_ID = Object.freeze({
   'south-west': 'UK-ENG-SW',
 });
 
+/** App `id` order for England region explorer cards (matches `englandRegions` array order). */
+export const UK_EXPLORER_APP_REGION_IDS = Object.freeze([
+  'north-east',
+  'north-west',
+  'yorkshire',
+  'east-midlands',
+  'west-midlands',
+  'east-of-england',
+  'london',
+  'south-east',
+  'south-west',
+]);
+
+/**
+ * England region explorer row: Firestore is primary; hardcoded `englandRegions` fills gaps.
+ * When `hasRegionalMayor` is false, head-of-region name/party/since stay from hardcoded (same as merge).
+ *
+ * @param {Record<string, unknown>} fsRow
+ * @param {Record<string, unknown>} hardcoded
+ */
+export function buildUkEnglandRegionRowFromFirestoreWithHardcodedFallback(
+  fsRow,
+  hardcoded,
+) {
+  if (!hardcoded) return hardcoded;
+  if (!fsRow || typeof fsRow !== 'object') return { ...hardcoded };
+
+  const ts = trimString;
+  const mayor = !!hardcoded.hasRegionalMayor;
+  const out = { ...hardcoded };
+
+  out.capital = ts(fsRow.capital) || String(hardcoded.capital || '');
+
+  const popFs =
+    fsRow.population_display != null && String(fsRow.population_display).trim()
+      ? String(fsRow.population_display).trim()
+      : '';
+  out.population = popFs || String(hardcoded.population || '');
+
+  if (mayor) {
+    out.leader = ts(fsRow.leader_name) || String(hardcoded.leader || '');
+    out.leaderParty = ts(fsRow.leader_party) || String(hardcoded.leaderParty || '');
+    out.leaderSince = ts(fsRow.leader_since) || String(hardcoded.leaderSince || '');
+  }
+
+  out.leaderBio = ts(fsRow.leader_bio) || String(hardcoded.leaderBio || '');
+  out.leaderTitle = ts(fsRow.leaderTitle) || String(hardcoded.leaderTitle || '');
+  out.displayName = ts(fsRow.name) || String(hardcoded.displayName || hardcoded.name || '');
+
+  const abbrFs =
+    fsRow.abbreviation != null && String(fsRow.abbreviation).trim()
+      ? String(fsRow.abbreviation).trim().toUpperCase()
+      : '';
+  out.subnationalAbbreviation =
+    abbrFs || String(hardcoded.subnationalAbbreviation || hardcoded.abbr || '').trim();
+
+  out.legislatureName =
+    ts(fsRow.legislatureName) || String(hardcoded.legislatureName || '');
+
+  if (fsRow.id) out.subnationalId = fsRow.id;
+  if (fsRow.country) out.subnationalCountry = fsRow.country;
+  if (fsRow.jurisdictionType) out.jurisdictionType = fsRow.jurisdictionType;
+
+  if (fsRow.officialWebsite !== undefined && fsRow.officialWebsite !== null) {
+    out.officialWebsite = fsRow.officialWebsite;
+  } else if (hardcoded.officialWebsite !== undefined) {
+    out.officialWebsite = hardcoded.officialWebsite;
+  }
+
+  out.legislatureWebsite =
+    ts(fsRow.legislatureWebsite) || String(hardcoded.legislatureWebsite || '');
+
+  const legFs = buildLegislatureFromSubnationalFirestore(fsRow);
+  if (legFs && legFs.parties && legFs.parties.length) {
+    out.legislature = legFs;
+  }
+
+  const flagFs = ts(fsRow.flagUrl);
+  if (flagFs) out.flagUrl = flagFs;
+
+  return out;
+}
+
 /**
  * Resolve Firestore row for a hardcoded England region card (id match first, then name / aliases).
  *
