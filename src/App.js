@@ -6,6 +6,7 @@ import {
   AU_EXPLORER_REQUIRED_ABBR,
   abbreviationFromExplorerFlagCode,
   buildAustralianExplorerRowFromFirestoreWithHardcodedFallback,
+  buildProvincialExplorerRowFromFirestoreWithHardcodedFallback,
   mergeAustralianExplorerRow,
   mergeProvincialExplorerRow,
   UK_FIRESTORE_REQUIRED_IDS,
@@ -13054,18 +13055,62 @@ function App() {
     ];
 
     const fsMaps = provincialExplorerFirestoreByAbbr;
+
+    const applyProvincialFlagFallback = (row) => ({
+      ...row,
+      flagUrl:
+        typeof row.flagUrl === 'string' && row.flagUrl.trim()
+          ? row.flagUrl.trim()
+          : flagUrl(row.name),
+    });
+
     const overlayRow = (row, countryKey) => {
       const abbr = abbreviationFromExplorerFlagCode(row.flagCode);
       const fsRow = abbr && fsMaps?.[countryKey]?.[abbr];
       return mergeProvincialExplorerRow(row, fsRow, countryKey === 'us');
     };
 
-    const cp = canadaProvinces
-      .map((p) => overlayRow(p, 'ca'))
-      .map((p) => ({ ...p, flagUrl: (typeof p.flagUrl === 'string' && p.flagUrl.trim() ? p.flagUrl.trim() : flagUrl(p.name)) }));
-    const us = usStates
-      .map((s) => overlayRow(s, 'us'))
-      .map((s) => ({ ...s, flagUrl: (typeof s.flagUrl === 'string' && s.flagUrl.trim() ? s.flagUrl.trim() : flagUrl(s.name)) }));
+    const usAbbrs = usStates
+      .map((s) => abbreviationFromExplorerFlagCode(s.flagCode))
+      .filter(Boolean);
+    const caAbbrs = canadaProvinces
+      .map((p) => abbreviationFromExplorerFlagCode(p.flagCode))
+      .filter(Boolean);
+    const usFsComplete =
+      fsMaps &&
+      usAbbrs.length === 50 &&
+      usAbbrs.every((ab) => fsMaps.us && fsMaps.us[ab]);
+    const caFsComplete =
+      fsMaps &&
+      caAbbrs.length === 13 &&
+      caAbbrs.every((ab) => fsMaps.ca && fsMaps.ca[ab]);
+
+    const cp = caFsComplete
+      ? canadaProvinces
+          .map((p) => {
+            const ab = abbreviationFromExplorerFlagCode(p.flagCode);
+            return buildProvincialExplorerRowFromFirestoreWithHardcodedFallback(
+              fsMaps.ca[ab],
+              p,
+              false,
+            );
+          })
+          .map(applyProvincialFlagFallback)
+      : canadaProvinces.map((p) => overlayRow(p, 'ca')).map(applyProvincialFlagFallback);
+
+    const us = usFsComplete
+      ? usStates
+          .map((s) => {
+            const ab = abbreviationFromExplorerFlagCode(s.flagCode);
+            return buildProvincialExplorerRowFromFirestoreWithHardcodedFallback(
+              fsMaps.us[ab],
+              s,
+              true,
+            );
+          })
+          .map(applyProvincialFlagFallback)
+      : usStates.map((s) => overlayRow(s, 'us')).map(applyProvincialFlagFallback);
+
     return { canadaProvinces: cp, usStates: us };
   };
 

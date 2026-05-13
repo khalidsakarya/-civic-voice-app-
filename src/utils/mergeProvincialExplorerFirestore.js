@@ -162,6 +162,111 @@ export function abbreviationFromExplorerFlagCode(flagCode) {
   return (parts[parts.length - 1] || '').toUpperCase();
 }
 
+/**
+ * US/CA provincial explorer row: Firestore `subnational_jurisdictions` is primary; hardcoded seed fills gaps.
+ *
+ * @param {Record<string, unknown>} fsRow
+ * @param {Record<string, unknown>} hardcoded
+ * @param {boolean} isUSA
+ */
+export function buildProvincialExplorerRowFromFirestoreWithHardcodedFallback(
+  fsRow,
+  hardcoded,
+  isUSA,
+) {
+  if (!hardcoded) return hardcoded;
+  if (!fsRow || typeof fsRow !== 'object') return { ...hardcoded };
+
+  const ts = trimString;
+
+  const abbrFs =
+    fsRow.abbreviation != null && String(fsRow.abbreviation).trim()
+      ? String(fsRow.abbreviation).trim().toUpperCase()
+      : '';
+  const abbrFromFlag = abbreviationFromExplorerFlagCode(String(hardcoded.flagCode || ''));
+
+  const out = {
+    name: ts(fsRow.name) || String(hardcoded.name || ''),
+    capital: ts(fsRow.capital) || String(hardcoded.capital || ''),
+    flagCode: String(hardcoded.flagCode || ''),
+  };
+
+  if (isUSA) {
+    out.governor = ts(fsRow.leader_name) || String(hardcoded.governor || '');
+    const lp = ts(fsRow.leader_party) || String(hardcoded.govParty || '');
+    out.govParty = lp;
+    out.partyShort =
+      ts(fsRow.leader_party_short) ||
+      usPartyShortFromLeaderParty(lp, String(hardcoded.partyShort || ''));
+    const pop =
+      fsRow.population_display != null && String(fsRow.population_display).trim()
+        ? String(fsRow.population_display).trim()
+        : '';
+    if (pop) out.population = pop;
+    else if (hardcoded.population) out.population = hardcoded.population;
+  } else {
+    out.population =
+      fsRow.population_display != null && String(fsRow.population_display).trim()
+        ? String(fsRow.population_display).trim()
+        : String(hardcoded.population || '');
+    out.premier = ts(fsRow.leader_name) || String(hardcoded.premier || '');
+    out.party = ts(fsRow.leader_party) || String(hardcoded.party || '');
+    out.partyShort =
+      ts(fsRow.leader_party_short) || String(hardcoded.partyShort || '');
+  }
+
+  out.since = ts(fsRow.leader_since) || String(hardcoded.since || '');
+  out.bio = ts(fsRow.leader_bio) || String(hardcoded.bio || '');
+  out.ltGovTitle = ts(fsRow.deputy_leader_title) || String(hardcoded.ltGovTitle || '');
+  out.ltGovernor = ts(fsRow.deputy_leader_name) || String(hardcoded.ltGovernor || '');
+  out.ltGovParty = ts(fsRow.deputy_leader_party) || String(hardcoded.ltGovParty || '');
+  out.ltGovSince = ts(fsRow.deputy_leader_since) || String(hardcoded.ltGovSince || '');
+  out.ltGovBio = ts(fsRow.deputy_leader_bio) || String(hardcoded.ltGovBio || '');
+
+  if (fsRow.id) out.subnationalId = fsRow.id;
+  if (fsRow.country) out.subnationalCountry = fsRow.country;
+  if (fsRow.jurisdictionType) out.jurisdictionType = fsRow.jurisdictionType;
+
+  out.displayName =
+    ts(fsRow.name) || String(hardcoded.displayName || hardcoded.name || '');
+  out.subnationalAbbreviation =
+    abbrFs ||
+    String(hardcoded.subnationalAbbreviation || abbrFromFlag || '').toUpperCase();
+
+  if (fsRow.officialWebsite !== undefined && fsRow.officialWebsite !== null) {
+    out.officialWebsite = fsRow.officialWebsite;
+  } else if (hardcoded.officialWebsite !== undefined) {
+    out.officialWebsite = hardcoded.officialWebsite;
+  }
+
+  const legWs = ts(fsRow.legislatureWebsite);
+  if (legWs) out.legislatureWebsite = legWs;
+  else if (hardcoded.legislatureWebsite) out.legislatureWebsite = hardcoded.legislatureWebsite;
+
+  const fsLt = ts(fsRow.leaderTitle);
+  if (fsLt) out.leaderTitle = fsLt;
+  else if (hardcoded.leaderTitle) out.leaderTitle = hardcoded.leaderTitle;
+
+  const fsLegNameOnly = ts(fsRow.legislatureName);
+  if (fsLegNameOnly) out.legislatureName = fsLegNameOnly;
+  else if (hardcoded.legislatureName) out.legislatureName = hardcoded.legislatureName;
+
+  const legFs = buildLegislatureFromSubnationalFirestore(fsRow);
+  if (legFs && legFs.parties && legFs.parties.length) {
+    out.legislature = legFs;
+  } else if (hardcoded.legislature && typeof hardcoded.legislature === 'object') {
+    out.legislature = { ...hardcoded.legislature };
+    if (fsLegNameOnly) {
+      out.legislature = { ...out.legislature, name: fsLegNameOnly };
+    }
+  }
+
+  const flagFs = ts(fsRow.flagUrl);
+  if (flagFs) out.flagUrl = flagFs;
+
+  return out;
+}
+
 /** Postal abbreviations required for Australian state/territory explorer overlay (must match hardcoded rows). */
 export const AU_EXPLORER_REQUIRED_ABBR = Object.freeze([
   'NSW',
