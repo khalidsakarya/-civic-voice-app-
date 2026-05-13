@@ -25,8 +25,9 @@ import {
 } from './constants/executiveOrderDocumentTypes';
 import { collection, getDocs, getDoc, query, where, addDoc, setDoc, doc, increment, serverTimestamp, getCountFromServer } from 'firebase/firestore';
 import { logEvent } from './analytics';
-import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell, Loader2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell, Loader2, Copy } from 'lucide-react';
 import { BarChart, Bar, AreaChart, Area, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { HelmetProvider, Helmet } from 'react-helmet-async';
 import './App.css';
 import { FirestoreDebugPanel } from './dev/FirestoreDebugPanel';
 
@@ -1861,6 +1862,7 @@ function App() {
   const [expandedAuLeaderSections, setExpandedAuLeaderSections] = useState({});
   const [auHighCourtVotes, setAuHighCourtVotes] = useState({});
   const [copiedShareId, setCopiedShareId] = useState(null);
+  const [shareModal, setShareModal] = useState(null);
   const [senateSearch, setSenateSearch] = useState('');
   const [senateFilter, setSenateFilter] = useState('All');
   const [selectedSenator, setSelectedSenator] = useState(null);
@@ -1875,18 +1877,78 @@ function App() {
   });
   const [firestoreVoteCounts, setFirestoreVoteCounts] = useState({});
 
-  const handleShare = async (e, { id, title, text, url }) => {
-    e.stopPropagation();
-    const shareUrl = url || window.location.href;
-    if (navigator.share) {
-      try { await navigator.share({ title, text, url: shareUrl }); } catch (_) {}
-    } else {
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        setCopiedShareId(id);
-        setTimeout(() => setCopiedShareId(null), 2000);
-      } catch (_) {}
+  const getSocialMeta = () => {
+    if (view === 'member-detail' && selectedMember) {
+      return {
+        title: `${selectedMember.name} — MP | Civic Voice`,
+        description: `${selectedMember.party} Member of Parliament for ${selectedMember.riding}, ${selectedMember.province}. View attendance, voting record, expenses, and more on Civic Voice.`,
+      };
     }
+    if ((view === 'bill-detail' || view === 'us-bill-detail') && selectedBill) {
+      const num = selectedBill.billNumber || selectedBill.number || '';
+      const raw = (selectedBill.description || selectedBill.summary || '').slice(0, 160);
+      return {
+        title: `${num}: ${selectedBill.title} | Civic Voice`,
+        description: `${selectedBill.status} — ${raw}`.trim(),
+      };
+    }
+    if (view === 'department-detail' && selectedDepartment) {
+      return {
+        title: `${selectedDepartment.name} | Civic Voice`,
+        description: `US federal department: budget, leadership, and transparency data on Civic Voice.`,
+      };
+    }
+    if (view === 'case-detail' && selectedCase) {
+      return {
+        title: `${selectedCase.name} | Supreme Court | Civic Voice`,
+        description: `Court case — status: ${selectedCase.status}. View full case details on Civic Voice.`,
+      };
+    }
+    if (view === 'uk-member-detail' && selectedUkMember) {
+      return {
+        title: `${selectedUkMember.name} — MP | Civic Voice`,
+        description: `${selectedUkMember.party} MP for ${selectedUkMember.constituency || ''}. View voting record, expenses, and more on Civic Voice.`,
+      };
+    }
+    if (view === 'uk-lord-detail' && selectedUkLord) {
+      return {
+        title: `${selectedUkLord.name} — House of Lords | Civic Voice`,
+        description: `${selectedUkLord.party ? selectedUkLord.party + ' member of' : 'Member of'} the House of Lords. View profile on Civic Voice.`,
+      };
+    }
+    if (view === 'province-detail' && selectedProvince) {
+      return {
+        title: `${selectedProvince.name} — Provincial Government | Civic Voice`,
+        description: `Provincial government data for ${selectedProvince.name}: leadership, economy, legislature, and more on Civic Voice.`,
+      };
+    }
+    if (view === 'canada-pm-detail') {
+      return { title: 'Mark Carney — Prime Minister of Canada | Civic Voice', description: "View Prime Minister Mark Carney's profile, voting record, expenses, and government actions on Civic Voice." };
+    }
+    if (view === 'uk-pm-detail') {
+      return { title: 'Keir Starmer — Prime Minister of the UK | Civic Voice', description: "View UK Prime Minister Keir Starmer's profile, voting record, and government actions on Civic Voice." };
+    }
+    if (view === 'president-detail') {
+      return { title: 'US President — Executive Profile | Civic Voice', description: "View the US President's profile, executive orders, and government actions on Civic Voice." };
+    }
+    if (view === 'supreme-court') {
+      return { title: 'Supreme Court of Canada | Civic Voice', description: 'Track Supreme Court of Canada cases, justices, and decisions on Civic Voice.' };
+    }
+    if (view === 'us-supreme-court') {
+      return { title: 'US Supreme Court | Civic Voice', description: 'Track US Supreme Court cases, justices, and decisions on Civic Voice.' };
+    }
+    if (view === 'uk-supreme-court') {
+      return { title: 'UK Supreme Court | Civic Voice', description: 'Track UK Supreme Court cases, justices, and decisions on Civic Voice.' };
+    }
+    return {
+      title: 'Civic Voice — Government Transparency Platform',
+      description: 'Track elected officials, bills, court cases, and government spending across Canada, USA, UK, and Australia.',
+    };
+  };
+
+  const handleShare = (e, { id, title, text, url }) => {
+    e.stopPropagation();
+    setShareModal({ title: title || '', description: text || '', url: url || window.location.href });
   };
 
   // Canadian data
@@ -7572,7 +7634,7 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm">
-          <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
             <button
               onClick={() => {
                 setSelectedCase(null);
@@ -7581,6 +7643,13 @@ function App() {
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
               <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Supreme Court</span>
+            </button>
+            <button
+              onClick={(e) => handleShare(e, { id: selectedCase.caseNumber, title: selectedCase.name, text: `Court case — status: ${selectedCase.status}. View on Civic Voice.`, url: window.location.href })}
+              className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+              aria-label="Share"
+            >
+              <Share2 className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -28419,15 +28488,22 @@ function App() {
   const renderBillDetail = () => (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <button
             onClick={() => {
               setSelectedBill(null);
               setView('bills');
             }}
-            className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
+            className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
           >
             <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Bills</span>
+          </button>
+          <button
+            onClick={(e) => handleShare(e, { id: selectedBill.id, title: `${selectedBill.billNumber}: ${selectedBill.title}`, text: selectedBill.description || selectedBill.summary || '', url: window.location.href })}
+            className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+            aria-label="Share"
+          >
+            <Share2 className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -31475,16 +31551,23 @@ function App() {
   const renderMemberDetail = () => (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <button
             onClick={() => {
               setSelectedMember(null);
               setCaChamber('House');
               setView('ca-parliament');
             }}
-            className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
+            className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
           >
             <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to MPs</span>
+          </button>
+          <button
+            onClick={(e) => handleShare(e, { id: selectedMember.name, title: `${selectedMember.name} — MP, ${selectedMember.riding}`, text: `${selectedMember.party} MP for ${selectedMember.riding}, ${selectedMember.province}. View on Civic Voice.`, url: window.location.href })}
+            className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+            aria-label="Share"
+          >
+            <Share2 className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -35694,8 +35777,29 @@ function App() {
   };
 
   return (
+    <HelmetProvider>
     <div className={`App smooth-scroll pb-10${darkMode ? ' dark' : ''}`}>
       <style>{customStyles}</style>
+      {(() => {
+        const meta = getSocialMeta();
+        const ogImage = `${window.location.origin}/og-image.svg`;
+        return (
+          <Helmet>
+            <title>{meta.title}</title>
+            <meta name="description" content={meta.description} />
+            <meta property="og:title" content={meta.title} />
+            <meta property="og:description" content={meta.description} />
+            <meta property="og:image" content={ogImage} />
+            <meta property="og:url" content={window.location.href} />
+            <meta property="og:type" content="website" />
+            <meta property="og:site_name" content="Civic Voice" />
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content={meta.title} />
+            <meta name="twitter:description" content={meta.description} />
+            <meta name="twitter:image" content={ogImage} />
+          </Helmet>
+        );
+      })()}
 
       <FirestoreDebugPanel />
 
@@ -35933,7 +36037,94 @@ function App() {
           </button>
         </div>
       </footer>
+
+      {shareModal && (
+        <div
+          className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setShareModal(null)}
+        >
+          <div
+            className="bg-white w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden animate-fade-in"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b">
+              <h3 className="text-base font-bold text-gray-800">Share</h3>
+              <button onClick={() => setShareModal(null)} className="text-gray-400 hover:text-gray-600 p-1">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="px-5 py-4 border-b bg-gray-50">
+              <p className="text-sm font-semibold text-gray-800 mb-1 line-clamp-2">{shareModal.title}</p>
+              {shareModal.description && <p className="text-xs text-gray-500 line-clamp-3">{shareModal.description}</p>}
+              <p className="text-xs text-blue-500 mt-1.5 truncate">civic-voice-app.vercel.app</p>
+            </div>
+            <div className="grid grid-cols-4 gap-4 px-5 py-5">
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareModal.url)}`}
+                target="_blank" rel="noopener noreferrer"
+                className="flex flex-col items-center gap-2"
+                onClick={() => setShareModal(null)}
+              >
+                <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+                </div>
+                <span className="text-xs text-gray-600 font-medium">Facebook</span>
+              </a>
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareModal.url)}&text=${encodeURIComponent(shareModal.title)}`}
+                target="_blank" rel="noopener noreferrer"
+                className="flex flex-col items-center gap-2"
+                onClick={() => setShareModal(null)}
+              >
+                <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </div>
+                <span className="text-xs text-gray-600 font-medium">X</span>
+              </a>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(shareModal.title + (shareModal.description ? '\n\n' + shareModal.description : '') + '\n\n' + shareModal.url)}`}
+                target="_blank" rel="noopener noreferrer"
+                className="flex flex-col items-center gap-2"
+                onClick={() => setShareModal(null)}
+              >
+                <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                </div>
+                <span className="text-xs text-gray-600 font-medium">WhatsApp</span>
+              </a>
+              <a
+                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareModal.url)}`}
+                target="_blank" rel="noopener noreferrer"
+                className="flex flex-col items-center gap-2"
+                onClick={() => setShareModal(null)}
+              >
+                <div className="w-12 h-12 rounded-full bg-blue-700 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+                </div>
+                <span className="text-xs text-gray-600 font-medium">LinkedIn</span>
+              </a>
+            </div>
+            <div className="px-5 pb-5">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(shareModal.url).then(() => {
+                    setCopiedShareId('__modal__');
+                    setTimeout(() => { setCopiedShareId(null); setShareModal(null); }, 1800);
+                  }).catch(() => {});
+                }}
+                className={`w-full py-3 rounded-xl border-2 text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${copiedShareId === '__modal__' ? 'border-green-300 text-green-600 bg-green-50' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+              >
+                {copiedShareId === '__modal__'
+                  ? <><CheckCircle className="w-4 h-4" /> Copied!</>
+                  : <><Copy className="w-4 h-4" /> Copy Link</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+    </HelmetProvider>
   );
 }
 
