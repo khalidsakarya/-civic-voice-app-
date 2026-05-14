@@ -1,6 +1,6 @@
 /**
  * Client-side read helper for `subnational_jurisdictions`.
- * Does not replace hardcoded app data until an approved UI migration.
+ * Callers merge with local seeds; treat narrative fields as unverified in UI until engine-sourced documents replace demo content.
  */
 
 import { collection, getDocs, query, where } from 'firebase/firestore';

@@ -1,6 +1,7 @@
 /**
  * Provincial/state explorer — merge helpers for Firestore `subnational_jurisdictions`.
  * When present, `leader_party_short` overrides badge text (`partyShort`); otherwise hardcoded values remain.
+ * Narrative and legislature breakdown fields are only as trustworthy as the backing documents (engine-sourced vs demo).
  */
 
 /** @param {unknown} v */

@@ -54,6 +54,22 @@ const LOCATION_GATE_US_STATE_NAMES_FALLBACK = ['Alabama','Alaska','Arizona','Ark
 /** Province/territory codes in same order as CANADA_PROVINCE_TERRITORY_NAMES_REGION_GATE (for Firestore ordering). */
 const CANADA_LOCATION_GATE_ORDER_ABBR = ['AB','BC','MB','NB','NL','NT','NS','NU','ON','PE','QC','SK','YT'];
 
+/** Shown on subnational explorer views: legacy/demo copy is not authenticated until engine-sourced sync. */
+function SubnationalIllustrativeExplorerNote() {
+  return (
+    <div
+      className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2.5 text-xs text-amber-950 leading-snug mb-4 flex gap-2 items-start"
+      role="note"
+    >
+      <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-800" aria-hidden />
+      <p>
+        <span className="font-semibold">Illustrative / unverified: </span>
+        Biographies, deputy notes, legislature seat charts, and UK regional narrative may be demo seed data—not authenticated government records—until the engine replaces them with officially sourced fields.
+      </p>
+    </div>
+  );
+}
+
 // Custom CSS for animations and enhanced styling
 const customStyles = `
   @keyframes fadeIn {
@@ -13143,6 +13159,8 @@ function App() {
             </div>
           </div>
 
+          <SubnationalIllustrativeExplorerNote />
+
           {/* Leadership — two cards side by side */}
           <h2 className="text-base font-bold text-gray-600 uppercase tracking-wide mb-3 px-1">Leadership</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -20652,6 +20670,8 @@ function App() {
             )}
           </div>
 
+          <SubnationalIllustrativeExplorerNote />
+
           {/* ── Regional Leadership ── */}
           <SectionLabel>Regional Leadership</SectionLabel>
           <div className={`grid grid-cols-1 ${r.subMayors && r.subMayors.length > 0 ? 'md:grid-cols-2' : ''} gap-4`}>
@@ -23870,6 +23890,8 @@ function App() {
             </div>
           </div>
 
+          <SubnationalIllustrativeExplorerNote />
+
           {/* ── Leadership ── */}
           <SectionLabel>Government Leadership</SectionLabel>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -25036,6 +25058,8 @@ function App() {
 
         <div className="max-w-5xl mx-auto px-4 sm:px-8 py-8">
 
+          <SubnationalIllustrativeExplorerNote />
+
           {/* ── PROFILE CARD ─────────────────────────────────────────── */}
           <div className="bg-white rounded-2xl overflow-hidden mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.10)' }}>
             <div className="h-1.5 w-full" style={{ background: partyColor }} />
@@ -25091,18 +25115,18 @@ function App() {
 
           {/* ── CONTACT ──────────────────────────────────────────────── */}
           <div className="bg-white rounded-2xl shadow-sm p-6 mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
-            <h3 className="text-lg font-black text-gray-900 mb-4">📧 Contact Information</h3>
+            <h3 className="text-lg font-black text-gray-900 mb-4">📧 Example contact (illustrative)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="rounded-xl p-4" style={{ background: `${partyColor}0d`, border: `1px solid ${partyColor}30` }}>
-                <p className="text-sm text-gray-600 mb-1 font-medium">Official Email</p>
+                <p className="text-sm text-gray-600 mb-1 font-medium">Example email</p>
                 <a href={`mailto:${email}`} className="font-semibold break-all text-sm" style={{ color: partyColor }}>{email}</a>
               </div>
               <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                <p className="text-sm text-gray-600 mb-1 font-medium">Office Phone</p>
+                <p className="text-sm text-gray-600 mb-1 font-medium">Example phone</p>
                 <a href={`tel:${phone}`} className="text-green-700 font-semibold text-sm">{phone}</a>
               </div>
               <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 md:col-span-2">
-                <p className="text-sm text-gray-600 mb-1 font-medium">Office Address</p>
+                <p className="text-sm text-gray-600 mb-1 font-medium">Example address</p>
                 <p className="text-gray-700 text-sm font-medium">{officeAddr}</p>
               </div>
             </div>
@@ -34187,6 +34211,8 @@ function App() {
           <div className="flex-1 overflow-y-auto">
             <div className="p-6 space-y-7">
 
+              <SubnationalIllustrativeExplorerNote />
+
               {/* Bio */}
               {leader.bio && (
                 <section>
@@ -34212,14 +34238,14 @@ function App() {
 
               {/* Contact */}
               <section>
-                <p className="panel-section-label">Contact Information</p>
+                <p className="panel-section-label">Example contact (illustrative)</p>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
                     <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                       <MapPin className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 font-medium">Office Phone</p>
+                      <p className="text-xs text-gray-500 font-medium">Example phone</p>
                       <p className="text-sm font-semibold text-green-700">{leader.contact.phone}</p>
                     </div>
                   </div>
@@ -34228,7 +34254,7 @@ function App() {
                       <Building2 className="w-4 h-4 text-orange-600" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 font-medium">Official Address</p>
+                      <p className="text-xs text-gray-500 font-medium">Example address</p>
                       <p className="text-sm font-medium text-gray-700">{leader.contact.address}</p>
                     </div>
                   </div>
@@ -34237,7 +34263,7 @@ function App() {
                       <Globe className="w-4 h-4 text-blue-600" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 font-medium">Official Website</p>
+                      <p className="text-xs text-gray-500 font-medium">Example website</p>
                       <p className="text-sm font-semibold text-blue-600">{leader.contact.website}</p>
                     </div>
                   </div>
