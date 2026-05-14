@@ -12619,258 +12619,195 @@ function App() {
     const canadaProvinces = [
       {
         name: 'Ontario', flagCode: 'ca-on', population: '14.9M',
-        partyShort: 'PC',
       },
       {
         name: 'Quebec', flagCode: 'ca-qc', population: '8.8M',
-        partyShort: 'CAQ',
       },
       {
         name: 'British Columbia', flagCode: 'ca-bc', population: '5.3M',
-        partyShort: 'NDP',
       },
       {
         name: 'Alberta', flagCode: 'ca-ab', population: '4.6M',
-        partyShort: 'UCP',
       },
       {
         name: 'Saskatchewan', flagCode: 'ca-sk', population: '1.2M',
-        partyShort: 'Sask. Party',
       },
       {
         name: 'Manitoba', flagCode: 'ca-mb', population: '1.4M',
-        partyShort: 'NDP',
       },
       {
         name: 'Nova Scotia', flagCode: 'ca-ns', population: '1.0M',
-        partyShort: 'PC',
       },
       {
         name: 'New Brunswick', flagCode: 'ca-nb', population: '820K',
-        partyShort: 'Liberal',
       },
       {
         name: 'Newfoundland & Labrador', flagCode: 'ca-nl', population: '530K',
-        partyShort: 'Liberal',
       },
       {
         name: 'Prince Edward Island', flagCode: 'ca-pe', population: '170K',
-        partyShort: 'PC',
       },
       {
         name: 'Northwest Territories', flagCode: 'ca-nt', population: '45K',
-        partyShort: 'Consensus',
       },
       {
         name: 'Yukon', flagCode: 'ca-yt', population: '43K',
-        partyShort: 'Liberal',
       },
       {
         name: 'Nunavut', flagCode: 'ca-nu', population: '40K',
-        partyShort: 'Consensus',
       },
     ];
 
     const usStates = [
       {
         name: 'Alabama', flagCode: 'us-al',
-        partyShort: 'R',
       },
       {
         name: 'Alaska', flagCode: 'us-ak',
-        partyShort: 'R',
       },
       {
         name: 'Arizona', flagCode: 'us-az',
-        partyShort: 'D',
       },
       {
         name: 'Arkansas', flagCode: 'us-ar',
-        partyShort: 'R',
       },
       {
         name: 'California', flagCode: 'us-ca',
-        partyShort: 'D',
       },
       {
         name: 'Colorado', flagCode: 'us-co',
-        partyShort: 'D',
       },
       {
         name: 'Connecticut', flagCode: 'us-ct',
-        partyShort: 'D',
       },
       {
         name: 'Delaware', flagCode: 'us-de',
-        partyShort: 'D',
       },
       {
         name: 'Florida', flagCode: 'us-fl',
-        partyShort: 'R',
       },
       {
         name: 'Georgia', flagCode: 'us-ga',
-        partyShort: 'R',
       },
       {
         name: 'Hawaii', flagCode: 'us-hi',
-        partyShort: 'D',
       },
       {
         name: 'Idaho', flagCode: 'us-id',
-        partyShort: 'R',
       },
       {
         name: 'Illinois', flagCode: 'us-il',
-        partyShort: 'D',
       },
       {
         name: 'Indiana', flagCode: 'us-in',
-        partyShort: 'R',
       },
       {
         name: 'Iowa', flagCode: 'us-ia',
-        partyShort: 'R',
       },
       {
         name: 'Kansas', flagCode: 'us-ks',
-        partyShort: 'D',
       },
       {
         name: 'Kentucky', flagCode: 'us-ky',
-        partyShort: 'D',
       },
       {
         name: 'Louisiana', flagCode: 'us-la',
-        partyShort: 'R',
       },
       {
         name: 'Maine', flagCode: 'us-me',
-        partyShort: 'D',
       },
       {
         name: 'Maryland', flagCode: 'us-md',
-        partyShort: 'D',
       },
       {
         name: 'Massachusetts', flagCode: 'us-ma',
-        partyShort: 'D',
       },
       {
         name: 'Michigan', flagCode: 'us-mi',
-        partyShort: 'D',
       },
       {
         name: 'Minnesota', flagCode: 'us-mn',
-        partyShort: 'D',
       },
       {
         name: 'Mississippi', flagCode: 'us-ms',
-        partyShort: 'R',
       },
       {
         name: 'Missouri', flagCode: 'us-mo',
-        partyShort: 'R',
       },
       {
         name: 'Montana', flagCode: 'us-mt',
-        partyShort: 'R',
       },
       {
         name: 'Nebraska', flagCode: 'us-ne',
-        partyShort: 'R',
       },
       {
         name: 'Nevada', flagCode: 'us-nv',
-        partyShort: 'R',
       },
       {
         name: 'New Hampshire', flagCode: 'us-nh',
-        partyShort: 'R',
       },
       {
         name: 'New Jersey', flagCode: 'us-nj',
-        partyShort: 'D',
       },
       {
         name: 'New Mexico', flagCode: 'us-nm',
-        partyShort: 'D',
       },
       {
         name: 'New York', flagCode: 'us-ny',
-        partyShort: 'D',
       },
       {
         name: 'North Carolina', flagCode: 'us-nc',
-        partyShort: 'D',
       },
       {
         name: 'North Dakota', flagCode: 'us-nd',
-        partyShort: 'R',
       },
       {
         name: 'Ohio', flagCode: 'us-oh',
-        partyShort: 'R',
       },
       {
         name: 'Oklahoma', flagCode: 'us-ok',
-        partyShort: 'R',
       },
       {
         name: 'Oregon', flagCode: 'us-or',
-        partyShort: 'D',
       },
       {
         name: 'Pennsylvania', flagCode: 'us-pa',
-        partyShort: 'D',
       },
       {
         name: 'Rhode Island', flagCode: 'us-ri',
-        partyShort: 'D',
       },
       {
         name: 'South Carolina', flagCode: 'us-sc',
-        partyShort: 'R',
       },
       {
         name: 'South Dakota', flagCode: 'us-sd',
-        partyShort: 'R',
       },
       {
         name: 'Tennessee', flagCode: 'us-tn',
-        partyShort: 'R',
       },
       {
         name: 'Texas', flagCode: 'us-tx',
-        partyShort: 'R',
       },
       {
         name: 'Utah', flagCode: 'us-ut',
-        partyShort: 'R',
       },
       {
         name: 'Vermont', flagCode: 'us-vt',
-        partyShort: 'R',
       },
       {
         name: 'Virginia', flagCode: 'us-va',
-        partyShort: 'R',
       },
       {
         name: 'Washington', flagCode: 'us-wa',
-        partyShort: 'D',
       },
       {
         name: 'West Virginia', flagCode: 'us-wv',
-        partyShort: 'R',
       },
       {
         name: 'Wisconsin', flagCode: 'us-wi',
-        partyShort: 'D',
       },
       {
         name: 'Wyoming', flagCode: 'us-wy',
-        partyShort: 'R',
       },
     ];
 
@@ -23639,42 +23576,42 @@ function App() {
     const states = [
       {
         name: 'New South Wales', abbr: 'NSW',
-        leaderTitle: 'Premier', partyShort: 'ALP',
+        leaderTitle: 'Premier',
         legislature: { name: 'NSW Legislative Assembly', totalSeats: 93, parties: [{ name: 'Labor', seats: 45, color: '#CC0000' }, { name: 'Liberal', seats: 33, color: '#1B5BA5' }, { name: 'Nationals', seats: 9, color: '#006644' }, { name: 'Greens', seats: 3, color: '#10B981' }, { name: 'Independent', seats: 3, color: '#6B7280' }] },
       },
       {
         name: 'Victoria', abbr: 'VIC',
-        leaderTitle: 'Premier', partyShort: 'ALP',
+        leaderTitle: 'Premier',
         legislature: { name: 'Victorian Legislative Assembly', totalSeats: 88, parties: [{ name: 'Labor', seats: 51, color: '#CC0000' }, { name: 'Liberal', seats: 23, color: '#1B5BA5' }, { name: 'Nationals', seats: 9, color: '#006644' }, { name: 'Greens', seats: 4, color: '#10B981' }, { name: 'Independent', seats: 1, color: '#6B7280' }] },
       },
       {
         name: 'Queensland', abbr: 'QLD',
-        leaderTitle: 'Premier', partyShort: 'LNP',
+        leaderTitle: 'Premier',
         legislature: { name: 'Queensland Legislative Assembly', totalSeats: 93, parties: [{ name: 'LNP', seats: 55, color: '#1B5BA5' }, { name: 'Labor', seats: 31, color: '#CC0000' }, { name: 'Greens', seats: 5, color: '#10B981' }, { name: 'Independent', seats: 2, color: '#6B7280' }] },
       },
       {
         name: 'Western Australia', abbr: 'WA',
-        leaderTitle: 'Premier', partyShort: 'ALP',
+        leaderTitle: 'Premier',
         legislature: { name: 'WA Legislative Assembly', totalSeats: 59, parties: [{ name: 'Labor', seats: 40, color: '#CC0000' }, { name: 'Liberal', seats: 7, color: '#1B5BA5' }, { name: 'Nationals', seats: 5, color: '#006644' }, { name: 'Greens', seats: 4, color: '#10B981' }, { name: 'Independent', seats: 3, color: '#6B7280' }] },
       },
       {
         name: 'South Australia', abbr: 'SA',
-        leaderTitle: 'Premier', partyShort: 'ALP',
+        leaderTitle: 'Premier',
         legislature: { name: 'SA House of Assembly', totalSeats: 47, parties: [{ name: 'Labor', seats: 26, color: '#CC0000' }, { name: 'Liberal', seats: 18, color: '#1B5BA5' }, { name: 'Greens', seats: 1, color: '#10B981' }, { name: 'Independent', seats: 2, color: '#6B7280' }] },
       },
       {
         name: 'Tasmania', abbr: 'TAS',
-        leaderTitle: 'Premier', partyShort: 'Liberal',
+        leaderTitle: 'Premier',
         legislature: { name: 'Tasmanian House of Assembly', totalSeats: 35, parties: [{ name: 'Liberal', seats: 14, color: '#1B5BA5' }, { name: 'Labor', seats: 10, color: '#CC0000' }, { name: 'Greens', seats: 7, color: '#10B981' }, { name: 'Independent', seats: 4, color: '#6B7280' }] },
       },
       {
         name: 'Australian Capital Territory', abbr: 'ACT',
-        leaderTitle: 'Chief Minister', partyShort: 'ALP',
+        leaderTitle: 'Chief Minister',
         legislature: { name: 'ACT Legislative Assembly', totalSeats: 25, parties: [{ name: 'Labor', seats: 11, color: '#CC0000' }, { name: 'Liberal', seats: 7, color: '#1B5BA5' }, { name: 'Greens', seats: 6, color: '#10B981' }, { name: 'Independent', seats: 1, color: '#6B7280' }] },
       },
       {
         name: 'Northern Territory', abbr: 'NT',
-        leaderTitle: 'Chief Minister', partyShort: 'CLP',
+        leaderTitle: 'Chief Minister',
         legislature: { name: 'NT Legislative Assembly', totalSeats: 25, parties: [{ name: 'CLP', seats: 17, color: '#1B5BA5' }, { name: 'Labor', seats: 8, color: '#CC0000' }] },
       },
     ];

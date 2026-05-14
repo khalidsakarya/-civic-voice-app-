@@ -96,7 +96,7 @@ export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
       out.partyShort = fsPartyShort || usPartyShortFromLeaderParty(lp, hardcoded.partyShort);
     } else {
       out.party = lp;
-      if (fsPartyShort) out.partyShort = fsPartyShort;
+      out.partyShort = fsPartyShort || String(hardcoded.partyShort || '');
     }
   } else if (fsPartyShort) {
     out.partyShort = fsPartyShort;
@@ -366,7 +366,7 @@ export function mergeAustralianExplorerRow(hardcoded, fsRow) {
     fsRow.leader_party_short != null && String(fsRow.leader_party_short).trim()
       ? String(fsRow.leader_party_short).trim()
       : '';
-  if (fsPartyShort) out.partyShort = fsPartyShort;
+  out.partyShort = fsPartyShort || String(hardcoded.partyShort || '');
 
   return out;
 }
