@@ -23,6 +23,9 @@ import { SUBNATIONAL_JURISDICTIONS_COLLECTION } from '../constants/firestoreColl
  * @property {string|null} officialWebsite
  * @property {string} legislatureWebsite
  * @property {string} population_display
+ * @property {number=} area_km2
+ * @property {number=} population
+ * @property {number=} populationRaw
  * @property {string} leader_name
  * @property {string} leader_party
  * @property {string} leader_party_short
@@ -140,6 +143,21 @@ function normalizeRecord(docId, raw) {
 
   const flagFromDoc = optTrim(raw.flagUrl) || optTrim(raw.flag_url);
   if (flagFromDoc) rec.flagUrl = flagFromDoc;
+
+  const areaKm2 = Number(raw.area_km2);
+  if (Number.isFinite(areaKm2) && areaKm2 > 0) {
+    rec.area_km2 = areaKm2;
+  }
+
+  const popNum = Number(raw.population);
+  if (Number.isFinite(popNum) && popNum > 0) {
+    rec.population = popNum;
+  }
+
+  const popRawNum = Number(raw.populationRaw);
+  if (Number.isFinite(popRawNum) && popRawNum > 0) {
+    rec.populationRaw = popRawNum;
+  }
 
   return /** @type {SubnationalJurisdictionRecord} */ (rec);
 }

@@ -19924,8 +19924,6 @@ function App() {
       name: 'North East England',
       abbr: 'NE',
       emoji: '⚙️',
-      populationRaw: 2650000,
-      area: '8,592 km²',
       cities: ['Newcastle upon Tyne', 'Sunderland', 'Middlesbrough', 'Durham', 'Gateshead'],
       gdpPerCapita: '£22,900',
       gdpTotal: '£60.8B',
@@ -19962,8 +19960,6 @@ function App() {
       name: 'North West England',
       abbr: 'NW',
       emoji: '🏙️',
-      populationRaw: 7420000,
-      area: '14,165 km²',
       cities: ['Manchester', 'Liverpool', 'Salford', 'Preston', 'Bolton', 'Blackpool', 'Chester'],
       gdpPerCapita: '£26,800',
       gdpTotal: '£198.6B',
@@ -20007,8 +20003,6 @@ function App() {
       name: 'Yorkshire & The Humber',
       abbr: 'YH',
       emoji: '🌹',
-      populationRaw: 5540000,
-      area: '15,420 km²',
       cities: ['Leeds', 'Sheffield', 'Bradford', 'Hull', 'York', 'Harrogate', 'Doncaster'],
       gdpPerCapita: '£24,200',
       gdpTotal: '£133.9B',
@@ -20052,8 +20046,6 @@ function App() {
       name: 'East Midlands',
       abbr: 'EM',
       emoji: '🏛️',
-      populationRaw: 4930000,
-      area: '15,627 km²',
       cities: ['Nottingham', 'Leicester', 'Derby', 'Lincoln', 'Northampton', 'Chesterfield'],
       gdpPerCapita: '£26,500',
       gdpTotal: '£130.7B',
@@ -20090,8 +20082,6 @@ function App() {
       name: 'West Midlands',
       abbr: 'WM',
       emoji: '🏭',
-      populationRaw: 5920000,
-      area: '13,004 km²',
       cities: ['Birmingham', 'Coventry', 'Wolverhampton', 'Stoke-on-Trent', 'Walsall', 'Dudley'],
       gdpPerCapita: '£24,800',
       gdpTotal: '£146.8B',
@@ -20128,8 +20118,6 @@ function App() {
       name: 'East of England',
       abbr: 'EE',
       emoji: '🌾',
-      populationRaw: 6330000,
-      area: '19,120 km²',
       cities: ['Cambridge', 'Norwich', 'Luton', 'Ipswich', 'Peterborough', 'Chelmsford', 'Colchester'],
       gdpPerCapita: '£29,200',
       gdpTotal: '£184.8B',
@@ -20170,8 +20158,6 @@ function App() {
       name: 'London',
       abbr: 'LON',
       emoji: '🏙️',
-      populationRaw: 9080000,
-      area: '1,572 km²',
       cities: ['City of London', 'Westminster', 'Canary Wharf', 'Croydon', 'Bromley', 'Hackney', 'Tower Hamlets'],
       gdpPerCapita: '£57,700',
       gdpTotal: '£524.0B',
@@ -20208,8 +20194,6 @@ function App() {
       name: 'South East England',
       abbr: 'SE',
       emoji: '🏖️',
-      populationRaw: 9180000,
-      area: '19,095 km²',
       cities: ['Brighton', 'Southampton', 'Oxford', 'Reading', 'Portsmouth', 'Guildford', 'Canterbury'],
       gdpPerCapita: '£33,700',
       gdpTotal: '£309.2B',
@@ -20250,8 +20234,6 @@ function App() {
       name: 'South West England',
       abbr: 'SW',
       emoji: '🌊',
-      populationRaw: 5700000,
-      area: '23,829 km²',
       cities: ['Bristol', 'Plymouth', 'Exeter', 'Bath', 'Swindon', 'Gloucester', 'Truro'],
       gdpPerCapita: '£27,100',
       gdpTotal: '£154.5B',
@@ -20335,7 +20317,11 @@ function App() {
 
   const renderUKRegions = () => {
     const regions = getEnglandRegionsExplorerRows();
-    const totalPop = regions.reduce((s, r) => s + r.populationRaw, 0);
+    const totalPop = regions.reduce((s, r) => {
+      const pr =
+        typeof r.populationRaw === 'number' && Number.isFinite(r.populationRaw) ? r.populationRaw : 0;
+      return s + pr;
+    }, 0);
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Sticky header */}
@@ -20367,7 +20353,7 @@ function App() {
               <p className="text-sm font-semibold text-gray-600 mt-1">Statistical Regions</p>
             </div>
             <div className="rounded-xl p-5 border-2 text-center" style={{ background: '#01216908', borderColor: '#012169' }}>
-              <p className="text-3xl font-black" style={{ color: '#012169' }}>{(totalPop / 1000000).toFixed(1)}M</p>
+              <p className="text-3xl font-black" style={{ color: '#012169' }}>{totalPop > 0 ? `${(totalPop / 1000000).toFixed(1)}M` : '—'}</p>
               <p className="text-sm font-semibold text-gray-600 mt-1">Total Population</p>
             </div>
             <div className="bg-green-50 rounded-xl p-5 border-2 border-green-300 text-center">
@@ -20405,7 +20391,10 @@ function App() {
                   <div className="grid grid-cols-3 gap-2 mb-3">
                     <div className="text-center">
                       <p className="text-xs text-gray-400">Population</p>
-                      <p className="text-sm font-bold text-gray-800">{region.population}</p>
+                      <p className="text-sm font-bold text-gray-800">{region.population || '—'}</p>
+                      {region.area ? (
+                        <p className="text-[10px] text-gray-500 mt-0.5 tabular-nums leading-tight">{region.area}</p>
+                      ) : null}
                     </div>
                     <div className="text-center">
                       <p className="text-xs text-gray-400">GDP/capita</p>
@@ -20448,6 +20437,10 @@ function App() {
     if (!selectedUkRegion) return null;
     const r = selectedUkRegion;
     const ukRegionLabel = r.displayName || r.name;
+    const ukOfficialSite =
+      typeof r.officialWebsite === 'string' && /^https?:\/\//i.test(r.officialWebsite.trim())
+        ? r.officialWebsite.trim()
+        : '';
     const ukRed = '#C8102E', ukNavy = '#012169';
 
     const legislatureByRegion = {
@@ -20609,8 +20602,25 @@ function App() {
                     🏛 <span className="ml-0.5">Capital: <strong className="text-white">{r.capital || r.cities[0]}</strong></span>
                   </span>
                   <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    👥 <span className="ml-0.5">Pop: <strong className="text-white">{r.population}</strong></span>
+                    👥 <span className="ml-0.5">Pop: <strong className="text-white">{r.population || '—'}</strong></span>
                   </span>
+                  {r.area ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      📐 <span className="ml-0.5">Area: <strong className="text-white">{r.area}</strong></span>
+                    </span>
+                  ) : null}
+                  {ukOfficialSite ? (
+                    <a
+                      href={ukOfficialSite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5 transition-colors hover:bg-white/15"
+                      style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.92)', border: '1px solid rgba(255,255,255,0.1)' }}
+                    >
+                      <Globe className="w-3 h-3 flex-shrink-0" aria-hidden />
+                      <span>Official site</span>
+                    </a>
+                  ) : null}
                   {r.hasRegionalMayor && (
                     <span className="inline-flex items-center gap-1 text-xs font-bold rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5 text-white" style={{ background: leaderColor }}>
                       <Crown className="w-3 h-3" /> Elected Mayor

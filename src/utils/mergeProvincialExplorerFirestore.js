@@ -536,6 +536,68 @@ function defaultUkEnglandNonMayorLeaderTitle(hardcoded) {
   return '';
 }
 
+/** ONS-style region population — reject non-sensical values before using for sums or display. */
+const UK_ENG_OFFICIAL_POP_MIN = 50_000;
+const UK_ENG_OFFICIAL_POP_MAX = 25_000_000;
+
+/**
+ * @param {Record<string, unknown>} fsRow
+ * @returns {number | null}
+ */
+function officialUkEnglandPopulationRaw(fsRow) {
+  if (!fsRow || typeof fsRow !== 'object') return null;
+  const candidates = [fsRow.population, fsRow.populationRaw];
+  for (let i = 0; i < candidates.length; i += 1) {
+    const n = Number(candidates[i]);
+    if (!Number.isFinite(n) || n < UK_ENG_OFFICIAL_POP_MIN || n > UK_ENG_OFFICIAL_POP_MAX) continue;
+    return Math.round(n);
+  }
+  return null;
+}
+
+/**
+ * @param {Record<string, unknown>} fsRow
+ * @returns {string}
+ */
+function formatUkEnglandAreaKm2(fsRow) {
+  if (!fsRow || typeof fsRow !== 'object') return '';
+  const km2 = Number(fsRow.area_km2);
+  if (!Number.isFinite(km2) || km2 <= 0 || km2 > 500_000) return '';
+  const rounded = km2 < 100 ? Math.round(km2 * 10) / 10 : Math.round(km2);
+  const body =
+    km2 < 100 && !Number.isInteger(rounded)
+      ? String(rounded)
+      : Math.round(km2).toLocaleString('en-GB');
+  return `${body} km²`;
+}
+
+/**
+ * Prefer Firestore `population_display`, then a safe numeric headline, then hardcoded fallbacks.
+ *
+ * @param {Record<string, unknown>} fsRow
+ * @param {Record<string, unknown>} hardcoded
+ */
+function ukEnglandPopulationDisplay(fsRow, hardcoded) {
+  const disp =
+    fsRow && fsRow.population_display != null && String(fsRow.population_display).trim()
+      ? String(fsRow.population_display).trim()
+      : '';
+  if (disp) return disp;
+  const raw = officialUkEnglandPopulationRaw(fsRow);
+  if (raw != null) return raw.toLocaleString('en-GB');
+  const hPop =
+    hardcoded && hardcoded.population != null && String(hardcoded.population).trim()
+      ? String(hardcoded.population).trim()
+      : '';
+  if (hPop) return hPop;
+  const legacyRaw =
+    hardcoded && typeof hardcoded.populationRaw === 'number' && Number.isFinite(hardcoded.populationRaw)
+      ? Math.round(hardcoded.populationRaw)
+      : null;
+  if (legacyRaw != null) return legacyRaw.toLocaleString('en-GB');
+  return '';
+}
+
 /**
  * England region explorer row: Firestore is primary; hardcoded `englandRegions` fills gaps.
  * When `hasRegionalMayor` is false, head-of-region name/party/since stay from hardcoded (same as merge).
@@ -556,11 +618,14 @@ export function buildUkEnglandRegionRowFromFirestoreWithHardcodedFallback(
 
   out.capital = ts(fsRow.capital) || String(hardcoded.capital || '');
 
-  const popFs =
-    fsRow.population_display != null && String(fsRow.population_display).trim()
-      ? String(fsRow.population_display).trim()
-      : '';
-  out.population = popFs || String(hardcoded.population || '');
+  out.population = ukEnglandPopulationDisplay(fsRow, hardcoded);
+  const rawOff = officialUkEnglandPopulationRaw(fsRow);
+  if (rawOff != null) out.populationRaw = rawOff;
+  else delete out.populationRaw;
+
+  const areaStr = formatUkEnglandAreaKm2(fsRow);
+  if (areaStr) out.area = areaStr;
+  else delete out.area;
 
   if (mayor) {
     out.leader = ts(fsRow.leader_name) || String(hardcoded.leader || '');
@@ -676,11 +741,14 @@ export function mergeUkEnglandRegionRow(hardcoded, fsRow) {
   const cap = typeof fsRow.capital === 'string' ? fsRow.capital.trim() : '';
   if (cap) out.capital = cap;
 
-  const pop =
-    fsRow.population_display != null && String(fsRow.population_display).trim()
-      ? String(fsRow.population_display).trim()
-      : '';
-  if (pop) out.population = pop;
+  out.population = ukEnglandPopulationDisplay(fsRow, hardcoded);
+  const rawOff = officialUkEnglandPopulationRaw(fsRow);
+  if (rawOff != null) out.populationRaw = rawOff;
+  else delete out.populationRaw;
+
+  const areaStr = formatUkEnglandAreaKm2(fsRow);
+  if (areaStr) out.area = areaStr;
+  else delete out.area;
 
   const mayor = !!hardcoded.hasRegionalMayor;
   if (mayor) {
@@ -706,7 +774,12 @@ export function mergeUkEnglandRegionRow(hardcoded, fsRow) {
 
   if (fsRow.abbreviation) out.subnationalAbbreviation = String(fsRow.abbreviation);
 
-  if (fsRow.officialWebsite) out.officialWebsite = fsRow.officialWebsite;
+  if (fsRow.officialWebsite !== undefined && fsRow.officialWebsite !== null) {
+    out.officialWebsite = fsRow.officialWebsite;
+  } else if (hardcoded.officialWebsite !== undefined) {
+    out.officialWebsite = hardcoded.officialWebsite;
+  }
+
   if (fsRow.legislatureWebsite) out.legislatureWebsite = String(fsRow.legislatureWebsite);
 
   const fsLt =
