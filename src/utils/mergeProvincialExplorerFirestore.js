@@ -279,6 +279,23 @@ export const AU_EXPLORER_REQUIRED_ABBR = Object.freeze([
   'NT',
 ]);
 
+/** Label fallback when neither Firestore nor seed supplies `leaderTitle` (states vs territories). */
+function defaultAustralianExplorerLeaderTitle(abbr) {
+  const u = String(abbr || '').trim().toUpperCase();
+  if (u === 'ACT' || u === 'NT') return 'Chief Minister';
+  if (
+    u === 'NSW' ||
+    u === 'VIC' ||
+    u === 'QLD' ||
+    u === 'WA' ||
+    u === 'SA' ||
+    u === 'TAS'
+  ) {
+    return 'Premier';
+  }
+  return '';
+}
+
 /**
  * Merge Firestore AU row into hardcoded Australian explorer row (`leader` / `party`; keep `partyShort` for badges).
  *
@@ -328,7 +345,15 @@ export function mergeAustralianExplorerRow(hardcoded, fsRow) {
     fsRow.leaderTitle != null && String(fsRow.leaderTitle).trim()
       ? String(fsRow.leaderTitle).trim()
       : '';
-  if (fsLt) out.leaderTitle = fsLt;
+  const abbrForLt = String(
+    (fsRow.abbreviation != null && String(fsRow.abbreviation).trim()
+      ? String(fsRow.abbreviation).trim()
+      : String(hardcoded.abbr || '')),
+  ).toUpperCase();
+  out.leaderTitle =
+    fsLt ||
+    String(hardcoded.leaderTitle || '') ||
+    defaultAustralianExplorerLeaderTitle(abbrForLt);
 
   const fsLegName =
     fsRow.legislatureName != null && String(fsRow.legislatureName).trim()
@@ -402,7 +427,10 @@ export function buildAustralianExplorerRowFromFirestoreWithHardcodedFallback(
         ? String(fsRow.population_display).trim()
         : String(hardcoded.population || ''),
     leader: ts(fsRow.leader_name) || String(hardcoded.leader || ''),
-    leaderTitle: ts(fsRow.leaderTitle) || String(hardcoded.leaderTitle || ''),
+    leaderTitle:
+      ts(fsRow.leaderTitle) ||
+      String(hardcoded.leaderTitle || '') ||
+      defaultAustralianExplorerLeaderTitle(abbr),
     party: ts(fsRow.leader_party) || String(hardcoded.party || ''),
     partyShort:
       ts(fsRow.leader_party_short) || String(hardcoded.partyShort || ''),
