@@ -12618,43 +12618,43 @@ function App() {
 
     const canadaProvinces = [
       {
-        name: 'Ontario', flagCode: 'ca-on', population: '14.9M',
+        name: 'Ontario', flagCode: 'ca-on',
       },
       {
-        name: 'Quebec', flagCode: 'ca-qc', population: '8.8M',
+        name: 'Quebec', flagCode: 'ca-qc',
       },
       {
-        name: 'British Columbia', flagCode: 'ca-bc', population: '5.3M',
+        name: 'British Columbia', flagCode: 'ca-bc',
       },
       {
-        name: 'Alberta', flagCode: 'ca-ab', population: '4.6M',
+        name: 'Alberta', flagCode: 'ca-ab',
       },
       {
-        name: 'Saskatchewan', flagCode: 'ca-sk', population: '1.2M',
+        name: 'Saskatchewan', flagCode: 'ca-sk',
       },
       {
-        name: 'Manitoba', flagCode: 'ca-mb', population: '1.4M',
+        name: 'Manitoba', flagCode: 'ca-mb',
       },
       {
-        name: 'Nova Scotia', flagCode: 'ca-ns', population: '1.0M',
+        name: 'Nova Scotia', flagCode: 'ca-ns',
       },
       {
-        name: 'New Brunswick', flagCode: 'ca-nb', population: '820K',
+        name: 'New Brunswick', flagCode: 'ca-nb',
       },
       {
-        name: 'Newfoundland & Labrador', flagCode: 'ca-nl', population: '530K',
+        name: 'Newfoundland & Labrador', flagCode: 'ca-nl',
       },
       {
-        name: 'Prince Edward Island', flagCode: 'ca-pe', population: '170K',
+        name: 'Prince Edward Island', flagCode: 'ca-pe',
       },
       {
-        name: 'Northwest Territories', flagCode: 'ca-nt', population: '45K',
+        name: 'Northwest Territories', flagCode: 'ca-nt',
       },
       {
-        name: 'Yukon', flagCode: 'ca-yt', population: '43K',
+        name: 'Yukon', flagCode: 'ca-yt',
       },
       {
-        name: 'Nunavut', flagCode: 'ca-nu', population: '40K',
+        name: 'Nunavut', flagCode: 'ca-nu',
       },
     ];
 
