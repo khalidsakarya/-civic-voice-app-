@@ -23577,42 +23577,34 @@ function App() {
       {
         name: 'New South Wales', abbr: 'NSW',
         leaderTitle: 'Premier',
-        legislature: { name: 'NSW Legislative Assembly', totalSeats: 93, parties: [{ name: 'Labor', seats: 45, color: '#CC0000' }, { name: 'Liberal', seats: 33, color: '#1B5BA5' }, { name: 'Nationals', seats: 9, color: '#006644' }, { name: 'Greens', seats: 3, color: '#10B981' }, { name: 'Independent', seats: 3, color: '#6B7280' }] },
       },
       {
         name: 'Victoria', abbr: 'VIC',
         leaderTitle: 'Premier',
-        legislature: { name: 'Victorian Legislative Assembly', totalSeats: 88, parties: [{ name: 'Labor', seats: 51, color: '#CC0000' }, { name: 'Liberal', seats: 23, color: '#1B5BA5' }, { name: 'Nationals', seats: 9, color: '#006644' }, { name: 'Greens', seats: 4, color: '#10B981' }, { name: 'Independent', seats: 1, color: '#6B7280' }] },
       },
       {
         name: 'Queensland', abbr: 'QLD',
         leaderTitle: 'Premier',
-        legislature: { name: 'Queensland Legislative Assembly', totalSeats: 93, parties: [{ name: 'LNP', seats: 55, color: '#1B5BA5' }, { name: 'Labor', seats: 31, color: '#CC0000' }, { name: 'Greens', seats: 5, color: '#10B981' }, { name: 'Independent', seats: 2, color: '#6B7280' }] },
       },
       {
         name: 'Western Australia', abbr: 'WA',
         leaderTitle: 'Premier',
-        legislature: { name: 'WA Legislative Assembly', totalSeats: 59, parties: [{ name: 'Labor', seats: 40, color: '#CC0000' }, { name: 'Liberal', seats: 7, color: '#1B5BA5' }, { name: 'Nationals', seats: 5, color: '#006644' }, { name: 'Greens', seats: 4, color: '#10B981' }, { name: 'Independent', seats: 3, color: '#6B7280' }] },
       },
       {
         name: 'South Australia', abbr: 'SA',
         leaderTitle: 'Premier',
-        legislature: { name: 'SA House of Assembly', totalSeats: 47, parties: [{ name: 'Labor', seats: 26, color: '#CC0000' }, { name: 'Liberal', seats: 18, color: '#1B5BA5' }, { name: 'Greens', seats: 1, color: '#10B981' }, { name: 'Independent', seats: 2, color: '#6B7280' }] },
       },
       {
         name: 'Tasmania', abbr: 'TAS',
         leaderTitle: 'Premier',
-        legislature: { name: 'Tasmanian House of Assembly', totalSeats: 35, parties: [{ name: 'Liberal', seats: 14, color: '#1B5BA5' }, { name: 'Labor', seats: 10, color: '#CC0000' }, { name: 'Greens', seats: 7, color: '#10B981' }, { name: 'Independent', seats: 4, color: '#6B7280' }] },
       },
       {
         name: 'Australian Capital Territory', abbr: 'ACT',
         leaderTitle: 'Chief Minister',
-        legislature: { name: 'ACT Legislative Assembly', totalSeats: 25, parties: [{ name: 'Labor', seats: 11, color: '#CC0000' }, { name: 'Liberal', seats: 7, color: '#1B5BA5' }, { name: 'Greens', seats: 6, color: '#10B981' }, { name: 'Independent', seats: 1, color: '#6B7280' }] },
       },
       {
         name: 'Northern Territory', abbr: 'NT',
         leaderTitle: 'Chief Minister',
-        legislature: { name: 'NT Legislative Assembly', totalSeats: 25, parties: [{ name: 'CLP', seats: 17, color: '#1B5BA5' }, { name: 'Labor', seats: 8, color: '#CC0000' }] },
       },
     ];
 
@@ -23737,7 +23729,20 @@ function App() {
     if (!selectedAuState) return null;
     const item = selectedAuState;
     const displayLabel = item.displayName || item.name;
-    const leg = item.legislature;
+    const leg =
+      item.legislature &&
+      item.legislature.parties &&
+      Array.isArray(item.legislature.parties) &&
+      item.legislature.parties.length > 0
+        ? item.legislature
+        : {
+            name:
+              typeof item.legislatureName === 'string' && item.legislatureName.trim()
+                ? item.legislatureName.trim()
+                : 'Legislature',
+            totalSeats: 0,
+            parties: [],
+          };
 
     const getInitials = (name) => {
       if (!name) return '?';
