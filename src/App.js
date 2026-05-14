@@ -12543,8 +12543,6 @@ function App() {
 
   // ── Shared province/state data (used by both list + detail views) ──────────
   const getProvincialData = () => {
-    const isUSA = selectedCountry?.type === 'usa';
-
     // Wikipedia Commons — reliable source for every state & provincial flag
     const W = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
     const flagFiles = {

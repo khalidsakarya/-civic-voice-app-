@@ -14,7 +14,7 @@ function trimString(v) {
  * @param {Record<string, unknown>} fsRow
  * @returns {{ name: string, totalSeats: number, parties: { name: string, seats: number, color: string }[] } | null}
  */
-export function buildLegislatureFromSubnationalFirestore(fsRow) {
+function buildLegislatureFromSubnationalFirestore(fsRow) {
   if (!fsRow || typeof fsRow !== 'object') return null;
   const rawBreakdown = fsRow.legislature_party_breakdown;
   if (!Array.isArray(rawBreakdown) || rawBreakdown.length === 0) return null;
@@ -45,7 +45,7 @@ export function buildLegislatureFromSubnationalFirestore(fsRow) {
 }
 
 /** @param {string} partyStr @param {string} fallback */
-export function usPartyShortFromLeaderParty(partyStr, fallback) {
+function usPartyShortFromLeaderParty(partyStr, fallback) {
   const u = (partyStr || '').toLowerCase();
   if (u.includes('republican')) return 'R';
   if (u.includes('democrat')) return 'D';
