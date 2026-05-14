@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import app, { db } from './firebase';
 import { EXECUTIVE_ACTIONS_COLLECTION } from './constants/firestoreCollections';
 import { fetchSubnationalJurisdictions } from './firestore/fetchSubnationalJurisdictions';
+import { fetchSummaryStatsDashboard } from './firestore/fetchSummaryStatsDashboard';
 import {
   AU_EXPLORER_REQUIRED_ABBR,
   abbreviationFromExplorerFlagCode,
@@ -1690,9 +1691,19 @@ function mapExpenseLeaderboardRowToWasteUi(r) {
   };
 }
 
-/** Hub/card subtitle from cached `government_contracts` rows (`liveContracts[jur]`). Undefined = fetch not done for that jurisdiction yet. */
-function governmentContractsHubSubtitle(rows) {
-  if (rows === undefined) return 'Government contract records';
+/**
+ * Hub/card subtitle from cached `government_contracts` rows (`liveContracts[jur]`).
+ * Undefined rows = fetch not done yet — optional `summaryCount` from `summary_stats/contract_stats` fills the headline until rows load.
+ */
+function governmentContractsHubSubtitle(rows, summaryCount) {
+  if (rows === undefined) {
+    const sc = summaryCount != null ? Number(summaryCount) : NaN;
+    if (Number.isFinite(sc) && sc >= 0) {
+      const r = Math.round(sc);
+      return `${r} contract record${r === 1 ? '' : 's'}`;
+    }
+    return 'Government contract records';
+  }
   const n = rows.length;
   return `${n} contract record${n === 1 ? '' : 's'}`;
 }
@@ -1800,6 +1811,8 @@ function App() {
   const [ukExplorerFirestoreRows, setUkExplorerFirestoreRows] = useState(null);
   const ukExplorerFirestoreFetchDoneRef = useRef(false);
   const ukExplorerMapsAppliedRef = useRef(null);
+  /** Latest `summary_stats` dashboard slice — read in async callbacks (e.g. count aggregation) to prefer summary over duplicate queries. */
+  const summaryStatsRef = useRef(null);
   const [pmVotes, setPmVotes] = useState(() => {
     const saved = localStorage.getItem('cvPMVote');
     return saved ? JSON.parse(saved) : { support: 0, oppose: 0, concerned: 0, userVote: null };
@@ -1979,6 +1992,8 @@ function App() {
   const [usBills, setUsBills] = useState([]);
   const [usDepartments, setUsDepartments] = useState([]);
   const [liveContracts, setLiveContracts] = useState({});
+  /** Pre-aggregated `summary_stats` docs (`department_summary`, `member_stats`, `contract_stats`) for hub cards; detailed collection reads remain fallbacks. */
+  const [summaryStatsDashboard, setSummaryStatsDashboard] = useState(null);
   const [contractsFetchedJurisdictions, setContractsFetchedJurisdictions] = useState({});
   const [courtJustices, setCourtJustices] = useState({});
   const [courtCases, setCourtCases] = useState({});
@@ -6253,7 +6268,32 @@ function App() {
     })();
   }, [view, selectedCountry]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // US cabinet roster count (department_heads) for categories / president hub — aligns UI with Firestore
+  useEffect(() => {
+    summaryStatsRef.current = summaryStatsDashboard;
+  }, [summaryStatsDashboard]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const s = await fetchSummaryStatsDashboard();
+      if (!cancelled && s) setSummaryStatsDashboard(s);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // US cabinet roster count — prefer `summary_stats` when the engine publishes it; otherwise `getCountFromServer` on `department_heads`.
+  useEffect(() => {
+    if (selectedCountry?.type !== 'usa') return;
+    if (!['categories', 'president-executive', 'president-detail'].includes(view)) return;
+    const n = summaryStatsDashboard?.departmentHeadsUS;
+    if (n == null) return;
+    const r = Math.round(Number(n));
+    if (!Number.isFinite(r) || r < 0) return;
+    setUsCabinetRosterCount(r);
+    setUsCabinetRosterLoading(false);
+  }, [view, selectedCountry?.type, summaryStatsDashboard?.departmentHeadsUS]);
+
+  // Prefer `summary_stats` for US cabinet headcount when present; otherwise count `department_heads` (US).
   useEffect(() => {
     if (selectedCountry?.type !== 'usa') {
       setUsCabinetRosterCount((c) => (c !== null ? null : c));
@@ -6266,7 +6306,13 @@ function App() {
       try {
         const q = query(collection(db, 'department_heads'), where('jurisdiction', '==', 'US'));
         const snap = await getCountFromServer(q);
-        setUsCabinetRosterCount(snap.data().count);
+        const s = summaryStatsRef.current;
+        const prefer = s?.departmentHeadsUS;
+        if (prefer != null && Number.isFinite(Number(prefer))) {
+          setUsCabinetRosterCount(Math.round(Number(prefer)));
+        } else {
+          setUsCabinetRosterCount(snap.data().count);
+        }
       } catch (err) {
         console.warn('[USCabinetRosterCount] fetch failed:', err.message);
         setUsCabinetRosterCount(-1);
@@ -6565,17 +6611,32 @@ function App() {
     return null;
   };
 
+  const sumDash = summaryStatsDashboard;
+  const caParliamentCardCount =
+    sumDash?.memberCACommons != null && sumDash?.memberCASenate != null
+      ? sumDash.memberCACommons + sumDash.memberCASenate
+      : sumDash?.memberCAParliament ?? null;
+  const canadaMembersHub = caParliamentCardCount ?? (mps.length || 338);
+  const usMembersHub = sumDash?.memberUSCongress ?? (congressMembers.length || 535);
+  const auMembersHub = sumDash?.memberAUTotal ?? sumDash?.memberAUHouse ?? 227;
+  const ukMembersHub = sumDash?.memberUK ?? 650;
+  const caContractsCardCount =
+    liveContracts.CA !== undefined ? liveContracts.CA.length : (sumDash?.contractsCA ?? null);
+  const usDeptHubCount = sumDash?.departmentsUS ?? (usDepartments.length > 0 ? usDepartments.length : null) ?? 15;
+  const caDeptHubCount = sumDash?.departmentsCA ?? ministries.length ?? 15;
+  const auDeptHubCount = sumDash?.departmentsAU ?? 15;
+
   const countries = [
-    { id: 1, name: 'Canada', flag: '🇨🇦', members: mps.length || 338, type: 'canada' },
-    { id: 2, name: 'United States', flag: '🇺🇸', members: congressMembers.length || 535, type: 'usa' },
-    { id: 3, name: 'Australia', flag: '🇦🇺', members: 227, type: 'australia' },
-    { id: 4, name: 'United Kingdom', flag: '🇬🇧', members: 650, type: 'uk' }
+    { id: 1, name: 'Canada', flag: '🇨🇦', members: canadaMembersHub, type: 'canada' },
+    { id: 2, name: 'United States', flag: '🇺🇸', members: usMembersHub, type: 'usa' },
+    { id: 3, name: 'Australia', flag: '🇦🇺', members: auMembersHub, type: 'australia' },
+    { id: 4, name: 'United Kingdom', flag: '🇬🇧', members: ukMembersHub, type: 'uk' }
   ];
 
   const categories = [
-    { id: 1, name: 'Federal Parliament', icon: <Globe className="w-6 h-6" />, count: mps.length || 338, type: 'parliament' },
+    { id: 1, name: 'Federal Parliament', icon: <Globe className="w-6 h-6" />, count: canadaMembersHub, type: 'parliament' },
     { id: 2, name: 'Latest Laws & Regulations', icon: <FileText className="w-6 h-6" />, count: laws.length || 12, type: 'laws' },
-    { id: 3, name: 'Government Contracts', icon: <DollarSign className="w-6 h-6" />, count: liveContracts.CA === undefined ? null : liveContracts.CA.length, type: 'contracts' }
+    { id: 3, name: 'Government Contracts', icon: <DollarSign className="w-6 h-6" />, count: caContractsCardCount, type: 'contracts' }
   ];
 
   const getAnalyticsData = () => {
@@ -19679,6 +19740,7 @@ function App() {
       ukExplorerFirestoreRows.forEach((r) => { if (r && r.id) _ukNationById[r.id] = r; });
     }
     const _nationFs = (id) => _ukNationById[id] || {};
+    const ukCommonsMembers = summaryStatsDashboard?.memberUK ?? 650;
     return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-6xl mx-auto">
@@ -19734,9 +19796,9 @@ function App() {
               <Users className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">House of Commons</h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">Explore all 650 MPs — elected members of the lower chamber</p>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Explore all {ukCommonsMembers} MPs — elected members of the lower chamber</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>650 MPs · Lower Chamber</span>
+              <span>{ukCommonsMembers} MPs · Lower Chamber</span>
               <ChevronRight className="w-5 h-5" style={{ color: '#012169' }} />
             </div>
           </div>
@@ -19856,7 +19918,7 @@ function App() {
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Contracts</h2>
             <p className="text-gray-600 mb-3 text-sm sm:text-base">Major public procurement contracts — defence, infrastructure &amp; services</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{governmentContractsHubSubtitle(liveContracts.UK)}</span>
+              <span>{governmentContractsHubSubtitle(liveContracts.UK, summaryStatsDashboard?.contractsUK)}</span>
               <ChevronRight className="w-5 h-5" style={{ color: '#C8102E' }} />
             </div>
           </div>
@@ -26896,9 +26958,15 @@ function App() {
     const isUSA = selectedCountry?.type === 'usa';
     const countryName = isUSA ? 'United States' : 'Canadian';
     const legislatureName = isUSA ? 'Congress' : 'Federal Parliament';
-    const memberCount = isUSA ? (congressMembers.length || 535) : (mps.length || 325);
+    const memberCount = isUSA ? usMembersHub : canadaMembersHub;
     const memberTitle = isUSA ? 'Members of Congress' : 'Members of Parliament';
     const legislativeBody = isUSA ? 'Bills' : 'Parliamentary Bills';
+    const caCommonsForLabel = sumDash?.memberCACommons ?? 338;
+    const caSenateForLabel = sumDash?.memberCASenate ?? 105;
+    const caBicameralFootnote =
+      sumDash?.memberCAParliament != null && (sumDash.memberCACommons == null || sumDash.memberCASenate == null)
+        ? `${sumDash.memberCAParliament} Parliamentarians`
+        : `${caCommonsForLabel} MPs · ${caSenateForLabel} Senators`;
     
     return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-8 animate-fade-in">
@@ -26991,7 +27059,7 @@ function App() {
               {isUSA ? `Explore ${memberCount} ${memberTitle} across all parties` : 'House of Commons and Senate — Canada\'s bicameral Parliament'}
             </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{isUSA ? `${memberCount} Members` : '338 MPs · 105 Senators'}</span>
+              <span>{isUSA ? `${memberCount} Members` : caBicameralFootnote}</span>
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
@@ -27095,7 +27163,7 @@ function App() {
               }
             </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>15 {isUSA ? 'Departments' : 'Ministries'}</span>
+              <span>{isUSA ? usDeptHubCount : caDeptHubCount} {isUSA ? 'Departments' : 'Ministries'}</span>
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
@@ -27118,7 +27186,12 @@ function App() {
               }
             </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{governmentContractsHubSubtitle(isUSA ? liveContracts.US : liveContracts.CA)}</span>
+              <span>
+                {governmentContractsHubSubtitle(
+                  isUSA ? liveContracts.US : liveContracts.CA,
+                  isUSA ? sumDash?.contractsUS : sumDash?.contractsCA,
+                )}
+              </span>
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
@@ -27616,6 +27689,9 @@ function App() {
     const CA_SENATE_PARTIES = ['ISG', 'Conservative', 'CSG', 'PSG', 'Non-affiliated'];
     const CA_MP_PARTIES = [...new Set(mps.map(m => m.party))].sort();
 
+    const caHoCHeadline = summaryStatsDashboard?.memberCACommons ?? (mps.length || 338);
+    const caSenateHeadline = summaryStatsDashboard?.memberCASenate ?? 105;
+
     const isSenate = caChamber === 'Senate';
     const sourceData = isSenate ? SENATORS_DATA : mps;
     const partyOptions = isSenate ? CA_SENATE_PARTIES : CA_MP_PARTIES;
@@ -27658,7 +27734,7 @@ function App() {
               <span className="text-4xl">🏛️</span>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Federal Parliament</h1>
             </div>
-            <p className="text-gray-600 text-base sm:text-lg">Senate (105 senators) · House of Commons (338 MPs)</p>
+            <p className="text-gray-600 text-base sm:text-lg">Senate ({caSenateHeadline} senators) · House of Commons ({caHoCHeadline} MPs)</p>
             <div className="w-24 h-1 bg-gradient-to-r from-red-500 to-rose-500 mt-3 rounded-full" />
           </div>
 
@@ -27668,13 +27744,13 @@ function App() {
               onClick={() => { setCaChamber('Senate'); setCaPartyFilter('All'); setCaSearch(''); }}
               className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${caChamber === 'Senate' ? 'bg-red-600 text-white border-red-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-red-400'}`}
             >
-              Senate (105)
+              Senate ({caSenateHeadline})
             </button>
             <button
               onClick={() => { setCaChamber('House'); setCaPartyFilter('All'); setCaSearch(''); }}
               className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${caChamber === 'House' ? 'bg-red-600 text-white border-red-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-red-400'}`}
             >
-              House of Commons ({mps.length || 338})
+              House of Commons ({caHoCHeadline})
             </button>
           </div>
 
@@ -32545,6 +32621,7 @@ function App() {
   });
 
   const renderAuCategories = () => {
+    const auHoRMembers = summaryStatsDashboard?.memberAUHouse ?? 151;
     return (
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-green-50 p-4 sm:p-8 animate-fade-in">
         <div className="max-w-6xl mx-auto">
@@ -32602,7 +32679,7 @@ function App() {
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Federal Parliament</h2>
               <p className="text-gray-600 mb-3 text-sm sm:text-base">House of Representatives — explore all members across every party</p>
               <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>151 Members · Lower House</span>
+                <span>{auHoRMembers} Members · Lower House</span>
                 <ChevronRight className="w-5 h-5 text-green-700" />
               </div>
             </div>
@@ -32662,7 +32739,7 @@ function App() {
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Departments</h2>
               <p className="text-gray-600 mb-3 text-sm sm:text-base">Review department budgets, programs &amp; ministerial performance</p>
               <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>15 Federal Departments</span>
+                <span>{auDeptHubCount} Federal Departments</span>
                 <ChevronRight className="w-5 h-5 text-amber-700" />
               </div>
             </div>
@@ -32697,7 +32774,7 @@ function App() {
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Contracts</h2>
               <p className="text-gray-600 mb-3 text-sm sm:text-base">Federal procurement — follow the taxpayer money across defence, infrastructure &amp; technology</p>
               <div className="flex items-center justify-between text-sm text-gray-500">
-                <span className="font-medium">{governmentContractsHubSubtitle(liveContracts.AU)}</span>
+                <span className="font-medium">{governmentContractsHubSubtitle(liveContracts.AU, summaryStatsDashboard?.contractsAU)}</span>
                 <ChevronRight className="w-5 h-5 text-rose-700" />
               </div>
             </div>
@@ -34430,8 +34507,8 @@ function App() {
   };
 
   const renderNotificationsPanel = () => {
-    const CANADA = { id: 1, name: 'Canada', flag: '🇨🇦', members: 338, type: 'canada' };
-    const USA    = { id: 2, name: 'United States', flag: '🇺🇸', members: 535, type: 'usa' };
+    const CANADA = { id: 1, name: 'Canada', flag: '🇨🇦', members: canadaMembersHub, type: 'canada' };
+    const USA    = { id: 2, name: 'United States', flag: '🇺🇸', members: usMembersHub, type: 'usa' };
 
     const navigateFromNotif = (n) => {
       setShowNotifications(false);
