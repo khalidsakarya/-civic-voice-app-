@@ -11,6 +11,52 @@ function trimString(v) {
   return s;
 }
 
+/** Firestore field keys that map to US governor headline (name / party / in-office date). */
+const US_GOVERNOR_HEADLINE_MANUAL_REVIEW_FS_FIELDS = Object.freeze([
+  'leader_name',
+  'leader_party',
+  'leader_since',
+]);
+
+/**
+ * @param {Record<string, unknown>} fsRow
+ * @returns {string[]}
+ */
+function usGovernorHeadlineManualReviewFields(fsRow) {
+  if (!fsRow || typeof fsRow !== 'object') return [];
+  const raw = fsRow.needs_manual_review_fields;
+  if (!Array.isArray(raw) || !raw.length) return [];
+  const present = new Set(raw.map((x) => String(x).trim()).filter(Boolean));
+  const out = [];
+  for (let i = 0; i < US_GOVERNOR_HEADLINE_MANUAL_REVIEW_FS_FIELDS.length; i += 1) {
+    const f = US_GOVERNOR_HEADLINE_MANUAL_REVIEW_FS_FIELDS[i];
+    if (present.has(f)) out.push(f);
+  }
+  return out;
+}
+
+/**
+ * @param {Record<string, unknown>} out
+ * @param {Record<string, unknown>|null|undefined} fsRow
+ * @param {boolean} isUSA
+ */
+function applyUsGovernorHeadlineManualReviewFlags(out, fsRow, isUSA) {
+  if (!out || typeof out !== 'object') return;
+  if (!isUSA) {
+    delete out.usSubnationalGovernorHeadlineNeedsVerification;
+    delete out.usSubnationalGovernorHeadlineNeedsVerificationFields;
+    return;
+  }
+  const vf = usGovernorHeadlineManualReviewFields(fsRow || {});
+  if (vf.length) {
+    out.usSubnationalGovernorHeadlineNeedsVerification = true;
+    out.usSubnationalGovernorHeadlineNeedsVerificationFields = vf;
+  } else {
+    delete out.usSubnationalGovernorHeadlineNeedsVerification;
+    delete out.usSubnationalGovernorHeadlineNeedsVerificationFields;
+  }
+}
+
 /**
  * @param {Record<string, unknown>} fsRow
  * @returns {{ name: string, totalSeats: number, parties: { name: string, seats: number, color: string }[] } | null}
@@ -60,7 +106,11 @@ function usPartyShortFromLeaderParty(partyStr, fallback) {
  */
 export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
   if (!hardcoded) return hardcoded;
-  if (!fsRow) return { ...hardcoded };
+  if (!fsRow) {
+    const out = { ...hardcoded };
+    applyUsGovernorHeadlineManualReviewFlags(out, null, isUSA);
+    return out;
+  }
 
   const out = { ...hardcoded };
 
@@ -150,6 +200,8 @@ export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
   const legFs = buildLegislatureFromSubnationalFirestore(fsRow);
   if (legFs) out.legislature = legFs;
 
+  applyUsGovernorHeadlineManualReviewFlags(out, fsRow, isUSA);
+
   return out;
 }
 
@@ -176,7 +228,11 @@ export function buildProvincialExplorerRowFromFirestoreWithHardcodedFallback(
   isUSA,
 ) {
   if (!hardcoded) return hardcoded;
-  if (!fsRow || typeof fsRow !== 'object') return { ...hardcoded };
+  if (!fsRow || typeof fsRow !== 'object') {
+    const out = { ...hardcoded };
+    applyUsGovernorHeadlineManualReviewFlags(out, null, isUSA);
+    return out;
+  }
 
   const ts = trimString;
 
@@ -264,6 +320,8 @@ export function buildProvincialExplorerRowFromFirestoreWithHardcodedFallback(
 
   const flagFs = ts(fsRow.flagUrl);
   if (flagFs) out.flagUrl = flagFs;
+
+  applyUsGovernorHeadlineManualReviewFlags(out, fsRow, isUSA);
 
   return out;
 }

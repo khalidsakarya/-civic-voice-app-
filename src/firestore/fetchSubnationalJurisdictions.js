@@ -43,6 +43,7 @@ import { SUBNATIONAL_JURISDICTIONS_COLLECTION } from '../constants/firestoreColl
  * @property {string} source_url
  * @property {string} last_updated
  * @property {string} dataStatus
+ * @property {string[]=} needs_manual_review_fields Field keys the engine marked for manual review (subset of Firestore shapes).
  */
 
 /**
@@ -64,6 +65,53 @@ function normalizeCountryCode(countryCode) {
   const s = String(countryCode).trim().toUpperCase();
   if (!s) return null;
   return s;
+}
+
+/**
+ * Normalize Firestore `needs_manual_review` (map, array, or per-field flags) into stable field keys.
+ *
+ * @param {Record<string, unknown>} raw
+ * @returns {string[]}
+ */
+function collectNeedsManualReviewFieldKeys(raw) {
+  if (!raw || typeof raw !== 'object') return [];
+  const out = new Set();
+
+  const truthyReview = (v) => {
+    if (v === true || v === 1) return true;
+    const s = String(v).trim().toLowerCase();
+    return s === 'needs_manual_review' || s === 'true' || s === '1' || s === 'yes';
+  };
+
+  const nmr = raw.needs_manual_review ?? raw.needsManualReview;
+  if (Array.isArray(nmr)) {
+    for (let i = 0; i < nmr.length; i += 1) {
+      const k = String(nmr[i]).trim();
+      if (k) out.add(k);
+    }
+  } else if (nmr && typeof nmr === 'object' && !Array.isArray(nmr)) {
+    const entries = Object.entries(nmr);
+    for (let i = 0; i < entries.length; i += 1) {
+      const [k, v] = entries[i];
+      if (!k) continue;
+      if (v && typeof v === 'object' && !Array.isArray(v)) {
+        const st = v.status != null ? String(v.status).trim().toLowerCase() : '';
+        if (st === 'needs_manual_review' || truthyReview(v)) out.add(k);
+      } else if (truthyReview(v)) {
+        out.add(k);
+      }
+    }
+  }
+
+  const optionalFieldKeys = ['leader_name', 'leader_party', 'leader_since', 'leader_party_short'];
+  for (let i = 0; i < optionalFieldKeys.length; i += 1) {
+    const fk = optionalFieldKeys[i];
+    if (truthyReview(raw[`${fk}_needs_manual_review`])) out.add(fk);
+    const st = raw[`${fk}_data_status`] != null ? String(raw[`${fk}_data_status`]).trim().toLowerCase() : '';
+    if (st === 'needs_manual_review') out.add(fk);
+  }
+
+  return [...out].sort((a, b) => a.localeCompare(b));
 }
 
 /**
@@ -157,6 +205,11 @@ function normalizeRecord(docId, raw) {
   const popRawNum = Number(raw.populationRaw);
   if (Number.isFinite(popRawNum) && popRawNum > 0) {
     rec.populationRaw = popRawNum;
+  }
+
+  const nmrFields = collectNeedsManualReviewFieldKeys(raw);
+  if (nmrFields.length) {
+    rec.needs_manual_review_fields = nmrFields;
   }
 
   return /** @type {SubnationalJurisdictionRecord} */ (rec);

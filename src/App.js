@@ -13161,6 +13161,30 @@ function App() {
 
           <SubnationalIllustrativeExplorerNote />
 
+          {isUSA &&
+            Array.isArray(item.usSubnationalGovernorHeadlineNeedsVerificationFields) &&
+            item.usSubnationalGovernorHeadlineNeedsVerificationFields.length > 0 && (
+              <div
+                className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2 text-xs text-amber-950 leading-snug mb-4"
+                role="note"
+              >
+                <p>
+                  <span className="font-semibold">Needs verification: </span>
+                  {(() => {
+                    const labels = {
+                      leader_name: 'Governor name',
+                      leader_party: 'Party',
+                      leader_since: 'In-office date',
+                    };
+                    const parts = item.usSubnationalGovernorHeadlineNeedsVerificationFields.map(
+                      (f) => labels[f] || String(f),
+                    );
+                    return `${parts.join(', ')} from Firestore is flagged for manual review and may not match the official record yet.`;
+                  })()}
+                </p>
+              </div>
+            )}
+
           {/* Leadership — two cards side by side */}
           <h2 className="text-base font-bold text-gray-600 uppercase tracking-wide mb-3 px-1">Leadership</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
