@@ -526,6 +526,15 @@ export const UK_EXPLORER_APP_REGION_IDS = Object.freeze([
   'south-west',
 ]);
 
+/** UI label when `leaderTitle` is missing from Firestore and seed (England regions without a regional mayor). */
+function defaultUkEnglandNonMayorLeaderTitle(hardcoded) {
+  if (!hardcoded || hardcoded.hasRegionalMayor) return '';
+  const id = String(hardcoded.id || '');
+  if (id === 'north-west' || id === 'yorkshire') return 'Combined Authority Mayors';
+  if (id === 'east-of-england' || id === 'south-east' || id === 'south-west') return 'No Regional Mayor';
+  return '';
+}
+
 /**
  * England region explorer row: Firestore is primary; hardcoded `englandRegions` fills gaps.
  * When `hasRegionalMayor` is false, head-of-region name/party/since stay from hardcoded (same as merge).
@@ -559,7 +568,10 @@ export function buildUkEnglandRegionRowFromFirestoreWithHardcodedFallback(
   }
 
   out.leaderBio = ts(fsRow.leader_bio) || String(hardcoded.leaderBio || '');
-  out.leaderTitle = ts(fsRow.leaderTitle) || String(hardcoded.leaderTitle || '');
+  out.leaderTitle =
+    ts(fsRow.leaderTitle) ||
+    String(hardcoded.leaderTitle || '') ||
+    defaultUkEnglandNonMayorLeaderTitle(hardcoded);
   out.displayName = ts(fsRow.name) || String(hardcoded.displayName || hardcoded.name || '');
 
   const abbrFs =
@@ -650,7 +662,13 @@ export function findUkEnglandRegionFirestoreRow(region, byIdMap, ukRows) {
  */
 export function mergeUkEnglandRegionRow(hardcoded, fsRow) {
   if (!hardcoded) return hardcoded;
-  if (!fsRow) return { ...hardcoded };
+  if (!fsRow) {
+    const out = { ...hardcoded };
+    out.leaderTitle =
+      String(hardcoded.leaderTitle || '') ||
+      defaultUkEnglandNonMayorLeaderTitle(hardcoded);
+    return out;
+  }
 
   const out = { ...hardcoded };
 
@@ -694,7 +712,10 @@ export function mergeUkEnglandRegionRow(hardcoded, fsRow) {
     fsRow.leaderTitle != null && String(fsRow.leaderTitle).trim()
       ? String(fsRow.leaderTitle).trim()
       : '';
-  if (fsLt) out.leaderTitle = fsLt;
+  out.leaderTitle =
+    fsLt ||
+    String(hardcoded.leaderTitle || '') ||
+    defaultUkEnglandNonMayorLeaderTitle(hardcoded);
 
   const fsLegName =
     fsRow.legislatureName != null && String(fsRow.legislatureName).trim()
