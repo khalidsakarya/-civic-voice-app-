@@ -23764,43 +23764,43 @@ function App() {
 
     const states = [
       {
-        name: 'New South Wales', abbr: 'NSW', capital: 'Sydney', population: '8.2M',
-        leader: 'Chris Minns', leaderTitle: 'Premier', party: 'Australian Labor Party', partyShort: 'ALP', since: '2023',
+        name: 'New South Wales', abbr: 'NSW',
+        leaderTitle: 'Premier', partyShort: 'ALP',
         legislature: { name: 'NSW Legislative Assembly', totalSeats: 93, parties: [{ name: 'Labor', seats: 45, color: '#CC0000' }, { name: 'Liberal', seats: 33, color: '#1B5BA5' }, { name: 'Nationals', seats: 9, color: '#006644' }, { name: 'Greens', seats: 3, color: '#10B981' }, { name: 'Independent', seats: 3, color: '#6B7280' }] },
       },
       {
-        name: 'Victoria', abbr: 'VIC', capital: 'Melbourne', population: '6.7M',
-        leader: 'Jacinta Allan', leaderTitle: 'Premier', party: 'Australian Labor Party', partyShort: 'ALP', since: '2023',
+        name: 'Victoria', abbr: 'VIC',
+        leaderTitle: 'Premier', partyShort: 'ALP',
         legislature: { name: 'Victorian Legislative Assembly', totalSeats: 88, parties: [{ name: 'Labor', seats: 51, color: '#CC0000' }, { name: 'Liberal', seats: 23, color: '#1B5BA5' }, { name: 'Nationals', seats: 9, color: '#006644' }, { name: 'Greens', seats: 4, color: '#10B981' }, { name: 'Independent', seats: 1, color: '#6B7280' }] },
       },
       {
-        name: 'Queensland', abbr: 'QLD', capital: 'Brisbane', population: '5.4M',
-        leader: 'David Crisafulli', leaderTitle: 'Premier', party: 'Liberal National Party', partyShort: 'LNP', since: '2024',
+        name: 'Queensland', abbr: 'QLD',
+        leaderTitle: 'Premier', partyShort: 'LNP',
         legislature: { name: 'Queensland Legislative Assembly', totalSeats: 93, parties: [{ name: 'LNP', seats: 55, color: '#1B5BA5' }, { name: 'Labor', seats: 31, color: '#CC0000' }, { name: 'Greens', seats: 5, color: '#10B981' }, { name: 'Independent', seats: 2, color: '#6B7280' }] },
       },
       {
-        name: 'Western Australia', abbr: 'WA', capital: 'Perth', population: '2.8M',
-        leader: 'Roger Cook', leaderTitle: 'Premier', party: 'Australian Labor Party', partyShort: 'ALP', since: '2023',
+        name: 'Western Australia', abbr: 'WA',
+        leaderTitle: 'Premier', partyShort: 'ALP',
         legislature: { name: 'WA Legislative Assembly', totalSeats: 59, parties: [{ name: 'Labor', seats: 40, color: '#CC0000' }, { name: 'Liberal', seats: 7, color: '#1B5BA5' }, { name: 'Nationals', seats: 5, color: '#006644' }, { name: 'Greens', seats: 4, color: '#10B981' }, { name: 'Independent', seats: 3, color: '#6B7280' }] },
       },
       {
-        name: 'South Australia', abbr: 'SA', capital: 'Adelaide', population: '1.8M',
-        leader: 'Peter Malinauskas', leaderTitle: 'Premier', party: 'Australian Labor Party', partyShort: 'ALP', since: '2022',
+        name: 'South Australia', abbr: 'SA',
+        leaderTitle: 'Premier', partyShort: 'ALP',
         legislature: { name: 'SA House of Assembly', totalSeats: 47, parties: [{ name: 'Labor', seats: 26, color: '#CC0000' }, { name: 'Liberal', seats: 18, color: '#1B5BA5' }, { name: 'Greens', seats: 1, color: '#10B981' }, { name: 'Independent', seats: 2, color: '#6B7280' }] },
       },
       {
-        name: 'Tasmania', abbr: 'TAS', capital: 'Hobart', population: '570K',
-        leader: 'Jeremy Rockliff', leaderTitle: 'Premier', party: 'Liberal Party', partyShort: 'Liberal', since: '2021',
+        name: 'Tasmania', abbr: 'TAS',
+        leaderTitle: 'Premier', partyShort: 'Liberal',
         legislature: { name: 'Tasmanian House of Assembly', totalSeats: 35, parties: [{ name: 'Liberal', seats: 14, color: '#1B5BA5' }, { name: 'Labor', seats: 10, color: '#CC0000' }, { name: 'Greens', seats: 7, color: '#10B981' }, { name: 'Independent', seats: 4, color: '#6B7280' }] },
       },
       {
-        name: 'Australian Capital Territory', abbr: 'ACT', capital: 'Canberra', population: '460K',
-        leader: 'Andrew Barr', leaderTitle: 'Chief Minister', party: 'Australian Labor Party', partyShort: 'ALP', since: '2014',
+        name: 'Australian Capital Territory', abbr: 'ACT',
+        leaderTitle: 'Chief Minister', partyShort: 'ALP',
         legislature: { name: 'ACT Legislative Assembly', totalSeats: 25, parties: [{ name: 'Labor', seats: 11, color: '#CC0000' }, { name: 'Liberal', seats: 7, color: '#1B5BA5' }, { name: 'Greens', seats: 6, color: '#10B981' }, { name: 'Independent', seats: 1, color: '#6B7280' }] },
       },
       {
-        name: 'Northern Territory', abbr: 'NT', capital: 'Darwin', population: '250K',
-        leader: 'Lia Finocchiaro', leaderTitle: 'Chief Minister', party: 'Country Liberal Party', partyShort: 'CLP', since: '2024',
+        name: 'Northern Territory', abbr: 'NT',
+        leaderTitle: 'Chief Minister', partyShort: 'CLP',
         legislature: { name: 'NT Legislative Assembly', totalSeats: 25, parties: [{ name: 'CLP', seats: 17, color: '#1B5BA5' }, { name: 'Labor', seats: 8, color: '#CC0000' }] },
       },
     ];
