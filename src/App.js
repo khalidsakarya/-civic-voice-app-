@@ -65,7 +65,7 @@ function SubnationalIllustrativeExplorerNote() {
       <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-800" aria-hidden />
       <p>
         <span className="font-semibold">Illustrative / unverified: </span>
-        Biographies, deputy notes, legislature seat charts, and UK regional narrative may be demo seed data—not authenticated government records—until the engine replaces them with officially sourced fields.
+        Explorer lists may mix Firestore-backed fields with curated fallbacks when sync is incomplete. Biographies, deputy notes, legislature seat charts, and UK regional narrative may be demo seed data—not authenticated government records—until the engine replaces them with officially sourced fields.
       </p>
     </div>
   );
@@ -12992,6 +12992,8 @@ function App() {
             <div className="w-24 h-1 mt-3 rounded-full" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}></div>
           </div>
 
+          <SubnationalIllustrativeExplorerNote />
+
           {/* Compact button list */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
             {items.map((item, index) => {
@@ -13545,12 +13547,21 @@ function App() {
             </button>
             <div className="flex-1 min-w-0">
               <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug truncate">{item.name} — Economic &amp; Social Data</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Illustrative data · figures are statistically modelled</p>
+              <p className="text-xs text-amber-900 mt-0.5 font-medium">Not official statistics — illustrative demo only (deterministic example values).</p>
             </div>
           </div>
 
           {/* Charts — single column, full width, scrollable */}
           <div className="p-4">
+            <div
+              className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2.5 text-xs text-amber-950 leading-snug mb-4"
+              role="note"
+            >
+              <p>
+                <span className="font-semibold">Illustrative only: </span>
+                Charts below are not government-published figures. They are deterministically generated from this region&apos;s name for layout exploration until real economic and social series are wired in.
+              </p>
+            </div>
 
             {/* 1. Government Budget Distribution */}
             <Card title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
@@ -13676,8 +13687,9 @@ function App() {
               <button onClick={() => setExpandedChartId('homeless')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
             </Card>
 
-            <p className="text-center text-xs text-gray-400 pb-2">
-              Data is statistically modelled for illustrative purposes. Figures use deterministic generation seeded from {item.name}.
+            <p className="text-center text-xs text-gray-500 pb-2">
+              <span className="font-semibold text-amber-900">Illustrative demo.</span>{' '}
+              Values are statistically modelled (not official) and seeded from {item.name} for reproducible examples only.
             </p>
             <button onClick={() => setShowEconomicModal(false)} className="w-full mt-2 mb-1 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
@@ -13699,6 +13711,7 @@ function App() {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-widest mb-0.5" style={{ color: '#94a3b8' }}>Full Screen · {isUSA ? 'US State' : 'Province'}</p>
                   <span className="font-bold text-white text-base sm:text-lg leading-snug block">{chartTitle}</span>
+                  <span className="text-[11px] text-amber-200/95 mt-1 block">Illustrative demo — not official statistics</span>
                 </div>
                 <button
                   onClick={() => setExpandedChartId(null)}
@@ -13940,10 +13953,12 @@ function App() {
               </button>
               <div className="flex-1 min-w-0">
                 <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Tax Exempt Companies</h2>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {companies.length} companies &nbsp;·&nbsp; Est. total annual exemption:{' '}
-                  <span className="font-semibold text-amber-600">{fmtTotal}</span>
-                  &nbsp;·&nbsp; Illustrative sample data
+                <p className="text-xs text-amber-900 mt-0.5 font-medium">
+                  Not official records — illustrative demo only. Company names and amounts are generated examples.
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {companies.length} sample rows &nbsp;·&nbsp; Demo total exemption:{' '}
+                  <span className="font-semibold text-amber-700">{fmtTotal}</span>
                 </p>
               </div>
               <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
@@ -13966,6 +13981,12 @@ function App() {
                 </button>
               )}
             </div>
+          </div>
+
+          <div className="px-4 sm:px-6 pt-2">
+            <p className="text-[11px] text-amber-950 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 leading-snug" role="note">
+              <span className="font-semibold">Demo content: </span>Table rows are synthetic placeholders, not a registry of real exemptions.
+            </p>
           </div>
 
           {/* Table body */}
@@ -14173,10 +14194,12 @@ function App() {
               </button>
               <div className="flex-1 min-w-0">
                 <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Grants Given</h2>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {grants.length} grants &nbsp;·&nbsp; Total awarded:{' '}
-                  <span className="font-semibold text-emerald-600">{fmtTotal}</span>
-                  &nbsp;·&nbsp; Illustrative sample data
+                <p className="text-xs text-amber-900 mt-0.5 font-medium">
+                  Not official records — illustrative demo only. Recipients and amounts are generated examples.
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {grants.length} sample rows &nbsp;·&nbsp; Demo total awarded:{' '}
+                  <span className="font-semibold text-emerald-700">{fmtTotal}</span>
                 </p>
               </div>
               <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
@@ -14199,6 +14222,12 @@ function App() {
                 </button>
               )}
             </div>
+          </div>
+
+          <div className="px-4 sm:px-6 pt-2">
+            <p className="text-[11px] text-amber-950 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 leading-snug" role="note">
+              <span className="font-semibold">Demo content: </span>Table rows are synthetic placeholders, not a register of real grants.
+            </p>
           </div>
 
           {/* Table */}
@@ -20448,6 +20477,8 @@ function App() {
             </div>
           </div>
 
+          <SubnationalIllustrativeExplorerNote />
+
           {/* Region cards grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
             {regions.map((region, i) => (
@@ -23731,6 +23762,8 @@ function App() {
             <div className="w-24 h-1 mt-3 rounded-full" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }} />
           </div>
 
+          <SubnationalIllustrativeExplorerNote />
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {states.map((item, index) => {
               const badgeClass = partyBadgeColors[item.partyShort] || 'bg-gray-100 text-gray-700';
@@ -23792,6 +23825,13 @@ function App() {
             totalSeats: 0,
             parties: [],
           };
+
+    const auLegislatureChartReady =
+      Array.isArray(leg.parties) &&
+      leg.parties.length > 0 &&
+      typeof leg.totalSeats === 'number' &&
+      Number.isFinite(leg.totalSeats) &&
+      leg.totalSeats > 0;
 
     const getInitials = (name) => {
       if (!name) return '?';
@@ -23997,6 +24037,7 @@ function App() {
 
           {/* ── Legislature ── */}
           <SectionLabel>Legislature Composition</SectionLabel>
+          {auLegislatureChartReady ? (
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
             <div className="p-6 sm:p-8">
               <div className="flex flex-col lg:flex-row items-center gap-8">
@@ -24053,6 +24094,14 @@ function App() {
               </div>
             </div>
           </div>
+          ) : (
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden px-6 py-8 text-center" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+            <p className="text-sm font-semibold text-gray-800">{leg.name}</p>
+            <p className="text-xs text-gray-500 mt-2 max-w-md mx-auto leading-relaxed">
+              Party seat totals are not available for this jurisdiction yet. The composition chart appears when the app has official seat counts and a non-zero chamber size from synced data.
+            </p>
+          </div>
+          )}
 
           {/* ── Transparency Data ── */}
           <SectionLabel>Transparency Data</SectionLabel>
@@ -24251,6 +24300,9 @@ function App() {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>Australian State · Economic &amp; Social Data</p>
               <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{item.name}</h1>
+              <p className="text-xs text-amber-200/95 mt-1 font-medium leading-snug">
+                Illustrative demo — not official statistics or government figures.
+              </p>
             </div>
             {item.flag && (
               <img src={item.flag} alt={item.name} className="hidden sm:block w-20 rounded-lg object-cover flex-shrink-0" style={{ height: '52px', boxShadow: '0 0 0 2px rgba(200,164,0,0.5)' }} />
@@ -24258,6 +24310,15 @@ function App() {
           </div>
         </div>
         <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8">
+          <div
+            className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2.5 text-xs text-amber-950 leading-snug mb-6"
+            role="note"
+          >
+            <p>
+              <span className="font-semibold">Illustrative only: </span>
+              These charts are not official Australian government statistics. Values are deterministically generated from this state or territory name as demo examples until real series are connected.
+            </p>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <AuCard id="au-budget" title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
               <ResponsiveContainer width="100%" height={220}>
@@ -24613,6 +24674,9 @@ function App() {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>Australian State · Tax Exempt Companies</p>
               <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{item.name}</h1>
+              <p className="text-xs text-amber-200/95 mt-1 font-medium leading-snug">
+                Not official records — illustrative demo only. Rows are synthetic examples.
+              </p>
             </div>
             {item.flag && (
               <img src={item.flag} alt={item.name} className="hidden sm:block w-20 rounded-lg object-cover flex-shrink-0" style={{ height: '52px', boxShadow: '0 0 0 2px rgba(200,164,0,0.5)' }} />
@@ -24621,6 +24685,15 @@ function App() {
         </div>
         {/* Stat strip + search */}
         <div className="max-w-6xl mx-auto px-4 sm:px-8 pt-6 pb-4">
+          <div
+            className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2.5 text-xs text-amber-950 leading-snug mb-5"
+            role="note"
+          >
+            <p>
+              <span className="font-semibold">Illustrative only: </span>
+              Companies and exemption amounts below are synthetic demo rows—not an official tax-exempt registry.
+            </p>
+          </div>
           <div className="bg-white rounded-2xl px-5 py-4 mb-5 flex flex-wrap items-center gap-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-400 mb-0.5">Companies</p>
@@ -24708,7 +24781,7 @@ function App() {
             )}
           </div>
           <p className="text-center text-xs text-gray-400 mt-6 mb-8">
-            Sample data for illustrative purposes only. Figures are statistically modelled.
+            Illustrative demo only — not official data. Sample rows are statistically modelled placeholders.
           </p>
         </div>
       </div>
@@ -24835,6 +24908,9 @@ function App() {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#86efac' }}>Australian State · Grants Given</p>
               <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{item.name}</h1>
+              <p className="text-xs text-emerald-100/95 mt-1 font-medium leading-snug">
+                Not official grant records — illustrative demo only. Recipients and amounts are generated examples.
+              </p>
             </div>
             {item.flag && (
               <img src={item.flag} alt={item.name} className="hidden sm:block w-20 rounded-lg object-cover flex-shrink-0" style={{ height: '52px', boxShadow: '0 0 0 2px rgba(0,132,61,0.5)' }} />
@@ -24843,6 +24919,15 @@ function App() {
         </div>
         {/* Stat strip + search */}
         <div className="max-w-6xl mx-auto px-4 sm:px-8 pt-6 pb-4">
+          <div
+            className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2.5 text-xs text-amber-950 leading-snug mb-5"
+            role="note"
+          >
+            <p>
+              <span className="font-semibold">Illustrative only: </span>
+              Grant listings below are synthetic demo rows—not a government awards register.
+            </p>
+          </div>
           <div className="bg-white rounded-2xl px-5 py-4 mb-5 flex flex-wrap items-center gap-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-400 mb-0.5">Total Grants</p>
@@ -24932,7 +25017,7 @@ function App() {
             )}
           </div>
           <p className="text-center text-xs text-gray-400 mt-6 mb-8">
-            Sample data for illustrative purposes only. Figures are statistically modelled.
+            Illustrative demo only — not official data. Sample rows are statistically modelled placeholders.
           </p>
         </div>
       </div>
@@ -35396,6 +35481,10 @@ function App() {
                     🇺🇸 USA
                   </button>
                 </div>
+                <p className="text-[11px] text-gray-500 leading-snug mb-2" role="note">
+                  <span className="font-semibold text-gray-600">Note: </span>
+                  Labels may come from synced data or a built-in fallback list; the stored value is the region name you pick here.
+                </p>
                 <select
                   value={manualRegionValue}
                   onChange={(e) => setManualRegionValue(e.target.value)}
