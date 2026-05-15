@@ -44,7 +44,7 @@ import { SUBNATIONAL_JURISDICTIONS_COLLECTION } from '../constants/firestoreColl
  * @property {string} last_updated
  * @property {string} dataStatus
  * @property {string[]=} needs_manual_review_fields Field keys the engine marked for manual review (subset of Firestore shapes).
- * @property {string[]=} needs_manual_review_primary_field_keys Keys from `needs_manual_review` / `needsManualReview` only (excludes per-field `*_needs_manual_review` / `*_data_status` expansions).
+ * @property {string[]=} needs_manual_review_primary_field_keys Keys from `needs_manual_review` / `needsManualReview`, plus Firestore `needs_manual_review_fields` **only when** the primary field yields no keys (canonical array fallback; still excludes per-field `*_needs_manual_review` / `*_data_status` expansions).
  */
 
 /**
@@ -102,6 +102,19 @@ function collectPrimaryNeedsManualReviewFieldKeys(raw) {
         if (st === 'needs_manual_review' || truthyNeedsManualReviewValue(v)) out.add(k);
       } else if (truthyNeedsManualReviewValue(v)) {
         out.add(k);
+      }
+    }
+  }
+
+  // When verification stores the canonical list only on `needs_manual_review_fields` (array) and
+  // `needs_manual_review` is absent/empty, still surface those keys — without merging per-field
+  // `leader_name_needs_manual_review` (handled only in collectNeedsManualReviewFieldKeys).
+  if (out.size === 0) {
+    const fsList = raw.needs_manual_review_fields;
+    if (Array.isArray(fsList)) {
+      for (let i = 0; i < fsList.length; i += 1) {
+        const k = String(fsList[i]).trim();
+        if (k) out.add(k);
       }
     }
   }
