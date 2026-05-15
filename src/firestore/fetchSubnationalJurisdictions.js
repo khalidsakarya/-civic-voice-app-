@@ -44,6 +44,7 @@ import { SUBNATIONAL_JURISDICTIONS_COLLECTION } from '../constants/firestoreColl
  * @property {string} last_updated
  * @property {string} dataStatus
  * @property {string[]=} needs_manual_review_fields Field keys the engine marked for manual review (subset of Firestore shapes).
+ * @property {string[]=} needs_manual_review_primary_field_keys Keys from `needs_manual_review` / `needsManualReview` only (excludes per-field `*_needs_manual_review` / `*_data_status` expansions).
  */
 
 /**
@@ -67,21 +68,23 @@ function normalizeCountryCode(countryCode) {
   return s;
 }
 
+/** @param {unknown} v */
+function truthyNeedsManualReviewValue(v) {
+  if (v === true || v === 1) return true;
+  const s = String(v).trim().toLowerCase();
+  return s === 'needs_manual_review' || s === 'true' || s === '1' || s === 'yes';
+}
+
 /**
- * Normalize Firestore `needs_manual_review` (map, array, or per-field flags) into stable field keys.
+ * Keys listed only on Firestore `needs_manual_review` / `needsManualReview` (array or map).
+ * Does not merge `leader_name_needs_manual_review`-style flags (those stay in {@link collectNeedsManualReviewFieldKeys} only).
  *
  * @param {Record<string, unknown>} raw
  * @returns {string[]}
  */
-function collectNeedsManualReviewFieldKeys(raw) {
+function collectPrimaryNeedsManualReviewFieldKeys(raw) {
   if (!raw || typeof raw !== 'object') return [];
   const out = new Set();
-
-  const truthyReview = (v) => {
-    if (v === true || v === 1) return true;
-    const s = String(v).trim().toLowerCase();
-    return s === 'needs_manual_review' || s === 'true' || s === '1' || s === 'yes';
-  };
 
   const nmr = raw.needs_manual_review ?? raw.needsManualReview;
   if (Array.isArray(nmr)) {
@@ -96,17 +99,30 @@ function collectNeedsManualReviewFieldKeys(raw) {
       if (!k) continue;
       if (v && typeof v === 'object' && !Array.isArray(v)) {
         const st = v.status != null ? String(v.status).trim().toLowerCase() : '';
-        if (st === 'needs_manual_review' || truthyReview(v)) out.add(k);
-      } else if (truthyReview(v)) {
+        if (st === 'needs_manual_review' || truthyNeedsManualReviewValue(v)) out.add(k);
+      } else if (truthyNeedsManualReviewValue(v)) {
         out.add(k);
       }
     }
   }
 
+  return [...out].sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Normalize Firestore manual-review signals into stable field keys (primary NMR plus per-field flags).
+ *
+ * @param {Record<string, unknown>} raw
+ * @returns {string[]}
+ */
+function collectNeedsManualReviewFieldKeys(raw) {
+  if (!raw || typeof raw !== 'object') return [];
+  const out = new Set(collectPrimaryNeedsManualReviewFieldKeys(raw));
+
   const optionalFieldKeys = ['leader_name', 'leader_party', 'leader_since', 'leader_party_short'];
   for (let i = 0; i < optionalFieldKeys.length; i += 1) {
     const fk = optionalFieldKeys[i];
-    if (truthyReview(raw[`${fk}_needs_manual_review`])) out.add(fk);
+    if (truthyNeedsManualReviewValue(raw[`${fk}_needs_manual_review`])) out.add(fk);
     const st = raw[`${fk}_data_status`] != null ? String(raw[`${fk}_data_status`]).trim().toLowerCase() : '';
     if (st === 'needs_manual_review') out.add(fk);
   }
@@ -211,6 +227,8 @@ function normalizeRecord(docId, raw) {
   if (nmrFields.length) {
     rec.needs_manual_review_fields = nmrFields;
   }
+
+  rec.needs_manual_review_primary_field_keys = collectPrimaryNeedsManualReviewFieldKeys(raw);
 
   return /** @type {SubnationalJurisdictionRecord} */ (rec);
 }

@@ -24,7 +24,8 @@ const US_GOVERNOR_HEADLINE_MANUAL_REVIEW_FS_FIELDS = Object.freeze([
  */
 function usGovernorHeadlineManualReviewFields(fsRow) {
   if (!fsRow || typeof fsRow !== 'object') return [];
-  const raw = fsRow.needs_manual_review_fields;
+  const primary = fsRow.needs_manual_review_primary_field_keys;
+  const raw = Array.isArray(primary) ? primary : fsRow.needs_manual_review_fields;
   if (!Array.isArray(raw) || !raw.length) return [];
   const present = new Set(raw.map((x) => String(x).trim()).filter(Boolean));
   const out = [];
