@@ -1746,6 +1746,11 @@ function App() {
   const [taxExemptSearch, setTaxExemptSearch] = useState('');
   const [showGrantsModal, setShowGrantsModal] = useState(false);
   const [grantsSearch, setGrantsSearch] = useState('');
+  /** Firestore-backed detail module data keyed by jurisdiction_id (e.g. 'CA-ON'). null = not yet fetched. */
+  const [detailEconByJurisdiction, setDetailEconByJurisdiction] = useState({});
+  const [detailGrantsByJurisdiction, setDetailGrantsByJurisdiction] = useState({});
+  const [detailTaxByJurisdiction, setDetailTaxByJurisdiction] = useState({});
+  const detailModuleFetchedRef = useRef(new Set());
   const [showLeaderPanel, setShowLeaderPanel] = useState(false);
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
@@ -3554,6 +3559,29 @@ function App() {
       }
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch subnational detail module data (economic stats, grants, tax-exempt) from Firestore
+  useEffect(() => {
+    const anyOpen = showEconomicModal || showGrantsModal || showTaxExemptModal;
+    if (!anyOpen || !selectedProvince?.flagCode) return;
+    const jid = selectedProvince.flagCode.toUpperCase(); // e.g. 'CA-ON'
+    if (detailModuleFetchedRef.current.has(jid)) return;
+    detailModuleFetchedRef.current.add(jid);
+    (async () => {
+      try {
+        const [econSnap, grantsSnap, taxSnap] = await Promise.all([
+          getDoc(doc(db, 'subnational_economic_social_stats', jid)),
+          getDoc(doc(db, 'subnational_grants', jid)),
+          getDoc(doc(db, 'subnational_tax_exempt_entities', jid)),
+        ]);
+        if (econSnap.exists())   setDetailEconByJurisdiction(p => ({ ...p, [jid]: econSnap.data() }));
+        if (grantsSnap.exists()) setDetailGrantsByJurisdiction(p => ({ ...p, [jid]: grantsSnap.data() }));
+        if (taxSnap.exists())    setDetailTaxByJurisdiction(p => ({ ...p, [jid]: taxSnap.data() }));
+      } catch (err) {
+        console.warn('[DetailModule] Firestore fetch failed for', jid, err.message);
+      }
+    })();
+  }, [showEconomicModal, showGrantsModal, showTaxExemptModal, selectedProvince]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch US Congress stock trades from Firestore when panel opens
   useEffect(() => {
@@ -13512,7 +13540,7 @@ function App() {
     const inf  = rng(10, 18, 3);
     const ps   = rng(8, 14, 4);
     const soc  = budgetTotal - edu - hlt - inf - ps;
-    const budgetData = [
+    let budgetData = [
       { name: 'Education',       value: edu,  color: '#6366f1' },
       { name: 'Healthcare',      value: hlt,  color: '#10b981' },
       { name: 'Infrastructure',  value: inf,  color: '#f59e0b' },
@@ -13521,7 +13549,7 @@ function App() {
     ];
 
     // ── Chart 2: Spending vs Budget (bar) ────────────────────────────────────
-    const spendData = budgetData.map((cat, i) => {
+    let spendData = budgetData.map((cat, i) => {
       const allocated = rng(800, 4200, 10 + i);
       const variance  = rng(-12, 15, 20 + i);
       return {
@@ -13535,7 +13563,7 @@ function App() {
     const currentYear = 2024;
     const baseViolent  = rngf(180, 520, 30);
     const baseProp     = rngf(1400, 3200, 31);
-    const crimeData = Array.from({ length: 10 }, (_, i) => {
+    let crimeData = Array.from({ length: 10 }, (_, i) => {
       const yr = currentYear - 9 + i;
       const trend = 1 - (i * rngf(0.005, 0.025, 40 + i, 4));
       const noise = (salt) => rngf(-0.06, 0.06, 50 + i + salt, 4);
@@ -13549,7 +13577,7 @@ function App() {
     // ── Chart 4: Unemployment Rate (line, 4 years) ───────────────────────────
     const isUSA = selectedCountry?.type === 'usa';
     const uBase = rngf(2.8, 7.5, 60);
-    const unempData = [2021, 2022, 2023, 2024].map((yr, i) => {
+    let unempData = [2021, 2022, 2023, 2024].map((yr, i) => {
       const mult = [1.4, 1.15, 1.05, 1.0][i];
       const natAvg = [5.4, 3.7, 3.6, 4.1][i];
       return {
@@ -13558,10 +13586,10 @@ function App() {
         [`${isUSA ? 'US' : 'CA'} Average`]: natAvg,
       };
     });
-    const unempKeys = [item.name, `${isUSA ? 'US' : 'CA'} Average`];
+    let unempKeys = [item.name, `${isUSA ? 'US' : 'CA'} Average`];
 
     // ── Chart 5: GDP Growth Over Time (bar, 10 years) ─────────────────────────
-    const gdpData = Array.from({ length: 10 }, (_, i) => {
+    let gdpData = Array.from({ length: 10 }, (_, i) => {
       const yr = 2015 + i;
       let growth;
       if (i === 5) {
@@ -13577,7 +13605,7 @@ function App() {
     // ── Chart 6: Poverty Rate Trend (line, 10 years) ─────────────────────────
     const povBase = rngf(9.0, 17.0, 90, 1);
     const povDecline = rngf(0.1, 0.4, 91, 2);
-    const povData = Array.from({ length: 10 }, (_, i) => {
+    let povData = Array.from({ length: 10 }, (_, i) => {
       const yr = 2015 + i;
       const pandemicSpike = i === 5 ? rngf(1.5, 3.5, 96, 1) : 0;
       const noise = rngf(-0.4, 0.4, 100 + i, 1);
@@ -13587,7 +13615,7 @@ function App() {
 
     // ── Chart 7: Homelessness Statistics (bar, 5 years) ───────────────────────
     const homelessBase = rng(2800, 48000, 110);
-    const homelessData = [2020, 2021, 2022, 2023, 2024].map((yr, i) => {
+    let homelessData = [2020, 2021, 2022, 2023, 2024].map((yr, i) => {
       const growthFactor = 1 + i * rngf(0.015, 0.055, 120 + i, 3);
       const total = Math.round(homelessBase * growthFactor);
       const unshelteredRatio = rngf(0.25, 0.52, 130 + i, 3);
@@ -13595,6 +13623,20 @@ function App() {
       return { year: String(yr), Sheltered: total - unsheltered, Unsheltered: unsheltered };
     });
 
+
+    // ── Live Firestore override (when official data exists for this jurisdiction) ─
+    const jid = item.flagCode?.toUpperCase();
+    const liveEcon = jid ? (detailEconByJurisdiction[jid] || null) : null;
+    let isLive = false;
+    if (liveEcon) {
+      if (liveEcon.budget_distribution?.length)  { budgetData  = liveEcon.budget_distribution; isLive = true; }
+      if (liveEcon.spending_vs_budget?.length)   { spendData   = liveEcon.spending_vs_budget;  isLive = true; }
+      if (liveEcon.crime_rate?.length)           { crimeData   = liveEcon.crime_rate;           isLive = true; }
+      if (liveEcon.unemployment_rate?.length)    { unempData   = liveEcon.unemployment_rate;    unempKeys = Object.keys(liveEcon.unemployment_rate[0]).filter(k => k !== 'year'); isLive = true; }
+      if (liveEcon.gdp_growth?.length)           { gdpData     = liveEcon.gdp_growth;           isLive = true; }
+      if (liveEcon.poverty_rate?.length)         { povData     = liveEcon.poverty_rate;          isLive = true; }
+      if (liveEcon.homelessness?.length)         { homelessData = liveEcon.homelessness;         isLive = true; }
+    }
 
     // ── Shared chart config ─────────────────────────────────────────────────
     const TICK   = { fontSize: 13, fill: '#4b5563' };
@@ -13633,7 +13675,10 @@ function App() {
             </button>
             <div className="flex-1 min-w-0">
               <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug truncate">{item.name} — Economic &amp; Social Data</h2>
-              <p className="text-xs text-gray-400 mt-0.5">Illustrative data · figures are statistically modelled</p>
+              {isLive
+                ? <p className="text-xs text-green-600 mt-0.5">Official data · Statistics Canada, Ontario Ministry of Finance, ESDC</p>
+                : <p className="text-xs text-gray-400 mt-0.5">Illustrative data · figures are statistically modelled</p>
+              }
             </div>
           </div>
 
@@ -13995,19 +14040,27 @@ function App() {
       };
     });
 
+    // ── Live Firestore override ──────────────────────────────────────────────
+    const taxJid = item.flagCode?.toUpperCase();
+    const liveTax = taxJid ? (detailTaxByJurisdiction[taxJid] || null) : null;
+    const displayCompanies = (liveTax?.records?.length > 0) ? liveTax.records : companies;
+    const isLiveTax = liveTax?.records?.length > 0;
+
     const q = taxExemptSearch.toLowerCase();
     const filtered = q
-      ? companies.filter(c =>
-          c.name.toLowerCase().includes(q) ||
-          c.industry.toLowerCase().includes(q) ||
-          c.exemType.toLowerCase().includes(q)
+      ? displayCompanies.filter(c =>
+          (c.name || '').toLowerCase().includes(q) ||
+          (c.industry || '').toLowerCase().includes(q) ||
+          (c.exemType || '').toLowerCase().includes(q)
         )
-      : companies;
+      : displayCompanies;
 
-    const totalRaw = companies.reduce((s, c) => s + c.rawValue, 0);
+    const totalRaw = displayCompanies.reduce((s, c) => s + (c.rawValue || 0), 0);
     const fmtTotal = totalRaw >= 1_000_000_000
       ? `$${(totalRaw / 1_000_000_000).toFixed(2)}B`
-      : `$${(totalRaw / 1_000_000).toFixed(1)}M`;
+      : totalRaw >= 1_000_000
+        ? `$${(totalRaw / 1_000_000).toFixed(1)}M`
+        : 'Tax-Exempt';
 
     const closeModal = () => { setShowTaxExemptModal(false); setTaxExemptSearch(''); };
 
@@ -14027,11 +14080,13 @@ function App() {
                 <span>Back</span>
               </button>
               <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Tax Exempt Companies</h2>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {companies.length} companies &nbsp;·&nbsp; Est. total annual exemption:{' '}
-                  <span className="font-semibold text-amber-600">{fmtTotal}</span>
-                  &nbsp;·&nbsp; Illustrative sample data
+                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — {isLiveTax ? 'CRA Registered Charities' : 'Tax Exempt Companies'}</h2>
+                <p className={`text-xs mt-0.5 ${isLiveTax ? 'text-green-600' : 'text-gray-400'}`}>
+                  {displayCompanies.length} {isLiveTax ? 'registered charities' : 'companies'} &nbsp;·&nbsp;
+                  {isLiveTax
+                    ? <>{' '}<span className="font-semibold">Canada Revenue Agency · open.canada.ca</span></>
+                    : <>{' '}Est. total annual exemption:{' '}<span className="font-semibold text-amber-600">{fmtTotal}</span>&nbsp;·&nbsp; Illustrative sample data</>
+                  }
                 </p>
               </div>
               <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
@@ -14113,16 +14168,17 @@ function App() {
                     </tbody>
                   </table>
                 </div>
-                {filtered.length < companies.length && (
+                {filtered.length < displayCompanies.length && (
                   <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 text-center text-xs text-gray-400">
-                    Showing {filtered.length} of {companies.length} companies
+                    Showing {filtered.length} of {displayCompanies.length} {isLiveTax ? 'charities' : 'companies'}
                   </div>
                 )}
               </div>
             )}
-            <p className="text-center text-xs text-gray-400 mt-4">
-              Sample data for illustrative purposes only. Figures are statistically modelled.
-            </p>
+            {isLiveTax
+              ? <p className="text-center text-xs text-gray-400 mt-4">Source: Canada Revenue Agency — Registered Charities (1998 list, open.canada.ca). City field may be blank for older records.</p>
+              : <p className="text-center text-xs text-gray-400 mt-4">Sample data for illustrative purposes only. Figures are statistically modelled.</p>
+            }
             <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
             </button>
@@ -14227,17 +14283,23 @@ function App() {
       return { recipientName, typeLabel, typeColor, purpose, fmtAmount, rawAmount, date: `${mo} ${yr}`, dept };
     });
 
+    // ── Live Firestore override ──────────────────────────────────────────────
+    const grantsJid = item.flagCode?.toUpperCase();
+    const liveGrants = grantsJid ? (detailGrantsByJurisdiction[grantsJid] || null) : null;
+    const displayGrants = (liveGrants?.records?.length > 0) ? liveGrants.records : grants;
+    const isLiveGrants = liveGrants?.records?.length > 0;
+
     const q = grantsSearch.toLowerCase();
     const filtered = q
-      ? grants.filter(g =>
-          g.recipientName.toLowerCase().includes(q) ||
-          g.purpose.toLowerCase().includes(q) ||
-          g.dept.toLowerCase().includes(q) ||
-          g.typeLabel.toLowerCase().includes(q)
+      ? displayGrants.filter(g =>
+          (g.recipientName || '').toLowerCase().includes(q) ||
+          (g.purpose || '').toLowerCase().includes(q) ||
+          (g.dept || '').toLowerCase().includes(q) ||
+          (g.typeLabel || '').toLowerCase().includes(q)
         )
-      : grants;
+      : displayGrants;
 
-    const totalRaw = grants.reduce((s, g) => s + g.rawAmount, 0);
+    const totalRaw = displayGrants.reduce((s, g) => s + (g.rawAmount || 0), 0);
     const fmtTotal = totalRaw >= 1_000_000_000
       ? `$${(totalRaw / 1_000_000_000).toFixed(2)}B`
       : `$${(totalRaw / 1_000_000).toFixed(1)}M`;
@@ -14260,11 +14322,11 @@ function App() {
                 <span>Back</span>
               </button>
               <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Grants Given</h2>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {grants.length} grants &nbsp;·&nbsp; Total awarded:{' '}
-                  <span className="font-semibold text-emerald-600">{fmtTotal}</span>
-                  &nbsp;·&nbsp; Illustrative sample data
+                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — {isLiveGrants ? 'Transfer Payments (Public Accounts)' : 'Grants Given'}</h2>
+                <p className={`text-xs mt-0.5 ${isLiveGrants ? 'text-green-600' : 'text-gray-400'}`}>
+                  {displayGrants.length} {isLiveGrants ? 'transfer payments' : 'grants'} &nbsp;·&nbsp; Total:{' '}
+                  <span className={`font-semibold ${isLiveGrants ? 'text-emerald-700' : 'text-emerald-600'}`}>{fmtTotal}</span>
+                  {isLiveGrants ? <>&nbsp;·&nbsp; Ontario Public Accounts 2023–24</> : <>&nbsp;·&nbsp; Illustrative sample data</>}
                 </p>
               </div>
               <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
@@ -14349,16 +14411,17 @@ function App() {
                     </tbody>
                   </table>
                 </div>
-                {filtered.length < grants.length && (
+                {filtered.length < displayGrants.length && (
                   <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 text-center text-xs text-gray-400">
-                    Showing {filtered.length} of {grants.length} grants
+                    Showing {filtered.length} of {displayGrants.length} {isLiveGrants ? 'transfer payments' : 'grants'}
                   </div>
                 )}
               </div>
             )}
-            <p className="text-center text-xs text-gray-400 mt-4">
-              Sample data for illustrative purposes only. Figures are statistically modelled.
-            </p>
+            {isLiveGrants
+              ? <p className="text-center text-xs text-gray-400 mt-4">Source: Ontario Ministry of Finance — Public Accounts, Detailed Schedule of Payments (data.ontario.ca). Fiscal year 2023–24. Top 100 Transfer Payments by amount.</p>
+              : <p className="text-center text-xs text-gray-400 mt-4">Sample data for illustrative purposes only. Figures are statistically modelled.</p>
+            }
             <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
             </button>
