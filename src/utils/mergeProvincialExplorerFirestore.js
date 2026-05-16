@@ -11,12 +11,64 @@ function trimString(v) {
   return s;
 }
 
-/** Firestore field keys that map to US governor headline (name / party / in-office date). */
+/** US-only: governor headline fields surfaced on state detail. */
 const US_GOVERNOR_HEADLINE_MANUAL_REVIEW_FS_FIELDS = Object.freeze([
   'leader_name',
   'leader_party',
   'leader_since',
 ]);
+
+/** Canada / Australia province-state detail notice: keys from Firestore `needs_manual_review` (via normalized primary list). */
+const CA_AU_SUBNATIONAL_MANUAL_REVIEW_NOTICE_ORDER = Object.freeze([
+  'leader_name',
+  'leader_party',
+  'leader_since',
+  'population',
+]);
+
+/**
+ * @param {Record<string, unknown>} fsRow
+ * @returns {string[]}
+ */
+function caAuSubnationalManualReviewNoticeFields(fsRow) {
+  if (!fsRow || typeof fsRow !== 'object') return [];
+  const primary = fsRow.needs_manual_review_primary_field_keys;
+  const raw = Array.isArray(primary) ? primary : fsRow.needs_manual_review_fields;
+  if (!Array.isArray(raw) || !raw.length) return [];
+  const present = new Set(raw.map((x) => String(x).trim()).filter(Boolean));
+  const buckets = new Set();
+  for (const k of present) {
+    if (k === 'population_display' || k === 'population_raw') buckets.add('population');
+    else if (
+      k === 'leader_name' ||
+      k === 'leader_party' ||
+      k === 'leader_since' ||
+      k === 'population'
+    ) {
+      buckets.add(k);
+    }
+  }
+  const out = [];
+  for (let i = 0; i < CA_AU_SUBNATIONAL_MANUAL_REVIEW_NOTICE_ORDER.length; i += 1) {
+    const f = CA_AU_SUBNATIONAL_MANUAL_REVIEW_NOTICE_ORDER[i];
+    if (buckets.has(f)) out.push(f);
+  }
+  return out;
+}
+
+/**
+ * @param {Record<string, unknown>} out
+ * @param {Record<string, unknown>|null|undefined} fsRow
+ */
+function applyCaAuSubnationalManualReviewNoticeFields(out, fsRow) {
+  if (!out || typeof out !== 'object') return;
+  const vf = caAuSubnationalManualReviewNoticeFields(fsRow || {});
+  if (vf.length) {
+    out.subnationalManualReviewNoticeFields = vf;
+  } else {
+    delete out.subnationalManualReviewNoticeFields;
+  }
+}
 
 /**
  * @param {Record<string, unknown>} fsRow
@@ -46,8 +98,10 @@ function applyUsGovernorHeadlineManualReviewFlags(out, fsRow, isUSA) {
   if (!isUSA) {
     delete out.usSubnationalGovernorHeadlineNeedsVerification;
     delete out.usSubnationalGovernorHeadlineNeedsVerificationFields;
+    applyCaAuSubnationalManualReviewNoticeFields(out, fsRow);
     return;
   }
+  delete out.subnationalManualReviewNoticeFields;
   const vf = usGovernorHeadlineManualReviewFields(fsRow || {});
   if (vf.length) {
     out.usSubnationalGovernorHeadlineNeedsVerification = true;
@@ -364,7 +418,11 @@ function defaultAustralianExplorerLeaderTitle(abbr) {
  */
 export function mergeAustralianExplorerRow(hardcoded, fsRow) {
   if (!hardcoded) return hardcoded;
-  if (!fsRow) return { ...hardcoded };
+  if (!fsRow) {
+    const out = { ...hardcoded };
+    delete out.subnationalManualReviewNoticeFields;
+    return out;
+  }
 
   const out = { ...hardcoded };
 
@@ -453,6 +511,8 @@ export function mergeAustralianExplorerRow(hardcoded, fsRow) {
       : '';
   out.partyShort = fsPartyShort || String(hardcoded.partyShort || '');
 
+  applyCaAuSubnationalManualReviewNoticeFields(out, fsRow);
+
   return out;
 }
 
@@ -468,7 +528,11 @@ export function buildAustralianExplorerRowFromFirestoreWithHardcodedFallback(
   hardcoded,
 ) {
   if (!hardcoded) return hardcoded;
-  if (!fsRow || typeof fsRow !== 'object') return { ...hardcoded };
+  if (!fsRow || typeof fsRow !== 'object') {
+    const out = { ...hardcoded };
+    delete out.subnationalManualReviewNoticeFields;
+    return out;
+  }
 
   const ts = trimString;
 
@@ -539,6 +603,8 @@ export function buildAustralianExplorerRowFromFirestoreWithHardcodedFallback(
   if (out.legislature === undefined && hardcoded.legislature) {
     out.legislature = { ...hardcoded.legislature };
   }
+
+  applyCaAuSubnationalManualReviewNoticeFields(out, fsRow);
 
   return out;
 }
