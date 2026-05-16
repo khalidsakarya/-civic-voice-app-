@@ -55,7 +55,7 @@ const LOCATION_GATE_US_STATE_NAMES_FALLBACK = ['Alabama','Alaska','Arizona','Ark
 /** Province/territory codes in same order as CANADA_PROVINCE_TERRITORY_NAMES_REGION_GATE (for Firestore ordering). */
 const CANADA_LOCATION_GATE_ORDER_ABBR = ['AB','BC','MB','NB','NL','NT','NS','NU','ON','PE','QC','SK','YT'];
 
-/** Shown on subnational explorer views: legacy/demo copy is not authenticated until engine-sourced sync. */
+/** Shown on subnational explorer/detail: sync gaps vs curated seed — kept short so it does not read as “whole page unreliable”. */
 function SubnationalIllustrativeExplorerNote() {
   return (
     <div
@@ -64,8 +64,27 @@ function SubnationalIllustrativeExplorerNote() {
     >
       <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-800" aria-hidden />
       <p>
-        <span className="font-semibold">Illustrative / unverified: </span>
-        Explorer lists may mix Firestore-backed fields with curated fallbacks when sync is incomplete. Biographies, deputy notes, legislature seat charts, and UK regional narrative may be demo seed data—not authenticated government records—until the engine replaces them with officially sourced fields.
+        <span className="font-semibold">Note: </span>
+        Some explorer or narrative fields may still be illustrative or filling in from sync. Where Firestore already has engine-sourced values, those are shown as usual. Bios, deputy lines, legislature charts, and UK regional copy may update as official data lands.
+      </p>
+    </div>
+  );
+}
+
+/** Firestore manual-review flags on a few headline fields — wording stresses scoped check, not whole-screen risk. */
+function SubnationalFieldVerificationNotice({ labels }) {
+  if (!Array.isArray(labels) || labels.length === 0) return null;
+  const list = labels.join(', ');
+  const scope = labels.length === 1 ? 'This field is' : 'These values are';
+  return (
+    <div
+      className="rounded-lg border border-amber-200/90 bg-amber-50/90 px-3 py-2 text-xs text-amber-950 leading-snug mb-3 flex gap-2 items-start"
+      role="status"
+    >
+      <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-700" aria-hidden />
+      <p>
+        <span className="font-semibold">In review: </span>
+        {list}. {scope} being validated against official sources; other information on this screen is unchanged.
       </p>
     </div>
   );
@@ -13222,56 +13241,36 @@ function App() {
             </div>
           </div>
 
-          <SubnationalIllustrativeExplorerNote />
-
           {isUSA &&
             Array.isArray(item.usSubnationalGovernorHeadlineNeedsVerificationFields) &&
             item.usSubnationalGovernorHeadlineNeedsVerificationFields.length > 0 && (
-              <div
-                className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2 text-xs text-amber-950 leading-snug mb-4"
-                role="note"
-              >
-                <p>
-                  <span className="font-semibold">Needs verification: </span>
-                  {(() => {
-                    const labels = {
-                      leader_name: 'Governor name',
-                      leader_party: 'Party',
-                      leader_since: 'In-office date',
-                    };
-                    const parts = item.usSubnationalGovernorHeadlineNeedsVerificationFields.map(
-                      (f) => labels[f] || String(f),
-                    );
-                    return `${parts.join(', ')} from Firestore is flagged for manual review and may not match the official record yet.`;
-                  })()}
-                </p>
-              </div>
+              <SubnationalFieldVerificationNotice
+                labels={item.usSubnationalGovernorHeadlineNeedsVerificationFields.map((f) =>
+                  ({
+                    leader_name: 'Governor name',
+                    leader_party: 'Party',
+                    leader_since: 'In-office date',
+                  }[f] || String(f)),
+                )}
+              />
             )}
 
           {!isUSA &&
             Array.isArray(item.subnationalManualReviewNoticeFields) &&
             item.subnationalManualReviewNoticeFields.length > 0 && (
-              <div
-                className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2 text-xs text-amber-950 leading-snug mb-4"
-                role="note"
-              >
-                <p>
-                  <span className="font-semibold">Needs verification: </span>
-                  {(() => {
-                    const labels = {
-                      leader_name: 'Leader name',
-                      leader_party: 'Party',
-                      leader_since: 'In-office date',
-                      population: 'Population',
-                    };
-                    const parts = item.subnationalManualReviewNoticeFields.map(
-                      (f) => labels[f] || String(f),
-                    );
-                    return `${parts.join(', ')} from Firestore is flagged for manual review and may not match the official record yet.`;
-                  })()}
-                </p>
-              </div>
+              <SubnationalFieldVerificationNotice
+                labels={item.subnationalManualReviewNoticeFields.map((f) =>
+                  ({
+                    leader_name: 'Leader name',
+                    leader_party: 'Party',
+                    leader_since: 'In-office date',
+                    population: 'Population',
+                  }[f] || String(f)),
+                )}
+              />
             )}
+
+          <SubnationalIllustrativeExplorerNote />
 
           {/* Leadership — two cards side by side */}
           <h2 className="text-base font-bold text-gray-600 uppercase tracking-wide mb-3 px-1">Leadership</h2>
@@ -20822,9 +20821,8 @@ function App() {
             )}
           </div>
 
-          <SubnationalIllustrativeExplorerNote />
-
           {/* ── Regional Leadership ── */}
+          <SubnationalIllustrativeExplorerNote />
           <SectionLabel>Regional Leadership</SectionLabel>
           <div className={`grid grid-cols-1 ${r.subMayors && r.subMayors.length > 0 ? 'md:grid-cols-2' : ''} gap-4`}>
             <PersonCard
@@ -24051,31 +24049,21 @@ function App() {
             </div>
           </div>
 
-          <SubnationalIllustrativeExplorerNote />
-
           {Array.isArray(item.subnationalManualReviewNoticeFields) &&
             item.subnationalManualReviewNoticeFields.length > 0 && (
-              <div
-                className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2 text-xs text-amber-950 leading-snug mb-4"
-                role="note"
-              >
-                <p>
-                  <span className="font-semibold">Needs verification: </span>
-                  {(() => {
-                    const labels = {
-                      leader_name: 'Leader name',
-                      leader_party: 'Party',
-                      leader_since: 'In-office date',
-                      population: 'Population',
-                    };
-                    const parts = item.subnationalManualReviewNoticeFields.map(
-                      (f) => labels[f] || String(f),
-                    );
-                    return `${parts.join(', ')} from Firestore is flagged for manual review and may not match the official record yet.`;
-                  })()}
-                </p>
-              </div>
+              <SubnationalFieldVerificationNotice
+                labels={item.subnationalManualReviewNoticeFields.map((f) =>
+                  ({
+                    leader_name: 'Leader name',
+                    leader_party: 'Party',
+                    leader_since: 'In-office date',
+                    population: 'Population',
+                  }[f] || String(f)),
+                )}
+              />
             )}
+
+          <SubnationalIllustrativeExplorerNote />
 
           {/* ── Leadership ── */}
           <SectionLabel>Government Leadership</SectionLabel>
