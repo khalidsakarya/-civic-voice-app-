@@ -18,6 +18,12 @@ import {
   mergeUkEnglandRegionRow,
 } from './utils/mergeProvincialExplorerFirestore';
 import { formatExecutiveOrderDisplayDate } from './utils/executiveOrderDates';
+import {
+  economicSocialFromExplorerItem,
+  taxExemptFromExplorerItem,
+  grantsGivenFromExplorerItem,
+  formatCurrencyCompact,
+} from './utils/subnationalTransparencyData';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
 import {
   FEDERAL_REGISTER_SOURCE_NAME,
@@ -13428,122 +13434,28 @@ function App() {
   const renderEconomicModal = () => {
     if (!selectedProvince || !showEconomicModal) return null;
     const item = selectedProvince;
-
-    // ── Deterministic data generator seeded from province/state name ──────────
-    let h = 5381;
-    for (let i = 0; i < item.name.length; i++) h = (Math.imul(h, 33) ^ item.name.charCodeAt(i)) | 0;
-    h = Math.abs(h);
-    const rng = (min, max, salt) => {
-      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
-      return Math.round(min + (v % (max - min + 1)));
-    };
-    const rngf = (min, max, salt, dec = 1) => {
-      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
-      const raw = min + (v % 1000) / 1000 * (max - min);
-      return parseFloat(raw.toFixed(dec));
-    };
-
-    // ── Chart 1: Budget Distribution (donut) ─────────────────────────────────
-    const budgetTotal = 100;
-    const edu  = rng(22, 32, 1);
-    const hlt  = rng(18, 28, 2);
-    const inf  = rng(10, 18, 3);
-    const ps   = rng(8, 14, 4);
-    const soc  = budgetTotal - edu - hlt - inf - ps;
-    const budgetData = [
-      { name: 'Education',       value: edu,  color: '#6366f1' },
-      { name: 'Healthcare',      value: hlt,  color: '#10b981' },
-      { name: 'Infrastructure',  value: inf,  color: '#f59e0b' },
-      { name: 'Public Safety',   value: ps,   color: '#ef4444' },
-      { name: 'Social Services', value: soc,  color: '#8b5cf6' },
-    ];
-
-    // ── Chart 2: Spending vs Budget (bar) ────────────────────────────────────
-    const spendData = budgetData.map((cat, i) => {
-      const allocated = rng(800, 4200, 10 + i);
-      const variance  = rng(-12, 15, 20 + i);
-      return {
-        category: cat.name.split(' ')[0],
-        Allocated: allocated,
-        Actual: Math.round(allocated * (1 + variance / 100)),
-      };
-    });
-
-    // ── Chart 3: Crime Rate Trends (line, 10 years) ──────────────────────────
-    const currentYear = 2024;
-    const baseViolent  = rngf(180, 520, 30);
-    const baseProp     = rngf(1400, 3200, 31);
-    const crimeData = Array.from({ length: 10 }, (_, i) => {
-      const yr = currentYear - 9 + i;
-      const trend = 1 - (i * rngf(0.005, 0.025, 40 + i, 4));
-      const noise = (salt) => rngf(-0.06, 0.06, 50 + i + salt, 4);
-      return {
-        year: String(yr),
-        'Violent Crime': parseFloat((baseViolent * trend * (1 + noise(0))).toFixed(1)),
-        'Property Crime': parseFloat((baseProp * trend * (1 + noise(1))).toFixed(1)),
-      };
-    });
-
-    // ── Chart 4: Unemployment Rate (line, 4 years) ───────────────────────────
     const isUSA = selectedCountry?.type === 'usa';
-    const uBase = rngf(2.8, 7.5, 60);
-    const unempData = [2021, 2022, 2023, 2024].map((yr, i) => {
-      const mult = [1.4, 1.15, 1.05, 1.0][i];
-      const natAvg = [5.4, 3.7, 3.6, 4.1][i];
-      return {
-        year: String(yr),
-        [item.name]: parseFloat((uBase * mult + rngf(-0.3, 0.3, 70 + i, 2)).toFixed(1)),
-        [`${isUSA ? 'US' : 'CA'} Average`]: natAvg,
-      };
-    });
-    const unempKeys = [item.name, `${isUSA ? 'US' : 'CA'} Average`];
-
-    // ── Chart 5: GDP Growth Over Time (bar, 10 years) ─────────────────────────
-    const gdpData = Array.from({ length: 10 }, (_, i) => {
-      const yr = 2015 + i;
-      let growth;
-      if (i === 5) {
-        growth = rngf(-8.0, -2.0, 85, 1); // 2020 pandemic dip
-      } else if (i === 6) {
-        growth = rngf(3.5, 7.5, 86, 1);   // 2021 recovery bounce
-      } else {
-        growth = rngf(0.8, 4.5, 80 + i, 1);
-      }
-      return { year: String(yr), 'GDP Growth (%)': growth };
-    });
-
-    // ── Chart 6: Poverty Rate Trend (line, 10 years) ─────────────────────────
-    const povBase = rngf(9.0, 17.0, 90, 1);
-    const povDecline = rngf(0.1, 0.4, 91, 2);
-    const povData = Array.from({ length: 10 }, (_, i) => {
-      const yr = 2015 + i;
-      const pandemicSpike = i === 5 ? rngf(1.5, 3.5, 96, 1) : 0;
-      const noise = rngf(-0.4, 0.4, 100 + i, 1);
-      const rate = Math.max(4.5, povBase - i * povDecline + pandemicSpike + noise);
-      return { year: String(yr), 'Poverty Rate (%)': parseFloat(rate.toFixed(1)) };
-    });
-
-    // ── Chart 7: Homelessness Statistics (bar, 5 years) ───────────────────────
-    const homelessBase = rng(2800, 48000, 110);
-    const homelessData = [2020, 2021, 2022, 2023, 2024].map((yr, i) => {
-      const growthFactor = 1 + i * rngf(0.015, 0.055, 120 + i, 3);
-      const total = Math.round(homelessBase * growthFactor);
-      const unshelteredRatio = rngf(0.25, 0.52, 130 + i, 3);
-      const unsheltered = Math.round(total * unshelteredRatio);
-      return { year: String(yr), Sheltered: total - unsheltered, Unsheltered: unsheltered };
-    });
-
+    const jurisdictionLabel = item.displayName || item.name;
+    const economic = economicSocialFromExplorerItem(item, isUSA);
+    const {
+      hasData,
+      budgetData,
+      spendData,
+      crimeDataM,
+      unempData,
+      unempKeys,
+      gdpDataM,
+      povDataM,
+      homelessData,
+      sourceName,
+      sourceUrl,
+    } = economic;
 
     // ── Shared chart config ─────────────────────────────────────────────────
     const TICK   = { fontSize: 13, fill: '#4b5563' };
     const TT     = { fontSize: '13px', borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' };
     const LEG    = { fontSize: '13px', paddingTop: '10px' };
     const MARGIN = { top: 5, right: 24, left: 0, bottom: 5 };
-
-    // Trim 10-year series to 6 most recent points to avoid crowding
-    const crimeDataM = crimeData.slice(-6);
-    const gdpDataM   = gdpData.slice(-6);
-    const povDataM   = povData.slice(-6);
 
     // Card wrapper matching Analytics section style
     const Card = ({ title, desc, children }) => (
@@ -13570,24 +13482,31 @@ function App() {
               <span>Back</span>
             </button>
             <div className="flex-1 min-w-0">
-              <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug truncate">{item.name} — Economic &amp; Social Data</h2>
-              <p className="text-xs text-amber-900 mt-0.5 font-medium">Not official statistics — illustrative demo only (deterministic example values).</p>
+              <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug truncate">{jurisdictionLabel} — Economic &amp; Social Data</h2>
+              {hasData ? (
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Official series from government sources
+                  {sourceName ? ` · ${sourceName}` : ''}
+                </p>
+              ) : (
+                <p className="text-xs text-gray-600 mt-0.5 font-medium">Official economic and social statistics are not loaded yet for this jurisdiction.</p>
+              )}
             </div>
           </div>
 
           {/* Charts — single column, full width, scrollable */}
           <div className="p-4">
-            <div
-              className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2.5 text-xs text-amber-950 leading-snug mb-4"
-              role="note"
-            >
-              <p>
-                <span className="font-semibold">Illustrative only: </span>
-                Charts below are not government-published figures. They are deterministically generated from this region&apos;s name for layout exploration until real economic and social series are wired in.
-              </p>
-            </div>
-
-            {/* 1. Government Budget Distribution */}
+            {!hasData ? (
+              <div className="text-center py-16 px-4">
+                <BarChart3 className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                <p className="text-sm font-medium text-gray-700">No official data loaded yet</p>
+                <p className="text-xs text-gray-500 mt-2 max-w-sm mx-auto leading-relaxed">
+                  Budget, crime, unemployment, and related series for {jurisdictionLabel} will appear here once they are ingested into Firestore from official sources. This screen does not show placeholder or generated figures.
+                </p>
+              </div>
+            ) : (
+            <>
+            {budgetData.length > 0 && (
             <Card title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
@@ -13611,8 +13530,9 @@ function App() {
                 ))}
               </div>
             </Card>
+            )}
 
-            {/* 2. Spending vs Budget */}
+            {spendData.length > 0 && (
             <Card title="Spending vs Budget" desc="Allocated vs actual spending per category ($M)">
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart layout="vertical" data={spendData} margin={MARGIN}>
@@ -13627,8 +13547,9 @@ function App() {
               </ResponsiveContainer>
               <button onClick={() => setExpandedChartId('spending')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
             </Card>
+            )}
 
-            {/* 3. Crime Rate Trends */}
+            {crimeDataM.length > 0 && (
             <Card title="Crime Rate Trends" desc="Incidents per 100,000 people — last 6 years">
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
@@ -13643,9 +13564,10 @@ function App() {
               </ResponsiveContainer>
               <button onClick={() => setExpandedChartId('crime')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
             </Card>
+            )}
 
-            {/* 4. Unemployment Rate */}
-            <Card title="Unemployment Rate" desc={`Annual rate (%) vs ${isUSA ? 'US' : 'CA'} national average — last 4 years`}>
+            {unempData.length > 0 && unempKeys.length >= 2 && (
+            <Card title="Unemployment Rate" desc={`Annual rate (%) vs ${isUSA ? 'US' : 'CA'} national average`}>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart layout="vertical" data={unempData} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
@@ -13659,9 +13581,10 @@ function App() {
               </ResponsiveContainer>
               <button onClick={() => setExpandedChartId('unemployment')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
             </Card>
+            )}
 
-            {/* 5. GDP Growth Over Time */}
-            <Card title="GDP Growth Over Time" desc="Annual GDP growth rate (%) — last 6 years · green = growth, red = contraction">
+            {gdpDataM.length > 0 && (
+            <Card title="GDP Growth Over Time" desc="Annual GDP growth rate (%) — green = growth, red = contraction">
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart layout="vertical" data={gdpDataM} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
@@ -13679,9 +13602,10 @@ function App() {
                 <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0 bg-red-500" /> Contraction</span>
               </div>
             </Card>
+            )}
 
-            {/* 6. Poverty Rate Trend */}
-            <Card title="Poverty Rate Trend" desc="Population living below the poverty line (%) — last 6 years">
+            {povDataM.length > 0 && (
+            <Card title="Poverty Rate Trend" desc="Population living below the poverty line (%)">
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart layout="vertical" data={povDataM} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
@@ -13694,9 +13618,10 @@ function App() {
               </ResponsiveContainer>
               <button onClick={() => setExpandedChartId('poverty')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
             </Card>
+            )}
 
-            {/* 7. Homelessness Statistics */}
-            <Card title="Homelessness Statistics" desc="Sheltered vs unsheltered population 2020–2024">
+            {homelessData.length > 0 && (
+            <Card title="Homelessness Statistics" desc="Sheltered vs unsheltered population">
               <ResponsiveContainer width="100%" height={230}>
                 <BarChart layout="vertical" data={homelessData} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
@@ -13710,11 +13635,18 @@ function App() {
               </ResponsiveContainer>
               <button onClick={() => setExpandedChartId('homeless')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
             </Card>
+            )}
 
-            <p className="text-center text-xs text-gray-500 pb-2">
-              <span className="font-semibold text-amber-900">Illustrative demo.</span>{' '}
-              Values are statistically modelled (not official) and seeded from {item.name} for reproducible examples only.
-            </p>
+            {sourceUrl && (
+              <p className="text-center text-xs text-gray-500 pb-2">
+                Source:{' '}
+                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  {sourceName || sourceUrl}
+                </a>
+              </p>
+            )}
+            </>
+            )}
             <button onClick={() => setShowEconomicModal(false)} className="w-full mt-2 mb-1 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
             </button>
@@ -13723,7 +13655,7 @@ function App() {
       </div>
 
       {/* Full-screen chart overlay */}
-      {expandedChartId && (() => {
+      {hasData && expandedChartId && (() => {
         const chartTitles = { budget: 'Government Budget Distribution', spending: 'Spending vs Budget', crime: 'Crime Rate Trends', unemployment: 'Unemployment Rate', gdp: 'GDP Growth Over Time', poverty: 'Poverty Rate Trend', homeless: 'Homelessness Statistics' };
         const chartTitle = chartTitles[expandedChartId] || '';
         const chartH = 'calc(100vh - 210px)';
@@ -13735,7 +13667,9 @@ function App() {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-widest mb-0.5" style={{ color: '#94a3b8' }}>Full Screen · {isUSA ? 'US State' : 'Province'}</p>
                   <span className="font-bold text-white text-base sm:text-lg leading-snug block">{chartTitle}</span>
-                  <span className="text-[11px] text-amber-200/95 mt-1 block">Illustrative demo — not official statistics</span>
+                  {sourceName && (
+                    <span className="text-[11px] text-slate-300 mt-1 block">{sourceName}</span>
+                  )}
                 </div>
                 <button
                   onClick={() => setExpandedChartId(null)}
@@ -13860,89 +13794,11 @@ function App() {
   const renderTaxExemptModal = () => {
     if (!selectedProvince || !showTaxExemptModal) return null;
     const item = selectedProvince;
-
-    // ── Deterministic data generator (different offset from economic modal) ────
-    let h = 5381;
-    for (let i = 0; i < item.name.length; i++) h = (Math.imul(h, 33) ^ item.name.charCodeAt(i)) | 0;
-    h = Math.abs(h) ^ 0xBEEF;
-    const rng = (min, max, salt) => {
-      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
-      return Math.round(min + (v % (max - min + 1)));
-    };
-    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
-
-    const prefixes = [
-      'Pacific', 'Atlantic', 'Northern', 'Southern', 'Eastern', 'Western',
-      'National', 'American', 'Canadian', 'Continental', 'Heritage', 'Pioneer',
-      'Summit', 'Apex', 'Liberty', 'Crown', 'Cascade', 'Prairie', 'Coastal',
-      'Heartland', 'Metro', 'Regional', 'Allied', 'United', 'General', 'Global',
-      'Premier', 'Advanced', 'Integrated', 'Strategic', 'Keystone', 'Horizon',
-      'Pinnacle', 'Meridian', 'Catalyst', 'Vanguard', 'Cornerstone', 'Triton',
-    ];
-
-    const industryGroups = [
-      { industry: 'Technology',      color: 'bg-blue-100 text-blue-700',     keywords: ['Technologies', 'Systems', 'Software', 'Digital', 'Data Solutions', 'CloudTech', 'Cyber'] },
-      { industry: 'Healthcare',      color: 'bg-green-100 text-green-700',   keywords: ['Health', 'Medical Group', 'Pharma', 'Biomedical', 'Care Systems', 'Life Sciences'] },
-      { industry: 'Manufacturing',   color: 'bg-orange-100 text-orange-700', keywords: ['Manufacturing', 'Industries', 'Products', 'Fabrication', 'Components'] },
-      { industry: 'Energy',          color: 'bg-amber-100 text-amber-700',   keywords: ['Energy', 'Power', 'Petroleum', 'Gas & Electric', 'Solar Energy', 'Renewables'] },
-      { industry: 'Real Estate',     color: 'bg-purple-100 text-purple-700', keywords: ['Properties', 'Realty', 'Development', 'Estates', 'Real Estate'] },
-      { industry: 'Finance',         color: 'bg-indigo-100 text-indigo-700', keywords: ['Financial', 'Capital', 'Investments', 'Asset Management', 'Holdings'] },
-      { industry: 'Retail',          color: 'bg-pink-100 text-pink-700',     keywords: ['Retail', 'Commerce', 'Distribution', 'Wholesale'] },
-      { industry: 'Agriculture',     color: 'bg-lime-100 text-lime-700',     keywords: ['Farms', 'Agriculture', 'Agri-Products', 'Grain', 'Harvest'] },
-      { industry: 'Mining',          color: 'bg-stone-100 text-stone-600',   keywords: ['Mining', 'Minerals', 'Resources', 'Extraction'] },
-      { industry: 'Transportation',  color: 'bg-cyan-100 text-cyan-700',     keywords: ['Transport', 'Logistics', 'Freight', 'Transit'] },
-      { industry: 'Construction',    color: 'bg-yellow-100 text-yellow-700', keywords: ['Construction', 'Building Group', 'Contractors', 'Infrastructure'] },
-      { industry: 'Utilities',       color: 'bg-teal-100 text-teal-700',     keywords: ['Utilities', 'Water Systems', 'Electric', 'Gas Services'] },
-      { industry: 'Food & Beverage', color: 'bg-red-100 text-red-700',       keywords: ['Foods', 'Beverages', 'Brewing', 'Food Processing'] },
-      { industry: 'Pharmaceutical',  color: 'bg-emerald-100 text-emerald-700', keywords: ['Pharmaceuticals', 'Biotech', 'Laboratories', 'Therapeutics'] },
-      { industry: 'Aerospace',       color: 'bg-sky-100 text-sky-700',       keywords: ['Aerospace', 'Aviation', 'Defense Systems', 'Space Tech'] },
-    ];
-
-    const suffixes = ['Inc.', 'LLC', 'Corp.', 'Ltd.', 'Co.', 'Group', 'Holdings'];
-
-    const exemptionTypes = [
-      'Property Tax Exemption',
-      'R&D Tax Credit',
-      'Enterprise Zone Credit',
-      'Manufacturing Exemption',
-      'Non-Profit Tax Status',
-      'Agricultural Land Exemption',
-      'Renewable Energy Credit',
-      'Export Tax Incentive',
-      'Historic Preservation Credit',
-      'Low-Income Housing Credit',
-      'Job Creation Tax Credit',
-      'Capital Investment Exemption',
-      'Economic Development Zone',
-      'Sales Tax Exemption',
-      'Corporate Income Tax Abatement',
-    ];
-
-    const count = rng(15, 20, 200);
-    const companies = Array.from({ length: count }, (_, i) => {
-      const g        = pick(industryGroups, 201 + i * 9);
-      const keyword  = pick(g.keywords,    202 + i * 9);
-      const prefix   = pick(prefixes,      203 + i * 9);
-      const suffix   = pick(suffixes,      204 + i * 9);
-      const exemType = pick(exemptionTypes,205 + i * 9);
-      const year     = rng(2004, 2023,     206 + i * 9);
-      const isBig    = rng(0, 5,           207 + i * 9) === 0;
-      const rawValue = isBig
-        ? rng(5, 50,    208 + i * 9) * 1_000_000
-        : rng(200, 4800,208 + i * 9) * 1_000;
-      const fmtValue = rawValue >= 1_000_000
-        ? `$${(rawValue / 1_000_000).toFixed(1)}M`
-        : `$${(rawValue / 1_000).toFixed(0)}K`;
-      return {
-        name: `${prefix} ${keyword} ${suffix}`,
-        industry: g.industry,
-        industryColor: g.color,
-        exemType,
-        fmtValue,
-        rawValue,
-        year,
-      };
-    });
+    const jurisdictionLabel = item.displayName || item.name;
+    const taxLive = taxExemptFromExplorerItem(item);
+    const companies = taxLive.companies;
+    const hasLiveData = companies.length > 0;
+    const { sourceName, sourceUrl } = taxLive;
 
     const q = taxExemptSearch.toLowerCase();
     const filtered = q
@@ -13954,9 +13810,7 @@ function App() {
       : companies;
 
     const totalRaw = companies.reduce((s, c) => s + c.rawValue, 0);
-    const fmtTotal = totalRaw >= 1_000_000_000
-      ? `$${(totalRaw / 1_000_000_000).toFixed(2)}B`
-      : `$${(totalRaw / 1_000_000).toFixed(1)}M`;
+    const fmtTotal = formatCurrencyCompact(totalRaw);
 
     const closeModal = () => { setShowTaxExemptModal(false); setTaxExemptSearch(''); };
 
@@ -13976,14 +13830,17 @@ function App() {
                 <span>Back</span>
               </button>
               <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Tax Exempt Companies</h2>
-                <p className="text-xs text-amber-900 mt-0.5 font-medium">
-                  Not official records — illustrative demo only. Company names and amounts are generated examples.
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {companies.length} sample rows &nbsp;·&nbsp; Demo total exemption:{' '}
-                  <span className="font-semibold text-amber-700">{fmtTotal}</span>
-                </p>
+                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Tax Exempt Companies</h2>
+                {hasLiveData ? (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {companies.length} {companies.length === 1 ? 'record' : 'records'}
+                    &nbsp;·&nbsp; Total reported exemption:{' '}
+                    <span className="font-semibold text-amber-700">{fmtTotal}</span>
+                    {sourceName ? ` · ${sourceName}` : ''}
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-600 mt-0.5 font-medium">Official tax-exempt company records are not loaded yet for this jurisdiction.</p>
+                )}
               </div>
               <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
                 <X className="w-5 h-5" />
@@ -14007,15 +13864,17 @@ function App() {
             </div>
           </div>
 
-          <div className="px-4 sm:px-6 pt-2">
-            <p className="text-[11px] text-amber-950 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 leading-snug" role="note">
-              <span className="font-semibold">Demo content: </span>Table rows are synthetic placeholders, not a registry of real exemptions.
-            </p>
-          </div>
-
           {/* Table body */}
           <div className="p-3 sm:p-5">
-            {filtered.length === 0 ? (
+            {!hasLiveData ? (
+              <div className="text-center py-14 px-4 text-gray-500">
+                <Building2 className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                <p className="text-sm font-medium text-gray-700">No official data loaded yet</p>
+                <p className="text-xs mt-2 max-w-md mx-auto leading-relaxed">
+                  Tax-exempt company listings for {jurisdictionLabel} will appear here once they are ingested from official sources. This screen does not show placeholder or generated rows.
+                </p>
+              </div>
+            ) : filtered.length === 0 ? (
               <div className="text-center py-14 text-gray-400">
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
                 <p className="text-sm">No companies match &quot;{taxExemptSearch}&quot;</p>
@@ -14077,9 +13936,14 @@ function App() {
                 )}
               </div>
             )}
-            <p className="text-center text-xs text-gray-400 mt-4">
-              Sample data for illustrative purposes only. Figures are statistically modelled.
-            </p>
+            {hasLiveData && sourceUrl && (
+              <p className="text-center text-xs text-gray-500 mt-4">
+                Source:{' '}
+                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  {sourceName || sourceUrl}
+                </a>
+              </p>
+            )}
             <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
             </button>
@@ -14094,95 +13958,11 @@ function App() {
     if (!selectedProvince || !showGrantsModal) return null;
     const item = selectedProvince;
     const isUSA = selectedCountry?.type === 'usa';
-
-    // ── Deterministic RNG (distinct seed offset from other modals) ─────────────
-    let h = 5381;
-    for (let i = 0; i < item.name.length; i++) h = (Math.imul(h, 33) ^ item.name.charCodeAt(i)) | 0;
-    h = Math.abs(h) ^ 0xCAFE1234;
-    const rng = (min, max, salt) => {
-      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
-      return Math.round(min + (v % (max - min + 1)));
-    };
-    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
-
-    // ── Name pools ────────────────────────────────────────────────────────────
-    const orgPrefixes  = ['Community', 'City', 'Regional', 'Metropolitan', 'State', 'National', 'Local', 'Rural', 'Urban', 'District', 'County', 'Public', 'Civic'];
-    const orgFields    = ['Health', 'Education', 'Research', 'Arts', 'Science', 'Technology', 'Environment', 'Youth', 'Family', 'Housing', 'Development', 'Innovation', 'Literacy', 'Wellness', 'Veterans'];
-    const orgTypes     = ['Foundation', 'Institute', 'Association', 'Center', 'Coalition', 'Trust', 'Fund', 'Alliance', 'Council', 'Society', 'Network', 'Initiative'];
-    const coKeywords   = ['Solutions', 'Technologies', 'Systems', 'Services', 'Consulting', 'Innovations', 'Enterprises', 'Dynamics', 'Analytics', 'Research'];
-    const coPrefixes   = ['Apex', 'Summit', 'Vanguard', 'Horizon', 'Pinnacle', 'Meridian', 'Allied', 'Catalyst', 'Pioneer', 'Keystone', 'Integrated', 'Advanced'];
-    const coSuffixes   = ['Inc.', 'LLC', 'Corp.', 'Ltd.', 'Co.'];
-    const firstNames   = ['James', 'Maria', 'Robert', 'Sarah', 'Michael', 'Jennifer', 'David', 'Emily', 'John', 'Amanda', 'Christopher', 'Rachel', 'Daniel', 'Stephanie', 'Matthew', 'Nicole', 'Anthony', 'Lauren', 'Mark', 'Megan', 'Paul', 'Kevin', 'Brian', 'Rebecca', 'George', 'Thomas', 'Danielle', 'Lisa', 'Carlos', 'Priya'];
-    const lastNames    = ['Johnson', 'Smith', 'Williams', 'Brown', 'Jones', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Martinez', 'Robinson', 'Clark', 'Rodriguez', 'Lewis', 'Walker', 'Hall', 'Allen', 'Young', 'Patel', 'Nguyen', 'Kim'];
-
-    // ── Grant purposes ────────────────────────────────────────────────────────
-    const purposes = [
-      'STEM Education Program', 'Community Health Initiative', 'Infrastructure Modernization',
-      'Small Business Development', 'Environmental Conservation', 'Workforce Training Program',
-      'Affordable Housing Project', 'Renewable Energy Research', 'Arts & Culture Promotion',
-      'Public Safety Equipment', 'Agricultural Innovation', 'Mental Health Services',
-      'Digital Literacy Program', 'Economic Recovery Initiative', 'Youth Development Program',
-      'Medical Research Grant', 'Clean Water Infrastructure', 'Transportation Improvement',
-      'Emergency Preparedness', 'Indigenous Community Support',
-    ];
-
-    // ── Funding departments ───────────────────────────────────────────────────
-    const usDepts = [
-      'Dept. of Health & Human Services', 'Dept. of Education', 'Dept. of Commerce',
-      'Dept. of Transportation', 'Dept. of Energy', 'Dept. of Agriculture',
-      'Dept. of Housing & Urban Dev.', 'Dept. of Labor', 'Environmental Protection Agency',
-      'National Science Foundation', 'National Institutes of Health',
-      'Small Business Administration', 'Dept. of Justice', 'Dept. of Homeland Security',
-      'Dept. of the Interior',
-    ];
-    const caDepts = [
-      'Ministry of Health', 'Ministry of Education', 'Ministry of Economic Development',
-      'Ministry of Transportation', 'Ministry of Environment', 'Ministry of Agriculture',
-      'Ministry of Labour', 'Ministry of Finance', 'Ministry of Culture & Tourism',
-      'Natural Sciences & Engineering Research Council', 'Social Sciences & Humanities Research Council',
-      'Innovation, Science & Economic Development', 'National Research Council',
-      'Indigenous Services Canada', 'Infrastructure Canada',
-    ];
-    const depts = isUSA ? usDepts : caDepts;
-
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    // ── Generate grants ───────────────────────────────────────────────────────
-    const count = rng(15, 20, 300);
-    const grants = Array.from({ length: count }, (_, i) => {
-      const recipientType = rng(0, 9, 301 + i * 11) < 5 ? 'org'
-                          : rng(0, 9, 302 + i * 11) < 7 ? 'company'
-                          : 'individual';
-
-      let recipientName, typeLabel, typeColor;
-      if (recipientType === 'org') {
-        recipientName = `${pick(orgPrefixes, 303 + i * 11)} ${pick(orgFields, 304 + i * 11)} ${pick(orgTypes, 305 + i * 11)}`;
-        typeLabel = 'Organization'; typeColor = 'bg-green-100 text-green-700';
-      } else if (recipientType === 'company') {
-        recipientName = `${pick(coPrefixes, 306 + i * 11)} ${pick(coKeywords, 307 + i * 11)} ${pick(coSuffixes, 308 + i * 11)}`;
-        typeLabel = 'Company'; typeColor = 'bg-blue-100 text-blue-700';
-      } else {
-        recipientName = `${pick(firstNames, 309 + i * 11)} ${pick(lastNames, 310 + i * 11)}`;
-        typeLabel = 'Individual'; typeColor = 'bg-purple-100 text-purple-700';
-      }
-
-      const tier = rng(0, 9, 311 + i * 11);
-      const rawAmount = tier < 2
-        ? rng(10, 99, 312 + i * 11) * 1_000            // $10K–$99K
-        : tier < 8
-          ? rng(100, 999, 312 + i * 11) * 1_000         // $100K–$999K
-          : rng(1, 50, 312 + i * 11) * 100_000;         // $100K–$5M (large)
-      const fmtAmount = rawAmount >= 1_000_000
-        ? `$${(rawAmount / 1_000_000).toFixed(2)}M`
-        : `$${(rawAmount / 1_000).toFixed(0)}K`;
-
-      const yr  = rng(2018, 2024, 313 + i * 11);
-      const mo  = pick(months,   314 + i * 11);
-      const purpose = pick(purposes, 315 + i * 11);
-      const dept    = pick(depts,    316 + i * 11);
-
-      return { recipientName, typeLabel, typeColor, purpose, fmtAmount, rawAmount, date: `${mo} ${yr}`, dept };
-    });
+    const jurisdictionLabel = item.displayName || item.name;
+    const grantsLive = grantsGivenFromExplorerItem(item);
+    const grants = grantsLive.grants;
+    const hasLiveData = grants.length > 0;
+    const { sourceName, sourceUrl } = grantsLive;
 
     const q = grantsSearch.toLowerCase();
     const filtered = q
@@ -14195,9 +13975,7 @@ function App() {
       : grants;
 
     const totalRaw = grants.reduce((s, g) => s + g.rawAmount, 0);
-    const fmtTotal = totalRaw >= 1_000_000_000
-      ? `$${(totalRaw / 1_000_000_000).toFixed(2)}B`
-      : `$${(totalRaw / 1_000_000).toFixed(1)}M`;
+    const fmtTotal = formatCurrencyCompact(totalRaw);
 
     const closeModal = () => { setShowGrantsModal(false); setGrantsSearch(''); };
 
@@ -14217,14 +13995,17 @@ function App() {
                 <span>Back</span>
               </button>
               <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — Grants Given</h2>
-                <p className="text-xs text-amber-900 mt-0.5 font-medium">
-                  Not official records — illustrative demo only. Recipients and amounts are generated examples.
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {grants.length} sample rows &nbsp;·&nbsp; Demo total awarded:{' '}
-                  <span className="font-semibold text-emerald-700">{fmtTotal}</span>
-                </p>
+                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Grants Given</h2>
+                {hasLiveData ? (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {grants.length} {grants.length === 1 ? 'grant' : 'grants'}
+                    &nbsp;·&nbsp; Total reported:{' '}
+                    <span className="font-semibold text-emerald-700">{fmtTotal}</span>
+                    {sourceName ? ` · ${sourceName}` : ''}
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-600 mt-0.5 font-medium">Official grant award records are not loaded yet for this jurisdiction.</p>
+                )}
               </div>
               <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
                 <X className="w-5 h-5" />
@@ -14248,15 +14029,17 @@ function App() {
             </div>
           </div>
 
-          <div className="px-4 sm:px-6 pt-2">
-            <p className="text-[11px] text-amber-950 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 leading-snug" role="note">
-              <span className="font-semibold">Demo content: </span>Table rows are synthetic placeholders, not a register of real grants.
-            </p>
-          </div>
-
           {/* Table */}
           <div className="p-3 sm:p-5">
-            {filtered.length === 0 ? (
+            {!hasLiveData ? (
+              <div className="text-center py-14 px-4 text-gray-500">
+                <DollarSign className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                <p className="text-sm font-medium text-gray-700">No official data loaded yet</p>
+                <p className="text-xs mt-2 max-w-md mx-auto leading-relaxed">
+                  Grant award listings for {jurisdictionLabel} will appear here once they are ingested from official sources. This screen does not show placeholder or generated rows.
+                </p>
+              </div>
+            ) : filtered.length === 0 ? (
               <div className="text-center py-14 text-gray-400">
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
                 <p className="text-sm">No grants match &quot;{grantsSearch}&quot;</p>
@@ -14321,9 +14104,14 @@ function App() {
                 )}
               </div>
             )}
-            <p className="text-center text-xs text-gray-400 mt-4">
-              Sample data for illustrative purposes only. Figures are statistically modelled.
-            </p>
+            {hasLiveData && sourceUrl && (
+              <p className="text-center text-xs text-gray-500 mt-4">
+                Source:{' '}
+                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  {sourceName || sourceUrl}
+                </a>
+              </p>
+            )}
             <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
             </button>
