@@ -1771,6 +1771,7 @@ function App() {
   /** Modal transparency fields from dedicated Firestore collections (e.g. CA-ON). */
   const [provinceTransparencyFields, setProvinceTransparencyFields] = useState(null);
   const [showEconomicModal, setShowEconomicModal] = useState(false);
+  const [economicModalChartsOpen, setEconomicModalChartsOpen] = useState(false);
   const [presidentVotes, setPresidentVotes] = useState(() => {
     const saved = localStorage.getItem('cvPresidentVote');
     return saved ? JSON.parse(saved) : { support: 0, oppose: 0, concerned: 0, userVote: null };
@@ -13012,6 +13013,20 @@ function App() {
     };
   }, [selectedProvince, selectedCountry]);
 
+  useEffect(() => {
+    if (!showEconomicModal || !selectedProvince) return;
+    const isUSA = selectedCountry?.type === 'usa';
+    const merged = provinceTransparencyFields
+      ? { ...selectedProvince, ...provinceTransparencyFields }
+      : selectedProvince;
+    const economic = economicSocialFromExplorerItem(merged, isUSA);
+    const headlines = buildEconomicTransparencyHeadlines(
+      economic,
+      merged.displayName || merged.name,
+    );
+    setEconomicModalChartsOpen(!headlines.hasLiveData);
+  }, [showEconomicModal, provinceTransparencyFields, selectedProvince, selectedCountry]);
+
   const renderProvincial = () => {
     const isUSA = selectedCountry?.type === 'usa';
     const { canadaProvinces, usStates } = getProvincialData();
@@ -13428,121 +13443,84 @@ function App() {
             );
           })()}
 
-          {/* Transparency snapshots — latest official figures; full detail in modals */}
-          {(() => {
-            const transparencyJurisdictionId = subnationalTransparencyJurisdictionId(item, isUSA);
-            const transparencyLoading =
-              Boolean(transparencyJurisdictionId) && provinceTransparencyFields === null;
-            const mergedTransparency = provinceTransparencyFields
-              ? { ...item, ...provinceTransparencyFields }
-              : item;
-            const economicLive = economicSocialFromExplorerItem(mergedTransparency, isUSA);
-            const taxLive = taxExemptFromExplorerItem(mergedTransparency);
-            const grantsLive = grantsGivenFromExplorerItem(mergedTransparency);
-            const economicHeadlines = buildEconomicTransparencyHeadlines(economicLive, displayLabel);
-            const taxHeadlines = buildTaxTransparencyHeadlines(
-              taxLive,
-              mergedTransparency.subnationalTaxHeadlineMeta,
-            );
-            const grantsHeadlines = buildGrantsTransparencyHeadlines(
-              grantsLive,
-              mergedTransparency.subnationalGrantsHeadlineMeta,
-            );
-
-            const renderSnapshotCard = ({ title, Icon, gradient, headlines, onOpen }) => (
-              <div className="bg-white rounded-2xl shadow-elegant p-5 flex flex-col h-full">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-gray-900 text-base leading-snug">{title}</h3>
-                    <p className="text-xs text-gray-500 mt-1 leading-snug">
-                      Latest official snapshot on this page. Open for full charts, records, reporting
-                      periods, and sources.
-                    </p>
-                  </div>
-                  <div
-                    className="p-2.5 rounded-xl text-white flex-shrink-0"
-                    style={{ background: gradient }}
-                    aria-hidden
-                  >
-                    <Icon className="w-5 h-5" />
-                  </div>
-                </div>
-                <div className="flex-1 mb-4">
-                  {transparencyLoading ? (
-                    <p className="text-sm text-gray-500 flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
-                      Loading official data…
-                    </p>
-                  ) : headlines.hasLiveData ? (
-                    <dl className="space-y-2.5">
-                      {headlines.metrics.map((m) => (
-                        <div key={m.label}>
-                          <div className="flex justify-between gap-3 text-sm">
-                            <dt className="text-gray-500">{m.label}</dt>
-                            <dd className="font-semibold text-gray-900 text-right tabular-nums">
-                              {m.value}
-                            </dd>
-                          </div>
-                          {m.sub ? (
-                            <dd className="text-xs text-gray-400 mt-0.5 text-right leading-snug">
-                              {m.sub}
-                            </dd>
-                          ) : null}
-                        </div>
-                      ))}
-                    </dl>
-                  ) : (
-                    <p className="text-sm text-gray-600">{TRANSPARENCY_HEADLINE_NOT_LOADED}</p>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={onOpen}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-white text-sm shadow-elegant transition-all hover:opacity-90 active:scale-[0.98]"
-                  style={{ background: gradient }}
-                >
-                  View details
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            );
-
-            if (!transparencyJurisdictionId) return null;
-
-            return (
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
-                {renderSnapshotCard({
-                  title: 'Economic & Social Data',
-                  Icon: BarChart3,
-                  gradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                  headlines: economicHeadlines,
-                  onOpen: () => setShowEconomicModal(true),
-                })}
-                {renderSnapshotCard({
-                  title: 'Tax Exempt / Charities',
-                  Icon: DollarSign,
-                  gradient: 'linear-gradient(135deg, #d97706, #f59e0b)',
-                  headlines: taxHeadlines,
-                  onOpen: () => {
-                    setTaxExemptSearch('');
-                    setShowTaxExemptModal(true);
-                  },
-                })}
-                {renderSnapshotCard({
-                  title: 'Grants Given',
-                  Icon: Award,
-                  gradient: 'linear-gradient(135deg, #059669, #10b981)',
-                  headlines: grantsHeadlines,
-                  onOpen: () => {
-                    setGrantsSearch('');
-                    setShowGrantsModal(true);
-                  },
-                })}
-              </div>
-            );
-          })()}
+          {/* Transparency module actions */}
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <button
+              onClick={() => {
+                setEconomicModalChartsOpen(false);
+                setShowEconomicModal(true);
+              }}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            >
+              <BarChart3 className="w-5 h-5" />
+              Economic &amp; Social Data
+            </button>
+            <button
+              onClick={() => { setTaxExemptSearch(''); setShowTaxExemptModal(true); }}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #d97706, #f59e0b)' }}
+            >
+              <DollarSign className="w-5 h-5" />
+              Tax Exempt / Charities
+            </button>
+            <button
+              onClick={() => { setGrantsSearch(''); setShowGrantsModal(true); }}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #059669, #10b981)' }}
+            >
+              <Award className="w-5 h-5" />
+              Grants Given
+            </button>
+          </div>
 
         </div>
+      </div>
+    );
+  };
+
+  const renderSubnationalHeadlineSnapshot = (headlines, loading) => {
+    if (loading) {
+      return (
+        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+            Latest official snapshot
+          </p>
+          <p className="text-sm text-gray-500 flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+            Loading official data…
+          </p>
+        </div>
+      );
+    }
+    if (!headlines?.hasLiveData) {
+      return (
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
+            Latest official snapshot
+          </p>
+          <p className="text-sm text-gray-600">{TRANSPARENCY_HEADLINE_NOT_LOADED}</p>
+        </div>
+      );
+    }
+    return (
+      <div className="bg-white border border-indigo-100 rounded-xl p-4 mb-4 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600 mb-3">
+          Latest official snapshot
+        </p>
+        <dl className="space-y-2.5">
+          {headlines.metrics.map((m) => (
+            <div key={m.label}>
+              <div className="flex justify-between gap-3 text-sm">
+                <dt className="text-gray-600">{m.label}</dt>
+                <dd className="font-semibold text-gray-900 text-right tabular-nums">{m.value}</dd>
+              </div>
+              {m.sub ? (
+                <dd className="text-xs text-gray-400 mt-0.5 text-right leading-snug">{m.sub}</dd>
+              ) : null}
+            </div>
+          ))}
+        </dl>
       </div>
     );
   };
@@ -13630,6 +13608,11 @@ function App() {
       sourceUrl,
     } = economic;
 
+    const transparencyLoading =
+      Boolean(subnationalTransparencyJurisdictionId(item, isUSA)) &&
+      provinceTransparencyFields === null;
+    const economicHeadlines = buildEconomicTransparencyHeadlines(economic, jurisdictionLabel);
+
     const crimeIsCsi = crimeMetricType === 'csi';
     const crimeIsCount = crimeMetricType === 'incident_count';
     const crimeBarViolent = crimeViolentKey || 'Violent Crime';
@@ -13693,32 +13676,56 @@ function App() {
             </button>
             <div className="flex-1 min-w-0">
               <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug truncate">{jurisdictionLabel} — Economic &amp; Social Data</h2>
-              {hasData ? (
-                <>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Official series from government sources
-                    {sourceName ? ` · ${sourceName}` : ''}
-                  </p>
-                  {renderSubnationalPeriodMeta(item, 'economic')}
-                </>
+              {(hasData || transparencyLoading) ? (
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Official series from government sources
+                  {sourceName ? ` · ${sourceName}` : ''}
+                </p>
               ) : (
                 <p className="text-xs text-gray-600 mt-0.5 font-medium">Official economic and social statistics are not loaded yet for this jurisdiction.</p>
               )}
             </div>
           </div>
 
-          {/* Charts — single column, full width, scrollable */}
           <div className="p-4">
-            {!hasData ? (
-              <div className="text-center py-16 px-4">
+            {renderSubnationalHeadlineSnapshot(economicHeadlines, transparencyLoading)}
+            {!transparencyLoading ? (
+              <div className="mb-4">{renderSubnationalPeriodMeta(item, 'economic')}</div>
+            ) : null}
+
+            {!hasData && !transparencyLoading ? (
+              <div className="text-center py-12 px-4">
                 <BarChart3 className="w-10 h-10 mx-auto mb-3 text-gray-300" />
                 <p className="text-sm font-medium text-gray-700">No official data loaded yet</p>
                 <p className="text-xs text-gray-500 mt-2 max-w-sm mx-auto leading-relaxed">
                   Budget, crime, unemployment, and related series for {jurisdictionLabel} will appear here once they are ingested into Firestore from official sources. This screen does not show placeholder or generated figures.
                 </p>
               </div>
-            ) : (
+            ) : null}
+
+            {hasData && !transparencyLoading ? (
             <>
+            {!economicModalChartsOpen ? (
+              <button
+                type="button"
+                onClick={() => setEconomicModalChartsOpen(true)}
+                className="w-full mb-4 py-3 rounded-xl text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors"
+              >
+                View full charts &amp; details
+              </button>
+            ) : null}
+            {economicModalChartsOpen ? (
+              <>
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <h3 className="text-sm font-bold text-gray-800">Full charts &amp; details</h3>
+                <button
+                  type="button"
+                  onClick={() => setEconomicModalChartsOpen(false)}
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+                >
+                  Hide charts
+                </button>
+              </div>
             {budgetData.length > 0 && (
             <Card title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
               <ResponsiveContainer width="100%" height={220}>
@@ -13862,8 +13869,10 @@ function App() {
                 </a>
               </p>
             )}
+              </>
+            ) : null}
             </>
-            )}
+            ) : null}
             <button onClick={() => setShowEconomicModal(false)} className="w-full mt-2 mb-1 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
             </button>
@@ -14017,11 +14026,16 @@ function App() {
     const item = provinceTransparencyFields
       ? { ...selectedProvince, ...provinceTransparencyFields }
       : selectedProvince;
+    const isUSA = selectedCountry?.type === 'usa';
     const jurisdictionLabel = item.displayName || item.name;
     const taxLive = taxExemptFromExplorerItem(item);
     const companies = taxLive.companies;
     const hasLiveData = companies.length > 0;
     const { sourceName, sourceUrl } = taxLive;
+    const transparencyLoading =
+      Boolean(subnationalTransparencyJurisdictionId(item, isUSA)) &&
+      provinceTransparencyFields === null;
+    const taxHeadlines = buildTaxTransparencyHeadlines(taxLive, item.subnationalTaxHeadlineMeta);
 
     const q = taxExemptSearch.toLowerCase();
     const filtered = q
@@ -14053,17 +14067,12 @@ function App() {
                 <span>Back</span>
               </button>
               <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Tax Exempt Companies</h2>
-                {hasLiveData ? (
-                  <>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {companies.length} {companies.length === 1 ? 'record' : 'records'}
-                      &nbsp;·&nbsp; Total reported exemption:{' '}
-                      <span className="font-semibold text-amber-700">{fmtTotal}</span>
-                      {sourceName ? ` · ${sourceName}` : ''}
-                    </p>
-                    {renderSubnationalPeriodMeta(item, 'tax')}
-                  </>
+                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Tax Exempt / Charities</h2>
+                {(hasLiveData || transparencyLoading) ? (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Official registry listing
+                    {sourceName ? ` · ${sourceName}` : ''}
+                  </p>
                 ) : (
                   <p className="text-xs text-gray-600 mt-0.5 font-medium">Official tax-exempt company records are not loaded yet for this jurisdiction.</p>
                 )}
@@ -14092,7 +14101,20 @@ function App() {
 
           {/* Table body */}
           <div className="p-3 sm:p-5">
-            {!hasLiveData ? (
+            {renderSubnationalHeadlineSnapshot(taxHeadlines, transparencyLoading)}
+            {!transparencyLoading ? (
+              <div className="mb-4">{renderSubnationalPeriodMeta(item, 'tax')}</div>
+            ) : null}
+            {!transparencyLoading && hasLiveData ? (
+              <p className="text-xs text-gray-500 mb-3">
+                {companies.length} {companies.length === 1 ? 'record' : 'records'} in listing
+                {Number.isFinite(totalRaw) && totalRaw > 0
+                  ? ` · Total reported exemption: ${fmtTotal}`
+                  : ''}
+              </p>
+            ) : null}
+            <h3 className="text-sm font-bold text-gray-800 mb-3">Full registry &amp; details</h3>
+            {!hasLiveData && !transparencyLoading ? (
               <div className="text-center py-14 px-4 text-gray-500">
                 <Building2 className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                 <p className="text-sm font-medium text-gray-700">No official data loaded yet</p>
@@ -14191,6 +14213,13 @@ function App() {
     const grants = grantsLive.grants;
     const hasLiveData = grants.length > 0;
     const { sourceName, sourceUrl } = grantsLive;
+    const transparencyLoading =
+      Boolean(subnationalTransparencyJurisdictionId(item, isUSA)) &&
+      provinceTransparencyFields === null;
+    const grantsHeadlines = buildGrantsTransparencyHeadlines(
+      grantsLive,
+      item.subnationalGrantsHeadlineMeta,
+    );
 
     const q = grantsSearch.toLowerCase();
     const filtered = q
@@ -14224,16 +14253,11 @@ function App() {
               </button>
               <div className="flex-1 min-w-0">
                 <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Grants Given</h2>
-                {hasLiveData ? (
-                  <>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {grants.length} {grants.length === 1 ? 'grant' : 'grants'}
-                      &nbsp;·&nbsp; Total reported:{' '}
-                      <span className="font-semibold text-emerald-700">{fmtTotal}</span>
-                      {sourceName ? ` · ${sourceName}` : ''}
-                    </p>
-                    {renderSubnationalPeriodMeta(item, 'grants')}
-                  </>
+                {(hasLiveData || transparencyLoading) ? (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Official grant awards
+                    {sourceName ? ` · ${sourceName}` : ''}
+                  </p>
                 ) : (
                   <p className="text-xs text-gray-600 mt-0.5 font-medium">Official grant award records are not loaded yet for this jurisdiction.</p>
                 )}
@@ -14262,7 +14286,18 @@ function App() {
 
           {/* Table */}
           <div className="p-3 sm:p-5">
-            {!hasLiveData ? (
+            {renderSubnationalHeadlineSnapshot(grantsHeadlines, transparencyLoading)}
+            {!transparencyLoading ? (
+              <div className="mb-4">{renderSubnationalPeriodMeta(item, 'grants')}</div>
+            ) : null}
+            {!transparencyLoading && hasLiveData ? (
+              <p className="text-xs text-gray-500 mb-3">
+                {grants.length} {grants.length === 1 ? 'award' : 'awards'} in listing · Total shown:{' '}
+                <span className="font-semibold text-emerald-700">{fmtTotal}</span>
+              </p>
+            ) : null}
+            <h3 className="text-sm font-bold text-gray-800 mb-3">Full awards &amp; details</h3>
+            {!hasLiveData && !transparencyLoading ? (
               <div className="text-center py-14 px-4 text-gray-500">
                 <DollarSign className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                 <p className="text-sm font-medium text-gray-700">No official data loaded yet</p>
