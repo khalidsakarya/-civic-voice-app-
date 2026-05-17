@@ -13573,6 +13573,7 @@ function App() {
         'Property Crime': parseFloat((baseProp * trend * (1 + noise(1))).toFixed(1)),
       };
     });
+    let crimeKeys = ['Violent Crime', 'Property Crime'];
 
     // ── Chart 4: Unemployment Rate (line, 4 years) ───────────────────────────
     const isUSA = selectedCountry?.type === 'usa';
@@ -13631,7 +13632,7 @@ function App() {
     if (liveEcon) {
       if (liveEcon.budget_distribution?.length)  { budgetData  = liveEcon.budget_distribution; isLive = true; }
       if (liveEcon.spending_vs_budget?.length)   { spendData   = liveEcon.spending_vs_budget;  isLive = true; }
-      if (liveEcon.crime_rate?.length)           { crimeData   = liveEcon.crime_rate;           isLive = true; }
+      if (liveEcon.crime_rate?.length)           { crimeData   = liveEcon.crime_rate;           crimeKeys = Object.keys(liveEcon.crime_rate[0]).filter(k => k !== 'year'); isLive = true; }
       if (liveEcon.unemployment_rate?.length)    { unempData   = liveEcon.unemployment_rate;    unempKeys = Object.keys(liveEcon.unemployment_rate[0]).filter(k => k !== 'year'); isLive = true; }
       if (liveEcon.gdp_growth?.length)           { gdpData     = liveEcon.gdp_growth;           isLive = true; }
       if (liveEcon.poverty_rate?.length)         { povData     = liveEcon.poverty_rate;          isLive = true; }
@@ -13727,16 +13728,15 @@ function App() {
             </Card>
 
             {/* 3. Crime Rate Trends */}
-            <Card title="Crime Rate Trends" desc="Incidents per 100,000 people — last 6 years">
+            <Card title="Crime Rate Trends" desc={isLive ? 'Crime Severity Index (StatCan, 2006=100) — last 6 years' : 'Incidents per 100,000 people — last 6 years'}>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                   <YAxis dataKey="year" type="category" width={45} tick={TICK} />
                   <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
-                  <Tooltip formatter={(v, name) => [`${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
+                  <Tooltip formatter={(v, name) => [isLive ? `${v.toLocaleString()} (index)` : `${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
                   <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey="Violent Crime"  fill="#ef4444" radius={[0, 3, 3, 0]} maxBarSize={18} />
-                  <Bar dataKey="Property Crime" fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                  {crimeKeys.map((k, i) => <Bar key={k} dataKey={k} fill={i === 0 ? '#ef4444' : '#f59e0b'} radius={[0, 3, 3, 0]} maxBarSize={18} />)}
                 </BarChart>
               </ResponsiveContainer>
               <button onClick={() => setExpandedChartId('crime')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
@@ -13882,10 +13882,9 @@ function App() {
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                           <YAxis dataKey="year" type="category" width={45} tick={TICK} />
                           <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
-                          <Tooltip formatter={(v, name) => [`${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
+                          <Tooltip formatter={(v, name) => [isLive ? `${v.toLocaleString()} (index)` : `${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
                           <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                          <Bar dataKey="Violent Crime"  fill="#ef4444" radius={[0, 3, 3, 0]} maxBarSize={28} />
-                          <Bar dataKey="Property Crime" fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          {crimeKeys.map((k, i) => <Bar key={k} dataKey={k} fill={i === 0 ? '#ef4444' : '#f59e0b'} radius={[0, 3, 3, 0]} maxBarSize={28} />)}
                         </BarChart>
                       </ResponsiveContainer>
                     )}
