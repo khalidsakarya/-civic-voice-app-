@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import app, { db } from './firebase';
 import { EXECUTIVE_ACTIONS_COLLECTION } from './constants/firestoreCollections';
 import { fetchSubnationalJurisdictions } from './firestore/fetchSubnationalJurisdictions';
+import { fetchSubnationalTransparencyForExplorerItem } from './firestore/fetchSubnationalTransparencyModalDocs';
 import { fetchSummaryStatsDashboard } from './firestore/fetchSummaryStatsDashboard';
 import {
   AU_EXPLORER_REQUIRED_ABBR,
@@ -1760,6 +1761,8 @@ function App() {
   const [showAuMemberPanel, setShowAuMemberPanel] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null);
   const [selectedProvince, setSelectedProvince] = useState(null);
+  /** Modal transparency fields from dedicated Firestore collections (e.g. CA-ON). */
+  const [provinceTransparencyFields, setProvinceTransparencyFields] = useState(null);
   const [showEconomicModal, setShowEconomicModal] = useState(false);
   const [presidentVotes, setPresidentVotes] = useState(() => {
     const saved = localStorage.getItem('cvPresidentVote');
@@ -12982,6 +12985,26 @@ function App() {
     if (fresh) setSelectedProvince(fresh);
   }, [provincialExplorerFirestoreByAbbr]);
 
+  useEffect(() => {
+    if (!selectedProvince) {
+      setProvinceTransparencyFields(null);
+      return undefined;
+    }
+    const isUSA = selectedCountry?.type === 'usa';
+    let cancelled = false;
+    setProvinceTransparencyFields(null);
+    fetchSubnationalTransparencyForExplorerItem(selectedProvince, isUSA)
+      .then((fields) => {
+        if (!cancelled) setProvinceTransparencyFields(fields);
+      })
+      .catch(() => {
+        if (!cancelled) setProvinceTransparencyFields(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedProvince, selectedCountry]);
+
   const renderProvincial = () => {
     const isUSA = selectedCountry?.type === 'usa';
     const { canadaProvinces, usStates } = getProvincialData();
@@ -13433,7 +13456,9 @@ function App() {
 
   const renderEconomicModal = () => {
     if (!selectedProvince || !showEconomicModal) return null;
-    const item = selectedProvince;
+    const item = provinceTransparencyFields
+      ? { ...selectedProvince, ...provinceTransparencyFields }
+      : selectedProvince;
     const isUSA = selectedCountry?.type === 'usa';
     const jurisdictionLabel = item.displayName || item.name;
     const economic = economicSocialFromExplorerItem(item, isUSA);
@@ -13793,7 +13818,9 @@ function App() {
 
   const renderTaxExemptModal = () => {
     if (!selectedProvince || !showTaxExemptModal) return null;
-    const item = selectedProvince;
+    const item = provinceTransparencyFields
+      ? { ...selectedProvince, ...provinceTransparencyFields }
+      : selectedProvince;
     const jurisdictionLabel = item.displayName || item.name;
     const taxLive = taxExemptFromExplorerItem(item);
     const companies = taxLive.companies;
@@ -13956,7 +13983,9 @@ function App() {
 
   const renderGrantsModal = () => {
     if (!selectedProvince || !showGrantsModal) return null;
-    const item = selectedProvince;
+    const item = provinceTransparencyFields
+      ? { ...selectedProvince, ...provinceTransparencyFields }
+      : selectedProvince;
     const isUSA = selectedCountry?.type === 'usa';
     const jurisdictionLabel = item.displayName || item.name;
     const grantsLive = grantsGivenFromExplorerItem(item);

@@ -1,7 +1,8 @@
 /**
- * Subnational jurisdiction transparency payloads (`subnational_jurisdictions`).
- * Engine may store `economic_social_data`, `tax_exempt_companies`, and `grants_given`
- * (or camelCase / nested `transparency` equivalents). UI uses parsed rows only — no demo RNG.
+ * Subnational jurisdiction transparency payloads.
+ * Sources: embedded fields on `subnational_jurisdictions`, or dedicated modal collections
+ * (`subnational_economic_social_stats`, `subnational_tax_exempt_entities`, `subnational_grants`)
+ * keyed by jurisdiction id (e.g. `CA-ON`). UI uses parsed rows only — no demo RNG.
  */
 
 const BUDGET_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899'];
@@ -40,6 +41,31 @@ function trimStr(v) {
 function numOrNull(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
+}
+
+/** @param {string} flagCode e.g. `ca-on`, `us-tx` */
+function abbreviationFromExplorerFlagCode(flagCode) {
+  if (!flagCode || typeof flagCode !== 'string') return '';
+  const parts = flagCode.split('-');
+  return (parts[parts.length - 1] || '').toUpperCase();
+}
+
+/**
+ * @param {Record<string, unknown>|null|undefined} item
+ * @param {boolean} isUSA
+ * @returns {string}
+ */
+export function subnationalTransparencyJurisdictionId(item, isUSA) {
+  if (!item || typeof item !== 'object') return '';
+  const fromId = trimStr(item.subnationalId);
+  if (fromId) return fromId;
+  const country =
+    trimStr(item.subnationalCountry) || (isUSA ? 'US' : 'CA');
+  const abbr =
+    trimStr(item.subnationalAbbreviation) ||
+    abbreviationFromExplorerFlagCode(String(item.flagCode || ''));
+  if (abbr) return `${country}-${abbr.toUpperCase()}`;
+  return '';
 }
 
 /** @param {unknown} raw */
@@ -282,6 +308,34 @@ export function formatCurrencyCompact(rawValue) {
   return `$${rawValue.toLocaleString()}`;
 }
 
+/** @param {unknown} row */
+function normalizeTaxExemptRow(row) {
+  if (!row || typeof row !== 'object') return null;
+  const name = trimStr(row.name ?? row.company_name ?? row.companyName);
+  if (!name) return null;
+  const industry = trimStr(row.industry) || 'Other';
+  const exemType =
+    trimStr(row.exemType ?? row.exemption_type ?? row.exemptionType) || 'Tax exemption';
+  const rawValue =
+    numOrNull(row.rawValue ?? row.annual_value ?? row.annualValue ?? row.value ?? row.amount) ??
+    0;
+  const fmtFromDoc = trimStr(row.fmtValue);
+  const yearRaw = row.year_granted ?? row.yearGranted ?? row.year;
+  const year = yearRaw != null && String(yearRaw).trim() ? String(yearRaw).trim() : '—';
+  return {
+    name,
+    industry,
+    industryColor:
+      trimStr(row.industryColor) ||
+      INDUSTRY_BADGE_COLORS[industry] ||
+      'bg-gray-100 text-gray-700',
+    exemType,
+    fmtValue: fmtFromDoc || formatCurrencyCompact(rawValue),
+    rawValue,
+    year,
+  };
+}
+
 /** @param {unknown} raw */
 export function parseSubnationalTaxExemptCompanies(raw) {
   const bundle = transparencyBundleFromRaw(raw);
@@ -291,32 +345,64 @@ export function parseSubnationalTaxExemptCompanies(raw) {
   }
   const companies = [];
   for (let i = 0; i < rows.length; i += 1) {
-    const row = rows[i];
-    if (!row || typeof row !== 'object') continue;
-    const name = trimStr(row.name ?? row.company_name ?? row.companyName);
-    if (!name) continue;
-    const industry = trimStr(row.industry) || 'Other';
-    const exemType =
-      trimStr(row.exemption_type ?? row.exemptionType ?? row.exemType) || 'Tax exemption';
-    const rawValue =
-      numOrNull(row.annual_value ?? row.annualValue ?? row.value ?? row.amount) ?? 0;
-    const yearRaw = row.year_granted ?? row.yearGranted ?? row.year;
-    const year =
-      yearRaw != null && String(yearRaw).trim() ? String(yearRaw).trim() : '—';
-    companies.push({
-      name,
-      industry,
-      industryColor: INDUSTRY_BADGE_COLORS[industry] || 'bg-gray-100 text-gray-700',
-      exemType,
-      fmtValue: formatCurrencyCompact(rawValue),
-      rawValue,
-      year,
-    });
+    const normalized = normalizeTaxExemptRow(rows[i]);
+    if (normalized) companies.push(normalized);
   }
   return {
     companies,
     sourceName: bundle.sourceName,
     sourceUrl: bundle.sourceUrl,
+  };
+}
+
+/**
+ * `subnational_tax_exempt_entities/{jurisdictionId}` document.
+ * @param {Record<string, unknown>|null|undefined} doc
+ */
+export function parseSubnationalTaxFromEntitiesDoc(doc) {
+  if (!doc || typeof doc !== 'object') {
+    return { companies: [], sourceName: '', sourceUrl: '' };
+  }
+  const rows = Array.isArray(doc.records) ? doc.records : [];
+  const companies = rows.map((r) => normalizeTaxExemptRow(r)).filter(Boolean);
+  return {
+    companies,
+    sourceName: trimStr(doc.data_source) || trimStr(doc.source_name),
+    sourceUrl: trimStr(doc.source_url) || trimStr(doc.cra_search_url),
+  };
+}
+
+/** @param {unknown} row */
+function normalizeGrantRow(row) {
+  if (!row || typeof row !== 'object') return null;
+  const recipientName =
+    trimStr(row.recipientName ?? row.recipient_name ?? row.recipient ?? row.name) ||
+    trimStr(row.program_name ?? row.programName);
+  if (!recipientName) return null;
+  const typeLabel =
+    trimStr(row.typeLabel ?? row.recipient_type ?? row.recipientType ?? row.type) || 'Grant';
+  const typeColor =
+    trimStr(row.typeColor) || GRANT_TYPE_COLORS[typeLabel] || 'bg-gray-100 text-gray-700';
+  const purpose =
+    trimStr(row.purpose ?? row.program_name ?? row.programName ?? row.description) || '—';
+  const dept =
+    trimStr(row.dept ?? row.funding_department ?? row.fundingDepartment ?? row.department ?? row.agency) ||
+    '—';
+  const rawAmount =
+    numOrNull(row.rawAmount ?? row.amount ?? row.award_amount ?? row.awardAmount) ?? 0;
+  const fmtFromDoc = trimStr(row.fmtAmount);
+  const date =
+    trimStr(row.date ?? row.award_date ?? row.awardDate) ||
+    (row.year != null ? String(row.year) : '—');
+  return {
+    recipientName,
+    typeLabel,
+    typeColor,
+    purpose,
+    fmtAmount: fmtFromDoc || formatCurrencyCompact(rawAmount),
+    rawAmount,
+    date,
+    dept,
   };
 }
 
@@ -329,40 +415,91 @@ export function parseSubnationalGrantsGiven(raw) {
   }
   const grants = [];
   for (let i = 0; i < rows.length; i += 1) {
-    const row = rows[i];
-    if (!row || typeof row !== 'object') continue;
-    const recipientName =
-      trimStr(row.recipient_name ?? row.recipientName ?? row.recipient ?? row.name) ||
-      trimStr(row.program_name ?? row.programName);
-    if (!recipientName) continue;
-    const typeLabel =
-      trimStr(row.recipient_type ?? row.recipientType ?? row.type) || 'Grant';
-    const typeColor = GRANT_TYPE_COLORS[typeLabel] || 'bg-gray-100 text-gray-700';
-    const purpose =
-      trimStr(row.purpose ?? row.program_name ?? row.programName ?? row.description) || '—';
-    const dept =
-      trimStr(row.funding_department ?? row.fundingDepartment ?? row.department ?? row.agency) ||
-      '—';
-    const rawAmount = numOrNull(row.amount ?? row.award_amount ?? row.awardAmount) ?? 0;
-    const date =
-      trimStr(row.date ?? row.award_date ?? row.awardDate) ||
-      (row.year != null ? String(row.year) : '—');
-    grants.push({
-      recipientName,
-      typeLabel,
-      typeColor,
-      purpose,
-      fmtAmount: formatCurrencyCompact(rawAmount),
-      rawAmount,
-      date,
-      dept,
-    });
+    const normalized = normalizeGrantRow(rows[i]);
+    if (normalized) grants.push(normalized);
   }
   return {
     grants,
     sourceName: bundle.sourceName,
     sourceUrl: bundle.sourceUrl,
   };
+}
+
+/**
+ * `subnational_grants/{jurisdictionId}` document.
+ * @param {Record<string, unknown>|null|undefined} doc
+ */
+export function parseSubnationalGrantsFromGrantsDoc(doc) {
+  if (!doc || typeof doc !== 'object') {
+    return { grants: [], sourceName: '', sourceUrl: '' };
+  }
+  const rows = Array.isArray(doc.records) ? doc.records : [];
+  const grants = rows.map((r) => normalizeGrantRow(r)).filter(Boolean);
+  return {
+    grants,
+    sourceName: trimStr(doc.data_source) || trimStr(doc.source_name),
+    sourceUrl: trimStr(doc.source_url),
+  };
+}
+
+/**
+ * `subnational_economic_social_stats/{jurisdictionId}` — series live at document top level.
+ * @param {Record<string, unknown>|null|undefined} doc
+ * @param {string} jurisdictionName
+ * @param {boolean} isUSA
+ */
+export function parseSubnationalEconomicSocialFromStatsDoc(doc, jurisdictionName, isUSA) {
+  if (!doc || typeof doc !== 'object') {
+    return parseSubnationalEconomicSocialData(null, jurisdictionName, isUSA);
+  }
+  const wrapped = {
+    economic_social_data: {
+      budget_distribution: doc.budget_distribution,
+      spending_vs_budget: doc.spending_vs_budget,
+      crime_rate_trends: doc.crime_rate_trends ?? doc.crime_rate,
+      unemployment_rate: doc.unemployment_rate,
+      gdp_growth: doc.gdp_growth,
+      poverty_rate: doc.poverty_rate,
+      homelessness: doc.homelessness,
+      source_name: doc.budget_distribution_source || doc.unemployment_source,
+      source_url: doc.budget_distribution_url || doc.unemployment_url,
+    },
+    transparency_source_name: doc.budget_distribution_source,
+    transparency_source_url: doc.budget_distribution_url,
+    source_name: doc.budget_distribution_source,
+    source_url: doc.budget_distribution_url,
+  };
+  return parseSubnationalEconomicSocialData(wrapped, jurisdictionName, isUSA);
+}
+
+/**
+ * @param {{
+ *   economicDoc?: Record<string, unknown>|null;
+ *   taxDoc?: Record<string, unknown>|null;
+ *   grantsDoc?: Record<string, unknown>|null;
+ * }} docs
+ * @param {string} jurisdictionName
+ * @param {boolean} isUSA
+ */
+export function buildTransparencyFieldsFromModalDocs(docs, jurisdictionName, isUSA) {
+  const economic = parseSubnationalEconomicSocialFromStatsDoc(
+    docs?.economicDoc || null,
+    jurisdictionName,
+    isUSA,
+  );
+  const tax = parseSubnationalTaxFromEntitiesDoc(docs?.taxDoc || null);
+  const grants = parseSubnationalGrantsFromGrantsDoc(docs?.grantsDoc || null);
+  const sourceName =
+    trimStr(economic.sourceName) || trimStr(tax.sourceName) || trimStr(grants.sourceName);
+  const sourceUrl =
+    trimStr(economic.sourceUrl) || trimStr(tax.sourceUrl) || trimStr(grants.sourceUrl);
+  const out = {};
+  if (economic.hasData) out.subnationalEconomicSocial = economic;
+  if (tax.companies.length) out.subnationalTaxExemptCompanies = tax.companies;
+  if (grants.grants.length) out.subnationalGrantsGiven = grants.grants;
+  if (sourceName) out.subnationalTransparencySourceName = sourceName;
+  if (sourceUrl) out.subnationalTransparencySourceUrl = sourceUrl;
+  return out;
 }
 
 /**
