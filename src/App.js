@@ -13468,6 +13468,9 @@ function App() {
       budgetData,
       spendData,
       crimeDataM,
+      crimeMetricType,
+      crimeViolentKey,
+      crimePropertyKey,
       unempData,
       unempKeys,
       gdpDataM,
@@ -13476,6 +13479,21 @@ function App() {
       sourceName,
       sourceUrl,
     } = economic;
+
+    const crimeIsCsi = crimeMetricType === 'csi';
+    const crimeBarViolent = crimeViolentKey || 'Violent Crime';
+    const crimeBarProperty = crimePropertyKey || 'Property Crime';
+    const crimeChartTitle = crimeIsCsi ? 'Crime Severity Index Trends' : 'Crime Rate Trends';
+    const crimeChartDesc = crimeIsCsi
+      ? 'Crime Severity Index (2006=100) — last 6 years'
+      : 'Incidents per 100,000 people — last 6 years';
+    const formatCrimeTooltip = (v, name) => {
+      const n = Number(v);
+      if (crimeIsCsi) {
+        return [`${Number.isFinite(n) ? n.toFixed(1) : v} (CSI, 2006=100)`, name];
+      }
+      return [`${Number(n).toLocaleString()} per 100K`, name];
+    };
 
     // ── Shared chart config ─────────────────────────────────────────────────
     const TICK   = { fontSize: 13, fill: '#4b5563' };
@@ -13581,16 +13599,20 @@ function App() {
             )}
 
             {crimeDataM.length > 0 && (
-            <Card title="Crime Rate Trends" desc="Incidents per 100,000 people — last 6 years">
+            <Card title={crimeChartTitle} desc={crimeChartDesc}>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                   <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
-                  <Tooltip formatter={(v, name) => [`${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
+                  <XAxis
+                    type="number"
+                    tick={TICK}
+                    tickFormatter={(v) => (crimeIsCsi ? Number(v).toFixed(0) : v.toLocaleString())}
+                  />
+                  <Tooltip formatter={formatCrimeTooltip} contentStyle={TT} />
                   <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey="Violent Crime"  fill="#ef4444" radius={[0, 3, 3, 0]} maxBarSize={18} />
-                  <Bar dataKey="Property Crime" fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                  <Bar dataKey={crimeBarViolent}  fill="#ef4444" radius={[0, 3, 3, 0]} maxBarSize={18} />
+                  <Bar dataKey={crimeBarProperty} fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={18} />
                 </BarChart>
               </ResponsiveContainer>
               <button onClick={() => setExpandedChartId('crime')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
@@ -13687,7 +13709,7 @@ function App() {
 
       {/* Full-screen chart overlay */}
       {hasData && expandedChartId && (() => {
-        const chartTitles = { budget: 'Government Budget Distribution', spending: 'Spending vs Budget', crime: 'Crime Rate Trends', unemployment: 'Unemployment Rate', gdp: 'GDP Growth Over Time', poverty: 'Poverty Rate Trend', homeless: 'Homelessness Statistics' };
+        const chartTitles = { budget: 'Government Budget Distribution', spending: 'Spending vs Budget', crime: crimeChartTitle, unemployment: 'Unemployment Rate', gdp: 'GDP Growth Over Time', poverty: 'Poverty Rate Trend', homeless: 'Homelessness Statistics' };
         const chartTitle = chartTitles[expandedChartId] || '';
         const chartH = 'calc(100vh - 210px)';
         return (
@@ -13750,11 +13772,15 @@ function App() {
                         <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                           <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                          <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
-                          <Tooltip formatter={(v, name) => [`${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
+                          <XAxis
+                            type="number"
+                            tick={TICK}
+                            tickFormatter={(v) => (crimeIsCsi ? Number(v).toFixed(0) : v.toLocaleString())}
+                          />
+                          <Tooltip formatter={formatCrimeTooltip} contentStyle={TT} />
                           <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                          <Bar dataKey="Violent Crime"  fill="#ef4444" radius={[0, 3, 3, 0]} maxBarSize={28} />
-                          <Bar dataKey="Property Crime" fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          <Bar dataKey={crimeBarViolent}  fill="#ef4444" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          <Bar dataKey={crimeBarProperty} fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={28} />
                         </BarChart>
                       </ResponsiveContainer>
                     )}

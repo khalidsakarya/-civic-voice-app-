@@ -196,6 +196,87 @@ function normalizeUnemploymentRows(rows, jurisdictionName, isUSA) {
   };
 }
 
+/** @param {Record<string, unknown>} row @param {string[]} keys */
+function pickNumFromRow(row, keys) {
+  for (let i = 0; i < keys.length; i += 1) {
+    const v = numOrNull(row[keys[i]]);
+    if (v != null) return v;
+  }
+  return null;
+}
+
+const CRIME_VIOLENT_CSI_KEYS = ['Violent CSI', 'violent_csi'];
+const CRIME_PROPERTY_CSI_KEYS = [
+  'Non-violent CSI',
+  'Non-Violent CSI',
+  'non_violent_csi',
+  'non-violent_csi',
+];
+const CRIME_VIOLENT_RATE_KEYS = ['Violent Crime', 'violent_crime'];
+const CRIME_PROPERTY_RATE_KEYS = ['Property Crime', 'property_crime'];
+
+/**
+ * Normalize crime series from Firestore (CSI or per-capita incident keys).
+ * @param {unknown} crimeRaw
+ * @returns {{
+ *   crimeDataM: Array<Record<string, unknown>>;
+ *   crimeMetricType: 'csi' | 'incident_rate';
+ *   crimeViolentKey: string;
+ *   crimePropertyKey: string;
+ * }}
+ */
+function normalizeCrimeSeries(crimeRaw) {
+  const empty = {
+    crimeDataM: [],
+    crimeMetricType: 'incident_rate',
+    crimeViolentKey: 'Violent Crime',
+    crimePropertyKey: 'Property Crime',
+  };
+  if (!Array.isArray(crimeRaw) || !crimeRaw.length) return empty;
+
+  let isCsi = false;
+  for (let i = 0; i < crimeRaw.length; i += 1) {
+    const row = crimeRaw[i];
+    if (!row || typeof row !== 'object') continue;
+    if (
+      pickNumFromRow(row, CRIME_VIOLENT_CSI_KEYS) != null ||
+      pickNumFromRow(row, CRIME_PROPERTY_CSI_KEYS) != null
+    ) {
+      isCsi = true;
+      break;
+    }
+  }
+
+  const violentKey = isCsi ? 'Violent CSI' : 'Violent Crime';
+  const propertyKey = isCsi ? 'Non-violent CSI' : 'Property Crime';
+  const violentPick = isCsi ? CRIME_VIOLENT_CSI_KEYS : CRIME_VIOLENT_RATE_KEYS;
+  const propertyPick = isCsi ? CRIME_PROPERTY_CSI_KEYS : CRIME_PROPERTY_RATE_KEYS;
+
+  const crimeData = [];
+  for (let i = 0; i < crimeRaw.length; i += 1) {
+    const row = crimeRaw[i];
+    if (!row || typeof row !== 'object') continue;
+    const year = trimStr(row.year);
+    if (!year) continue;
+    const violent = pickNumFromRow(row, violentPick);
+    const property = pickNumFromRow(row, propertyPick);
+    if (violent == null && property == null) continue;
+    const point = { year };
+    if (violent != null) point[violentKey] = violent;
+    if (property != null) point[propertyKey] = property;
+    crimeData.push(point);
+  }
+
+  if (!crimeData.length) return empty;
+
+  return {
+    crimeDataM: crimeData.slice(-6),
+    crimeMetricType: isCsi ? 'csi' : 'incident_rate',
+    crimeViolentKey: violentKey,
+    crimePropertyKey: propertyKey,
+  };
+}
+
 /**
  * @param {unknown} raw
  * @param {string} jurisdictionName
@@ -210,6 +291,9 @@ export function parseSubnationalEconomicSocialData(raw, jurisdictionName, isUSA)
       budgetData: [],
       spendData: [],
       crimeDataM: [],
+      crimeMetricType: 'incident_rate',
+      crimeViolentKey: 'Violent Crime',
+      crimePropertyKey: 'Property Crime',
       unempData: [],
       unempKeys: [],
       gdpDataM: [],
@@ -230,21 +314,14 @@ export function parseSubnationalEconomicSocialData(raw, jurisdictionName, isUSA)
     ? spendRaw.map((r) => normalizeSpendRow(r)).filter(Boolean)
     : [];
 
-  const crimeRaw = src.crime_rate_trends ?? src.crimeRateTrends ?? src.crime;
-  const crimeData = Array.isArray(crimeRaw)
-    ? crimeRaw
-        .map((r) =>
-          normalizeYearSeriesRow(r, ['Violent Crime', 'Property Crime', 'violent_crime', 'property_crime']),
-        )
-        .filter(Boolean)
-        .map((r) => ({
-          year: r.year,
-          'Violent Crime': r['Violent Crime'] ?? r.violent_crime,
-          'Property Crime': r['Property Crime'] ?? r.property_crime,
-        }))
-        .filter((r) => r['Violent Crime'] != null || r['Property Crime'] != null)
-    : [];
-  const crimeDataM = crimeData.slice(-6);
+  const crimeRaw =
+    src.crime_rate_trends ?? src.crimeRateTrends ?? src.crime_rate ?? src.crime;
+  const {
+    crimeDataM,
+    crimeMetricType,
+    crimeViolentKey,
+    crimePropertyKey,
+  } = normalizeCrimeSeries(crimeRaw);
 
   const unempRaw = src.unemployment_rate ?? src.unemploymentRate ?? src.unemployment;
   const { unempData, unempKeys } = normalizeUnemploymentRows(unempRaw, jurisdictionName, isUSA);
@@ -303,6 +380,9 @@ export function parseSubnationalEconomicSocialData(raw, jurisdictionName, isUSA)
     budgetData,
     spendData,
     crimeDataM,
+    crimeMetricType,
+    crimeViolentKey,
+    crimePropertyKey,
     unempData,
     unempKeys,
     gdpDataM,
