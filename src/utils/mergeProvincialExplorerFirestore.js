@@ -4,6 +4,8 @@
  * Narrative and legislature breakdown fields are only as trustworthy as the backing documents (engine-sourced vs demo).
  */
 
+import { buildExplorerTransparencyFields } from './subnationalTransparencyData';
+
 /** @param {unknown} v */
 function trimString(v) {
   if (v == null) return '';
@@ -255,6 +257,8 @@ export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
   const legFs = buildLegislatureFromSubnationalFirestore(fsRow);
   if (legFs) out.legislature = legFs;
 
+  Object.assign(out, buildExplorerTransparencyFields(fsRow, isUSA));
+
   applyUsGovernorHeadlineManualReviewFlags(out, fsRow, isUSA);
 
   return out;
@@ -375,6 +379,8 @@ export function buildProvincialExplorerRowFromFirestoreWithHardcodedFallback(
 
   const flagFs = ts(fsRow.flagUrl);
   if (flagFs) out.flagUrl = flagFs;
+
+  Object.assign(out, buildExplorerTransparencyFields(fsRow, isUSA));
 
   applyUsGovernorHeadlineManualReviewFlags(out, fsRow, isUSA);
 

@@ -6,6 +6,7 @@
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { SUBNATIONAL_JURISDICTIONS_COLLECTION } from '../constants/firestoreCollections';
+import { passThroughSubnationalTransparencyFields } from '../utils/subnationalTransparencyData';
 
 /**
  * @typedef {Object} SubnationalJurisdictionRecord
@@ -242,6 +243,8 @@ function normalizeRecord(docId, raw) {
   }
 
   rec.needs_manual_review_primary_field_keys = collectPrimaryNeedsManualReviewFieldKeys(raw);
+
+  passThroughSubnationalTransparencyFields(rec, raw);
 
   return /** @type {SubnationalJurisdictionRecord} */ (rec);
 }
