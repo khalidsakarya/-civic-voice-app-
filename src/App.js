@@ -25,6 +25,12 @@ import {
   grantsGivenFromExplorerItem,
   formatCurrencyCompact,
   REPORTING_PERIOD_NOT_SPECIFIED,
+  SUBNATIONAL_SERIES_PERIOD_INTRO,
+  buildEconomicTransparencyHeadlines,
+  buildTaxTransparencyHeadlines,
+  buildGrantsTransparencyHeadlines,
+  TRANSPARENCY_HEADLINE_NOT_LOADED,
+  subnationalTransparencyJurisdictionId,
 } from './utils/subnationalTransparencyData';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
 import {
@@ -13422,35 +13428,179 @@ function App() {
             );
           })()}
 
-          {/* Action buttons */}
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <button
-              onClick={() => setShowEconomicModal(true)}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
-              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
-            >
-              <BarChart3 className="w-5 h-5" />
-              Economic &amp; Social Data
-            </button>
-            <button
-              onClick={() => { setTaxExemptSearch(''); setShowTaxExemptModal(true); }}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
-              style={{ background: 'linear-gradient(135deg, #d97706, #f59e0b)' }}
-            >
-              <DollarSign className="w-5 h-5" />
-              Tax Exempt Companies
-            </button>
-            <button
-              onClick={() => { setGrantsSearch(''); setShowGrantsModal(true); }}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
-              style={{ background: 'linear-gradient(135deg, #059669, #10b981)' }}
-            >
-              <Award className="w-5 h-5" />
-              Grants Given
-            </button>
-          </div>
+          {/* Transparency snapshots — latest official figures; full detail in modals */}
+          {(() => {
+            const transparencyJurisdictionId = subnationalTransparencyJurisdictionId(item, isUSA);
+            const transparencyLoading =
+              Boolean(transparencyJurisdictionId) && provinceTransparencyFields === null;
+            const mergedTransparency = provinceTransparencyFields
+              ? { ...item, ...provinceTransparencyFields }
+              : item;
+            const economicLive = economicSocialFromExplorerItem(mergedTransparency, isUSA);
+            const taxLive = taxExemptFromExplorerItem(mergedTransparency);
+            const grantsLive = grantsGivenFromExplorerItem(mergedTransparency);
+            const economicHeadlines = buildEconomicTransparencyHeadlines(economicLive, displayLabel);
+            const taxHeadlines = buildTaxTransparencyHeadlines(
+              taxLive,
+              mergedTransparency.subnationalTaxHeadlineMeta,
+            );
+            const grantsHeadlines = buildGrantsTransparencyHeadlines(
+              grantsLive,
+              mergedTransparency.subnationalGrantsHeadlineMeta,
+            );
+
+            const renderSnapshotCard = ({ title, Icon, gradient, headlines, onOpen }) => (
+              <div className="bg-white rounded-2xl shadow-elegant p-5 flex flex-col h-full">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-gray-900 text-base leading-snug">{title}</h3>
+                    <p className="text-xs text-gray-500 mt-1 leading-snug">
+                      Latest official snapshot on this page. Open for full charts, records, reporting
+                      periods, and sources.
+                    </p>
+                  </div>
+                  <div
+                    className="p-2.5 rounded-xl text-white flex-shrink-0"
+                    style={{ background: gradient }}
+                    aria-hidden
+                  >
+                    <Icon className="w-5 h-5" />
+                  </div>
+                </div>
+                <div className="flex-1 mb-4">
+                  {transparencyLoading ? (
+                    <p className="text-sm text-gray-500 flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+                      Loading official data…
+                    </p>
+                  ) : headlines.hasLiveData ? (
+                    <dl className="space-y-2.5">
+                      {headlines.metrics.map((m) => (
+                        <div key={m.label}>
+                          <div className="flex justify-between gap-3 text-sm">
+                            <dt className="text-gray-500">{m.label}</dt>
+                            <dd className="font-semibold text-gray-900 text-right tabular-nums">
+                              {m.value}
+                            </dd>
+                          </div>
+                          {m.sub ? (
+                            <dd className="text-xs text-gray-400 mt-0.5 text-right leading-snug">
+                              {m.sub}
+                            </dd>
+                          ) : null}
+                        </div>
+                      ))}
+                    </dl>
+                  ) : (
+                    <p className="text-sm text-gray-600">{TRANSPARENCY_HEADLINE_NOT_LOADED}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={onOpen}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-white text-sm shadow-elegant transition-all hover:opacity-90 active:scale-[0.98]"
+                  style={{ background: gradient }}
+                >
+                  View details
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            );
+
+            if (!transparencyJurisdictionId) return null;
+
+            return (
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
+                {renderSnapshotCard({
+                  title: 'Economic & Social Data',
+                  Icon: BarChart3,
+                  gradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                  headlines: economicHeadlines,
+                  onOpen: () => setShowEconomicModal(true),
+                })}
+                {renderSnapshotCard({
+                  title: 'Tax Exempt / Charities',
+                  Icon: DollarSign,
+                  gradient: 'linear-gradient(135deg, #d97706, #f59e0b)',
+                  headlines: taxHeadlines,
+                  onOpen: () => {
+                    setTaxExemptSearch('');
+                    setShowTaxExemptModal(true);
+                  },
+                })}
+                {renderSnapshotCard({
+                  title: 'Grants Given',
+                  Icon: Award,
+                  gradient: 'linear-gradient(135deg, #059669, #10b981)',
+                  headlines: grantsHeadlines,
+                  onOpen: () => {
+                    setGrantsSearch('');
+                    setShowGrantsModal(true);
+                  },
+                })}
+              </div>
+            );
+          })()}
 
         </div>
+      </div>
+    );
+  };
+
+  const renderSubnationalPeriodMeta = (item, kind) => {
+    const introKey =
+      kind === 'economic'
+        ? 'subnationalEconomicPeriodIntro'
+        : kind === 'tax'
+          ? 'subnationalTaxPeriodIntro'
+          : 'subnationalGrantsPeriodIntro';
+    const categoriesKey =
+      kind === 'economic'
+        ? 'subnationalEconomicPeriodCategories'
+        : kind === 'tax'
+          ? 'subnationalTaxPeriodCategories'
+          : 'subnationalGrantsPeriodCategories';
+    const footnoteKey =
+      kind === 'economic'
+        ? 'subnationalEconomicPeriodFootnote'
+        : kind === 'tax'
+          ? 'subnationalTaxPeriodFootnote'
+          : 'subnationalGrantsPeriodFootnote';
+    const legacyKey =
+      kind === 'economic'
+        ? 'subnationalEconomicReportingPeriod'
+        : kind === 'tax'
+          ? 'subnationalTaxReportingPeriod'
+          : 'subnationalGrantsReportingPeriod';
+
+    const intro = item[introKey] || SUBNATIONAL_SERIES_PERIOD_INTRO[kind];
+    const categories = Array.isArray(item[categoriesKey]) ? item[categoriesKey] : [];
+    const footnote =
+      item[footnoteKey] != null && String(item[footnoteKey]).trim()
+        ? String(item[footnoteKey]).trim()
+        : '';
+
+    return (
+      <div className="mt-1.5 space-y-1">
+        <p className="text-xs text-gray-500 leading-snug">{intro}</p>
+        {categories.length > 0 ? (
+          <ul className="text-xs text-slate-700 font-medium leading-snug space-y-0.5 list-none pl-0 m-0">
+            {categories.map((c) => (
+              <li key={c.label}>
+                <span className="text-slate-500">{c.label}:</span> {c.period}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-xs text-slate-700 font-medium leading-snug">
+            {item[legacyKey] || REPORTING_PERIOD_NOT_SPECIFIED}
+          </p>
+        )}
+        {footnote ? (
+          <p className="text-xs text-slate-600 leading-snug">
+            <span className="text-slate-500">Overview:</span> {footnote}
+          </p>
+        ) : null}
       </div>
     );
   };
@@ -13549,9 +13699,7 @@ function App() {
                     Official series from government sources
                     {sourceName ? ` · ${sourceName}` : ''}
                   </p>
-                  <p className="text-xs text-slate-700 mt-1 font-medium leading-snug">
-                    {item.subnationalEconomicReportingPeriod || REPORTING_PERIOD_NOT_SPECIFIED}
-                  </p>
+                  {renderSubnationalPeriodMeta(item, 'economic')}
                 </>
               ) : (
                 <p className="text-xs text-gray-600 mt-0.5 font-medium">Official economic and social statistics are not loaded yet for this jurisdiction.</p>
@@ -13914,9 +14062,7 @@ function App() {
                       <span className="font-semibold text-amber-700">{fmtTotal}</span>
                       {sourceName ? ` · ${sourceName}` : ''}
                     </p>
-                    <p className="text-xs text-slate-700 mt-1 font-medium leading-snug">
-                      {item.subnationalTaxReportingPeriod || REPORTING_PERIOD_NOT_SPECIFIED}
-                    </p>
+                    {renderSubnationalPeriodMeta(item, 'tax')}
                   </>
                 ) : (
                   <p className="text-xs text-gray-600 mt-0.5 font-medium">Official tax-exempt company records are not loaded yet for this jurisdiction.</p>
@@ -14086,9 +14232,7 @@ function App() {
                       <span className="font-semibold text-emerald-700">{fmtTotal}</span>
                       {sourceName ? ` · ${sourceName}` : ''}
                     </p>
-                    <p className="text-xs text-slate-700 mt-1 font-medium leading-snug">
-                      {item.subnationalGrantsReportingPeriod || REPORTING_PERIOD_NOT_SPECIFIED}
-                    </p>
+                    {renderSubnationalPeriodMeta(item, 'grants')}
                   </>
                 ) : (
                   <p className="text-xs text-gray-600 mt-0.5 font-medium">Official grant award records are not loaded yet for this jurisdiction.</p>

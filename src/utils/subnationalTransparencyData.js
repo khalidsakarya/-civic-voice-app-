@@ -33,7 +33,65 @@ const GRANT_TYPE_COLORS = {
 
 /** Shown when Firestore has no usable period metadata for a modal doc. */
 export const REPORTING_PERIOD_NOT_SPECIFIED =
-  'Reporting period: not specified in source metadata.';
+  'Category-level reporting periods were not specified in source metadata';
+
+/** Per-metric placeholder on detail-page snapshots when series is absent. */
+export const TRANSPARENCY_HEADLINE_NOT_LOADED = 'Not loaded yet';
+
+/** Modal header copy — charts/lists may use different official periods per category. */
+export const SUBNATIONAL_SERIES_PERIOD_INTRO = {
+  economic:
+    'Each chart uses the latest official reporting period available for that category. Series may not share the same fiscal or calendar year.',
+  tax:
+    'This registry reflects the latest official snapshot available from the source below. Registration or filing years may differ by organization.',
+  grants:
+    'Awards shown use the latest official reporting period published by the source below. Totals may combine more than one fiscal year.',
+};
+
+const ECONOMIC_PERIOD_SERIES = [
+  {
+    label: 'Approved Budget',
+    arrayKeys: ['budget_distribution', 'budgetDistribution'],
+    periodKeys: ['budget_reporting_period', 'budget_distribution_reporting_period'],
+    sourceKeys: ['budget_distribution_source'],
+  },
+  {
+    label: 'Actual Spending',
+    arrayKeys: ['spending_vs_budget', 'spendingVsBudget'],
+    periodKeys: ['spending_reporting_period', 'spending_vs_budget_reporting_period'],
+    sourceKeys: ['spending_source', 'spending_vs_budget_source'],
+  },
+  {
+    label: 'Crime Report',
+    arrayKeys: ['crime_rate', 'crime_rate_trends', 'crimeRateTrends'],
+    periodKeys: ['crime_reporting_period'],
+    sourceKeys: ['crime_source'],
+  },
+  {
+    label: 'Unemployment',
+    arrayKeys: ['unemployment_rate', 'unemploymentRate'],
+    periodKeys: ['unemployment_reporting_period'],
+    sourceKeys: ['unemployment_source'],
+  },
+  {
+    label: 'GDP',
+    arrayKeys: ['gdp_growth', 'gdpGrowth'],
+    periodKeys: ['gdp_reporting_period'],
+    sourceKeys: ['gdp_source'],
+  },
+  {
+    label: 'Poverty',
+    arrayKeys: ['poverty_rate', 'povertyRate'],
+    periodKeys: ['poverty_reporting_period'],
+    sourceKeys: ['poverty_source'],
+  },
+  {
+    label: 'Homelessness PIT Count',
+    arrayKeys: ['homelessness', 'homeless'],
+    periodKeys: ['homelessness_reporting_period'],
+    sourceKeys: ['homelessness_source'],
+  },
+];
 
 const PERIOD_FIELD_KEYS = [
   'reporting_period',
@@ -633,6 +691,194 @@ function formatExplicitPeriodLabel(raw) {
   return s;
 }
 
+/** @param {Record<string, unknown>} doc @param {string[]} keys */
+function pickFirstTrimmed(doc, keys) {
+  for (let i = 0; i < keys.length; i += 1) {
+    const v = trimStr(doc[keys[i]]);
+    if (v) return v;
+  }
+  return '';
+}
+
+/** @param {Record<string, unknown>} doc @param {string[]} arrayKeys */
+function firstNonEmptyArray(doc, arrayKeys) {
+  for (let i = 0; i < arrayKeys.length; i += 1) {
+    const arr = doc[arrayKeys[i]];
+    if (Array.isArray(arr) && arr.length) return arr;
+  }
+  return null;
+}
+
+/** @param {unknown} series */
+function yearRangeFromSeries(series) {
+  if (!Array.isArray(series) || !series.length) return '';
+  const years = [];
+  for (let i = 0; i < series.length; i += 1) {
+    const y = trimStr(series[i]?.year);
+    if (y) years.push(y);
+  }
+  if (!years.length) return '';
+  years.sort();
+  if (years.length === 1) return years[0];
+  return `${years[0]}–${years[years.length - 1]}`;
+}
+
+/** @param {unknown} records */
+function yearRangeFromRecordYears(records) {
+  if (!Array.isArray(records) || !records.length) return '';
+  const years = new Set();
+  for (let i = 0; i < records.length; i += 1) {
+    const y = records[i]?.year;
+    if (y != null && String(y).trim() && String(y).trim() !== '—') {
+      years.add(String(y).trim());
+    }
+  }
+  if (!years.size) return '';
+  const sorted = [...years].sort();
+  if (sorted.length === 1) return sorted[0];
+  return `${sorted[0]}–${sorted[sorted.length - 1]}`;
+}
+
+/**
+ * @param {Record<string, unknown>} doc
+ * @param {{
+ *   label: string;
+ *   arrayKeys: string[];
+ *   periodKeys: string[];
+ *   sourceKeys?: string[];
+ * }} spec
+ */
+function buildEconomicPeriodCategory(doc, spec) {
+  const data = firstNonEmptyArray(doc, spec.arrayKeys);
+  const periodMeta = pickFirstTrimmed(doc, spec.periodKeys);
+  if (!data && !periodMeta) return null;
+
+  let period = periodMeta;
+  if (!period && data) {
+    const range = yearRangeFromSeries(data);
+    if (range) period = `Latest series years: ${range}`;
+  }
+  if (!period) {
+    const source = spec.sourceKeys ? pickFirstTrimmed(doc, spec.sourceKeys) : '';
+    if (source) period = source;
+  }
+  if (!period) return null;
+
+  return { label: spec.label, period };
+}
+
+/** @param {Record<string, unknown>} doc */
+function buildEconomicPeriodCategories(doc) {
+  const categories = [];
+  for (let i = 0; i < ECONOMIC_PERIOD_SERIES.length; i += 1) {
+    const cat = buildEconomicPeriodCategory(doc, ECONOMIC_PERIOD_SERIES[i]);
+    if (cat) categories.push(cat);
+  }
+  return categories;
+}
+
+/** @param {Record<string, unknown>} doc */
+function buildTaxPeriodCategories(doc) {
+  const records = Array.isArray(doc.records) ? doc.records : [];
+  const explicit = pickExplicitPeriodFromDoc(doc);
+  const note = trimStr(doc.note);
+  const dataSource = trimStr(doc.data_source) || trimStr(doc.source);
+
+  let period = explicit ? formatExplicitPeriodLabel(explicit) : '';
+  if (!period) {
+    const range = yearRangeFromRecordYears(records);
+    if (range) period = `Registration years in list: ${range}`;
+  }
+  if (!period && dataSource) period = 'Latest registry extract';
+  if (!period && !records.length) return [];
+
+  if (note && period && !period.includes(note)) {
+    period = `${period} (${note})`;
+  }
+
+  return [{ label: 'Registry Snapshot', period: period || 'Latest registry extract' }];
+}
+
+/** @param {Record<string, unknown>} doc */
+function buildGrantsPeriodCategories(doc) {
+  const explicit = pickExplicitPeriodFromDoc(doc);
+  const note = trimStr(doc.note);
+  const dataSource = trimStr(doc.data_source) || trimStr(doc.source);
+  const records = Array.isArray(doc.records) ? doc.records : [];
+
+  let period = explicit ? formatExplicitPeriodLabel(explicit) : '';
+  if (!period && dataSource) period = dataSource;
+  if (!period) {
+    const range = yearRangeFromRecordYears(
+      records.map((r) => ({ year: r?.date ?? r?.fiscal_year ?? r?.year })),
+    );
+    if (range) period = `Award dates in list: ${range}`;
+  }
+  if (!period && records.length) period = 'Latest published grant awards';
+
+  if (note && period && !period.toLowerCase().includes(note.toLowerCase())) {
+    period = `${period} — ${note}`;
+  }
+
+  if (!period && !records.length) return [];
+  return [{ label: 'Public Accounts / Grants', period: period || 'Latest published grant awards' }];
+}
+
+/**
+ * Category-level reporting metadata for subnational modal headers.
+ * @param {Record<string, unknown>|null|undefined} doc
+ * @param {'economic'|'tax'|'grants'} kind
+ * @returns {{ intro: string; categories: Array<{ label: string; period: string }>; footnote: string }}
+ */
+export function buildSubnationalModalPeriodMeta(doc, kind) {
+  const intro = SUBNATIONAL_SERIES_PERIOD_INTRO[kind] || SUBNATIONAL_SERIES_PERIOD_INTRO.economic;
+  if (!doc || typeof doc !== 'object') {
+    return { intro, categories: [], footnote: '' };
+  }
+
+  let categories = [];
+  if (kind === 'economic') categories = buildEconomicPeriodCategories(doc);
+  else if (kind === 'tax') categories = buildTaxPeriodCategories(doc);
+  else if (kind === 'grants') categories = buildGrantsPeriodCategories(doc);
+
+  if (!categories.length) {
+    const explicit = pickExplicitPeriodFromDoc(doc);
+    if (explicit) {
+      const label =
+        kind === 'tax'
+          ? 'Registry Snapshot'
+          : kind === 'grants'
+            ? 'Public Accounts / Grants'
+            : 'Official series';
+      categories = [{ label, period: formatExplicitPeriodLabel(explicit) }];
+    } else if (kind === 'economic') {
+      const composite = trimStr(doc.reporting_period);
+      if (composite) {
+        categories = [{ label: 'Official series', period: composite }];
+      }
+    } else if (kind === 'tax') {
+      const dataSource = trimStr(doc.data_source) || trimStr(doc.source);
+      if (dataSource) categories = [{ label: 'Registry Snapshot', period: dataSource }];
+    } else if (kind === 'grants') {
+      const dataSource = trimStr(doc.data_source) || trimStr(doc.source);
+      if (dataSource) categories = [{ label: 'Public Accounts / Grants', period: dataSource }];
+    }
+  }
+
+  const compositeNote = trimStr(doc.reporting_period);
+  let footnote = '';
+  if (
+    compositeNote &&
+    kind === 'economic' &&
+    categories.length > 1 &&
+    !categories.some((c) => c.period === compositeNote)
+  ) {
+    footnote = compositeNote;
+  }
+
+  return { intro, categories, footnote };
+}
+
 /**
  * Human-readable reporting period from a dedicated modal Firestore document.
  * @param {Record<string, unknown>|null|undefined} doc
@@ -640,54 +886,13 @@ function formatExplicitPeriodLabel(raw) {
  * @returns {string}
  */
 export function reportingPeriodLineFromModalDoc(doc, kind) {
-  if (!doc || typeof doc !== 'object') {
+  const { intro, categories, footnote } = buildSubnationalModalPeriodMeta(doc, kind);
+  if (!categories.length) {
     return REPORTING_PERIOD_NOT_SPECIFIED;
   }
-
-  const explicit = pickExplicitPeriodFromDoc(doc);
-  if (explicit) {
-    return `Reporting period: ${formatExplicitPeriodLabel(explicit)}`;
-  }
-
-  if (kind === 'economic') {
-    const budgetSrc = trimStr(doc.budget_distribution_source);
-    const spendSrc = trimStr(doc.spending_source);
-    const primary = budgetSrc || spendSrc;
-    if (primary) {
-      return `Reporting period: ${primary}`;
-    }
-  }
-
-  if (kind === 'tax') {
-    const dataSource = trimStr(doc.data_source) || trimStr(doc.source);
-    if (dataSource) {
-      return `Reporting period: ${dataSource}`;
-    }
-    const records = Array.isArray(doc.records) ? doc.records : [];
-    if (records.length) {
-      const years = new Set();
-      for (let i = 0; i < records.length; i += 1) {
-        const y = records[i]?.year;
-        if (y != null && String(y).trim()) years.add(String(y).trim());
-      }
-      if (years.size === 1) {
-        const y = [...years][0];
-        return `Reporting period: CRA registered charities snapshot (${y} list)`;
-      }
-    }
-  }
-
-  if (kind === 'grants') {
-    const dataSource = trimStr(doc.data_source) || trimStr(doc.source);
-    if (dataSource && trimStr(doc.note)) {
-      return `Reporting period: ${dataSource} (${trimStr(doc.note)})`;
-    }
-    if (dataSource) {
-      return `Reporting period: ${dataSource}`;
-    }
-  }
-
-  return REPORTING_PERIOD_NOT_SPECIFIED;
+  const lines = categories.map((c) => `${c.label}: ${c.period}`);
+  const block = [intro, ...lines, footnote].filter(Boolean).join(' · ');
+  return block;
 }
 
 /**
@@ -713,25 +918,47 @@ export function buildTransparencyFieldsFromModalDocs(docs, jurisdictionName, isU
     trimStr(economic.sourceUrl) || trimStr(tax.sourceUrl) || trimStr(grants.sourceUrl);
   const out = {};
   if (economic.hasData) {
+    const economicPeriod = buildSubnationalModalPeriodMeta(docs?.economicDoc || null, 'economic');
     out.subnationalEconomicSocial = economic;
+    out.subnationalEconomicPeriodIntro = economicPeriod.intro;
+    out.subnationalEconomicPeriodCategories = economicPeriod.categories;
+    out.subnationalEconomicPeriodFootnote = economicPeriod.footnote;
     out.subnationalEconomicReportingPeriod = reportingPeriodLineFromModalDoc(
       docs?.economicDoc || null,
       'economic',
     );
   }
   if (tax.companies.length) {
+    const taxDoc = docs?.taxDoc || null;
+    const taxPeriod = buildSubnationalModalPeriodMeta(taxDoc, 'tax');
     out.subnationalTaxExemptCompanies = tax.companies;
-    out.subnationalTaxReportingPeriod = reportingPeriodLineFromModalDoc(
-      docs?.taxDoc || null,
-      'tax',
-    );
+    out.subnationalTaxPeriodIntro = taxPeriod.intro;
+    out.subnationalTaxPeriodCategories = taxPeriod.categories;
+    out.subnationalTaxPeriodFootnote = taxPeriod.footnote;
+    out.subnationalTaxReportingPeriod = reportingPeriodLineFromModalDoc(taxDoc, 'tax');
+    if (taxDoc && typeof taxDoc === 'object') {
+      out.subnationalTaxHeadlineMeta = {
+        recordsStored: numOrNull(taxDoc.records_stored),
+        totalInSource: numOrNull(taxDoc.total_in_source),
+      };
+    }
   }
   if (grants.grants.length) {
+    const grantsDoc = docs?.grantsDoc || null;
+    const grantsPeriod = buildSubnationalModalPeriodMeta(grantsDoc, 'grants');
     out.subnationalGrantsGiven = grants.grants;
-    out.subnationalGrantsReportingPeriod = reportingPeriodLineFromModalDoc(
-      docs?.grantsDoc || null,
-      'grants',
-    );
+    out.subnationalGrantsPeriodIntro = grantsPeriod.intro;
+    out.subnationalGrantsPeriodCategories = grantsPeriod.categories;
+    out.subnationalGrantsPeriodFootnote = grantsPeriod.footnote;
+    out.subnationalGrantsReportingPeriod = reportingPeriodLineFromModalDoc(grantsDoc, 'grants');
+    if (grantsDoc && typeof grantsDoc === 'object') {
+      out.subnationalGrantsHeadlineMeta = {
+        recordsStored: numOrNull(grantsDoc.records_stored),
+        totalInSource: numOrNull(grantsDoc.total_in_source),
+        fmtTotalTop: trimStr(grantsDoc.fmt_total_top100),
+        fiscalYear: trimStr(grantsDoc.fiscal_year),
+      };
+    }
   }
   if (sourceName) out.subnationalTransparencySourceName = sourceName;
   if (sourceUrl) out.subnationalTransparencySourceUrl = sourceUrl;
@@ -818,6 +1045,240 @@ export function grantsGivenFromExplorerItem(item) {
     source_name: item.subnationalTransparencySourceName,
     source_url: item.subnationalTransparencySourceUrl,
   });
+}
+
+/** @param {Array<{ year?: string }>} rows */
+function latestRowByYear(rows) {
+  if (!Array.isArray(rows) || !rows.length) return null;
+  return [...rows].sort((a, b) => String(a.year || '').localeCompare(String(b.year || ''))).pop() || null;
+}
+
+/**
+ * @param {number|null|undefined} violent
+ * @param {number|null|undefined} property
+ * @param {'csi'|'incident_rate'|'incident_count'} metricType
+ */
+function formatCrimeHeadlinePair(violent, property, metricType) {
+  if (violent == null && property == null) return '';
+  const v = violent != null ? Number(violent) : null;
+  const p = property != null ? Number(property) : null;
+  if (metricType === 'csi') {
+    const parts = [];
+    if (v != null && Number.isFinite(v)) parts.push(`Violent ${v.toFixed(1)}`);
+    if (p != null && Number.isFinite(p)) parts.push(`Non-violent ${p.toFixed(1)}`);
+    return parts.length ? `${parts.join(' · ')} (CSI, 2006=100)` : '';
+  }
+  if (metricType === 'incident_count') {
+    const parts = [];
+    if (v != null && Number.isFinite(v)) parts.push(`${v.toLocaleString()} violent`);
+    if (p != null && Number.isFinite(p)) parts.push(`${p.toLocaleString()} property`);
+    return parts.join(' · ');
+  }
+  const parts = [];
+  if (v != null && Number.isFinite(v)) parts.push(`${v.toFixed(1)} violent`);
+  if (p != null && Number.isFinite(p)) parts.push(`${p.toFixed(1)} property`);
+  return parts.length ? `${parts.join(' · ')} per 100K` : '';
+}
+
+/**
+ * Latest official snapshot lines for the province/state detail page (economic module).
+ * @param {ReturnType<typeof parseSubnationalEconomicSocialData>} economic
+ * @param {string} jurisdictionLabel
+ */
+export function buildEconomicTransparencyHeadlines(economic, jurisdictionLabel) {
+  if (!economic?.hasData) {
+    return { hasLiveData: false, metrics: [] };
+  }
+
+  /** @type {Array<{ label: string; value: string; sub?: string }>} */
+  const metrics = [];
+
+  if (economic.budgetData.length) {
+    const top = [...economic.budgetData].sort((a, b) => b.value - a.value)[0];
+    metrics.push({
+      label: 'Approved Budget',
+      value: `${top.value}%`,
+      sub: `Largest share: ${top.name}`,
+    });
+  }
+
+  if (economic.spendData.length) {
+    let alloc = 0;
+    let actual = 0;
+    for (let i = 0; i < economic.spendData.length; i += 1) {
+      alloc += Number(economic.spendData[i].Allocated) || 0;
+      actual += Number(economic.spendData[i].Actual) || 0;
+    }
+    const pct = alloc > 0 ? Math.round((actual / alloc) * 100) : null;
+    metrics.push({
+      label: 'Actual Spending',
+      value: formatCurrencyCompact(actual),
+      sub:
+        pct != null
+          ? `${pct}% of ${formatCurrencyCompact(alloc)} allocated (official categories)`
+          : `Allocated ${formatCurrencyCompact(alloc)}`,
+    });
+  }
+
+  if (economic.crimeDataM.length) {
+    const latest = latestRowByYear(economic.crimeDataM);
+    if (latest) {
+      const violent = latest[economic.crimeViolentKey];
+      const property = latest[economic.crimePropertyKey];
+      const value = formatCrimeHeadlinePair(violent, property, economic.crimeMetricType);
+      if (value) {
+        metrics.push({
+          label: 'Crime Report',
+          value,
+          sub: `Latest year: ${latest.year}`,
+        });
+      }
+    }
+  }
+
+  if (economic.unempData.length && economic.unempKeys.length) {
+    const latest = latestRowByYear(economic.unempData);
+    const jKey = economic.unempKeys[0];
+    if (latest && jKey) {
+      const rate = numOrNull(latest[jKey]);
+      if (rate != null) {
+        metrics.push({
+          label: 'Unemployment',
+          value: `${rate}%`,
+          sub: `Latest year: ${latest.year}`,
+        });
+      }
+    }
+  }
+
+  if (economic.gdpDataM.length) {
+    const latest = latestRowByYear(economic.gdpDataM);
+    const growth = latest ? numOrNull(latest['GDP Growth (%)']) : null;
+    if (latest && growth != null) {
+      metrics.push({
+        label: 'GDP',
+        value: `${growth >= 0 ? '+' : ''}${growth}%`,
+        sub: `Annual growth · ${latest.year}`,
+      });
+    }
+  }
+
+  if (economic.povDataM.length) {
+    const latest = latestRowByYear(economic.povDataM);
+    const rate = latest ? numOrNull(latest['Poverty Rate (%)']) : null;
+    if (latest && rate != null) {
+      metrics.push({
+        label: 'Poverty',
+        value: `${rate}%`,
+        sub: `Latest year: ${latest.year}`,
+      });
+    }
+  }
+
+  if (economic.homelessData.length) {
+    const latest = latestRowByYear(economic.homelessData);
+    if (latest) {
+      const total =
+        (numOrNull(latest.Sheltered) ?? 0) + (numOrNull(latest.Unsheltered) ?? 0);
+      metrics.push({
+        label: 'Homelessness PIT Count',
+        value: total.toLocaleString(),
+        sub: `PIT ${latest.year} · ${(numOrNull(latest.Sheltered) ?? 0).toLocaleString()} sheltered`,
+      });
+    }
+  }
+
+  return { hasLiveData: metrics.length > 0, metrics };
+}
+
+/**
+ * @param {{ companies: Array<Record<string, unknown>>; sourceName?: string }} tax
+ * @param {{ recordsStored?: number|null; totalInSource?: number|null }|null|undefined} meta
+ */
+export function buildTaxTransparencyHeadlines(tax, meta) {
+  const companies = tax?.companies;
+  if (!Array.isArray(companies) || !companies.length) {
+    return { hasLiveData: false, metrics: [] };
+  }
+
+  /** @type {Array<{ label: string; value: string; sub?: string }>} */
+  const metrics = [];
+  const stored = meta?.recordsStored ?? companies.length;
+  const inSource = meta?.totalInSource;
+
+  metrics.push({
+    label: 'Registry Snapshot',
+    value: `${stored.toLocaleString()} organizations`,
+    sub:
+      inSource != null && inSource > stored
+        ? `Top listing from ${inSource.toLocaleString()} in official source`
+        : 'Latest official tax-exempt registry listing',
+  });
+
+  let topValue = 0;
+  let topName = '';
+  for (let i = 0; i < companies.length; i += 1) {
+    const raw = numOrNull(companies[i].rawValue) ?? 0;
+    if (raw > topValue) {
+      topValue = raw;
+      topName = trimStr(companies[i].name);
+    }
+  }
+  if (topValue > 0) {
+    metrics.push({
+      label: 'Largest reported value',
+      value: formatCurrencyCompact(topValue),
+      sub: topName || undefined,
+    });
+  }
+
+  return { hasLiveData: true, metrics };
+}
+
+/**
+ * @param {{ grants: Array<Record<string, unknown>>; sourceName?: string }} grants
+ * @param {{ recordsStored?: number|null; totalInSource?: number|null; fmtTotalTop?: string; fiscalYear?: string }|null|undefined} meta
+ */
+export function buildGrantsTransparencyHeadlines(grants, meta) {
+  const rows = grants?.grants;
+  if (!Array.isArray(rows) || !rows.length) {
+    return { hasLiveData: false, metrics: [] };
+  }
+
+  /** @type {Array<{ label: string; value: string; sub?: string }>} */
+  const metrics = [];
+  const stored = meta?.recordsStored ?? rows.length;
+  const fy = meta?.fiscalYear;
+
+  let topAmt = 0;
+  let topRecipient = '';
+  let sumAmt = 0;
+  for (let i = 0; i < rows.length; i += 1) {
+    const raw = numOrNull(rows[i].rawAmount) ?? 0;
+    sumAmt += raw;
+    if (raw > topAmt) {
+      topAmt = raw;
+      topRecipient = trimStr(rows[i].recipientName);
+    }
+  }
+
+  metrics.push({
+    label: 'Public Accounts / Grants',
+    value: meta?.fmtTotalTop || formatCurrencyCompact(sumAmt),
+    sub: fy
+      ? `FY ${fy} · top ${stored.toLocaleString()} awards by amount`
+      : `Top ${stored.toLocaleString()} awards by amount`,
+  });
+
+  if (topAmt > 0) {
+    metrics.push({
+      label: 'Largest award',
+      value: formatCurrencyCompact(topAmt),
+      sub: topRecipient.length > 48 ? `${topRecipient.slice(0, 45)}…` : topRecipient,
+    });
+  }
+
+  return { hasLiveData: true, metrics };
 }
 
 /** @param {Record<string, unknown>} fsRow @param {boolean} isUSA */
