@@ -13481,18 +13481,34 @@ function App() {
     } = economic;
 
     const crimeIsCsi = crimeMetricType === 'csi';
+    const crimeIsCount = crimeMetricType === 'incident_count';
     const crimeBarViolent = crimeViolentKey || 'Violent Crime';
     const crimeBarProperty = crimePropertyKey || 'Property Crime';
-    const crimeChartTitle = crimeIsCsi ? 'Crime Severity Index Trends' : 'Crime Rate Trends';
+    const crimeChartTitle = crimeIsCsi
+      ? 'Crime Severity Index Trends'
+      : crimeIsCount
+        ? 'Reported Crime Incidents'
+        : 'Crime Rate Trends';
     const crimeChartDesc = crimeIsCsi
       ? 'Crime Severity Index (2006=100) — last 6 years'
-      : 'Incidents per 100,000 people — last 6 years';
+      : crimeIsCount
+        ? 'Reported incident counts — last 6 years'
+        : 'Rate per 100,000 population — last 6 years';
     const formatCrimeTooltip = (v, name) => {
       const n = Number(v);
       if (crimeIsCsi) {
         return [`${Number.isFinite(n) ? n.toFixed(1) : v} (CSI, 2006=100)`, name];
       }
-      return [`${Number(n).toLocaleString()} per 100K`, name];
+      if (crimeIsCount) {
+        return [`${Number.isFinite(n) ? n.toLocaleString() : v} incidents`, name];
+      }
+      return [`${Number.isFinite(n) ? n.toFixed(1) : v} per 100,000`, name];
+    };
+    const formatCrimeAxisTick = (v) => {
+      const n = Number(v);
+      if (crimeIsCsi) return Number.isFinite(n) ? n.toFixed(0) : String(v);
+      if (crimeIsCount) return Number.isFinite(n) ? n.toLocaleString() : String(v);
+      return Number.isFinite(n) ? n.toFixed(0) : String(v);
     };
 
     // ── Shared chart config ─────────────────────────────────────────────────
@@ -13607,7 +13623,7 @@ function App() {
                   <XAxis
                     type="number"
                     tick={TICK}
-                    tickFormatter={(v) => (crimeIsCsi ? Number(v).toFixed(0) : v.toLocaleString())}
+                    tickFormatter={formatCrimeAxisTick}
                   />
                   <Tooltip formatter={formatCrimeTooltip} contentStyle={TT} />
                   <Legend verticalAlign="bottom" wrapperStyle={LEG} />
@@ -13775,7 +13791,7 @@ function App() {
                           <XAxis
                             type="number"
                             tick={TICK}
-                            tickFormatter={(v) => (crimeIsCsi ? Number(v).toFixed(0) : v.toLocaleString())}
+                            tickFormatter={formatCrimeAxisTick}
                           />
                           <Tooltip formatter={formatCrimeTooltip} contentStyle={TT} />
                           <Legend verticalAlign="bottom" wrapperStyle={LEG} />

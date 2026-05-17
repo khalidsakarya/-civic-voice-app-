@@ -215,17 +215,56 @@ const CRIME_PROPERTY_CSI_KEYS = [
 const CRIME_VIOLENT_RATE_KEYS = ['Violent Crime', 'violent_crime'];
 const CRIME_PROPERTY_RATE_KEYS = ['Property Crime', 'property_crime'];
 
+/** @param {unknown} v */
+function normalizeCrimeMetricType(v) {
+  const t = trimStr(v).toLowerCase().replace(/-/g, '_');
+  if (t === 'csi' || t === 'crime_severity_index') return 'csi';
+  if (
+    t === 'incident_count' ||
+    t === 'count' ||
+    t === 'incident_counts' ||
+    t === 'raw_count'
+  ) {
+    return 'incident_count';
+  }
+  if (
+    t === 'incident_rate' ||
+    t === 'rate' ||
+    t === 'rate_per_100k' ||
+    t === 'rate_per_100000' ||
+    t === 'per_100k'
+  ) {
+    return 'incident_rate';
+  }
+  return null;
+}
+
+/** @param {Array<Record<string, unknown>>} crimeData */
+function inferCrimeMetricTypeFromValues(crimeData) {
+  let maxVal = 0;
+  for (let i = 0; i < crimeData.length; i += 1) {
+    const row = crimeData[i];
+    for (const key of Object.keys(row)) {
+      if (key === 'year') continue;
+      const n = numOrNull(row[key]);
+      if (n != null && n > maxVal) maxVal = n;
+    }
+  }
+  return maxVal >= 5000 ? 'incident_count' : 'incident_rate';
+}
+
 /**
- * Normalize crime series from Firestore (CSI or per-capita incident keys).
+ * Normalize crime series from Firestore (CSI, per-100k rates, or incident counts).
  * @param {unknown} crimeRaw
+ * @param {unknown} [explicitMetricType]
  * @returns {{
  *   crimeDataM: Array<Record<string, unknown>>;
- *   crimeMetricType: 'csi' | 'incident_rate';
+ *   crimeMetricType: 'csi' | 'incident_rate' | 'incident_count';
  *   crimeViolentKey: string;
  *   crimePropertyKey: string;
  * }}
  */
-function normalizeCrimeSeries(crimeRaw) {
+function normalizeCrimeSeries(crimeRaw, explicitMetricType) {
   const empty = {
     crimeDataM: [],
     crimeMetricType: 'incident_rate',
@@ -269,9 +308,13 @@ function normalizeCrimeSeries(crimeRaw) {
 
   if (!crimeData.length) return empty;
 
+  let crimeMetricType = normalizeCrimeMetricType(explicitMetricType);
+  if (isCsi) crimeMetricType = 'csi';
+  else if (!crimeMetricType) crimeMetricType = inferCrimeMetricTypeFromValues(crimeData);
+
   return {
     crimeDataM: crimeData.slice(-6),
-    crimeMetricType: isCsi ? 'csi' : 'incident_rate',
+    crimeMetricType,
     crimeViolentKey: violentKey,
     crimePropertyKey: propertyKey,
   };
@@ -316,12 +359,14 @@ export function parseSubnationalEconomicSocialData(raw, jurisdictionName, isUSA)
 
   const crimeRaw =
     src.crime_rate_trends ?? src.crimeRateTrends ?? src.crime_rate ?? src.crime;
+  const crimeMetricFromDoc =
+    src.crime_metric_type ?? src.crimeMetricType ?? src.crime_metric ?? src.crimeMetric;
   const {
     crimeDataM,
     crimeMetricType,
     crimeViolentKey,
     crimePropertyKey,
-  } = normalizeCrimeSeries(crimeRaw);
+  } = normalizeCrimeSeries(crimeRaw, crimeMetricFromDoc);
 
   const unempRaw = src.unemployment_rate ?? src.unemploymentRate ?? src.unemployment;
   const { unempData, unempKeys } = normalizeUnemploymentRows(unempRaw, jurisdictionName, isUSA);
@@ -552,6 +597,7 @@ export function parseSubnationalEconomicSocialFromStatsDoc(doc, jurisdictionName
       budget_distribution: doc.budget_distribution,
       spending_vs_budget: doc.spending_vs_budget,
       crime_rate_trends: doc.crime_rate_trends ?? doc.crime_rate,
+      crime_metric_type: doc.crime_metric_type ?? doc.crimeMetricType,
       unemployment_rate: doc.unemployment_rate,
       gdp_growth: doc.gdp_growth,
       poverty_rate: doc.poverty_rate,

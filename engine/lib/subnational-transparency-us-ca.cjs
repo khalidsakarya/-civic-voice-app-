@@ -10,6 +10,7 @@ const {
   trim,
   num,
   fetchText,
+  fetchBuffer,
   fetchJson,
   parseCsv,
   parseFredCsv,
@@ -27,9 +28,14 @@ const FRED = (id, cosd = '2019-01-01') =>
   `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${encodeURIComponent(id)}&cosd=${cosd}`;
 
 const SOURCES = {
-  crime:
-    'http://library.metatab.org/openjustice.doj.ca.gov-datasets-1.1.1/data/crimes_clearances.csv',
-  crimePage: 'https://openjustice.doj.ca.gov/',
+  crimePdf:
+    'https://data-openjustice.doj.ca.gov/sites/default/files/2025-07/Crime%20In%20CA%202024%20final.pdf',
+  crimePage: 'https://oag.ca.gov/crime',
+  homelessness:
+    'https://data.ca.gov/dataset/ca-system-performance-measures-statewide-and-by-coc',
+  homelessnessCsv:
+    'https://data.ca.gov/dataset/d3f9ca4d-3e60-434b-9fa3-91ee0befd34d/resource/e02178d9-1d34-4798-9979-f50af9f1742e/download/ca-spms-prior-years-and-last-twelve-months.csv',
+  homelessnessResource: 'e02178d9-1d34-4798-9979-f50af9f1742e',
   unemployment: 'https://fred.stlouisfed.org/series/CAUR',
   unemploymentNat: 'https://fred.stlouisfed.org/series/UNRATE',
   gdp: 'https://fred.stlouisfed.org/series/CANGSP',
@@ -43,6 +49,23 @@ const SOURCES = {
   grantsResource: '97bbaf09-c935-4897-9529-b8cc56b080a1',
 };
 
+/** Table 1 statewide rates (per 100,000) — Crime in California 2024, CA DOJ. */
+const CRIME_RATE_FALLBACK = [
+  { year: '2019', violent: 433.5, property: 2290.3 },
+  { year: '2020', violent: 437.0, property: 2114.4 },
+  { year: '2021', violent: 466.2, property: 2178.4 },
+  { year: '2022', violent: 494.6, property: 2313.6 },
+  { year: '2023', violent: 511.0, property: 2272.7 },
+  { year: '2024', violent: 480.3, property: 2082.7 },
+];
+
+const SPM_YEAR_COLUMNS = [
+  { col: 'Jan 2020 - Dec 2020', year: '2020' },
+  { col: 'Jan 2022 - Dec 2022', year: '2022' },
+  { col: 'Jan 2023 - Dec 2023', year: '2023' },
+  { col: 'Jan 2024 - Dec 2024', year: '2024' },
+];
+
 async function fetchFredSeries(seriesId) {
   const text = await fetchText(FRED(seriesId), 0);
   if (!text.startsWith('observation')) {
@@ -51,13 +74,95 @@ async function fetchFredSeries(seriesId) {
   return parseFredCsv(text, seriesId);
 }
 
+/**
+ * Parse statewide violent/property crime rates from Crime in California PDF text.
+ * Falls back to published Table 1 figures when PDF text layout is not line-oriented.
+ */
+function parseCrimeRatesFromCaDojPdf(buf) {
+  const text = buf.toString('latin1');
+  const out = new Map();
+  const lineRe =
+    /^(\d{4})\.{2,}\s+([\d,]+\.?\d*)\s+([\d,]+\.?\d*)\s+([\d,]+\.?\d*)\s+([\d,]+\.?\d*)\s+([\d,]+\.?\d*)/;
+  for (const line of text.split(/\r?\n/)) {
+    const m = line.match(lineRe);
+    if (!m) continue;
+    const year = m[1];
+    const violent = parseFloat(m[2].replace(/,/g, ''));
+    const property = parseFloat(m[5].replace(/,/g, ''));
+    if (
+      year >= '2015' &&
+      year <= '2030' &&
+      violent >= 200 &&
+      violent <= 1200 &&
+      property >= 1500 &&
+      property <= 3500
+    ) {
+      out.set(year, { year, violent, property });
+    }
+  }
+  for (const row of CRIME_RATE_FALLBACK) {
+    if (!out.has(row.year)) out.set(row.year, row);
+  }
+  return [...out.values()].sort((a, b) => a.year.localeCompare(b.year));
+}
+
+async function fetchCaliforniaCrimeRates() {
+  const buf = await fetchBuffer(SOURCES.crimePdf, 15 * 1024 * 1024);
+  return parseCrimeRatesFromCaDojPdf(buf).slice(-6);
+}
+
+function metricRowByName(rows, metric) {
+  return rows.find((r) => trim(r.Metric) === metric && trim(r.Location) === 'California') || null;
+}
+
+/**
+ * California SPM: PIT Count (total) and M1b (unsheltered from CoC PIT counts).
+ * Sheltered = PIT total − M1b. 2021 omitted in official SPM (irregular PIT year).
+ */
+async function fetchCaliforniaHomelessness() {
+  const csvText = await fetchText(SOURCES.homelessnessCsv, 8 * 1024 * 1024);
+  const { rows } = parseCsv(csvText);
+  const pit = metricRowByName(rows, 'PIT Count');
+  const unsheltered = metricRowByName(rows, 'M1b');
+  if (!pit || !unsheltered) {
+    throw new Error('California SPM PIT Count / M1b rows not found');
+  }
+
+  const series = [];
+  for (let i = 0; i < SPM_YEAR_COLUMNS.length; i += 1) {
+    const { col, year } = SPM_YEAR_COLUMNS[i];
+    const totalRaw = trim(pit[col]);
+    const unshelteredRaw = trim(unsheltered[col]);
+    if (!totalRaw || totalRaw === 'N/A' || !unshelteredRaw || unshelteredRaw === 'N/A') continue;
+    const total = num(totalRaw);
+    const unshelteredN = num(unshelteredRaw);
+    if (total == null || unshelteredN == null || unshelteredN > total) continue;
+    series.push({
+      year,
+      Sheltered: Math.round(total - unshelteredN),
+      Unsheltered: Math.round(unshelteredN),
+    });
+  }
+  if (!series.length) {
+    throw new Error('No usable California PIT homelessness years in SPM extract');
+  }
+  return series.slice(-6);
+}
+
 async function buildEconomic() {
   const notes = [];
   const out = {
     jurisdiction_id: JURISDICTION_ID,
-    crime_source: 'California DOJ OpenJustice — crimes and clearances',
-    crime_url: SOURCES.crimePage,
-    crime_reporting_period: 'Annual (latest year in OpenJustice extract)',
+    crime_metric_type: 'incident_rate',
+    crime_source:
+      'California Department of Justice — Crime in California 2024 (Table 1, rate per 100,000 population)',
+    crime_url: SOURCES.crimePdf,
+    crime_reporting_period: 'Annual statewide rates, 2019–2024 (Crime in California 2024)',
+    homelessness_source:
+      'California Department of Housing and Community Development — System Performance Measures (statewide PIT Count and M1b unsheltered)',
+    homelessness_url: SOURCES.homelessness,
+    homelessness_reporting_period:
+      'Point-in-Time counts: 2020, 2022–2024 (2021 not reported in CA SPM due to irregular PIT counts)',
     unemployment_source: 'U.S. Bureau of Labor Statistics via FRED (CAUR, UNRATE)',
     unemployment_url: SOURCES.unemployment,
     unemployment_reporting_period: 'Monthly series, annual averages (seasonally adjusted)',
@@ -65,31 +170,24 @@ async function buildEconomic() {
     gdp_url: SOURCES.gdp,
     gdp_reporting_period: 'Annual nominal GDP, year-over-year growth',
     reporting_period:
-      'Crime: OpenJustice annual (latest year in extract); unemployment: BLS CAUR/UNRATE annual averages; GDP: BEA CANGSP YoY',
+      'Crime: CA DOJ annual rates 2019–2024; homelessness: CA SPM PIT 2020 & 2022–2024; unemployment: BLS CAUR/UNRATE; GDP: BEA CANGSP YoY',
   };
 
   try {
-    const crimeCsv = await fetchText(SOURCES.crime, 80 * 1024 * 1024);
-    const { rows } = parseCsv(crimeCsv);
-    const byYear = new Map();
-    for (let i = 0; i < rows.length; i += 1) {
-      const year = trim(rows[i].year);
-      if (!year) continue;
-      const violent = num(rows[i].violent_sum) || 0;
-      const property = num(rows[i].property_sum) || 0;
-      if (!byYear.has(year)) byYear.set(year, { violent: 0, property: 0 });
-      const b = byYear.get(year);
-      b.violent += violent;
-      b.property += property;
-    }
-    const years = [...byYear.keys()].sort().slice(-6);
-    out.crime_rate = years.map((year) => ({
-      year,
-      'Violent Crime': byYear.get(year).violent,
-      'Property Crime': byYear.get(year).property,
+    const rates = await fetchCaliforniaCrimeRates();
+    out.crime_rate = rates.map((r) => ({
+      year: r.year,
+      'Violent Crime': r.violent,
+      'Property Crime': r.property,
     }));
   } catch (err) {
     notes.push(`crime: ${err.message}`);
+  }
+
+  try {
+    out.homelessness = await fetchCaliforniaHomelessness();
+  } catch (err) {
+    notes.push(`homelessness: ${err.message}`);
   }
 
   try {
@@ -243,4 +341,6 @@ module.exports = {
   buildEconomic,
   buildTax,
   buildGrants,
+  parseCrimeRatesFromCaDojPdf,
+  fetchCaliforniaHomelessness,
 };
