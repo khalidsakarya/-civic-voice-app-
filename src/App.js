@@ -24,6 +24,7 @@ import {
   taxExemptFromExplorerItem,
   grantsGivenFromExplorerItem,
   formatCurrencyCompact,
+  REPORTING_PERIOD_NOT_SPECIFIED,
 } from './utils/subnationalTransparencyData';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
 import {
@@ -13509,10 +13510,15 @@ function App() {
             <div className="flex-1 min-w-0">
               <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug truncate">{jurisdictionLabel} — Economic &amp; Social Data</h2>
               {hasData ? (
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Official series from government sources
-                  {sourceName ? ` · ${sourceName}` : ''}
-                </p>
+                <>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Official series from government sources
+                    {sourceName ? ` · ${sourceName}` : ''}
+                  </p>
+                  <p className="text-xs text-slate-700 mt-1 font-medium leading-snug">
+                    {item.subnationalEconomicReportingPeriod || REPORTING_PERIOD_NOT_SPECIFIED}
+                  </p>
+                </>
               ) : (
                 <p className="text-xs text-gray-600 mt-0.5 font-medium">Official economic and social statistics are not loaded yet for this jurisdiction.</p>
               )}
@@ -13859,12 +13865,17 @@ function App() {
               <div className="flex-1 min-w-0">
                 <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Tax Exempt Companies</h2>
                 {hasLiveData ? (
-                  <p className="text-xs text-gray-500 mt-1">
-                    {companies.length} {companies.length === 1 ? 'record' : 'records'}
-                    &nbsp;·&nbsp; Total reported exemption:{' '}
-                    <span className="font-semibold text-amber-700">{fmtTotal}</span>
-                    {sourceName ? ` · ${sourceName}` : ''}
-                  </p>
+                  <>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {companies.length} {companies.length === 1 ? 'record' : 'records'}
+                      &nbsp;·&nbsp; Total reported exemption:{' '}
+                      <span className="font-semibold text-amber-700">{fmtTotal}</span>
+                      {sourceName ? ` · ${sourceName}` : ''}
+                    </p>
+                    <p className="text-xs text-slate-700 mt-1 font-medium leading-snug">
+                      {item.subnationalTaxReportingPeriod || REPORTING_PERIOD_NOT_SPECIFIED}
+                    </p>
+                  </>
                 ) : (
                   <p className="text-xs text-gray-600 mt-0.5 font-medium">Official tax-exempt company records are not loaded yet for this jurisdiction.</p>
                 )}
@@ -14026,12 +14037,17 @@ function App() {
               <div className="flex-1 min-w-0">
                 <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Grants Given</h2>
                 {hasLiveData ? (
-                  <p className="text-xs text-gray-500 mt-1">
-                    {grants.length} {grants.length === 1 ? 'grant' : 'grants'}
-                    &nbsp;·&nbsp; Total reported:{' '}
-                    <span className="font-semibold text-emerald-700">{fmtTotal}</span>
-                    {sourceName ? ` · ${sourceName}` : ''}
-                  </p>
+                  <>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {grants.length} {grants.length === 1 ? 'grant' : 'grants'}
+                      &nbsp;·&nbsp; Total reported:{' '}
+                      <span className="font-semibold text-emerald-700">{fmtTotal}</span>
+                      {sourceName ? ` · ${sourceName}` : ''}
+                    </p>
+                    <p className="text-xs text-slate-700 mt-1 font-medium leading-snug">
+                      {item.subnationalGrantsReportingPeriod || REPORTING_PERIOD_NOT_SPECIFIED}
+                    </p>
+                  </>
                 ) : (
                   <p className="text-xs text-gray-600 mt-0.5 font-medium">Official grant award records are not loaded yet for this jurisdiction.</p>
                 )}

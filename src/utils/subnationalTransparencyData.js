@@ -31,6 +31,21 @@ const GRANT_TYPE_COLORS = {
   Individual: 'bg-purple-100 text-purple-700',
 };
 
+/** Shown when Firestore has no usable period metadata for a modal doc. */
+export const REPORTING_PERIOD_NOT_SPECIFIED =
+  'Reporting period: not specified in source metadata.';
+
+const PERIOD_FIELD_KEYS = [
+  'reporting_period',
+  'reportingPeriod',
+  'fiscal_year',
+  'fiscalYear',
+  'data_year',
+  'dataYear',
+  'source_year',
+  'sourceYear',
+];
+
 /** @param {unknown} v */
 function trimStr(v) {
   if (v == null) return '';
@@ -472,6 +487,83 @@ export function parseSubnationalEconomicSocialFromStatsDoc(doc, jurisdictionName
   return parseSubnationalEconomicSocialData(wrapped, jurisdictionName, isUSA);
 }
 
+/** @param {Record<string, unknown>} doc */
+function pickExplicitPeriodFromDoc(doc) {
+  for (let i = 0; i < PERIOD_FIELD_KEYS.length; i += 1) {
+    const k = PERIOD_FIELD_KEYS[i];
+    const v = trimStr(doc[k]);
+    if (v) return v;
+  }
+  return '';
+}
+
+/** @param {string} raw */
+function formatExplicitPeriodLabel(raw) {
+  const s = trimStr(raw);
+  if (!s) return '';
+  if (/^fy[\s-]/i.test(s)) return s;
+  if (/^\d{4}[-–]\d{2,4}$/.test(s)) return `FY ${s}`;
+  if (/^\d{4}$/.test(s)) return `Calendar year ${s}`;
+  return s;
+}
+
+/**
+ * Human-readable reporting period from a dedicated modal Firestore document.
+ * @param {Record<string, unknown>|null|undefined} doc
+ * @param {'economic'|'tax'|'grants'} kind
+ * @returns {string}
+ */
+export function reportingPeriodLineFromModalDoc(doc, kind) {
+  if (!doc || typeof doc !== 'object') {
+    return REPORTING_PERIOD_NOT_SPECIFIED;
+  }
+
+  const explicit = pickExplicitPeriodFromDoc(doc);
+  if (explicit) {
+    return `Reporting period: ${formatExplicitPeriodLabel(explicit)}`;
+  }
+
+  if (kind === 'economic') {
+    const budgetSrc = trimStr(doc.budget_distribution_source);
+    const spendSrc = trimStr(doc.spending_source);
+    const primary = budgetSrc || spendSrc;
+    if (primary) {
+      return `Reporting period: ${primary}`;
+    }
+  }
+
+  if (kind === 'tax') {
+    const dataSource = trimStr(doc.data_source) || trimStr(doc.source);
+    if (dataSource) {
+      return `Reporting period: ${dataSource}`;
+    }
+    const records = Array.isArray(doc.records) ? doc.records : [];
+    if (records.length) {
+      const years = new Set();
+      for (let i = 0; i < records.length; i += 1) {
+        const y = records[i]?.year;
+        if (y != null && String(y).trim()) years.add(String(y).trim());
+      }
+      if (years.size === 1) {
+        const y = [...years][0];
+        return `Reporting period: CRA registered charities snapshot (${y} list)`;
+      }
+    }
+  }
+
+  if (kind === 'grants') {
+    const dataSource = trimStr(doc.data_source) || trimStr(doc.source);
+    if (dataSource && trimStr(doc.note)) {
+      return `Reporting period: ${dataSource} (${trimStr(doc.note)})`;
+    }
+    if (dataSource) {
+      return `Reporting period: ${dataSource}`;
+    }
+  }
+
+  return REPORTING_PERIOD_NOT_SPECIFIED;
+}
+
 /**
  * @param {{
  *   economicDoc?: Record<string, unknown>|null;
@@ -494,9 +586,27 @@ export function buildTransparencyFieldsFromModalDocs(docs, jurisdictionName, isU
   const sourceUrl =
     trimStr(economic.sourceUrl) || trimStr(tax.sourceUrl) || trimStr(grants.sourceUrl);
   const out = {};
-  if (economic.hasData) out.subnationalEconomicSocial = economic;
-  if (tax.companies.length) out.subnationalTaxExemptCompanies = tax.companies;
-  if (grants.grants.length) out.subnationalGrantsGiven = grants.grants;
+  if (economic.hasData) {
+    out.subnationalEconomicSocial = economic;
+    out.subnationalEconomicReportingPeriod = reportingPeriodLineFromModalDoc(
+      docs?.economicDoc || null,
+      'economic',
+    );
+  }
+  if (tax.companies.length) {
+    out.subnationalTaxExemptCompanies = tax.companies;
+    out.subnationalTaxReportingPeriod = reportingPeriodLineFromModalDoc(
+      docs?.taxDoc || null,
+      'tax',
+    );
+  }
+  if (grants.grants.length) {
+    out.subnationalGrantsGiven = grants.grants;
+    out.subnationalGrantsReportingPeriod = reportingPeriodLineFromModalDoc(
+      docs?.grantsDoc || null,
+      'grants',
+    );
+  }
   if (sourceName) out.subnationalTransparencySourceName = sourceName;
   if (sourceUrl) out.subnationalTransparencySourceUrl = sourceUrl;
   return out;
