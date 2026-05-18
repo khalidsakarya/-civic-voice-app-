@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-18T18:43:32.432Z",
+  "generatedAt": "2026-05-18T19:04:40.617Z",
   "mode": "write",
   "jurisdictions": [
     {
@@ -11,7 +11,7 @@
           "section": "salary",
           "loaded": true,
           "count": 4,
-          "source": "https://www.ontario.ca/page/public-sector-salary-disclosure"
+          "source": "https://www.ontario.ca/public-sector-salary-disclosure/2024/all-sectors-and-seconded-employees"
         },
         {
           "section": "financial_disclosure",
@@ -57,7 +57,7 @@
         }
       ],
       "field_sources": {
-        "salary": "https://www.ontario.ca/page/public-sector-salary-disclosure",
+        "salary": "https://www.ontario.ca/public-sector-salary-disclosure/2024/all-sectors-and-seconded-employees",
         "campaign_finance": "https://finances.elections.on.ca/en/contributions?entityNames=Ford%2C%20Doug&fromYear=2018&toYear=2024",
         "recent_official_activity": "https://news.ontario.ca/newsroom/en"
       }

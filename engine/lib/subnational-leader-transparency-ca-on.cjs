@@ -22,7 +22,7 @@ const LEADER_NAME = 'Ford, Doug';
 
 const SOURCES = Object.freeze({
   pssdPage: 'https://www.ontario.ca/page/public-sector-salary-disclosure',
-  pssdOpenData: 'https://data.ontario.ca/dataset/public-sector-salary-disclosure-2020',
+  pssdFilesJson: 'https://www.ontario.ca/public-sector-salary-disclosure_artifacts/pssdfiles.json',
   oicoPds: 'https://pds.oico.on.ca/Pages/Public/PublicDisclosures.aspx',
   electionsSearch:
     'https://finances.elections.on.ca/en/contributions?entityNames=Ford%2C%20Doug&fromYear=2018&toYear=2024',
@@ -33,7 +33,11 @@ const SOURCES = Object.freeze({
 
 const API_BASE = 'https://api.news.ontario.ca/api/v1/releases';
 
-const PSSD_YEARS = [2020, 2019];
+/** Newest first — ontario.ca compendium CSV (via pssdfiles.json), then open-data CKAN fallback. */
+const PSSD_ONTARIO_CA_YEARS = [2024, 2023, 2022, 2021];
+const PSSD_CKAN_YEARS = [2020, 2019];
+
+let pssdFilesCache = null;
 
 function parseMoney(text) {
   const n = Number(String(text || '').replace(/[^0-9.-]/g, ''));
@@ -49,7 +53,35 @@ function formatCad(amount) {
   }).format(amount);
 }
 
-async function resolvePssdCsvUrl(year) {
+function pssdYearPageUrl(year) {
+  return `https://www.ontario.ca/public-sector-salary-disclosure/${year}/all-sectors-and-seconded-employees`;
+}
+
+function rowField(row, ...names) {
+  for (const name of names) {
+    const direct = trim(row[name]);
+    if (direct) return direct;
+    const key = Object.keys(row).find((k) => k.toLowerCase() === name.toLowerCase());
+    if (key && trim(row[key])) return trim(row[key]);
+  }
+  return '';
+}
+
+async function loadPssdFilesManifest() {
+  if (pssdFilesCache) return pssdFilesCache;
+  pssdFilesCache = await fetchJson(SOURCES.pssdFilesJson);
+  return pssdFilesCache;
+}
+
+async function resolveOntarioCaCsvUrl(year) {
+  const manifest = await loadPssdFilesManifest();
+  const rel = trim(manifest?.[String(year)]?.Compendium?.en?.csv);
+  if (!rel) return '';
+  if (/^https?:\/\//i.test(rel)) return rel;
+  return new URL(rel, 'https://www.ontario.ca/').href;
+}
+
+async function resolveCkanCsvUrl(year) {
   const body = await fetchJson(
     `https://data.ontario.ca/api/3/action/package_show?id=public-sector-salary-disclosure-${year}`,
   );
@@ -88,9 +120,9 @@ function streamPssdMatch(csvUrl, onMatch) {
           const cols = splitCsvLine(line);
           const row = {};
           for (let i = 0; i < headers.length; i += 1) row[headers[i]] = cols[i] ?? '';
-          const last = trim(row['Last name'] || row.Lastname || row.last_name).toLowerCase();
-          const first = trim(row['First name'] || row.Firstname || row.first_name).toLowerCase();
-          const title = trim(row['Job title'] || row['Job Title'] || row.job_title);
+          const last = rowField(row, 'Last name', 'Last Name').toLowerCase();
+          const first = rowField(row, 'First name', 'First Name').toLowerCase();
+          const title = rowField(row, 'Job title', 'Job Title');
           if (last === 'ford' && first === 'doug' && /premier/i.test(title)) {
             onMatch(row);
             rl.close();
@@ -109,41 +141,69 @@ function streamPssdMatch(csvUrl, onMatch) {
   });
 }
 
-async function fetchSunshineSalary() {
-  for (const year of PSSD_YEARS) {
-    const csvUrl = await resolvePssdCsvUrl(year);
-    if (!csvUrl) continue;
-    let match = null;
-    await streamPssdMatch(csvUrl, (row) => {
-      match = row;
-    });
-    if (!match) continue;
+function buildSalaryFromRow(match, year, sourceKind) {
+  const salaryRaw = rowField(match, 'Salary', 'Salary paid');
+  const benefitsRaw = rowField(match, 'Benefits', 'Taxable benefits');
+  const disclosureYear = rowField(match, 'Year', 'Calendar year') || String(year);
+  const amount = parseMoney(salaryRaw);
+  const benefits = parseMoney(benefitsRaw);
+  const employer = rowField(match, 'Employer');
+  const jobTitle = rowField(match, 'Job title', 'Job Title');
 
-    const salaryRaw = trim(match.Salary || match.salary);
-    const benefitsRaw = trim(match.Benefits || match.benefits);
-    const disclosureYear = trim(match.Year || match.year) || String(year);
-    const amount = parseMoney(salaryRaw);
-    const benefits = parseMoney(benefitsRaw);
-    const employer = trim(match.Employer || match.employer);
-    const jobTitle = trim(match['Job title'] || match['Job Title']);
-
-    let amountText = salaryRaw;
-    if (amount != null) amountText = formatCad(amount);
-    if (benefits != null && benefits > 0) {
-      amountText = `${amountText} (taxable benefits ${formatCad(benefits)})`;
-    }
-
-    return {
-      salary: {
-        amount,
-        amount_text: amountText,
-        period: `Calendar year ${disclosureYear}`,
-        description: `${jobTitle || 'Premier'} — ${employer || 'Legislative Assembly'} (Ontario Public Sector Salary Disclosure)`,
-      },
-      sourceUrl: SOURCES.pssdPage,
-      datasetUrl: `https://data.ontario.ca/dataset/public-sector-salary-disclosure-${year}`,
-    };
+  let amountText = salaryRaw;
+  if (amount != null) amountText = formatCad(amount);
+  if (benefits != null && benefits > 0) {
+    amountText = `${amountText} (taxable benefits ${formatCad(benefits)})`;
   }
+
+  const sourceNote =
+    sourceKind === 'ontario_ca'
+      ? 'Ontario.ca published compendium CSV'
+      : 'Ontario Data Catalogue open-data CSV (newest machine-readable year on data.ontario.ca)';
+
+  return {
+    salary: {
+      amount,
+      amount_text: amountText,
+      period: `Calendar year ${disclosureYear}`,
+      description: `${jobTitle || 'Premier'} — ${employer || 'Legislative Assembly'} (${sourceNote})`,
+    },
+    sourceUrl:
+      sourceKind === 'ontario_ca' ? pssdYearPageUrl(year) : SOURCES.pssdPage,
+    reportingYear: disclosureYear,
+    sourceKind,
+  };
+}
+
+async function fetchSunshineSalary() {
+  for (const year of PSSD_ONTARIO_CA_YEARS) {
+    try {
+      const csvUrl = await resolveOntarioCaCsvUrl(year);
+      if (!csvUrl) continue;
+      let match = null;
+      await streamPssdMatch(csvUrl, (row) => {
+        match = row;
+      });
+      if (match) return buildSalaryFromRow(match, year, 'ontario_ca');
+    } catch {
+      // try next year
+    }
+  }
+
+  for (const year of PSSD_CKAN_YEARS) {
+    try {
+      const csvUrl = await resolveCkanCsvUrl(year);
+      if (!csvUrl) continue;
+      let match = null;
+      await streamPssdMatch(csvUrl, (row) => {
+        match = row;
+      });
+      if (match) return buildSalaryFromRow(match, year, 'ckan');
+    } catch {
+      // try next year
+    }
+  }
+
   return null;
 }
 
