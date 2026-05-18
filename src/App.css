@@ -20,3 +20,224 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Subnational transparency modals — mobile layout (≤768px); desktop unchanged */
+@media (max-width: 768px) {
+  .sn-trans-modal {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    border-radius: 1rem;
+  }
+
+  .sn-trans-modal-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem !important;
+  }
+
+  .sn-trans-modal-header .sn-trans-modal-back {
+    min-height: 2.5rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .sn-trans-modal-header-text {
+    flex: 1 1 calc(100% - 5.5rem);
+    min-width: 0;
+  }
+
+  .sn-trans-modal-title {
+    font-size: 0.875rem !important;
+    line-height: 1.3;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  .sn-trans-modal-subtitle {
+    font-size: 0.6875rem !important;
+    line-height: 1.35;
+    margin-top: 0.125rem !important;
+    word-break: break-word;
+  }
+
+  .sn-trans-modal-body {
+    padding: 0.625rem 0.75rem !important;
+  }
+
+  .sn-trans-modal-header-search {
+    margin-bottom: 0 !important;
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .sn-trans-modal-header-search input {
+    font-size: 0.8125rem;
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+  }
+
+  .sn-trans-snapshot {
+    padding: 0.75rem !important;
+    margin-bottom: 0.625rem !important;
+  }
+
+  .sn-trans-snapshot-label {
+    font-size: 0.6875rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .sn-trans-snapshot-row {
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .sn-trans-snapshot-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .sn-trans-snapshot-row .sn-trans-snapshot-main {
+    font-size: 0.8125rem;
+  }
+
+  .sn-trans-snapshot-row dt {
+    min-width: 0;
+    flex: 1 1 auto;
+    padding-right: 0.5rem;
+    line-height: 1.35;
+  }
+
+  .sn-trans-snapshot-row dd {
+    flex-shrink: 0;
+    text-align: right;
+    max-width: 52%;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
+  .sn-trans-snapshot-sub {
+    text-align: left !important;
+    font-size: 0.6875rem !important;
+    margin-top: 0.125rem;
+    padding-left: 0;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
+  .sn-trans-periods-accordion {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    background: #fff;
+    margin-bottom: 0.625rem;
+  }
+
+  .sn-trans-periods-accordion > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    list-style: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sn-trans-periods-accordion > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .sn-trans-periods-accordion > summary::after {
+    content: '▾';
+    font-size: 0.75rem;
+    color: #6b7280;
+    transition: transform 0.15s ease;
+  }
+
+  .sn-trans-periods-accordion[open] > summary::after {
+    transform: rotate(180deg);
+  }
+
+  .sn-trans-periods-body {
+    padding: 0 0.75rem 0.625rem;
+    font-size: 0.75rem;
+  }
+
+  .sn-trans-expand-btn {
+    min-height: 2.75rem;
+    font-size: 0.8125rem;
+    margin-bottom: 0.625rem;
+    touch-action: manipulation;
+    width: 100%;
+  }
+
+  .sn-trans-details-panel.hidden {
+    display: none;
+  }
+
+  .sn-trans-collapse-link {
+    min-height: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    touch-action: manipulation;
+  }
+
+  .sn-trans-details-panel .sn-trans-section-title {
+    font-size: 0.8125rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .sn-trans-details-panel .sn-trans-record-summary {
+    font-size: 0.6875rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .sn-trans-modal-close-btn {
+    min-height: 2.75rem;
+    margin-top: 0.5rem !important;
+    touch-action: manipulation;
+  }
+
+  .sn-trans-modal .sn-trans-chart-card {
+    padding: 0.75rem !important;
+    margin-bottom: 0.625rem !important;
+  }
+
+  .sn-trans-modal .sn-trans-chart-card h3 {
+    font-size: 0.875rem !important;
+  }
+
+  .sn-trans-modal .sn-trans-chart-card > p.text-sm {
+    font-size: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .sn-trans-modal .sn-trans-chart-card button {
+    min-height: 2.5rem;
+    width: 100%;
+  }
+}
+
+@media (min-width: 769px) {
+  .sn-trans-periods-accordion {
+    border: none;
+    background: transparent;
+    margin-bottom: 1rem;
+  }
+
+  .sn-trans-periods-accordion > summary {
+    display: none;
+  }
+
+  .sn-trans-periods-body {
+    padding: 0;
+  }
+
+  .sn-trans-expand-btn,
+  .sn-trans-collapse-link-wrap {
+    display: none !important;
+  }
+}

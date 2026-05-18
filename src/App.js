@@ -1813,8 +1813,10 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
   const [showTaxExemptModal, setShowTaxExemptModal] = useState(false);
+  const [taxModalDetailsOpen, setTaxModalDetailsOpen] = useState(false);
   const [taxExemptSearch, setTaxExemptSearch] = useState('');
   const [showGrantsModal, setShowGrantsModal] = useState(false);
+  const [grantsModalDetailsOpen, setGrantsModalDetailsOpen] = useState(false);
   const [grantsSearch, setGrantsSearch] = useState('');
   const [showLeaderPanel, setShowLeaderPanel] = useState(false);
   const [selectedLeader, setSelectedLeader] = useState(null);
@@ -13060,6 +13062,26 @@ function App() {
     setEconomicModalChartsOpen(!headlines.hasLiveData);
   }, [showEconomicModal, provinceTransparencyFields, selectedProvince, selectedCountry]);
 
+  useEffect(() => {
+    if (!showTaxExemptModal || !selectedProvince) return;
+    const isUSA = selectedCountry?.type === 'usa';
+    const merged = provinceTransparencyFields
+      ? { ...selectedProvince, ...provinceTransparencyFields }
+      : selectedProvince;
+    const taxLive = taxExemptFromExplorerItem(merged);
+    setTaxModalDetailsOpen(taxLive.companies.length === 0);
+  }, [showTaxExemptModal, provinceTransparencyFields, selectedProvince, selectedCountry]);
+
+  useEffect(() => {
+    if (!showGrantsModal || !selectedProvince) return;
+    const isUSA = selectedCountry?.type === 'usa';
+    const merged = provinceTransparencyFields
+      ? { ...selectedProvince, ...provinceTransparencyFields }
+      : selectedProvince;
+    const grantsLive = grantsGivenFromExplorerItem(merged);
+    setGrantsModalDetailsOpen(grantsLive.grants.length === 0);
+  }, [showGrantsModal, provinceTransparencyFields, selectedProvince, selectedCountry]);
+
   const renderProvincial = () => {
     const isUSA = selectedCountry?.type === 'usa';
     const { canadaProvinces, usStates } = getProvincialData();
@@ -13515,8 +13537,8 @@ function App() {
   const renderSubnationalHeadlineSnapshot = (headlines, loading) => {
     if (loading) {
       return (
-        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+        <div className="sn-trans-snapshot bg-white border border-gray-200 rounded-xl p-4 mb-4 shadow-sm">
+          <p className="sn-trans-snapshot-label text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
             Latest official snapshot
           </p>
           <p className="text-sm text-gray-500 flex items-center gap-2">
@@ -13528,8 +13550,8 @@ function App() {
     }
     if (!headlines?.hasLiveData) {
       return (
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
+        <div className="sn-trans-snapshot bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
+          <p className="sn-trans-snapshot-label text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
             Latest official snapshot
           </p>
           <p className="text-sm text-gray-600">{TRANSPARENCY_HEADLINE_NOT_LOADED}</p>
@@ -13537,19 +13559,19 @@ function App() {
       );
     }
     return (
-      <div className="bg-white border border-indigo-100 rounded-xl p-4 mb-4 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600 mb-3">
+      <div className="sn-trans-snapshot bg-white border border-indigo-100 rounded-xl p-4 mb-4 shadow-sm">
+        <p className="sn-trans-snapshot-label text-xs font-semibold uppercase tracking-wide text-indigo-600 mb-3">
           Latest official snapshot
         </p>
-        <dl className="space-y-2.5">
+        <dl className="space-y-0">
           {headlines.metrics.map((m) => (
-            <div key={m.label}>
-              <div className="flex justify-between gap-3 text-sm">
+            <div key={m.label} className="sn-trans-snapshot-row">
+              <div className="sn-trans-snapshot-main flex justify-between gap-3 text-sm">
                 <dt className="text-gray-600">{m.label}</dt>
                 <dd className="font-semibold text-gray-900 text-right tabular-nums">{m.value}</dd>
               </div>
               {m.sub ? (
-                <dd className="text-xs text-gray-400 mt-0.5 text-right leading-snug">{m.sub}</dd>
+                <p className="sn-trans-snapshot-sub text-xs text-gray-400 mt-0.5 text-right leading-snug">{m.sub}</p>
               ) : null}
             </div>
           ))}
@@ -13592,27 +13614,30 @@ function App() {
         : '';
 
     return (
-      <div className="mt-1.5 space-y-1">
-        <p className="text-xs text-gray-500 leading-snug">{intro}</p>
-        {categories.length > 0 ? (
-          <ul className="text-xs text-slate-700 font-medium leading-snug space-y-0.5 list-none pl-0 m-0">
-            {categories.map((c) => (
-              <li key={c.label}>
-                <span className="text-slate-500">{c.label}:</span> {c.period}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-xs text-slate-700 font-medium leading-snug">
-            {item[legacyKey] || REPORTING_PERIOD_NOT_SPECIFIED}
-          </p>
-        )}
-        {footnote ? (
-          <p className="text-xs text-slate-600 leading-snug">
-            <span className="text-slate-500">Overview:</span> {footnote}
-          </p>
-        ) : null}
-      </div>
+      <details className="sn-trans-periods-accordion">
+        <summary>Reporting periods</summary>
+        <div className="sn-trans-periods-body mt-1.5 space-y-1">
+          <p className="text-xs text-gray-500 leading-snug">{intro}</p>
+          {categories.length > 0 ? (
+            <ul className="text-xs text-slate-700 font-medium leading-snug space-y-0.5 list-none pl-0 m-0">
+              {categories.map((c) => (
+                <li key={c.label}>
+                  <span className="text-slate-500">{c.label}:</span> {c.period}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-slate-700 font-medium leading-snug">
+              {item[legacyKey] || REPORTING_PERIOD_NOT_SPECIFIED}
+            </p>
+          )}
+          {footnote ? (
+            <p className="text-xs text-slate-600 leading-snug">
+              <span className="text-slate-500">Overview:</span> {footnote}
+            </p>
+          ) : null}
+        </div>
+      </details>
     );
   };
 
@@ -13685,7 +13710,7 @@ function App() {
 
     // Card wrapper matching Analytics section style
     const Card = ({ title, desc, children }) => (
-      <div className="bg-white rounded-lg shadow-md p-5 mb-4">
+      <div className="sn-trans-chart-card bg-white rounded-lg shadow-md p-5 mb-4">
         <h3 className="text-base font-bold text-gray-800 mb-0.5">{title}</h3>
         <p className="text-sm text-gray-500 mb-4">{desc}</p>
         {children}
@@ -13699,28 +13724,28 @@ function App() {
         style={{ background: 'rgba(0,0,0,0.55)' }}
         onClick={(e) => { if (e.target === e.currentTarget) setShowEconomicModal(false); }}
       >
-        <div className="relative bg-gray-50 w-full max-w-xl md:max-w-4xl mx-2 sm:mx-4 md:mx-auto my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
+        <div className="sn-trans-modal relative bg-gray-50 w-full max-w-xl md:max-w-4xl mx-2 sm:mx-4 md:mx-auto my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
 
           {/* Header */}
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-center gap-3 border-b border-gray-100 shadow-sm">
-            <button onClick={() => setShowEconomicModal(false)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0">
+          <div className="sn-trans-modal-header sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-center gap-3 border-b border-gray-100 shadow-sm">
+            <button onClick={() => setShowEconomicModal(false)} className="sn-trans-modal-back flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0">
               <X className="w-4 h-4" />
               <span>Back</span>
             </button>
-            <div className="flex-1 min-w-0">
-              <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug truncate">{jurisdictionLabel} — Economic &amp; Social Data</h2>
+            <div className="sn-trans-modal-header-text flex-1 min-w-0">
+              <h2 className="sn-trans-modal-title font-bold text-gray-800 text-sm sm:text-base leading-snug truncate">{jurisdictionLabel} — Economic &amp; Social Data</h2>
               {(hasData || transparencyLoading) ? (
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="sn-trans-modal-subtitle text-xs text-gray-500 mt-0.5">
                   Official series from government sources
                   {sourceName ? ` · ${sourceName}` : ''}
                 </p>
               ) : (
-                <p className="text-xs text-gray-600 mt-0.5 font-medium">Official economic and social statistics are not loaded yet for this jurisdiction.</p>
+                <p className="sn-trans-modal-subtitle text-xs text-gray-600 mt-0.5 font-medium">Official economic and social statistics are not loaded yet for this jurisdiction.</p>
               )}
             </div>
           </div>
 
-          <div className="p-4">
+          <div className="sn-trans-modal-body p-4">
             {renderSubnationalHeadlineSnapshot(economicHeadlines, transparencyLoading)}
             {!transparencyLoading ? (
               <div className="mb-4">{renderSubnationalPeriodMeta(item, 'economic')}</div>
@@ -13742,19 +13767,29 @@ function App() {
               <button
                 type="button"
                 onClick={() => setEconomicModalChartsOpen(true)}
-                className="w-full mb-4 py-3 rounded-xl text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors"
+                className="sn-trans-expand-btn w-full mb-4 py-3 rounded-xl text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors md:hidden"
+              >
+                View full charts &amp; details
+              </button>
+            ) : null}
+            <div className={economicModalChartsOpen ? 'sn-trans-details-panel' : 'sn-trans-details-panel hidden md:block'}>
+            {!economicModalChartsOpen ? (
+              <button
+                type="button"
+                onClick={() => setEconomicModalChartsOpen(true)}
+                className="sn-trans-expand-btn hidden md:block w-full mb-4 py-3 rounded-xl text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors"
               >
                 View full charts &amp; details
               </button>
             ) : null}
             {economicModalChartsOpen ? (
               <>
-              <div className="flex items-center justify-between gap-2 mb-3">
+              <div className="flex items-center justify-between gap-2 mb-3 sn-trans-collapse-link-wrap">
                 <h3 className="text-sm font-bold text-gray-800">Full charts &amp; details</h3>
                 <button
                   type="button"
                   onClick={() => setEconomicModalChartsOpen(false)}
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+                  className="sn-trans-collapse-link text-xs font-semibold text-indigo-600 hover:text-indigo-800 px-2 py-1"
                 >
                   Hide charts
                 </button>
@@ -13904,9 +13939,10 @@ function App() {
             )}
               </>
             ) : null}
+            </div>
             </>
             ) : null}
-            <button onClick={() => setShowEconomicModal(false)} className="w-full mt-2 mb-1 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+            <button onClick={() => setShowEconomicModal(false)} className="sn-trans-modal-close-btn w-full mt-2 mb-1 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
             </button>
           </div>
@@ -14090,24 +14126,24 @@ function App() {
         style={{ background: 'rgba(0,0,0,0.55)' }}
         onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
       >
-        <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
+        <div className="sn-trans-modal relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
 
           {/* Sticky header */}
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
-            <div className="flex items-start gap-3 mb-3">
-              <button onClick={closeModal} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
+          <div className="sn-trans-modal-header sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
+            <div className="flex items-start gap-3 mb-3 md:mb-3">
+              <button onClick={closeModal} className="sn-trans-modal-back flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
                 <X className="w-4 h-4" />
                 <span>Back</span>
               </button>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Tax Exempt / Charities</h2>
+              <div className="sn-trans-modal-header-text flex-1 min-w-0">
+                <h2 className="sn-trans-modal-title font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Tax Exempt / Charities</h2>
                 {(hasLiveData || transparencyLoading) ? (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="sn-trans-modal-subtitle text-xs text-gray-500 mt-1">
                     Official registry listing
                     {sourceName ? ` · ${sourceName}` : ''}
                   </p>
                 ) : (
-                  <p className="text-xs text-gray-600 mt-0.5 font-medium">Official tax-exempt company records are not loaded yet for this jurisdiction.</p>
+                  <p className="sn-trans-modal-subtitle text-xs text-gray-600 mt-0.5 font-medium">Official tax-exempt company records are not loaded yet for this jurisdiction.</p>
                 )}
               </div>
               <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
@@ -14115,7 +14151,7 @@ function App() {
               </button>
             </div>
             {/* Search bar */}
-            <div className="relative">
+            <div className="sn-trans-modal-header-search relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <input
                 type="text"
@@ -14133,20 +14169,49 @@ function App() {
           </div>
 
           {/* Table body */}
-          <div className="p-3 sm:p-5">
+          <div className="sn-trans-modal-body p-3 sm:p-5">
             {renderSubnationalHeadlineSnapshot(taxHeadlines, transparencyLoading)}
             {!transparencyLoading ? (
               <div className="mb-4">{renderSubnationalPeriodMeta(item, 'tax')}</div>
             ) : null}
             {!transparencyLoading && hasLiveData ? (
-              <p className="text-xs text-gray-500 mb-3">
+              <p className="sn-trans-record-summary text-xs text-gray-500 mb-3 hidden md:block">
                 {companies.length} {companies.length === 1 ? 'record' : 'records'} in listing
                 {Number.isFinite(totalRaw) && totalRaw > 0
                   ? ` · Total reported exemption: ${fmtTotal}`
                   : ''}
               </p>
             ) : null}
-            <h3 className="text-sm font-bold text-gray-800 mb-3">Full registry &amp; details</h3>
+            {!taxModalDetailsOpen && hasLiveData && !transparencyLoading ? (
+              <button
+                type="button"
+                onClick={() => setTaxModalDetailsOpen(true)}
+                className="sn-trans-expand-btn md:hidden w-full mb-3 py-3 rounded-xl text-sm font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors"
+              >
+                View full charts &amp; details
+              </button>
+            ) : null}
+            <div className={taxModalDetailsOpen ? 'sn-trans-details-panel' : 'sn-trans-details-panel hidden md:block'}>
+            {taxModalDetailsOpen ? (
+              <div className="sn-trans-collapse-link-wrap flex justify-end mb-2 md:hidden">
+                <button
+                  type="button"
+                  onClick={() => setTaxModalDetailsOpen(false)}
+                  className="sn-trans-collapse-link text-xs font-semibold text-amber-700 px-2 py-1"
+                >
+                  Hide details
+                </button>
+              </div>
+            ) : null}
+            {!transparencyLoading && hasLiveData ? (
+              <p className="sn-trans-record-summary text-xs text-gray-500 mb-3 md:hidden">
+                {companies.length} {companies.length === 1 ? 'record' : 'records'} in listing
+                {Number.isFinite(totalRaw) && totalRaw > 0
+                  ? ` · Total reported exemption: ${fmtTotal}`
+                  : ''}
+              </p>
+            ) : null}
+            <h3 className="sn-trans-section-title text-sm font-bold text-gray-800 mb-3">Full registry &amp; details</h3>
             {!hasLiveData && !transparencyLoading ? (
               <div className="text-center py-14 px-4 text-gray-500">
                 <Building2 className="w-8 h-8 mx-auto mb-2 text-gray-300" />
@@ -14225,7 +14290,8 @@ function App() {
                 </a>
               </p>
             )}
-            <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+            </div>
+            <button onClick={closeModal} className="sn-trans-modal-close-btn w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
             </button>
           </div>
@@ -14275,24 +14341,24 @@ function App() {
         style={{ background: 'rgba(0,0,0,0.55)' }}
         onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
       >
-        <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
+        <div className="sn-trans-modal relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
 
           {/* Sticky header */}
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
+          <div className="sn-trans-modal-header sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
             <div className="flex items-start gap-3 mb-3">
-              <button onClick={closeModal} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
+              <button onClick={closeModal} className="sn-trans-modal-back flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
                 <X className="w-4 h-4" />
                 <span>Back</span>
               </button>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Grants Given</h2>
+              <div className="sn-trans-modal-header-text flex-1 min-w-0">
+                <h2 className="sn-trans-modal-title font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Grants Given</h2>
                 {(hasLiveData || transparencyLoading) ? (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="sn-trans-modal-subtitle text-xs text-gray-500 mt-1">
                     Official grant awards
                     {sourceName ? ` · ${sourceName}` : ''}
                   </p>
                 ) : (
-                  <p className="text-xs text-gray-600 mt-0.5 font-medium">Official grant award records are not loaded yet for this jurisdiction.</p>
+                  <p className="sn-trans-modal-subtitle text-xs text-gray-600 mt-0.5 font-medium">Official grant award records are not loaded yet for this jurisdiction.</p>
                 )}
               </div>
               <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
@@ -14300,7 +14366,7 @@ function App() {
               </button>
             </div>
             {/* Search bar */}
-            <div className="relative">
+            <div className="sn-trans-modal-header-search relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <input
                 type="text"
@@ -14318,18 +14384,45 @@ function App() {
           </div>
 
           {/* Table */}
-          <div className="p-3 sm:p-5">
+          <div className="sn-trans-modal-body p-3 sm:p-5">
             {renderSubnationalHeadlineSnapshot(grantsHeadlines, transparencyLoading)}
             {!transparencyLoading ? (
               <div className="mb-4">{renderSubnationalPeriodMeta(item, 'grants')}</div>
             ) : null}
             {!transparencyLoading && hasLiveData ? (
-              <p className="text-xs text-gray-500 mb-3">
+              <p className="sn-trans-record-summary text-xs text-gray-500 mb-3 hidden md:block">
                 {grants.length} {grants.length === 1 ? 'award' : 'awards'} in listing · Total shown:{' '}
                 <span className="font-semibold text-emerald-700">{fmtTotal}</span>
               </p>
             ) : null}
-            <h3 className="text-sm font-bold text-gray-800 mb-3">Full awards &amp; details</h3>
+            {!grantsModalDetailsOpen && hasLiveData && !transparencyLoading ? (
+              <button
+                type="button"
+                onClick={() => setGrantsModalDetailsOpen(true)}
+                className="sn-trans-expand-btn md:hidden w-full mb-3 py-3 rounded-xl text-sm font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors"
+              >
+                View full charts &amp; details
+              </button>
+            ) : null}
+            <div className={grantsModalDetailsOpen ? 'sn-trans-details-panel' : 'sn-trans-details-panel hidden md:block'}>
+            {grantsModalDetailsOpen ? (
+              <div className="sn-trans-collapse-link-wrap flex justify-end mb-2 md:hidden">
+                <button
+                  type="button"
+                  onClick={() => setGrantsModalDetailsOpen(false)}
+                  className="sn-trans-collapse-link text-xs font-semibold text-emerald-700 px-2 py-1"
+                >
+                  Hide details
+                </button>
+              </div>
+            ) : null}
+            {!transparencyLoading && hasLiveData ? (
+              <p className="sn-trans-record-summary text-xs text-gray-500 mb-3 md:hidden">
+                {grants.length} {grants.length === 1 ? 'award' : 'awards'} in listing · Total shown:{' '}
+                <span className="font-semibold text-emerald-700">{fmtTotal}</span>
+              </p>
+            ) : null}
+            <h3 className="sn-trans-section-title text-sm font-bold text-gray-800 mb-3">Full awards &amp; details</h3>
             {!hasLiveData && !transparencyLoading ? (
               <div className="text-center py-14 px-4 text-gray-500">
                 <DollarSign className="w-8 h-8 mx-auto mb-2 text-gray-300" />
@@ -14411,7 +14504,8 @@ function App() {
                 </a>
               </p>
             )}
-            <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+            </div>
+            <button onClick={closeModal} className="sn-trans-modal-close-btn w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
             </button>
           </div>
