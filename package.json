@@ -29,6 +29,7 @@
     "sync:subnational-transparency": "node engine/sync-subnational-transparency.cjs",
     "sync:subnational-leader-profiles-pilot": "node engine/sync-subnational-leader-profiles-pilot.cjs",
     "sync:subnational-leader-profiles": "node engine/sync-subnational-leader-profiles.cjs",
+    "sync:subnational-leader-transparency": "node engine/sync-subnational-leader-transparency.cjs",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

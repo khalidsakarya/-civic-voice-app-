@@ -36,6 +36,9 @@ import {
   hasLiveOfficialLeaderProfile,
   leaderProfilePanelPayloadFromExplorerItem,
 } from './utils/subnationalLeaderProfile';
+import { fetchSubnationalLeaderTransparency } from './firestore/fetchSubnationalLeaderTransparency';
+import { PILOT_LEADER_TRANSPARENCY_IDS } from './utils/subnationalLeaderTransparency';
+import SubnationalLeaderTransparencySections from './components/SubnationalLeaderTransparencySections';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
 import {
   FEDERAL_REGISTER_SOURCE_NAME,
@@ -1815,6 +1818,8 @@ function App() {
   const [grantsSearch, setGrantsSearch] = useState('');
   const [showLeaderPanel, setShowLeaderPanel] = useState(false);
   const [selectedLeader, setSelectedLeader] = useState(null);
+  const [subnationalLeaderTransparency, setSubnationalLeaderTransparency] = useState(null);
+  const [subnationalLeaderTransparencyLoading, setSubnationalLeaderTransparencyLoading] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -3994,6 +3999,30 @@ function App() {
       }
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const id = selectedLeader?.subnationalId;
+    if (!showLeaderPanel || !id || !PILOT_LEADER_TRANSPARENCY_IDS.includes(id)) {
+      setSubnationalLeaderTransparency(null);
+      setSubnationalLeaderTransparencyLoading(false);
+      return undefined;
+    }
+    let cancelled = false;
+    setSubnationalLeaderTransparencyLoading(true);
+    fetchSubnationalLeaderTransparency(id)
+      .then((row) => {
+        if (!cancelled) setSubnationalLeaderTransparency(row);
+      })
+      .catch(() => {
+        if (!cancelled) setSubnationalLeaderTransparency(null);
+      })
+      .finally(() => {
+        if (!cancelled) setSubnationalLeaderTransparencyLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showLeaderPanel, selectedLeader?.subnationalId]);
 
   // Shared helper: fetch member_bios for a given member; tries bioguide_id first, then memberName
   const fetchMemberBio = async (member) => {
@@ -25160,7 +25189,7 @@ function App() {
     if (!isDeputy && !useOfficial) {
       return (
         <div className="min-h-screen animate-fade-in" style={{ background: '#F0F4F8' }}>
-          <motion.div
+          <div
             className="sticky top-0 z-10"
             style={{
               background: 'linear-gradient(135deg, #071322 0%, #0A1F48 100%)',
@@ -25192,7 +25221,7 @@ function App() {
                 <h1 className="font-black text-white text-lg sm:text-xl leading-tight truncate">{leaderName}</h1>
               </div>
             </div>
-          </motion.div>
+          </div>
           <div className="max-w-5xl mx-auto px-4 sm:px-8 py-8">
             <div className="bg-white rounded-2xl p-6 mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.10)' }}>
               <div className="flex items-start gap-4">
@@ -34441,11 +34470,16 @@ function App() {
     return { ...leader, leaderProfilePending: true };
   };
 
+
   const renderLeaderPanel = () => {
     if (!selectedLeader || !showLeaderPanel) return null;
     const leader = enrichLeader(selectedLeader);
     const useOfficial = !!leader.useOfficialProfileOnly;
     const profilePending = !!leader.leaderProfilePending;
+    const showTransparencyPilot =
+      useOfficial &&
+      leader.subnationalId &&
+      PILOT_LEADER_TRANSPARENCY_IDS.includes(leader.subnationalId);
     const partyColorMap = {
       'Republican': '#dc2626',            'Democratic': '#2563eb',
       'NDP': '#f97316',                   'Liberal': '#dc2626',
@@ -34496,9 +34530,7 @@ function App() {
             <div className="p-6 space-y-7">
 
               {profilePending && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
+                <div
                   className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-5 text-center"
                   role="status"
                 >
@@ -34506,7 +34538,7 @@ function App() {
                   <p className="text-xs text-amber-800/90 mt-1.5 leading-relaxed">
                     Only basic identity is shown until leader fields are verified from official government sources.
                   </p>
-                </motion.div>
+                </div>
               )}
 
               {useOfficial && (
@@ -34591,6 +34623,13 @@ function App() {
                     )}
                   </div>
                 </section>
+              )}
+
+              {showTransparencyPilot && (
+                <SubnationalLeaderTransparencySections
+                  transparencyRow={subnationalLeaderTransparency}
+                  loading={subnationalLeaderTransparencyLoading}
+                />
               )}
 
               {false && (
