@@ -41,6 +41,7 @@ import {
 import { fetchSubnationalLeaderTransparency } from './firestore/fetchSubnationalLeaderTransparency';
 import { PILOT_LEADER_TRANSPARENCY_IDS } from './utils/subnationalLeaderTransparency';
 import SubnationalLeaderTransparencySections from './components/SubnationalLeaderTransparencySections';
+import CaOnLeaderTransparencySections from './components/CaOnLeaderTransparencySections';
 import EconomicModalMetricChart from './components/EconomicModalMetricChart';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
 import {
@@ -34621,12 +34622,18 @@ function App() {
                 </section>
               )}
 
-              {showTransparencyPilot && (
-                <SubnationalLeaderTransparencySections
-                  transparencyRow={subnationalLeaderTransparency}
-                  loading={subnationalLeaderTransparencyLoading}
-                />
-              )}
+              {showTransparencyPilot &&
+                (leader.subnationalId === 'CA-ON' ? (
+                  <CaOnLeaderTransparencySections
+                    transparencyRow={subnationalLeaderTransparency}
+                    loading={subnationalLeaderTransparencyLoading}
+                  />
+                ) : (
+                  <SubnationalLeaderTransparencySections
+                    transparencyRow={subnationalLeaderTransparency}
+                    loading={subnationalLeaderTransparencyLoading}
+                  />
+                ))}
 
               {false && (
               <>
