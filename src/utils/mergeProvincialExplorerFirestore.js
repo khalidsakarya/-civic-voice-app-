@@ -5,6 +5,7 @@
  */
 
 import { buildExplorerTransparencyFields } from './subnationalTransparencyData';
+import { applyLeaderProfileFieldsFromFirestore } from './subnationalLeaderProfile';
 
 /** @param {unknown} v */
 function trimString(v) {
@@ -259,6 +260,8 @@ export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
 
   Object.assign(out, buildExplorerTransparencyFields(fsRow, isUSA));
 
+  applyLeaderProfileFieldsFromFirestore(out, fsRow);
+
   applyUsGovernorHeadlineManualReviewFlags(out, fsRow, isUSA);
 
   return out;
@@ -381,6 +384,8 @@ export function buildProvincialExplorerRowFromFirestoreWithHardcodedFallback(
   if (flagFs) out.flagUrl = flagFs;
 
   Object.assign(out, buildExplorerTransparencyFields(fsRow, isUSA));
+
+  applyLeaderProfileFieldsFromFirestore(out, fsRow);
 
   applyUsGovernorHeadlineManualReviewFlags(out, fsRow, isUSA);
 
@@ -517,6 +522,8 @@ export function mergeAustralianExplorerRow(hardcoded, fsRow) {
       : '';
   out.partyShort = fsPartyShort || String(hardcoded.partyShort || '');
 
+  applyLeaderProfileFieldsFromFirestore(out, fsRow);
+
   applyCaAuSubnationalManualReviewNoticeFields(out, fsRow);
 
   return out;
@@ -609,6 +616,8 @@ export function buildAustralianExplorerRowFromFirestoreWithHardcodedFallback(
   if (out.legislature === undefined && hardcoded.legislature) {
     out.legislature = { ...hardcoded.legislature };
   }
+
+  applyLeaderProfileFieldsFromFirestore(out, fsRow);
 
   applyCaAuSubnationalManualReviewNoticeFields(out, fsRow);
 
@@ -802,6 +811,8 @@ export function buildUkEnglandRegionRowFromFirestoreWithHardcodedFallback(
   const flagFs = ts(fsRow.flagUrl);
   if (flagFs) out.flagUrl = flagFs;
 
+  applyLeaderProfileFieldsFromFirestore(out, fsRow);
+
   return out;
 }
 
@@ -938,6 +949,8 @@ export function mergeUkEnglandRegionRow(hardcoded, fsRow) {
 
   const legFs = buildLegislatureFromSubnationalFirestore(fsRow);
   if (legFs) out.legislature = legFs;
+
+  applyLeaderProfileFieldsFromFirestore(out, fsRow);
 
   return out;
 }

@@ -32,6 +32,10 @@ import {
   TRANSPARENCY_HEADLINE_NOT_LOADED,
   subnationalTransparencyJurisdictionId,
 } from './utils/subnationalTransparencyData';
+import {
+  hasLiveOfficialLeaderProfile,
+  leaderProfilePanelPayloadFromExplorerItem,
+} from './utils/subnationalLeaderProfile';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
 import {
   FEDERAL_REGISTER_SOURCE_NAME,
@@ -13330,7 +13334,7 @@ function App() {
             {/* Governor / Premier */}
             <div
               className="bg-white rounded-2xl shadow-elegant p-6 cursor-pointer hover:shadow-lg hover:ring-2 hover:ring-blue-200 transition-all relative group"
-              onClick={() => { setSelectedLeader({ name: leaderName, title: leaderTitle, party: leaderParty, since: item.since, bio: item.bio, isUSA, region: item.name, isDeputy: false }); setShowLeaderPanel(true); }}
+              onClick={() => { setSelectedLeader({ name: leaderName, title: leaderTitle, party: leaderParty, since: item.since, bio: item.bio, isUSA, region: item.name, isDeputy: false, ...leaderProfilePanelPayloadFromExplorerItem(item) }); setShowLeaderPanel(true); }}
             >
               <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-4">{leaderTitle}</p>
               <div className="flex flex-col items-center mb-5">
@@ -20677,11 +20681,18 @@ function App() {
       </div>
     );
 
-    const PersonCard = ({ title, name, party, since, bio, cfg, bioId }) => {
+    const PersonCard = ({ title, name, party, since, bio, cfg, bioId, onOpenProfile }) => {
       const isExpanded = !!expandedBios[bioId];
       const isLong = bio && bio.length > 150;
       return (
-        <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+        <div
+          className={`bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col${onOpenProfile ? ' cursor-pointer hover:shadow-lg transition-all group' : ''}`}
+          style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
+          onClick={onOpenProfile}
+          onKeyDown={onOpenProfile ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenProfile(); } } : undefined}
+          role={onOpenProfile ? 'button' : undefined}
+          tabIndex={onOpenProfile ? 0 : undefined}
+        >
           <div className="h-1.5 flex-shrink-0" style={{ background: cfg.solid }} />
           <div className="p-5 sm:p-6 flex flex-col flex-1">
             <div className="mb-4">
@@ -20703,7 +20714,7 @@ function App() {
               </p>
               {isLong && (
                 <button
-                  onClick={() => setExpandedBios(prev => ({ ...prev, [bioId]: !isExpanded }))}
+                  onClick={(e) => { e.stopPropagation(); setExpandedBios(prev => ({ ...prev, [bioId]: !isExpanded })); }}
                   className="mt-1.5 text-xs font-semibold transition-colors"
                   style={{ color: cfg.solid }}
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.75'}
@@ -20887,6 +20898,24 @@ function App() {
               bio={r.leaderBio}
               cfg={lcfg}
               bioId={`uk-region-${r.id}`}
+              onOpenProfile={
+                r.id === 'london' && r.hasRegionalMayor
+                  ? () => {
+                      setSelectedLeader({
+                        name: r.leader,
+                        title: r.leaderTitle || 'Mayor of London',
+                        party: r.leaderParty,
+                        since: r.leaderSince,
+                        bio: r.leaderBio,
+                        isUSA: false,
+                        region: ukRegionLabel,
+                        isDeputy: false,
+                        ...leaderProfilePanelPayloadFromExplorerItem(r),
+                      });
+                      setShowLeaderPanel(true);
+                    }
+                  : undefined
+              }
             />
             {r.subMayors && r.subMayors.length > 0 && (
               <SubMayorsCard mayors={r.subMayors} />
@@ -25123,6 +25152,7 @@ function App() {
     const leaderParty = isDeputy ? item.deputyParty  : item.party;
     const leaderSince = isDeputy ? item.deputySince  : item.since;
     const leaderBio   = isDeputy ? item.deputyBio    : item.bio;
+    const useOfficial = !isDeputy && hasLiveOfficialLeaderProfile(item);
 
     const partyColors = {
       'ALP': '#CC0000', 'Labor': '#CC0000',
@@ -25303,6 +25333,68 @@ function App() {
     const pct   = total > 0 ? Math.round((currentVotes.support / total) * 100) : 50;
 
     const getInitialsLocal = (name) => name ? name.split(' ').filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase() : '??';
+
+    if (useOfficial) {
+      return (
+        <div className="min-h-screen animate-fade-in" style={{ background: '#F0F4F8' }}>
+          <div className="sticky top-0 z-10" style={{ background: 'linear-gradient(135deg, #071322 0%, #0A1F48 100%)', paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
+            <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #C8A400, #F0C808, #C8A400)' }} />
+            <div className="max-w-5xl mx-auto px-4 sm:px-8 py-4 flex items-center gap-4">
+              <button
+                onClick={() => { setView('au-state-detail'); setSelectedAuLeader(null); }}
+                className="inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-2 transition-colors flex-shrink-0"
+                style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.88)', border: '1px solid rgba(255,255,255,0.18)' }}
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" /><span>Back</span>
+              </button>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>{item.name} · {leaderTitle}</p>
+                <h1 className="font-black text-white text-lg sm:text-xl leading-tight truncate">{leaderName}</h1>
+              </div>
+            </div>
+          </div>
+          <div className="max-w-5xl mx-auto px-4 sm:px-8 py-8">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/95 px-3 py-2.5 text-xs text-emerald-950 leading-snug mb-4 flex gap-2 items-start" role="status">
+              <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-emerald-700" aria-hidden />
+              <p>
+                <span className="font-semibold">Official source: </span>
+                Fields below are from government websites only.
+                {item.leader_profile_source_url ? (
+                  <> <a href={item.leader_profile_source_url} target="_blank" rel="noopener noreferrer" className="font-semibold underline">View source</a></>
+                ) : null}
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.10)' }}>
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-black" style={{ background: partyColor }}>{getInitialsLocal(leaderName)}</div>
+                <div>
+                  <h2 className="text-xl font-black text-gray-900">{leaderName}</h2>
+                  <p className="text-sm text-gray-600 mt-1">{leaderParty} · In office since {leaderSince}</p>
+                </div>
+              </div>
+              {leaderBio && <p className="text-sm text-gray-700 leading-relaxed">{leaderBio}</p>}
+            </div>
+            {(item.leader_office_contact || item.leader_office_address || item.officialWebsite) && (
+              <div className="bg-white rounded-2xl p-6 mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+                <h3 className="text-lg font-black text-gray-900 mb-3">Official contact</h3>
+                <div className="space-y-2 text-sm text-gray-700">
+                  {item.leader_office_contact && <p><span className="font-semibold">Contact:</span> {item.leader_office_contact}</p>}
+                  {item.leader_office_address && <p><span className="font-semibold">Address:</span> {item.leader_office_address}</p>}
+                  {item.officialWebsite && (
+                    <p><span className="font-semibold">Website:</span>{' '}
+                      <a href={item.officialWebsite} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline break-all">{item.officialWebsite}</a>
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            <p className="text-xs text-gray-500 text-center pb-4">
+              Official government source{item.leader_profile_fetched_at ? ` · fetched ${item.leader_profile_fetched_at.slice(0, 10)}` : ''}
+            </p>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="min-h-screen animate-fade-in" style={{ background: '#F0F4F8' }}>
@@ -34274,6 +34366,9 @@ function App() {
 
   // ── Enrich a governor/premier/lt-gov with deterministic generated data ───────
   const enrichLeader = (leader) => {
+    if (hasLiveOfficialLeaderProfile(leader)) {
+      return { ...leader, useOfficialProfileOnly: true };
+    }
     let h = 5381;
     for (let i = 0; i < leader.name.length; i++) h = (Math.imul(h, 33) ^ leader.name.charCodeAt(i)) | 0;
     h = Math.abs(h);
@@ -34449,6 +34544,7 @@ function App() {
   const renderLeaderPanel = () => {
     if (!selectedLeader || !showLeaderPanel) return null;
     const leader = enrichLeader(selectedLeader);
+    const useOfficial = !!leader.useOfficialProfileOnly;
     const partyColorMap = {
       'Republican': '#dc2626',            'Democratic': '#2563eb',
       'NDP': '#f97316',                   'Liberal': '#dc2626',
@@ -34498,7 +34594,33 @@ function App() {
           <div className="flex-1 overflow-y-auto">
             <div className="p-6 space-y-7">
 
-              <SubnationalIllustrativeExplorerNote />
+              {!useOfficial && <SubnationalIllustrativeExplorerNote />}
+
+              {useOfficial && (
+                <div
+                  className="rounded-lg border border-emerald-200 bg-emerald-50/95 px-3 py-2.5 text-xs text-emerald-950 leading-snug flex gap-2 items-start"
+                  role="status"
+                >
+                  <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-emerald-700" aria-hidden />
+                  <p>
+                    <span className="font-semibold">Official source: </span>
+                    Leader fields below are from government websites only.
+                    {leader.leader_profile_source_url ? (
+                      <>
+                        {' '}
+                        <a
+                          href={leader.leader_profile_source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-semibold underline"
+                        >
+                          View source page
+                        </a>
+                      </>
+                    ) : null}
+                  </p>
+                </div>
+              )}
 
               {/* Bio */}
               {leader.bio && (
@@ -34510,6 +34632,56 @@ function App() {
                 </section>
               )}
 
+              {useOfficial && (leader.leader_office_contact || leader.leader_office_address || leader.officialWebsite) && (
+                <section>
+                  <p className="panel-section-label">Official contact</p>
+                  <div className="space-y-2">
+                    {leader.leader_office_contact && (
+                      <div className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                        <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">Contact</p>
+                          <p className="text-sm font-semibold text-green-700">{leader.leader_office_contact}</p>
+                        </div>
+                      </div>
+                    )}
+                    {leader.leader_office_address && (
+                      <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                        <div className="w-9 h-9 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Building2 className="w-4 h-4 text-orange-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">Address</p>
+                          <p className="text-sm font-medium text-gray-700">{leader.leader_office_address}</p>
+                        </div>
+                      </div>
+                    )}
+                    {leader.officialWebsite && (
+                      <div className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                        <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Globe className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">Official website</p>
+                          <a
+                            href={leader.officialWebsite}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm font-semibold text-blue-600 break-all"
+                          >
+                            {leader.officialWebsite}
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {!useOfficial && (
+              <>
               {/* Cabinet Portfolios */}
               <section>
                 <p className="panel-section-label">Cabinet Portfolios &amp; Oversight Areas</p>
@@ -34674,7 +34846,17 @@ function App() {
                 </div>
               </section>
 
-              <p className="text-center text-xs text-gray-400 pb-2">Illustrative data · figures are statistically modelled</p>
+              </>
+              )}
+
+              {useOfficial ? (
+                <p className="text-center text-xs text-gray-500 pb-2">
+                  Official government source
+                  {leader.leader_profile_fetched_at ? ` · fetched ${leader.leader_profile_fetched_at.slice(0, 10)}` : ''}
+                </p>
+              ) : (
+                <p className="text-center text-xs text-gray-400 pb-2">Illustrative data · figures are statistically modelled</p>
+              )}
             </div>
           </div>
         </div>

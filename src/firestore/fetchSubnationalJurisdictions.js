@@ -246,6 +246,19 @@ function normalizeRecord(docId, raw) {
 
   passThroughSubnationalTransparencyFields(rec, raw);
 
+  const leaderTitleSnake = optTrim(raw.leader_title);
+  if (leaderTitleSnake) rec.leader_title = leaderTitleSnake;
+
+  const loc = optTrim(raw.leader_office_contact);
+  if (loc) rec.leader_office_contact = loc;
+  const loa = optTrim(raw.leader_office_address);
+  if (loa) rec.leader_office_address = loa;
+  const lpsu = optTrim(raw.leader_profile_source_url);
+  if (lpsu) rec.leader_profile_source_url = lpsu;
+  const lpfa = optTrim(raw.leader_profile_fetched_at);
+  if (lpfa) rec.leader_profile_fetched_at = lpfa;
+  if (raw.leader_profile_live === true) rec.leader_profile_live = true;
+
   return /** @type {SubnationalJurisdictionRecord} */ (rec);
 }
 
