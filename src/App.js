@@ -27,6 +27,8 @@ import {
   REPORTING_PERIOD_NOT_SPECIFIED,
   SUBNATIONAL_SERIES_PERIOD_INTRO,
   buildEconomicTransparencyHeadlines,
+  ECONOMIC_METRIC_CHART_SECTION_TITLE,
+  economicMetricChartAvailable,
   buildTaxTransparencyHeadlines,
   buildGrantsTransparencyHeadlines,
   TRANSPARENCY_HEADLINE_NOT_LOADED,
@@ -39,6 +41,7 @@ import {
 import { fetchSubnationalLeaderTransparency } from './firestore/fetchSubnationalLeaderTransparency';
 import { PILOT_LEADER_TRANSPARENCY_IDS } from './utils/subnationalLeaderTransparency';
 import SubnationalLeaderTransparencySections from './components/SubnationalLeaderTransparencySections';
+import EconomicModalMetricChart from './components/EconomicModalMetricChart';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
 import {
   FEDERAL_REGISTER_SOURCE_NAME,
@@ -1778,7 +1781,7 @@ function App() {
   /** Modal transparency fields from dedicated Firestore collections (e.g. CA-ON). */
   const [provinceTransparencyFields, setProvinceTransparencyFields] = useState(null);
   const [showEconomicModal, setShowEconomicModal] = useState(false);
-  const [economicModalChartsOpen, setEconomicModalChartsOpen] = useState(false);
+  const [economicModalSelectedChart, setEconomicModalSelectedChart] = useState(null);
   const [presidentVotes, setPresidentVotes] = useState(() => {
     const saved = localStorage.getItem('cvPresidentVote');
     return saved ? JSON.parse(saved) : { support: 0, oppose: 0, concerned: 0, userVote: null };
@@ -13049,18 +13052,10 @@ function App() {
   }, [selectedProvince, selectedCountry]);
 
   useEffect(() => {
-    if (!showEconomicModal || !selectedProvince) return;
-    const isUSA = selectedCountry?.type === 'usa';
-    const merged = provinceTransparencyFields
-      ? { ...selectedProvince, ...provinceTransparencyFields }
-      : selectedProvince;
-    const economic = economicSocialFromExplorerItem(merged, isUSA);
-    const headlines = buildEconomicTransparencyHeadlines(
-      economic,
-      merged.displayName || merged.name,
-    );
-    setEconomicModalChartsOpen(!headlines.hasLiveData);
-  }, [showEconomicModal, provinceTransparencyFields, selectedProvince, selectedCountry]);
+    if (!showEconomicModal) {
+      setEconomicModalSelectedChart(null);
+    }
+  }, [showEconomicModal]);
 
   useEffect(() => {
     if (!showTaxExemptModal || !selectedProvince) return;
@@ -13502,7 +13497,7 @@ function App() {
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
               onClick={() => {
-                setEconomicModalChartsOpen(false);
+                setEconomicModalSelectedChart(null);
                 setShowEconomicModal(true);
               }}
               className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
@@ -13534,7 +13529,8 @@ function App() {
     );
   };
 
-  const renderSubnationalHeadlineSnapshot = (headlines, loading) => {
+  const renderSubnationalHeadlineSnapshot = (headlines, loading, snapshotOptions) => {
+    const metricChart = snapshotOptions?.metricChart;
     if (loading) {
       return (
         <div className="sn-trans-snapshot bg-white border border-gray-200 rounded-xl p-4 mb-4 shadow-sm">
@@ -13566,9 +13562,33 @@ function App() {
         <dl className="space-y-0">
           {headlines.metrics.map((m) => (
             <div key={m.label} className="sn-trans-snapshot-row">
-              <div className="sn-trans-snapshot-main flex justify-between gap-3 text-sm">
-                <dt className="text-gray-600">{m.label}</dt>
-                <dd className="font-semibold text-gray-900 text-right tabular-nums">{m.value}</dd>
+              <div className="sn-trans-snapshot-main flex justify-between gap-2 text-sm items-start">
+                <dt className="text-gray-600 min-w-0 flex-1">{m.label}</dt>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <dd className="font-semibold text-gray-900 text-right tabular-nums">{m.value}</dd>
+                  {metricChart && m.chartKey ? (
+                    m.chartAvailable ? (
+                      <button
+                        type="button"
+                        onClick={() => metricChart.onSelect(m.chartKey)}
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold border transition-colors min-h-[2rem] ${
+                          metricChart.selectedKey === m.chartKey
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                        }`}
+                        aria-label={`View ${m.label} chart`}
+                        aria-pressed={metricChart.selectedKey === m.chartKey}
+                      >
+                        <BarChart3 className="w-3.5 h-3.5 flex-shrink-0" aria-hidden />
+                        <span className="hidden sm:inline">View</span>
+                      </button>
+                    ) : (
+                      <span className="text-[10px] text-gray-400 italic max-w-[4.5rem] text-right leading-tight">
+                        Chart not loaded yet.
+                      </span>
+                    )
+                  ) : null}
+                </div>
               </div>
               {m.sub ? (
                 <p className="sn-trans-snapshot-sub text-xs text-gray-400 mt-0.5 text-right leading-snug">{m.sub}</p>
@@ -13708,15 +13728,6 @@ function App() {
     const LEG    = { fontSize: '13px', paddingTop: '10px' };
     const MARGIN = { top: 5, right: 24, left: 0, bottom: 5 };
 
-    // Card wrapper matching Analytics section style
-    const Card = ({ title, desc, children }) => (
-      <div className="sn-trans-chart-card bg-white rounded-lg shadow-md p-5 mb-4">
-        <h3 className="text-base font-bold text-gray-800 mb-0.5">{title}</h3>
-        <p className="text-sm text-gray-500 mb-4">{desc}</p>
-        {children}
-      </div>
-    );
-
     return (
       <>
       <div
@@ -13746,7 +13757,15 @@ function App() {
           </div>
 
           <div className="sn-trans-modal-body p-4">
-            {renderSubnationalHeadlineSnapshot(economicHeadlines, transparencyLoading)}
+            {renderSubnationalHeadlineSnapshot(economicHeadlines, transparencyLoading, {
+              metricChart: hasData && !transparencyLoading
+                ? {
+                    selectedKey: economicModalSelectedChart,
+                    onSelect: (key) =>
+                      setEconomicModalSelectedChart((prev) => (prev === key ? null : key)),
+                  }
+                : undefined,
+            })}
             {!transparencyLoading ? (
               <div className="mb-4">{renderSubnationalPeriodMeta(item, 'economic')}</div>
             ) : null}
@@ -13761,186 +13780,56 @@ function App() {
               </div>
             ) : null}
 
-            {hasData && !transparencyLoading ? (
-            <>
-            {!economicModalChartsOpen ? (
-              <button
-                type="button"
-                onClick={() => setEconomicModalChartsOpen(true)}
-                className="sn-trans-expand-btn w-full mb-4 py-3 rounded-xl text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors md:hidden"
-              >
-                View full charts &amp; details
-              </button>
-            ) : null}
-            <div className={economicModalChartsOpen ? 'sn-trans-details-panel' : 'sn-trans-details-panel hidden md:block'}>
-            {!economicModalChartsOpen ? (
-              <button
-                type="button"
-                onClick={() => setEconomicModalChartsOpen(true)}
-                className="sn-trans-expand-btn hidden md:block w-full mb-4 py-3 rounded-xl text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors"
-              >
-                View full charts &amp; details
-              </button>
-            ) : null}
-            {economicModalChartsOpen ? (
-              <>
-              <div className="flex items-center justify-between gap-2 mb-3 sn-trans-collapse-link-wrap">
-                <h3 className="text-sm font-bold text-gray-800">Full charts &amp; details</h3>
-                <button
-                  type="button"
-                  onClick={() => setEconomicModalChartsOpen(false)}
-                  className="sn-trans-collapse-link text-xs font-semibold text-indigo-600 hover:text-indigo-800 px-2 py-1"
-                >
-                  Hide charts
-                </button>
+            {hasData &&
+            !transparencyLoading &&
+            economicModalSelectedChart &&
+            economicMetricChartAvailable(economic, economicModalSelectedChart) ? (
+              <div className="sn-trans-details-panel mb-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3 sn-trans-collapse-link-wrap">
+                  <h3 className="text-sm font-bold text-gray-800">
+                    {ECONOMIC_METRIC_CHART_SECTION_TITLE[economicModalSelectedChart]}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setEconomicModalSelectedChart(null)}
+                    className="sn-trans-collapse-link text-xs font-semibold text-indigo-600 hover:text-indigo-800 px-2 py-1 min-h-[2rem]"
+                  >
+                    Back to snapshot
+                  </button>
+                </div>
+                <EconomicModalMetricChart
+                  chartKey={economicModalSelectedChart}
+                  isUSA={isUSA}
+                  budgetData={budgetData}
+                  spendData={spendData}
+                  crimeDataM={crimeDataM}
+                  crimeChartTitle={crimeChartTitle}
+                  crimeChartDesc={crimeChartDesc}
+                  crimeBarViolent={crimeBarViolent}
+                  crimeBarProperty={crimeBarProperty}
+                  formatCrimeTooltip={formatCrimeTooltip}
+                  formatCrimeAxisTick={formatCrimeAxisTick}
+                  unempData={unempData}
+                  unempKeys={unempKeys}
+                  gdpDataM={gdpDataM}
+                  povDataM={povDataM}
+                  homelessData={homelessData}
+                  onExpand={setExpandedChartId}
+                />
+                {sourceUrl ? (
+                  <p className="text-center text-xs text-gray-500 pb-2">
+                    Source:{' '}
+                    <a
+                      href={sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {sourceName || sourceUrl}
+                    </a>
+                  </p>
+                ) : null}
               </div>
-            {budgetData.length > 0 && (
-            <Card title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="name" type="category" width={120} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 5']} />
-                  <Tooltip formatter={(v) => [`${v}%`, 'Budget Share']} contentStyle={TT} />
-                  <Bar dataKey="value" name="Budget Share" radius={[0, 4, 4, 0]} maxBarSize={28}>
-                    {budgetData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('budget')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-              {/* Manual legend since Cell-coloring bypasses built-in Legend */}
-              <div className="flex flex-wrap gap-x-4 gap-y-1.5 justify-center mt-3">
-                {budgetData.map((c) => (
-                  <span key={c.name} className="flex items-center gap-1.5 text-xs text-gray-600">
-                    <span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: c.color }} />
-                    {c.name}
-                  </span>
-                ))}
-              </div>
-            </Card>
-            )}
-
-            {spendData.length > 0 && (
-            <Card title="Spending vs Budget" desc="Allocated vs actual spending per category ($M)">
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart layout="vertical" data={spendData} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="category" type="category" width={90} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `$${(v / 1000).toFixed(1)}B`} />
-                  <Tooltip formatter={(v) => [`$${v.toLocaleString()}M`, '']} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey="Allocated" fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={18} />
-                  <Bar dataKey="Actual"    fill="#10b981" radius={[0, 3, 3, 0]} maxBarSize={18} />
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('spending')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-            </Card>
-            )}
-
-            {crimeDataM.length > 0 && (
-            <Card title={crimeChartTitle} desc={crimeChartDesc}>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis
-                    type="number"
-                    tick={TICK}
-                    tickFormatter={formatCrimeAxisTick}
-                  />
-                  <Tooltip formatter={formatCrimeTooltip} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey={crimeBarViolent}  fill="#ef4444" radius={[0, 3, 3, 0]} maxBarSize={18} />
-                  <Bar dataKey={crimeBarProperty} fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={18} />
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('crime')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-            </Card>
-            )}
-
-            {unempData.length > 0 && unempKeys.length >= 2 && (
-            <Card title="Unemployment Rate" desc={`Annual rate (%) vs ${isUSA ? 'US' : 'CA'} national average`}>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart layout="vertical" data={unempData} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 1']} />
-                  <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey={unempKeys[0]} fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={18} />
-                  <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={18} />
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('unemployment')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-            </Card>
-            )}
-
-            {gdpDataM.length > 0 && (
-            <Card title="GDP Growth Over Time" desc="Annual GDP growth rate (%) — green = growth, red = contraction">
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart layout="vertical" data={gdpDataM} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} />
-                  <Tooltip formatter={(v) => [`${v}%`, 'GDP Growth']} contentStyle={TT} />
-                  <Bar dataKey="GDP Growth (%)" radius={[0, 4, 4, 0]} maxBarSize={28}>
-                    {gdpDataM.map((e, i) => <Cell key={i} fill={e['GDP Growth (%)'] >= 0 ? '#10b981' : '#ef4444'} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('gdp')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-              <div className="flex gap-4 justify-center mt-2">
-                <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0 bg-emerald-500" /> Growth</span>
-                <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0 bg-red-500" /> Contraction</span>
-              </div>
-            </Card>
-            )}
-
-            {povDataM.length > 0 && (
-            <Card title="Poverty Rate Trend" desc="Population living below the poverty line (%)">
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart layout="vertical" data={povDataM} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 2']} />
-                  <Tooltip formatter={(v) => [`${v}%`, 'Poverty Rate']} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey="Poverty Rate (%)" fill="#f59e0b" radius={[0, 4, 4, 0]} maxBarSize={28} />
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('poverty')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-            </Card>
-            )}
-
-            {homelessData.length > 0 && (
-            <Card title="Homelessness Statistics" desc="Sheltered vs unsheltered population">
-              <ResponsiveContainer width="100%" height={230}>
-                <BarChart layout="vertical" data={homelessData} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
-                  <Tooltip formatter={(v, name) => [v.toLocaleString(), name]} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey="Sheltered"   stackId="a" fill="#6366f1" maxBarSize={32} />
-                  <Bar dataKey="Unsheltered" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} maxBarSize={32} />
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('homeless')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-            </Card>
-            )}
-
-            {sourceUrl && (
-              <p className="text-center text-xs text-gray-500 pb-2">
-                Source:{' '}
-                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                  {sourceName || sourceUrl}
-                </a>
-              </p>
-            )}
-              </>
-            ) : null}
-            </div>
-            </>
             ) : null}
             <button onClick={() => setShowEconomicModal(false)} className="sn-trans-modal-close-btn w-full mt-2 mb-1 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
