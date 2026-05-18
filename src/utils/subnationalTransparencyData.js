@@ -1080,6 +1080,43 @@ function formatCrimeHeadlinePair(violent, property, metricType) {
   return parts.length ? `${parts.join(' · ')} per 100K` : '';
 }
 
+/** Snapshot row → chart panel id for the economic modal. */
+export const ECONOMIC_METRIC_CHART_SECTION_TITLE = Object.freeze({
+  budget: 'Approved Budget — trend chart',
+  spending: 'Actual Spending — trend chart',
+  crime: 'Crime Report — trend chart',
+  unemployment: 'Unemployment — trend chart',
+  gdp: 'GDP — trend chart',
+  poverty: 'Poverty — trend chart',
+  homeless: 'Homelessness PIT Count — trend chart',
+});
+
+/**
+ * @param {ReturnType<typeof parseSubnationalEconomicSocialData>} economic
+ * @param {string} chartKey
+ */
+export function economicMetricChartAvailable(economic, chartKey) {
+  if (!economic?.hasData || !chartKey) return false;
+  switch (chartKey) {
+    case 'budget':
+      return economic.budgetData.length > 0;
+    case 'spending':
+      return economic.spendData.length > 0;
+    case 'crime':
+      return economic.crimeDataM.length > 0;
+    case 'unemployment':
+      return economic.unempData.length > 0 && economic.unempKeys.length >= 2;
+    case 'gdp':
+      return economic.gdpDataM.length > 0;
+    case 'poverty':
+      return economic.povDataM.length > 0;
+    case 'homeless':
+      return economic.homelessData.length > 0;
+    default:
+      return false;
+  }
+}
+
 /**
  * Latest official snapshot lines for the province/state detail page (economic module).
  * @param {ReturnType<typeof parseSubnationalEconomicSocialData>} economic
@@ -1090,7 +1127,7 @@ export function buildEconomicTransparencyHeadlines(economic, jurisdictionLabel) 
     return { hasLiveData: false, metrics: [] };
   }
 
-  /** @type {Array<{ label: string; value: string; sub?: string }>} */
+  /** @type {Array<{ label: string; value: string; sub?: string; chartKey?: string; chartAvailable?: boolean }>} */
   const metrics = [];
 
   if (economic.budgetData.length) {
@@ -1099,6 +1136,8 @@ export function buildEconomicTransparencyHeadlines(economic, jurisdictionLabel) 
       label: 'Approved Budget',
       value: `${top.value}%`,
       sub: `Largest share: ${top.name}`,
+      chartKey: 'budget',
+      chartAvailable: economicMetricChartAvailable(economic, 'budget'),
     });
   }
 
@@ -1117,6 +1156,8 @@ export function buildEconomicTransparencyHeadlines(economic, jurisdictionLabel) 
         pct != null
           ? `${pct}% of ${formatCurrencyCompact(alloc)} allocated (official categories)`
           : `Allocated ${formatCurrencyCompact(alloc)}`,
+      chartKey: 'spending',
+      chartAvailable: economicMetricChartAvailable(economic, 'spending'),
     });
   }
 
@@ -1131,6 +1172,8 @@ export function buildEconomicTransparencyHeadlines(economic, jurisdictionLabel) 
           label: 'Crime Report',
           value,
           sub: `Latest year: ${latest.year}`,
+          chartKey: 'crime',
+          chartAvailable: economicMetricChartAvailable(economic, 'crime'),
         });
       }
     }
@@ -1146,6 +1189,8 @@ export function buildEconomicTransparencyHeadlines(economic, jurisdictionLabel) 
           label: 'Unemployment',
           value: `${rate}%`,
           sub: `Latest year: ${latest.year}`,
+          chartKey: 'unemployment',
+          chartAvailable: economicMetricChartAvailable(economic, 'unemployment'),
         });
       }
     }
@@ -1159,6 +1204,8 @@ export function buildEconomicTransparencyHeadlines(economic, jurisdictionLabel) 
         label: 'GDP',
         value: `${growth >= 0 ? '+' : ''}${growth}%`,
         sub: `Annual growth · ${latest.year}`,
+        chartKey: 'gdp',
+        chartAvailable: economicMetricChartAvailable(economic, 'gdp'),
       });
     }
   }
@@ -1171,6 +1218,8 @@ export function buildEconomicTransparencyHeadlines(economic, jurisdictionLabel) 
         label: 'Poverty',
         value: `${rate}%`,
         sub: `Latest year: ${latest.year}`,
+        chartKey: 'poverty',
+        chartAvailable: economicMetricChartAvailable(economic, 'poverty'),
       });
     }
   }
@@ -1184,6 +1233,8 @@ export function buildEconomicTransparencyHeadlines(economic, jurisdictionLabel) 
         label: 'Homelessness PIT Count',
         value: total.toLocaleString(),
         sub: `PIT ${latest.year} · ${(numOrNull(latest.Sheltered) ?? 0).toLocaleString()} sheltered`,
+        chartKey: 'homeless',
+        chartAvailable: economicMetricChartAvailable(economic, 'homeless'),
       });
     }
   }
