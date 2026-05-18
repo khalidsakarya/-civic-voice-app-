@@ -1,65 +1,7 @@
 {
-  "generatedAt": "2026-05-18T04:13:12.561Z",
+  "generatedAt": "2026-05-18T18:43:32.432Z",
   "mode": "write",
   "jurisdictions": [
-    {
-      "id": "US-CA",
-      "transparency_live": true,
-      "error": null,
-      "sections": [
-        {
-          "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "financial_disclosure",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "assets",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "stock_holdings",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "lobbying_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "conflict_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "recent_official_activity",
-          "loaded": true,
-          "count": 4,
-          "source": "https://www.gov.ca.gov/newsroom/"
-        }
-      ],
-      "field_sources": {
-        "recent_official_activity": "https://www.gov.ca.gov/newsroom/"
-      }
-    },
     {
       "id": "CA-ON",
       "transparency_live": true,
@@ -67,9 +9,9 @@
       "sections": [
         {
           "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
+          "loaded": true,
+          "count": 4,
+          "source": "https://www.ontario.ca/page/public-sector-salary-disclosure"
         },
         {
           "section": "financial_disclosure",
@@ -91,9 +33,9 @@
         },
         {
           "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
+          "loaded": true,
+          "count": 2,
+          "source": "https://finances.elections.on.ca/en/contributions?entityNames=Ford%2C%20Doug&fromYear=2018&toYear=2024"
         },
         {
           "section": "lobbying_disclosures",
@@ -115,124 +57,9 @@
         }
       ],
       "field_sources": {
+        "salary": "https://www.ontario.ca/page/public-sector-salary-disclosure",
+        "campaign_finance": "https://finances.elections.on.ca/en/contributions?entityNames=Ford%2C%20Doug&fromYear=2018&toYear=2024",
         "recent_official_activity": "https://news.ontario.ca/newsroom/en"
-      }
-    },
-    {
-      "id": "AU-NSW",
-      "transparency_live": true,
-      "error": null,
-      "sections": [
-        {
-          "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "financial_disclosure",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "assets",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "stock_holdings",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "lobbying_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "conflict_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "recent_official_activity",
-          "loaded": true,
-          "count": 1,
-          "source": "https://www.nsw.gov.au/media-releases"
-        }
-      ],
-      "field_sources": {
-        "recent_official_activity": "https://www.nsw.gov.au/media-releases"
-      }
-    },
-    {
-      "id": "UK-ENG-LON",
-      "transparency_live": true,
-      "error": null,
-      "sections": [
-        {
-          "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "financial_disclosure",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "assets",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "stock_holdings",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "lobbying_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "conflict_disclosures",
-          "loaded": true,
-          "count": 25,
-          "source": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/gifts-hospitality"
-        },
-        {
-          "section": "recent_official_activity",
-          "loaded": true,
-          "count": 8,
-          "source": "https://www.london.gov.uk/media-centre/mayors-press-releases"
-        }
-      ],
-      "field_sources": {
-        "recent_official_activity": "https://www.london.gov.uk/media-centre/mayors-press-releases",
-        "conflict_disclosures": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/gifts-hospitality"
       }
     }
   ]
