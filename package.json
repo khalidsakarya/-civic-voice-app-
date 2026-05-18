@@ -28,6 +28,7 @@
     "enrich:subnational-jurisdictions:phase3b": "node engine/enrich-subnational-jurisdictions-phase3b.cjs",
     "sync:subnational-transparency": "node engine/sync-subnational-transparency.cjs",
     "sync:subnational-leader-profiles-pilot": "node engine/sync-subnational-leader-profiles-pilot.cjs",
+    "sync:subnational-leader-profiles": "node engine/sync-subnational-leader-profiles.cjs",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

@@ -25154,6 +25154,77 @@ function App() {
     const leaderBio   = isDeputy ? item.deputyBio    : item.bio;
     const useOfficial = !isDeputy && hasLiveOfficialLeaderProfile(item);
 
+    const getInitialsLocal = (name) =>
+      name ? name.split(' ').filter(Boolean).map((p) => p[0]).slice(0, 2).join('').toUpperCase() : '??';
+
+    if (!isDeputy && !useOfficial) {
+      return (
+        <div className="min-h-screen animate-fade-in" style={{ background: '#F0F4F8' }}>
+          <motion.div
+            className="sticky top-0 z-10"
+            style={{
+              background: 'linear-gradient(135deg, #071322 0%, #0A1F48 100%)',
+              paddingTop: 'max(env(safe-area-inset-top), 0px)',
+            }}
+          >
+            <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #C8A400, #F0C808, #C8A400)' }} />
+            <div className="max-w-5xl mx-auto px-4 sm:px-8 py-4 flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setView('au-state-detail');
+                  setSelectedAuLeader(null);
+                }}
+                className="inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-2 transition-colors flex-shrink-0"
+                style={{
+                  background: 'rgba(255,255,255,0.12)',
+                  color: 'rgba(255,255,255,0.88)',
+                  border: '1px solid rgba(255,255,255,0.18)',
+                }}
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" />
+                <span>Back</span>
+              </button>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>
+                  {item.name} · {leaderTitle}
+                </p>
+                <h1 className="font-black text-white text-lg sm:text-xl leading-tight truncate">{leaderName}</h1>
+              </div>
+            </div>
+          </motion.div>
+          <div className="max-w-5xl mx-auto px-4 sm:px-8 py-8">
+            <div className="bg-white rounded-2xl p-6 mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.10)' }}>
+              <div className="flex items-start gap-4">
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-black flex-shrink-0"
+                  style={{ background: '#003087' }}
+                >
+                  {getInitialsLocal(leaderName)}
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-gray-900">{leaderName}</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {leaderParty ? `${leaderParty} · ` : ''}
+                    {leaderSince ? `In office since ${leaderSince}` : leaderTitle}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div
+              className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-5 text-center"
+              role="status"
+            >
+              <p className="text-sm font-semibold text-amber-950">Official profile not loaded yet.</p>
+              <p className="text-xs text-amber-800/90 mt-1.5 leading-relaxed">
+                Only basic identity is shown until leader fields are verified from official government sources.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const partyColors = {
       'ALP': '#CC0000', 'Labor': '#CC0000',
       'LNP': '#003087', 'Liberal': '#003087', 'Liberal/National': '#003087',
@@ -25331,8 +25402,6 @@ function App() {
 
     const total = (currentVotes.support || 0) + (currentVotes.oppose || 0);
     const pct   = total > 0 ? Math.round((currentVotes.support / total) * 100) : 50;
-
-    const getInitialsLocal = (name) => name ? name.split(' ').filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase() : '??';
 
     if (useOfficial) {
       return (
@@ -34369,182 +34438,14 @@ function App() {
     if (hasLiveOfficialLeaderProfile(leader)) {
       return { ...leader, useOfficialProfileOnly: true };
     }
-    let h = 5381;
-    for (let i = 0; i < leader.name.length; i++) h = (Math.imul(h, 33) ^ leader.name.charCodeAt(i)) | 0;
-    h = Math.abs(h);
-    const rng = (min, max, salt) => {
-      const v = Math.abs((Math.imul(h + salt, 1664525) + 1013904223) | 0);
-      return min + (v % (max - min + 1));
-    };
-    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
-    const L = { ...leader };
-
-    // Portfolios
-    const portfolioPool = [
-      'Economic Development', 'Healthcare & Public Health', 'Education & Training',
-      'Infrastructure', 'Environment & Energy', 'Public Safety & Emergency Management',
-      'Agriculture & Rural Affairs', 'Housing & Community Development', 'Finance & Budget',
-      'Justice & Legal Affairs', 'Labor & Employment', 'Natural Resources',
-      'Technology & Innovation', 'Veterans Affairs',
-      leader.isUSA ? 'National Guard Liaison' : 'Indigenous Relations',
-    ];
-    const numPortfolios = rng(4, 6, 1);
-    const seen = new Set();
-    L.portfolios = [];
-    for (let att = 0; L.portfolios.length < numPortfolios && att < 30; att++) {
-      const idx = rng(0, portfolioPool.length - 1, 2 + att);
-      if (!seen.has(idx)) { seen.add(idx); L.portfolios.push(portfolioPool[idx]); }
-    }
-
-    // Contact
-    const ac = rng(201, 989, 10);
-    const px = rng(200, 999, 11);
-    const ln = rng(1000, 9999, 12).toString().padStart(4, '0');
-    const slug = leader.region.toLowerCase().replace(/[^a-z]/g, '');
-    L.contact = {
-      phone:   `(${ac}) ${px}-${ln}`,
-      address: leader.isUSA
-        ? `State Capitol Building, Room ${rng(100, 650, 13)}, ${leader.region}`
-        : `Legislative Assembly, Room ${rng(100, 450, 13)}, ${leader.region}`,
-      website: leader.isUSA ? `governor.${slug}.gov` : `premier.${slug}.ca`,
-    };
-
-    // Legislative activity
-    L.legislativeActivity = {
-      year: 2024,
-      billsSigned:     rng(leader.isDeputy ? 5  : 18, leader.isDeputy ? 30 : 90, 20),
-      billsVetoed:     leader.isDeputy ? 0 : rng(0, 14, 21),
-      executiveOrders: rng(leader.isDeputy ? 0  :  3, leader.isDeputy ?  8 : 32, 22),
-    };
-
-    // Key decisions
-    const billPool = leader.isUSA ? [
-      { title: 'State Budget Appropriations Act',    desc: 'Annual budget allocating funds across all state departments and programs' },
-      { title: 'Infrastructure Investment Bill',      desc: 'Capital investment in roads, bridges, and public transit systems' },
-      { title: 'Education Funding Reform Act',        desc: 'Restructuring of public school funding formulas and teacher support' },
-      { title: 'Healthcare Access Expansion Act',     desc: 'Expanding Medicaid eligibility and rural clinic funding statewide' },
-      { title: 'Tax Reduction Initiative',            desc: 'Reduction of personal income tax rates for middle-income earners' },
-      { title: 'Environmental Protection Standards',  desc: 'New air and water quality emissions standards for industrial facilities' },
-      { title: 'Economic Development Zone Act',       desc: 'Designating enterprise zones with tax incentives for new businesses' },
-      { title: 'Workforce Development Program',       desc: 'Apprenticeship and vocational training expansion across the state' },
-      { title: 'Housing Affordability Act',           desc: 'Zoning reforms and subsidies for affordable housing construction' },
-      { title: 'Public Safety Omnibus Bill',          desc: 'Police funding, community programs, and criminal justice reform measures' },
-    ] : [
-      { title: 'Provincial Budget Act',               desc: 'Annual budget covering all provincial program expenditures and priorities' },
-      { title: 'Healthcare Services Improvement Act', desc: 'Funding for hospital infrastructure and primary care network expansion' },
-      { title: 'Education Reform Bill',               desc: 'Curriculum updates, teacher compensation and retention review' },
-      { title: 'Infrastructure Investment Plan',      desc: 'Provincial highways, transit, and rural broadband infrastructure expansion' },
-      { title: 'Environmental Assessment Act',        desc: 'New standards for industrial and resource sector environmental impact reviews' },
-      { title: 'Economic Diversification Strategy',   desc: 'Incentives to attract investment in technology and clean energy sectors' },
-      { title: 'Public Safety Legislation',           desc: 'First responder funding and integrated community safety programs' },
-      { title: 'Housing Strategy Act',                desc: 'Affordable housing targets and developer incentives for new construction' },
-      { title: 'Labour Standards Amendment',          desc: 'Minimum wage increase and worker protection measures review' },
-      { title: 'Carbon Reduction Framework',          desc: 'Provincial carbon pricing and clean energy transition plan and targets' },
-    ];
-    const usedBills = new Set();
-    L.keyDecisions = Array.from({ length: 3 }, (_, i) => {
-      let idx, att = 0;
-      do { idx = rng(0, billPool.length - 1, 30 + i * 5 + att); att++; } while (usedBills.has(idx) && att < 20);
-      usedBills.add(idx);
-      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const mo = pick(months, 31 + i * 5);
-      const yr = rng(2022, 2024, 32 + i * 5);
-      const action = (!leader.isDeputy && rng(0, 4, 33 + i * 5) === 0) ? 'Vetoed' : 'Signed';
-      return { ...billPool[idx], action, date: `${mo} ${yr}` };
-    });
-
-    // Financial disclosure
-    const sinceYear = parseInt(leader.since) || 2020;
-    const salary = leader.isUSA ? rng(95000, 214000, 40) : rng(185000, 360000, 40);
-    const initialWorth = rng(150000, 3800000, 41);
-    const growPct = rng(8, 185, 42);
-    L.financialDisclosure = {
-      electedYear: sinceYear,
-      salary,
-      initialWorth,
-      currentWorth: Math.round(initialWorth * (1 + growPct / 100)),
-      percentageIncrease: growPct,
-      assets: [
-        { type: pick(['Primary Residence', 'Investment Properties', 'Real Estate Portfolio'], 43), value: rng(200000, 1900000, 44) },
-        { type: pick(['Investment Portfolio', 'Retirement Accounts', 'Index Funds'],          45), value: rng(50000,   900000, 46) },
-        { type: pick(['Savings & Checking',  'Money Market Account',  'Business Interests'],  47), value: rng(10000,   280000, 48) },
-      ],
-    };
-
-    // Top donors (skipped for Crown/Federal Appointee roles)
-    const isCrown = leader.party === 'Federal Appointee' || leader.party === 'Crown Representative';
-    if (!isCrown) {
-      const donorPool = leader.isUSA ? [
-        { name: 'State Business Association',         sector: 'Business',     amount: rng(50000, 500000, 50) },
-        { name: 'Healthcare Industry PAC',            sector: 'Healthcare',   amount: rng(30000, 350000, 51) },
-        { name: 'Real Estate Development Fund',       sector: 'Real Estate',  amount: rng(25000, 280000, 52) },
-        { name: 'Energy Sector Coalition',            sector: 'Energy',       amount: rng(40000, 420000, 53) },
-        { name: 'Teachers Union PAC',                 sector: 'Education',    amount: rng(20000, 200000, 54) },
-        { name: 'Financial Services Industry Group',  sector: 'Finance',      amount: rng(35000, 380000, 55) },
-        { name: 'Agricultural Producers Alliance',    sector: 'Agriculture',  amount: rng(10000, 150000, 56) },
-      ] : [
-        { name: 'Provincial Business Council',        sector: 'Business',     amount: rng(50000, 400000, 50) },
-        { name: 'Healthcare Workers Union',           sector: 'Healthcare',   amount: rng(30000, 300000, 51) },
-        { name: 'Construction Industry Alliance',     sector: 'Construction', amount: rng(25000, 250000, 52) },
-        { name: 'Energy Companies Coalition',         sector: 'Energy',       amount: rng(40000, 380000, 53) },
-        { name: 'Teachers Federation',                sector: 'Education',    amount: rng(20000, 200000, 54) },
-        { name: 'Financial Services Association',     sector: 'Finance',      amount: rng(35000, 320000, 55) },
-        { name: 'Agricultural Producers Association', sector: 'Agriculture',  amount: rng(10000, 140000, 56) },
-      ];
-      const donorSeen = new Set();
-      const numDonors = rng(2, 3, 60);
-      L.topDonors = [];
-      for (let att = 0; L.topDonors.length < numDonors && att < 30; att++) {
-        const idx = rng(0, donorPool.length - 1, 61 + att);
-        if (!donorSeen.has(idx)) { donorSeen.add(idx); L.topDonors.push(donorPool[idx]); }
-      }
-    } else {
-      L.topDonors = [];
-    }
-
-    // Recent activity
-    const activities = leader.isUSA ? [
-      'Announced infrastructure funding package for state transportation network',
-      'Met with mayors to discuss regional housing crisis response plan',
-      'Signed executive order expanding rural broadband internet access',
-      'Issued emergency declaration following severe weather event',
-      'Launched workforce development initiative with community colleges',
-      'Hosted economic development summit with business and industry leaders',
-      'Released state climate action and clean energy transition plan',
-      'Appointed new cabinet secretary for health and human services',
-      'Signed small business tax relief and incentive package into law',
-      'Delivered annual State of the State address to the legislature',
-    ] : [
-      'Announced provincial healthcare expansion and hospital infrastructure funding',
-      'Met with First Nations leaders on land rights and resource sharing discussions',
-      'Tabled legislative priorities for the current parliamentary session',
-      'Signed memorandum of understanding with the federal government',
-      'Launched provincial skills training and apprenticeship initiative',
-      'Hosted interprovincial premiers and territorial leaders conference',
-      'Released provincial climate action and clean energy transition roadmap',
-      'Appointed new deputy minister for economic and regional development',
-      'Announced provincial affordable housing and rental assistance strategy',
-      'Addressed legislative assembly on provincial budget and fiscal priorities',
-    ];
-    const months2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const actSeen = new Set();
-    L.recentActivity = [];
-    for (let att = 0; L.recentActivity.length < 4 && att < 30; att++) {
-      const idx = rng(0, activities.length - 1, 70 + att);
-      if (!actSeen.has(idx)) {
-        actSeen.add(idx);
-        const mo = pick(months2, 71 + att);
-        const yr = rng(2023, 2024, 72 + att);
-        L.recentActivity.push({ description: activities[idx], date: `${mo} ${yr}` });
-      }
-    }
-    return L;
+    return { ...leader, leaderProfilePending: true };
   };
 
   const renderLeaderPanel = () => {
     if (!selectedLeader || !showLeaderPanel) return null;
     const leader = enrichLeader(selectedLeader);
     const useOfficial = !!leader.useOfficialProfileOnly;
+    const profilePending = !!leader.leaderProfilePending;
     const partyColorMap = {
       'Republican': '#dc2626',            'Democratic': '#2563eb',
       'NDP': '#f97316',                   'Liberal': '#dc2626',
@@ -34594,7 +34495,19 @@ function App() {
           <div className="flex-1 overflow-y-auto">
             <div className="p-6 space-y-7">
 
-              {!useOfficial && <SubnationalIllustrativeExplorerNote />}
+              {profilePending && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-5 text-center"
+                  role="status"
+                >
+                  <p className="text-sm font-semibold text-amber-950">Official profile not loaded yet.</p>
+                  <p className="text-xs text-amber-800/90 mt-1.5 leading-relaxed">
+                    Only basic identity is shown until leader fields are verified from official government sources.
+                  </p>
+                </motion.div>
+              )}
 
               {useOfficial && (
                 <div
@@ -34680,7 +34593,7 @@ function App() {
                 </section>
               )}
 
-              {!useOfficial && (
+              {false && (
               <>
               {/* Cabinet Portfolios */}
               <section>
@@ -34854,9 +34767,9 @@ function App() {
                   Official government source
                   {leader.leader_profile_fetched_at ? ` · fetched ${leader.leader_profile_fetched_at.slice(0, 10)}` : ''}
                 </p>
-              ) : (
-                <p className="text-center text-xs text-gray-400 pb-2">Illustrative data · figures are statistically modelled</p>
-              )}
+              ) : profilePending ? (
+                <p className="text-center text-xs text-gray-500 pb-2">Official profile not loaded yet.</p>
+              ) : null}
             </div>
           </div>
         </div>

@@ -1,13 +1,6 @@
 /**
- * Pilot live official leader profiles (CA-ON, US-CA, UK-ENG-LON, AU-NSW).
+ * Official subnational leader profiles (government sources only).
  */
-
-export const PILOT_LEADER_PROFILE_JURISDICTION_IDS = Object.freeze([
-  'CA-ON',
-  'US-CA',
-  'UK-ENG-LON',
-  'AU-NSW',
-]);
 
 /** @param {unknown} v */
 function trim(v) {
@@ -20,10 +13,15 @@ function trim(v) {
  */
 export function hasLiveOfficialLeaderProfile(row) {
   if (!row || typeof row !== 'object') return false;
-  const id = trim(row.subnationalId || row.id);
-  if (!id || !PILOT_LEADER_PROFILE_JURISDICTION_IDS.includes(id)) return false;
   if (row.leader_profile_live === true) return true;
   return !!trim(row.leader_profile_source_url);
+}
+
+/**
+ * @param {Record<string, unknown>|null|undefined} row
+ */
+export function isSubnationalLeaderProfilePending(row) {
+  return !hasLiveOfficialLeaderProfile(row);
 }
 
 /**
@@ -55,7 +53,7 @@ export function applyLeaderProfileFieldsFromFirestore(out, fsRow) {
 export function leaderProfilePanelPayloadFromExplorerItem(item) {
   if (!item || typeof item !== 'object') return {};
   return {
-    subnationalId: trim(item.subnationalId),
+    subnationalId: trim(item.subnationalId || item.id),
     leader_profile_live: item.leader_profile_live === true,
     leader_profile_source_url: trim(item.leader_profile_source_url),
     leader_profile_fetched_at: trim(item.leader_profile_fetched_at),
