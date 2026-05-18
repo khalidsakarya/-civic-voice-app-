@@ -177,27 +177,101 @@ function DetailConflictFilings({ row }) {
   );
 }
 
+function parseFinancialDisclosureSummary(fd) {
+  if (!fd || typeof fd !== 'object') return null;
+
+  const filingText = String(fd.filing_status_2024 || '');
+  const status = /^filed/i.test(filingText)
+    ? 'Filed'
+    : filingText.split(/[—–-]/)[0]?.trim() || 'See official report';
+
+  const mppCount = filingText.match(/(\d+)\s+sitting\s+Ontario\s+MPPs/i);
+  const coverage = mppCount
+    ? `${mppCount[1]} / ${mppCount[1]} Ontario MPPs filed annual statements`
+    : filingText.includes('124')
+      ? '124 / 124 Ontario MPPs filed annual statements'
+      : 'All sitting Ontario MPPs filed annual statements';
+
+  const periodFromField = String(fd.reporting_period || '');
+  const periodMatch =
+    periodFromField.match(/fall\s+20\d{2}/i) || filingText.match(/fall\s+20\d{2}/i);
+  const latestPeriod = periodMatch
+    ? periodMatch[0].charAt(0).toUpperCase() + periodMatch[0].slice(1)
+    : periodFromField.replace(/^annual\s*[—–-]\s*most recent filing:\s*/i, '').trim() ||
+      'Fall 2024';
+
+  const publicValues =
+    fd.portal_note || fd.disclosure_note ? 'Not machine-readable' : 'See official source';
+
+  return {
+    status,
+    coverage,
+    latestPeriod,
+    publicValues,
+    fordSpecific: 'Requires manual portal review',
+  };
+}
+
+function DisclosureResultRow({ label, value }) {
+  return (
+    <div className="flex flex-col gap-0.5 py-2 border-b border-gray-100 last:border-0 sm:flex-row sm:gap-3">
+      <span className="text-xs font-medium text-gray-500 sm:w-44 flex-shrink-0">{label}</span>
+      <span className="text-xs text-gray-900 leading-relaxed">{value}</span>
+    </div>
+  );
+}
+
 function DetailFinancialDisclosure({ row }) {
   const fd = row?.financial_disclosure;
   const src = caOnSourceUrl(fd);
+  const summary = parseFinancialDisclosureSummary(fd);
+
   return (
-    <div className="pt-3 space-y-2">
-      {fd?.filing_status_2024 && (
-        <p className="text-xs text-gray-700 leading-relaxed">{fd.filing_status_2024}</p>
+    <div className="pt-3 space-y-3">
+      {summary && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50/90 px-3 py-1">
+          <DisclosureResultRow label="Status" value={summary.status} />
+          <DisclosureResultRow label="Coverage" value={summary.coverage} />
+          <DisclosureResultRow label="Latest period" value={summary.latestPeriod} />
+          <DisclosureResultRow label="Public values" value={summary.publicValues} />
+          <DisclosureResultRow
+            label="Doug Ford-specific values"
+            value={summary.fordSpecific}
+          />
+        </div>
       )}
-      {fd?.regulatory_framework && <p className="text-xs text-gray-600">{fd.regulatory_framework}</p>}
-      {fd?.reporting_period && <p className="text-xs text-gray-500">Period: {fd.reporting_period}</p>}
-      {fd?.disclosure_note && (
-        <p className="text-xs text-gray-600 leading-relaxed">{fd.disclosure_note}</p>
-      )}
-      {fd?.portal_note && (
-        <p className="text-xs text-gray-500 italic leading-relaxed">{fd.portal_note}</p>
-      )}
-      <BulletList items={fd?.what_is_disclosed} />
-      <BulletList items={fd?.cabinet_restrictions} />
-      {caOnNeedsManualReview(fd) && frameworkNote()}
-      {sourceLink(src, 'View OICO guidance')}
-      {fd?.portal && sourceLink(fd.portal, 'MPP disclosure portal')}
+
+      <details className="rounded-lg border border-gray-200 bg-white">
+        <summary className="text-xs font-medium text-gray-700 px-3 py-2.5 cursor-pointer touch-manipulation list-none flex items-center justify-between gap-2">
+          <span>How disclosure works</span>
+          <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" aria-hidden />
+        </summary>
+        <div className="px-3 pb-3 pt-1 space-y-2 border-t border-gray-100">
+          {fd?.regulatory_framework && (
+            <p className="text-xs text-gray-600">{fd.regulatory_framework}</p>
+          )}
+          {fd?.filing_status_2024 && (
+            <p className="text-xs text-gray-700 leading-relaxed">{fd.filing_status_2024}</p>
+          )}
+          {fd?.reporting_period && (
+            <p className="text-xs text-gray-500">{fd.reporting_period}</p>
+          )}
+          {fd?.disclosure_note && (
+            <p className="text-xs text-gray-600 leading-relaxed">{fd.disclosure_note}</p>
+          )}
+          {fd?.portal_note && (
+            <p className="text-xs text-gray-500 italic leading-relaxed">{fd.portal_note}</p>
+          )}
+          <BulletList items={fd?.what_is_disclosed} />
+          <BulletList items={fd?.cabinet_restrictions} />
+          {caOnNeedsManualReview(fd) && frameworkNote()}
+        </div>
+      </details>
+
+      <div className="flex flex-col gap-1">
+        {sourceLink(src, 'View OICO guidance')}
+        {fd?.portal && sourceLink(fd.portal, 'MPP disclosure portal')}
+      </div>
     </div>
   );
 }
