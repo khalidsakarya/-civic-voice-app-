@@ -271,6 +271,9 @@ function normalizeUnemploymentRows(rows, jurisdictionName, natKey) {
   };
 }
 
+/** Modal / full-screen chart: latest N monthly or rolling periods (display only). */
+const UNEMPLOYMENT_CHART_PERIOD_LIMIT = 12;
+
 /**
  * Monthly or rolling 3-month unemployment series from Firestore.
  * @param {unknown} rows
@@ -307,7 +310,7 @@ function normalizeUnemploymentMonthlyRows(rows, jurisdictionName, natKey) {
     unempData.push(point);
   }
   unempData.sort((a, b) => String(a.periodSort).localeCompare(String(b.periodSort)));
-  const slice = unempData.slice(-24);
+  const slice = unempData.slice(-UNEMPLOYMENT_CHART_PERIOD_LIMIT);
   const keys = [jurisdictionName];
   if (slice.some((r) => r[natKey] != null)) keys.push(natKey);
   return {
@@ -325,8 +328,15 @@ function normalizeUnemploymentMonthlyRows(rows, jurisdictionName, natKey) {
  */
 function normalizeUnemploymentFromEconomic(src, jurisdictionName, isUSA, countryCode) {
   const natKey = nationalUnemploymentKey(isUSA, countryCode);
-  const monthly =
-    src.unemployment_series_rolling_3_month ?? src.unemployment_series_monthly;
+  const freq = trimStr(src.unemployment_frequency);
+  let monthly;
+  if (freq === 'rolling_3_month' && Array.isArray(src.unemployment_series_rolling_3_month)) {
+    monthly = src.unemployment_series_rolling_3_month;
+  } else if (freq === 'monthly' && Array.isArray(src.unemployment_series_monthly)) {
+    monthly = src.unemployment_series_monthly;
+  } else {
+    monthly = src.unemployment_series_rolling_3_month ?? src.unemployment_series_monthly;
+  }
   if (Array.isArray(monthly) && monthly.length) {
     const parsed = normalizeUnemploymentMonthlyRows(monthly, jurisdictionName, natKey);
     return {
