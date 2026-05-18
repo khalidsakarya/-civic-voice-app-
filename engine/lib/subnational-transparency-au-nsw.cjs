@@ -13,6 +13,7 @@ const {
   fetchText,
   splitCsvLine,
 } = require('./subnational-transparency-shared.cjs');
+const { absNswMonthlyUnemployment } = require('./subnational-unemployment-monthly.cjs');
 
 const JURISDICTION_ID = 'AU-NSW';
 
@@ -85,49 +86,11 @@ async function buildEconomic() {
   out.crime_rate = crime.slice(-6);
 
   try {
-    const html = await fetchText(SOURCES.unemploymentAbs, 2 * 1024 * 1024);
-    const match = html.match(/href="([^"]+6291001\.xlsx)"/i);
-    if (match) {
-      const xUrl = match[1].startsWith('http')
-        ? match[1]
-        : `https://www.abs.gov.au${match[1]}`;
-      const xBuf = await fetchBuffer(xUrl);
-      const xWb = XLSX.read(xBuf, { type: 'buffer' });
-      const sheetName =
-        xWb.SheetNames.find((n) => /unemployment|table 6/i.test(n)) ||
-        xWb.SheetNames[0];
-      const tRows = XLSX.utils.sheet_to_json(xWb.Sheets[sheetName], {
-        header: 1,
-        defval: '',
-      });
-      const unemp = [];
-      for (let i = 0; i < tRows.length; i += 1) {
-        const row = tRows[i];
-        const label = trim(row[0]).toLowerCase();
-        if (label.includes('new south wales') && !label.includes('youth')) {
-          const yearMatch = trim(row[0]).match(/(\d{4})/);
-          const val = num(row[row.length - 1]);
-          if (yearMatch && val != null) {
-            unemp.push({ year: yearMatch[1], 'New South Wales': val });
-          }
-        }
-        if (label === 'australia' || label === 'australia ') {
-          const val = num(row[row.length - 1]);
-          if (val != null && unemp.length) {
-            unemp[unemp.length - 1]['AU Average'] = val;
-          }
-        }
-      }
-      if (unemp.length) {
-        out.unemployment_rate = unemp.slice(-6);
-        out.unemployment_source = 'Australian Bureau of Statistics — Labour Force, Australia';
-        out.unemployment_url = SOURCES.unemploymentAbs;
-        out.unemployment_reporting_period =
-          'Latest Labour Force release (Table 6 — unemployment rate by state)';
-      }
-    }
-  } catch (_) {
-    /* unemployment optional */
+    const unemp = await absNswMonthlyUnemployment(fetchText, fetchBuffer, XLSX);
+    if (unemp) Object.assign(out, unemp);
+  } catch (err) {
+    /* unemployment optional — crime series still written */
+    out.data_status = { notes: [`unemployment: ${err.message}`] };
   }
 
   return out;

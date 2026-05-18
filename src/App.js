@@ -13679,6 +13679,8 @@ function App() {
       crimePropertyKey,
       unempData,
       unempKeys,
+      unempChartUsesPeriod,
+      unempFrequency,
       gdpDataM,
       povDataM,
       homelessData,
@@ -13811,6 +13813,8 @@ function App() {
                   formatCrimeAxisTick={formatCrimeAxisTick}
                   unempData={unempData}
                   unempKeys={unempKeys}
+                  unempChartUsesPeriod={unempChartUsesPeriod}
+                  unempFrequency={unempFrequency}
                   gdpDataM={gdpDataM}
                   povDataM={povDataM}
                   homelessData={homelessData}
@@ -13919,12 +13923,21 @@ function App() {
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart layout="vertical" data={unempData} margin={MARGIN}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <YAxis
+                            dataKey={unempChartUsesPeriod ? 'period' : 'year'}
+                            type="category"
+                            width={unempChartUsesPeriod ? 80 : 45}
+                            tick={TICK}
+                          />
                           <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 1']} />
                           <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={TT} />
-                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          {unempKeys.length > 1 ? (
+                            <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          ) : null}
                           <Bar dataKey={unempKeys[0]} fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={28} />
-                          <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          {unempKeys[1] ? (
+                            <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          ) : null}
                         </BarChart>
                       </ResponsiveContainer>
                     )}

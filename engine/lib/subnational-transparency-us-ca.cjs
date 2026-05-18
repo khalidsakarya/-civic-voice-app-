@@ -22,6 +22,10 @@ const {
   ckanDatastoreSearch,
   splitCsvLine,
 } = require('./subnational-transparency-shared.cjs');
+const {
+  buildUnemploymentFirestoreFields,
+  fredMonthlyUnemployment,
+} = require('./subnational-unemployment-monthly.cjs');
 
 const JURISDICTION_ID = 'US-CA';
 const FRED = (id, cosd = '2019-01-01') =>
@@ -165,7 +169,7 @@ async function buildEconomic() {
       'Point-in-Time counts: 2020, 2022–2024 (2021 not reported in CA SPM due to irregular PIT counts)',
     unemployment_source: 'U.S. Bureau of Labor Statistics via FRED (CAUR, UNRATE)',
     unemployment_url: SOURCES.unemployment,
-    unemployment_reporting_period: 'Monthly series, annual averages (seasonally adjusted)',
+    unemployment_reporting_period: 'Monthly state unemployment rate (seasonally adjusted)',
     gdp_source: 'U.S. Bureau of Economic Analysis via FRED (CANGSP)',
     gdp_url: SOURCES.gdp,
     gdp_reporting_period: 'Annual nominal GDP, year-over-year growth',
@@ -191,14 +195,20 @@ async function buildEconomic() {
   }
 
   try {
-    const ca = annualFromMonthly(await fetchFredSeries('CAUR'), 6);
-    const us = annualFromMonthly(await fetchFredSeries('UNRATE'), 6);
-    const usByYear = new Map(us.map((r) => [r.year, r.value]));
-    out.unemployment_rate = ca.map((r) => ({
-      year: r.year,
-      California: r.value,
-      'US Average': usByYear.get(r.year) ?? null,
-    }));
+    const caPts = await fetchFredSeries('CAUR');
+    const usPts = await fetchFredSeries('UNRATE');
+    const monthly = fredMonthlyUnemployment(caPts, usPts, 24);
+    const unempFields = buildUnemploymentFirestoreFields({
+      monthly,
+      jurisdictionKey: 'California',
+      natKey: 'US Average',
+      frequency: 'monthly',
+      seriesField: 'unemployment_series_monthly',
+      source: 'U.S. Bureau of Labor Statistics via FRED (LAUS CAUR, national UNRATE)',
+      sourceUrl: SOURCES.unemployment,
+      reportingPeriod: 'Monthly state unemployment rate (seasonally adjusted)',
+    });
+    if (unempFields) Object.assign(out, unempFields);
   } catch (err) {
     notes.push(`unemployment: ${err.message}`);
   }

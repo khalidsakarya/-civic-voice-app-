@@ -2,15 +2,18 @@
  * UK-ENG-LON (Greater London / GLA) — official sources only.
  */
 
+const XLSX = require('xlsx');
 const {
   MAX_RECORDS,
   trim,
   num,
   fetchText,
+  fetchBuffer,
   parseCsv,
   fmtCompact,
   parseMoneyish,
 } = require('./subnational-transparency-shared.cjs');
+const { onsLondonRollingUnemployment } = require('./subnational-unemployment-monthly.cjs');
 
 const JURISDICTION_ID = 'UK-ENG-LON';
 
@@ -92,6 +95,14 @@ async function buildEconomic() {
     }
   }
   if (crime.length) out.crime_rate = crime;
+
+  try {
+    const unemp = await onsLondonRollingUnemployment(fetchText, fetchBuffer, XLSX);
+    if (unemp) Object.assign(out, unemp);
+  } catch (err) {
+    out.data_status = { notes: [`unemployment: ${err.message}`] };
+  }
+
   return out;
 }
 

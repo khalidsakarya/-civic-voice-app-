@@ -69,8 +69,13 @@ const ECONOMIC_PERIOD_SERIES = [
   },
   {
     label: 'Unemployment',
-    arrayKeys: ['unemployment_rate', 'unemploymentRate'],
-    periodKeys: ['unemployment_reporting_period'],
+    arrayKeys: [
+      'unemployment_series_monthly',
+      'unemployment_series_rolling_3_month',
+      'unemployment_rate',
+      'unemploymentRate',
+    ],
+    periodKeys: ['unemployment_reporting_period', 'unemployment_latest_period'],
     sourceKeys: ['unemployment_source'],
   },
   {
@@ -219,14 +224,23 @@ function normalizeYearSeriesRow(row, valueKeys) {
   return hasValue ? out : null;
 }
 
+/** @param {boolean} isUSA @param {string} countryCode */
+function nationalUnemploymentKey(isUSA, countryCode) {
+  const c = trimStr(countryCode).toUpperCase();
+  if (c === 'AU') return 'AU Average';
+  if (c.startsWith('UK')) return 'UK Average';
+  return `${isUSA || c === 'US' ? 'US' : 'CA'} Average`;
+}
+
 /**
  * @param {unknown} rows
  * @param {string} jurisdictionName
- * @param {boolean} isUSA
+ * @param {string} natKey
  */
-function normalizeUnemploymentRows(rows, jurisdictionName, isUSA) {
-  if (!Array.isArray(rows) || !rows.length) return { unempData: [], unempKeys: [] };
-  const natKey = `${isUSA ? 'US' : 'CA'} Average`;
+function normalizeUnemploymentRows(rows, jurisdictionName, natKey) {
+  if (!Array.isArray(rows) || !rows.length) {
+    return { unempData: [], unempKeys: [], unempChartUsesPeriod: false };
+  }
   const unempData = [];
   for (let i = 0; i < rows.length; i += 1) {
     const row = rows[i];
@@ -243,14 +257,98 @@ function normalizeUnemploymentRows(rows, jurisdictionName, isUSA) {
       numOrNull(row.nationalAverage) ??
       numOrNull(row[natKey]);
     if (jVal == null && nVal == null) continue;
-    const point = { year };
+    const point = { year, periodSort: year };
     if (jVal != null) point[jurisdictionName] = jVal;
     if (nVal != null) point[natKey] = nVal;
     unempData.push(point);
   }
+  const keys = [jurisdictionName];
+  if (unempData.some((r) => r[natKey] != null)) keys.push(natKey);
   return {
     unempData,
-    unempKeys: unempData.length ? [jurisdictionName, natKey] : [],
+    unempKeys: unempData.length ? keys : [],
+    unempChartUsesPeriod: false,
+  };
+}
+
+/**
+ * Monthly or rolling 3-month unemployment series from Firestore.
+ * @param {unknown} rows
+ * @param {string} jurisdictionName
+ * @param {string} natKey
+ */
+function normalizeUnemploymentMonthlyRows(rows, jurisdictionName, natKey) {
+  if (!Array.isArray(rows) || !rows.length) {
+    return { unempData: [], unempKeys: [], unempChartUsesPeriod: false };
+  }
+  const unempData = [];
+  for (let i = 0; i < rows.length; i += 1) {
+    const row = rows[i];
+    if (!row || typeof row !== 'object') continue;
+    const periodSort = trimStr(row.period) || trimStr(row.period_sort);
+    const periodLabel =
+      trimStr(row.period_label) || trimStr(row.periodLabel) || periodSort;
+    if (!periodSort) continue;
+    const jVal =
+      numOrNull(row.jurisdiction) ??
+      numOrNull(row.jurisdiction_rate) ??
+      numOrNull(row[jurisdictionName]);
+    const nVal =
+      numOrNull(row.national_average) ??
+      numOrNull(row.nationalAverage) ??
+      numOrNull(row[natKey]);
+    if (jVal == null && nVal == null) continue;
+    const point = {
+      period: periodLabel,
+      periodSort,
+    };
+    if (jVal != null) point[jurisdictionName] = jVal;
+    if (nVal != null) point[natKey] = nVal;
+    unempData.push(point);
+  }
+  unempData.sort((a, b) => String(a.periodSort).localeCompare(String(b.periodSort)));
+  const slice = unempData.slice(-24);
+  const keys = [jurisdictionName];
+  if (slice.some((r) => r[natKey] != null)) keys.push(natKey);
+  return {
+    unempData: slice,
+    unempKeys: slice.length ? keys : [],
+    unempChartUsesPeriod: true,
+  };
+}
+
+/**
+ * @param {Record<string, unknown>} src
+ * @param {string} jurisdictionName
+ * @param {boolean} isUSA
+ * @param {string} countryCode
+ */
+function normalizeUnemploymentFromEconomic(src, jurisdictionName, isUSA, countryCode) {
+  const natKey = nationalUnemploymentKey(isUSA, countryCode);
+  const monthly =
+    src.unemployment_series_rolling_3_month ?? src.unemployment_series_monthly;
+  if (Array.isArray(monthly) && monthly.length) {
+    const parsed = normalizeUnemploymentMonthlyRows(monthly, jurisdictionName, natKey);
+    return {
+      ...parsed,
+      unempLatestRate: numOrNull(src.unemployment_latest_rate),
+      unempLatestPeriod: trimStr(src.unemployment_latest_period),
+      unempFrequency: trimStr(src.unemployment_frequency),
+      unempSourceUrl:
+        trimStr(src.unemployment_source_url) ||
+        trimStr(src.unemployment_url),
+    };
+  }
+  const unempRaw = src.unemployment_rate ?? src.unemploymentRate ?? src.unemployment;
+  const annual = normalizeUnemploymentRows(unempRaw, jurisdictionName, natKey);
+  return {
+    ...annual,
+    unempLatestRate: null,
+    unempLatestPeriod: '',
+    unempFrequency: '',
+    unempSourceUrl:
+      trimStr(src.unemployment_source_url) ||
+      trimStr(src.unemployment_url),
   };
 }
 
@@ -386,6 +484,10 @@ function normalizeCrimeSeries(crimeRaw, explicitMetricType) {
 export function parseSubnationalEconomicSocialData(raw, jurisdictionName, isUSA) {
   const bundle = transparencyBundleFromRaw(raw);
   const src = bundle.economic;
+  const countryCode =
+    trimStr(raw?.country) ||
+    trimStr(raw?.subnationalCountry) ||
+    (isUSA ? 'US' : 'CA');
   if (!src || typeof src !== 'object') {
     return {
       hasData: false,
@@ -397,6 +499,11 @@ export function parseSubnationalEconomicSocialData(raw, jurisdictionName, isUSA)
       crimePropertyKey: 'Property Crime',
       unempData: [],
       unempKeys: [],
+      unempChartUsesPeriod: false,
+      unempLatestRate: null,
+      unempLatestPeriod: '',
+      unempFrequency: '',
+      unempSourceUrl: '',
       gdpDataM: [],
       povDataM: [],
       homelessData: [],
@@ -426,8 +533,15 @@ export function parseSubnationalEconomicSocialData(raw, jurisdictionName, isUSA)
     crimePropertyKey,
   } = normalizeCrimeSeries(crimeRaw, crimeMetricFromDoc);
 
-  const unempRaw = src.unemployment_rate ?? src.unemploymentRate ?? src.unemployment;
-  const { unempData, unempKeys } = normalizeUnemploymentRows(unempRaw, jurisdictionName, isUSA);
+  const {
+    unempData,
+    unempKeys,
+    unempChartUsesPeriod,
+    unempLatestRate,
+    unempLatestPeriod,
+    unempFrequency,
+    unempSourceUrl,
+  } = normalizeUnemploymentFromEconomic(src, jurisdictionName, isUSA, countryCode);
 
   const gdpRaw = src.gdp_growth ?? src.gdpGrowth ?? src.gdp;
   const gdpData = Array.isArray(gdpRaw)
@@ -488,6 +602,14 @@ export function parseSubnationalEconomicSocialData(raw, jurisdictionName, isUSA)
     crimePropertyKey,
     unempData,
     unempKeys,
+    unempChartUsesPeriod,
+    unempLatestRate,
+    unempLatestPeriod,
+    unempFrequency,
+    unempSourceUrl:
+      unempSourceUrl ||
+      trimStr(src.unemployment_source_url) ||
+      trimStr(src.unemployment_url),
     gdpDataM,
     povDataM,
     homelessData,
@@ -657,6 +779,12 @@ export function parseSubnationalEconomicSocialFromStatsDoc(doc, jurisdictionName
       crime_rate_trends: doc.crime_rate_trends ?? doc.crime_rate,
       crime_metric_type: doc.crime_metric_type ?? doc.crimeMetricType,
       unemployment_rate: doc.unemployment_rate,
+      unemployment_latest_rate: doc.unemployment_latest_rate,
+      unemployment_latest_period: doc.unemployment_latest_period,
+      unemployment_frequency: doc.unemployment_frequency,
+      unemployment_series_monthly: doc.unemployment_series_monthly,
+      unemployment_series_rolling_3_month: doc.unemployment_series_rolling_3_month,
+      unemployment_source_url: doc.unemployment_source_url,
       gdp_growth: doc.gdp_growth,
       poverty_rate: doc.poverty_rate,
       homelessness: doc.homelessness,
@@ -1105,7 +1233,13 @@ export function economicMetricChartAvailable(economic, chartKey) {
     case 'crime':
       return economic.crimeDataM.length > 0;
     case 'unemployment':
-      return economic.unempData.length > 0 && economic.unempKeys.length >= 2;
+      return (
+        economic.unempData.length > 0 &&
+        economic.unempKeys.length >= 1 &&
+        economic.unempKeys.some((k) =>
+          economic.unempData.some((row) => numOrNull(row[k]) != null),
+        )
+      );
     case 'gdp':
       return economic.gdpDataM.length > 0;
     case 'poverty':
@@ -1179,7 +1313,24 @@ export function buildEconomicTransparencyHeadlines(economic, jurisdictionLabel) 
     }
   }
 
-  if (economic.unempData.length && economic.unempKeys.length) {
+  if (economic.unempLatestRate != null) {
+    const freq = economic.unempFrequency;
+    const freqLabel =
+      freq === 'rolling_3_month'
+        ? 'rolling 3-month'
+        : freq === 'monthly'
+          ? 'monthly'
+          : 'official';
+    metrics.push({
+      label: 'Unemployment',
+      value: `${economic.unempLatestRate}%`,
+      sub: economic.unempLatestPeriod
+        ? `Latest ${freqLabel}: ${economic.unempLatestPeriod}`
+        : `Latest ${freqLabel} rate`,
+      chartKey: 'unemployment',
+      chartAvailable: economicMetricChartAvailable(economic, 'unemployment'),
+    });
+  } else if (economic.unempData.length && economic.unempKeys.length) {
     const latest = latestRowByYear(economic.unempData);
     const jKey = economic.unempKeys[0];
     if (latest && jKey) {

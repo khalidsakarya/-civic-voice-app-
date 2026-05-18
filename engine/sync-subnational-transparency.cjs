@@ -26,6 +26,7 @@ const {
   hasGrantsPayload,
 } = require('./lib/subnational-transparency-shared.cjs');
 const usCa = require('./lib/subnational-transparency-us-ca.cjs');
+const caOn = require('./lib/subnational-transparency-ca-on.cjs');
 const auNsw = require('./lib/subnational-transparency-au-nsw.cjs');
 const ukLon = require('./lib/subnational-transparency-uk-lon.cjs');
 
@@ -34,6 +35,7 @@ const COL_TAX = 'subnational_tax_exempt_entities';
 const COL_GRANTS = 'subnational_grants';
 
 const MODULES = {
+  'CA-ON': caOn,
   'US-CA': usCa,
   'AU-NSW': auNsw,
   'UK-ENG-LON': ukLon,
@@ -94,6 +96,7 @@ async function syncJurisdiction(mod, db, write) {
       report.economic.sourceUrl =
         economicDoc.budget_distribution_url ||
         economicDoc.crime_url ||
+        economicDoc.unemployment_source_url ||
         economicDoc.unemployment_url ||
         null;
       if (write) {
