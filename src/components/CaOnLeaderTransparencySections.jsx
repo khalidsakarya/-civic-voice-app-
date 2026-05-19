@@ -222,6 +222,7 @@ function DisclosureResultRow({ label, value }) {
 }
 
 function DetailFinancialDisclosure({ row }) {
+  const [howOpen, setHowOpen] = useState(false);
   const fd = row?.financial_disclosure;
   const src = caOnSourceUrl(fd);
   const summary = parseFinancialDisclosureSummary(fd);
@@ -241,32 +242,41 @@ function DetailFinancialDisclosure({ row }) {
         </div>
       )}
 
-      <details className="rounded-lg border border-gray-200 bg-white">
-        <summary className="text-xs font-medium text-gray-700 px-3 py-2.5 cursor-pointer touch-manipulation list-none flex items-center justify-between gap-2">
+      <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setHowOpen((o) => !o)}
+          className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-left text-xs font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 touch-manipulation"
+        >
           <span>How disclosure works</span>
-          <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" aria-hidden />
-        </summary>
-        <div className="px-3 pb-3 pt-1 space-y-2 border-t border-gray-100">
-          {fd?.regulatory_framework && (
-            <p className="text-xs text-gray-600">{fd.regulatory_framework}</p>
-          )}
-          {fd?.filing_status_2024 && (
-            <p className="text-xs text-gray-700 leading-relaxed">{fd.filing_status_2024}</p>
-          )}
-          {fd?.reporting_period && (
-            <p className="text-xs text-gray-500">{fd.reporting_period}</p>
-          )}
-          {fd?.disclosure_note && (
-            <p className="text-xs text-gray-600 leading-relaxed">{fd.disclosure_note}</p>
-          )}
-          {fd?.portal_note && (
-            <p className="text-xs text-gray-500 italic leading-relaxed">{fd.portal_note}</p>
-          )}
-          <BulletList items={fd?.what_is_disclosed} />
-          <BulletList items={fd?.cabinet_restrictions} />
-          {caOnNeedsManualReview(fd) && frameworkNote()}
-        </div>
-      </details>
+          <ChevronDown
+            className={`w-4 h-4 text-gray-500 flex-shrink-0 transition-transform duration-200 ${howOpen ? 'rotate-180' : ''}`}
+            aria-hidden
+          />
+        </button>
+        {howOpen && (
+          <div className="px-3 pb-3 pt-1 space-y-2 border-t border-gray-100">
+            {fd?.regulatory_framework && (
+              <p className="text-xs text-gray-600">{fd.regulatory_framework}</p>
+            )}
+            {fd?.filing_status_2024 && (
+              <p className="text-xs text-gray-700 leading-relaxed">{fd.filing_status_2024}</p>
+            )}
+            {fd?.reporting_period && (
+              <p className="text-xs text-gray-500">{fd.reporting_period}</p>
+            )}
+            {fd?.disclosure_note && (
+              <p className="text-xs text-gray-600 leading-relaxed">{fd.disclosure_note}</p>
+            )}
+            {fd?.portal_note && (
+              <p className="text-xs text-gray-500 italic leading-relaxed">{fd.portal_note}</p>
+            )}
+            <BulletList items={fd?.what_is_disclosed} />
+            <BulletList items={fd?.cabinet_restrictions} />
+            {caOnNeedsManualReview(fd) && frameworkNote()}
+          </div>
+        )}
+      </div>
 
       <div className="flex flex-col gap-1">
         {sourceLink(src, 'View OICO guidance')}
