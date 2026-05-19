@@ -28,6 +28,7 @@ import { logEvent } from './analytics';
 import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell, Loader2, Copy } from 'lucide-react';
 import { BarChart, Bar, AreaChart, Area, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
+import { CaOnFinancialDisclosure } from './CaOnLeaderTransparencySections';
 import './App.css';
 import { FirestoreDebugPanel } from './dev/FirestoreDebugPanel';
 
@@ -34619,40 +34620,45 @@ function App() {
               </section>
 
               {/* Financial Disclosure */}
-              <section>
-                <p className="panel-section-label">Financial Disclosure — Since {leader.financialDisclosure.electedYear}</p>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
-                      <p className="text-xs text-gray-500 mb-1">Worth on Taking Office</p>
-                      <p className="text-base font-bold text-blue-700">{formatCurrency(leader.financialDisclosure.initialWorth)}</p>
-                    </div>
-                    <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
-                      <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
-                      <p className="text-base font-bold text-green-700">{formatCurrency(leader.financialDisclosure.currentWorth)}</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between">
-                      <span className="text-sm text-gray-700 font-medium">Annual Salary</span>
-                      <span className="font-bold text-amber-700">{formatCurrency(leader.financialDisclosure.salary)}</span>
-                    </div>
-                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 flex items-center justify-between">
-                      <span className="text-sm text-gray-700 font-medium">Net Worth Growth</span>
-                      <span className="font-bold text-purple-700">+{leader.financialDisclosure.percentageIncrease}%</span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Declared Assets</p>
-                    {leader.financialDisclosure.assets.map((asset, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <span className="text-sm text-gray-700">{asset.type}</span>
-                        <span className="text-sm font-bold text-gray-900">{formatCurrency(asset.value)}</span>
+              {leader.name === 'Doug Ford'
+                ? <CaOnFinancialDisclosure />
+                : (
+                  <section>
+                    <p className="panel-section-label">Financial Disclosure — Since {leader.financialDisclosure.electedYear}</p>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                          <p className="text-xs text-gray-500 mb-1">Worth on Taking Office</p>
+                          <p className="text-base font-bold text-blue-700">{formatCurrency(leader.financialDisclosure.initialWorth)}</p>
+                        </div>
+                        <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
+                          <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
+                          <p className="text-base font-bold text-green-700">{formatCurrency(leader.financialDisclosure.currentWorth)}</p>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between">
+                          <span className="text-sm text-gray-700 font-medium">Annual Salary</span>
+                          <span className="font-bold text-amber-700">{formatCurrency(leader.financialDisclosure.salary)}</span>
+                        </div>
+                        <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 flex items-center justify-between">
+                          <span className="text-sm text-gray-700 font-medium">Net Worth Growth</span>
+                          <span className="font-bold text-purple-700">+{leader.financialDisclosure.percentageIncrease}%</span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Declared Assets</p>
+                        {leader.financialDisclosure.assets.map((asset, i) => (
+                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <span className="text-sm text-gray-700">{asset.type}</span>
+                            <span className="text-sm font-bold text-gray-900">{formatCurrency(asset.value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                )
+              }
 
               {/* Top Donors — hidden for Crown/Federal Appointee roles */}
               {!isCrown && leader.topDonors.length > 0 && (
