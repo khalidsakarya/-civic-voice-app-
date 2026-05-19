@@ -1,0 +1,827 @@
+{
+  "generatedAt": "2026-05-18T01:45:41.400Z",
+  "mode": "write",
+  "summary": {
+    "registryTotal": 76,
+    "syncable": 76,
+    "attempted": 76,
+    "updated": 50,
+    "unresolved": 26
+  },
+  "updated": [
+    {
+      "id": "US-AL",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-AK",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-AR",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-CA",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_since",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_office_address",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-CO",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-CT",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-DE",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_office_address",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-GA",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-HI",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-ID",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-IN",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-IA",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-KS",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-KY",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_office_address",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-LA",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_office_address",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-ME",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-MD",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-MI",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-MN",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-MS",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-MO",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-MT",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-NE",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_office_address",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-NV",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_office_address",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-NH",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_office_address",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-NJ",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_address",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-NM",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-NC",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-ND",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_office_address",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-OH",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-OK",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-PA",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-SC",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-UT",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-WA",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-WV",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-WI",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_office_address",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-WY",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "US-DC",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "CA-MB",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "CA-NB",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "CA-NS",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "CA-ON",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_since",
+        "leader_party",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "CA-PE",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "AU-NSW",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_since",
+        "leader_party",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_office_address",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "AU-TAS",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "UK-SCT",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_bio",
+        "officialWebsite",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "UK-WLS",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "officialWebsite",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "UK-NIR",
+      "fields": [
+        "leader_title",
+        "officialWebsite",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    },
+    {
+      "id": "UK-ENG-LON",
+      "fields": [
+        "leader_name",
+        "leader_title",
+        "leader_party",
+        "leader_bio",
+        "officialWebsite",
+        "leader_office_contact",
+        "leader_profile_source_url",
+        "leader_profile_fetched_at",
+        "leader_profile_live",
+        "leaderTitle"
+      ]
+    }
+  ],
+  "unresolved": [
+    {
+      "id": "US-AZ",
+      "reason": "https://azgovernor.gov/: HTTP 403 for https://azgovernor.gov/; https://azgovernor.gov/about: HTTP 403 for https://azgovernor.gov/about"
+    },
+    {
+      "id": "US-FL",
+      "reason": "https://www.flgov.gov/: fetch failed; https://www.flgov.gov/about: fetch failed"
+    },
+    {
+      "id": "US-IL",
+      "reason": "name_not_found_on_official_pages"
+    },
+    {
+      "id": "US-MA",
+      "reason": "name_not_found_on_official_pages"
+    },
+    {
+      "id": "US-NY",
+      "reason": "https://www.governor.ny.gov/about: HTTP 403 for https://www.governor.ny.gov/about; https://www.governor.ny.gov/about-the-governor: HTTP 404 for https://www.governor.ny.gov/about-the-governor"
+    },
+    {
+      "id": "US-OR",
+      "reason": "https://www.oregon.gov/gov/about: HTTP 404 for https://www.oregon.gov/gov/about; https://www.oregon.gov/gov/about-the-governor: HTTP 404 for https://www.oregon.gov/gov/about-the-governor"
+    },
+    {
+      "id": "US-RI",
+      "reason": "https://governor.ri.gov/: HTTP 403 for https://governor.ri.gov/; https://governor.ri.gov/about: HTTP 403 for https://governor.ri.gov/about"
+    },
+    {
+      "id": "US-SD",
+      "reason": "name_not_found_on_official_pages"
+    },
+    {
+      "id": "US-TN",
+      "reason": "https://www.tn.gov/governor/: fetch failed; https://www.tn.gov/governor/about: fetch failed"
+    },
+    {
+      "id": "US-TX",
+      "reason": "HTTP 404 for https://gov.texas.gov/governor"
+    },
+    {
+      "id": "US-VT",
+      "reason": "https://governor.vermont.gov/about: HTTP 404 for https://governor.vermont.gov/about; https://governor.vermont.gov/about-the-governor: HTTP 404 for https://governor.vermont.gov/about-the-governor"
+    },
+    {
+      "id": "US-VA",
+      "reason": "https://www.governor.virginia.gov/about: HTTP 404 for https://www.governor.virginia.gov/about; https://www.governor.virginia.gov/about-governor: HTTP 404 for https://www.governor.virginia.gov/about-governor"
+    },
+    {
+      "id": "CA-AB",
+      "reason": "https://www.alberta.ca/premier/about: HTTP 404 for https://www.alberta.ca/premier/about; https://www.alberta.ca/premier/premier: HTTP 404 for https://www.alberta.ca/premier/premier"
+    },
+    {
+      "id": "CA-BC",
+      "reason": "https://www2.gov.bc.ca/gov/content/government/premier: HTTP 404 for https://www2.gov.bc.ca/gov/content/government/premier; https://www2.gov.bc.ca/gov/content/government/premier/about: HTTP 404 for https://www2.gov.bc.ca/gov/content/government/premier/about"
+    },
+    {
+      "id": "CA-NL",
+      "reason": "name_not_found_on_official_pages"
+    },
+    {
+      "id": "CA-NT",
+      "reason": "https://www.gov.nt.ca/about: HTTP 404 for https://www.gov.nt.ca/about; https://www.gov.nt.ca/contact: HTTP 404 for https://www.gov.nt.ca/contact"
+    },
+    {
+      "id": "CA-NU",
+      "reason": "https://www.premier.gov.nu.ca/premier: HTTP 404 for https://www.premier.gov.nu.ca/premier"
+    },
+    {
+      "id": "CA-QC",
+      "reason": "name_not_found_on_official_pages"
+    },
+    {
+      "id": "CA-SK",
+      "reason": "https://www.saskatchewan.ca/government/premier: HTTP 404 for https://www.saskatchewan.ca/government/premier; https://www.saskatchewan.ca/government/premier/about: HTTP 404 for https://www.saskatchewan.ca/government/premier/about"
+    },
+    {
+      "id": "CA-YT",
+      "reason": "https://yukon.ca/en/your-government/yukon-premier: HTTP 403 for https://yukon.ca/en/your-government/yukon-premier; https://yukon.ca/en/your-government/yukon-premier/about: HTTP 404 for https://yukon.ca/en/your-government/yukon-premier/about"
+    },
+    {
+      "id": "AU-VIC",
+      "reason": "https://www.premier.vic.gov.au/about: HTTP 404 for https://www.premier.vic.gov.au/about; https://www.premier.vic.gov.au/contact: HTTP 404 for https://www.premier.vic.gov.au/contact"
+    },
+    {
+      "id": "AU-QLD",
+      "reason": "https://www.qld.gov.au/about/leadership-government-government/premier-minister: HTTP 404 for https://www.qld.gov.au/about/leadership-government-government/premier-minister; https://www.qld.gov.au/about/leadership-government-government/premier-minister/about: HTTP 404 for https://www.qld.gov.au/about/leadership-government-government/premier-minister/about"
+    },
+    {
+      "id": "AU-WA",
+      "reason": "https://www.wa.gov.au/government/premier-state-government: HTTP 404 for https://www.wa.gov.au/government/premier-state-government; https://www.wa.gov.au/government/premier-state-government/about: HTTP 404 for https://www.wa.gov.au/government/premier-state-government/about"
+    },
+    {
+      "id": "AU-SA",
+      "reason": "https://www.premier.sa.gov.au/: HTTP 403 for https://www.premier.sa.gov.au/; https://www.premier.sa.gov.au/about: HTTP 404 for https://www.premier.sa.gov.au/about"
+    },
+    {
+      "id": "AU-ACT",
+      "reason": "https://www.act.gov.au/: HTTP 403 for https://www.act.gov.au/; https://www.act.gov.au/about: HTTP 404 for https://www.act.gov.au/about"
+    },
+    {
+      "id": "AU-NT",
+      "reason": "https://nt.gov.au/: HTTP 403 for https://nt.gov.au/; https://nt.gov.au/about: HTTP 404 for https://nt.gov.au/about"
+    }
+  ]
+}

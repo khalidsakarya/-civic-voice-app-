@@ -26,6 +26,10 @@
     "seed:subnational-jurisdictions": "node engine/seed-subnational-jurisdictions.cjs",
     "validate:subnational-jurisdictions": "node engine/validate-subnational-jurisdictions.cjs",
     "enrich:subnational-jurisdictions:phase3b": "node engine/enrich-subnational-jurisdictions-phase3b.cjs",
+    "sync:subnational-transparency": "node engine/sync-subnational-transparency.cjs",
+    "sync:subnational-leader-profiles-pilot": "node engine/sync-subnational-leader-profiles-pilot.cjs",
+    "sync:subnational-leader-profiles": "node engine/sync-subnational-leader-profiles.cjs",
+    "sync:subnational-leader-transparency": "node engine/sync-subnational-leader-transparency.cjs",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -53,6 +57,7 @@
     "dotenv": "^17.3.1",
     "firebase-admin": "^13.8.0",
     "postcss": "^8.5.6",
-    "tailwindcss": "^3.3.0"
+    "tailwindcss": "^3.3.0",
+    "xlsx": "^0.18.5"
   }
 }

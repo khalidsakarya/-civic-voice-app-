@@ -1,7 +1,11 @@
 /**
  * Provincial/state explorer — merge helpers for Firestore `subnational_jurisdictions`.
  * When present, `leader_party_short` overrides badge text (`partyShort`); otherwise hardcoded values remain.
+ * Narrative and legislature breakdown fields are only as trustworthy as the backing documents (engine-sourced vs demo).
  */
+
+import { buildExplorerTransparencyFields } from './subnationalTransparencyData';
+import { applyLeaderProfileFieldsFromFirestore } from './subnationalLeaderProfile';
 
 /** @param {unknown} v */
 function trimString(v) {
@@ -10,11 +14,112 @@ function trimString(v) {
   return s;
 }
 
+/** US-only: governor headline fields surfaced on state detail. */
+const US_GOVERNOR_HEADLINE_MANUAL_REVIEW_FS_FIELDS = Object.freeze([
+  'leader_name',
+  'leader_party',
+  'leader_since',
+]);
+
+/** Canada / Australia province-state detail notice: keys from Firestore `needs_manual_review` (via normalized primary list). */
+const CA_AU_SUBNATIONAL_MANUAL_REVIEW_NOTICE_ORDER = Object.freeze([
+  'leader_name',
+  'leader_party',
+  'leader_since',
+  'population',
+]);
+
+/**
+ * @param {Record<string, unknown>} fsRow
+ * @returns {string[]}
+ */
+function caAuSubnationalManualReviewNoticeFields(fsRow) {
+  if (!fsRow || typeof fsRow !== 'object') return [];
+  const primary = fsRow.needs_manual_review_primary_field_keys;
+  const raw = Array.isArray(primary) ? primary : fsRow.needs_manual_review_fields;
+  if (!Array.isArray(raw) || !raw.length) return [];
+  const present = new Set(raw.map((x) => String(x).trim()).filter(Boolean));
+  const buckets = new Set();
+  for (const k of present) {
+    if (k === 'population_display' || k === 'population_raw') buckets.add('population');
+    else if (
+      k === 'leader_name' ||
+      k === 'leader_party' ||
+      k === 'leader_since' ||
+      k === 'population'
+    ) {
+      buckets.add(k);
+    }
+  }
+  const out = [];
+  for (let i = 0; i < CA_AU_SUBNATIONAL_MANUAL_REVIEW_NOTICE_ORDER.length; i += 1) {
+    const f = CA_AU_SUBNATIONAL_MANUAL_REVIEW_NOTICE_ORDER[i];
+    if (buckets.has(f)) out.push(f);
+  }
+  return out;
+}
+
+/**
+ * @param {Record<string, unknown>} out
+ * @param {Record<string, unknown>|null|undefined} fsRow
+ */
+function applyCaAuSubnationalManualReviewNoticeFields(out, fsRow) {
+  if (!out || typeof out !== 'object') return;
+  const vf = caAuSubnationalManualReviewNoticeFields(fsRow || {});
+  if (vf.length) {
+    out.subnationalManualReviewNoticeFields = vf;
+  } else {
+    delete out.subnationalManualReviewNoticeFields;
+  }
+}
+
+/**
+ * @param {Record<string, unknown>} fsRow
+ * @returns {string[]}
+ */
+function usGovernorHeadlineManualReviewFields(fsRow) {
+  if (!fsRow || typeof fsRow !== 'object') return [];
+  const primary = fsRow.needs_manual_review_primary_field_keys;
+  const raw = Array.isArray(primary) ? primary : fsRow.needs_manual_review_fields;
+  if (!Array.isArray(raw) || !raw.length) return [];
+  const present = new Set(raw.map((x) => String(x).trim()).filter(Boolean));
+  const out = [];
+  for (let i = 0; i < US_GOVERNOR_HEADLINE_MANUAL_REVIEW_FS_FIELDS.length; i += 1) {
+    const f = US_GOVERNOR_HEADLINE_MANUAL_REVIEW_FS_FIELDS[i];
+    if (present.has(f)) out.push(f);
+  }
+  return out;
+}
+
+/**
+ * @param {Record<string, unknown>} out
+ * @param {Record<string, unknown>|null|undefined} fsRow
+ * @param {boolean} isUSA
+ */
+function applyUsGovernorHeadlineManualReviewFlags(out, fsRow, isUSA) {
+  if (!out || typeof out !== 'object') return;
+  if (!isUSA) {
+    delete out.usSubnationalGovernorHeadlineNeedsVerification;
+    delete out.usSubnationalGovernorHeadlineNeedsVerificationFields;
+    applyCaAuSubnationalManualReviewNoticeFields(out, fsRow);
+    return;
+  }
+  delete out.subnationalManualReviewNoticeFields;
+  const vf = usGovernorHeadlineManualReviewFields(fsRow || {});
+  if (vf.length) {
+    out.usSubnationalGovernorHeadlineNeedsVerification = true;
+    out.usSubnationalGovernorHeadlineNeedsVerificationFields = vf;
+  } else {
+    delete out.usSubnationalGovernorHeadlineNeedsVerification;
+    delete out.usSubnationalGovernorHeadlineNeedsVerificationFields;
+  }
+}
+
 /**
  * @param {Record<string, unknown>} fsRow
  * @returns {{ name: string, totalSeats: number, parties: { name: string, seats: number, color: string }[] } | null}
  */
-export function buildLegislatureFromSubnationalFirestore(fsRow) {
+function buildLegislatureFromSubnationalFirestore(fsRow) {
   if (!fsRow || typeof fsRow !== 'object') return null;
   const rawBreakdown = fsRow.legislature_party_breakdown;
   if (!Array.isArray(rawBreakdown) || rawBreakdown.length === 0) return null;
@@ -45,7 +150,7 @@ export function buildLegislatureFromSubnationalFirestore(fsRow) {
 }
 
 /** @param {string} partyStr @param {string} fallback */
-export function usPartyShortFromLeaderParty(partyStr, fallback) {
+function usPartyShortFromLeaderParty(partyStr, fallback) {
   const u = (partyStr || '').toLowerCase();
   if (u.includes('republican')) return 'R';
   if (u.includes('democrat')) return 'D';
@@ -59,7 +164,11 @@ export function usPartyShortFromLeaderParty(partyStr, fallback) {
  */
 export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
   if (!hardcoded) return hardcoded;
-  if (!fsRow) return { ...hardcoded };
+  if (!fsRow) {
+    const out = { ...hardcoded };
+    applyUsGovernorHeadlineManualReviewFlags(out, null, isUSA);
+    return out;
+  }
 
   const out = { ...hardcoded };
 
@@ -96,7 +205,7 @@ export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
       out.partyShort = fsPartyShort || usPartyShortFromLeaderParty(lp, hardcoded.partyShort);
     } else {
       out.party = lp;
-      if (fsPartyShort) out.partyShort = fsPartyShort;
+      out.partyShort = fsPartyShort || String(hardcoded.partyShort || '');
     }
   } else if (fsPartyShort) {
     out.partyShort = fsPartyShort;
@@ -149,6 +258,12 @@ export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
   const legFs = buildLegislatureFromSubnationalFirestore(fsRow);
   if (legFs) out.legislature = legFs;
 
+  Object.assign(out, buildExplorerTransparencyFields(fsRow, isUSA));
+
+  applyLeaderProfileFieldsFromFirestore(out, fsRow);
+
+  applyUsGovernorHeadlineManualReviewFlags(out, fsRow, isUSA);
+
   return out;
 }
 
@@ -175,7 +290,11 @@ export function buildProvincialExplorerRowFromFirestoreWithHardcodedFallback(
   isUSA,
 ) {
   if (!hardcoded) return hardcoded;
-  if (!fsRow || typeof fsRow !== 'object') return { ...hardcoded };
+  if (!fsRow || typeof fsRow !== 'object') {
+    const out = { ...hardcoded };
+    applyUsGovernorHeadlineManualReviewFlags(out, null, isUSA);
+    return out;
+  }
 
   const ts = trimString;
 
@@ -264,6 +383,12 @@ export function buildProvincialExplorerRowFromFirestoreWithHardcodedFallback(
   const flagFs = ts(fsRow.flagUrl);
   if (flagFs) out.flagUrl = flagFs;
 
+  Object.assign(out, buildExplorerTransparencyFields(fsRow, isUSA));
+
+  applyLeaderProfileFieldsFromFirestore(out, fsRow);
+
+  applyUsGovernorHeadlineManualReviewFlags(out, fsRow, isUSA);
+
   return out;
 }
 
@@ -279,6 +404,23 @@ export const AU_EXPLORER_REQUIRED_ABBR = Object.freeze([
   'NT',
 ]);
 
+/** Label fallback when neither Firestore nor seed supplies `leaderTitle` (states vs territories). */
+function defaultAustralianExplorerLeaderTitle(abbr) {
+  const u = String(abbr || '').trim().toUpperCase();
+  if (u === 'ACT' || u === 'NT') return 'Chief Minister';
+  if (
+    u === 'NSW' ||
+    u === 'VIC' ||
+    u === 'QLD' ||
+    u === 'WA' ||
+    u === 'SA' ||
+    u === 'TAS'
+  ) {
+    return 'Premier';
+  }
+  return '';
+}
+
 /**
  * Merge Firestore AU row into hardcoded Australian explorer row (`leader` / `party`; keep `partyShort` for badges).
  *
@@ -287,7 +429,11 @@ export const AU_EXPLORER_REQUIRED_ABBR = Object.freeze([
  */
 export function mergeAustralianExplorerRow(hardcoded, fsRow) {
   if (!hardcoded) return hardcoded;
-  if (!fsRow) return { ...hardcoded };
+  if (!fsRow) {
+    const out = { ...hardcoded };
+    delete out.subnationalManualReviewNoticeFields;
+    return out;
+  }
 
   const out = { ...hardcoded };
 
@@ -328,7 +474,15 @@ export function mergeAustralianExplorerRow(hardcoded, fsRow) {
     fsRow.leaderTitle != null && String(fsRow.leaderTitle).trim()
       ? String(fsRow.leaderTitle).trim()
       : '';
-  if (fsLt) out.leaderTitle = fsLt;
+  const abbrForLt = String(
+    (fsRow.abbreviation != null && String(fsRow.abbreviation).trim()
+      ? String(fsRow.abbreviation).trim()
+      : String(hardcoded.abbr || '')),
+  ).toUpperCase();
+  out.leaderTitle =
+    fsLt ||
+    String(hardcoded.leaderTitle || '') ||
+    defaultAustralianExplorerLeaderTitle(abbrForLt);
 
   const fsLegName =
     fsRow.legislatureName != null && String(fsRow.legislatureName).trim()
@@ -366,7 +520,11 @@ export function mergeAustralianExplorerRow(hardcoded, fsRow) {
     fsRow.leader_party_short != null && String(fsRow.leader_party_short).trim()
       ? String(fsRow.leader_party_short).trim()
       : '';
-  if (fsPartyShort) out.partyShort = fsPartyShort;
+  out.partyShort = fsPartyShort || String(hardcoded.partyShort || '');
+
+  applyLeaderProfileFieldsFromFirestore(out, fsRow);
+
+  applyCaAuSubnationalManualReviewNoticeFields(out, fsRow);
 
   return out;
 }
@@ -383,7 +541,11 @@ export function buildAustralianExplorerRowFromFirestoreWithHardcodedFallback(
   hardcoded,
 ) {
   if (!hardcoded) return hardcoded;
-  if (!fsRow || typeof fsRow !== 'object') return { ...hardcoded };
+  if (!fsRow || typeof fsRow !== 'object') {
+    const out = { ...hardcoded };
+    delete out.subnationalManualReviewNoticeFields;
+    return out;
+  }
 
   const ts = trimString;
 
@@ -402,7 +564,10 @@ export function buildAustralianExplorerRowFromFirestoreWithHardcodedFallback(
         ? String(fsRow.population_display).trim()
         : String(hardcoded.population || ''),
     leader: ts(fsRow.leader_name) || String(hardcoded.leader || ''),
-    leaderTitle: ts(fsRow.leaderTitle) || String(hardcoded.leaderTitle || ''),
+    leaderTitle:
+      ts(fsRow.leaderTitle) ||
+      String(hardcoded.leaderTitle || '') ||
+      defaultAustralianExplorerLeaderTitle(abbr),
     party: ts(fsRow.leader_party) || String(hardcoded.party || ''),
     partyShort:
       ts(fsRow.leader_party_short) || String(hardcoded.partyShort || ''),
@@ -452,6 +617,10 @@ export function buildAustralianExplorerRowFromFirestoreWithHardcodedFallback(
     out.legislature = { ...hardcoded.legislature };
   }
 
+  applyLeaderProfileFieldsFromFirestore(out, fsRow);
+
+  applyCaAuSubnationalManualReviewNoticeFields(out, fsRow);
+
   return out;
 }
 
@@ -498,6 +667,77 @@ export const UK_EXPLORER_APP_REGION_IDS = Object.freeze([
   'south-west',
 ]);
 
+/** UI label when `leaderTitle` is missing from Firestore and seed (England regions without a regional mayor). */
+function defaultUkEnglandNonMayorLeaderTitle(hardcoded) {
+  if (!hardcoded || hardcoded.hasRegionalMayor) return '';
+  const id = String(hardcoded.id || '');
+  if (id === 'north-west' || id === 'yorkshire') return 'Combined Authority Mayors';
+  if (id === 'east-of-england' || id === 'south-east' || id === 'south-west') return 'No Regional Mayor';
+  return '';
+}
+
+/** ONS-style region population — reject non-sensical values before using for sums or display. */
+const UK_ENG_OFFICIAL_POP_MIN = 50_000;
+const UK_ENG_OFFICIAL_POP_MAX = 25_000_000;
+
+/**
+ * @param {Record<string, unknown>} fsRow
+ * @returns {number | null}
+ */
+function officialUkEnglandPopulationRaw(fsRow) {
+  if (!fsRow || typeof fsRow !== 'object') return null;
+  const candidates = [fsRow.population, fsRow.populationRaw];
+  for (let i = 0; i < candidates.length; i += 1) {
+    const n = Number(candidates[i]);
+    if (!Number.isFinite(n) || n < UK_ENG_OFFICIAL_POP_MIN || n > UK_ENG_OFFICIAL_POP_MAX) continue;
+    return Math.round(n);
+  }
+  return null;
+}
+
+/**
+ * @param {Record<string, unknown>} fsRow
+ * @returns {string}
+ */
+function formatUkEnglandAreaKm2(fsRow) {
+  if (!fsRow || typeof fsRow !== 'object') return '';
+  const km2 = Number(fsRow.area_km2);
+  if (!Number.isFinite(km2) || km2 <= 0 || km2 > 500_000) return '';
+  const rounded = km2 < 100 ? Math.round(km2 * 10) / 10 : Math.round(km2);
+  const body =
+    km2 < 100 && !Number.isInteger(rounded)
+      ? String(rounded)
+      : Math.round(km2).toLocaleString('en-GB');
+  return `${body} km²`;
+}
+
+/**
+ * Prefer Firestore `population_display`, then a safe numeric headline, then hardcoded fallbacks.
+ *
+ * @param {Record<string, unknown>} fsRow
+ * @param {Record<string, unknown>} hardcoded
+ */
+function ukEnglandPopulationDisplay(fsRow, hardcoded) {
+  const disp =
+    fsRow && fsRow.population_display != null && String(fsRow.population_display).trim()
+      ? String(fsRow.population_display).trim()
+      : '';
+  if (disp) return disp;
+  const raw = officialUkEnglandPopulationRaw(fsRow);
+  if (raw != null) return raw.toLocaleString('en-GB');
+  const hPop =
+    hardcoded && hardcoded.population != null && String(hardcoded.population).trim()
+      ? String(hardcoded.population).trim()
+      : '';
+  if (hPop) return hPop;
+  const legacyRaw =
+    hardcoded && typeof hardcoded.populationRaw === 'number' && Number.isFinite(hardcoded.populationRaw)
+      ? Math.round(hardcoded.populationRaw)
+      : null;
+  if (legacyRaw != null) return legacyRaw.toLocaleString('en-GB');
+  return '';
+}
+
 /**
  * England region explorer row: Firestore is primary; hardcoded `englandRegions` fills gaps.
  * When `hasRegionalMayor` is false, head-of-region name/party/since stay from hardcoded (same as merge).
@@ -518,11 +758,14 @@ export function buildUkEnglandRegionRowFromFirestoreWithHardcodedFallback(
 
   out.capital = ts(fsRow.capital) || String(hardcoded.capital || '');
 
-  const popFs =
-    fsRow.population_display != null && String(fsRow.population_display).trim()
-      ? String(fsRow.population_display).trim()
-      : '';
-  out.population = popFs || String(hardcoded.population || '');
+  out.population = ukEnglandPopulationDisplay(fsRow, hardcoded);
+  const rawOff = officialUkEnglandPopulationRaw(fsRow);
+  if (rawOff != null) out.populationRaw = rawOff;
+  else delete out.populationRaw;
+
+  const areaStr = formatUkEnglandAreaKm2(fsRow);
+  if (areaStr) out.area = areaStr;
+  else delete out.area;
 
   if (mayor) {
     out.leader = ts(fsRow.leader_name) || String(hardcoded.leader || '');
@@ -531,7 +774,10 @@ export function buildUkEnglandRegionRowFromFirestoreWithHardcodedFallback(
   }
 
   out.leaderBio = ts(fsRow.leader_bio) || String(hardcoded.leaderBio || '');
-  out.leaderTitle = ts(fsRow.leaderTitle) || String(hardcoded.leaderTitle || '');
+  out.leaderTitle =
+    ts(fsRow.leaderTitle) ||
+    String(hardcoded.leaderTitle || '') ||
+    defaultUkEnglandNonMayorLeaderTitle(hardcoded);
   out.displayName = ts(fsRow.name) || String(hardcoded.displayName || hardcoded.name || '');
 
   const abbrFs =
@@ -564,6 +810,8 @@ export function buildUkEnglandRegionRowFromFirestoreWithHardcodedFallback(
 
   const flagFs = ts(fsRow.flagUrl);
   if (flagFs) out.flagUrl = flagFs;
+
+  applyLeaderProfileFieldsFromFirestore(out, fsRow);
 
   return out;
 }
@@ -622,18 +870,27 @@ export function findUkEnglandRegionFirestoreRow(region, byIdMap, ukRows) {
  */
 export function mergeUkEnglandRegionRow(hardcoded, fsRow) {
   if (!hardcoded) return hardcoded;
-  if (!fsRow) return { ...hardcoded };
+  if (!fsRow) {
+    const out = { ...hardcoded };
+    out.leaderTitle =
+      String(hardcoded.leaderTitle || '') ||
+      defaultUkEnglandNonMayorLeaderTitle(hardcoded);
+    return out;
+  }
 
   const out = { ...hardcoded };
 
   const cap = typeof fsRow.capital === 'string' ? fsRow.capital.trim() : '';
   if (cap) out.capital = cap;
 
-  const pop =
-    fsRow.population_display != null && String(fsRow.population_display).trim()
-      ? String(fsRow.population_display).trim()
-      : '';
-  if (pop) out.population = pop;
+  out.population = ukEnglandPopulationDisplay(fsRow, hardcoded);
+  const rawOff = officialUkEnglandPopulationRaw(fsRow);
+  if (rawOff != null) out.populationRaw = rawOff;
+  else delete out.populationRaw;
+
+  const areaStr = formatUkEnglandAreaKm2(fsRow);
+  if (areaStr) out.area = areaStr;
+  else delete out.area;
 
   const mayor = !!hardcoded.hasRegionalMayor;
   if (mayor) {
@@ -659,14 +916,22 @@ export function mergeUkEnglandRegionRow(hardcoded, fsRow) {
 
   if (fsRow.abbreviation) out.subnationalAbbreviation = String(fsRow.abbreviation);
 
-  if (fsRow.officialWebsite) out.officialWebsite = fsRow.officialWebsite;
+  if (fsRow.officialWebsite !== undefined && fsRow.officialWebsite !== null) {
+    out.officialWebsite = fsRow.officialWebsite;
+  } else if (hardcoded.officialWebsite !== undefined) {
+    out.officialWebsite = hardcoded.officialWebsite;
+  }
+
   if (fsRow.legislatureWebsite) out.legislatureWebsite = String(fsRow.legislatureWebsite);
 
   const fsLt =
     fsRow.leaderTitle != null && String(fsRow.leaderTitle).trim()
       ? String(fsRow.leaderTitle).trim()
       : '';
-  if (fsLt) out.leaderTitle = fsLt;
+  out.leaderTitle =
+    fsLt ||
+    String(hardcoded.leaderTitle || '') ||
+    defaultUkEnglandNonMayorLeaderTitle(hardcoded);
 
   const fsLegName =
     fsRow.legislatureName != null && String(fsRow.legislatureName).trim()
@@ -684,6 +949,8 @@ export function mergeUkEnglandRegionRow(hardcoded, fsRow) {
 
   const legFs = buildLegislatureFromSubnationalFirestore(fsRow);
   if (legFs) out.legislature = legFs;
+
+  applyLeaderProfileFieldsFromFirestore(out, fsRow);
 
   return out;
 }

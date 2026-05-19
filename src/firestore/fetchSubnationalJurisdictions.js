@@ -1,11 +1,12 @@
 /**
  * Client-side read helper for `subnational_jurisdictions`.
- * Does not replace hardcoded app data until an approved UI migration.
+ * Callers merge with local seeds; treat narrative fields as unverified in UI until engine-sourced documents replace demo content.
  */
 
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { SUBNATIONAL_JURISDICTIONS_COLLECTION } from '../constants/firestoreCollections';
+import { passThroughSubnationalTransparencyFields } from '../utils/subnationalTransparencyData';
 
 /**
  * @typedef {Object} SubnationalJurisdictionRecord
@@ -23,6 +24,9 @@ import { SUBNATIONAL_JURISDICTIONS_COLLECTION } from '../constants/firestoreColl
  * @property {string|null} officialWebsite
  * @property {string} legislatureWebsite
  * @property {string} population_display
+ * @property {number=} area_km2
+ * @property {number=} population
+ * @property {number=} populationRaw
  * @property {string} leader_name
  * @property {string} leader_party
  * @property {string} leader_party_short
@@ -40,6 +44,8 @@ import { SUBNATIONAL_JURISDICTIONS_COLLECTION } from '../constants/firestoreColl
  * @property {string} source_url
  * @property {string} last_updated
  * @property {string} dataStatus
+ * @property {string[]=} needs_manual_review_fields Field keys the engine marked for manual review (subset of Firestore shapes).
+ * @property {string[]=} needs_manual_review_primary_field_keys Keys from `needs_manual_review` / `needsManualReview`, plus Firestore `needs_manual_review_fields` **only when** the primary field yields no keys (canonical array fallback; still excludes per-field `*_needs_manual_review` / `*_data_status` expansions).
  */
 
 /**
@@ -61,6 +67,81 @@ function normalizeCountryCode(countryCode) {
   const s = String(countryCode).trim().toUpperCase();
   if (!s) return null;
   return s;
+}
+
+/** @param {unknown} v */
+function truthyNeedsManualReviewValue(v) {
+  if (v === true || v === 1) return true;
+  const s = String(v).trim().toLowerCase();
+  return s === 'needs_manual_review' || s === 'true' || s === '1' || s === 'yes';
+}
+
+/**
+ * Keys listed only on Firestore `needs_manual_review` / `needsManualReview` (array or map).
+ * Does not merge `leader_name_needs_manual_review`-style flags (those stay in {@link collectNeedsManualReviewFieldKeys} only).
+ *
+ * @param {Record<string, unknown>} raw
+ * @returns {string[]}
+ */
+function collectPrimaryNeedsManualReviewFieldKeys(raw) {
+  if (!raw || typeof raw !== 'object') return [];
+  const out = new Set();
+
+  const nmr = raw.needs_manual_review ?? raw.needsManualReview;
+  if (Array.isArray(nmr)) {
+    for (let i = 0; i < nmr.length; i += 1) {
+      const k = String(nmr[i]).trim();
+      if (k) out.add(k);
+    }
+  } else if (nmr && typeof nmr === 'object' && !Array.isArray(nmr)) {
+    const entries = Object.entries(nmr);
+    for (let i = 0; i < entries.length; i += 1) {
+      const [k, v] = entries[i];
+      if (!k) continue;
+      if (v && typeof v === 'object' && !Array.isArray(v)) {
+        const st = v.status != null ? String(v.status).trim().toLowerCase() : '';
+        if (st === 'needs_manual_review' || truthyNeedsManualReviewValue(v)) out.add(k);
+      } else if (truthyNeedsManualReviewValue(v)) {
+        out.add(k);
+      }
+    }
+  }
+
+  // When verification stores the canonical list only on `needs_manual_review_fields` (array) and
+  // `needs_manual_review` is absent/empty, still surface those keys — without merging per-field
+  // `leader_name_needs_manual_review` (handled only in collectNeedsManualReviewFieldKeys).
+  if (out.size === 0) {
+    const fsList = raw.needs_manual_review_fields;
+    if (Array.isArray(fsList)) {
+      for (let i = 0; i < fsList.length; i += 1) {
+        const k = String(fsList[i]).trim();
+        if (k) out.add(k);
+      }
+    }
+  }
+
+  return [...out].sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Normalize Firestore manual-review signals into stable field keys (primary NMR plus per-field flags).
+ *
+ * @param {Record<string, unknown>} raw
+ * @returns {string[]}
+ */
+function collectNeedsManualReviewFieldKeys(raw) {
+  if (!raw || typeof raw !== 'object') return [];
+  const out = new Set(collectPrimaryNeedsManualReviewFieldKeys(raw));
+
+  const optionalFieldKeys = ['leader_name', 'leader_party', 'leader_since', 'leader_party_short'];
+  for (let i = 0; i < optionalFieldKeys.length; i += 1) {
+    const fk = optionalFieldKeys[i];
+    if (truthyNeedsManualReviewValue(raw[`${fk}_needs_manual_review`])) out.add(fk);
+    const st = raw[`${fk}_data_status`] != null ? String(raw[`${fk}_data_status`]).trim().toLowerCase() : '';
+    if (st === 'needs_manual_review') out.add(fk);
+  }
+
+  return [...out].sort((a, b) => a.localeCompare(b));
 }
 
 /**
@@ -140,6 +221,43 @@ function normalizeRecord(docId, raw) {
 
   const flagFromDoc = optTrim(raw.flagUrl) || optTrim(raw.flag_url);
   if (flagFromDoc) rec.flagUrl = flagFromDoc;
+
+  const areaKm2 = Number(raw.area_km2);
+  if (Number.isFinite(areaKm2) && areaKm2 > 0) {
+    rec.area_km2 = areaKm2;
+  }
+
+  const popNum = Number(raw.population);
+  if (Number.isFinite(popNum) && popNum > 0) {
+    rec.population = popNum;
+  }
+
+  const popRawNum = Number(raw.populationRaw);
+  if (Number.isFinite(popRawNum) && popRawNum > 0) {
+    rec.populationRaw = popRawNum;
+  }
+
+  const nmrFields = collectNeedsManualReviewFieldKeys(raw);
+  if (nmrFields.length) {
+    rec.needs_manual_review_fields = nmrFields;
+  }
+
+  rec.needs_manual_review_primary_field_keys = collectPrimaryNeedsManualReviewFieldKeys(raw);
+
+  passThroughSubnationalTransparencyFields(rec, raw);
+
+  const leaderTitleSnake = optTrim(raw.leader_title);
+  if (leaderTitleSnake) rec.leader_title = leaderTitleSnake;
+
+  const loc = optTrim(raw.leader_office_contact);
+  if (loc) rec.leader_office_contact = loc;
+  const loa = optTrim(raw.leader_office_address);
+  if (loa) rec.leader_office_address = loa;
+  const lpsu = optTrim(raw.leader_profile_source_url);
+  if (lpsu) rec.leader_profile_source_url = lpsu;
+  const lpfa = optTrim(raw.leader_profile_fetched_at);
+  if (lpfa) rec.leader_profile_fetched_at = lpfa;
+  if (raw.leader_profile_live === true) rec.leader_profile_live = true;
 
   return /** @type {SubnationalJurisdictionRecord} */ (rec);
 }

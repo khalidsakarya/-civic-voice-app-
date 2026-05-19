@@ -1,0 +1,66 @@
+{
+  "generatedAt": "2026-05-18T19:04:40.617Z",
+  "mode": "write",
+  "jurisdictions": [
+    {
+      "id": "CA-ON",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": true,
+          "count": 4,
+          "source": "https://www.ontario.ca/public-sector-salary-disclosure/2024/all-sectors-and-seconded-employees"
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": true,
+          "count": 2,
+          "source": "https://finances.elections.on.ca/en/contributions?entityNames=Ford%2C%20Doug&fromYear=2018&toYear=2024"
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "recent_official_activity",
+          "loaded": true,
+          "count": 8,
+          "source": "https://news.ontario.ca/newsroom/en"
+        }
+      ],
+      "field_sources": {
+        "salary": "https://www.ontario.ca/public-sector-salary-disclosure/2024/all-sectors-and-seconded-employees",
+        "campaign_finance": "https://finances.elections.on.ca/en/contributions?entityNames=Ford%2C%20Doug&fromYear=2018&toYear=2024",
+        "recent_official_activity": "https://news.ontario.ca/newsroom/en"
+      }
+    }
+  ]
+}

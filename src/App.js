@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import app, { db } from './firebase';
 import { EXECUTIVE_ACTIONS_COLLECTION } from './constants/firestoreCollections';
 import { fetchSubnationalJurisdictions } from './firestore/fetchSubnationalJurisdictions';
+import { fetchSubnationalTransparencyForExplorerItem } from './firestore/fetchSubnationalTransparencyModalDocs';
+import { fetchSummaryStatsDashboard } from './firestore/fetchSummaryStatsDashboard';
 import {
   AU_EXPLORER_REQUIRED_ABBR,
   abbreviationFromExplorerFlagCode,
@@ -17,6 +19,30 @@ import {
   mergeUkEnglandRegionRow,
 } from './utils/mergeProvincialExplorerFirestore';
 import { formatExecutiveOrderDisplayDate } from './utils/executiveOrderDates';
+import {
+  economicSocialFromExplorerItem,
+  taxExemptFromExplorerItem,
+  grantsGivenFromExplorerItem,
+  formatCurrencyCompact,
+  REPORTING_PERIOD_NOT_SPECIFIED,
+  SUBNATIONAL_SERIES_PERIOD_INTRO,
+  buildEconomicTransparencyHeadlines,
+  ECONOMIC_METRIC_CHART_SECTION_TITLE,
+  economicMetricChartAvailable,
+  buildTaxTransparencyHeadlines,
+  buildGrantsTransparencyHeadlines,
+  TRANSPARENCY_HEADLINE_NOT_LOADED,
+  subnationalTransparencyJurisdictionId,
+} from './utils/subnationalTransparencyData';
+import {
+  hasLiveOfficialLeaderProfile,
+  leaderProfilePanelPayloadFromExplorerItem,
+} from './utils/subnationalLeaderProfile';
+import { fetchSubnationalLeaderTransparency } from './firestore/fetchSubnationalLeaderTransparency';
+import { PILOT_LEADER_TRANSPARENCY_IDS } from './utils/subnationalLeaderTransparency';
+import SubnationalLeaderTransparencySections from './components/SubnationalLeaderTransparencySections';
+import CaOnLeaderTransparencySections from './components/CaOnLeaderTransparencySections';
+import EconomicModalMetricChart from './components/EconomicModalMetricChart';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
 import {
   FEDERAL_REGISTER_SOURCE_NAME,
@@ -28,7 +54,6 @@ import { logEvent } from './analytics';
 import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell, Loader2, Copy } from 'lucide-react';
 import { BarChart, Bar, AreaChart, Area, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
-import { CaOnFinancialDisclosure } from './CaOnLeaderTransparencySections';
 import './App.css';
 import { FirestoreDebugPanel } from './dev/FirestoreDebugPanel';
 
@@ -54,6 +79,41 @@ const LOCATION_GATE_US_STATE_NAMES_FALLBACK = ['Alabama','Alaska','Arizona','Ark
 
 /** Province/territory codes in same order as CANADA_PROVINCE_TERRITORY_NAMES_REGION_GATE (for Firestore ordering). */
 const CANADA_LOCATION_GATE_ORDER_ABBR = ['AB','BC','MB','NB','NL','NT','NS','NU','ON','PE','QC','SK','YT'];
+
+/** Shown on subnational explorer/detail: sync gaps vs curated seed — kept short so it does not read as “whole page unreliable”. */
+function SubnationalIllustrativeExplorerNote() {
+  return (
+    <div
+      className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2.5 text-xs text-amber-950 leading-snug mb-4 flex gap-2 items-start"
+      role="note"
+    >
+      <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-800" aria-hidden />
+      <p>
+        <span className="font-semibold">Note: </span>
+        Some explorer or narrative fields may still be illustrative or filling in from sync. Where Firestore already has engine-sourced values, those are shown as usual. Bios, deputy lines, legislature charts, and UK regional copy may update as official data lands.
+      </p>
+    </div>
+  );
+}
+
+/** Firestore manual-review flags on a few headline fields — wording stresses scoped check, not whole-screen risk. */
+function SubnationalFieldVerificationNotice({ labels }) {
+  if (!Array.isArray(labels) || labels.length === 0) return null;
+  const list = labels.join(', ');
+  const scope = labels.length === 1 ? 'This field is' : 'These values are';
+  return (
+    <div
+      className="rounded-lg border border-amber-200/90 bg-amber-50/90 px-3 py-2 text-xs text-amber-950 leading-snug mb-3 flex gap-2 items-start"
+      role="status"
+    >
+      <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-700" aria-hidden />
+      <p>
+        <span className="font-semibold">In review: </span>
+        {list}. {scope} being validated against official sources; other information on this screen is unchanged.
+      </p>
+    </div>
+  );
+}
 
 // Custom CSS for animations and enhanced styling
 const customStyles = `
@@ -1675,9 +1735,19 @@ function mapExpenseLeaderboardRowToWasteUi(r) {
   };
 }
 
-/** Hub/card subtitle from cached `government_contracts` rows (`liveContracts[jur]`). Undefined = fetch not done for that jurisdiction yet. */
-function governmentContractsHubSubtitle(rows) {
-  if (rows === undefined) return 'Government contract records';
+/**
+ * Hub/card subtitle from cached `government_contracts` rows (`liveContracts[jur]`).
+ * Undefined rows = fetch not done yet — optional `summaryCount` from `summary_stats/contract_stats` fills the headline until rows load.
+ */
+function governmentContractsHubSubtitle(rows, summaryCount) {
+  if (rows === undefined) {
+    const sc = summaryCount != null ? Number(summaryCount) : NaN;
+    if (Number.isFinite(sc) && sc >= 0) {
+      const r = Math.round(sc);
+      return `${r} contract record${r === 1 ? '' : 's'}`;
+    }
+    return 'Government contract records';
+  }
   const n = rows.length;
   return `${n} contract record${n === 1 ? '' : 's'}`;
 }
@@ -1709,7 +1779,10 @@ function App() {
   const [showAuMemberPanel, setShowAuMemberPanel] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null);
   const [selectedProvince, setSelectedProvince] = useState(null);
+  /** Modal transparency fields from dedicated Firestore collections (e.g. CA-ON). */
+  const [provinceTransparencyFields, setProvinceTransparencyFields] = useState(null);
   const [showEconomicModal, setShowEconomicModal] = useState(false);
+  const [economicModalSelectedChart, setEconomicModalSelectedChart] = useState(null);
   const [presidentVotes, setPresidentVotes] = useState(() => {
     const saved = localStorage.getItem('cvPresidentVote');
     return saved ? JSON.parse(saved) : { support: 0, oppose: 0, concerned: 0, userVote: null };
@@ -1744,16 +1817,15 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
   const [showTaxExemptModal, setShowTaxExemptModal] = useState(false);
+  const [taxModalDetailsOpen, setTaxModalDetailsOpen] = useState(false);
   const [taxExemptSearch, setTaxExemptSearch] = useState('');
   const [showGrantsModal, setShowGrantsModal] = useState(false);
+  const [grantsModalDetailsOpen, setGrantsModalDetailsOpen] = useState(false);
   const [grantsSearch, setGrantsSearch] = useState('');
-  /** Firestore-backed detail module data keyed by jurisdiction_id (e.g. 'CA-ON'). null = not yet fetched. */
-  const [detailEconByJurisdiction, setDetailEconByJurisdiction] = useState({});
-  const [detailGrantsByJurisdiction, setDetailGrantsByJurisdiction] = useState({});
-  const [detailTaxByJurisdiction, setDetailTaxByJurisdiction] = useState({});
-  const detailModuleFetchedRef = useRef(new Set());
   const [showLeaderPanel, setShowLeaderPanel] = useState(false);
   const [selectedLeader, setSelectedLeader] = useState(null);
+  const [subnationalLeaderTransparency, setSubnationalLeaderTransparency] = useState(null);
+  const [subnationalLeaderTransparencyLoading, setSubnationalLeaderTransparencyLoading] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -1790,6 +1862,8 @@ function App() {
   const [ukExplorerFirestoreRows, setUkExplorerFirestoreRows] = useState(null);
   const ukExplorerFirestoreFetchDoneRef = useRef(false);
   const ukExplorerMapsAppliedRef = useRef(null);
+  /** Latest `summary_stats` dashboard slice — read in async callbacks (e.g. count aggregation) to prefer summary over duplicate queries. */
+  const summaryStatsRef = useRef(null);
   const [pmVotes, setPmVotes] = useState(() => {
     const saved = localStorage.getItem('cvPMVote');
     return saved ? JSON.parse(saved) : { support: 0, oppose: 0, concerned: 0, userVote: null };
@@ -1969,6 +2043,8 @@ function App() {
   const [usBills, setUsBills] = useState([]);
   const [usDepartments, setUsDepartments] = useState([]);
   const [liveContracts, setLiveContracts] = useState({});
+  /** Pre-aggregated `summary_stats` docs (`department_summary`, `member_stats`, `contract_stats`) for hub cards; detailed collection reads remain fallbacks. */
+  const [summaryStatsDashboard, setSummaryStatsDashboard] = useState(null);
   const [contractsFetchedJurisdictions, setContractsFetchedJurisdictions] = useState({});
   const [courtJustices, setCourtJustices] = useState({});
   const [courtCases, setCourtCases] = useState({});
@@ -3561,29 +3637,6 @@ function App() {
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch subnational detail module data (economic stats, grants, tax-exempt) from Firestore
-  useEffect(() => {
-    const anyOpen = showEconomicModal || showGrantsModal || showTaxExemptModal;
-    if (!anyOpen || !selectedProvince?.flagCode) return;
-    const jid = selectedProvince.flagCode.toUpperCase(); // e.g. 'CA-ON'
-    if (detailModuleFetchedRef.current.has(jid)) return;
-    detailModuleFetchedRef.current.add(jid);
-    (async () => {
-      try {
-        const [econSnap, grantsSnap, taxSnap] = await Promise.all([
-          getDoc(doc(db, 'subnational_economic_social_stats', jid)),
-          getDoc(doc(db, 'subnational_grants', jid)),
-          getDoc(doc(db, 'subnational_tax_exempt_entities', jid)),
-        ]);
-        if (econSnap.exists())   setDetailEconByJurisdiction(p => ({ ...p, [jid]: econSnap.data() }));
-        if (grantsSnap.exists()) setDetailGrantsByJurisdiction(p => ({ ...p, [jid]: grantsSnap.data() }));
-        if (taxSnap.exists())    setDetailTaxByJurisdiction(p => ({ ...p, [jid]: taxSnap.data() }));
-      } catch (err) {
-        console.warn('[DetailModule] Firestore fetch failed for', jid, err.message);
-      }
-    })();
-  }, [showEconomicModal, showGrantsModal, showTaxExemptModal, selectedProvince]); // eslint-disable-line react-hooks/exhaustive-deps
-
   // Fetch US Congress stock trades from Firestore when panel opens
   useEffect(() => {
     if (!showMemberPanel || !selectedMember?.name) return;
@@ -3952,6 +4005,30 @@ function App() {
       }
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const id = selectedLeader?.subnationalId;
+    if (!showLeaderPanel || !id || !PILOT_LEADER_TRANSPARENCY_IDS.includes(id)) {
+      setSubnationalLeaderTransparency(null);
+      setSubnationalLeaderTransparencyLoading(false);
+      return undefined;
+    }
+    let cancelled = false;
+    setSubnationalLeaderTransparencyLoading(true);
+    fetchSubnationalLeaderTransparency(id)
+      .then((row) => {
+        if (!cancelled) setSubnationalLeaderTransparency(row);
+      })
+      .catch(() => {
+        if (!cancelled) setSubnationalLeaderTransparency(null);
+      })
+      .finally(() => {
+        if (!cancelled) setSubnationalLeaderTransparencyLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showLeaderPanel, selectedLeader?.subnationalId]);
 
   // Shared helper: fetch member_bios for a given member; tries bioguide_id first, then memberName
   const fetchMemberBio = async (member) => {
@@ -6266,7 +6343,32 @@ function App() {
     })();
   }, [view, selectedCountry]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // US cabinet roster count (department_heads) for categories / president hub — aligns UI with Firestore
+  useEffect(() => {
+    summaryStatsRef.current = summaryStatsDashboard;
+  }, [summaryStatsDashboard]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const s = await fetchSummaryStatsDashboard();
+      if (!cancelled && s) setSummaryStatsDashboard(s);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // US cabinet roster count — prefer `summary_stats` when the engine publishes it; otherwise `getCountFromServer` on `department_heads`.
+  useEffect(() => {
+    if (selectedCountry?.type !== 'usa') return;
+    if (!['categories', 'president-executive', 'president-detail'].includes(view)) return;
+    const n = summaryStatsDashboard?.departmentHeadsUS;
+    if (n == null) return;
+    const r = Math.round(Number(n));
+    if (!Number.isFinite(r) || r < 0) return;
+    setUsCabinetRosterCount(r);
+    setUsCabinetRosterLoading(false);
+  }, [view, selectedCountry?.type, summaryStatsDashboard?.departmentHeadsUS]);
+
+  // Prefer `summary_stats` for US cabinet headcount when present; otherwise count `department_heads` (US).
   useEffect(() => {
     if (selectedCountry?.type !== 'usa') {
       setUsCabinetRosterCount((c) => (c !== null ? null : c));
@@ -6279,7 +6381,13 @@ function App() {
       try {
         const q = query(collection(db, 'department_heads'), where('jurisdiction', '==', 'US'));
         const snap = await getCountFromServer(q);
-        setUsCabinetRosterCount(snap.data().count);
+        const s = summaryStatsRef.current;
+        const prefer = s?.departmentHeadsUS;
+        if (prefer != null && Number.isFinite(Number(prefer))) {
+          setUsCabinetRosterCount(Math.round(Number(prefer)));
+        } else {
+          setUsCabinetRosterCount(snap.data().count);
+        }
       } catch (err) {
         console.warn('[USCabinetRosterCount] fetch failed:', err.message);
         setUsCabinetRosterCount(-1);
@@ -6578,17 +6686,32 @@ function App() {
     return null;
   };
 
+  const sumDash = summaryStatsDashboard;
+  const caParliamentCardCount =
+    sumDash?.memberCACommons != null && sumDash?.memberCASenate != null
+      ? sumDash.memberCACommons + sumDash.memberCASenate
+      : sumDash?.memberCAParliament ?? null;
+  const canadaMembersHub = caParliamentCardCount ?? (mps.length || 338);
+  const usMembersHub = sumDash?.memberUSCongress ?? (congressMembers.length || 535);
+  const auMembersHub = sumDash?.memberAUTotal ?? sumDash?.memberAUHouse ?? 227;
+  const ukMembersHub = sumDash?.memberUK ?? 650;
+  const caContractsCardCount =
+    liveContracts.CA !== undefined ? liveContracts.CA.length : (sumDash?.contractsCA ?? null);
+  const usDeptHubCount = sumDash?.departmentsUS ?? (usDepartments.length > 0 ? usDepartments.length : null) ?? 15;
+  const caDeptHubCount = sumDash?.departmentsCA ?? ministries.length ?? 15;
+  const auDeptHubCount = sumDash?.departmentsAU ?? 15;
+
   const countries = [
-    { id: 1, name: 'Canada', flag: '🇨🇦', members: mps.length || 338, type: 'canada' },
-    { id: 2, name: 'United States', flag: '🇺🇸', members: congressMembers.length || 535, type: 'usa' },
-    { id: 3, name: 'Australia', flag: '🇦🇺', members: 227, type: 'australia' },
-    { id: 4, name: 'United Kingdom', flag: '🇬🇧', members: 650, type: 'uk' }
+    { id: 1, name: 'Canada', flag: '🇨🇦', members: canadaMembersHub, type: 'canada' },
+    { id: 2, name: 'United States', flag: '🇺🇸', members: usMembersHub, type: 'usa' },
+    { id: 3, name: 'Australia', flag: '🇦🇺', members: auMembersHub, type: 'australia' },
+    { id: 4, name: 'United Kingdom', flag: '🇬🇧', members: ukMembersHub, type: 'uk' }
   ];
 
   const categories = [
-    { id: 1, name: 'Federal Parliament', icon: <Globe className="w-6 h-6" />, count: mps.length || 338, type: 'parliament' },
+    { id: 1, name: 'Federal Parliament', icon: <Globe className="w-6 h-6" />, count: canadaMembersHub, type: 'parliament' },
     { id: 2, name: 'Latest Laws & Regulations', icon: <FileText className="w-6 h-6" />, count: laws.length || 12, type: 'laws' },
-    { id: 3, name: 'Government Contracts', icon: <DollarSign className="w-6 h-6" />, count: liveContracts.CA === undefined ? null : liveContracts.CA.length, type: 'contracts' }
+    { id: 3, name: 'Government Contracts', icon: <DollarSign className="w-6 h-6" />, count: caContractsCardCount, type: 'contracts' }
   ];
 
   const getAnalyticsData = () => {
@@ -12572,8 +12695,6 @@ function App() {
 
   // ── Shared province/state data (used by both list + detail views) ──────────
   const getProvincialData = () => {
-    const isUSA = selectedCountry?.type === 'usa';
-
     // Wikipedia Commons — reliable source for every state & provincial flag
     const W = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
     const flagFiles = {
@@ -12647,385 +12768,196 @@ function App() {
 
     const canadaProvinces = [
       {
-        name: 'Ontario', capital: 'Toronto', flagCode: 'ca-on', population: '14.9M',
-        premier: 'Doug Ford', party: 'Progressive Conservative', partyShort: 'PC', since: '2018',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Edith Dumont', ltGovParty: 'Crown Representative', ltGovSince: '2023',
+        name: 'Ontario', flagCode: 'ca-on',
       },
       {
-        name: 'Quebec', capital: 'Quebec City', flagCode: 'ca-qc', population: '8.8M',
-        premier: 'François Legault', party: 'Coalition Avenir Québec', partyShort: 'CAQ', since: '2018',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Manon Jeannotte', ltGovParty: 'Crown Representative', ltGovSince: '2022',
+        name: 'Quebec', flagCode: 'ca-qc',
       },
       {
-        name: 'British Columbia', capital: 'Victoria', flagCode: 'ca-bc', population: '5.3M',
-        premier: 'David Eby', party: 'New Democratic Party', partyShort: 'NDP', since: '2022',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Janet Austin', ltGovParty: 'Crown Representative', ltGovSince: '2018',
+        name: 'British Columbia', flagCode: 'ca-bc',
       },
       {
-        name: 'Alberta', capital: 'Edmonton', flagCode: 'ca-ab', population: '4.6M',
-        premier: 'Danielle Smith', party: 'United Conservative Party', partyShort: 'UCP', since: '2022',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Salma Lakhani', ltGovParty: 'Crown Representative', ltGovSince: '2020',
+        name: 'Alberta', flagCode: 'ca-ab',
       },
       {
-        name: 'Saskatchewan', capital: 'Regina', flagCode: 'ca-sk', population: '1.2M',
-        premier: 'Scott Moe', party: 'Saskatchewan Party', partyShort: 'Sask. Party', since: '2018',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Russell Mirasty', ltGovParty: 'Crown Representative', ltGovSince: '2019',
+        name: 'Saskatchewan', flagCode: 'ca-sk',
       },
       {
-        name: 'Manitoba', capital: 'Winnipeg', flagCode: 'ca-mb', population: '1.4M',
-        premier: 'Wab Kinew', party: 'New Democratic Party', partyShort: 'NDP', since: '2023',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Anita Neville', ltGovParty: 'Crown Representative', ltGovSince: '2021',
+        name: 'Manitoba', flagCode: 'ca-mb',
       },
       {
-        name: 'Nova Scotia', capital: 'Halifax', flagCode: 'ca-ns', population: '1.0M',
-        premier: 'Tim Houston', party: 'Progressive Conservative', partyShort: 'PC', since: '2021',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Arthur J. LeBlanc', ltGovParty: 'Crown Representative', ltGovSince: '2017',
+        name: 'Nova Scotia', flagCode: 'ca-ns',
       },
       {
-        name: 'New Brunswick', capital: 'Fredericton', flagCode: 'ca-nb', population: '820K',
-        premier: 'Susan Holt', party: 'Liberal', partyShort: 'Liberal', since: '2024',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Brenda L. Murphy', ltGovParty: 'Crown Representative', ltGovSince: '2019',
+        name: 'New Brunswick', flagCode: 'ca-nb',
       },
       {
-        name: 'Newfoundland & Labrador', capital: "St. John's", flagCode: 'ca-nl', population: '530K',
-        premier: 'Andrew Furey', party: 'Liberal', partyShort: 'Liberal', since: '2020',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Judy Foote', ltGovParty: 'Crown Representative', ltGovSince: '2018',
+        name: 'Newfoundland & Labrador', flagCode: 'ca-nl',
       },
       {
-        name: 'Prince Edward Island', capital: 'Charlottetown', flagCode: 'ca-pe', population: '170K',
-        premier: 'Dennis King', party: 'Progressive Conservative', partyShort: 'PC', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Antoinette Perry', ltGovParty: 'Crown Representative', ltGovSince: '2022',
+        name: 'Prince Edward Island', flagCode: 'ca-pe',
       },
       {
-        name: 'Northwest Territories', capital: 'Yellowknife', flagCode: 'ca-nt', population: '45K',
-        premier: 'R.J. Simpson', party: 'Consensus Government', partyShort: 'Consensus', since: '2023',
-        ltGovTitle: 'Commissioner',
-        ltGovernor: 'Jodie Ferris', ltGovParty: 'Federal Appointee', ltGovSince: '2021',
+        name: 'Northwest Territories', flagCode: 'ca-nt',
       },
       {
-        name: 'Yukon', capital: 'Whitehorse', flagCode: 'ca-yt', population: '43K',
-        premier: 'Ranj Pillai', party: 'Liberal', partyShort: 'Liberal', since: '2023',
-        ltGovTitle: 'Commissioner',
-        ltGovernor: 'Angélique Bernard', ltGovParty: 'Federal Appointee', ltGovSince: '2020',
+        name: 'Yukon', flagCode: 'ca-yt',
       },
       {
-        name: 'Nunavut', capital: 'Iqaluit', flagCode: 'ca-nu', population: '40K',
-        premier: 'P.J. Akeeagok', party: 'Consensus Government', partyShort: 'Consensus', since: '2021',
-        ltGovTitle: 'Commissioner',
-        ltGovernor: 'Eva Aariak', ltGovParty: 'Federal Appointee', ltGovSince: '2020',
+        name: 'Nunavut', flagCode: 'ca-nu',
       },
     ];
 
     const usStates = [
       {
-        name: 'Alabama', capital: 'Montgomery', flagCode: 'us-al',
-        governor: 'Kay Ivey', govParty: 'Republican', partyShort: 'R', since: '2017',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Will Ainsworth', ltGovParty: 'R', ltGovSince: '2019',
+        name: 'Alabama', flagCode: 'us-al',
       },
       {
-        name: 'Alaska', capital: 'Juneau', flagCode: 'us-ak',
-        governor: 'Mike Dunleavy', govParty: 'Republican', partyShort: 'R', since: '2018',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Nancy Dahlstrom', ltGovParty: 'R', ltGovSince: '2018',
+        name: 'Alaska', flagCode: 'us-ak',
       },
       {
-        name: 'Arizona', capital: 'Phoenix', flagCode: 'us-az',
-        governor: 'Katie Hobbs', govParty: 'Democrat', partyShort: 'D', since: '2023',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: '— (position being established)', ltGovParty: '', ltGovSince: '',
+        name: 'Arizona', flagCode: 'us-az',
       },
       {
-        name: 'Arkansas', capital: 'Little Rock', flagCode: 'us-ar',
-        governor: 'Sarah Huckabee Sanders', govParty: 'Republican', partyShort: 'R', since: '2023',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Leslie Rutledge', ltGovParty: 'R', ltGovSince: '2023',
+        name: 'Arkansas', flagCode: 'us-ar',
       },
       {
-        name: 'California', capital: 'Sacramento', flagCode: 'us-ca',
-        governor: 'Gavin Newsom', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Eleni Kounalakis', ltGovParty: 'D', ltGovSince: '2019',
+        name: 'California', flagCode: 'us-ca',
       },
       {
-        name: 'Colorado', capital: 'Denver', flagCode: 'us-co',
-        governor: 'Jared Polis', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Dianne Primavera', ltGovParty: 'D', ltGovSince: '2019',
+        name: 'Colorado', flagCode: 'us-co',
       },
       {
-        name: 'Connecticut', capital: 'Hartford', flagCode: 'us-ct',
-        governor: 'Ned Lamont', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Susan Bysiewicz', ltGovParty: 'D', ltGovSince: '2019',
+        name: 'Connecticut', flagCode: 'us-ct',
       },
       {
-        name: 'Delaware', capital: 'Dover', flagCode: 'us-de',
-        governor: 'Matt Meyer', govParty: 'Democrat', partyShort: 'D', since: '2025',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Kyle Evans Gay', ltGovParty: 'D', ltGovSince: '2025',
+        name: 'Delaware', flagCode: 'us-de',
       },
       {
-        name: 'Florida', capital: 'Tallahassee', flagCode: 'us-fl',
-        governor: 'Ron DeSantis', govParty: 'Republican', partyShort: 'R', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Jeanette Nuñez', ltGovParty: 'R', ltGovSince: '2019',
+        name: 'Florida', flagCode: 'us-fl',
       },
       {
-        name: 'Georgia', capital: 'Atlanta', flagCode: 'us-ga',
-        governor: 'Brian Kemp', govParty: 'Republican', partyShort: 'R', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Burt Jones', ltGovParty: 'R', ltGovSince: '2023',
+        name: 'Georgia', flagCode: 'us-ga',
       },
       {
-        name: 'Hawaii', capital: 'Honolulu', flagCode: 'us-hi',
-        governor: 'Josh Green', govParty: 'Democrat', partyShort: 'D', since: '2022',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Sylvia Luke', ltGovParty: 'D', ltGovSince: '2022',
+        name: 'Hawaii', flagCode: 'us-hi',
       },
       {
-        name: 'Idaho', capital: 'Boise', flagCode: 'us-id',
-        governor: 'Brad Little', govParty: 'Republican', partyShort: 'R', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Scott Bedke', ltGovParty: 'R', ltGovSince: '2023',
+        name: 'Idaho', flagCode: 'us-id',
       },
       {
-        name: 'Illinois', capital: 'Springfield', flagCode: 'us-il',
-        governor: 'JB Pritzker', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Juliana Stratton', ltGovParty: 'D', ltGovSince: '2019',
+        name: 'Illinois', flagCode: 'us-il',
       },
       {
-        name: 'Indiana', capital: 'Indianapolis', flagCode: 'us-in',
-        governor: 'Mike Braun', govParty: 'Republican', partyShort: 'R', since: '2025',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Micah Beckwith', ltGovParty: 'R', ltGovSince: '2025',
+        name: 'Indiana', flagCode: 'us-in',
       },
       {
-        name: 'Iowa', capital: 'Des Moines', flagCode: 'us-ia',
-        governor: 'Kim Reynolds', govParty: 'Republican', partyShort: 'R', since: '2017',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Adam Gregg', ltGovParty: 'R', ltGovSince: '2017',
+        name: 'Iowa', flagCode: 'us-ia',
       },
       {
-        name: 'Kansas', capital: 'Topeka', flagCode: 'us-ks',
-        governor: 'Laura Kelly', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'David Toland', ltGovParty: 'D', ltGovSince: '2019',
+        name: 'Kansas', flagCode: 'us-ks',
       },
       {
-        name: 'Kentucky', capital: 'Frankfort', flagCode: 'us-ky',
-        governor: 'Andy Beshear', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Jacqueline Coleman', ltGovParty: 'D', ltGovSince: '2019',
+        name: 'Kentucky', flagCode: 'us-ky',
       },
       {
-        name: 'Louisiana', capital: 'Baton Rouge', flagCode: 'us-la',
-        governor: 'Jeff Landry', govParty: 'Republican', partyShort: 'R', since: '2024',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Billy Nungesser', ltGovParty: 'R', ltGovSince: '2016',
+        name: 'Louisiana', flagCode: 'us-la',
       },
       {
-        name: 'Maine', capital: 'Augusta', flagCode: 'us-me',
-        governor: 'Janet Mills', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'None (position does not exist)', ltGovParty: '', ltGovSince: '',
+        name: 'Maine', flagCode: 'us-me',
       },
       {
-        name: 'Maryland', capital: 'Annapolis', flagCode: 'us-md',
-        governor: 'Wes Moore', govParty: 'Democrat', partyShort: 'D', since: '2023',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Aruna Miller', ltGovParty: 'D', ltGovSince: '2023',
+        name: 'Maryland', flagCode: 'us-md',
       },
       {
-        name: 'Massachusetts', capital: 'Boston', flagCode: 'us-ma',
-        governor: 'Maura Healey', govParty: 'Democrat', partyShort: 'D', since: '2023',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Kim Driscoll', ltGovParty: 'D', ltGovSince: '2023',
+        name: 'Massachusetts', flagCode: 'us-ma',
       },
       {
-        name: 'Michigan', capital: 'Lansing', flagCode: 'us-mi',
-        governor: 'Gretchen Whitmer', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Garlin Gilchrist II', ltGovParty: 'D', ltGovSince: '2019',
+        name: 'Michigan', flagCode: 'us-mi',
       },
       {
-        name: 'Minnesota', capital: 'Saint Paul', flagCode: 'us-mn',
-        governor: 'Tim Walz', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Peggy Flanagan', ltGovParty: 'D', ltGovSince: '2019',
+        name: 'Minnesota', flagCode: 'us-mn',
       },
       {
-        name: 'Mississippi', capital: 'Jackson', flagCode: 'us-ms',
-        governor: 'Tate Reeves', govParty: 'Republican', partyShort: 'R', since: '2020',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Delbert Hosemann', ltGovParty: 'R', ltGovSince: '2020',
+        name: 'Mississippi', flagCode: 'us-ms',
       },
       {
-        name: 'Missouri', capital: 'Jefferson City', flagCode: 'us-mo',
-        governor: 'Mike Kehoe', govParty: 'Republican', partyShort: 'R', since: '2025',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'David Wasinger', ltGovParty: 'R', ltGovSince: '2025',
+        name: 'Missouri', flagCode: 'us-mo',
       },
       {
-        name: 'Montana', capital: 'Helena', flagCode: 'us-mt',
-        governor: 'Greg Gianforte', govParty: 'Republican', partyShort: 'R', since: '2021',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Kristen Juras', ltGovParty: 'R', ltGovSince: '2021',
+        name: 'Montana', flagCode: 'us-mt',
       },
       {
-        name: 'Nebraska', capital: 'Lincoln', flagCode: 'us-ne',
-        governor: 'Jim Pillen', govParty: 'Republican', partyShort: 'R', since: '2023',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Joe Kelly', ltGovParty: 'R', ltGovSince: '2023',
+        name: 'Nebraska', flagCode: 'us-ne',
       },
       {
-        name: 'Nevada', capital: 'Carson City', flagCode: 'us-nv',
-        governor: 'Joe Lombardo', govParty: 'Republican', partyShort: 'R', since: '2023',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Stavros Anthony', ltGovParty: 'R', ltGovSince: '2023',
+        name: 'Nevada', flagCode: 'us-nv',
       },
       {
-        name: 'New Hampshire', capital: 'Concord', flagCode: 'us-nh',
-        governor: 'Kelly Ayotte', govParty: 'Republican', partyShort: 'R', since: '2025',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'None (position does not exist)', ltGovParty: '', ltGovSince: '',
+        name: 'New Hampshire', flagCode: 'us-nh',
       },
       {
-        name: 'New Jersey', capital: 'Trenton', flagCode: 'us-nj',
-        governor: 'Phil Murphy', govParty: 'Democrat', partyShort: 'D', since: '2018',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Tahesha Way', ltGovParty: 'D', ltGovSince: '2023',
+        name: 'New Jersey', flagCode: 'us-nj',
       },
       {
-        name: 'New Mexico', capital: 'Santa Fe', flagCode: 'us-nm',
-        governor: 'Michelle Lujan Grisham', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Howie Morales', ltGovParty: 'D', ltGovSince: '2019',
+        name: 'New Mexico', flagCode: 'us-nm',
       },
       {
-        name: 'New York', capital: 'Albany', flagCode: 'us-ny',
-        governor: 'Kathy Hochul', govParty: 'Democrat', partyShort: 'D', since: '2021',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Antonio Delgado', ltGovParty: 'D', ltGovSince: '2023',
+        name: 'New York', flagCode: 'us-ny',
       },
       {
-        name: 'North Carolina', capital: 'Raleigh', flagCode: 'us-nc',
-        governor: 'Josh Stein', govParty: 'Democrat', partyShort: 'D', since: '2025',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Rachel Hunt', ltGovParty: 'D', ltGovSince: '2025',
+        name: 'North Carolina', flagCode: 'us-nc',
       },
       {
-        name: 'North Dakota', capital: 'Bismarck', flagCode: 'us-nd',
-        governor: 'Kelly Armstrong', govParty: 'Republican', partyShort: 'R', since: '2025',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Michelle Strinden', ltGovParty: 'R', ltGovSince: '2025',
+        name: 'North Dakota', flagCode: 'us-nd',
       },
       {
-        name: 'Ohio', capital: 'Columbus', flagCode: 'us-oh',
-        governor: 'Mike DeWine', govParty: 'Republican', partyShort: 'R', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Jon Husted', ltGovParty: 'R', ltGovSince: '2019',
+        name: 'Ohio', flagCode: 'us-oh',
       },
       {
-        name: 'Oklahoma', capital: 'Oklahoma City', flagCode: 'us-ok',
-        governor: 'Kevin Stitt', govParty: 'Republican', partyShort: 'R', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Matt Pinnell', ltGovParty: 'R', ltGovSince: '2019',
+        name: 'Oklahoma', flagCode: 'us-ok',
       },
       {
-        name: 'Oregon', capital: 'Salem', flagCode: 'us-or',
-        governor: 'Tina Kotek', govParty: 'Democrat', partyShort: 'D', since: '2023',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'None (position does not exist)', ltGovParty: '', ltGovSince: '',
+        name: 'Oregon', flagCode: 'us-or',
       },
       {
-        name: 'Pennsylvania', capital: 'Harrisburg', flagCode: 'us-pa',
-        governor: 'Josh Shapiro', govParty: 'Democrat', partyShort: 'D', since: '2023',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Austin Davis', ltGovParty: 'D', ltGovSince: '2023',
+        name: 'Pennsylvania', flagCode: 'us-pa',
       },
       {
-        name: 'Rhode Island', capital: 'Providence', flagCode: 'us-ri',
-        governor: 'Dan McKee', govParty: 'Democrat', partyShort: 'D', since: '2021',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Sabina Matos', ltGovParty: 'D', ltGovSince: '2021',
+        name: 'Rhode Island', flagCode: 'us-ri',
       },
       {
-        name: 'South Carolina', capital: 'Columbia', flagCode: 'us-sc',
-        governor: 'Henry McMaster', govParty: 'Republican', partyShort: 'R', since: '2017',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Pamela Evette', ltGovParty: 'R', ltGovSince: '2019',
+        name: 'South Carolina', flagCode: 'us-sc',
       },
       {
-        name: 'South Dakota', capital: 'Pierre', flagCode: 'us-sd',
-        governor: 'Kristi Noem', govParty: 'Republican', partyShort: 'R', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Larry Rhoden', ltGovParty: 'R', ltGovSince: '2019',
+        name: 'South Dakota', flagCode: 'us-sd',
       },
       {
-        name: 'Tennessee', capital: 'Nashville', flagCode: 'us-tn',
-        governor: 'Bill Lee', govParty: 'Republican', partyShort: 'R', since: '2019',
-        ltGovTitle: 'Lieutenant Governor / Senate Speaker',
-        ltGovernor: 'Randy McNally', ltGovParty: 'R', ltGovSince: '2017',
+        name: 'Tennessee', flagCode: 'us-tn',
       },
       {
-        name: 'Texas', capital: 'Austin', flagCode: 'us-tx',
-        governor: 'Greg Abbott', govParty: 'Republican', partyShort: 'R', since: '2015',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Dan Patrick', ltGovParty: 'R', ltGovSince: '2015',
+        name: 'Texas', flagCode: 'us-tx',
       },
       {
-        name: 'Utah', capital: 'Salt Lake City', flagCode: 'us-ut',
-        governor: 'Spencer Cox', govParty: 'Republican', partyShort: 'R', since: '2021',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Deidre Henderson', ltGovParty: 'R', ltGovSince: '2021',
+        name: 'Utah', flagCode: 'us-ut',
       },
       {
-        name: 'Vermont', capital: 'Montpelier', flagCode: 'us-vt',
-        governor: 'Phil Scott', govParty: 'Republican', partyShort: 'R', since: '2017',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'David Zuckerman', ltGovParty: 'D', ltGovSince: '2023',
+        name: 'Vermont', flagCode: 'us-vt',
       },
       {
-        name: 'Virginia', capital: 'Richmond', flagCode: 'us-va',
-        governor: 'Glenn Youngkin', govParty: 'Republican', partyShort: 'R', since: '2022',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Winsome Earle-Sears', ltGovParty: 'R', ltGovSince: '2022',
+        name: 'Virginia', flagCode: 'us-va',
       },
       {
-        name: 'Washington', capital: 'Olympia', flagCode: 'us-wa',
-        governor: 'Bob Ferguson', govParty: 'Democrat', partyShort: 'D', since: '2025',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Denny Heck', ltGovParty: 'D', ltGovSince: '2021',
+        name: 'Washington', flagCode: 'us-wa',
       },
       {
-        name: 'West Virginia', capital: 'Charleston', flagCode: 'us-wv',
-        governor: 'Patrick Morrisey', govParty: 'Republican', partyShort: 'R', since: '2025',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: '— (Senate President serves)', ltGovParty: '', ltGovSince: '',
+        name: 'West Virginia', flagCode: 'us-wv',
       },
       {
-        name: 'Wisconsin', capital: 'Madison', flagCode: 'us-wi',
-        governor: 'Tony Evers', govParty: 'Democrat', partyShort: 'D', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Sara Rodriguez', ltGovParty: 'D', ltGovSince: '2023',
+        name: 'Wisconsin', flagCode: 'us-wi',
       },
       {
-        name: 'Wyoming', capital: 'Cheyenne', flagCode: 'us-wy',
-        governor: 'Mark Gordon', govParty: 'Republican', partyShort: 'R', since: '2019',
-        ltGovTitle: 'Lieutenant Governor',
-        ltGovernor: 'Jennings', ltGovParty: 'R', ltGovSince: '2019',
+        name: 'Wyoming', flagCode: 'us-wy',
       },
     ];
 
@@ -13100,6 +13032,52 @@ function App() {
     if (fresh) setSelectedProvince(fresh);
   }, [provincialExplorerFirestoreByAbbr]);
 
+  useEffect(() => {
+    if (!selectedProvince) {
+      setProvinceTransparencyFields(null);
+      return undefined;
+    }
+    const isUSA = selectedCountry?.type === 'usa';
+    let cancelled = false;
+    setProvinceTransparencyFields(null);
+    fetchSubnationalTransparencyForExplorerItem(selectedProvince, isUSA)
+      .then((fields) => {
+        if (!cancelled) setProvinceTransparencyFields(fields);
+      })
+      .catch(() => {
+        if (!cancelled) setProvinceTransparencyFields(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedProvince, selectedCountry]);
+
+  useEffect(() => {
+    if (!showEconomicModal) {
+      setEconomicModalSelectedChart(null);
+    }
+  }, [showEconomicModal]);
+
+  useEffect(() => {
+    if (!showTaxExemptModal || !selectedProvince) return;
+    const isUSA = selectedCountry?.type === 'usa';
+    const merged = provinceTransparencyFields
+      ? { ...selectedProvince, ...provinceTransparencyFields }
+      : selectedProvince;
+    const taxLive = taxExemptFromExplorerItem(merged);
+    setTaxModalDetailsOpen(taxLive.companies.length === 0);
+  }, [showTaxExemptModal, provinceTransparencyFields, selectedProvince, selectedCountry]);
+
+  useEffect(() => {
+    if (!showGrantsModal || !selectedProvince) return;
+    const isUSA = selectedCountry?.type === 'usa';
+    const merged = provinceTransparencyFields
+      ? { ...selectedProvince, ...provinceTransparencyFields }
+      : selectedProvince;
+    const grantsLive = grantsGivenFromExplorerItem(merged);
+    setGrantsModalDetailsOpen(grantsLive.grants.length === 0);
+  }, [showGrantsModal, provinceTransparencyFields, selectedProvince, selectedCountry]);
+
   const renderProvincial = () => {
     const isUSA = selectedCountry?.type === 'usa';
     const { canadaProvinces, usStates } = getProvincialData();
@@ -13134,6 +13112,8 @@ function App() {
             <p className="text-gray-500 text-sm sm:text-base">{subtitle}</p>
             <div className="w-24 h-1 mt-3 rounded-full" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}></div>
           </div>
+
+          <SubnationalIllustrativeExplorerNote />
 
           {/* Compact button list */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
@@ -13363,6 +13343,37 @@ function App() {
             </div>
           </div>
 
+          {isUSA &&
+            Array.isArray(item.usSubnationalGovernorHeadlineNeedsVerificationFields) &&
+            item.usSubnationalGovernorHeadlineNeedsVerificationFields.length > 0 && (
+              <SubnationalFieldVerificationNotice
+                labels={item.usSubnationalGovernorHeadlineNeedsVerificationFields.map((f) =>
+                  ({
+                    leader_name: 'Governor name',
+                    leader_party: 'Party',
+                    leader_since: 'In-office date',
+                  }[f] || String(f)),
+                )}
+              />
+            )}
+
+          {!isUSA &&
+            Array.isArray(item.subnationalManualReviewNoticeFields) &&
+            item.subnationalManualReviewNoticeFields.length > 0 && (
+              <SubnationalFieldVerificationNotice
+                labels={item.subnationalManualReviewNoticeFields.map((f) =>
+                  ({
+                    leader_name: 'Leader name',
+                    leader_party: 'Party',
+                    leader_since: 'In-office date',
+                    population: 'Population',
+                  }[f] || String(f)),
+                )}
+              />
+            )}
+
+          <SubnationalIllustrativeExplorerNote />
+
           {/* Leadership — two cards side by side */}
           <h2 className="text-base font-bold text-gray-600 uppercase tracking-wide mb-3 px-1">Leadership</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -13370,7 +13381,7 @@ function App() {
             {/* Governor / Premier */}
             <div
               className="bg-white rounded-2xl shadow-elegant p-6 cursor-pointer hover:shadow-lg hover:ring-2 hover:ring-blue-200 transition-all relative group"
-              onClick={() => { setSelectedLeader({ name: leaderName, title: leaderTitle, party: leaderParty, since: item.since, bio: item.bio, isUSA, region: item.name, isDeputy: false }); setShowLeaderPanel(true); }}
+              onClick={() => { setSelectedLeader({ name: leaderName, title: leaderTitle, party: leaderParty, since: item.since, bio: item.bio, isUSA, region: item.name, isDeputy: false, ...leaderProfilePanelPayloadFromExplorerItem(item) }); setShowLeaderPanel(true); }}
             >
               <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-4">{leaderTitle}</p>
               <div className="flex flex-col items-center mb-5">
@@ -13483,10 +13494,13 @@ function App() {
             );
           })()}
 
-          {/* Action buttons */}
+          {/* Transparency module actions */}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <button
-              onClick={() => setShowEconomicModal(true)}
+              onClick={() => {
+                setEconomicModalSelectedChart(null);
+                setShowEconomicModal(true);
+              }}
               className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95"
               style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
             >
@@ -13499,7 +13513,7 @@ function App() {
               style={{ background: 'linear-gradient(135deg, #d97706, #f59e0b)' }}
             >
               <DollarSign className="w-5 h-5" />
-              Tax Exempt Companies
+              Tax Exempt / Charities
             </button>
             <button
               onClick={() => { setGrantsSearch(''); setShowGrantsModal(true); }}
@@ -13516,149 +13530,206 @@ function App() {
     );
   };
 
+  const renderSubnationalHeadlineSnapshot = (headlines, loading, snapshotOptions) => {
+    const metricChart = snapshotOptions?.metricChart;
+    if (loading) {
+      return (
+        <div className="sn-trans-snapshot bg-white border border-gray-200 rounded-xl p-4 mb-4 shadow-sm">
+          <p className="sn-trans-snapshot-label text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+            Latest official snapshot
+          </p>
+          <p className="text-sm text-gray-500 flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+            Loading official data…
+          </p>
+        </div>
+      );
+    }
+    if (!headlines?.hasLiveData) {
+      return (
+        <div className="sn-trans-snapshot bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
+          <p className="sn-trans-snapshot-label text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
+            Latest official snapshot
+          </p>
+          <p className="text-sm text-gray-600">{TRANSPARENCY_HEADLINE_NOT_LOADED}</p>
+        </div>
+      );
+    }
+    return (
+      <div className="sn-trans-snapshot bg-white border border-indigo-100 rounded-xl p-4 mb-4 shadow-sm">
+        <p className="sn-trans-snapshot-label text-xs font-semibold uppercase tracking-wide text-indigo-600 mb-3">
+          Latest official snapshot
+        </p>
+        <dl className="space-y-0">
+          {headlines.metrics.map((m) => (
+            <div key={m.label} className="sn-trans-snapshot-row">
+              <div className="sn-trans-snapshot-main flex justify-between gap-2 text-sm items-start">
+                <dt className="text-gray-600 min-w-0 flex-1">{m.label}</dt>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <dd className="font-semibold text-gray-900 text-right tabular-nums">{m.value}</dd>
+                  {metricChart && m.chartKey ? (
+                    m.chartAvailable ? (
+                      <button
+                        type="button"
+                        onClick={() => metricChart.onSelect(m.chartKey)}
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold border transition-colors min-h-[2rem] ${
+                          metricChart.selectedKey === m.chartKey
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                        }`}
+                        aria-label={`View ${m.label} chart`}
+                        aria-pressed={metricChart.selectedKey === m.chartKey}
+                      >
+                        <BarChart3 className="w-3.5 h-3.5 flex-shrink-0" aria-hidden />
+                        <span className="hidden sm:inline">View</span>
+                      </button>
+                    ) : (
+                      <span className="text-[10px] text-gray-400 italic max-w-[4.5rem] text-right leading-tight">
+                        Chart not loaded yet.
+                      </span>
+                    )
+                  ) : null}
+                </div>
+              </div>
+              {m.sub ? (
+                <p className="sn-trans-snapshot-sub text-xs text-gray-400 mt-0.5 text-right leading-snug">{m.sub}</p>
+              ) : null}
+            </div>
+          ))}
+        </dl>
+      </div>
+    );
+  };
+
+  const renderSubnationalPeriodMeta = (item, kind) => {
+    const introKey =
+      kind === 'economic'
+        ? 'subnationalEconomicPeriodIntro'
+        : kind === 'tax'
+          ? 'subnationalTaxPeriodIntro'
+          : 'subnationalGrantsPeriodIntro';
+    const categoriesKey =
+      kind === 'economic'
+        ? 'subnationalEconomicPeriodCategories'
+        : kind === 'tax'
+          ? 'subnationalTaxPeriodCategories'
+          : 'subnationalGrantsPeriodCategories';
+    const footnoteKey =
+      kind === 'economic'
+        ? 'subnationalEconomicPeriodFootnote'
+        : kind === 'tax'
+          ? 'subnationalTaxPeriodFootnote'
+          : 'subnationalGrantsPeriodFootnote';
+    const legacyKey =
+      kind === 'economic'
+        ? 'subnationalEconomicReportingPeriod'
+        : kind === 'tax'
+          ? 'subnationalTaxReportingPeriod'
+          : 'subnationalGrantsReportingPeriod';
+
+    const intro = item[introKey] || SUBNATIONAL_SERIES_PERIOD_INTRO[kind];
+    const categories = Array.isArray(item[categoriesKey]) ? item[categoriesKey] : [];
+    const footnote =
+      item[footnoteKey] != null && String(item[footnoteKey]).trim()
+        ? String(item[footnoteKey]).trim()
+        : '';
+
+    return (
+      <details className="sn-trans-periods-accordion">
+        <summary>Reporting periods</summary>
+        <div className="sn-trans-periods-body mt-1.5 space-y-1">
+          <p className="text-xs text-gray-500 leading-snug">{intro}</p>
+          {categories.length > 0 ? (
+            <ul className="text-xs text-slate-700 font-medium leading-snug space-y-0.5 list-none pl-0 m-0">
+              {categories.map((c) => (
+                <li key={c.label}>
+                  <span className="text-slate-500">{c.label}:</span> {c.period}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-slate-700 font-medium leading-snug">
+              {item[legacyKey] || REPORTING_PERIOD_NOT_SPECIFIED}
+            </p>
+          )}
+          {footnote ? (
+            <p className="text-xs text-slate-600 leading-snug">
+              <span className="text-slate-500">Overview:</span> {footnote}
+            </p>
+          ) : null}
+        </div>
+      </details>
+    );
+  };
+
   const renderEconomicModal = () => {
     if (!selectedProvince || !showEconomicModal) return null;
-    const item = selectedProvince;
-
-    // ── Deterministic data generator seeded from province/state name ──────────
-    let h = 5381;
-    for (let i = 0; i < item.name.length; i++) h = (Math.imul(h, 33) ^ item.name.charCodeAt(i)) | 0;
-    h = Math.abs(h);
-    const rng = (min, max, salt) => {
-      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
-      return Math.round(min + (v % (max - min + 1)));
-    };
-    const rngf = (min, max, salt, dec = 1) => {
-      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
-      const raw = min + (v % 1000) / 1000 * (max - min);
-      return parseFloat(raw.toFixed(dec));
-    };
-
-    // ── Chart 1: Budget Distribution (donut) ─────────────────────────────────
-    const budgetTotal = 100;
-    const edu  = rng(22, 32, 1);
-    const hlt  = rng(18, 28, 2);
-    const inf  = rng(10, 18, 3);
-    const ps   = rng(8, 14, 4);
-    const soc  = budgetTotal - edu - hlt - inf - ps;
-    let budgetData = [
-      { name: 'Education',       value: edu,  color: '#6366f1' },
-      { name: 'Healthcare',      value: hlt,  color: '#10b981' },
-      { name: 'Infrastructure',  value: inf,  color: '#f59e0b' },
-      { name: 'Public Safety',   value: ps,   color: '#ef4444' },
-      { name: 'Social Services', value: soc,  color: '#8b5cf6' },
-    ];
-
-    // ── Chart 2: Spending vs Budget (bar) ────────────────────────────────────
-    let spendData = budgetData.map((cat, i) => {
-      const allocated = rng(800, 4200, 10 + i);
-      const variance  = rng(-12, 15, 20 + i);
-      return {
-        category: cat.name.split(' ')[0],
-        Allocated: allocated,
-        Actual: Math.round(allocated * (1 + variance / 100)),
-      };
-    });
-
-    // ── Chart 3: Crime Rate Trends (line, 10 years) ──────────────────────────
-    const currentYear = 2024;
-    const baseViolent  = rngf(180, 520, 30);
-    const baseProp     = rngf(1400, 3200, 31);
-    let crimeData = Array.from({ length: 10 }, (_, i) => {
-      const yr = currentYear - 9 + i;
-      const trend = 1 - (i * rngf(0.005, 0.025, 40 + i, 4));
-      const noise = (salt) => rngf(-0.06, 0.06, 50 + i + salt, 4);
-      return {
-        year: String(yr),
-        'Violent Crime': parseFloat((baseViolent * trend * (1 + noise(0))).toFixed(1)),
-        'Property Crime': parseFloat((baseProp * trend * (1 + noise(1))).toFixed(1)),
-      };
-    });
-    let crimeKeys = ['Violent Crime', 'Property Crime'];
-
-    // ── Chart 4: Unemployment Rate (line, 4 years) ───────────────────────────
+    const item = provinceTransparencyFields
+      ? { ...selectedProvince, ...provinceTransparencyFields }
+      : selectedProvince;
     const isUSA = selectedCountry?.type === 'usa';
-    const uBase = rngf(2.8, 7.5, 60);
-    let unempData = [2021, 2022, 2023, 2024].map((yr, i) => {
-      const mult = [1.4, 1.15, 1.05, 1.0][i];
-      const natAvg = [5.4, 3.7, 3.6, 4.1][i];
-      return {
-        year: String(yr),
-        [item.name]: parseFloat((uBase * mult + rngf(-0.3, 0.3, 70 + i, 2)).toFixed(1)),
-        [`${isUSA ? 'US' : 'CA'} Average`]: natAvg,
-      };
-    });
-    let unempKeys = [item.name, `${isUSA ? 'US' : 'CA'} Average`];
+    const jurisdictionLabel = item.displayName || item.name;
+    const economic = economicSocialFromExplorerItem(item, isUSA);
+    const {
+      hasData,
+      budgetData,
+      spendData,
+      crimeDataM,
+      crimeMetricType,
+      crimeViolentKey,
+      crimePropertyKey,
+      unempData,
+      unempKeys,
+      unempChartUsesPeriod,
+      unempFrequency,
+      gdpDataM,
+      povDataM,
+      homelessData,
+      sourceName,
+      sourceUrl,
+    } = economic;
 
-    // ── Chart 5: GDP Growth Over Time (bar, 10 years) ─────────────────────────
-    let gdpData = Array.from({ length: 10 }, (_, i) => {
-      const yr = 2015 + i;
-      let growth;
-      if (i === 5) {
-        growth = rngf(-8.0, -2.0, 85, 1); // 2020 pandemic dip
-      } else if (i === 6) {
-        growth = rngf(3.5, 7.5, 86, 1);   // 2021 recovery bounce
-      } else {
-        growth = rngf(0.8, 4.5, 80 + i, 1);
+    const transparencyLoading =
+      Boolean(subnationalTransparencyJurisdictionId(item, isUSA)) &&
+      provinceTransparencyFields === null;
+    const economicHeadlines = buildEconomicTransparencyHeadlines(economic, jurisdictionLabel);
+
+    const crimeIsCsi = crimeMetricType === 'csi';
+    const crimeIsCount = crimeMetricType === 'incident_count';
+    const crimeBarViolent = crimeViolentKey || 'Violent Crime';
+    const crimeBarProperty = crimePropertyKey || 'Property Crime';
+    const crimeChartTitle = crimeIsCsi
+      ? 'Crime Severity Index Trends'
+      : crimeIsCount
+        ? 'Reported Crime Incidents'
+        : 'Crime Rate Trends';
+    const crimeChartDesc = crimeIsCsi
+      ? 'Crime Severity Index (2006=100) — last 6 years'
+      : crimeIsCount
+        ? 'Reported incident counts — last 6 years'
+        : 'Rate per 100,000 population — last 6 years';
+    const formatCrimeTooltip = (v, name) => {
+      const n = Number(v);
+      if (crimeIsCsi) {
+        return [`${Number.isFinite(n) ? n.toFixed(1) : v} (CSI, 2006=100)`, name];
       }
-      return { year: String(yr), 'GDP Growth (%)': growth };
-    });
-
-    // ── Chart 6: Poverty Rate Trend (line, 10 years) ─────────────────────────
-    const povBase = rngf(9.0, 17.0, 90, 1);
-    const povDecline = rngf(0.1, 0.4, 91, 2);
-    let povData = Array.from({ length: 10 }, (_, i) => {
-      const yr = 2015 + i;
-      const pandemicSpike = i === 5 ? rngf(1.5, 3.5, 96, 1) : 0;
-      const noise = rngf(-0.4, 0.4, 100 + i, 1);
-      const rate = Math.max(4.5, povBase - i * povDecline + pandemicSpike + noise);
-      return { year: String(yr), 'Poverty Rate (%)': parseFloat(rate.toFixed(1)) };
-    });
-
-    // ── Chart 7: Homelessness Statistics (bar, 5 years) ───────────────────────
-    const homelessBase = rng(2800, 48000, 110);
-    let homelessData = [2020, 2021, 2022, 2023, 2024].map((yr, i) => {
-      const growthFactor = 1 + i * rngf(0.015, 0.055, 120 + i, 3);
-      const total = Math.round(homelessBase * growthFactor);
-      const unshelteredRatio = rngf(0.25, 0.52, 130 + i, 3);
-      const unsheltered = Math.round(total * unshelteredRatio);
-      return { year: String(yr), Sheltered: total - unsheltered, Unsheltered: unsheltered };
-    });
-
-
-    // ── Live Firestore override (when official data exists for this jurisdiction) ─
-    const jid = item.flagCode?.toUpperCase();
-    const liveEcon = jid ? (detailEconByJurisdiction[jid] || null) : null;
-    let isLive = false;
-    if (liveEcon) {
-      if (liveEcon.budget_distribution?.length)  { budgetData  = liveEcon.budget_distribution; isLive = true; }
-      if (liveEcon.spending_vs_budget?.length)   { spendData   = liveEcon.spending_vs_budget;  isLive = true; }
-      if (liveEcon.crime_rate?.length)           { crimeData   = liveEcon.crime_rate;           crimeKeys = Object.keys(liveEcon.crime_rate[0]).filter(k => k !== 'year'); isLive = true; }
-      if (liveEcon.unemployment_rate?.length)    { unempData   = liveEcon.unemployment_rate;    unempKeys = Object.keys(liveEcon.unemployment_rate[0]).filter(k => k !== 'year'); isLive = true; }
-      if (liveEcon.gdp_growth?.length)           { gdpData     = liveEcon.gdp_growth;           isLive = true; }
-      if (liveEcon.poverty_rate?.length)         { povData     = liveEcon.poverty_rate;          isLive = true; }
-      if (liveEcon.homelessness?.length)         { homelessData = liveEcon.homelessness;         isLive = true; }
-    }
+      if (crimeIsCount) {
+        return [`${Number.isFinite(n) ? n.toLocaleString() : v} incidents`, name];
+      }
+      return [`${Number.isFinite(n) ? n.toFixed(1) : v} per 100,000`, name];
+    };
+    const formatCrimeAxisTick = (v) => {
+      const n = Number(v);
+      if (crimeIsCsi) return Number.isFinite(n) ? n.toFixed(0) : String(v);
+      if (crimeIsCount) return Number.isFinite(n) ? n.toLocaleString() : String(v);
+      return Number.isFinite(n) ? n.toFixed(0) : String(v);
+    };
 
     // ── Shared chart config ─────────────────────────────────────────────────
     const TICK   = { fontSize: 13, fill: '#4b5563' };
     const TT     = { fontSize: '13px', borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' };
     const LEG    = { fontSize: '13px', paddingTop: '10px' };
     const MARGIN = { top: 5, right: 24, left: 0, bottom: 5 };
-
-    // Trim 10-year series to 6 most recent points to avoid crowding
-    const crimeDataM = crimeData.slice(-6);
-    const gdpDataM   = gdpData.slice(-6);
-    const povDataM   = povData.slice(-6);
-
-    // Card wrapper matching Analytics section style
-    const Card = ({ title, desc, children }) => (
-      <div className="bg-white rounded-lg shadow-md p-5 mb-4">
-        <h3 className="text-base font-bold text-gray-800 mb-0.5">{title}</h3>
-        <p className="text-sm text-gray-500 mb-4">{desc}</p>
-        {children}
-      </div>
-    );
 
     return (
       <>
@@ -13667,153 +13738,105 @@ function App() {
         style={{ background: 'rgba(0,0,0,0.55)' }}
         onClick={(e) => { if (e.target === e.currentTarget) setShowEconomicModal(false); }}
       >
-        <div className="relative bg-gray-50 w-full max-w-xl md:max-w-4xl mx-2 sm:mx-4 md:mx-auto my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
+        <div className="sn-trans-modal relative bg-gray-50 w-full max-w-xl md:max-w-4xl mx-2 sm:mx-4 md:mx-auto my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
 
           {/* Header */}
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-center gap-3 border-b border-gray-100 shadow-sm">
-            <button onClick={() => setShowEconomicModal(false)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0">
+          <div className="sn-trans-modal-header sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-5 py-3 sm:py-4 flex items-center gap-3 border-b border-gray-100 shadow-sm">
+            <button onClick={() => setShowEconomicModal(false)} className="sn-trans-modal-back flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0">
               <X className="w-4 h-4" />
               <span>Back</span>
             </button>
-            <div className="flex-1 min-w-0">
-              <h2 className="font-bold text-gray-800 text-sm sm:text-base leading-snug truncate">{item.name} — Economic &amp; Social Data</h2>
-              {isLive
-                ? <p className="text-xs text-green-600 mt-0.5">Official data · Statistics Canada, Ontario Ministry of Finance, ESDC</p>
-                : <p className="text-xs text-gray-400 mt-0.5">Illustrative data · figures are statistically modelled</p>
-              }
+            <div className="sn-trans-modal-header-text flex-1 min-w-0">
+              <h2 className="sn-trans-modal-title font-bold text-gray-800 text-sm sm:text-base leading-snug truncate">{jurisdictionLabel} — Economic &amp; Social Data</h2>
+              {(hasData || transparencyLoading) ? (
+                <p className="sn-trans-modal-subtitle text-xs text-gray-500 mt-0.5">
+                  Official series from government sources
+                  {sourceName ? ` · ${sourceName}` : ''}
+                </p>
+              ) : (
+                <p className="sn-trans-modal-subtitle text-xs text-gray-600 mt-0.5 font-medium">Official economic and social statistics are not loaded yet for this jurisdiction.</p>
+              )}
             </div>
           </div>
 
-          {/* Charts — single column, full width, scrollable */}
-          <div className="p-4">
+          <div className="sn-trans-modal-body p-4">
+            {renderSubnationalHeadlineSnapshot(economicHeadlines, transparencyLoading, {
+              metricChart: hasData && !transparencyLoading
+                ? {
+                    selectedKey: economicModalSelectedChart,
+                    onSelect: (key) =>
+                      setEconomicModalSelectedChart((prev) => (prev === key ? null : key)),
+                  }
+                : undefined,
+            })}
+            {!transparencyLoading ? (
+              <div className="mb-4">{renderSubnationalPeriodMeta(item, 'economic')}</div>
+            ) : null}
 
-            {/* 1. Government Budget Distribution */}
-            <Card title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="name" type="category" width={120} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 5']} />
-                  <Tooltip formatter={(v) => [`${v}%`, 'Budget Share']} contentStyle={TT} />
-                  <Bar dataKey="value" name="Budget Share" radius={[0, 4, 4, 0]} maxBarSize={28}>
-                    {budgetData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('budget')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-              {/* Manual legend since Cell-coloring bypasses built-in Legend */}
-              <div className="flex flex-wrap gap-x-4 gap-y-1.5 justify-center mt-3">
-                {budgetData.map((c) => (
-                  <span key={c.name} className="flex items-center gap-1.5 text-xs text-gray-600">
-                    <span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: c.color }} />
-                    {c.name}
-                  </span>
-                ))}
+            {!hasData && !transparencyLoading ? (
+              <div className="text-center py-12 px-4">
+                <BarChart3 className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                <p className="text-sm font-medium text-gray-700">No official data loaded yet</p>
+                <p className="text-xs text-gray-500 mt-2 max-w-sm mx-auto leading-relaxed">
+                  Budget, crime, unemployment, and related series for {jurisdictionLabel} will appear here once they are ingested into Firestore from official sources. This screen does not show placeholder or generated figures.
+                </p>
               </div>
-            </Card>
+            ) : null}
 
-            {/* 2. Spending vs Budget */}
-            <Card title="Spending vs Budget" desc="Allocated vs actual spending per category ($M)">
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart layout="vertical" data={spendData} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="category" type="category" width={90} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `$${(v / 1000).toFixed(1)}B`} />
-                  <Tooltip formatter={(v) => [`$${v.toLocaleString()}M`, '']} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey="Allocated" fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={18} />
-                  <Bar dataKey="Actual"    fill="#10b981" radius={[0, 3, 3, 0]} maxBarSize={18} />
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('spending')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-            </Card>
-
-            {/* 3. Crime Rate Trends */}
-            <Card title="Crime Rate Trends" desc={isLive ? 'Crime Severity Index (StatCan, 2006=100) — last 6 years' : 'Incidents per 100,000 people — last 6 years'}>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
-                  <Tooltip formatter={(v, name) => [isLive ? `${v.toLocaleString()} (index)` : `${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  {crimeKeys.map((k, i) => <Bar key={k} dataKey={k} fill={i === 0 ? '#ef4444' : '#f59e0b'} radius={[0, 3, 3, 0]} maxBarSize={18} />)}
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('crime')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-            </Card>
-
-            {/* 4. Unemployment Rate */}
-            <Card title="Unemployment Rate" desc={`Annual rate (%) vs ${isUSA ? 'US' : 'CA'} national average — last 4 years`}>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart layout="vertical" data={unempData} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 1']} />
-                  <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey={unempKeys[0]} fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={18} />
-                  <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={18} />
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('unemployment')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-            </Card>
-
-            {/* 5. GDP Growth Over Time */}
-            <Card title="GDP Growth Over Time" desc="Annual GDP growth rate (%) — last 6 years · green = growth, red = contraction">
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart layout="vertical" data={gdpDataM} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} />
-                  <Tooltip formatter={(v) => [`${v}%`, 'GDP Growth']} contentStyle={TT} />
-                  <Bar dataKey="GDP Growth (%)" radius={[0, 4, 4, 0]} maxBarSize={28}>
-                    {gdpDataM.map((e, i) => <Cell key={i} fill={e['GDP Growth (%)'] >= 0 ? '#10b981' : '#ef4444'} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('gdp')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-              <div className="flex gap-4 justify-center mt-2">
-                <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0 bg-emerald-500" /> Growth</span>
-                <span className="flex items-center gap-1.5 text-xs text-gray-600"><span className="inline-block w-3 h-3 rounded-sm flex-shrink-0 bg-red-500" /> Contraction</span>
+            {hasData &&
+            !transparencyLoading &&
+            economicModalSelectedChart &&
+            economicMetricChartAvailable(economic, economicModalSelectedChart) ? (
+              <div className="sn-trans-details-panel mb-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3 sn-trans-collapse-link-wrap">
+                  <h3 className="text-sm font-bold text-gray-800">
+                    {ECONOMIC_METRIC_CHART_SECTION_TITLE[economicModalSelectedChart]}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setEconomicModalSelectedChart(null)}
+                    className="sn-trans-collapse-link text-xs font-semibold text-indigo-600 hover:text-indigo-800 px-2 py-1 min-h-[2rem]"
+                  >
+                    Back to snapshot
+                  </button>
+                </div>
+                <EconomicModalMetricChart
+                  chartKey={economicModalSelectedChart}
+                  isUSA={isUSA}
+                  budgetData={budgetData}
+                  spendData={spendData}
+                  crimeDataM={crimeDataM}
+                  crimeChartTitle={crimeChartTitle}
+                  crimeChartDesc={crimeChartDesc}
+                  crimeBarViolent={crimeBarViolent}
+                  crimeBarProperty={crimeBarProperty}
+                  formatCrimeTooltip={formatCrimeTooltip}
+                  formatCrimeAxisTick={formatCrimeAxisTick}
+                  unempData={unempData}
+                  unempKeys={unempKeys}
+                  unempChartUsesPeriod={unempChartUsesPeriod}
+                  unempFrequency={unempFrequency}
+                  gdpDataM={gdpDataM}
+                  povDataM={povDataM}
+                  homelessData={homelessData}
+                  onExpand={setExpandedChartId}
+                />
+                {sourceUrl ? (
+                  <p className="text-center text-xs text-gray-500 pb-2">
+                    Source:{' '}
+                    <a
+                      href={sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {sourceName || sourceUrl}
+                    </a>
+                  </p>
+                ) : null}
               </div>
-            </Card>
-
-            {/* 6. Poverty Rate Trend */}
-            <Card title="Poverty Rate Trend" desc="Population living below the poverty line (%) — last 6 years">
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart layout="vertical" data={povDataM} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 2']} />
-                  <Tooltip formatter={(v) => [`${v}%`, 'Poverty Rate']} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey="Poverty Rate (%)" fill="#f59e0b" radius={[0, 4, 4, 0]} maxBarSize={28} />
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('poverty')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-            </Card>
-
-            {/* 7. Homelessness Statistics */}
-            <Card title="Homelessness Statistics" desc="Sheltered vs unsheltered population 2020–2024">
-              <ResponsiveContainer width="100%" height={230}>
-                <BarChart layout="vertical" data={homelessData} margin={MARGIN}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                  <XAxis type="number" tick={TICK} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
-                  <Tooltip formatter={(v, name) => [v.toLocaleString(), name]} contentStyle={TT} />
-                  <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                  <Bar dataKey="Sheltered"   stackId="a" fill="#6366f1" maxBarSize={32} />
-                  <Bar dataKey="Unsheltered" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} maxBarSize={32} />
-                </BarChart>
-              </ResponsiveContainer>
-              <button onClick={() => setExpandedChartId('homeless')} className="mt-3 w-full py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">📈 View Full Screen</button>
-            </Card>
-
-            <p className="text-center text-xs text-gray-400 pb-2">
-              Data is statistically modelled for illustrative purposes. Figures use deterministic generation seeded from {item.name}.
-            </p>
-            <button onClick={() => setShowEconomicModal(false)} className="w-full mt-2 mb-1 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+            ) : null}
+            <button onClick={() => setShowEconomicModal(false)} className="sn-trans-modal-close-btn w-full mt-2 mb-1 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
             </button>
           </div>
@@ -13821,8 +13844,8 @@ function App() {
       </div>
 
       {/* Full-screen chart overlay */}
-      {expandedChartId && (() => {
-        const chartTitles = { budget: 'Government Budget Distribution', spending: 'Spending vs Budget', crime: 'Crime Rate Trends', unemployment: 'Unemployment Rate', gdp: 'GDP Growth Over Time', poverty: 'Poverty Rate Trend', homeless: 'Homelessness Statistics' };
+      {hasData && expandedChartId && (() => {
+        const chartTitles = { budget: 'Government Budget Distribution', spending: 'Spending vs Budget', crime: crimeChartTitle, unemployment: 'Unemployment Rate', gdp: 'GDP Growth Over Time', poverty: 'Poverty Rate Trend', homeless: 'Homelessness Statistics' };
         const chartTitle = chartTitles[expandedChartId] || '';
         const chartH = 'calc(100vh - 210px)';
         return (
@@ -13833,6 +13856,9 @@ function App() {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-widest mb-0.5" style={{ color: '#94a3b8' }}>Full Screen · {isUSA ? 'US State' : 'Province'}</p>
                   <span className="font-bold text-white text-base sm:text-lg leading-snug block">{chartTitle}</span>
+                  {sourceName && (
+                    <span className="text-[11px] text-slate-300 mt-1 block">{sourceName}</span>
+                  )}
                 </div>
                 <button
                   onClick={() => setExpandedChartId(null)}
@@ -13882,10 +13908,15 @@ function App() {
                         <BarChart layout="vertical" data={crimeDataM} margin={MARGIN}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                           <YAxis dataKey="year" type="category" width={45} tick={TICK} />
-                          <XAxis type="number" tick={TICK} tickFormatter={(v) => v.toLocaleString()} />
-                          <Tooltip formatter={(v, name) => [isLive ? `${v.toLocaleString()} (index)` : `${v.toLocaleString()} per 100K`, name]} contentStyle={TT} />
+                          <XAxis
+                            type="number"
+                            tick={TICK}
+                            tickFormatter={formatCrimeAxisTick}
+                          />
+                          <Tooltip formatter={formatCrimeTooltip} contentStyle={TT} />
                           <Legend verticalAlign="bottom" wrapperStyle={LEG} />
-                          {crimeKeys.map((k, i) => <Bar key={k} dataKey={k} fill={i === 0 ? '#ef4444' : '#f59e0b'} radius={[0, 3, 3, 0]} maxBarSize={28} />)}
+                          <Bar dataKey={crimeBarViolent}  fill="#ef4444" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          <Bar dataKey={crimeBarProperty} fill="#f59e0b" radius={[0, 3, 3, 0]} maxBarSize={28} />
                         </BarChart>
                       </ResponsiveContainer>
                     )}
@@ -13893,12 +13924,21 @@ function App() {
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart layout="vertical" data={unempData} margin={MARGIN}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                          <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+                          <YAxis
+                            dataKey={unempChartUsesPeriod ? 'period' : 'year'}
+                            type="category"
+                            width={unempChartUsesPeriod ? 80 : 45}
+                            tick={TICK}
+                          />
                           <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 1']} />
                           <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={TT} />
-                          <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          {unempKeys.length > 1 ? (
+                            <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+                          ) : null}
                           <Bar dataKey={unempKeys[0]} fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={28} />
-                          <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          {unempKeys[1] ? (
+                            <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={28} />
+                          ) : null}
                         </BarChart>
                       </ResponsiveContainer>
                     )}
@@ -13955,112 +13995,31 @@ function App() {
 
   const renderTaxExemptModal = () => {
     if (!selectedProvince || !showTaxExemptModal) return null;
-    const item = selectedProvince;
-
-    // ── Deterministic data generator (different offset from economic modal) ────
-    let h = 5381;
-    for (let i = 0; i < item.name.length; i++) h = (Math.imul(h, 33) ^ item.name.charCodeAt(i)) | 0;
-    h = Math.abs(h) ^ 0xBEEF;
-    const rng = (min, max, salt) => {
-      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
-      return Math.round(min + (v % (max - min + 1)));
-    };
-    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
-
-    const prefixes = [
-      'Pacific', 'Atlantic', 'Northern', 'Southern', 'Eastern', 'Western',
-      'National', 'American', 'Canadian', 'Continental', 'Heritage', 'Pioneer',
-      'Summit', 'Apex', 'Liberty', 'Crown', 'Cascade', 'Prairie', 'Coastal',
-      'Heartland', 'Metro', 'Regional', 'Allied', 'United', 'General', 'Global',
-      'Premier', 'Advanced', 'Integrated', 'Strategic', 'Keystone', 'Horizon',
-      'Pinnacle', 'Meridian', 'Catalyst', 'Vanguard', 'Cornerstone', 'Triton',
-    ];
-
-    const industryGroups = [
-      { industry: 'Technology',      color: 'bg-blue-100 text-blue-700',     keywords: ['Technologies', 'Systems', 'Software', 'Digital', 'Data Solutions', 'CloudTech', 'Cyber'] },
-      { industry: 'Healthcare',      color: 'bg-green-100 text-green-700',   keywords: ['Health', 'Medical Group', 'Pharma', 'Biomedical', 'Care Systems', 'Life Sciences'] },
-      { industry: 'Manufacturing',   color: 'bg-orange-100 text-orange-700', keywords: ['Manufacturing', 'Industries', 'Products', 'Fabrication', 'Components'] },
-      { industry: 'Energy',          color: 'bg-amber-100 text-amber-700',   keywords: ['Energy', 'Power', 'Petroleum', 'Gas & Electric', 'Solar Energy', 'Renewables'] },
-      { industry: 'Real Estate',     color: 'bg-purple-100 text-purple-700', keywords: ['Properties', 'Realty', 'Development', 'Estates', 'Real Estate'] },
-      { industry: 'Finance',         color: 'bg-indigo-100 text-indigo-700', keywords: ['Financial', 'Capital', 'Investments', 'Asset Management', 'Holdings'] },
-      { industry: 'Retail',          color: 'bg-pink-100 text-pink-700',     keywords: ['Retail', 'Commerce', 'Distribution', 'Wholesale'] },
-      { industry: 'Agriculture',     color: 'bg-lime-100 text-lime-700',     keywords: ['Farms', 'Agriculture', 'Agri-Products', 'Grain', 'Harvest'] },
-      { industry: 'Mining',          color: 'bg-stone-100 text-stone-600',   keywords: ['Mining', 'Minerals', 'Resources', 'Extraction'] },
-      { industry: 'Transportation',  color: 'bg-cyan-100 text-cyan-700',     keywords: ['Transport', 'Logistics', 'Freight', 'Transit'] },
-      { industry: 'Construction',    color: 'bg-yellow-100 text-yellow-700', keywords: ['Construction', 'Building Group', 'Contractors', 'Infrastructure'] },
-      { industry: 'Utilities',       color: 'bg-teal-100 text-teal-700',     keywords: ['Utilities', 'Water Systems', 'Electric', 'Gas Services'] },
-      { industry: 'Food & Beverage', color: 'bg-red-100 text-red-700',       keywords: ['Foods', 'Beverages', 'Brewing', 'Food Processing'] },
-      { industry: 'Pharmaceutical',  color: 'bg-emerald-100 text-emerald-700', keywords: ['Pharmaceuticals', 'Biotech', 'Laboratories', 'Therapeutics'] },
-      { industry: 'Aerospace',       color: 'bg-sky-100 text-sky-700',       keywords: ['Aerospace', 'Aviation', 'Defense Systems', 'Space Tech'] },
-    ];
-
-    const suffixes = ['Inc.', 'LLC', 'Corp.', 'Ltd.', 'Co.', 'Group', 'Holdings'];
-
-    const exemptionTypes = [
-      'Property Tax Exemption',
-      'R&D Tax Credit',
-      'Enterprise Zone Credit',
-      'Manufacturing Exemption',
-      'Non-Profit Tax Status',
-      'Agricultural Land Exemption',
-      'Renewable Energy Credit',
-      'Export Tax Incentive',
-      'Historic Preservation Credit',
-      'Low-Income Housing Credit',
-      'Job Creation Tax Credit',
-      'Capital Investment Exemption',
-      'Economic Development Zone',
-      'Sales Tax Exemption',
-      'Corporate Income Tax Abatement',
-    ];
-
-    const count = rng(15, 20, 200);
-    const companies = Array.from({ length: count }, (_, i) => {
-      const g        = pick(industryGroups, 201 + i * 9);
-      const keyword  = pick(g.keywords,    202 + i * 9);
-      const prefix   = pick(prefixes,      203 + i * 9);
-      const suffix   = pick(suffixes,      204 + i * 9);
-      const exemType = pick(exemptionTypes,205 + i * 9);
-      const year     = rng(2004, 2023,     206 + i * 9);
-      const isBig    = rng(0, 5,           207 + i * 9) === 0;
-      const rawValue = isBig
-        ? rng(5, 50,    208 + i * 9) * 1_000_000
-        : rng(200, 4800,208 + i * 9) * 1_000;
-      const fmtValue = rawValue >= 1_000_000
-        ? `$${(rawValue / 1_000_000).toFixed(1)}M`
-        : `$${(rawValue / 1_000).toFixed(0)}K`;
-      return {
-        name: `${prefix} ${keyword} ${suffix}`,
-        industry: g.industry,
-        industryColor: g.color,
-        exemType,
-        fmtValue,
-        rawValue,
-        year,
-      };
-    });
-
-    // ── Live Firestore override ──────────────────────────────────────────────
-    const taxJid = item.flagCode?.toUpperCase();
-    const liveTax = taxJid ? (detailTaxByJurisdiction[taxJid] || null) : null;
-    const displayCompanies = (liveTax?.records?.length > 0) ? liveTax.records : companies;
-    const isLiveTax = liveTax?.records?.length > 0;
+    const item = provinceTransparencyFields
+      ? { ...selectedProvince, ...provinceTransparencyFields }
+      : selectedProvince;
+    const isUSA = selectedCountry?.type === 'usa';
+    const jurisdictionLabel = item.displayName || item.name;
+    const taxLive = taxExemptFromExplorerItem(item);
+    const companies = taxLive.companies;
+    const hasLiveData = companies.length > 0;
+    const { sourceName, sourceUrl } = taxLive;
+    const transparencyLoading =
+      Boolean(subnationalTransparencyJurisdictionId(item, isUSA)) &&
+      provinceTransparencyFields === null;
+    const taxHeadlines = buildTaxTransparencyHeadlines(taxLive, item.subnationalTaxHeadlineMeta);
 
     const q = taxExemptSearch.toLowerCase();
     const filtered = q
-      ? displayCompanies.filter(c =>
-          (c.name || '').toLowerCase().includes(q) ||
-          (c.industry || '').toLowerCase().includes(q) ||
-          (c.exemType || '').toLowerCase().includes(q)
+      ? companies.filter(c =>
+          c.name.toLowerCase().includes(q) ||
+          c.industry.toLowerCase().includes(q) ||
+          c.exemType.toLowerCase().includes(q)
         )
-      : displayCompanies;
+      : companies;
 
-    const totalRaw = displayCompanies.reduce((s, c) => s + (c.rawValue || 0), 0);
-    const fmtTotal = totalRaw >= 1_000_000_000
-      ? `$${(totalRaw / 1_000_000_000).toFixed(2)}B`
-      : totalRaw >= 1_000_000
-        ? `$${(totalRaw / 1_000_000).toFixed(1)}M`
-        : 'Tax-Exempt';
+    const totalRaw = companies.reduce((s, c) => s + c.rawValue, 0);
+    const fmtTotal = formatCurrencyCompact(totalRaw);
 
     const closeModal = () => { setShowTaxExemptModal(false); setTaxExemptSearch(''); };
 
@@ -14070,31 +14029,32 @@ function App() {
         style={{ background: 'rgba(0,0,0,0.55)' }}
         onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
       >
-        <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
+        <div className="sn-trans-modal relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
 
           {/* Sticky header */}
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
-            <div className="flex items-start gap-3 mb-3">
-              <button onClick={closeModal} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
+          <div className="sn-trans-modal-header sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
+            <div className="flex items-start gap-3 mb-3 md:mb-3">
+              <button onClick={closeModal} className="sn-trans-modal-back flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
                 <X className="w-4 h-4" />
                 <span>Back</span>
               </button>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — {isLiveTax ? 'CRA Registered Charities' : 'Tax Exempt Companies'}</h2>
-                <p className={`text-xs mt-0.5 ${isLiveTax ? 'text-green-600' : 'text-gray-400'}`}>
-                  {displayCompanies.length} {isLiveTax ? 'registered charities' : 'companies'} &nbsp;·&nbsp;
-                  {isLiveTax
-                    ? <>{' '}<span className="font-semibold">Canada Revenue Agency · open.canada.ca</span></>
-                    : <>{' '}Est. total annual exemption:{' '}<span className="font-semibold text-amber-600">{fmtTotal}</span>&nbsp;·&nbsp; Illustrative sample data</>
-                  }
-                </p>
+              <div className="sn-trans-modal-header-text flex-1 min-w-0">
+                <h2 className="sn-trans-modal-title font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Tax Exempt / Charities</h2>
+                {(hasLiveData || transparencyLoading) ? (
+                  <p className="sn-trans-modal-subtitle text-xs text-gray-500 mt-1">
+                    Official registry listing
+                    {sourceName ? ` · ${sourceName}` : ''}
+                  </p>
+                ) : (
+                  <p className="sn-trans-modal-subtitle text-xs text-gray-600 mt-0.5 font-medium">Official tax-exempt company records are not loaded yet for this jurisdiction.</p>
+                )}
               </div>
               <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
                 <X className="w-5 h-5" />
               </button>
             </div>
             {/* Search bar */}
-            <div className="relative">
+            <div className="sn-trans-modal-header-search relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <input
                 type="text"
@@ -14112,8 +14072,58 @@ function App() {
           </div>
 
           {/* Table body */}
-          <div className="p-3 sm:p-5">
-            {filtered.length === 0 ? (
+          <div className="sn-trans-modal-body p-3 sm:p-5">
+            {renderSubnationalHeadlineSnapshot(taxHeadlines, transparencyLoading)}
+            {!transparencyLoading ? (
+              <div className="mb-4">{renderSubnationalPeriodMeta(item, 'tax')}</div>
+            ) : null}
+            {!transparencyLoading && hasLiveData ? (
+              <p className="sn-trans-record-summary text-xs text-gray-500 mb-3 hidden md:block">
+                {companies.length} {companies.length === 1 ? 'record' : 'records'} in listing
+                {Number.isFinite(totalRaw) && totalRaw > 0
+                  ? ` · Total reported exemption: ${fmtTotal}`
+                  : ''}
+              </p>
+            ) : null}
+            {!taxModalDetailsOpen && hasLiveData && !transparencyLoading ? (
+              <button
+                type="button"
+                onClick={() => setTaxModalDetailsOpen(true)}
+                className="sn-trans-expand-btn md:hidden w-full mb-3 py-3 rounded-xl text-sm font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors"
+              >
+                View full charts &amp; details
+              </button>
+            ) : null}
+            <div className={taxModalDetailsOpen ? 'sn-trans-details-panel' : 'sn-trans-details-panel hidden md:block'}>
+            {taxModalDetailsOpen ? (
+              <div className="sn-trans-collapse-link-wrap flex justify-end mb-2 md:hidden">
+                <button
+                  type="button"
+                  onClick={() => setTaxModalDetailsOpen(false)}
+                  className="sn-trans-collapse-link text-xs font-semibold text-amber-700 px-2 py-1"
+                >
+                  Hide details
+                </button>
+              </div>
+            ) : null}
+            {!transparencyLoading && hasLiveData ? (
+              <p className="sn-trans-record-summary text-xs text-gray-500 mb-3 md:hidden">
+                {companies.length} {companies.length === 1 ? 'record' : 'records'} in listing
+                {Number.isFinite(totalRaw) && totalRaw > 0
+                  ? ` · Total reported exemption: ${fmtTotal}`
+                  : ''}
+              </p>
+            ) : null}
+            <h3 className="sn-trans-section-title text-sm font-bold text-gray-800 mb-3">Full registry &amp; details</h3>
+            {!hasLiveData && !transparencyLoading ? (
+              <div className="text-center py-14 px-4 text-gray-500">
+                <Building2 className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                <p className="text-sm font-medium text-gray-700">No official data loaded yet</p>
+                <p className="text-xs mt-2 max-w-md mx-auto leading-relaxed">
+                  Tax-exempt company listings for {jurisdictionLabel} will appear here once they are ingested from official sources. This screen does not show placeholder or generated rows.
+                </p>
+              </div>
+            ) : filtered.length === 0 ? (
               <div className="text-center py-14 text-gray-400">
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
                 <p className="text-sm">No companies match &quot;{taxExemptSearch}&quot;</p>
@@ -14168,18 +14178,23 @@ function App() {
                     </tbody>
                   </table>
                 </div>
-                {filtered.length < displayCompanies.length && (
+                {filtered.length < companies.length && (
                   <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 text-center text-xs text-gray-400">
-                    Showing {filtered.length} of {displayCompanies.length} {isLiveTax ? 'charities' : 'companies'}
+                    Showing {filtered.length} of {companies.length} companies
                   </div>
                 )}
               </div>
             )}
-            {isLiveTax
-              ? <p className="text-center text-xs text-gray-400 mt-4">Source: Canada Revenue Agency — Registered Charities (1998 list, open.canada.ca). City field may be blank for older records.</p>
-              : <p className="text-center text-xs text-gray-400 mt-4">Sample data for illustrative purposes only. Figures are statistically modelled.</p>
-            }
-            <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+            {hasLiveData && sourceUrl && (
+              <p className="text-center text-xs text-gray-500 mt-4">
+                Source:{' '}
+                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  {sourceName || sourceUrl}
+                </a>
+              </p>
+            )}
+            </div>
+            <button onClick={closeModal} className="sn-trans-modal-close-btn w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
             </button>
           </div>
@@ -14191,118 +14206,35 @@ function App() {
 
   const renderGrantsModal = () => {
     if (!selectedProvince || !showGrantsModal) return null;
-    const item = selectedProvince;
+    const item = provinceTransparencyFields
+      ? { ...selectedProvince, ...provinceTransparencyFields }
+      : selectedProvince;
     const isUSA = selectedCountry?.type === 'usa';
-
-    // ── Deterministic RNG (distinct seed offset from other modals) ─────────────
-    let h = 5381;
-    for (let i = 0; i < item.name.length; i++) h = (Math.imul(h, 33) ^ item.name.charCodeAt(i)) | 0;
-    h = Math.abs(h) ^ 0xCAFE1234;
-    const rng = (min, max, salt) => {
-      let v = Math.abs((h ^ (salt * 2654435761)) >>> 0);
-      return Math.round(min + (v % (max - min + 1)));
-    };
-    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
-
-    // ── Name pools ────────────────────────────────────────────────────────────
-    const orgPrefixes  = ['Community', 'City', 'Regional', 'Metropolitan', 'State', 'National', 'Local', 'Rural', 'Urban', 'District', 'County', 'Public', 'Civic'];
-    const orgFields    = ['Health', 'Education', 'Research', 'Arts', 'Science', 'Technology', 'Environment', 'Youth', 'Family', 'Housing', 'Development', 'Innovation', 'Literacy', 'Wellness', 'Veterans'];
-    const orgTypes     = ['Foundation', 'Institute', 'Association', 'Center', 'Coalition', 'Trust', 'Fund', 'Alliance', 'Council', 'Society', 'Network', 'Initiative'];
-    const coKeywords   = ['Solutions', 'Technologies', 'Systems', 'Services', 'Consulting', 'Innovations', 'Enterprises', 'Dynamics', 'Analytics', 'Research'];
-    const coPrefixes   = ['Apex', 'Summit', 'Vanguard', 'Horizon', 'Pinnacle', 'Meridian', 'Allied', 'Catalyst', 'Pioneer', 'Keystone', 'Integrated', 'Advanced'];
-    const coSuffixes   = ['Inc.', 'LLC', 'Corp.', 'Ltd.', 'Co.'];
-    const firstNames   = ['James', 'Maria', 'Robert', 'Sarah', 'Michael', 'Jennifer', 'David', 'Emily', 'John', 'Amanda', 'Christopher', 'Rachel', 'Daniel', 'Stephanie', 'Matthew', 'Nicole', 'Anthony', 'Lauren', 'Mark', 'Megan', 'Paul', 'Kevin', 'Brian', 'Rebecca', 'George', 'Thomas', 'Danielle', 'Lisa', 'Carlos', 'Priya'];
-    const lastNames    = ['Johnson', 'Smith', 'Williams', 'Brown', 'Jones', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Martinez', 'Robinson', 'Clark', 'Rodriguez', 'Lewis', 'Walker', 'Hall', 'Allen', 'Young', 'Patel', 'Nguyen', 'Kim'];
-
-    // ── Grant purposes ────────────────────────────────────────────────────────
-    const purposes = [
-      'STEM Education Program', 'Community Health Initiative', 'Infrastructure Modernization',
-      'Small Business Development', 'Environmental Conservation', 'Workforce Training Program',
-      'Affordable Housing Project', 'Renewable Energy Research', 'Arts & Culture Promotion',
-      'Public Safety Equipment', 'Agricultural Innovation', 'Mental Health Services',
-      'Digital Literacy Program', 'Economic Recovery Initiative', 'Youth Development Program',
-      'Medical Research Grant', 'Clean Water Infrastructure', 'Transportation Improvement',
-      'Emergency Preparedness', 'Indigenous Community Support',
-    ];
-
-    // ── Funding departments ───────────────────────────────────────────────────
-    const usDepts = [
-      'Dept. of Health & Human Services', 'Dept. of Education', 'Dept. of Commerce',
-      'Dept. of Transportation', 'Dept. of Energy', 'Dept. of Agriculture',
-      'Dept. of Housing & Urban Dev.', 'Dept. of Labor', 'Environmental Protection Agency',
-      'National Science Foundation', 'National Institutes of Health',
-      'Small Business Administration', 'Dept. of Justice', 'Dept. of Homeland Security',
-      'Dept. of the Interior',
-    ];
-    const caDepts = [
-      'Ministry of Health', 'Ministry of Education', 'Ministry of Economic Development',
-      'Ministry of Transportation', 'Ministry of Environment', 'Ministry of Agriculture',
-      'Ministry of Labour', 'Ministry of Finance', 'Ministry of Culture & Tourism',
-      'Natural Sciences & Engineering Research Council', 'Social Sciences & Humanities Research Council',
-      'Innovation, Science & Economic Development', 'National Research Council',
-      'Indigenous Services Canada', 'Infrastructure Canada',
-    ];
-    const depts = isUSA ? usDepts : caDepts;
-
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    // ── Generate grants ───────────────────────────────────────────────────────
-    const count = rng(15, 20, 300);
-    const grants = Array.from({ length: count }, (_, i) => {
-      const recipientType = rng(0, 9, 301 + i * 11) < 5 ? 'org'
-                          : rng(0, 9, 302 + i * 11) < 7 ? 'company'
-                          : 'individual';
-
-      let recipientName, typeLabel, typeColor;
-      if (recipientType === 'org') {
-        recipientName = `${pick(orgPrefixes, 303 + i * 11)} ${pick(orgFields, 304 + i * 11)} ${pick(orgTypes, 305 + i * 11)}`;
-        typeLabel = 'Organization'; typeColor = 'bg-green-100 text-green-700';
-      } else if (recipientType === 'company') {
-        recipientName = `${pick(coPrefixes, 306 + i * 11)} ${pick(coKeywords, 307 + i * 11)} ${pick(coSuffixes, 308 + i * 11)}`;
-        typeLabel = 'Company'; typeColor = 'bg-blue-100 text-blue-700';
-      } else {
-        recipientName = `${pick(firstNames, 309 + i * 11)} ${pick(lastNames, 310 + i * 11)}`;
-        typeLabel = 'Individual'; typeColor = 'bg-purple-100 text-purple-700';
-      }
-
-      const tier = rng(0, 9, 311 + i * 11);
-      const rawAmount = tier < 2
-        ? rng(10, 99, 312 + i * 11) * 1_000            // $10K–$99K
-        : tier < 8
-          ? rng(100, 999, 312 + i * 11) * 1_000         // $100K–$999K
-          : rng(1, 50, 312 + i * 11) * 100_000;         // $100K–$5M (large)
-      const fmtAmount = rawAmount >= 1_000_000
-        ? `$${(rawAmount / 1_000_000).toFixed(2)}M`
-        : `$${(rawAmount / 1_000).toFixed(0)}K`;
-
-      const yr  = rng(2018, 2024, 313 + i * 11);
-      const mo  = pick(months,   314 + i * 11);
-      const purpose = pick(purposes, 315 + i * 11);
-      const dept    = pick(depts,    316 + i * 11);
-
-      return { recipientName, typeLabel, typeColor, purpose, fmtAmount, rawAmount, date: `${mo} ${yr}`, dept };
-    });
-
-    // ── Live Firestore override ──────────────────────────────────────────────
-    const grantsJid = item.flagCode?.toUpperCase();
-    const liveGrants = grantsJid ? (detailGrantsByJurisdiction[grantsJid] || null) : null;
-    const displayGrants = (liveGrants?.records?.length > 0) ? liveGrants.records : grants;
-    const isLiveGrants = liveGrants?.records?.length > 0;
+    const jurisdictionLabel = item.displayName || item.name;
+    const grantsLive = grantsGivenFromExplorerItem(item);
+    const grants = grantsLive.grants;
+    const hasLiveData = grants.length > 0;
+    const { sourceName, sourceUrl } = grantsLive;
+    const transparencyLoading =
+      Boolean(subnationalTransparencyJurisdictionId(item, isUSA)) &&
+      provinceTransparencyFields === null;
+    const grantsHeadlines = buildGrantsTransparencyHeadlines(
+      grantsLive,
+      item.subnationalGrantsHeadlineMeta,
+    );
 
     const q = grantsSearch.toLowerCase();
     const filtered = q
-      ? displayGrants.filter(g =>
-          (g.recipientName || '').toLowerCase().includes(q) ||
-          (g.purpose || '').toLowerCase().includes(q) ||
-          (g.dept || '').toLowerCase().includes(q) ||
-          (g.typeLabel || '').toLowerCase().includes(q)
+      ? grants.filter(g =>
+          g.recipientName.toLowerCase().includes(q) ||
+          g.purpose.toLowerCase().includes(q) ||
+          g.dept.toLowerCase().includes(q) ||
+          g.typeLabel.toLowerCase().includes(q)
         )
-      : displayGrants;
+      : grants;
 
-    const totalRaw = displayGrants.reduce((s, g) => s + (g.rawAmount || 0), 0);
-    const fmtTotal = totalRaw >= 1_000_000_000
-      ? `$${(totalRaw / 1_000_000_000).toFixed(2)}B`
-      : `$${(totalRaw / 1_000_000).toFixed(1)}M`;
+    const totalRaw = grants.reduce((s, g) => s + g.rawAmount, 0);
+    const fmtTotal = formatCurrencyCompact(totalRaw);
 
     const closeModal = () => { setShowGrantsModal(false); setGrantsSearch(''); };
 
@@ -14312,29 +14244,32 @@ function App() {
         style={{ background: 'rgba(0,0,0,0.55)' }}
         onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
       >
-        <div className="relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
+        <div className="sn-trans-modal relative bg-gray-50 w-full max-w-5xl mx-2 sm:mx-3 my-2 sm:my-6 rounded-2xl shadow-2xl animate-fade-in">
 
           {/* Sticky header */}
-          <div className="sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
+          <div className="sn-trans-modal-header sticky top-0 z-10 bg-white rounded-t-2xl px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 shadow-sm">
             <div className="flex items-start gap-3 mb-3">
-              <button onClick={closeModal} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
+              <button onClick={closeModal} className="sn-trans-modal-back flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-colors flex-shrink-0 mt-0.5">
                 <X className="w-4 h-4" />
                 <span>Back</span>
               </button>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-bold text-gray-800 text-sm sm:text-lg">{item.name} — {isLiveGrants ? 'Transfer Payments (Public Accounts)' : 'Grants Given'}</h2>
-                <p className={`text-xs mt-0.5 ${isLiveGrants ? 'text-green-600' : 'text-gray-400'}`}>
-                  {displayGrants.length} {isLiveGrants ? 'transfer payments' : 'grants'} &nbsp;·&nbsp; Total:{' '}
-                  <span className={`font-semibold ${isLiveGrants ? 'text-emerald-700' : 'text-emerald-600'}`}>{fmtTotal}</span>
-                  {isLiveGrants ? <>&nbsp;·&nbsp; Ontario Public Accounts 2023–24</> : <>&nbsp;·&nbsp; Illustrative sample data</>}
-                </p>
+              <div className="sn-trans-modal-header-text flex-1 min-w-0">
+                <h2 className="sn-trans-modal-title font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Grants Given</h2>
+                {(hasLiveData || transparencyLoading) ? (
+                  <p className="sn-trans-modal-subtitle text-xs text-gray-500 mt-1">
+                    Official grant awards
+                    {sourceName ? ` · ${sourceName}` : ''}
+                  </p>
+                ) : (
+                  <p className="sn-trans-modal-subtitle text-xs text-gray-600 mt-0.5 font-medium">Official grant award records are not loaded yet for this jurisdiction.</p>
+                )}
               </div>
               <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
                 <X className="w-5 h-5" />
               </button>
             </div>
             {/* Search bar */}
-            <div className="relative">
+            <div className="sn-trans-modal-header-search relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <input
                 type="text"
@@ -14352,8 +14287,54 @@ function App() {
           </div>
 
           {/* Table */}
-          <div className="p-3 sm:p-5">
-            {filtered.length === 0 ? (
+          <div className="sn-trans-modal-body p-3 sm:p-5">
+            {renderSubnationalHeadlineSnapshot(grantsHeadlines, transparencyLoading)}
+            {!transparencyLoading ? (
+              <div className="mb-4">{renderSubnationalPeriodMeta(item, 'grants')}</div>
+            ) : null}
+            {!transparencyLoading && hasLiveData ? (
+              <p className="sn-trans-record-summary text-xs text-gray-500 mb-3 hidden md:block">
+                {grants.length} {grants.length === 1 ? 'award' : 'awards'} in listing · Total shown:{' '}
+                <span className="font-semibold text-emerald-700">{fmtTotal}</span>
+              </p>
+            ) : null}
+            {!grantsModalDetailsOpen && hasLiveData && !transparencyLoading ? (
+              <button
+                type="button"
+                onClick={() => setGrantsModalDetailsOpen(true)}
+                className="sn-trans-expand-btn md:hidden w-full mb-3 py-3 rounded-xl text-sm font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors"
+              >
+                View full charts &amp; details
+              </button>
+            ) : null}
+            <div className={grantsModalDetailsOpen ? 'sn-trans-details-panel' : 'sn-trans-details-panel hidden md:block'}>
+            {grantsModalDetailsOpen ? (
+              <div className="sn-trans-collapse-link-wrap flex justify-end mb-2 md:hidden">
+                <button
+                  type="button"
+                  onClick={() => setGrantsModalDetailsOpen(false)}
+                  className="sn-trans-collapse-link text-xs font-semibold text-emerald-700 px-2 py-1"
+                >
+                  Hide details
+                </button>
+              </div>
+            ) : null}
+            {!transparencyLoading && hasLiveData ? (
+              <p className="sn-trans-record-summary text-xs text-gray-500 mb-3 md:hidden">
+                {grants.length} {grants.length === 1 ? 'award' : 'awards'} in listing · Total shown:{' '}
+                <span className="font-semibold text-emerald-700">{fmtTotal}</span>
+              </p>
+            ) : null}
+            <h3 className="sn-trans-section-title text-sm font-bold text-gray-800 mb-3">Full awards &amp; details</h3>
+            {!hasLiveData && !transparencyLoading ? (
+              <div className="text-center py-14 px-4 text-gray-500">
+                <DollarSign className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                <p className="text-sm font-medium text-gray-700">No official data loaded yet</p>
+                <p className="text-xs mt-2 max-w-md mx-auto leading-relaxed">
+                  Grant award listings for {jurisdictionLabel} will appear here once they are ingested from official sources. This screen does not show placeholder or generated rows.
+                </p>
+              </div>
+            ) : filtered.length === 0 ? (
               <div className="text-center py-14 text-gray-400">
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
                 <p className="text-sm">No grants match &quot;{grantsSearch}&quot;</p>
@@ -14411,18 +14392,23 @@ function App() {
                     </tbody>
                   </table>
                 </div>
-                {filtered.length < displayGrants.length && (
+                {filtered.length < grants.length && (
                   <div className="px-4 py-2 bg-gray-50 border-t border-gray-100 text-center text-xs text-gray-400">
-                    Showing {filtered.length} of {displayGrants.length} {isLiveGrants ? 'transfer payments' : 'grants'}
+                    Showing {filtered.length} of {grants.length} grants
                   </div>
                 )}
               </div>
             )}
-            {isLiveGrants
-              ? <p className="text-center text-xs text-gray-400 mt-4">Source: Ontario Ministry of Finance — Public Accounts, Detailed Schedule of Payments (data.ontario.ca). Fiscal year 2023–24. Top 100 Transfer Payments by amount.</p>
-              : <p className="text-center text-xs text-gray-400 mt-4">Sample data for illustrative purposes only. Figures are statistically modelled.</p>
-            }
-            <button onClick={closeModal} className="w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
+            {hasLiveData && sourceUrl && (
+              <p className="text-center text-xs text-gray-500 mt-4">
+                Source:{' '}
+                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  {sourceName || sourceUrl}
+                </a>
+              </p>
+            )}
+            </div>
+            <button onClick={closeModal} className="sn-trans-modal-close-btn w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
             </button>
           </div>
@@ -19891,6 +19877,7 @@ function App() {
       ukExplorerFirestoreRows.forEach((r) => { if (r && r.id) _ukNationById[r.id] = r; });
     }
     const _nationFs = (id) => _ukNationById[id] || {};
+    const ukCommonsMembers = summaryStatsDashboard?.memberUK ?? 650;
     return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-6xl mx-auto">
@@ -19946,9 +19933,9 @@ function App() {
               <Users className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">House of Commons</h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">Explore all 650 MPs — elected members of the lower chamber</p>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Explore all {ukCommonsMembers} MPs — elected members of the lower chamber</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>650 MPs · Lower Chamber</span>
+              <span>{ukCommonsMembers} MPs · Lower Chamber</span>
               <ChevronRight className="w-5 h-5" style={{ color: '#012169' }} />
             </div>
           </div>
@@ -20068,7 +20055,7 @@ function App() {
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Contracts</h2>
             <p className="text-gray-600 mb-3 text-sm sm:text-base">Major public procurement contracts — defence, infrastructure &amp; services</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{governmentContractsHubSubtitle(liveContracts.UK)}</span>
+              <span>{governmentContractsHubSubtitle(liveContracts.UK, summaryStatsDashboard?.contractsUK)}</span>
               <ChevronRight className="w-5 h-5" style={{ color: '#C8102E' }} />
             </div>
           </div>
@@ -20160,21 +20147,12 @@ function App() {
       name: 'North East England',
       abbr: 'NE',
       emoji: '⚙️',
-      population: '2.65M',
-      populationRaw: 2650000,
-      area: '8,592 km²',
       cities: ['Newcastle upon Tyne', 'Sunderland', 'Middlesbrough', 'Durham', 'Gateshead'],
-      capital: 'Newcastle upon Tyne',
       gdpPerCapita: '£22,900',
       gdpTotal: '£60.8B',
       unemployment: '5.2%',
       hasRegionalMayor: true,
-      leader: 'Kim McGuinness',
-      leaderTitle: 'North East Mayor',
-      leaderParty: 'Labour',
       leaderPartyColor: '#E4003B',
-      leaderSince: 'May 2024',
-      leaderBio: 'Former Police and Crime Commissioner for Northumbria. Kim McGuinness became the first ever directly elected Mayor of the North East in May 2024, winning with 50.9% of the vote. She leads the North East Mayoral Combined Authority covering seven local authorities, with devolved powers over transport, skills, economic development and housing.',
       subMayors: [],
       economicSectors: [
         { name: 'Manufacturing', share: '14%', trend: 'declining' },
@@ -20205,17 +20183,12 @@ function App() {
       name: 'North West England',
       abbr: 'NW',
       emoji: '🏙️',
-      population: '7.42M',
-      populationRaw: 7420000,
-      area: '14,165 km²',
       cities: ['Manchester', 'Liverpool', 'Salford', 'Preston', 'Bolton', 'Blackpool', 'Chester'],
-      capital: 'Manchester',
       gdpPerCapita: '£26,800',
       gdpTotal: '£198.6B',
       unemployment: '4.8%',
       hasRegionalMayor: false,
       leader: 'No Regional Mayor',
-      leaderTitle: 'Combined Authority Mayors',
       leaderParty: '',
       leaderPartyColor: '#6B7280',
       leaderSince: '',
@@ -20253,17 +20226,12 @@ function App() {
       name: 'Yorkshire & The Humber',
       abbr: 'YH',
       emoji: '🌹',
-      population: '5.54M',
-      populationRaw: 5540000,
-      area: '15,420 km²',
       cities: ['Leeds', 'Sheffield', 'Bradford', 'Hull', 'York', 'Harrogate', 'Doncaster'],
-      capital: 'Leeds',
       gdpPerCapita: '£24,200',
       gdpTotal: '£133.9B',
       unemployment: '4.5%',
       hasRegionalMayor: false,
       leader: 'No Regional Mayor',
-      leaderTitle: 'Combined Authority Mayors',
       leaderParty: '',
       leaderPartyColor: '#6B7280',
       leaderSince: '',
@@ -20301,21 +20269,12 @@ function App() {
       name: 'East Midlands',
       abbr: 'EM',
       emoji: '🏛️',
-      population: '4.93M',
-      populationRaw: 4930000,
-      area: '15,627 km²',
       cities: ['Nottingham', 'Leicester', 'Derby', 'Lincoln', 'Northampton', 'Chesterfield'],
-      capital: 'Nottingham',
       gdpPerCapita: '£26,500',
       gdpTotal: '£130.7B',
       unemployment: '4.1%',
       hasRegionalMayor: true,
-      leader: 'Claire Ward',
-      leaderTitle: 'East Midlands Mayor',
-      leaderParty: 'Labour',
       leaderPartyColor: '#E4003B',
-      leaderSince: 'May 2024',
-      leaderBio: 'Claire Ward became the first ever Mayor of the East Midlands County Combined Authority in May 2024, covering Derbyshire and Nottinghamshire. A former MP for Watford (1997–2010), she focused her campaign on improving transport links, skills investment and economic growth. The combined authority covers a population of around 2.1 million across the two counties.',
       subMayors: [],
       economicSectors: [
         { name: 'Manufacturing & Logistics', share: '18%', trend: 'stable' },
@@ -20346,21 +20305,12 @@ function App() {
       name: 'West Midlands',
       abbr: 'WM',
       emoji: '🏭',
-      population: '5.92M',
-      populationRaw: 5920000,
-      area: '13,004 km²',
       cities: ['Birmingham', 'Coventry', 'Wolverhampton', 'Stoke-on-Trent', 'Walsall', 'Dudley'],
-      capital: 'Birmingham',
       gdpPerCapita: '£24,800',
       gdpTotal: '£146.8B',
       unemployment: '5.5%',
       hasRegionalMayor: true,
-      leader: 'Richard Parker',
-      leaderTitle: 'West Midlands Mayor',
-      leaderParty: 'Labour',
       leaderPartyColor: '#E4003B',
-      leaderSince: 'May 2024',
-      leaderBio: 'Richard Parker won the West Midlands Mayoral election in May 2024, narrowly defeating Conservative incumbent Andy Street by just 1,508 votes — the closest mayoral election in England\'s history. He leads the West Midlands Combined Authority covering seven metropolitan borough councils. Parker, a former council leader and economic development professional, focuses on transport, housing and inward investment.',
       subMayors: [],
       economicSectors: [
         { name: 'Manufacturing & Automotive', share: '19%', trend: 'transforming' },
@@ -20391,17 +20341,12 @@ function App() {
       name: 'East of England',
       abbr: 'EE',
       emoji: '🌾',
-      population: '6.33M',
-      populationRaw: 6330000,
-      area: '19,120 km²',
       cities: ['Cambridge', 'Norwich', 'Luton', 'Ipswich', 'Peterborough', 'Chelmsford', 'Colchester'],
-      capital: 'Cambridge',
       gdpPerCapita: '£29,200',
       gdpTotal: '£184.8B',
       unemployment: '3.4%',
       hasRegionalMayor: false,
       leader: 'No Regional Mayor',
-      leaderTitle: 'No Regional Mayor',
       leaderParty: '',
       leaderPartyColor: '#6B7280',
       leaderSince: '',
@@ -20436,21 +20381,12 @@ function App() {
       name: 'London',
       abbr: 'LON',
       emoji: '🏙️',
-      population: '9.08M',
-      populationRaw: 9080000,
-      area: '1,572 km²',
       cities: ['City of London', 'Westminster', 'Canary Wharf', 'Croydon', 'Bromley', 'Hackney', 'Tower Hamlets'],
-      capital: 'City of Westminster',
       gdpPerCapita: '£57,700',
       gdpTotal: '£524.0B',
       unemployment: '5.0%',
       hasRegionalMayor: true,
-      leader: 'Sadiq Khan',
-      leaderTitle: 'Mayor of London',
-      leaderParty: 'Labour',
       leaderPartyColor: '#E4003B',
-      leaderSince: 'May 2016',
-      leaderBio: 'Sadiq Khan was first elected Mayor of London in May 2016, becoming the first Muslim mayor of a major Western capital. Re-elected in 2018, 2021 and again in 2024, he leads the Greater London Authority and Transport for London. Khan focuses on housing affordability, the ULEZ (Ultra Low Emission Zone), free school meals for primary pupils, and improving public transport. He is the longest-serving Mayor of London since the office was created in 2000.',
       subMayors: [],
       economicSectors: [
         { name: 'Finance & Insurance', share: '26%', trend: 'stable' },
@@ -20481,17 +20417,12 @@ function App() {
       name: 'South East England',
       abbr: 'SE',
       emoji: '🏖️',
-      population: '9.18M',
-      populationRaw: 9180000,
-      area: '19,095 km²',
       cities: ['Brighton', 'Southampton', 'Oxford', 'Reading', 'Portsmouth', 'Guildford', 'Canterbury'],
-      capital: 'Brighton (unofficial)',
       gdpPerCapita: '£33,700',
       gdpTotal: '£309.2B',
       unemployment: '3.2%',
       hasRegionalMayor: false,
       leader: 'No Regional Mayor',
-      leaderTitle: 'No Regional Mayor',
       leaderParty: '',
       leaderPartyColor: '#6B7280',
       leaderSince: '',
@@ -20526,17 +20457,12 @@ function App() {
       name: 'South West England',
       abbr: 'SW',
       emoji: '🌊',
-      population: '5.70M',
-      populationRaw: 5700000,
-      area: '23,829 km²',
       cities: ['Bristol', 'Plymouth', 'Exeter', 'Bath', 'Swindon', 'Gloucester', 'Truro'],
-      capital: 'Bristol (unofficial)',
       gdpPerCapita: '£27,100',
       gdpTotal: '£154.5B',
       unemployment: '3.6%',
       hasRegionalMayor: false,
       leader: 'No Regional Mayor',
-      leaderTitle: 'No Regional Mayor',
       leaderParty: '',
       leaderPartyColor: '#6B7280',
       leaderSince: '',
@@ -20572,7 +20498,9 @@ function App() {
 
   const getEnglandRegionsExplorerRows = () => {
     const rows = ukExplorerFirestoreRows;
-    if (!rows || !Array.isArray(rows) || rows.length !== 13) return englandRegions;
+    if (!rows || !Array.isArray(rows) || rows.length !== 13) {
+      return englandRegions.map((r) => mergeUkEnglandRegionRow(r, null));
+    }
     const byId = {};
     for (let i = 0; i < rows.length; i += 1) {
       const row = rows[i];
@@ -20612,7 +20540,11 @@ function App() {
 
   const renderUKRegions = () => {
     const regions = getEnglandRegionsExplorerRows();
-    const totalPop = regions.reduce((s, r) => s + r.populationRaw, 0);
+    const totalPop = regions.reduce((s, r) => {
+      const pr =
+        typeof r.populationRaw === 'number' && Number.isFinite(r.populationRaw) ? r.populationRaw : 0;
+      return s + pr;
+    }, 0);
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Sticky header */}
@@ -20644,7 +20576,7 @@ function App() {
               <p className="text-sm font-semibold text-gray-600 mt-1">Statistical Regions</p>
             </div>
             <div className="rounded-xl p-5 border-2 text-center" style={{ background: '#01216908', borderColor: '#012169' }}>
-              <p className="text-3xl font-black" style={{ color: '#012169' }}>{(totalPop / 1000000).toFixed(1)}M</p>
+              <p className="text-3xl font-black" style={{ color: '#012169' }}>{totalPop > 0 ? `${(totalPop / 1000000).toFixed(1)}M` : '—'}</p>
               <p className="text-sm font-semibold text-gray-600 mt-1">Total Population</p>
             </div>
             <div className="bg-green-50 rounded-xl p-5 border-2 border-green-300 text-center">
@@ -20652,6 +20584,8 @@ function App() {
               <p className="text-sm font-semibold text-gray-600 mt-1">Elected Mayors</p>
             </div>
           </div>
+
+          <SubnationalIllustrativeExplorerNote />
 
           {/* Region cards grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
@@ -20682,7 +20616,10 @@ function App() {
                   <div className="grid grid-cols-3 gap-2 mb-3">
                     <div className="text-center">
                       <p className="text-xs text-gray-400">Population</p>
-                      <p className="text-sm font-bold text-gray-800">{region.population}</p>
+                      <p className="text-sm font-bold text-gray-800">{region.population || '—'}</p>
+                      {region.area ? (
+                        <p className="text-[10px] text-gray-500 mt-0.5 tabular-nums leading-tight">{region.area}</p>
+                      ) : null}
                     </div>
                     <div className="text-center">
                       <p className="text-xs text-gray-400">GDP/capita</p>
@@ -20725,6 +20662,10 @@ function App() {
     if (!selectedUkRegion) return null;
     const r = selectedUkRegion;
     const ukRegionLabel = r.displayName || r.name;
+    const ukOfficialSite =
+      typeof r.officialWebsite === 'string' && /^https?:\/\//i.test(r.officialWebsite.trim())
+        ? r.officialWebsite.trim()
+        : '';
     const ukRed = '#C8102E', ukNavy = '#012169';
 
     const legislatureByRegion = {
@@ -20766,11 +20707,18 @@ function App() {
       </div>
     );
 
-    const PersonCard = ({ title, name, party, since, bio, cfg, bioId }) => {
+    const PersonCard = ({ title, name, party, since, bio, cfg, bioId, onOpenProfile }) => {
       const isExpanded = !!expandedBios[bioId];
       const isLong = bio && bio.length > 150;
       return (
-        <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+        <div
+          className={`bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col${onOpenProfile ? ' cursor-pointer hover:shadow-lg transition-all group' : ''}`}
+          style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
+          onClick={onOpenProfile}
+          onKeyDown={onOpenProfile ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenProfile(); } } : undefined}
+          role={onOpenProfile ? 'button' : undefined}
+          tabIndex={onOpenProfile ? 0 : undefined}
+        >
           <div className="h-1.5 flex-shrink-0" style={{ background: cfg.solid }} />
           <div className="p-5 sm:p-6 flex flex-col flex-1">
             <div className="mb-4">
@@ -20792,7 +20740,7 @@ function App() {
               </p>
               {isLong && (
                 <button
-                  onClick={() => setExpandedBios(prev => ({ ...prev, [bioId]: !isExpanded }))}
+                  onClick={(e) => { e.stopPropagation(); setExpandedBios(prev => ({ ...prev, [bioId]: !isExpanded })); }}
                   className="mt-1.5 text-xs font-semibold transition-colors"
                   style={{ color: cfg.solid }}
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.75'}
@@ -20886,8 +20834,25 @@ function App() {
                     🏛 <span className="ml-0.5">Capital: <strong className="text-white">{r.capital || r.cities[0]}</strong></span>
                   </span>
                   <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    👥 <span className="ml-0.5">Pop: <strong className="text-white">{r.population}</strong></span>
+                    👥 <span className="ml-0.5">Pop: <strong className="text-white">{r.population || '—'}</strong></span>
                   </span>
+                  {r.area ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      📐 <span className="ml-0.5">Area: <strong className="text-white">{r.area}</strong></span>
+                    </span>
+                  ) : null}
+                  {ukOfficialSite ? (
+                    <a
+                      href={ukOfficialSite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-medium rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5 transition-colors hover:bg-white/15"
+                      style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.92)', border: '1px solid rgba(255,255,255,0.1)' }}
+                    >
+                      <Globe className="w-3 h-3 flex-shrink-0" aria-hidden />
+                      <span>Official site</span>
+                    </a>
+                  ) : null}
                   {r.hasRegionalMayor && (
                     <span className="inline-flex items-center gap-1 text-xs font-bold rounded-lg px-2.5 sm:px-3 py-1 sm:py-1.5 text-white" style={{ background: leaderColor }}>
                       <Crown className="w-3 h-3" /> Elected Mayor
@@ -20948,6 +20913,7 @@ function App() {
           </div>
 
           {/* ── Regional Leadership ── */}
+          <SubnationalIllustrativeExplorerNote />
           <SectionLabel>Regional Leadership</SectionLabel>
           <div className={`grid grid-cols-1 ${r.subMayors && r.subMayors.length > 0 ? 'md:grid-cols-2' : ''} gap-4`}>
             <PersonCard
@@ -20958,6 +20924,24 @@ function App() {
               bio={r.leaderBio}
               cfg={lcfg}
               bioId={`uk-region-${r.id}`}
+              onOpenProfile={
+                r.id === 'london' && r.hasRegionalMayor
+                  ? () => {
+                      setSelectedLeader({
+                        name: r.leader,
+                        title: r.leaderTitle || 'Mayor of London',
+                        party: r.leaderParty,
+                        since: r.leaderSince,
+                        bio: r.leaderBio,
+                        isUSA: false,
+                        region: ukRegionLabel,
+                        isDeputy: false,
+                        ...leaderProfilePanelPayloadFromExplorerItem(r),
+                      });
+                      setShowLeaderPanel(true);
+                    }
+                  : undefined
+              }
             />
             {r.subMayors && r.subMayors.length > 0 && (
               <SubMayorsCard mayors={r.subMayors} />
@@ -23826,62 +23810,14 @@ function App() {
     const flagUrl = (name) => W + (flagFiles[name] || 'Flag_of_' + name.replace(/ /g, '_') + '.svg');
 
     const states = [
-      {
-        name: 'New South Wales', abbr: 'NSW', capital: 'Sydney', population: '8.2M',
-        leader: 'Chris Minns', leaderTitle: 'Premier', party: 'Australian Labor Party', partyShort: 'ALP', since: '2023',
-        deputyTitle: 'Deputy Premier',
-        deputy: 'Prue Car', deputyParty: 'ALP', deputySince: '2023',
-        legislature: { name: 'NSW Legislative Assembly', totalSeats: 93, parties: [{ name: 'Labor', seats: 45, color: '#CC0000' }, { name: 'Liberal', seats: 33, color: '#1B5BA5' }, { name: 'Nationals', seats: 9, color: '#006644' }, { name: 'Greens', seats: 3, color: '#10B981' }, { name: 'Independent', seats: 3, color: '#6B7280' }] },
-      },
-      {
-        name: 'Victoria', abbr: 'VIC', capital: 'Melbourne', population: '6.7M',
-        leader: 'Jacinta Allan', leaderTitle: 'Premier', party: 'Australian Labor Party', partyShort: 'ALP', since: '2023',
-        deputyTitle: 'Deputy Premier',
-        deputy: 'Ben Carroll', deputyParty: 'ALP', deputySince: '2023',
-        legislature: { name: 'Victorian Legislative Assembly', totalSeats: 88, parties: [{ name: 'Labor', seats: 51, color: '#CC0000' }, { name: 'Liberal', seats: 23, color: '#1B5BA5' }, { name: 'Nationals', seats: 9, color: '#006644' }, { name: 'Greens', seats: 4, color: '#10B981' }, { name: 'Independent', seats: 1, color: '#6B7280' }] },
-      },
-      {
-        name: 'Queensland', abbr: 'QLD', capital: 'Brisbane', population: '5.4M',
-        leader: 'David Crisafulli', leaderTitle: 'Premier', party: 'Liberal National Party', partyShort: 'LNP', since: '2024',
-        deputyTitle: 'Deputy Premier',
-        deputy: 'Jarrod Bleijie', deputyParty: 'LNP', deputySince: '2024',
-        legislature: { name: 'Queensland Legislative Assembly', totalSeats: 93, parties: [{ name: 'LNP', seats: 55, color: '#1B5BA5' }, { name: 'Labor', seats: 31, color: '#CC0000' }, { name: 'Greens', seats: 5, color: '#10B981' }, { name: 'Independent', seats: 2, color: '#6B7280' }] },
-      },
-      {
-        name: 'Western Australia', abbr: 'WA', capital: 'Perth', population: '2.8M',
-        leader: 'Roger Cook', leaderTitle: 'Premier', party: 'Australian Labor Party', partyShort: 'ALP', since: '2023',
-        deputyTitle: 'Deputy Premier',
-        deputy: 'Rita Saffioti', deputyParty: 'ALP', deputySince: '2023',
-        legislature: { name: 'WA Legislative Assembly', totalSeats: 59, parties: [{ name: 'Labor', seats: 40, color: '#CC0000' }, { name: 'Liberal', seats: 7, color: '#1B5BA5' }, { name: 'Nationals', seats: 5, color: '#006644' }, { name: 'Greens', seats: 4, color: '#10B981' }, { name: 'Independent', seats: 3, color: '#6B7280' }] },
-      },
-      {
-        name: 'South Australia', abbr: 'SA', capital: 'Adelaide', population: '1.8M',
-        leader: 'Peter Malinauskas', leaderTitle: 'Premier', party: 'Australian Labor Party', partyShort: 'ALP', since: '2022',
-        deputyTitle: 'Deputy Premier',
-        deputy: 'Susan Close', deputyParty: 'ALP', deputySince: '2022',
-        legislature: { name: 'SA House of Assembly', totalSeats: 47, parties: [{ name: 'Labor', seats: 26, color: '#CC0000' }, { name: 'Liberal', seats: 18, color: '#1B5BA5' }, { name: 'Greens', seats: 1, color: '#10B981' }, { name: 'Independent', seats: 2, color: '#6B7280' }] },
-      },
-      {
-        name: 'Tasmania', abbr: 'TAS', capital: 'Hobart', population: '570K',
-        leader: 'Jeremy Rockliff', leaderTitle: 'Premier', party: 'Liberal Party', partyShort: 'Liberal', since: '2021',
-        deputyTitle: 'Deputy Premier',
-        deputy: 'Michael Ferguson', deputyParty: 'Liberal', deputySince: '2021',
-        legislature: { name: 'Tasmanian House of Assembly', totalSeats: 35, parties: [{ name: 'Liberal', seats: 14, color: '#1B5BA5' }, { name: 'Labor', seats: 10, color: '#CC0000' }, { name: 'Greens', seats: 7, color: '#10B981' }, { name: 'Independent', seats: 4, color: '#6B7280' }] },
-      },
-      {
-        name: 'Australian Capital Territory', abbr: 'ACT', capital: 'Canberra', population: '460K',
-        leader: 'Andrew Barr', leaderTitle: 'Chief Minister', party: 'Australian Labor Party', partyShort: 'ALP', since: '2014',
-        deputyTitle: 'Deputy Chief Minister',
-        deputy: 'Yvette Berry', deputyParty: 'ALP', deputySince: '2020',
-        legislature: { name: 'ACT Legislative Assembly', totalSeats: 25, parties: [{ name: 'Labor', seats: 11, color: '#CC0000' }, { name: 'Liberal', seats: 7, color: '#1B5BA5' }, { name: 'Greens', seats: 6, color: '#10B981' }, { name: 'Independent', seats: 1, color: '#6B7280' }] },
-      },
-      {
-        name: 'Northern Territory', abbr: 'NT', capital: 'Darwin', population: '250K',
-        leader: 'Lia Finocchiaro', leaderTitle: 'Chief Minister', party: 'Country Liberal Party', partyShort: 'CLP', since: '2024',
-        deputyTitle: 'Deputy Chief Minister',
-        deputy: 'Gerard Maley', deputyParty: 'CLP', deputySince: '2024',
-        legislature: { name: 'NT Legislative Assembly', totalSeats: 25, parties: [{ name: 'CLP', seats: 17, color: '#1B5BA5' }, { name: 'Labor', seats: 8, color: '#CC0000' }] },
-      },
+      { name: 'New South Wales', abbr: 'NSW' },
+      { name: 'Victoria', abbr: 'VIC' },
+      { name: 'Queensland', abbr: 'QLD' },
+      { name: 'Western Australia', abbr: 'WA' },
+      { name: 'South Australia', abbr: 'SA' },
+      { name: 'Tasmania', abbr: 'TAS' },
+      { name: 'Australian Capital Territory', abbr: 'ACT' },
+      { name: 'Northern Territory', abbr: 'NT' },
     ];
 
     const fsMap = auExplorerFirestoreByAbbr;
@@ -23958,6 +23894,8 @@ function App() {
             <div className="w-24 h-1 mt-3 rounded-full" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }} />
           </div>
 
+          <SubnationalIllustrativeExplorerNote />
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {states.map((item, index) => {
               const badgeClass = partyBadgeColors[item.partyShort] || 'bg-gray-100 text-gray-700';
@@ -24005,7 +23943,27 @@ function App() {
     if (!selectedAuState) return null;
     const item = selectedAuState;
     const displayLabel = item.displayName || item.name;
-    const leg = item.legislature;
+    const leg =
+      item.legislature &&
+      item.legislature.parties &&
+      Array.isArray(item.legislature.parties) &&
+      item.legislature.parties.length > 0
+        ? item.legislature
+        : {
+            name:
+              typeof item.legislatureName === 'string' && item.legislatureName.trim()
+                ? item.legislatureName.trim()
+                : 'Legislature',
+            totalSeats: 0,
+            parties: [],
+          };
+
+    const auLegislatureChartReady =
+      Array.isArray(leg.parties) &&
+      leg.parties.length > 0 &&
+      typeof leg.totalSeats === 'number' &&
+      Number.isFinite(leg.totalSeats) &&
+      leg.totalSeats > 0;
 
     const getInitials = (name) => {
       if (!name) return '?';
@@ -24200,6 +24158,22 @@ function App() {
             </div>
           </div>
 
+          {Array.isArray(item.subnationalManualReviewNoticeFields) &&
+            item.subnationalManualReviewNoticeFields.length > 0 && (
+              <SubnationalFieldVerificationNotice
+                labels={item.subnationalManualReviewNoticeFields.map((f) =>
+                  ({
+                    leader_name: 'Leader name',
+                    leader_party: 'Party',
+                    leader_since: 'In-office date',
+                    population: 'Population',
+                  }[f] || String(f)),
+                )}
+              />
+            )}
+
+          <SubnationalIllustrativeExplorerNote />
+
           {/* ── Leadership ── */}
           <SectionLabel>Government Leadership</SectionLabel>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -24209,6 +24183,7 @@ function App() {
 
           {/* ── Legislature ── */}
           <SectionLabel>Legislature Composition</SectionLabel>
+          {auLegislatureChartReady ? (
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
             <div className="p-6 sm:p-8">
               <div className="flex flex-col lg:flex-row items-center gap-8">
@@ -24265,6 +24240,14 @@ function App() {
               </div>
             </div>
           </div>
+          ) : (
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden px-6 py-8 text-center" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
+            <p className="text-sm font-semibold text-gray-800">{leg.name}</p>
+            <p className="text-xs text-gray-500 mt-2 max-w-md mx-auto leading-relaxed">
+              Party seat totals are not available for this jurisdiction yet. The composition chart appears when the app has official seat counts and a non-zero chamber size from synced data.
+            </p>
+          </div>
+          )}
 
           {/* ── Transparency Data ── */}
           <SectionLabel>Transparency Data</SectionLabel>
@@ -24463,6 +24446,9 @@ function App() {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>Australian State · Economic &amp; Social Data</p>
               <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{item.name}</h1>
+              <p className="text-xs text-amber-200/95 mt-1 font-medium leading-snug">
+                Illustrative demo — not official statistics or government figures.
+              </p>
             </div>
             {item.flag && (
               <img src={item.flag} alt={item.name} className="hidden sm:block w-20 rounded-lg object-cover flex-shrink-0" style={{ height: '52px', boxShadow: '0 0 0 2px rgba(200,164,0,0.5)' }} />
@@ -24470,6 +24456,15 @@ function App() {
           </div>
         </div>
         <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8">
+          <div
+            className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2.5 text-xs text-amber-950 leading-snug mb-6"
+            role="note"
+          >
+            <p>
+              <span className="font-semibold">Illustrative only: </span>
+              These charts are not official Australian government statistics. Values are deterministically generated from this state or territory name as demo examples until real series are connected.
+            </p>
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <AuCard id="au-budget" title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
               <ResponsiveContainer width="100%" height={220}>
@@ -24825,6 +24820,9 @@ function App() {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>Australian State · Tax Exempt Companies</p>
               <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{item.name}</h1>
+              <p className="text-xs text-amber-200/95 mt-1 font-medium leading-snug">
+                Not official records — illustrative demo only. Rows are synthetic examples.
+              </p>
             </div>
             {item.flag && (
               <img src={item.flag} alt={item.name} className="hidden sm:block w-20 rounded-lg object-cover flex-shrink-0" style={{ height: '52px', boxShadow: '0 0 0 2px rgba(200,164,0,0.5)' }} />
@@ -24833,6 +24831,15 @@ function App() {
         </div>
         {/* Stat strip + search */}
         <div className="max-w-6xl mx-auto px-4 sm:px-8 pt-6 pb-4">
+          <div
+            className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2.5 text-xs text-amber-950 leading-snug mb-5"
+            role="note"
+          >
+            <p>
+              <span className="font-semibold">Illustrative only: </span>
+              Companies and exemption amounts below are synthetic demo rows—not an official tax-exempt registry.
+            </p>
+          </div>
           <div className="bg-white rounded-2xl px-5 py-4 mb-5 flex flex-wrap items-center gap-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-400 mb-0.5">Companies</p>
@@ -24920,7 +24927,7 @@ function App() {
             )}
           </div>
           <p className="text-center text-xs text-gray-400 mt-6 mb-8">
-            Sample data for illustrative purposes only. Figures are statistically modelled.
+            Illustrative demo only — not official data. Sample rows are statistically modelled placeholders.
           </p>
         </div>
       </div>
@@ -25047,6 +25054,9 @@ function App() {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#86efac' }}>Australian State · Grants Given</p>
               <h1 className="font-black text-white text-lg sm:text-2xl leading-tight truncate">{item.name}</h1>
+              <p className="text-xs text-emerald-100/95 mt-1 font-medium leading-snug">
+                Not official grant records — illustrative demo only. Recipients and amounts are generated examples.
+              </p>
             </div>
             {item.flag && (
               <img src={item.flag} alt={item.name} className="hidden sm:block w-20 rounded-lg object-cover flex-shrink-0" style={{ height: '52px', boxShadow: '0 0 0 2px rgba(0,132,61,0.5)' }} />
@@ -25055,6 +25065,15 @@ function App() {
         </div>
         {/* Stat strip + search */}
         <div className="max-w-6xl mx-auto px-4 sm:px-8 pt-6 pb-4">
+          <div
+            className="rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2.5 text-xs text-amber-950 leading-snug mb-5"
+            role="note"
+          >
+            <p>
+              <span className="font-semibold">Illustrative only: </span>
+              Grant listings below are synthetic demo rows—not a government awards register.
+            </p>
+          </div>
           <div className="bg-white rounded-2xl px-5 py-4 mb-5 flex flex-wrap items-center gap-4" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-400 mb-0.5">Total Grants</p>
@@ -25144,7 +25163,7 @@ function App() {
             )}
           </div>
           <p className="text-center text-xs text-gray-400 mt-6 mb-8">
-            Sample data for illustrative purposes only. Figures are statistically modelled.
+            Illustrative demo only — not official data. Sample rows are statistically modelled placeholders.
           </p>
         </div>
       </div>
@@ -25159,6 +25178,78 @@ function App() {
     const leaderParty = isDeputy ? item.deputyParty  : item.party;
     const leaderSince = isDeputy ? item.deputySince  : item.since;
     const leaderBio   = isDeputy ? item.deputyBio    : item.bio;
+    const useOfficial = !isDeputy && hasLiveOfficialLeaderProfile(item);
+
+    const getInitialsLocal = (name) =>
+      name ? name.split(' ').filter(Boolean).map((p) => p[0]).slice(0, 2).join('').toUpperCase() : '??';
+
+    if (!isDeputy && !useOfficial) {
+      return (
+        <div className="min-h-screen animate-fade-in" style={{ background: '#F0F4F8' }}>
+          <div
+            className="sticky top-0 z-10"
+            style={{
+              background: 'linear-gradient(135deg, #071322 0%, #0A1F48 100%)',
+              paddingTop: 'max(env(safe-area-inset-top), 0px)',
+            }}
+          >
+            <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #C8A400, #F0C808, #C8A400)' }} />
+            <div className="max-w-5xl mx-auto px-4 sm:px-8 py-4 flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setView('au-state-detail');
+                  setSelectedAuLeader(null);
+                }}
+                className="inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-2 transition-colors flex-shrink-0"
+                style={{
+                  background: 'rgba(255,255,255,0.12)',
+                  color: 'rgba(255,255,255,0.88)',
+                  border: '1px solid rgba(255,255,255,0.18)',
+                }}
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" />
+                <span>Back</span>
+              </button>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>
+                  {item.name} · {leaderTitle}
+                </p>
+                <h1 className="font-black text-white text-lg sm:text-xl leading-tight truncate">{leaderName}</h1>
+              </div>
+            </div>
+          </div>
+          <div className="max-w-5xl mx-auto px-4 sm:px-8 py-8">
+            <div className="bg-white rounded-2xl p-6 mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.10)' }}>
+              <div className="flex items-start gap-4">
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-black flex-shrink-0"
+                  style={{ background: '#003087' }}
+                >
+                  {getInitialsLocal(leaderName)}
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-gray-900">{leaderName}</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {leaderParty ? `${leaderParty} · ` : ''}
+                    {leaderSince ? `In office since ${leaderSince}` : leaderTitle}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div
+              className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-5 text-center"
+              role="status"
+            >
+              <p className="text-sm font-semibold text-amber-950">Official profile not loaded yet.</p>
+              <p className="text-xs text-amber-800/90 mt-1.5 leading-relaxed">
+                Only basic identity is shown until leader fields are verified from official government sources.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     const partyColors = {
       'ALP': '#CC0000', 'Labor': '#CC0000',
@@ -25338,7 +25429,67 @@ function App() {
     const total = (currentVotes.support || 0) + (currentVotes.oppose || 0);
     const pct   = total > 0 ? Math.round((currentVotes.support / total) * 100) : 50;
 
-    const getInitialsLocal = (name) => name ? name.split(' ').filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase() : '??';
+    if (useOfficial) {
+      return (
+        <div className="min-h-screen animate-fade-in" style={{ background: '#F0F4F8' }}>
+          <div className="sticky top-0 z-10" style={{ background: 'linear-gradient(135deg, #071322 0%, #0A1F48 100%)', paddingTop: 'max(env(safe-area-inset-top), 0px)' }}>
+            <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #C8A400, #F0C808, #C8A400)' }} />
+            <div className="max-w-5xl mx-auto px-4 sm:px-8 py-4 flex items-center gap-4">
+              <button
+                onClick={() => { setView('au-state-detail'); setSelectedAuLeader(null); }}
+                className="inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-2 transition-colors flex-shrink-0"
+                style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.88)', border: '1px solid rgba(255,255,255,0.18)' }}
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" /><span>Back</span>
+              </button>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] mb-0.5" style={{ color: '#93c5fd' }}>{item.name} · {leaderTitle}</p>
+                <h1 className="font-black text-white text-lg sm:text-xl leading-tight truncate">{leaderName}</h1>
+              </div>
+            </div>
+          </div>
+          <div className="max-w-5xl mx-auto px-4 sm:px-8 py-8">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/95 px-3 py-2.5 text-xs text-emerald-950 leading-snug mb-4 flex gap-2 items-start" role="status">
+              <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-emerald-700" aria-hidden />
+              <p>
+                <span className="font-semibold">Official source: </span>
+                Fields below are from government websites only.
+                {item.leader_profile_source_url ? (
+                  <> <a href={item.leader_profile_source_url} target="_blank" rel="noopener noreferrer" className="font-semibold underline">View source</a></>
+                ) : null}
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.10)' }}>
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-black" style={{ background: partyColor }}>{getInitialsLocal(leaderName)}</div>
+                <div>
+                  <h2 className="text-xl font-black text-gray-900">{leaderName}</h2>
+                  <p className="text-sm text-gray-600 mt-1">{leaderParty} · In office since {leaderSince}</p>
+                </div>
+              </div>
+              {leaderBio && <p className="text-sm text-gray-700 leading-relaxed">{leaderBio}</p>}
+            </div>
+            {(item.leader_office_contact || item.leader_office_address || item.officialWebsite) && (
+              <div className="bg-white rounded-2xl p-6 mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+                <h3 className="text-lg font-black text-gray-900 mb-3">Official contact</h3>
+                <div className="space-y-2 text-sm text-gray-700">
+                  {item.leader_office_contact && <p><span className="font-semibold">Contact:</span> {item.leader_office_contact}</p>}
+                  {item.leader_office_address && <p><span className="font-semibold">Address:</span> {item.leader_office_address}</p>}
+                  {item.officialWebsite && (
+                    <p><span className="font-semibold">Website:</span>{' '}
+                      <a href={item.officialWebsite} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline break-all">{item.officialWebsite}</a>
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            <p className="text-xs text-gray-500 text-center pb-4">
+              Official government source{item.leader_profile_fetched_at ? ` · fetched ${item.leader_profile_fetched_at.slice(0, 10)}` : ''}
+            </p>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="min-h-screen animate-fade-in" style={{ background: '#F0F4F8' }}>
@@ -25365,6 +25516,8 @@ function App() {
         </div>
 
         <div className="max-w-5xl mx-auto px-4 sm:px-8 py-8">
+
+          <SubnationalIllustrativeExplorerNote />
 
           {/* ── PROFILE CARD ─────────────────────────────────────────── */}
           <div className="bg-white rounded-2xl overflow-hidden mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.10)' }}>
@@ -25421,18 +25574,18 @@ function App() {
 
           {/* ── CONTACT ──────────────────────────────────────────────── */}
           <div className="bg-white rounded-2xl shadow-sm p-6 mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
-            <h3 className="text-lg font-black text-gray-900 mb-4">📧 Contact Information</h3>
+            <h3 className="text-lg font-black text-gray-900 mb-4">📧 Example contact (illustrative)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="rounded-xl p-4" style={{ background: `${partyColor}0d`, border: `1px solid ${partyColor}30` }}>
-                <p className="text-sm text-gray-600 mb-1 font-medium">Official Email</p>
+                <p className="text-sm text-gray-600 mb-1 font-medium">Example email</p>
                 <a href={`mailto:${email}`} className="font-semibold break-all text-sm" style={{ color: partyColor }}>{email}</a>
               </div>
               <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                <p className="text-sm text-gray-600 mb-1 font-medium">Office Phone</p>
+                <p className="text-sm text-gray-600 mb-1 font-medium">Example phone</p>
                 <a href={`tel:${phone}`} className="text-green-700 font-semibold text-sm">{phone}</a>
               </div>
               <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 md:col-span-2">
-                <p className="text-sm text-gray-600 mb-1 font-medium">Office Address</p>
+                <p className="text-sm text-gray-600 mb-1 font-medium">Example address</p>
                 <p className="text-gray-700 text-sm font-medium">{officeAddr}</p>
               </div>
             </div>
@@ -27168,9 +27321,15 @@ function App() {
     const isUSA = selectedCountry?.type === 'usa';
     const countryName = isUSA ? 'United States' : 'Canadian';
     const legislatureName = isUSA ? 'Congress' : 'Federal Parliament';
-    const memberCount = isUSA ? (congressMembers.length || 535) : (mps.length || 325);
+    const memberCount = isUSA ? usMembersHub : canadaMembersHub;
     const memberTitle = isUSA ? 'Members of Congress' : 'Members of Parliament';
     const legislativeBody = isUSA ? 'Bills' : 'Parliamentary Bills';
+    const caCommonsForLabel = sumDash?.memberCACommons ?? 338;
+    const caSenateForLabel = sumDash?.memberCASenate ?? 105;
+    const caBicameralFootnote =
+      sumDash?.memberCAParliament != null && (sumDash.memberCACommons == null || sumDash.memberCASenate == null)
+        ? `${sumDash.memberCAParliament} Parliamentarians`
+        : `${caCommonsForLabel} MPs · ${caSenateForLabel} Senators`;
     
     return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-8 animate-fade-in">
@@ -27263,7 +27422,7 @@ function App() {
               {isUSA ? `Explore ${memberCount} ${memberTitle} across all parties` : 'House of Commons and Senate — Canada\'s bicameral Parliament'}
             </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{isUSA ? `${memberCount} Members` : '338 MPs · 105 Senators'}</span>
+              <span>{isUSA ? `${memberCount} Members` : caBicameralFootnote}</span>
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
@@ -27367,7 +27526,7 @@ function App() {
               }
             </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>15 {isUSA ? 'Departments' : 'Ministries'}</span>
+              <span>{isUSA ? usDeptHubCount : caDeptHubCount} {isUSA ? 'Departments' : 'Ministries'}</span>
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
@@ -27390,7 +27549,12 @@ function App() {
               }
             </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{governmentContractsHubSubtitle(isUSA ? liveContracts.US : liveContracts.CA)}</span>
+              <span>
+                {governmentContractsHubSubtitle(
+                  isUSA ? liveContracts.US : liveContracts.CA,
+                  isUSA ? sumDash?.contractsUS : sumDash?.contractsCA,
+                )}
+              </span>
               <ChevronRight className="w-5 h-5" />
             </div>
           </div>
@@ -27888,6 +28052,9 @@ function App() {
     const CA_SENATE_PARTIES = ['ISG', 'Conservative', 'CSG', 'PSG', 'Non-affiliated'];
     const CA_MP_PARTIES = [...new Set(mps.map(m => m.party))].sort();
 
+    const caHoCHeadline = summaryStatsDashboard?.memberCACommons ?? (mps.length || 338);
+    const caSenateHeadline = summaryStatsDashboard?.memberCASenate ?? 105;
+
     const isSenate = caChamber === 'Senate';
     const sourceData = isSenate ? SENATORS_DATA : mps;
     const partyOptions = isSenate ? CA_SENATE_PARTIES : CA_MP_PARTIES;
@@ -27930,7 +28097,7 @@ function App() {
               <span className="text-4xl">🏛️</span>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 text-shadow">Federal Parliament</h1>
             </div>
-            <p className="text-gray-600 text-base sm:text-lg">Senate (105 senators) · House of Commons (338 MPs)</p>
+            <p className="text-gray-600 text-base sm:text-lg">Senate ({caSenateHeadline} senators) · House of Commons ({caHoCHeadline} MPs)</p>
             <div className="w-24 h-1 bg-gradient-to-r from-red-500 to-rose-500 mt-3 rounded-full" />
           </div>
 
@@ -27940,13 +28107,13 @@ function App() {
               onClick={() => { setCaChamber('Senate'); setCaPartyFilter('All'); setCaSearch(''); }}
               className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${caChamber === 'Senate' ? 'bg-red-600 text-white border-red-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-red-400'}`}
             >
-              Senate (105)
+              Senate ({caSenateHeadline})
             </button>
             <button
               onClick={() => { setCaChamber('House'); setCaPartyFilter('All'); setCaSearch(''); }}
               className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${caChamber === 'House' ? 'bg-red-600 text-white border-red-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-red-400'}`}
             >
-              House of Commons ({mps.length || 338})
+              House of Commons ({caHoCHeadline})
             </button>
           </div>
 
@@ -32817,6 +32984,7 @@ function App() {
   });
 
   const renderAuCategories = () => {
+    const auHoRMembers = summaryStatsDashboard?.memberAUHouse ?? 151;
     return (
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-green-50 p-4 sm:p-8 animate-fade-in">
         <div className="max-w-6xl mx-auto">
@@ -32874,7 +33042,7 @@ function App() {
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Federal Parliament</h2>
               <p className="text-gray-600 mb-3 text-sm sm:text-base">House of Representatives — explore all members across every party</p>
               <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>151 Members · Lower House</span>
+                <span>{auHoRMembers} Members · Lower House</span>
                 <ChevronRight className="w-5 h-5 text-green-700" />
               </div>
             </div>
@@ -32934,7 +33102,7 @@ function App() {
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Departments</h2>
               <p className="text-gray-600 mb-3 text-sm sm:text-base">Review department budgets, programs &amp; ministerial performance</p>
               <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>15 Federal Departments</span>
+                <span>{auDeptHubCount} Federal Departments</span>
                 <ChevronRight className="w-5 h-5 text-amber-700" />
               </div>
             </div>
@@ -32969,7 +33137,7 @@ function App() {
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Government Contracts</h2>
               <p className="text-gray-600 mb-3 text-sm sm:text-base">Federal procurement — follow the taxpayer money across defence, infrastructure &amp; technology</p>
               <div className="flex items-center justify-between text-sm text-gray-500">
-                <span className="font-medium">{governmentContractsHubSubtitle(liveContracts.AU)}</span>
+                <span className="font-medium">{governmentContractsHubSubtitle(liveContracts.AU, summaryStatsDashboard?.contractsAU)}</span>
                 <ChevronRight className="w-5 h-5 text-rose-700" />
               </div>
             </div>
@@ -34293,181 +34461,22 @@ function App() {
 
   // ── Enrich a governor/premier/lt-gov with deterministic generated data ───────
   const enrichLeader = (leader) => {
-    let h = 5381;
-    for (let i = 0; i < leader.name.length; i++) h = (Math.imul(h, 33) ^ leader.name.charCodeAt(i)) | 0;
-    h = Math.abs(h);
-    const rng = (min, max, salt) => {
-      const v = Math.abs((Math.imul(h + salt, 1664525) + 1013904223) | 0);
-      return min + (v % (max - min + 1));
-    };
-    const pick = (arr, salt) => arr[rng(0, arr.length - 1, salt)];
-    const L = { ...leader };
-
-    // Portfolios
-    const portfolioPool = [
-      'Economic Development', 'Healthcare & Public Health', 'Education & Training',
-      'Infrastructure', 'Environment & Energy', 'Public Safety & Emergency Management',
-      'Agriculture & Rural Affairs', 'Housing & Community Development', 'Finance & Budget',
-      'Justice & Legal Affairs', 'Labor & Employment', 'Natural Resources',
-      'Technology & Innovation', 'Veterans Affairs',
-      leader.isUSA ? 'National Guard Liaison' : 'Indigenous Relations',
-    ];
-    const numPortfolios = rng(4, 6, 1);
-    const seen = new Set();
-    L.portfolios = [];
-    for (let att = 0; L.portfolios.length < numPortfolios && att < 30; att++) {
-      const idx = rng(0, portfolioPool.length - 1, 2 + att);
-      if (!seen.has(idx)) { seen.add(idx); L.portfolios.push(portfolioPool[idx]); }
+    if (hasLiveOfficialLeaderProfile(leader)) {
+      return { ...leader, useOfficialProfileOnly: true };
     }
-
-    // Contact
-    const ac = rng(201, 989, 10);
-    const px = rng(200, 999, 11);
-    const ln = rng(1000, 9999, 12).toString().padStart(4, '0');
-    const slug = leader.region.toLowerCase().replace(/[^a-z]/g, '');
-    L.contact = {
-      phone:   `(${ac}) ${px}-${ln}`,
-      address: leader.isUSA
-        ? `State Capitol Building, Room ${rng(100, 650, 13)}, ${leader.region}`
-        : `Legislative Assembly, Room ${rng(100, 450, 13)}, ${leader.region}`,
-      website: leader.isUSA ? `governor.${slug}.gov` : `premier.${slug}.ca`,
-    };
-
-    // Legislative activity
-    L.legislativeActivity = {
-      year: 2024,
-      billsSigned:     rng(leader.isDeputy ? 5  : 18, leader.isDeputy ? 30 : 90, 20),
-      billsVetoed:     leader.isDeputy ? 0 : rng(0, 14, 21),
-      executiveOrders: rng(leader.isDeputy ? 0  :  3, leader.isDeputy ?  8 : 32, 22),
-    };
-
-    // Key decisions
-    const billPool = leader.isUSA ? [
-      { title: 'State Budget Appropriations Act',    desc: 'Annual budget allocating funds across all state departments and programs' },
-      { title: 'Infrastructure Investment Bill',      desc: 'Capital investment in roads, bridges, and public transit systems' },
-      { title: 'Education Funding Reform Act',        desc: 'Restructuring of public school funding formulas and teacher support' },
-      { title: 'Healthcare Access Expansion Act',     desc: 'Expanding Medicaid eligibility and rural clinic funding statewide' },
-      { title: 'Tax Reduction Initiative',            desc: 'Reduction of personal income tax rates for middle-income earners' },
-      { title: 'Environmental Protection Standards',  desc: 'New air and water quality emissions standards for industrial facilities' },
-      { title: 'Economic Development Zone Act',       desc: 'Designating enterprise zones with tax incentives for new businesses' },
-      { title: 'Workforce Development Program',       desc: 'Apprenticeship and vocational training expansion across the state' },
-      { title: 'Housing Affordability Act',           desc: 'Zoning reforms and subsidies for affordable housing construction' },
-      { title: 'Public Safety Omnibus Bill',          desc: 'Police funding, community programs, and criminal justice reform measures' },
-    ] : [
-      { title: 'Provincial Budget Act',               desc: 'Annual budget covering all provincial program expenditures and priorities' },
-      { title: 'Healthcare Services Improvement Act', desc: 'Funding for hospital infrastructure and primary care network expansion' },
-      { title: 'Education Reform Bill',               desc: 'Curriculum updates, teacher compensation and retention review' },
-      { title: 'Infrastructure Investment Plan',      desc: 'Provincial highways, transit, and rural broadband infrastructure expansion' },
-      { title: 'Environmental Assessment Act',        desc: 'New standards for industrial and resource sector environmental impact reviews' },
-      { title: 'Economic Diversification Strategy',   desc: 'Incentives to attract investment in technology and clean energy sectors' },
-      { title: 'Public Safety Legislation',           desc: 'First responder funding and integrated community safety programs' },
-      { title: 'Housing Strategy Act',                desc: 'Affordable housing targets and developer incentives for new construction' },
-      { title: 'Labour Standards Amendment',          desc: 'Minimum wage increase and worker protection measures review' },
-      { title: 'Carbon Reduction Framework',          desc: 'Provincial carbon pricing and clean energy transition plan and targets' },
-    ];
-    const usedBills = new Set();
-    L.keyDecisions = Array.from({ length: 3 }, (_, i) => {
-      let idx, att = 0;
-      do { idx = rng(0, billPool.length - 1, 30 + i * 5 + att); att++; } while (usedBills.has(idx) && att < 20);
-      usedBills.add(idx);
-      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const mo = pick(months, 31 + i * 5);
-      const yr = rng(2022, 2024, 32 + i * 5);
-      const action = (!leader.isDeputy && rng(0, 4, 33 + i * 5) === 0) ? 'Vetoed' : 'Signed';
-      return { ...billPool[idx], action, date: `${mo} ${yr}` };
-    });
-
-    // Financial disclosure
-    const sinceYear = parseInt(leader.since) || 2020;
-    const salary = leader.isUSA ? rng(95000, 214000, 40) : rng(185000, 360000, 40);
-    const initialWorth = rng(150000, 3800000, 41);
-    const growPct = rng(8, 185, 42);
-    L.financialDisclosure = {
-      electedYear: sinceYear,
-      salary,
-      initialWorth,
-      currentWorth: Math.round(initialWorth * (1 + growPct / 100)),
-      percentageIncrease: growPct,
-      assets: [
-        { type: pick(['Primary Residence', 'Investment Properties', 'Real Estate Portfolio'], 43), value: rng(200000, 1900000, 44) },
-        { type: pick(['Investment Portfolio', 'Retirement Accounts', 'Index Funds'],          45), value: rng(50000,   900000, 46) },
-        { type: pick(['Savings & Checking',  'Money Market Account',  'Business Interests'],  47), value: rng(10000,   280000, 48) },
-      ],
-    };
-
-    // Top donors (skipped for Crown/Federal Appointee roles)
-    const isCrown = leader.party === 'Federal Appointee' || leader.party === 'Crown Representative';
-    if (!isCrown) {
-      const donorPool = leader.isUSA ? [
-        { name: 'State Business Association',         sector: 'Business',     amount: rng(50000, 500000, 50) },
-        { name: 'Healthcare Industry PAC',            sector: 'Healthcare',   amount: rng(30000, 350000, 51) },
-        { name: 'Real Estate Development Fund',       sector: 'Real Estate',  amount: rng(25000, 280000, 52) },
-        { name: 'Energy Sector Coalition',            sector: 'Energy',       amount: rng(40000, 420000, 53) },
-        { name: 'Teachers Union PAC',                 sector: 'Education',    amount: rng(20000, 200000, 54) },
-        { name: 'Financial Services Industry Group',  sector: 'Finance',      amount: rng(35000, 380000, 55) },
-        { name: 'Agricultural Producers Alliance',    sector: 'Agriculture',  amount: rng(10000, 150000, 56) },
-      ] : [
-        { name: 'Provincial Business Council',        sector: 'Business',     amount: rng(50000, 400000, 50) },
-        { name: 'Healthcare Workers Union',           sector: 'Healthcare',   amount: rng(30000, 300000, 51) },
-        { name: 'Construction Industry Alliance',     sector: 'Construction', amount: rng(25000, 250000, 52) },
-        { name: 'Energy Companies Coalition',         sector: 'Energy',       amount: rng(40000, 380000, 53) },
-        { name: 'Teachers Federation',                sector: 'Education',    amount: rng(20000, 200000, 54) },
-        { name: 'Financial Services Association',     sector: 'Finance',      amount: rng(35000, 320000, 55) },
-        { name: 'Agricultural Producers Association', sector: 'Agriculture',  amount: rng(10000, 140000, 56) },
-      ];
-      const donorSeen = new Set();
-      const numDonors = rng(2, 3, 60);
-      L.topDonors = [];
-      for (let att = 0; L.topDonors.length < numDonors && att < 30; att++) {
-        const idx = rng(0, donorPool.length - 1, 61 + att);
-        if (!donorSeen.has(idx)) { donorSeen.add(idx); L.topDonors.push(donorPool[idx]); }
-      }
-    } else {
-      L.topDonors = [];
-    }
-
-    // Recent activity
-    const activities = leader.isUSA ? [
-      'Announced infrastructure funding package for state transportation network',
-      'Met with mayors to discuss regional housing crisis response plan',
-      'Signed executive order expanding rural broadband internet access',
-      'Issued emergency declaration following severe weather event',
-      'Launched workforce development initiative with community colleges',
-      'Hosted economic development summit with business and industry leaders',
-      'Released state climate action and clean energy transition plan',
-      'Appointed new cabinet secretary for health and human services',
-      'Signed small business tax relief and incentive package into law',
-      'Delivered annual State of the State address to the legislature',
-    ] : [
-      'Announced provincial healthcare expansion and hospital infrastructure funding',
-      'Met with First Nations leaders on land rights and resource sharing discussions',
-      'Tabled legislative priorities for the current parliamentary session',
-      'Signed memorandum of understanding with the federal government',
-      'Launched provincial skills training and apprenticeship initiative',
-      'Hosted interprovincial premiers and territorial leaders conference',
-      'Released provincial climate action and clean energy transition roadmap',
-      'Appointed new deputy minister for economic and regional development',
-      'Announced provincial affordable housing and rental assistance strategy',
-      'Addressed legislative assembly on provincial budget and fiscal priorities',
-    ];
-    const months2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const actSeen = new Set();
-    L.recentActivity = [];
-    for (let att = 0; L.recentActivity.length < 4 && att < 30; att++) {
-      const idx = rng(0, activities.length - 1, 70 + att);
-      if (!actSeen.has(idx)) {
-        actSeen.add(idx);
-        const mo = pick(months2, 71 + att);
-        const yr = rng(2023, 2024, 72 + att);
-        L.recentActivity.push({ description: activities[idx], date: `${mo} ${yr}` });
-      }
-    }
-    return L;
+    return { ...leader, leaderProfilePending: true };
   };
+
 
   const renderLeaderPanel = () => {
     if (!selectedLeader || !showLeaderPanel) return null;
     const leader = enrichLeader(selectedLeader);
+    const useOfficial = !!leader.useOfficialProfileOnly;
+    const profilePending = !!leader.leaderProfilePending;
+    const showTransparencyPilot =
+      useOfficial &&
+      leader.subnationalId &&
+      PILOT_LEADER_TRANSPARENCY_IDS.includes(leader.subnationalId);
     const partyColorMap = {
       'Republican': '#dc2626',            'Democratic': '#2563eb',
       'NDP': '#f97316',                   'Liberal': '#dc2626',
@@ -34517,6 +34526,44 @@ function App() {
           <div className="flex-1 overflow-y-auto">
             <div className="p-6 space-y-7">
 
+              {profilePending && (
+                <div
+                  className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-5 text-center"
+                  role="status"
+                >
+                  <p className="text-sm font-semibold text-amber-950">Official profile not loaded yet.</p>
+                  <p className="text-xs text-amber-800/90 mt-1.5 leading-relaxed">
+                    Only basic identity is shown until leader fields are verified from official government sources.
+                  </p>
+                </div>
+              )}
+
+              {useOfficial && (
+                <div
+                  className="rounded-lg border border-emerald-200 bg-emerald-50/95 px-3 py-2.5 text-xs text-emerald-950 leading-snug flex gap-2 items-start"
+                  role="status"
+                >
+                  <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-emerald-700" aria-hidden />
+                  <p>
+                    <span className="font-semibold">Official source: </span>
+                    Leader fields below are from government websites only.
+                    {leader.leader_profile_source_url ? (
+                      <>
+                        {' '}
+                        <a
+                          href={leader.leader_profile_source_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-semibold underline"
+                        >
+                          View source page
+                        </a>
+                      </>
+                    ) : null}
+                  </p>
+                </div>
+              )}
+
               {/* Bio */}
               {leader.bio && (
                 <section>
@@ -34527,6 +34574,69 @@ function App() {
                 </section>
               )}
 
+              {useOfficial && (leader.leader_office_contact || leader.leader_office_address || leader.officialWebsite) && (
+                <section>
+                  <p className="panel-section-label">Official contact</p>
+                  <div className="space-y-2">
+                    {leader.leader_office_contact && (
+                      <div className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                        <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">Contact</p>
+                          <p className="text-sm font-semibold text-green-700">{leader.leader_office_contact}</p>
+                        </div>
+                      </div>
+                    )}
+                    {leader.leader_office_address && (
+                      <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                        <div className="w-9 h-9 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Building2 className="w-4 h-4 text-orange-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">Address</p>
+                          <p className="text-sm font-medium text-gray-700">{leader.leader_office_address}</p>
+                        </div>
+                      </div>
+                    )}
+                    {leader.officialWebsite && (
+                      <div className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                        <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Globe className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 font-medium">Official website</p>
+                          <a
+                            href={leader.officialWebsite}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm font-semibold text-blue-600 break-all"
+                          >
+                            {leader.officialWebsite}
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {showTransparencyPilot &&
+                (leader.subnationalId === 'CA-ON' ? (
+                  <CaOnLeaderTransparencySections
+                    transparencyRow={subnationalLeaderTransparency}
+                    loading={subnationalLeaderTransparencyLoading}
+                  />
+                ) : (
+                  <SubnationalLeaderTransparencySections
+                    transparencyRow={subnationalLeaderTransparency}
+                    loading={subnationalLeaderTransparencyLoading}
+                  />
+                ))}
+
+              {false && (
+              <>
               {/* Cabinet Portfolios */}
               <section>
                 <p className="panel-section-label">Cabinet Portfolios &amp; Oversight Areas</p>
@@ -34542,14 +34652,14 @@ function App() {
 
               {/* Contact */}
               <section>
-                <p className="panel-section-label">Contact Information</p>
+                <p className="panel-section-label">Example contact (illustrative)</p>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
                     <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                       <MapPin className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 font-medium">Office Phone</p>
+                      <p className="text-xs text-gray-500 font-medium">Example phone</p>
                       <p className="text-sm font-semibold text-green-700">{leader.contact.phone}</p>
                     </div>
                   </div>
@@ -34558,7 +34668,7 @@ function App() {
                       <Building2 className="w-4 h-4 text-orange-600" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 font-medium">Official Address</p>
+                      <p className="text-xs text-gray-500 font-medium">Example address</p>
                       <p className="text-sm font-medium text-gray-700">{leader.contact.address}</p>
                     </div>
                   </div>
@@ -34567,7 +34677,7 @@ function App() {
                       <Globe className="w-4 h-4 text-blue-600" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 font-medium">Official Website</p>
+                      <p className="text-xs text-gray-500 font-medium">Example website</p>
                       <p className="text-sm font-semibold text-blue-600">{leader.contact.website}</p>
                     </div>
                   </div>
@@ -34620,45 +34730,40 @@ function App() {
               </section>
 
               {/* Financial Disclosure */}
-              {leader.name === 'Doug Ford'
-                ? <CaOnFinancialDisclosure />
-                : (
-                  <section>
-                    <p className="panel-section-label">Financial Disclosure — Since {leader.financialDisclosure.electedYear}</p>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
-                          <p className="text-xs text-gray-500 mb-1">Worth on Taking Office</p>
-                          <p className="text-base font-bold text-blue-700">{formatCurrency(leader.financialDisclosure.initialWorth)}</p>
-                        </div>
-                        <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
-                          <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
-                          <p className="text-base font-bold text-green-700">{formatCurrency(leader.financialDisclosure.currentWorth)}</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between">
-                          <span className="text-sm text-gray-700 font-medium">Annual Salary</span>
-                          <span className="font-bold text-amber-700">{formatCurrency(leader.financialDisclosure.salary)}</span>
-                        </div>
-                        <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 flex items-center justify-between">
-                          <span className="text-sm text-gray-700 font-medium">Net Worth Growth</span>
-                          <span className="font-bold text-purple-700">+{leader.financialDisclosure.percentageIncrease}%</span>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Declared Assets</p>
-                        {leader.financialDisclosure.assets.map((asset, i) => (
-                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                            <span className="text-sm text-gray-700">{asset.type}</span>
-                            <span className="text-sm font-bold text-gray-900">{formatCurrency(asset.value)}</span>
-                          </div>
-                        ))}
-                      </div>
+              <section>
+                <p className="panel-section-label">Financial Disclosure — Since {leader.financialDisclosure.electedYear}</p>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                      <p className="text-xs text-gray-500 mb-1">Worth on Taking Office</p>
+                      <p className="text-base font-bold text-blue-700">{formatCurrency(leader.financialDisclosure.initialWorth)}</p>
                     </div>
-                  </section>
-                )
-              }
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
+                      <p className="text-xs text-gray-500 mb-1">Current Net Worth</p>
+                      <p className="text-base font-bold text-green-700">{formatCurrency(leader.financialDisclosure.currentWorth)}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between">
+                      <span className="text-sm text-gray-700 font-medium">Annual Salary</span>
+                      <span className="font-bold text-amber-700">{formatCurrency(leader.financialDisclosure.salary)}</span>
+                    </div>
+                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 flex items-center justify-between">
+                      <span className="text-sm text-gray-700 font-medium">Net Worth Growth</span>
+                      <span className="font-bold text-purple-700">+{leader.financialDisclosure.percentageIncrease}%</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Declared Assets</p>
+                    {leader.financialDisclosure.assets.map((asset, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <span className="text-sm text-gray-700">{asset.type}</span>
+                        <span className="text-sm font-bold text-gray-900">{formatCurrency(asset.value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
 
               {/* Top Donors — hidden for Crown/Federal Appointee roles */}
               {!isCrown && leader.topDonors.length > 0 && (
@@ -34696,7 +34801,17 @@ function App() {
                 </div>
               </section>
 
-              <p className="text-center text-xs text-gray-400 pb-2">Illustrative data · figures are statistically modelled</p>
+              </>
+              )}
+
+              {useOfficial ? (
+                <p className="text-center text-xs text-gray-500 pb-2">
+                  Official government source
+                  {leader.leader_profile_fetched_at ? ` · fetched ${leader.leader_profile_fetched_at.slice(0, 10)}` : ''}
+                </p>
+              ) : profilePending ? (
+                <p className="text-center text-xs text-gray-500 pb-2">Official profile not loaded yet.</p>
+              ) : null}
             </div>
           </div>
         </div>
@@ -34705,8 +34820,8 @@ function App() {
   };
 
   const renderNotificationsPanel = () => {
-    const CANADA = { id: 1, name: 'Canada', flag: '🇨🇦', members: 338, type: 'canada' };
-    const USA    = { id: 2, name: 'United States', flag: '🇺🇸', members: 535, type: 'usa' };
+    const CANADA = { id: 1, name: 'Canada', flag: '🇨🇦', members: canadaMembersHub, type: 'canada' };
+    const USA    = { id: 2, name: 'United States', flag: '🇺🇸', members: usMembersHub, type: 'usa' };
 
     const navigateFromNotif = (n) => {
       setShowNotifications(false);
@@ -35594,6 +35709,10 @@ function App() {
                     🇺🇸 USA
                   </button>
                 </div>
+                <p className="text-[11px] text-gray-500 leading-snug mb-2" role="note">
+                  <span className="font-semibold text-gray-600">Note: </span>
+                  Labels may come from synced data or a built-in fallback list; the stored value is the region name you pick here.
+                </p>
                 <select
                   value={manualRegionValue}
                   onChange={(e) => setManualRegionValue(e.target.value)}
