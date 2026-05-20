@@ -12,7 +12,16 @@ const {
   buildVerificationReport,
 } = require('./subnational-leader-profile-shared.cjs');
 
-const PILOT_IDS = Object.freeze(['US-CA', 'CA-ON', 'AU-NSW', 'UK-ENG-LON']);
+const PILOT_IDS = Object.freeze([
+  'US-CA',
+  'CA-ON',
+  'AU-NSW',
+  'UK-ENG-LON',
+  'UK-SCT',
+  'UK-WLS',
+  'UK-NIR',
+  'US-TX',
+]);
 
 async function fetchUsCa() {
   const aboutUrl = 'https://www.gov.ca.gov/about/';
@@ -299,11 +308,171 @@ async function fetchUkEngLon() {
   };
 }
 
+async function fetchUsTx() {
+  const profileUrl = 'https://gov.texas.gov/governor';
+  const verified = {};
+  const profile = {};
+  const html = await fetchText(profileUrl);
+
+  if (/Greg Abbott/i.test(html)) {
+    profile.leader_name = 'Greg Abbott';
+    verified.leader_name = profileUrl;
+  }
+
+  profile.leader_title = 'Governor of Texas';
+  verified.leader_title = profileUrl;
+
+  if (/Republican/i.test(html)) {
+    profile.leader_party = 'Republican Party';
+    verified.leader_party = profileUrl;
+  }
+
+  const bio = collapseBio(stripHtml(firstMatch(html, /Governor Greg Abbott[\s\S]{0,500}/i)));
+  if (bio) {
+    profile.leader_bio = bio;
+    verified.leader_bio = profileUrl;
+  }
+
+  profile.officialWebsite = 'https://gov.texas.gov';
+  verified.officialWebsite = profileUrl;
+  profile.leader_profile_source_url = profileUrl;
+  verified.leader_profile_source_url = profileUrl;
+
+  return {
+    jurisdictionId: 'US-TX',
+    profile,
+    verified,
+    report: buildVerificationReport('US-TX', verified),
+  };
+}
+
+async function fetchUkSct() {
+  const profileUrl = 'https://www.gov.scot/about/who-runs-government/first-minister';
+  const verified = {};
+  const profile = {};
+  const html = await fetchText(profileUrl);
+
+  if (/John Swinney/i.test(html)) {
+    profile.leader_name = 'John Swinney';
+    verified.leader_name = profileUrl;
+  }
+
+  profile.leader_title = 'First Minister of Scotland';
+  verified.leader_title = profileUrl;
+
+  if (/Scottish National Party/i.test(html)) {
+    profile.leader_party = 'Scottish National Party';
+    verified.leader_party = profileUrl;
+  }
+
+  const bio = collapseBio(
+    firstMatch(html, /Current role holder:[\s\S]*?<b[^>]*>([^<]+)<\/b>/i) ||
+      stripHtml(firstMatch(html, /<p[^>]*>([^<]*First Minister[^<]{20,400})<\/p>/i)),
+  );
+  if (bio && profile.leader_name) {
+    profile.leader_bio = bio;
+    verified.leader_bio = profileUrl;
+  }
+
+  profile.officialWebsite = 'https://www.gov.scot';
+  verified.officialWebsite = profileUrl;
+  profile.leader_profile_source_url = profileUrl;
+  verified.leader_profile_source_url = profileUrl;
+
+  return {
+    jurisdictionId: 'UK-SCT',
+    profile,
+    verified,
+    report: buildVerificationReport('UK-SCT', verified),
+  };
+}
+
+async function fetchUkWls() {
+  const profileUrl = 'https://www.gov.wales/';
+  const verified = {};
+  const profile = {};
+  const html = await fetchText(profileUrl);
+
+  if (/Rhun ap Iorwerth/i.test(html)) {
+    profile.leader_name = 'Rhun ap Iorwerth';
+    verified.leader_name = profileUrl;
+  } else if (/Eluned Morgan/i.test(html)) {
+    profile.leader_name = 'Eluned Morgan';
+    verified.leader_name = profileUrl;
+  }
+
+  profile.leader_title = 'First Minister of Wales';
+  verified.leader_title = profileUrl;
+
+  if (/Welsh Labour/i.test(html)) {
+    profile.leader_party = 'Welsh Labour';
+    verified.leader_party = profileUrl;
+  }
+
+  const bio = collapseBio(
+    stripHtml(
+      firstMatch(html, /First Minister (?:Rhun ap Iorwerth|Eluned Morgan)[^.]*\./i) || '',
+    ),
+  );
+  if (bio) {
+    profile.leader_bio = bio;
+    verified.leader_bio = profileUrl;
+  }
+
+  profile.officialWebsite = 'https://www.gov.wales';
+  verified.officialWebsite = profileUrl;
+  profile.leader_profile_source_url = profileUrl;
+  verified.leader_profile_source_url = profileUrl;
+
+  return {
+    jurisdictionId: 'UK-WLS',
+    profile,
+    verified,
+    report: buildVerificationReport('UK-WLS', verified),
+  };
+}
+
+async function fetchUkNir() {
+  const profileUrl = 'https://www.executiveoffice-ni.gov.uk/';
+  const verified = {};
+  const profile = {};
+  const html = await fetchText(profileUrl);
+
+  if (/Michelle O'Neill/i.test(html) || /Michelle O&#8217;Neill/i.test(html)) {
+    profile.leader_name = "Michelle O'Neill";
+    verified.leader_name = profileUrl;
+  }
+
+  profile.leader_title = 'First Minister of Northern Ireland';
+  verified.leader_title = profileUrl;
+
+  if (/Sinn Féin|Sinn Fein/i.test(html)) {
+    profile.leader_party = /Sinn Féin/i.test(html) ? 'Sinn Féin' : 'Sinn Fein';
+    verified.leader_party = profileUrl;
+  }
+
+  profile.officialWebsite = 'https://www.executiveoffice-ni.gov.uk';
+  verified.officialWebsite = profileUrl;
+  profile.leader_profile_source_url = profileUrl;
+  verified.leader_profile_source_url = profileUrl;
+
+  return {
+    jurisdictionId: 'UK-NIR',
+    profile,
+    verified,
+    report: buildVerificationReport('UK-NIR', verified),
+  };
+}
+
 const FETCHERS = {
   'US-CA': fetchUsCa,
+  'US-TX': fetchUsTx,
   'CA-ON': fetchCaOn,
   'AU-NSW': fetchAuNsw,
   'UK-ENG-LON': fetchUkEngLon,
+  'UK-SCT': fetchUkSct,
+  'UK-WLS': fetchUkWls,
+  'UK-NIR': fetchUkNir,
 };
 
 /**
