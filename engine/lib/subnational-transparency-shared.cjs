@@ -209,12 +209,17 @@ function industryFromNtee(subsection, classification) {
 
 function hasEconomicPayload(doc) {
   if (!doc || typeof doc !== 'object') return false;
+  if (doc.unemployment_latest_rate != null && Number.isFinite(Number(doc.unemployment_latest_rate))) {
+    return true;
+  }
   const keys = [
     'budget_distribution',
     'spending_vs_budget',
     'crime_rate',
     'crime_rate_trends',
     'unemployment_rate',
+    'unemployment_series_monthly',
+    'unemployment_series_rolling_3_month',
     'gdp_growth',
     'poverty_rate',
     'homelessness',

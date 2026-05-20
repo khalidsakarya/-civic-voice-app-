@@ -38,6 +38,8 @@ export default function EconomicModalMetricChart({
   formatCrimeAxisTick,
   unempData,
   unempKeys,
+  unempChartUsesPeriod,
+  unempFrequency,
   gdpDataM,
   povDataM,
   homelessData,
@@ -141,18 +143,29 @@ export default function EconomicModalMetricChart({
     );
   }
 
-  if (chartKey === 'unemployment' && unempData.length > 0 && unempKeys.length >= 2) {
+  if (chartKey === 'unemployment' && unempData.length > 0 && unempKeys.length >= 1) {
+    const periodKey = unempChartUsesPeriod ? 'period' : 'year';
+    const yWidth = unempChartUsesPeriod ? 72 : 45;
+    const unempDesc = unempChartUsesPeriod
+      ? unempFrequency === 'rolling_3_month'
+        ? 'Rolling 3-month unemployment rate (%) — official regional series'
+        : 'Monthly unemployment rate (%) — official series'
+      : `Annual rate (%) vs ${isUSA ? 'US' : 'CA'} national average`;
     return (
-      <Card title="Unemployment Rate" desc={`Annual rate (%) vs ${isUSA ? 'US' : 'CA'} national average`}>
-        <ResponsiveContainer width="100%" height={220}>
+      <Card title="Unemployment Rate" desc={unempDesc}>
+        <ResponsiveContainer width="100%" height={unempChartUsesPeriod ? 280 : 220}>
           <BarChart layout="vertical" data={unempData} margin={MARGIN}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-            <YAxis dataKey="year" type="category" width={45} tick={TICK} />
+            <YAxis dataKey={periodKey} type="category" width={yWidth} tick={TICK} />
             <XAxis type="number" tick={TICK} tickFormatter={(v) => `${v}%`} domain={[0, 'dataMax + 1']} />
             <Tooltip formatter={(v) => [`${v}%`, '']} contentStyle={TT} />
-            <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+            {unempKeys.length > 1 ? (
+              <Legend verticalAlign="bottom" wrapperStyle={LEG} />
+            ) : null}
             <Bar dataKey={unempKeys[0]} fill="#6366f1" radius={[0, 3, 3, 0]} maxBarSize={18} />
-            <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={18} />
+            {unempKeys[1] ? (
+              <Bar dataKey={unempKeys[1]} fill="#9ca3af" radius={[0, 3, 3, 0]} maxBarSize={18} />
+            ) : null}
           </BarChart>
         </ResponsiveContainer>
         <button
