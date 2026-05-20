@@ -5,6 +5,7 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { applyCaOnLeaderTransparencyFields } from '../utils/caOnLeaderTransparency';
+import { applyUsCaLeaderTransparencyFields } from '../utils/usCaLeaderTransparency';
 import { applyLeaderTransparencyFieldsFromFirestore } from '../utils/subnationalLeaderTransparency';
 
 export const SUBNATIONAL_LEADER_TRANSPARENCY_COLLECTION = 'subnational_leader_transparency';
@@ -24,6 +25,9 @@ export async function fetchSubnationalLeaderTransparency(jurisdictionId) {
     applyLeaderTransparencyFieldsFromFirestore(rec, raw);
     if (id === 'CA-ON') {
       applyCaOnLeaderTransparencyFields(rec, raw);
+    }
+    if (id === 'US-CA') {
+      applyUsCaLeaderTransparencyFields(rec, raw);
     }
     return rec;
   } catch (err) {

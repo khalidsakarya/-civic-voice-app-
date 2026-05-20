@@ -1,23 +1,23 @@
 {
-  "generatedAt": "2026-05-18T19:04:40.617Z",
+  "generatedAt": "2026-05-20T00:57:47.477Z",
   "mode": "write",
   "jurisdictions": [
     {
-      "id": "CA-ON",
+      "id": "US-CA",
       "transparency_live": true,
       "error": null,
       "sections": [
         {
           "section": "salary",
           "loaded": true,
-          "count": 4,
-          "source": "https://www.ontario.ca/public-sector-salary-disclosure/2024/all-sectors-and-seconded-employees"
+          "count": 6,
+          "source": "https://www.calhr.ca.gov/california-citizens-compensation-commission/cccc-salaries/"
         },
         {
           "section": "financial_disclosure",
-          "loaded": false,
-          "count": 0,
-          "source": null
+          "loaded": true,
+          "count": 10,
+          "source": "https://form700search.fppc.ca.gov/"
         },
         {
           "section": "assets",
@@ -27,15 +27,15 @@
         },
         {
           "section": "stock_holdings",
-          "loaded": false,
-          "count": 0,
-          "source": null
+          "loaded": true,
+          "count": 6,
+          "source": "https://form700search.fppc.ca.gov/"
         },
         {
           "section": "campaign_finance",
           "loaded": true,
-          "count": 2,
-          "source": "https://finances.elections.on.ca/en/contributions?entityNames=Ford%2C%20Doug&fromYear=2018&toYear=2024"
+          "count": 8,
+          "source": "https://powersearch.sos.ca.gov/advanced.php"
         },
         {
           "section": "lobbying_disclosures",
@@ -52,14 +52,19 @@
         {
           "section": "recent_official_activity",
           "loaded": true,
-          "count": 8,
-          "source": "https://news.ontario.ca/newsroom/en"
+          "count": 4,
+          "source": "https://www.gov.ca.gov/newsroom/"
         }
       ],
       "field_sources": {
-        "salary": "https://www.ontario.ca/public-sector-salary-disclosure/2024/all-sectors-and-seconded-employees",
-        "campaign_finance": "https://finances.elections.on.ca/en/contributions?entityNames=Ford%2C%20Doug&fromYear=2018&toYear=2024",
-        "recent_official_activity": "https://news.ontario.ca/newsroom/en"
+        "salary": "https://www.calhr.ca.gov/california-citizens-compensation-commission/cccc-salaries/",
+        "financial_disclosure": "https://form700search.fppc.ca.gov/",
+        "declared_assets": "https://form700search.fppc.ca.gov/",
+        "stock_holdings": "https://form700search.fppc.ca.gov/",
+        "gifts_hospitality": "https://form700search.fppc.ca.gov/",
+        "campaign_finance": "https://powersearch.sos.ca.gov/advanced.php",
+        "lobbying_records": "http://cal-access.sos.ca.gov/Lobbying/",
+        "recent_official_activity": "https://www.gov.ca.gov/newsroom/"
       }
     }
   ]
