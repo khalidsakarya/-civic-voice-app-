@@ -21,6 +21,14 @@ const US_GOVERNOR_HEADLINE_MANUAL_REVIEW_FS_FIELDS = Object.freeze([
   'leader_since',
 ]);
 
+/** @param {Record<string, unknown>} fsRow */
+function formatSubnationalAreaKm2(fsRow) {
+  if (!fsRow || typeof fsRow !== 'object') return '';
+  const km2 = Number(fsRow.area_km2);
+  if (!Number.isFinite(km2) || km2 <= 0 || km2 > 2_000_000) return '';
+  return `${Math.round(km2).toLocaleString('en-US')} km²`;
+}
+
 /** Canada / Australia province-state detail notice: keys from Firestore `needs_manual_review` (via normalized primary list). */
 const CA_AU_SUBNATIONAL_MANUAL_REVIEW_NOTICE_ORDER = Object.freeze([
   'leader_name',
@@ -35,8 +43,7 @@ const CA_AU_SUBNATIONAL_MANUAL_REVIEW_NOTICE_ORDER = Object.freeze([
  */
 function caAuSubnationalManualReviewNoticeFields(fsRow) {
   if (!fsRow || typeof fsRow !== 'object') return [];
-  const primary = fsRow.needs_manual_review_primary_field_keys;
-  const raw = Array.isArray(primary) ? primary : fsRow.needs_manual_review_fields;
+  const raw = fsRow.needs_manual_review_primary_field_keys;
   if (!Array.isArray(raw) || !raw.length) return [];
   const present = new Set(raw.map((x) => String(x).trim()).filter(Boolean));
   const buckets = new Set();
@@ -79,8 +86,8 @@ function applyCaAuSubnationalManualReviewNoticeFields(out, fsRow) {
  */
 function usGovernorHeadlineManualReviewFields(fsRow) {
   if (!fsRow || typeof fsRow !== 'object') return [];
-  const primary = fsRow.needs_manual_review_primary_field_keys;
-  const raw = Array.isArray(primary) ? primary : fsRow.needs_manual_review_fields;
+  if (fsRow.leader_profile_live === true) return [];
+  const raw = fsRow.needs_manual_review_primary_field_keys;
   if (!Array.isArray(raw) || !raw.length) return [];
   const present = new Set(raw.map((x) => String(x).trim()).filter(Boolean));
   const out = [];
@@ -180,6 +187,9 @@ export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
       ? String(fsRow.population_display).trim()
       : '';
   if (pop) out.population = pop;
+
+  const areaStr = formatSubnationalAreaKm2(fsRow);
+  if (areaStr) out.area = areaStr;
 
   const ln =
     fsRow.leader_name != null && String(fsRow.leader_name).trim()
@@ -323,6 +333,9 @@ export function buildProvincialExplorerRowFromFirestoreWithHardcodedFallback(
         : '';
     if (pop) out.population = pop;
     else if (hardcoded.population) out.population = hardcoded.population;
+    const areaStr = formatSubnationalAreaKm2(fsRow);
+    if (areaStr) out.area = areaStr;
+    else if (hardcoded.area) out.area = hardcoded.area;
   } else {
     out.population =
       fsRow.population_display != null && String(fsRow.population_display).trim()

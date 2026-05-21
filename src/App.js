@@ -36,6 +36,8 @@ import {
 } from './utils/subnationalTransparencyData';
 import {
   hasLiveOfficialLeaderProfile,
+  shouldHideSubnationalIllustrativeExplorerNote,
+  explorerLegislatureUsesHardcodedFallback,
   leaderProfilePanelPayloadFromExplorerItem,
 } from './utils/subnationalLeaderProfile';
 import { fetchSubnationalLeaderTransparency } from './firestore/fetchSubnationalLeaderTransparency';
@@ -94,6 +96,19 @@ function SubnationalIllustrativeExplorerNote() {
         Some explorer or narrative fields may still be illustrative or filling in from sync. Where Firestore already has engine-sourced values, those are shown as usual. Bios, deputy lines, legislature charts, and UK regional copy may update as official data lands.
       </p>
     </div>
+  );
+}
+
+/** Small note beside a section that still uses seed/demo content. */
+function SubnationalSectionFallbackNote({ children }) {
+  if (!children) return null;
+  return (
+    <p
+      className="text-xs text-amber-900/90 bg-amber-50/90 border border-amber-200/80 rounded-lg px-3 py-2 mb-3 leading-relaxed"
+      role="note"
+    >
+      {children}
+    </p>
   );
 }
 
@@ -13338,7 +13353,16 @@ function App() {
               </div>
               <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2 text-sm text-gray-500">
                 <span>Capital: <strong className="text-gray-700">{item.capital}</strong></span>
-                {!isUSA && item.population && <span>Population: <strong className="text-gray-700">{item.population}</strong></span>}
+                {item.population && (
+                  <span>
+                    Population: <strong className="text-gray-700">{item.population}</strong>
+                  </span>
+                )}
+                {item.area && (
+                  <span>
+                    Area: <strong className="text-gray-700">{item.area}</strong>
+                  </span>
+                )}
                 <span>Party: <strong className="text-gray-700">{leaderParty}</strong></span>
               </div>
             </div>
@@ -13373,7 +13397,9 @@ function App() {
               />
             )}
 
-          <SubnationalIllustrativeExplorerNote />
+          {!shouldHideSubnationalIllustrativeExplorerNote(item) && (
+            <SubnationalIllustrativeExplorerNote />
+          )}
 
           {/* Leadership — two cards side by side */}
           <h2 className="text-base font-bold text-gray-600 uppercase tracking-wide mb-3 px-1">Leadership</h2>
@@ -13428,13 +13454,10 @@ function App() {
 
           {/* Legislature Seat Distribution */}
           {(() => {
-            const leg =
-              item.legislature &&
-              item.legislature.parties &&
-              Array.isArray(item.legislature.parties) &&
-              item.legislature.parties.length
-                ? item.legislature
-                : getLegislatureData(item.name, isUSA);
+            const legislatureIsSeedFallback = explorerLegislatureUsesHardcodedFallback(item);
+            const leg = legislatureIsSeedFallback
+              ? getLegislatureData(item.name, isUSA)
+              : item.legislature;
             const legislatureLabel =
               typeof item.legislatureName === 'string' && item.legislatureName.trim()
                 ? item.legislatureName.trim()
@@ -13444,6 +13467,11 @@ function App() {
                 <div className="px-5 pt-5 pb-2">
                   <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Legislature Composition</h2>
                   <p className="text-xs text-gray-400 mt-0.5">{legislatureLabel} &nbsp;·&nbsp; {leg.totalSeats} total seats</p>
+                  {legislatureIsSeedFallback && (
+                    <SubnationalSectionFallbackNote>
+                      Party seat counts are orientation-only seed data until official legislature breakdown is synced for this jurisdiction.
+                    </SubnationalSectionFallbackNote>
+                  )}
                 </div>
                 {/* Mobile: compact party stat squares */}
                 <div className="sm:hidden px-4 pt-2 pb-4 grid grid-cols-2 gap-1.5">
