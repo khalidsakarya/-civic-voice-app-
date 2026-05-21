@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-20T00:57:47.477Z",
+  "generatedAt": "2026-05-21T00:13:56.500Z",
   "mode": "write",
   "jurisdictions": [
     {
@@ -16,7 +16,7 @@
         {
           "section": "financial_disclosure",
           "loaded": true,
-          "count": 10,
+          "count": 11,
           "source": "https://form700search.fppc.ca.gov/"
         },
         {
@@ -28,7 +28,7 @@
         {
           "section": "stock_holdings",
           "loaded": true,
-          "count": 6,
+          "count": 5,
           "source": "https://form700search.fppc.ca.gov/"
         },
         {
@@ -52,7 +52,7 @@
         {
           "section": "recent_official_activity",
           "loaded": true,
-          "count": 4,
+          "count": 3,
           "source": "https://www.gov.ca.gov/newsroom/"
         }
       ],
@@ -63,7 +63,7 @@
         "stock_holdings": "https://form700search.fppc.ca.gov/",
         "gifts_hospitality": "https://form700search.fppc.ca.gov/",
         "campaign_finance": "https://powersearch.sos.ca.gov/advanced.php",
-        "lobbying_records": "http://cal-access.sos.ca.gov/Lobbying/",
+        "lobbying_records": "https://sos.ca.gov/campaign-lobbying/helpful-resources/raw-data-campaign-finance-and-lobbying-activity",
         "recent_official_activity": "https://www.gov.ca.gov/newsroom/"
       }
     }

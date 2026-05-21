@@ -7,6 +7,10 @@ export const US_CA_JURISDICTION_ID = 'US-CA';
 export const FRAMEWORK_ONLY_NOTE =
   'Official Form 700 ranges available; individual values require FPPC filing review.';
 
+export const NOT_DISCLOSED_LABEL = 'Not disclosed in official filing.';
+
+export const REPORTED_HOLDINGS_LABEL = 'Reported holdings / value ranges (Form 700)';
+
 export const US_CA_TRANSPARENCY_SECTIONS = Object.freeze([
   { key: 'salary', label: 'Salary' },
   { key: 'financial_disclosure', label: 'Financial disclosure' },
@@ -182,15 +186,18 @@ export function buildUsCaTransparencySummaryCards(row) {
 
   if (usCaTransparencySectionLoaded('lobbying_records', row)) {
     const lr = row.lobbying_records;
+    const n = lr?.row_count ?? lr?.rows?.length ?? 0;
+    const noTarget =
+      lr?.status === 'no_official_target_specific_lobbying_records_found' || n === 0;
     cards.push({
       id: 'lobbying_records',
       title: 'Lobbying',
-      lines: [
-        lr?.status === 'official_data_requires_manual_review'
-          ? 'Cal-Access portal review required'
-          : trim(lr?.status) || 'See Cal-Access',
-        'No automated Governor-specific rows',
-      ],
+      lines: noTarget
+        ? ['No official target-specific lobbying records found']
+        : [
+            `${n} Governor-target registration${n === 1 ? '' : 's'}`,
+            'Cal-Access LEMP_CD (official SOS export)',
+          ],
     });
   }
 
@@ -205,27 +212,27 @@ export function buildUsCaTransparencySummaryCards(row) {
 
   if (usCaTransparencySectionLoaded('declared_assets', row)) {
     const da = row.declared_assets;
-    const n = da?.income_interests?.length || da?.items?.length || 0;
+    const n = da?.row_count ?? da?.rows?.length ?? 0;
     cards.push({
       id: 'declared_assets',
       title: 'Declared assets',
       lines:
         n > 0
-          ? [`${n} official interest${n === 1 ? '' : 's'} with FPPC ranges`]
-          : [FRAMEWORK_ONLY_NOTE],
+          ? [`${n} reported holding${n === 1 ? '' : 's'} (Form 700 schedules)`]
+          : [da?.status === 'no_official_records_found' ? 'No official records found' : FRAMEWORK_ONLY_NOTE],
     });
   }
 
   if (usCaTransparencySectionLoaded('stock_holdings', row)) {
     const sh = row.stock_holdings;
-    const n = sh?.items?.length || 0;
+    const n = sh?.row_count ?? sh?.rows?.length ?? 0;
     cards.push({
       id: 'stock_holdings',
       title: 'Stock holdings',
       lines:
         n > 0
-          ? ['Official FPPC range disclosures only']
-          : [FRAMEWORK_ONLY_NOTE],
+          ? [`${n} investment / entity row${n === 1 ? '' : 's'} — value ranges only`]
+          : [sh?.status === 'no_official_records_found' ? 'No official records found' : FRAMEWORK_ONLY_NOTE],
     });
   }
 

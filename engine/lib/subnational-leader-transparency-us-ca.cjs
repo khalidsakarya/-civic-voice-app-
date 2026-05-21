@@ -13,6 +13,8 @@ const {
   parsePressLinksFromHtml,
   finalizePayload,
 } = require('./subnational-leader-transparency-shared.cjs');
+const { buildReportedAssetRows } = require('./fppc-form700-rows.cjs');
+const { fetchGovernorLobbyingRows } = require('./calaccess-lobbying-extract.cjs');
 
 const JURISDICTION_ID = 'US-CA';
 const LEADER_FIRST = 'Gavin';
@@ -250,32 +252,42 @@ function extractScheduleE(scheduleE) {
   }));
 }
 
-function extractScheduleCIncome(scheduleC) {
-  if (!scheduleC?.incomeSections) return [];
-  return scheduleC.incomeSections.map((s) => ({
-    source: s.nameOfSource || '',
-    business_activity: s.businessActivity || '',
-    consideration: s.considerationOther || s.consideration || '',
-    gross_income_range: formatFppcRange(s.grossIncomeReceived),
-    gross_income_range_official: s.grossIncomeReceived || null,
-    business_position: s.businessPosition || '',
-  }));
-}
+async function mergeGovernorSchedules(latestGov) {
+  const scheduleQueries = [
+    { key: 'schedule_a1', field: 'ScheduleA1Exists' },
+    { key: 'schedule_a2', field: 'ScheduleA2Exists' },
+    { key: 'schedule_b', field: 'ScheduleBExists' },
+    { key: 'schedule_c', field: 'ScheduleCIncomeExists' },
+    { key: 'schedule_d', field: 'ScheduleDExists' },
+    { key: 'schedule_e', field: 'ScheduleEExists' },
+  ];
 
-function extractScheduleA2(scheduleA2) {
-  if (!scheduleA2) return { items: [], comments: [] };
-  const comments = (scheduleA2.pageComments || []).map((c) => c.comment).filter(Boolean);
-  const items = [];
-  for (const section of scheduleA2.sections || []) {
-    for (const asset of section.assets || section.investments || []) {
-      items.push({
-        description: asset.description || asset.investmentName || asset.name || 'Investment',
-        value_range: formatFppcRange(asset.value || asset.fairMarketValue),
-        value_range_official: asset.value || asset.fairMarketValue || null,
-      });
+  const merged = {};
+  const targetId = latestGov?.indexID;
+
+  for (const { key, field } of scheduleQueries) {
+    try {
+      const resp = await fppcSearch([{ queryField: field }]);
+      let doc =
+        (resp.documents || []).find((d) => d.indexID === targetId) ||
+        pickGovernorFiling(resp.documents) ||
+        (resp.documents || [])[0];
+      const schedules = doc?.filingData?.schedules;
+      if (!schedules) continue;
+      for (const [sk, val] of Object.entries(schedules)) {
+        const norm = sk.replace(/^schedule/i, 'schedule').replace('scheduleA1', 'scheduleA1');
+        merged[norm] = val;
+      }
+    } catch {
+      // continue
     }
   }
-  return { items, comments };
+
+  if (latestGov?.filingData?.schedules) {
+    Object.assign(merged, latestGov.filingData.schedules);
+  }
+
+  return merged;
 }
 
 async function fetchFppcDisclosure() {
@@ -285,30 +297,14 @@ async function fetchFppcDisclosure() {
   const latestYear =
     latestGov?.filingPositions?.find((p) => /governor/i.test(p.position))?.filingYear || 2025;
 
-  const scheduleQueries = [
-    { key: 'schedule_a2', field: 'ScheduleA2Exists' },
-    { key: 'schedule_c', field: 'ScheduleCIncomeExists' },
-    { key: 'schedule_d', field: 'ScheduleDExists' },
-    { key: 'schedule_e', field: 'ScheduleEExists' },
-  ];
+  const schedules = await mergeGovernorSchedules(latestGov);
+  const assetBlock = buildReportedAssetRows(schedules, {
+    source_url: SOURCES.fppcSearch,
+    filing_year: latestYear,
+  });
 
-  const scheduleData = {};
-  for (const { key, field } of scheduleQueries) {
-    try {
-      const resp = await fppcSearch([{ queryField: field }]);
-      const doc = pickGovernorFiling(resp.documents) || (resp.documents || [])[0];
-      if (doc?.filingData?.schedules) {
-        scheduleData[key] = doc.filingData.schedules;
-      }
-    } catch {
-      // continue
-    }
-  }
-
-  const gifts = extractScheduleD(scheduleData.schedule_d?.scheduleD);
-  const travel = extractScheduleE(scheduleData.schedule_e?.scheduleE);
-  const income = extractScheduleCIncome(scheduleData.schedule_c?.scheduleC);
-  const a2 = extractScheduleA2(scheduleData.schedule_a2?.scheduleA2);
+  const gifts = extractScheduleD(schedules.scheduleD);
+  const travel = extractScheduleE(schedules.scheduleE);
 
   const financial_disclosure = {
     status: 'filed',
@@ -318,35 +314,29 @@ async function fetchFppcDisclosure() {
       ? `Filed ${trim(latestGov.filingInfo?.filedDate || '').slice(0, 10)} as ${latestGov.filingPositions?.find((p) => /governor/i.test(p.position))?.filingType || 'Annual'}`
       : 'Filed — see FPPC Form 700 search for all positions held',
     regulatory_framework: 'Political Reform Act — Statement of Economic Interests (Form 700)',
-    portal_note:
-      'Schedule values are reported in official FPPC value ranges on Form 700; individual PDF review available via FPPC search.',
+    portal_note: assetBlock.disclosure_note,
     filings,
+    reported_holdings_row_count: assetBlock.row_count,
     data_status: 'official_fppc_form_700_search',
     source_url: SOURCES.fppcSearch,
-    needs_manual_review: ['specific_holdings_pdf'],
+    needs_manual_review: [],
   };
 
   const declared_assets = {
-    framework:
-      'Form 700 Schedule A-2 reports business entities, trusts, and investments (including blind trusts).',
-    blind_trust_note: a2.comments.length
-      ? a2.comments[0]
-      : 'Blind trust investments reported on Schedule A-2 (see FPPC filing PDF for full detail).',
-    items: a2.items,
-    income_interests: income,
-    status: a2.items.length || income.length ? 'filed_with_official_ranges' : 'official_data_requires_manual_review',
-    source_url: SOURCES.fppcSearch,
-    needs_manual_review: a2.items.length ? [] : ['schedule_a2_detail'],
+    status: assetBlock.rows.length ? 'filed' : 'no_official_records_found',
+    rows: assetBlock.rows,
+    page_comments: assetBlock.page_comments,
+    row_count: assetBlock.row_count,
+    source_url: assetBlock.source_url,
   };
 
   const stock_holdings = {
-    framework:
-      'Governor-held investments are reported on Form 700 Schedules A-1/A-2 using FPPC fair market value ranges, not ticker-level public listings.',
-    newsom_specific_note: a2.comments.join(' ') || '',
-    items: a2.items,
-    status: a2.items.length ? 'official_ranges_only' : 'official_data_requires_manual_review',
-    source_url: SOURCES.fppcSearch,
-    needs_manual_review: ['individual_securities_pdf'],
+    status: assetBlock.stock_rows.length ? 'filed' : 'no_official_records_found',
+    rows: assetBlock.stock_rows,
+    row_count: assetBlock.stock_rows.length,
+    disclosure_note:
+      'Official Form 700 reports holdings and fair market value ranges only — not stock purchases, tickers, or share counts unless explicitly stated on the filing.',
+    source_url: assetBlock.source_url,
   };
 
   const gifts_hospitality = {
@@ -471,33 +461,24 @@ async function fetchCampaignFinance() {
 }
 
 async function fetchLobbyingRecords() {
-  try {
-    const html = await fetchText(SOURCES.calAccessLobbying, 150000);
-    if (/incapsula|robots|noindex/i.test(html) && html.length < 5000) {
-      return {
-        lobbying_records: {
-          status: 'official_data_requires_manual_review',
-          note: 'Cal-Access lobbying filings are published on the Secretary of State portal; automated retrieval is blocked from this environment.',
-          portal: SOURCES.calAccessLobbying,
-          raw_data_url: SOURCES.calAccessRawData,
-          source_url: SOURCES.calAccessLobbying,
-        },
-        sourceUrl: SOURCES.calAccessLobbying,
-      };
-    }
-  } catch {
-    // fall through
-  }
+  const skipDownload = process.env.SKIP_CALACCESS_LOBBY_DOWNLOAD === '1';
+  const lobby = await fetchGovernorLobbyingRows({ maxRows: 250, skipDownload });
+
+  const lobbying_records = {
+    status: lobby.status,
+    rows: lobby.rows || [],
+    row_count: lobby.row_count || (lobby.rows || []).length,
+    note: lobby.note || '',
+    portal: SOURCES.calAccessLobbying,
+    raw_data_url: SOURCES.calAccessRawData,
+    source_url: lobby.source_url || SOURCES.calAccessRawData,
+    data_as_of: lobby.data_as_of || '',
+    error: lobby.error || '',
+  };
 
   return {
-    lobbying_records: {
-      status: 'official_data_requires_manual_review',
-      note: 'Lobbying activity is filed in Cal-Access (Secretary of State). No Governor-specific lobbying rows were machine-fetched.',
-      portal: SOURCES.calAccessLobbying,
-      raw_data_url: SOURCES.calAccessRawData,
-      source_url: SOURCES.calAccessRawData,
-    },
-    sourceUrl: SOURCES.calAccessRawData,
+    lobbying_records,
+    sourceUrl: lobbying_records.source_url,
   };
 }
 

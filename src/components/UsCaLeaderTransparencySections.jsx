@@ -3,6 +3,8 @@ import { ChevronDown } from 'lucide-react';
 import {
   US_CA_TRANSPARENCY_SECTIONS,
   FRAMEWORK_ONLY_NOTE,
+  NOT_DISCLOSED_LABEL,
+  REPORTED_HOLDINGS_LABEL,
   buildUsCaTransparencySummaryCards,
   usCaAccordionSubtitle,
   usCaNeedsManualReview,
@@ -46,14 +48,83 @@ function ResultRow({ label, value }) {
   );
 }
 
-function BulletList({ items }) {
-  if (!Array.isArray(items) || !items.length) return null;
+function cell(v) {
+  const s = v == null ? '' : String(v).trim();
+  return s || '—';
+}
+
+function ReportedHoldingsTable({ rows, caption }) {
+  if (!Array.isArray(rows) || !rows.length) return null;
   return (
-    <ul className="mt-2 space-y-1.5 list-disc list-outside ml-4 text-xs text-gray-700 leading-relaxed">
-      {items.map((item, i) => (
-        <li key={i}>{typeof item === 'string' ? item : JSON.stringify(item)}</li>
-      ))}
-    </ul>
+    <div className="mt-2">
+      {caption && <p className="text-xs font-semibold text-gray-800 mb-1.5">{caption}</p>}
+      <div className="overflow-x-auto -mx-1 px-1">
+        <table className="w-full min-w-[640px] text-[11px] sm:text-xs border border-gray-200 rounded-lg overflow-hidden">
+          <thead className="bg-gray-100 text-left">
+            <tr>
+              <th className="px-2 py-1.5 font-semibold text-gray-700">Asset / entity</th>
+              <th className="px-2 py-1.5 font-semibold text-gray-700">Sched.</th>
+              <th className="px-2 py-1.5 font-semibold text-gray-700">Type</th>
+              <th className="px-2 py-1.5 font-semibold text-gray-700">Value range</th>
+              <th className="px-2 py-1.5 font-semibold text-gray-700">Income range</th>
+              <th className="px-2 py-1.5 font-semibold text-gray-700">Trust / entity</th>
+              <th className="px-2 py-1.5 font-semibold text-gray-700">Pg</th>
+              <th className="px-2 py-1.5 font-semibold text-gray-700">Ticker</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 bg-white">
+            {rows.map((r, i) => (
+              <tr key={`${r.schedule}-${r.asset_or_entity_name}-${r.page_number}-${i}`} className="align-top">
+                <td className="px-2 py-1.5 text-gray-900 max-w-[10rem]">{cell(r.asset_or_entity_name)}</td>
+                <td className="px-2 py-1.5 text-gray-700 whitespace-nowrap">{cell(r.schedule)}</td>
+                <td className="px-2 py-1.5 text-gray-600 max-w-[8rem]">{cell(r.asset_type)}</td>
+                <td className="px-2 py-1.5 text-gray-800 whitespace-nowrap">{cell(r.value_range)}</td>
+                <td className="px-2 py-1.5 text-gray-800 whitespace-nowrap">{cell(r.income_range)}</td>
+                <td className="px-2 py-1.5 text-gray-600 max-w-[8rem]">{cell(r.trust_entity_name)}</td>
+                <td className="px-2 py-1.5 text-gray-500">{r.page_number != null ? r.page_number : '—'}</td>
+                <td className="px-2 py-1.5 text-gray-500">{cell(r.ticker)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[10px] text-gray-500 mt-1.5 leading-relaxed">
+        Share counts, exact tickers, and purchase amounts: {NOT_DISCLOSED_LABEL} Transaction dates only
+        when shown on the official Form 700 filing.
+      </p>
+    </div>
+  );
+}
+
+function LobbyingRecordsTable({ rows }) {
+  if (!Array.isArray(rows) || !rows.length) return null;
+  return (
+    <div className="mt-2 overflow-x-auto -mx-1 px-1">
+      <table className="w-full min-w-[640px] text-[11px] sm:text-xs border border-gray-200 rounded-lg overflow-hidden">
+        <thead className="bg-gray-100 text-left">
+          <tr>
+            <th className="px-2 py-1.5 font-semibold text-gray-700">Lobbyist / firm</th>
+            <th className="px-2 py-1.5 font-semibold text-gray-700">Client</th>
+            <th className="px-2 py-1.5 font-semibold text-gray-700">Target</th>
+            <th className="px-2 py-1.5 font-semibold text-gray-700">Issue</th>
+            <th className="px-2 py-1.5 font-semibold text-gray-700">Amount</th>
+            <th className="px-2 py-1.5 font-semibold text-gray-700">Period</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100 bg-white">
+          {rows.map((r, i) => (
+            <tr key={`${r.lobbyist_or_firm}-${r.target_office_or_person}-${i}`} className="align-top">
+              <td className="px-2 py-1.5 text-gray-900 max-w-[8rem]">{cell(r.lobbyist_or_firm)}</td>
+              <td className="px-2 py-1.5 text-gray-700 max-w-[8rem]">{cell(r.client_employer)}</td>
+              <td className="px-2 py-1.5 text-gray-800 max-w-[8rem]">{cell(r.target_office_or_person)}</td>
+              <td className="px-2 py-1.5 text-gray-600 max-w-[8rem]">{cell(r.issue_area)}</td>
+              <td className="px-2 py-1.5 text-gray-500 whitespace-nowrap">{cell(r.amount_paid)}</td>
+              <td className="px-2 py-1.5 text-gray-600 whitespace-nowrap">{cell(r.reporting_period)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -138,23 +209,31 @@ function DetailSalary({ row }) {
   );
 }
 
-function parseFinancialDisclosureSummary(fd) {
+function parseFinancialDisclosureSummary(fd, row) {
   if (!fd || typeof fd !== 'object') return null;
+  const holdingCount =
+    fd.reported_holdings_row_count ??
+    row?.declared_assets?.row_count ??
+    row?.declared_assets?.rows?.length ??
+    0;
   return {
     status: fd.status === 'filed' ? 'Filed' : String(fd.status || 'See FPPC'),
     latestYear: fd.latest_filing_year != null ? String(fd.latest_filing_year) : '—',
     form: 'Form 700 (Statement of Economic Interests)',
     publicValues: 'Official FPPC value ranges (not exact dollar amounts)',
-    newsomSpecific: usCaNeedsManualReview(fd)
-      ? 'Requires FPPC filing PDF review'
-      : 'See FPPC search for schedules',
+    newsomSpecific:
+      holdingCount > 0
+        ? `${holdingCount} reported holding rows from official FPPC electronic filing`
+        : usCaNeedsManualReview(fd)
+          ? 'Requires FPPC filing review'
+          : 'See FPPC search for schedules',
   };
 }
 
 function DetailFinancialDisclosure({ row }) {
   const fd = row?.financial_disclosure;
   const src = usCaSourceUrl(fd) || row?.field_sources?.financial_disclosure;
-  const summary = parseFinancialDisclosureSummary(fd);
+  const summary = parseFinancialDisclosureSummary(fd, row);
 
   return (
     <div className="pt-3 space-y-3">
@@ -212,40 +291,34 @@ function DetailFinancialDisclosure({ row }) {
 function DetailDeclaredAssets({ row }) {
   const da = row?.declared_assets;
   const src = usCaSourceUrl(da);
+  const rows = da?.rows || [];
+  const pageComments = da?.page_comments || [];
+
   return (
     <div className="pt-3 space-y-2">
-      {da?.framework && <p className="text-xs text-gray-700 leading-relaxed">{da.framework}</p>}
-      {da?.blind_trust_note && (
-        <p className="text-xs text-gray-600 italic leading-relaxed">{da.blind_trust_note}</p>
+      <p className="text-xs text-gray-700 leading-relaxed">{REPORTED_HOLDINGS_LABEL}</p>
+      {rows.length > 0 ? (
+        <ReportedHoldingsTable rows={rows} caption={`${rows.length} official Form 700 row(s)`} />
+      ) : (
+        <p className="text-xs text-gray-600 italic">
+          {da?.status === 'no_official_records_found'
+            ? 'No official records found in FPPC Form 700 search for this filing.'
+            : 'Official rows not loaded yet.'}
+        </p>
       )}
-      {Array.isArray(da?.income_interests) && da.income_interests.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-gray-800 mb-1">Income (Schedule C ranges)</p>
-          <ul className="space-y-2">
-            {da.income_interests.map((it, i) => (
-              <li key={i} className="text-xs border border-gray-200 rounded-lg p-2.5 bg-gray-50">
-                <p className="font-medium text-gray-900">{it.source}</p>
-                {it.business_activity && <p className="text-gray-600">{it.business_activity}</p>}
-                {it.gross_income_range && (
-                  <p className="text-gray-800 mt-0.5">Gross income: {it.gross_income_range}</p>
-                )}
+      {pageComments.length > 0 && (
+        <details className="rounded-lg border border-gray-200 bg-gray-50/80 mt-2">
+          <summary className="text-xs font-medium text-gray-700 px-3 py-2 cursor-pointer">
+            Filing page comments ({pageComments.length})
+          </summary>
+          <ul className="px-3 pb-2 space-y-1 text-xs text-gray-600">
+            {pageComments.map((c, i) => (
+              <li key={i}>
+                Page {c.page}: {c.comment}
               </li>
             ))}
           </ul>
-        </div>
-      )}
-      {Array.isArray(da?.items) && da.items.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-gray-800 mb-1">Investments (Schedule A-2)</p>
-          <ul className="space-y-1.5">
-            {da.items.map((it, i) => (
-              <li key={i} className="text-xs text-gray-700">
-                {it.description}
-                {it.value_range ? ` — ${it.value_range}` : ''}
-              </li>
-            ))}
-          </ul>
-        </div>
+        </details>
       )}
       {usCaNeedsManualReview(da) && frameworkNote()}
       {sourceLink(src, 'Search FPPC Form 700')}
@@ -256,23 +329,24 @@ function DetailDeclaredAssets({ row }) {
 function DetailStockHoldings({ row }) {
   const sh = row?.stock_holdings;
   const src = usCaSourceUrl(sh);
+  const rows = sh?.rows || [];
+
   return (
     <div className="pt-3 space-y-2">
-      {sh?.framework && <p className="text-xs text-gray-700 leading-relaxed">{sh.framework}</p>}
-      {sh?.newsom_specific_note && (
-        <p className="text-xs text-gray-500 italic leading-relaxed">{sh.newsom_specific_note}</p>
+      {sh?.disclosure_note && (
+        <p className="text-xs text-gray-600 leading-relaxed">{sh.disclosure_note}</p>
       )}
-      {Array.isArray(sh?.items) && sh.items.length > 0 ? (
-        <ul className="space-y-1.5">
-          {sh.items.map((it, i) => (
-            <li key={i} className="text-xs text-gray-700">
-              {it.description}
-              {it.value_range ? ` — ${it.value_range}` : ''}
-            </li>
-          ))}
-        </ul>
+      {rows.length > 0 ? (
+        <ReportedHoldingsTable
+          rows={rows}
+          caption={`${rows.length} investment / entity row(s) from Form 700 (not stock purchases)`}
+        />
       ) : (
-        <p className="text-xs text-gray-600">No machine-readable individual security listings; see Form 700 PDF.</p>
+        <p className="text-xs text-gray-600 italic">
+          {sh?.status === 'no_official_records_found'
+            ? 'No investment schedule rows in the official FPPC filing data.'
+            : 'No investment rows loaded.'}
+        </p>
       )}
       {usCaNeedsManualReview(sh) && frameworkNote()}
       {sourceLink(src, 'Search FPPC Form 700')}
@@ -375,13 +449,36 @@ function DetailCampaignFinance({ row }) {
 function DetailLobbyingRecords({ row }) {
   const lr = row?.lobbying_records;
   const src = usCaSourceUrl(lr);
+  const rows = lr?.rows || [];
+  const noTarget =
+    lr?.status === 'no_official_target_specific_lobbying_records_found' || rows.length === 0;
+
   return (
     <div className="pt-3 space-y-2">
-      {lr?.note && <p className="text-xs text-gray-700 leading-relaxed">{lr.note}</p>}
+      {lr?.data_as_of && (
+        <p className="text-xs text-gray-500">Data: {lr.data_as_of}</p>
+      )}
+      {noTarget && !lr?.error ? (
+        <p className="text-xs text-gray-800 font-medium">
+          No official target-specific lobbying records found.
+        </p>
+      ) : (
+        <>
+          {lr?.note && <p className="text-xs text-gray-700 leading-relaxed">{lr.note}</p>}
+          <LobbyingRecordsTable rows={rows} />
+        </>
+      )}
       {lr?.status === 'official_data_requires_manual_review' && (
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          Lobbying filings are published in Cal-Access; automated fetch was not available from this
-          environment.
+          {lr.error
+            ? `Cal-Access export could not be loaded: ${lr.error}`
+            : 'Lobbying filings are published in Cal-Access; automated fetch was not available from this environment.'}
+        </p>
+      )}
+      {rows.length > 0 && (
+        <p className="text-[10px] text-gray-500 leading-relaxed">
+          Payment amounts are reported on separate Cal-Access lobbying payment filings when not
+          shown in LEMP_CD contract registrations.
         </p>
       )}
       {sourceLink(lr?.portal, 'Cal-Access lobbying')}
