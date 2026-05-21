@@ -48,6 +48,31 @@ export function applyLeaderProfileFieldsFromFirestore(out, fsRow) {
 }
 
 /**
+ * Hide the generic provincial/state explorer illustrative banner when official data is live.
+ * US-CA: hide when governor profile is synced from official sources.
+ *
+ * @param {Record<string, unknown>|null|undefined} item Explorer row (merged Firestore + seed)
+ * @returns {boolean}
+ */
+export function shouldHideSubnationalIllustrativeExplorerNote(item) {
+  if (!item || typeof item !== 'object') return false;
+  if (item.subnationalId === 'US-CA' && hasLiveOfficialLeaderProfile(item)) return true;
+  return false;
+}
+
+/**
+ * Legislature chart is still the hardcoded seed breakdown (not Firestore party seats).
+ *
+ * @param {Record<string, unknown>|null|undefined} item
+ * @returns {boolean}
+ */
+export function explorerLegislatureUsesHardcodedFallback(item) {
+  if (!item || typeof item !== 'object') return true;
+  const parties = item.legislature?.parties;
+  return !(Array.isArray(parties) && parties.length > 0);
+}
+
+/**
  * @param {Record<string, unknown>|null|undefined} item Explorer detail row
  */
 export function leaderProfilePanelPayloadFromExplorerItem(item) {
