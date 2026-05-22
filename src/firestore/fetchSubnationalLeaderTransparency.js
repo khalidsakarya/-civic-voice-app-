@@ -6,6 +6,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { applyCaOnLeaderTransparencyFields } from '../utils/caOnLeaderTransparency';
 import { applyUsCaLeaderTransparencyFields } from '../utils/usCaLeaderTransparency';
+import { applyAuNswLeaderTransparencyFields } from '../utils/auNswLeaderTransparency';
+import { applyUkLonLeaderTransparencyFields } from '../utils/ukLonLeaderTransparency';
 import { applyLeaderTransparencyFieldsFromFirestore } from '../utils/subnationalLeaderTransparency';
 
 export const SUBNATIONAL_LEADER_TRANSPARENCY_COLLECTION = 'subnational_leader_transparency';
@@ -28,6 +30,12 @@ export async function fetchSubnationalLeaderTransparency(jurisdictionId) {
     }
     if (id === 'US-CA') {
       applyUsCaLeaderTransparencyFields(rec, raw);
+    }
+    if (id === 'AU-NSW') {
+      applyAuNswLeaderTransparencyFields(rec, raw);
+    }
+    if (id === 'UK-ENG-LON') {
+      applyUkLonLeaderTransparencyFields(rec, raw);
     }
     return rec;
   } catch (err) {

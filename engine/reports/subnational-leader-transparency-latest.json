@@ -1,23 +1,23 @@
 {
-  "generatedAt": "2026-05-21T00:13:56.500Z",
+  "generatedAt": "2026-05-22T01:03:14.587Z",
   "mode": "write",
   "jurisdictions": [
     {
-      "id": "US-CA",
+      "id": "AU-NSW",
       "transparency_live": true,
       "error": null,
       "sections": [
         {
           "section": "salary",
           "loaded": true,
-          "count": 6,
-          "source": "https://www.calhr.ca.gov/california-citizens-compensation-commission/cccc-salaries/"
+          "count": 4,
+          "source": "https://www.parliament.nsw.gov.au/members/Documents/LA%20Members%20Salaries%20%26%20Allowances%20July%202025.pdf"
         },
         {
           "section": "financial_disclosure",
           "loaded": true,
-          "count": 11,
-          "source": "https://form700search.fppc.ca.gov/"
+          "count": 7,
+          "source": "https://www.parliament.nsw.gov.au/la/papers/Pages/tabled-paper-details.aspx?pk=191919"
         },
         {
           "section": "assets",
@@ -29,13 +29,13 @@
           "section": "stock_holdings",
           "loaded": true,
           "count": 5,
-          "source": "https://form700search.fppc.ca.gov/"
+          "source": "https://www.parliament.nsw.gov.au/tp/files/191919/2024-25_Register%20of%20Disclosures%20by%20Members%20of%20the%20Legislative%20Assembly%20_Volume%201.pdf"
         },
         {
           "section": "campaign_finance",
-          "loaded": true,
-          "count": 8,
-          "source": "https://powersearch.sos.ca.gov/advanced.php"
+          "loaded": false,
+          "count": 0,
+          "source": null
         },
         {
           "section": "lobbying_disclosures",
@@ -52,19 +52,81 @@
         {
           "section": "recent_official_activity",
           "loaded": true,
-          "count": 3,
-          "source": "https://www.gov.ca.gov/newsroom/"
+          "count": 8,
+          "source": "https://www.nsw.gov.au/media-releases?ministers=The%20Premier"
         }
       ],
       "field_sources": {
-        "salary": "https://www.calhr.ca.gov/california-citizens-compensation-commission/cccc-salaries/",
-        "financial_disclosure": "https://form700search.fppc.ca.gov/",
-        "declared_assets": "https://form700search.fppc.ca.gov/",
-        "stock_holdings": "https://form700search.fppc.ca.gov/",
-        "gifts_hospitality": "https://form700search.fppc.ca.gov/",
-        "campaign_finance": "https://powersearch.sos.ca.gov/advanced.php",
-        "lobbying_records": "https://sos.ca.gov/campaign-lobbying/helpful-resources/raw-data-campaign-finance-and-lobbying-activity",
-        "recent_official_activity": "https://www.gov.ca.gov/newsroom/"
+        "salary": "https://www.parliament.nsw.gov.au/members/Documents/LA%20Members%20Salaries%20%26%20Allowances%20July%202025.pdf",
+        "financial_disclosure": "https://www.parliament.nsw.gov.au/la/papers/Pages/tabled-paper-details.aspx?pk=191919",
+        "declared_assets": "https://www.parliament.nsw.gov.au/tp/files/191919/2024-25_Register%20of%20Disclosures%20by%20Members%20of%20the%20Legislative%20Assembly%20_Volume%201.pdf",
+        "stock_holdings": "https://www.parliament.nsw.gov.au/tp/files/191919/2024-25_Register%20of%20Disclosures%20by%20Members%20of%20the%20Legislative%20Assembly%20_Volume%201.pdf",
+        "lobbying_records": "https://www.lobbying.nsw.gov.au/",
+        "recent_official_activity": "https://www.nsw.gov.au/media-releases?ministers=The%20Premier"
+      }
+    },
+    {
+      "id": "UK-ENG-LON",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": true,
+          "count": 7,
+          "source": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/register-of-interests"
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": true,
+          "count": 5,
+          "source": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/register-of-interests"
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": true,
+          "count": 80,
+          "source": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/gifts-hospitality"
+        },
+        {
+          "section": "recent_official_activity",
+          "loaded": true,
+          "count": 8,
+          "source": "https://www.london.gov.uk/media-centre/mayors-press-releases"
+        }
+      ],
+      "field_sources": {
+        "gifts_hospitality": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/gifts-hospitality",
+        "conflict_disclosures": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/gifts-hospitality",
+        "financial_disclosure": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/register-of-interests",
+        "declared_assets": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/register-of-interests",
+        "stock_holdings": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/register-of-interests",
+        "lobbying_records": "https://www.london.gov.uk/who-we-are/governance-and-spending/decisions-and-governance/meetings-and-decisions",
+        "recent_official_activity": "https://www.london.gov.uk/media-centre/mayors-press-releases"
       }
     }
   ]

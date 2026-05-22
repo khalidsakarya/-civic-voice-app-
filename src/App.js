@@ -45,6 +45,8 @@ import { PILOT_LEADER_TRANSPARENCY_IDS } from './utils/subnationalLeaderTranspar
 import SubnationalLeaderTransparencySections from './components/SubnationalLeaderTransparencySections';
 import CaOnLeaderTransparencySections from './components/CaOnLeaderTransparencySections';
 import UsCaLeaderTransparencySections from './components/UsCaLeaderTransparencySections';
+import AuNswLeaderTransparencySections from './components/AuNswLeaderTransparencySections';
+import UkLonLeaderTransparencySections from './components/UkLonLeaderTransparencySections';
 import EconomicModalMetricChart from './components/EconomicModalMetricChart';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
 import {
@@ -34659,6 +34661,16 @@ function App() {
                   />
                 ) : leader.subnationalId === 'US-CA' ? (
                   <UsCaLeaderTransparencySections
+                    transparencyRow={subnationalLeaderTransparency}
+                    loading={subnationalLeaderTransparencyLoading}
+                  />
+                ) : leader.subnationalId === 'AU-NSW' ? (
+                  <AuNswLeaderTransparencySections
+                    transparencyRow={subnationalLeaderTransparency}
+                    loading={subnationalLeaderTransparencyLoading}
+                  />
+                ) : leader.subnationalId === 'UK-ENG-LON' ? (
+                  <UkLonLeaderTransparencySections
                     transparencyRow={subnationalLeaderTransparency}
                     loading={subnationalLeaderTransparencyLoading}
                   />
