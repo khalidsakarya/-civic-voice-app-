@@ -10208,6 +10208,33 @@ function App() {
     );
   };
 
+  // ── News & Announcements (Canada) ────────────────────────────────────────────
+
+  const renderNewsCanada = () => (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-4xl mx-auto">
+        <button
+          onClick={() => setView('government-levels')}
+          className="mb-6 button-primary text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant"
+        >
+          <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Canada</span>
+        </button>
+        <div className="flex items-center gap-4 mb-8">
+          <span className="text-5xl">📢</span>
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">News &amp; Announcements</h1>
+            <p className="text-gray-500 mt-1">Latest government announcements with cost, impact, and your vote</p>
+          </div>
+        </div>
+        <div className="card-gradient rounded-2xl shadow-elegant-lg p-10 text-center border-2 border-white/50">
+          <div className="text-6xl mb-4">🚧</div>
+          <h2 className="text-2xl font-bold text-gray-700 mb-3">Coming Soon</h2>
+          <p className="text-gray-500 text-lg">Real-time government announcements with cost analysis</p>
+        </div>
+      </div>
+    </div>
+  );
+
   // ── Waste Tracker ────────────────────────────────────────────────────────────
 
   const renderWasteTracker = () => {
@@ -12665,6 +12692,23 @@ function App() {
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
+
+            {/* News & Announcements — Canada only */}
+            {!isUSA && !isAustralia && !isUK && (
+              <div
+                onClick={() => setView('news-canada')}
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
+                style={{ animationDelay: '0.25s' }}
+              >
+                <div className="text-red-600 mb-4 text-4xl leading-none">📢</div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">News &amp; Announcements</h2>
+                <p className="text-gray-600 mb-4 text-sm">Latest government announcements with cost, impact, and your vote</p>
+                <div className="flex items-center gap-2 text-red-600 font-semibold text-sm">
+                  <span>See Latest News</span>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
+            )}
 
             {/* Tax Calculator — Canada + USA */}
             {!isAustralia && !isUK && (
@@ -36145,6 +36189,7 @@ function App() {
       {view === 'au-contract-detail' && selectedAuContract && renderAuContractDetail()}
       {view === 'au-departments' && renderAuDepartments()}
       {view === 'au-department-detail' && selectedAuDepartment && renderAuDepartmentDetail()}
+      {view === 'news-canada' && renderNewsCanada()}
       {view === 'waste-tracker' && renderWasteTracker()}
       
       {/* Riding selector modal */}
