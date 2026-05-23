@@ -1976,7 +1976,10 @@ function App() {
   const [firestoreVoteCounts, setFirestoreVoteCounts] = useState({});
   const [newsCanadaItems, setNewsCanadaItems] = useState([]);
   const [newsCanadaLoading, setNewsCanadaLoading] = useState(false);
-  const [newsCanadaVotes, setNewsCanadaVotes] = useState({});
+  const [newsCanadaVotes, setNewsCanadaVotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cv_news_votes') || '{}'); } catch (_) { return {}; }
+  });
+  const [newsVoteCounts, setNewsVoteCounts] = useState({});
   const [newsNotifStatus, setNewsNotifStatus] = useState(() => {
     const stored = localStorage.getItem('cvNewsNotifStatus');
     if (stored) return stored;
@@ -10311,9 +10314,7 @@ function App() {
       return `$${Number(cost).toLocaleString('en-CA')} CAD`;
     };
 
-    const handleVote = (itemId, vote) => {
-      setNewsCanadaVotes(prev => ({ ...prev, [itemId]: prev[itemId] === vote ? null : vote }));
-    };
+    const pct = (n, total) => total > 0 ? Math.round((n / total) * 100) : 0;
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 sm:p-6 lg:p-8">
@@ -10403,6 +10404,8 @@ function App() {
               const cost = fmtCostCAD(item.cost_cad);
               const impactScore = Math.min(10, Math.max(1, Number(item.impact_score) || 5));
               const sourceUrl = item.source_url || 'https://pm.gc.ca/en/news';
+              const counts = newsVoteCounts[item.id] || { support: 0, concerned: 0, oppose: 0 };
+              const totalVotes = (counts.support || 0) + (counts.concerned || 0) + (counts.oppose || 0);
 
               return (
                 <div key={item.id} className="card-gradient rounded-2xl shadow-elegant-lg border-2 border-white/50 overflow-hidden">
@@ -10470,28 +10473,32 @@ function App() {
                     )}
                   </div>
 
-                  {/* Vote bar + source */}
+                  {/* Vote + counts footer */}
                   <div className="border-t border-gray-100 bg-gray-50/60 px-6 py-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
+                    {/* Buttons row */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-semibold text-gray-500">Your vote:</span>
                         <button
-                          onClick={() => handleVote(item.id, 'support')}
+                          onClick={() => submitNewsVote(item.id, 'support')}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${userVote === 'support' ? 'bg-green-600 text-white border-green-500 shadow' : 'bg-white text-green-700 border-green-300 hover:bg-green-50'}`}
                         >
-                          <ThumbsUp className="w-3.5 h-3.5" /> Support
+                          <ThumbsUp className="w-3.5 h-3.5" />
+                          Support {userVote === 'support' && counts.support > 0 ? `· ${counts.support.toLocaleString()}` : ''}
                         </button>
                         <button
-                          onClick={() => handleVote(item.id, 'concerned')}
+                          onClick={() => submitNewsVote(item.id, 'concerned')}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${userVote === 'concerned' ? 'bg-amber-500 text-white border-amber-400 shadow' : 'bg-white text-amber-600 border-amber-300 hover:bg-amber-50'}`}
                         >
-                          <MinusCircle className="w-3.5 h-3.5" /> Concerned
+                          <MinusCircle className="w-3.5 h-3.5" />
+                          Concerned {userVote === 'concerned' && counts.concerned > 0 ? `· ${counts.concerned.toLocaleString()}` : ''}
                         </button>
                         <button
-                          onClick={() => handleVote(item.id, 'oppose')}
+                          onClick={() => submitNewsVote(item.id, 'oppose')}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${userVote === 'oppose' ? 'bg-red-600 text-white border-red-500 shadow' : 'bg-white text-red-700 border-red-300 hover:bg-red-50'}`}
                         >
-                          <ThumbsDown className="w-3.5 h-3.5" /> Oppose
+                          <ThumbsDown className="w-3.5 h-3.5" />
+                          Oppose {userVote === 'oppose' && counts.oppose > 0 ? `· ${counts.oppose.toLocaleString()}` : ''}
                         </button>
                       </div>
                       <a
@@ -10504,6 +10511,43 @@ function App() {
                         Source (pm.gc.ca)
                       </a>
                     </div>
+
+                    {/* Community vote counts + percentage bars */}
+                    {totalVotes > 0 && (
+                      <div className="pt-3 border-t border-gray-100">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Community</span>
+                          <span className="text-xs text-gray-400">{totalVotes.toLocaleString()} {totalVotes === 1 ? 'vote' : 'votes'}</span>
+                        </div>
+                        {/* Segmented bar */}
+                        <div className="flex rounded-full overflow-hidden h-2.5 gap-px mb-2">
+                          {pct(counts.support, totalVotes) > 0 && (
+                            <div style={{ width: `${pct(counts.support, totalVotes)}%`, background: '#16a34a' }} className="transition-all duration-500" />
+                          )}
+                          {pct(counts.concerned, totalVotes) > 0 && (
+                            <div style={{ width: `${pct(counts.concerned, totalVotes)}%`, background: '#f59e0b' }} className="transition-all duration-500" />
+                          )}
+                          {pct(counts.oppose, totalVotes) > 0 && (
+                            <div style={{ width: `${pct(counts.oppose, totalVotes)}%`, background: '#dc2626' }} className="transition-all duration-500" />
+                          )}
+                        </div>
+                        {/* Legend */}
+                        <div className="flex items-center gap-4 flex-wrap">
+                          <span className="text-xs text-green-700 font-medium flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
+                            Support {pct(counts.support, totalVotes)}% <span className="text-gray-400 font-normal">({(counts.support || 0).toLocaleString()})</span>
+                          </span>
+                          <span className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
+                            Concerned {pct(counts.concerned, totalVotes)}% <span className="text-gray-400 font-normal">({(counts.concerned || 0).toLocaleString()})</span>
+                          </span>
+                          <span className="text-xs text-red-600 font-medium flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
+                            Oppose {pct(counts.oppose, totalVotes)}% <span className="text-gray-400 font-normal">({(counts.oppose || 0).toLocaleString()})</span>
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -17719,9 +17763,64 @@ function App() {
     }
   };
 
+  const fetchNewsVoteCounts = async () => {
+    try {
+      const snap = await getDocs(query(collection(db, 'news_vote_counts'), where('country', '==', 'CA')));
+      const counts = {};
+      snap.forEach(d => { counts[d.id] = d.data(); });
+      setNewsVoteCounts(counts);
+    } catch (err) {
+      console.warn('[NewsVotes] fetch counts failed:', err.message);
+    }
+  };
+
+  const submitNewsVote = async (itemId, newVote) => {
+    const prevVote = newsCanadaVotes[itemId] || null;
+    const nextVote = prevVote === newVote ? null : newVote;
+
+    // Optimistic local update — votes
+    setNewsCanadaVotes(prev => {
+      const next = { ...prev, [itemId]: nextVote };
+      try { localStorage.setItem('cv_news_votes', JSON.stringify(next)); } catch (_) {}
+      return next;
+    });
+
+    // Optimistic local update — counts
+    setNewsVoteCounts(prev => {
+      const cur = prev[itemId] || { support: 0, concerned: 0, oppose: 0 };
+      const next = { ...cur };
+      if (prevVote) next[prevVote] = Math.max(0, (next[prevVote] || 0) - 1);
+      if (nextVote) next[nextVote] = (next[nextVote] || 0) + 1;
+      return { ...prev, [itemId]: next };
+    });
+
+    try {
+      // Aggregate counter (one doc per news item)
+      const countUpdate = { newsId: itemId, country: 'CA', updated: serverTimestamp() };
+      if (prevVote) countUpdate[prevVote] = increment(-1);
+      if (nextVote) countUpdate[nextVote] = increment(1);
+      if (prevVote || nextVote) {
+        await setDoc(doc(db, 'news_vote_counts', itemId), countUpdate, { merge: true });
+      }
+      // Individual vote record (audit trail)
+      if (nextVote) {
+        await addDoc(collection(db, 'news_votes'), {
+          newsId: itemId,
+          voteType: nextVote,
+          userRegion: homeRegion || 'unknown',
+          country: 'CA',
+          timestamp: serverTimestamp(),
+        });
+      }
+    } catch (err) {
+      console.warn('[NewsVotes] write failed:', err.message);
+    }
+  };
+
   useEffect(() => {
     if (view !== 'news-canada') return;
     fetchNewsCanada();
+    fetchNewsVoteCounts();
     const interval = setInterval(fetchNewsCanada, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
