@@ -1800,6 +1800,8 @@ function App() {
   const [selectedProvince, setSelectedProvince] = useState(null);
   /** Modal transparency fields from dedicated Firestore collections (e.g. CA-ON). */
   const [provinceTransparencyFields, setProvinceTransparencyFields] = useState(null);
+  /** CA-ON supplemental data: cabinet, contact_offices, last_updated (not in merge pipeline). */
+  const [caOnSupplementalData, setCaOnSupplementalData] = useState(null);
   const [showEconomicModal, setShowEconomicModal] = useState(false);
   const [economicModalSelectedChart, setEconomicModalSelectedChart] = useState(null);
   const [presidentVotes, setPresidentVotes] = useState(() => {
@@ -13508,6 +13510,27 @@ function App() {
   }, [selectedProvince, selectedCountry]);
 
   useEffect(() => {
+    if (selectedProvince?.subnationalId !== 'CA-ON') {
+      setCaOnSupplementalData(null);
+      return undefined;
+    }
+    let cancelled = false;
+    getDoc(doc(db, 'subnational_jurisdictions', 'CA-ON')).then((snap) => {
+      if (cancelled) return;
+      if (!snap.exists()) { setCaOnSupplementalData({}); return; }
+      const d = snap.data();
+      setCaOnSupplementalData({
+        cabinet: Array.isArray(d.cabinet) ? d.cabinet : [],
+        contact_offices: Array.isArray(d.contact_offices) ? d.contact_offices : [],
+        last_updated: d.last_updated || '',
+        legislature_source_url: d.legislature_source_url || '',
+        legislature_last_updated: d.legislature_last_updated || d.last_updated || '',
+      });
+    }).catch(() => { if (!cancelled) setCaOnSupplementalData(null); });
+    return () => { cancelled = true; };
+  }, [selectedProvince?.subnationalId]);
+
+  useEffect(() => {
     if (!showEconomicModal) {
       setEconomicModalSelectedChart(null);
     }
@@ -13632,7 +13655,7 @@ function App() {
 
   const getLegislatureData = (name, isUSA) => {
     const ca = {
-      'Ontario':                  { name: 'Ontario Legislative Assembly',                    totalSeats: 124, parties: [{ name: 'PC', seats: 83, color: '#003f7f' }, { name: 'NDP', seats: 31, color: '#f37021' }, { name: 'Liberal', seats: 8, color: '#d71920' }, { name: 'Green', seats: 1, color: '#3d9b35' }, { name: 'Independent', seats: 1, color: '#6b7280' }] },
+      'Ontario':                  { name: 'Ontario Legislative Assembly',                    totalSeats: 124, parties: [{ name: 'PC', seats: 79, color: '#003f7f' }, { name: 'NDP', seats: 26, color: '#f37021' }, { name: 'Liberal', seats: 14, color: '#d71920' }, { name: 'Green', seats: 2, color: '#3d9b35' }, { name: 'Independent', seats: 2, color: '#6b7280' }, { name: 'Vacant', seats: 1, color: '#d1d5db' }] },
       'Quebec':                   { name: 'Assemblée nationale du Québec',                   totalSeats: 125, parties: [{ name: 'CAQ', seats: 90, color: '#009fda' }, { name: 'PLQ', seats: 21, color: '#d71920' }, { name: 'QS', seats: 11, color: '#ef3340' }, { name: 'PQ', seats: 3, color: '#003f7f' }] },
       'British Columbia':         { name: 'BC Legislative Assembly',                         totalSeats: 93,  parties: [{ name: 'NDP', seats: 46, color: '#f37021' }, { name: 'Conservative', seats: 44, color: '#00529b' }, { name: 'Green', seats: 3, color: '#3d9b35' }] },
       'Alberta':                  { name: 'Alberta Legislative Assembly',                    totalSeats: 87,  parties: [{ name: 'UCP', seats: 49, color: '#003087' }, { name: 'NDP', seats: 38, color: '#f37021' }] },
@@ -13891,6 +13914,59 @@ function App() {
             </div>
           </div>
 
+          {/* CA-ON Cabinet Members */}
+          {item.subnationalId === 'CA-ON' && (() => {
+            const cabinet = caOnSupplementalData?.cabinet;
+            if (!cabinet || cabinet.length === 0) return null;
+            const ministers = cabinet.filter(m => (m.type || '').toLowerCase() !== 'associate');
+            const associates = cabinet.filter(m => (m.type || '').toLowerCase() === 'associate');
+            const isOpen = !!expandedSections['on-cabinet'];
+            return (
+              <div className="mt-6 bg-white rounded-2xl shadow-elegant overflow-hidden">
+                <button
+                  className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                  onClick={() => toggleSection('on-cabinet')}
+                >
+                  <div>
+                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Cabinet Members</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">{cabinet.length} members · {ministers.length} ministers{associates.length > 0 ? ` · ${associates.length} associate ministers` : ''}</p>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5 pt-1">
+                    {ministers.length > 0 && (
+                      <>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ministers</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                          {ministers.map((m, i) => (
+                            <div key={i} className="bg-blue-50 rounded-lg px-3 py-2">
+                              <p className="text-sm font-semibold text-gray-800">{m.name}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">{m.portfolio || m.title || ''}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    {associates.length > 0 && (
+                      <>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Associate Ministers</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {associates.map((m, i) => (
+                            <div key={i} className="bg-gray-50 rounded-lg px-3 py-2">
+                              <p className="text-sm font-semibold text-gray-800">{m.name}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">{m.portfolio || m.title || ''}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Legislature Seat Distribution */}
           {(() => {
             const legislatureIsSeedFallback = explorerLegislatureUsesHardcodedFallback(item);
@@ -13906,6 +13982,16 @@ function App() {
                 <div className="px-5 pt-5 pb-2">
                   <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Legislature Composition</h2>
                   <p className="text-xs text-gray-400 mt-0.5">{legislatureLabel} &nbsp;·&nbsp; {leg.totalSeats} total seats</p>
+                  {item.subnationalId === 'CA-ON' && caOnSupplementalData && (
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+                      {caOnSupplementalData.legislature_last_updated && (
+                        <span className="text-xs text-gray-400">Updated: {caOnSupplementalData.legislature_last_updated}</span>
+                      )}
+                      {caOnSupplementalData.legislature_source_url && (
+                        <a href={caOnSupplementalData.legislature_source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">Official source ↗</a>
+                      )}
+                    </div>
+                  )}
                   {legislatureIsSeedFallback && (
                     <SubnationalSectionFallbackNote>
                       Party seat counts are orientation-only seed data until official legislature breakdown is synced for this jurisdiction.
@@ -13957,6 +14043,49 @@ function App() {
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* CA-ON Contact Information */}
+          {item.subnationalId === 'CA-ON' && (() => {
+            const offices = caOnSupplementalData?.contact_offices;
+            if (!offices || offices.length === 0) return null;
+            const lastUpdated = caOnSupplementalData?.last_updated;
+            return (
+              <div className="mt-6 bg-white rounded-2xl shadow-elegant overflow-hidden">
+                <div className="px-5 pt-5 pb-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Contact Information</h2>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 uppercase tracking-wide">LIVE</span>
+                  </div>
+                  {lastUpdated && <p className="text-xs text-gray-400">Updated: {lastUpdated}</p>}
+                </div>
+                <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {offices.map((office, i) => (
+                    <div key={i} className="bg-gray-50 rounded-xl p-4">
+                      <p className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">{office.type || office.name || `Office ${i + 1}`}</p>
+                      {office.address && (
+                        <div className="flex items-start gap-1.5 mb-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs text-gray-700 leading-snug">{office.address}</p>
+                        </div>
+                      )}
+                      {office.phone && (
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <span className="text-gray-400 text-[11px]">📞</span>
+                          <a href={`tel:${office.phone}`} className="text-xs text-blue-600 hover:underline">{office.phone}</a>
+                        </div>
+                      )}
+                      {office.email && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-gray-400 text-[11px]">✉️</span>
+                          <a href={`mailto:${office.email}`} className="text-xs text-blue-600 hover:underline truncate">{office.email}</a>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             );
