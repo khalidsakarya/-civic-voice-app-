@@ -1977,6 +1977,15 @@ function App() {
   const [newsCanadaItems, setNewsCanadaItems] = useState([]);
   const [newsCanadaLoading, setNewsCanadaLoading] = useState(false);
   const [newsCanadaVotes, setNewsCanadaVotes] = useState({});
+  const [newsNotifStatus, setNewsNotifStatus] = useState(() => {
+    const stored = localStorage.getItem('cvNewsNotifStatus');
+    if (stored) return stored;
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') return 'granted';
+    return null;
+  });
+  const [newsNotifBannerDismissed, setNewsNotifBannerDismissed] = useState(
+    () => !!localStorage.getItem('cvNewsNotifBannerDismissed')
+  );
 
   const getSocialMeta = () => {
     if (view === 'member-detail' && selectedMember) {
@@ -5861,6 +5870,51 @@ function App() {
       if (token) localStorage.setItem('cvFCMToken', token);
     } catch {
       // Notifications are optional — fail silently
+    }
+  };
+
+  const dismissNewsNotifBanner = () => {
+    setNewsNotifBannerDismissed(true);
+    localStorage.setItem('cvNewsNotifBannerDismissed', '1');
+  };
+
+  const skipCanadaNewsNotif = () => {
+    setNewsNotifStatus('skipped');
+    localStorage.setItem('cvNewsNotifStatus', 'skipped');
+    dismissNewsNotifBanner();
+  };
+
+  const requestCanadaNewsNotif = async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        setNewsNotifStatus('denied');
+        localStorage.setItem('cvNewsNotifStatus', 'denied');
+        dismissNewsNotifBanner();
+        return;
+      }
+      const sw = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      const { getMessaging, getToken } = await import('firebase/messaging');
+      const messaging = getMessaging(app);
+      const token = await getToken(messaging, {
+        serviceWorkerRegistration: sw,
+        vapidKey: 'BAuHr-DKvbopzCzk-wVBzlAiYXA0cxuCO_Wq-A3rQJWe2wXwxnVzSk6tuK6VLI0na7kWm9S3Zp6EDud9M_BWvW8',
+      });
+      if (token) {
+        localStorage.setItem('cvFCMToken', token);
+        // Store token in Firestore so server-side Cloud Function can subscribe it to 'canada-news' topic
+        await setDoc(doc(db, 'fcm_tokens', token), {
+          token,
+          topic: 'canada-news',
+          country: 'CA',
+          ts: serverTimestamp(),
+        }, { merge: true });
+      }
+      setNewsNotifStatus('granted');
+      localStorage.setItem('cvNewsNotifStatus', 'granted');
+      dismissNewsNotifBanner();
+    } catch (err) {
+      console.warn('[NewsNotif] FCM setup failed:', err.message);
     }
   };
 
@@ -10273,7 +10327,7 @@ function App() {
           </button>
 
           {/* Header */}
-          <div className="flex items-start justify-between mb-8 gap-4">
+          <div className="flex items-start justify-between mb-6 gap-4">
             <div className="flex items-center gap-4">
               <span className="text-5xl">📢</span>
               <div>
@@ -10284,10 +10338,45 @@ function App() {
                 <p className="text-gray-500 mt-1">Latest government announcements with cost, impact, and your vote</p>
               </div>
             </div>
-            {newsCanadaLoading && newsCanadaItems.length > 0 && (
-              <Loader2 className="w-5 h-5 text-blue-500 animate-spin flex-shrink-0 mt-2" />
-            )}
+            <div className="flex items-center gap-2 flex-shrink-0 mt-1">
+              {newsCanadaLoading && newsCanadaItems.length > 0 && (
+                <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+              )}
+              {/* Notification bell */}
+              <button
+                onClick={newsNotifStatus === 'granted' ? undefined : requestCanadaNewsNotif}
+                title={newsNotifStatus === 'granted' ? 'Notifications enabled for Canada News' : 'Enable notifications for Canada News'}
+                className={`p-2 rounded-xl border transition-all ${newsNotifStatus === 'granted' ? 'bg-green-50 border-green-200 cursor-default' : 'bg-white border-gray-200 hover:bg-blue-50 hover:border-blue-300 cursor-pointer'}`}
+              >
+                <Bell className={`w-5 h-5 ${newsNotifStatus === 'granted' ? 'text-green-600' : 'text-gray-400'}`} />
+              </button>
+            </div>
           </div>
+
+          {/* Notification permission banner */}
+          {!newsNotifBannerDismissed && newsNotifStatus !== 'granted' && (typeof Notification === 'undefined' || Notification.permission !== 'granted') && (
+            <div className="mb-6 rounded-2xl border-2 border-blue-200 bg-blue-50 p-4 flex items-start gap-3">
+              <Bell className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-blue-800 text-sm">Get notified of major government announcements</p>
+                <p className="text-blue-600 text-xs mt-0.5">We'll send you a notification when high-impact policy changes or new announcements are published.</p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={requestCanadaNewsNotif}
+                  className="px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Allow
+                </button>
+                <button
+                  onClick={skipCanadaNewsNotif}
+                  className="px-3 py-1.5 bg-white text-blue-600 text-xs font-semibold rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors"
+                >
+                  Skip
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Loading skeleton */}
           {newsCanadaLoading && newsCanadaItems.length === 0 && (

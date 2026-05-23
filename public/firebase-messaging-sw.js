@@ -2,6 +2,7 @@ importScripts('https://www.gstatic.com/firebasejs/12.10.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/12.10.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
+  apiKey: 'AIzaSyCPSMre1p20P7P7O5QyI7w8VZZuW6pilo8',
   projectId: 'civic-voice-5ea94',
   messagingSenderId: '560609528859',
   appId: '1:560609528859:web:bd5830fcd2a1efe065bcbe',
