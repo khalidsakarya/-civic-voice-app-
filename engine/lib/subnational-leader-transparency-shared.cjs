@@ -158,18 +158,29 @@ function buildTransparencyMergePatch(payload) {
   return patch;
 }
 
+const PILOT_SECTION_KEYS = Object.freeze([
+  ...new Set([
+    ...SECTION_KEYS,
+    'declared_assets',
+    'gifts_hospitality',
+    'lobbying_records',
+    'financial_disclosure',
+  ]),
+]);
+
+function sectionHasData(key, payload) {
+  const val = payload[key];
+  if (Array.isArray(val)) return val.length > 0;
+  if (val && typeof val === 'object') return Object.keys(val).length > 0;
+  return !!trim(val);
+}
+
 function computeSectionAvailability(payload) {
   const available = [];
   const unavailable = [];
 
-  for (const key of SECTION_KEYS) {
-    const val = payload[key];
-    let has = false;
-    if (Array.isArray(val)) has = val.length > 0;
-    else if (val && typeof val === 'object') has = Object.keys(val).length > 0;
-    else has = !!trim(val);
-
-    if (has) available.push(key);
+  for (const key of PILOT_SECTION_KEYS) {
+    if (sectionHasData(key, payload)) available.push(key);
     else unavailable.push(key);
   }
 
