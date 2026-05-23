@@ -46,6 +46,7 @@ import SubnationalLeaderTransparencySections from './components/SubnationalLeade
 import CaOnLeaderTransparencySections from './components/CaOnLeaderTransparencySections';
 import UsCaLeaderTransparencySections from './components/UsCaLeaderTransparencySections';
 import AuNswLeaderTransparencySections from './components/AuNswLeaderTransparencySections';
+import { resolveAuNswTransparencyJurisdictionId, shouldShowAuNswLeaderTransparency } from './utils/auNswLeaderTransparency';
 import UkLonLeaderTransparencySections from './components/UkLonLeaderTransparencySections';
 import EconomicModalMetricChart from './components/EconomicModalMetricChart';
 import { mapExecutiveActionsOrderDoc } from './utils/mapExecutiveActionsOrderDoc';
@@ -4049,8 +4050,22 @@ function App() {
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const id = selectedLeader?.subnationalId;
-    if (!showLeaderPanel || !id || !PILOT_LEADER_TRANSPARENCY_IDS.includes(id)) {
+    let id = '';
+    if (
+      showLeaderPanel &&
+      selectedLeader?.subnationalId &&
+      PILOT_LEADER_TRANSPARENCY_IDS.includes(selectedLeader.subnationalId)
+    ) {
+      id = selectedLeader.subnationalId;
+    } else if (
+      view === 'au-leader-detail' &&
+      selectedAuLeader &&
+      !selectedAuLeader.isDeputy &&
+      shouldShowAuNswLeaderTransparency(selectedAuLeader.state)
+    ) {
+      id = resolveAuNswTransparencyJurisdictionId(selectedAuLeader.state) || 'AU-NSW';
+    }
+    if (!id) {
       setSubnationalLeaderTransparency(null);
       setSubnationalLeaderTransparencyLoading(false);
       return undefined;
@@ -4070,7 +4085,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [showLeaderPanel, selectedLeader?.subnationalId]);
+  }, [showLeaderPanel, selectedLeader?.subnationalId, view, selectedAuLeader]);
 
   // Shared helper: fetch member_bios for a given member; tries bioguide_id first, then memberName
   const fetchMemberBio = async (member) => {
@@ -26016,6 +26031,14 @@ function App() {
                     </p>
                   )}
                 </div>
+              </div>
+            )}
+            {shouldShowAuNswLeaderTransparency(item) && (
+              <div className="bg-white rounded-2xl p-6 mb-6" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+                <AuNswLeaderTransparencySections
+                  transparencyRow={subnationalLeaderTransparency}
+                  loading={subnationalLeaderTransparencyLoading}
+                />
               </div>
             )}
             <p className="text-xs text-gray-500 text-center pb-4">

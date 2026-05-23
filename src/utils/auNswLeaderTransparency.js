@@ -4,6 +4,26 @@
 
 export const AU_NSW_JURISDICTION_ID = 'AU-NSW';
 
+/**
+ * NSW state explorer / leader detail rows use Firestore id AU-NSW or abbreviation NSW.
+ * @param {Record<string, unknown>|null|undefined} item
+ */
+export function resolveAuNswTransparencyJurisdictionId(item) {
+  if (!item || typeof item !== 'object') return '';
+  if (trim(item.subnationalId) === AU_NSW_JURISDICTION_ID) return AU_NSW_JURISDICTION_ID;
+  if (String(item.abbr || '').toUpperCase() === 'NSW') return AU_NSW_JURISDICTION_ID;
+  return '';
+}
+
+/**
+ * @param {Record<string, unknown>|null|undefined} item
+ * @param {{ isDeputy?: boolean }} [opts]
+ */
+export function shouldShowAuNswLeaderTransparency(item, opts = {}) {
+  if (opts.isDeputy) return false;
+  return !!resolveAuNswTransparencyJurisdictionId(item);
+}
+
 export const FRAMEWORK_ONLY_NOTE =
   'Official register published as NSW Parliament tabled papers; open linked PDFs for full schedules.';
 
