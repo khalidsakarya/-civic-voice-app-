@@ -33,8 +33,7 @@ export async function fetchSubnationalLeaderTransparency(jurisdictionId) {
     }
     if (id === 'AU-NSW') {
       applyAuNswLeaderTransparencyFields(rec, raw);
-    }
-    if (id === 'UK-ENG-LON') {
+    } else if (id === 'UK-ENG-LON') {
       applyUkLonLeaderTransparencyFields(rec, raw);
     }
     return rec;

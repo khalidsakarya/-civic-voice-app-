@@ -9,6 +9,8 @@ export const FRAMEWORK_ONLY_NOTE =
 
 export const NOT_DISCLOSED_LABEL = 'Not disclosed in official filing.';
 
+export const NOT_IN_SOURCE_LABEL = 'Not disclosed in official source.';
+
 export const REPORTED_HOLDINGS_LABEL = 'Reported interests / holdings (Register of Disclosures)';
 
 export const AU_NSW_TRANSPARENCY_SECTIONS = Object.freeze([
@@ -33,12 +35,48 @@ function isNonEmptyObject(v) {
   return v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length > 0;
 }
 
+/** @param {Record<string, unknown>|null|undefined} row */
+function sectionListed(row, sectionKey) {
+  const avail = row?.sections_available;
+  return Array.isArray(avail) && avail.includes(sectionKey);
+}
+
+/** @param {Record<string, unknown>|null|undefined} block */
+function hasAssetRows(block) {
+  if (!block || typeof block !== 'object') return false;
+  const rows = block.rows;
+  if (Array.isArray(rows) && rows.length > 0) return true;
+  const n = Number(block.row_count);
+  return Number.isFinite(n) && n > 0;
+}
+
+/**
+ * @param {Record<string, unknown>} out
+ * @param {Record<string, unknown>|null|undefined} fsRow
+ */
+export function normalizeAuNswTransparencyRow(out, fsRow) {
+  if (!out || !fsRow || typeof fsRow !== 'object') return out;
+
+  if (!out.declared_assets && fsRow.declared_assets) out.declared_assets = fsRow.declared_assets;
+  if (!out.declared_assets && fsRow.assets) out.declared_assets = fsRow.assets;
+
+  if (!out.lobbying_records && fsRow.lobbying_records) out.lobbying_records = fsRow.lobbying_records;
+  if (!out.lobbying_records && fsRow.lobbying_disclosures) {
+    out.lobbying_records = fsRow.lobbying_disclosures;
+  }
+
+  if (!out.field_sources && fsRow.field_sources) out.field_sources = fsRow.field_sources;
+
+  return out;
+}
+
 /**
  * @param {string} sectionKey
  * @param {Record<string, unknown>|null|undefined} row
  */
 export function auNswTransparencySectionLoaded(sectionKey, row) {
   if (!row || typeof row !== 'object') return false;
+  if (sectionListed(row, sectionKey)) return true;
 
   switch (sectionKey) {
     case 'salary':
@@ -50,13 +88,13 @@ export function auNswTransparencySectionLoaded(sectionKey, row) {
     case 'financial_disclosure':
       return isNonEmptyObject(row.financial_disclosure);
     case 'declared_assets':
-      return isNonEmptyObject(row.declared_assets);
+      return hasAssetRows(row.declared_assets) || isNonEmptyObject(row.declared_assets);
     case 'gifts_hospitality':
       return isNonEmptyObject(row.gifts_hospitality);
     case 'lobbying_records':
       return isNonEmptyObject(row.lobbying_records);
     case 'stock_holdings':
-      return isNonEmptyObject(row.stock_holdings);
+      return hasAssetRows(row.stock_holdings) || isNonEmptyObject(row.stock_holdings);
     default:
       return false;
   }
@@ -69,17 +107,24 @@ export function auNswTransparencySectionLoaded(sectionKey, row) {
 export function applyAuNswLeaderTransparencyFields(out, fsRow) {
   if (!out || !fsRow || typeof fsRow !== 'object') return;
   const keys = [
+    'salary',
     'financial_disclosure',
     'declared_assets',
     'gifts_hospitality',
     'lobbying_records',
     'stock_holdings',
+    'campaign_finance',
+    'recent_official_activity',
+    'field_sources',
     'data_completeness_note',
     'data_status',
     'sources_inaccessible',
     'sources_confirmed',
     'last_updated',
     'fetched_at',
+    'transparency_live',
+    'sections_available',
+    'sections_unavailable',
   ];
   for (let i = 0; i < keys.length; i += 1) {
     const k = keys[i];
@@ -89,6 +134,7 @@ export function applyAuNswLeaderTransparencyFields(out, fsRow) {
     if (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length) continue;
     out[k] = v;
   }
+  normalizeAuNswTransparencyRow(out, fsRow);
 }
 
 /** @param {Record<string, unknown>|null|undefined} block */

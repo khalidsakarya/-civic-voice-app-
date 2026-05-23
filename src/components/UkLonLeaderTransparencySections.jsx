@@ -4,6 +4,7 @@ import {
   UK_LON_TRANSPARENCY_SECTIONS,
   FRAMEWORK_ONLY_NOTE,
   NOT_DISCLOSED_LABEL,
+  NOT_IN_SOURCE_LABEL,
   REPORTED_HOLDINGS_LABEL,
   buildUkLonTransparencySummaryCards,
   ukLonAccordionSubtitle,
@@ -129,6 +130,7 @@ function LobbyingRecordsTable({ rows }) {
 }
 
 function SummaryCard({ title, lines, highlight }) {
+  const safeLines = Array.isArray(lines) ? lines.filter((line) => line != null && String(line).trim()) : [];
   return (
     <div
       className={`rounded-xl border p-3 sm:p-3.5 ${
@@ -137,7 +139,7 @@ function SummaryCard({ title, lines, highlight }) {
     >
       <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-gray-500">{title}</p>
       <div className="mt-1.5 space-y-0.5">
-        {lines.map((line, i) => (
+        {safeLines.map((line, i) => (
           <p key={i} className="text-xs sm:text-sm text-gray-900 leading-snug">
             {line}
           </p>
@@ -189,13 +191,30 @@ function TransparencyAccordion({ id, title, subtitle, open, onToggle, children, 
   );
 }
 
+function giftsBlock(row) {
+  if (row?.gifts_hospitality && typeof row.gifts_hospitality === 'object') {
+    return row.gifts_hospitality;
+  }
+  if (Array.isArray(row?.conflict_disclosures) && row.conflict_disclosures.length > 0) {
+    return {
+      gifts: row.conflict_disclosures,
+      gift_count: row.conflict_disclosures.length,
+      travel_payments: [],
+      travel_count: 0,
+    };
+  }
+  return null;
+}
+
 function DetailSalary({ row }) {
   const sal = row?.salary;
   const src = row?.field_sources?.salary;
+  const amountLabel =
+    sal?.amount_text || (sal?.amount != null ? formatMoney(sal.amount, 'GBP', 2) : NOT_IN_SOURCE_LABEL);
   return (
     <div className="pt-3 space-y-2">
       <p className="text-sm font-semibold text-gray-900">
-        {sal?.amount_text || (sal?.amount != null ? formatMoney(sal.amount, 'GBP', 2) : '')}
+        {amountLabel}
         {sal?.period ? ` · ${sal.period}` : ''}
       </p>
       {sal?.prior_amount_text && (
@@ -290,20 +309,26 @@ function DetailFinancialDisclosure({ row }) {
 
 function DetailDeclaredAssets({ row }) {
   const da = row?.declared_assets;
-  const src = ukLonSourceUrl(da);
-  const rows = da?.rows || [];
-  const pageComments = da?.page_comments || [];
+  const src = ukLonSourceUrl(da) || row?.field_sources?.declared_assets;
+  const rows = Array.isArray(da?.rows) ? da.rows.slice(0, 150) : [];
+  const rowCount = Number(da?.row_count) || rows.length;
+  const pageComments = Array.isArray(da?.page_comments) ? da.page_comments : [];
 
   return (
     <div className="pt-3 space-y-2">
       <p className="text-xs text-gray-700 leading-relaxed">{REPORTED_HOLDINGS_LABEL}</p>
       {rows.length > 0 ? (
-        <ReportedHoldingsTable rows={rows} caption={`${rows.length} official register row(s)`} />
+        <ReportedHoldingsTable
+          rows={rows}
+          caption={`${rows.length}${rowCount > rows.length ? ` of ${rowCount}` : ''} official register row(s)`}
+        />
       ) : (
         <p className="text-xs text-gray-600 italic">
-          {da?.status === 'no_official_records_found'
-            ? 'No machine-readable rows extracted; open official register on london.gov.uk.'
-            : 'Official rows not loaded yet.'}
+          {rowCount > 0
+            ? `${rowCount} official row(s) on file; open the register link for full schedules.`
+            : da?.status === 'no_official_records_found'
+              ? 'No machine-readable rows extracted; open official register on london.gov.uk.'
+              : NOT_IN_SOURCE_LABEL}
         </p>
       )}
       {pageComments.length > 0 && (
@@ -328,8 +353,8 @@ function DetailDeclaredAssets({ row }) {
 
 function DetailStockHoldings({ row }) {
   const sh = row?.stock_holdings;
-  const src = ukLonSourceUrl(sh);
-  const rows = sh?.rows || [];
+  const src = ukLonSourceUrl(sh) || row?.field_sources?.stock_holdings;
+  const rows = Array.isArray(sh?.rows) ? sh.rows.slice(0, 150) : [];
 
   return (
     <div className="pt-3 space-y-2">
@@ -381,7 +406,7 @@ function DetailGiftsHospitality({ row }) {
         <div>
           <p className="text-xs font-semibold text-gray-800 mb-1">Travel payments (Schedule E)</p>
           <ul className="space-y-2">
-            {gh.travel_payments.map((t, i) => (
+            {travel.map((t, i) => (
               <li key={i} className="text-xs border border-gray-200 rounded-lg p-2.5 bg-gray-50">
                 <p className="font-medium text-gray-900">{t.source}</p>
                 <p className="text-gray-700">{t.purpose}</p>
@@ -409,11 +434,14 @@ function DetailCampaignFinance({ row }) {
       {cf?.data_as_of && <p className="text-xs text-gray-500">Data as of {cf.data_as_of}</p>}
       {Array.isArray(cf?.committees) && cf.committees.length > 0 && (
         <ul className="space-y-2">
-          {cf.committees.map((c) => (
-            <li key={c.committee_id} className="text-xs border border-gray-200 rounded-lg p-2.5 bg-gray-50">
-              <p className="font-medium text-gray-900">{c.name}</p>
+          {cf.committees.map((c, i) => (
+            <li key={c?.committee_id || `committee-${i}`} className="text-xs border border-gray-200 rounded-lg p-2.5 bg-gray-50">
+              <p className="font-medium text-gray-900">{c?.name || '—'}</p>
               <p className="text-gray-700 mt-0.5">
-                {c.total_amount_text} · {c.contribution_count?.toLocaleString('en-US')} contributions
+                {c?.total_amount_text || NOT_IN_SOURCE_LABEL}
+                {c?.contribution_count != null
+                  ? ` · ${Number(c.contribution_count).toLocaleString('en-GB')} contributions`
+                  : ''}
               </p>
               {c.source_url && sourceLink(c.source_url, 'View on Electoral Commission')}
             </li>
@@ -441,6 +469,9 @@ function DetailCampaignFinance({ row }) {
       {cf?.top_contributors_note && (
         <p className="text-xs text-gray-500 leading-relaxed">{cf.top_contributors_note}</p>
       )}
+      {!cf?.summary && !(Array.isArray(cf?.items) && cf.items.length) && !(Array.isArray(cf?.committees) && cf.committees.length) && (
+        <p className="text-xs text-gray-600 italic">{NOT_IN_SOURCE_LABEL}</p>
+      )}
       {sourceLink(src, 'Electoral Commission donations search')}
     </div>
   );
@@ -448,8 +479,8 @@ function DetailCampaignFinance({ row }) {
 
 function DetailLobbyingRecords({ row }) {
   const lr = row?.lobbying_records;
-  const src = ukLonSourceUrl(lr);
-  const rows = lr?.rows || [];
+  const src = ukLonSourceUrl(lr) || row?.field_sources?.lobbying_records;
+  const rows = Array.isArray(lr?.rows) ? lr.rows : [];
   const noTarget =
     lr?.status === 'no_official_target_specific_lobbying_records_found' || rows.length === 0;
 
@@ -487,10 +518,11 @@ function DetailLobbyingRecords({ row }) {
 }
 
 function DetailRecentActivity({ row }) {
-  const items = row?.recent_official_activity || [];
+  const items = Array.isArray(row?.recent_official_activity) ? row.recent_official_activity : [];
   const src = row?.field_sources?.recent_official_activity;
   return (
     <div className="pt-3 space-y-2">
+      {!items.length && <p className="text-xs text-gray-600 italic">{NOT_IN_SOURCE_LABEL}</p>}
       {items.map((it, i) => (
         <div key={i} className="text-xs border-b border-gray-100 pb-2.5 last:border-0">
           {it.url ? (
@@ -535,7 +567,7 @@ export default function UkLonLeaderTransparencySections({ transparencyRow, loadi
   }, []);
 
   const summaryCards =
-    !loading && transparencyRow ? buildUsCaTransparencySummaryCards(transparencyRow) : [];
+    !loading && transparencyRow ? buildUkLonTransparencySummaryCards(transparencyRow) : [];
 
   return (
     <section className="uk-lon-leader-transparency">
