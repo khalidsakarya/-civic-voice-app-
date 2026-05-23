@@ -1974,6 +1974,9 @@ function App() {
     try { return JSON.parse(localStorage.getItem('cvCaMemberVotes') || '{}'); } catch { return {}; }
   });
   const [firestoreVoteCounts, setFirestoreVoteCounts] = useState({});
+  const [newsCanadaItems, setNewsCanadaItems] = useState([]);
+  const [newsCanadaLoading, setNewsCanadaLoading] = useState(false);
+  const [newsCanadaVotes, setNewsCanadaVotes] = useState({});
 
   const getSocialMeta = () => {
     if (view === 'member-detail' && selectedMember) {
@@ -10210,30 +10213,217 @@ function App() {
 
   // ── News & Announcements (Canada) ────────────────────────────────────────────
 
-  const renderNewsCanada = () => (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-4xl mx-auto">
-        <button
-          onClick={() => setView('government-levels')}
-          className="mb-6 button-primary text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant"
-        >
-          <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Canada</span>
-        </button>
-        <div className="flex items-center gap-4 mb-8">
-          <span className="text-5xl">📢</span>
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">News &amp; Announcements</h1>
-            <p className="text-gray-500 mt-1">Latest government announcements with cost, impact, and your vote</p>
+  const renderNewsCanada = () => {
+    const categoryStyle = (cat = '') => {
+      const c = cat.toLowerCase();
+      if (/defense|defence|military|national security/.test(c))
+        return { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', bar: '#dc2626' };
+      if (/health/.test(c))
+        return { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200', bar: '#16a34a' };
+      if (/econom|financ|budget|fiscal|tax/.test(c))
+        return { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200', bar: '#2563eb' };
+      if (/environ|climate|energy|green/.test(c))
+        return { bg: 'bg-teal-100', text: 'text-teal-700', border: 'border-teal-200', bar: '#0d9488' };
+      if (/hous|infra|transport|transit/.test(c))
+        return { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-200', bar: '#ea580c' };
+      if (/educ/.test(c))
+        return { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-200', bar: '#7c3aed' };
+      if (/immigr|border|asylum/.test(c))
+        return { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200', bar: '#d97706' };
+      if (/justice|crime|law|legal|court/.test(c))
+        return { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-200', bar: '#4338ca' };
+      return { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-200', bar: '#6b7280' };
+    };
+
+    const impactColor = (score) => {
+      if (score <= 3) return '#16a34a';
+      if (score <= 6) return '#d97706';
+      return '#dc2626';
+    };
+
+    const fmtDate = (d) => {
+      if (!d) return '';
+      try {
+        const dt = d?.toDate ? d.toDate() : new Date(d);
+        return isNaN(dt.getTime()) ? '' : dt.toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+      } catch { return ''; }
+    };
+
+    const fmtCostCAD = (cost) => {
+      if (cost == null) return null;
+      if (cost >= 1e9) return `$${(cost / 1e9).toFixed(1)}B CAD`;
+      if (cost >= 1e6) return `$${(cost / 1e6).toFixed(1)}M CAD`;
+      if (cost >= 1e3) return `$${(cost / 1e3).toFixed(0)}K CAD`;
+      return `$${Number(cost).toLocaleString('en-CA')} CAD`;
+    };
+
+    const handleVote = (itemId, vote) => {
+      setNewsCanadaVotes(prev => ({ ...prev, [itemId]: prev[itemId] === vote ? null : vote }));
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 sm:p-6 lg:p-8">
+        <div className="max-w-3xl mx-auto">
+          {/* Back */}
+          <button
+            onClick={() => setView('government-levels')}
+            className="mb-6 button-primary text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant"
+          >
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Canada</span>
+          </button>
+
+          {/* Header */}
+          <div className="flex items-start justify-between mb-8 gap-4">
+            <div className="flex items-center gap-4">
+              <span className="text-5xl">📢</span>
+              <div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">News &amp; Announcements</h1>
+                  <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">LIVE</span>
+                </div>
+                <p className="text-gray-500 mt-1">Latest government announcements with cost, impact, and your vote</p>
+              </div>
+            </div>
+            {newsCanadaLoading && newsCanadaItems.length > 0 && (
+              <Loader2 className="w-5 h-5 text-blue-500 animate-spin flex-shrink-0 mt-2" />
+            )}
+          </div>
+
+          {/* Loading skeleton */}
+          {newsCanadaLoading && newsCanadaItems.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-24 gap-4">
+              <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
+              <p className="text-gray-500">Loading announcements...</p>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {!newsCanadaLoading && newsCanadaItems.length === 0 && (
+            <div className="card-gradient rounded-2xl shadow-elegant-lg p-12 text-center border-2 border-white/50">
+              <div className="text-5xl mb-4">📭</div>
+              <h2 className="text-xl font-bold text-gray-700 mb-2">No announcements yet</h2>
+              <p className="text-gray-500">New government announcements will appear here automatically.</p>
+            </div>
+          )}
+
+          {/* Cards */}
+          <div className="flex flex-col gap-6">
+            {newsCanadaItems.map(item => {
+              const cs = categoryStyle(item.category);
+              const userVote = newsCanadaVotes[item.id] || null;
+              const cost = fmtCostCAD(item.cost_cad);
+              const impactScore = Math.min(10, Math.max(1, Number(item.impact_score) || 5));
+              const sourceUrl = item.source_url || 'https://pm.gc.ca/en/news';
+
+              return (
+                <div key={item.id} className="card-gradient rounded-2xl shadow-elegant-lg border-2 border-white/50 overflow-hidden">
+                  <div className="p-6 pb-4">
+                    {/* Category + date row */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${cs.bg} ${cs.text} ${cs.border}`}>
+                        {item.category || 'General'}
+                      </span>
+                      <span className="text-xs text-gray-400 flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {fmtDate(item.date)}
+                      </span>
+                    </div>
+
+                    {/* Title */}
+                    <h2 className="text-xl font-bold text-gray-800 mb-3 leading-snug">{item.title}</h2>
+
+                    {/* Cost */}
+                    {cost && (
+                      <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2 mb-4">
+                        <DollarSign className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                        <span className="text-xl font-bold text-blue-700">{cost}</span>
+                      </div>
+                    )}
+
+                    {/* Summary */}
+                    <p className="text-gray-600 text-sm leading-relaxed mb-4">{item.summary}</p>
+
+                    {/* Impact score bar */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Impact Score</span>
+                        <span className="text-sm font-bold" style={{ color: impactColor(impactScore) }}>{impactScore} / 10</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2.5">
+                        <div
+                          className="h-2.5 rounded-full transition-all duration-500"
+                          style={{ width: `${impactScore * 10}%`, background: impactColor(impactScore) }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Affected groups */}
+                    {Array.isArray(item.affected_groups) && item.affected_groups.length > 0 && (
+                      <div className="mb-4">
+                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">Affected Groups</span>
+                        <div className="flex flex-wrap gap-2">
+                          {item.affected_groups.map((g, i) => (
+                            <span key={i} className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-medium border border-gray-200">{g}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Timeline */}
+                    {item.timeline && (
+                      <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                        <Clock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <span className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Timeline</span>
+                          <p className="text-sm text-amber-800 mt-0.5">{item.timeline}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Vote bar + source */}
+                  <div className="border-t border-gray-100 bg-gray-50/60 px-6 py-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-semibold text-gray-500">Your vote:</span>
+                        <button
+                          onClick={() => handleVote(item.id, 'support')}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${userVote === 'support' ? 'bg-green-600 text-white border-green-500 shadow' : 'bg-white text-green-700 border-green-300 hover:bg-green-50'}`}
+                        >
+                          <ThumbsUp className="w-3.5 h-3.5" /> Support
+                        </button>
+                        <button
+                          onClick={() => handleVote(item.id, 'concerned')}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${userVote === 'concerned' ? 'bg-amber-500 text-white border-amber-400 shadow' : 'bg-white text-amber-600 border-amber-300 hover:bg-amber-50'}`}
+                        >
+                          <MinusCircle className="w-3.5 h-3.5" /> Concerned
+                        </button>
+                        <button
+                          onClick={() => handleVote(item.id, 'oppose')}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${userVote === 'oppose' ? 'bg-red-600 text-white border-red-500 shadow' : 'bg-white text-red-700 border-red-300 hover:bg-red-50'}`}
+                        >
+                          <ThumbsDown className="w-3.5 h-3.5" /> Oppose
+                        </button>
+                      </div>
+                      <a
+                        href={sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        <Globe className="w-3.5 h-3.5" />
+                        Source (pm.gc.ca)
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-        <div className="card-gradient rounded-2xl shadow-elegant-lg p-10 text-center border-2 border-white/50">
-          <div className="text-6xl mb-4">🚧</div>
-          <h2 className="text-2xl font-bold text-gray-700 mb-3">Coming Soon</h2>
-          <p className="text-gray-500 text-lg">Real-time government announcements with cost analysis</p>
-        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // ── Waste Tracker ────────────────────────────────────────────────────────────
 
@@ -17418,6 +17608,34 @@ function App() {
     })();
     return () => { cancelled = true; };
   }, [view, selectedCountry]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── News & Announcements (Canada) — Firestore fetch + 5-min auto-refresh ────
+  const fetchNewsCanada = async () => {
+    setNewsCanadaLoading(true);
+    try {
+      const snap = await getDocs(query(collection(db, 'news_alerts'), where('country', '==', 'CA')));
+      const items = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => {
+          const da = a.date?.toDate ? a.date.toDate() : new Date(a.date || 0);
+          const db_ = b.date?.toDate ? b.date.toDate() : new Date(b.date || 0);
+          return db_ - da;
+        });
+      setNewsCanadaItems(items);
+    } catch (err) {
+      console.warn('[NewsCanada] Firestore fetch failed:', err.message);
+      setNewsCanadaItems([]);
+    } finally {
+      setNewsCanadaLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (view !== 'news-canada') return;
+    fetchNewsCanada();
+    const interval = setInterval(fetchNewsCanada, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // -- Analytics & Budget Firestore fetch functions
   const fetchAnalyticsData = async (country) => {
