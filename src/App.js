@@ -1974,21 +1974,30 @@ function App() {
     try { return JSON.parse(localStorage.getItem('cvCaMemberVotes') || '{}'); } catch { return {}; }
   });
   const [firestoreVoteCounts, setFirestoreVoteCounts] = useState({});
-  const [newsCanadaItems, setNewsCanadaItems] = useState([]);
-  const [newsCanadaLoading, setNewsCanadaLoading] = useState(false);
-  const [newsCanadaVotes, setNewsCanadaVotes] = useState(() => {
+  const [newsItems, setNewsItems] = useState({});           // keyed by cc: 'CA'|'US'|'UK'|'AU'
+  const [newsLoading, setNewsLoading] = useState({});       // keyed by cc
+  const [newsUserVotes, setNewsUserVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_news_votes') || '{}'); } catch (_) { return {}; }
-  });
-  const [newsVoteCounts, setNewsVoteCounts] = useState({});
+  });                                                        // keyed by Firestore itemId
+  const [newsVoteCounts, setNewsVoteCounts] = useState({}); // keyed by Firestore itemId
   const [newsNotifStatus, setNewsNotifStatus] = useState(() => {
-    const stored = localStorage.getItem('cvNewsNotifStatus');
-    if (stored) return stored;
-    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') return 'granted';
-    return null;
-  });
-  const [newsNotifBannerDismissed, setNewsNotifBannerDismissed] = useState(
-    () => !!localStorage.getItem('cvNewsNotifBannerDismissed')
-  );
+    try {
+      const obj = JSON.parse(localStorage.getItem('cv_news_notif_status') || '{}');
+      if (!obj.CA) {
+        const legacy = localStorage.getItem('cvNewsNotifStatus');
+        if (legacy) obj.CA = legacy;
+        else if (typeof Notification !== 'undefined' && Notification.permission === 'granted') obj.CA = 'granted';
+      }
+      return obj;
+    } catch { return {}; }
+  });                                                        // keyed by cc
+  const [newsNotifBannerDismissed, setNewsNotifBannerDismissed] = useState(() => {
+    try {
+      const obj = JSON.parse(localStorage.getItem('cv_news_notif_dismissed') || '{}');
+      if (!obj.CA && localStorage.getItem('cvNewsNotifBannerDismissed')) obj.CA = true;
+      return obj;
+    } catch { return {}; }
+  });                                                        // keyed by cc
 
   const getSocialMeta = () => {
     if (view === 'member-detail' && selectedMember) {
@@ -5876,24 +5885,35 @@ function App() {
     }
   };
 
-  const dismissNewsNotifBanner = () => {
-    setNewsNotifBannerDismissed(true);
-    localStorage.setItem('cvNewsNotifBannerDismissed', '1');
+  const NEWS_NOTIF_TOPICS = { CA: 'canada-news', US: 'us-news', UK: 'uk-news', AU: 'australia-news' };
+
+  const dismissNewsNotifBanner = (cc) => {
+    setNewsNotifBannerDismissed(prev => {
+      const next = { ...prev, [cc]: true };
+      try { localStorage.setItem('cv_news_notif_dismissed', JSON.stringify(next)); } catch (_) {}
+      return next;
+    });
   };
 
-  const skipCanadaNewsNotif = () => {
-    setNewsNotifStatus('skipped');
-    localStorage.setItem('cvNewsNotifStatus', 'skipped');
-    dismissNewsNotifBanner();
+  const skipNewsNotif = (cc) => {
+    setNewsNotifStatus(prev => {
+      const next = { ...prev, [cc]: 'skipped' };
+      try { localStorage.setItem('cv_news_notif_status', JSON.stringify(next)); } catch (_) {}
+      return next;
+    });
+    dismissNewsNotifBanner(cc);
   };
 
-  const requestCanadaNewsNotif = async () => {
+  const requestNewsNotif = async (cc) => {
     try {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
-        setNewsNotifStatus('denied');
-        localStorage.setItem('cvNewsNotifStatus', 'denied');
-        dismissNewsNotifBanner();
+        setNewsNotifStatus(prev => {
+          const next = { ...prev, [cc]: 'denied' };
+          try { localStorage.setItem('cv_news_notif_status', JSON.stringify(next)); } catch (_) {}
+          return next;
+        });
+        dismissNewsNotifBanner(cc);
         return;
       }
       const sw = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
@@ -5905,17 +5925,19 @@ function App() {
       });
       if (token) {
         localStorage.setItem('cvFCMToken', token);
-        // Store token in Firestore so server-side Cloud Function can subscribe it to 'canada-news' topic
+        // Topic field (e.g. 'canada-news': true) lets Cloud Function subscribe this token
         await setDoc(doc(db, 'fcm_tokens', token), {
           token,
-          topic: 'canada-news',
-          country: 'CA',
+          [NEWS_NOTIF_TOPICS[cc] || 'general-news']: true,
           ts: serverTimestamp(),
         }, { merge: true });
       }
-      setNewsNotifStatus('granted');
-      localStorage.setItem('cvNewsNotifStatus', 'granted');
-      dismissNewsNotifBanner();
+      setNewsNotifStatus(prev => {
+        const next = { ...prev, [cc]: 'granted' };
+        try { localStorage.setItem('cv_news_notif_status', JSON.stringify(next)); } catch (_) {}
+        return next;
+      });
+      dismissNewsNotifBanner(cc);
     } catch (err) {
       console.warn('[NewsNotif] FCM setup failed:', err.message);
     }
@@ -10268,9 +10290,21 @@ function App() {
     );
   };
 
-  // ── News & Announcements (Canada) ────────────────────────────────────────────
+  // ── News & Announcements — generic view (CA / US / UK / AU) ─────────────────
 
-  const renderNewsCanada = () => {
+  const renderNewsView = (cc) => {
+    const NEWS_COUNTRY_CONFIG = {
+      CA: { flag: '🇨🇦', name: 'Canada',         backView: 'government-levels', backLabel: 'Back to Canada',          sym: '$',  code: 'CAD', costField: 'cost_cad', defaultSource: 'https://pm.gc.ca/en/news' },
+      US: { flag: '🇺🇸', name: 'United States',   backView: 'government-levels', backLabel: 'Back to United States',   sym: '$',  code: 'USD', costField: 'cost_usd', defaultSource: 'https://www.whitehouse.gov/news/' },
+      UK: { flag: '🇬🇧', name: 'United Kingdom',  backView: 'government-levels', backLabel: 'Back to United Kingdom',  sym: '£',  code: 'GBP', costField: 'cost_gbp', defaultSource: 'https://www.gov.uk/government/news' },
+      AU: { flag: '🇦🇺', name: 'Australia',       backView: 'government-levels', backLabel: 'Back to Australia',       sym: '$',  code: 'AUD', costField: 'cost_aud', defaultSource: 'https://www.pm.gov.au/media' },
+    };
+    const cfg = NEWS_COUNTRY_CONFIG[cc] || NEWS_COUNTRY_CONFIG.CA;
+    const items    = newsItems[cc] || [];
+    const loading  = newsLoading[cc] || false;
+    const notifGranted = (newsNotifStatus[cc] || null) === 'granted';
+    const bannerDismissed = newsNotifBannerDismissed[cc] || false;
+
     const categoryStyle = (cat = '') => {
       const c = cat.toLowerCase();
       if (/defense|defence|military|national security/.test(c))
@@ -10306,12 +10340,13 @@ function App() {
       } catch { return ''; }
     };
 
-    const fmtCostCAD = (cost) => {
-      if (cost == null) return null;
-      if (cost >= 1e9) return `$${(cost / 1e9).toFixed(1)}B CAD`;
-      if (cost >= 1e6) return `$${(cost / 1e6).toFixed(1)}M CAD`;
-      if (cost >= 1e3) return `$${(cost / 1e3).toFixed(0)}K CAD`;
-      return `$${Number(cost).toLocaleString('en-CA')} CAD`;
+    const fmtCost = (amount) => {
+      if (amount == null) return null;
+      const { sym, code } = cfg;
+      if (amount >= 1e9) return `${sym}${(amount / 1e9).toFixed(1)}B ${code}`;
+      if (amount >= 1e6) return `${sym}${(amount / 1e6).toFixed(1)}M ${code}`;
+      if (amount >= 1e3) return `${sym}${(amount / 1e3).toFixed(0)}K ${code}`;
+      return `${sym}${Number(amount).toLocaleString()} ${code}`;
     };
 
     const pct = (n, total) => total > 0 ? Math.round((n / total) * 100) : 0;
@@ -10321,10 +10356,10 @@ function App() {
         <div className="max-w-3xl mx-auto">
           {/* Back */}
           <button
-            onClick={() => setView('government-levels')}
+            onClick={() => setView(cfg.backView)}
             className="mb-6 button-primary text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium text-sm shadow-elegant"
           >
-            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Canada</span>
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← {cfg.backLabel}</span>
           </button>
 
           {/* Header */}
@@ -10333,54 +10368,44 @@ function App() {
               <span className="text-5xl">📢</span>
               <div>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">News &amp; Announcements</h1>
+                  <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">{cfg.flag} News &amp; Announcements</h1>
                   <span className="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">LIVE</span>
                 </div>
-                <p className="text-gray-500 mt-1">Latest government announcements with cost, impact, and your vote</p>
+                <p className="text-gray-500 mt-1">Latest {cfg.name} government announcements with cost, impact, and your vote</p>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0 mt-1">
-              {newsCanadaLoading && newsCanadaItems.length > 0 && (
+              {loading && items.length > 0 && (
                 <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
               )}
               {/* Notification bell */}
               <button
-                onClick={newsNotifStatus === 'granted' ? undefined : requestCanadaNewsNotif}
-                title={newsNotifStatus === 'granted' ? 'Notifications enabled for Canada News' : 'Enable notifications for Canada News'}
-                className={`p-2 rounded-xl border transition-all ${newsNotifStatus === 'granted' ? 'bg-green-50 border-green-200 cursor-default' : 'bg-white border-gray-200 hover:bg-blue-50 hover:border-blue-300 cursor-pointer'}`}
+                onClick={notifGranted ? undefined : () => requestNewsNotif(cc)}
+                title={notifGranted ? `Notifications enabled for ${cfg.name} News` : `Enable notifications for ${cfg.name} News`}
+                className={`p-2 rounded-xl border transition-all ${notifGranted ? 'bg-green-50 border-green-200 cursor-default' : 'bg-white border-gray-200 hover:bg-blue-50 hover:border-blue-300 cursor-pointer'}`}
               >
-                <Bell className={`w-5 h-5 ${newsNotifStatus === 'granted' ? 'text-green-600' : 'text-gray-400'}`} />
+                <Bell className={`w-5 h-5 ${notifGranted ? 'text-green-600' : 'text-gray-400'}`} />
               </button>
             </div>
           </div>
 
           {/* Notification permission banner */}
-          {!newsNotifBannerDismissed && newsNotifStatus !== 'granted' && (typeof Notification === 'undefined' || Notification.permission !== 'granted') && (
+          {!bannerDismissed && !notifGranted && (typeof Notification === 'undefined' || Notification.permission !== 'granted') && (
             <div className="mb-6 rounded-2xl border-2 border-blue-200 bg-blue-50 p-4 flex items-start gap-3">
               <Bell className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-blue-800 text-sm">Get notified of major government announcements</p>
+                <p className="font-semibold text-blue-800 text-sm">Get notified of major {cfg.name} government announcements</p>
                 <p className="text-blue-600 text-xs mt-0.5">We'll send you a notification when high-impact policy changes or new announcements are published.</p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <button
-                  onClick={requestCanadaNewsNotif}
-                  className="px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Allow
-                </button>
-                <button
-                  onClick={skipCanadaNewsNotif}
-                  className="px-3 py-1.5 bg-white text-blue-600 text-xs font-semibold rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors"
-                >
-                  Skip
-                </button>
+                <button onClick={() => requestNewsNotif(cc)} className="px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors">Allow</button>
+                <button onClick={() => skipNewsNotif(cc)} className="px-3 py-1.5 bg-white text-blue-600 text-xs font-semibold rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors">Skip</button>
               </div>
             </div>
           )}
 
           {/* Loading skeleton */}
-          {newsCanadaLoading && newsCanadaItems.length === 0 && (
+          {loading && items.length === 0 && (
             <div className="flex flex-col items-center justify-center py-24 gap-4">
               <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
               <p className="text-gray-500">Loading announcements...</p>
@@ -10388,22 +10413,22 @@ function App() {
           )}
 
           {/* Empty state */}
-          {!newsCanadaLoading && newsCanadaItems.length === 0 && (
+          {!loading && items.length === 0 && (
             <div className="card-gradient rounded-2xl shadow-elegant-lg p-12 text-center border-2 border-white/50">
               <div className="text-5xl mb-4">📭</div>
               <h2 className="text-xl font-bold text-gray-700 mb-2">No announcements yet</h2>
-              <p className="text-gray-500">New government announcements will appear here automatically.</p>
+              <p className="text-gray-500">New {cfg.name} government announcements will appear here automatically.</p>
             </div>
           )}
 
           {/* Cards */}
           <div className="flex flex-col gap-6">
-            {newsCanadaItems.map(item => {
+            {items.map(item => {
               const cs = categoryStyle(item.category);
-              const userVote = newsCanadaVotes[item.id] || null;
-              const cost = fmtCostCAD(item.cost_cad);
+              const userVote = newsUserVotes[item.id] || null;
+              const cost = fmtCost(item[cfg.costField] ?? item.cost ?? null);
               const impactScore = Math.min(10, Math.max(1, Number(item.impact_score) || 5));
-              const sourceUrl = item.source_url || 'https://pm.gc.ca/en/news';
+              const sourceUrl = item.source_url || cfg.defaultSource;
               const counts = newsVoteCounts[item.id] || { support: 0, concerned: 0, oppose: 0 };
               const totalVotes = (counts.support || 0) + (counts.concerned || 0) + (counts.oppose || 0);
 
@@ -10480,21 +10505,21 @@ function App() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-semibold text-gray-500">Your vote:</span>
                         <button
-                          onClick={() => submitNewsVote(item.id, 'support')}
+                          onClick={() => submitNewsVote(item.id, 'support', cc)}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${userVote === 'support' ? 'bg-green-600 text-white border-green-500 shadow' : 'bg-white text-green-700 border-green-300 hover:bg-green-50'}`}
                         >
                           <ThumbsUp className="w-3.5 h-3.5" />
                           Support {userVote === 'support' && counts.support > 0 ? `· ${counts.support.toLocaleString()}` : ''}
                         </button>
                         <button
-                          onClick={() => submitNewsVote(item.id, 'concerned')}
+                          onClick={() => submitNewsVote(item.id, 'concerned', cc)}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${userVote === 'concerned' ? 'bg-amber-500 text-white border-amber-400 shadow' : 'bg-white text-amber-600 border-amber-300 hover:bg-amber-50'}`}
                         >
                           <MinusCircle className="w-3.5 h-3.5" />
                           Concerned {userVote === 'concerned' && counts.concerned > 0 ? `· ${counts.concerned.toLocaleString()}` : ''}
                         </button>
                         <button
-                          onClick={() => submitNewsVote(item.id, 'oppose')}
+                          onClick={() => submitNewsVote(item.id, 'oppose', cc)}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${userVote === 'oppose' ? 'bg-red-600 text-white border-red-500 shadow' : 'bg-white text-red-700 border-red-300 hover:bg-red-50'}`}
                         >
                           <ThumbsDown className="w-3.5 h-3.5" />
@@ -12828,6 +12853,21 @@ function App() {
                 </div>
               </div>
 
+              {/* News & Announcements — UK */}
+              <div
+                onClick={() => setView('news-uk')}
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
+                style={{ animationDelay: '0.35s' }}
+              >
+                <div className="mb-4 text-4xl leading-none">📢</div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">News &amp; Announcements</h2>
+                <p className="text-gray-600 mb-4 text-sm">Latest government announcements with cost, impact, and your vote</p>
+                <div className="flex items-center gap-2 font-semibold text-sm" style={{ color: '#C8102E' }}>
+                  <span>See Latest News</span>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
+
               {/* Waste Tracker */}
               <div
                 onClick={() => setView('waste-tracker')}
@@ -12926,6 +12966,21 @@ function App() {
                 </div>
               </div>
 
+              {/* News & Announcements — Australia */}
+              <div
+                onClick={() => setView('news-australia')}
+                className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
+                style={{ animationDelay: '0.35s' }}
+              >
+                <div className="mb-4 text-4xl leading-none">📢</div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">News &amp; Announcements</h2>
+                <p className="text-gray-600 mb-4 text-sm">Latest government announcements with cost, impact, and your vote</p>
+                <div className="flex items-center gap-2 text-amber-600 font-semibold text-sm">
+                  <span>See Latest News</span>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
+
               {/* Waste Tracker */}
               <div
                 onClick={() => setView('waste-tracker')}
@@ -13016,17 +13071,17 @@ function App() {
               </div>
             </div>
 
-            {/* News & Announcements — Canada only */}
-            {!isUSA && !isAustralia && !isUK && (
+            {/* News & Announcements — Canada + USA */}
+            {!isAustralia && !isUK && (
               <div
-                onClick={() => setView('news-canada')}
+                onClick={() => setView(isUSA ? 'news-usa' : 'news-canada')}
                 className="card-gradient rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
                 style={{ animationDelay: '0.25s' }}
               >
-                <div className="text-red-600 mb-4 text-4xl leading-none">📢</div>
+                <div className="mb-4 text-4xl leading-none">📢</div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">News &amp; Announcements</h2>
                 <p className="text-gray-600 mb-4 text-sm">Latest government announcements with cost, impact, and your vote</p>
-                <div className="flex items-center gap-2 text-red-600 font-semibold text-sm">
+                <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm">
                   <span>See Latest News</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
@@ -17742,11 +17797,13 @@ function App() {
     return () => { cancelled = true; };
   }, [view, selectedCountry]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── News & Announcements (Canada) — Firestore fetch + 5-min auto-refresh ────
-  const fetchNewsCanada = async () => {
-    setNewsCanadaLoading(true);
+  // ── News & Announcements — generic Firestore fetch + 5-min auto-refresh ─────
+  const NEWS_VIEWS = { 'news-canada': 'CA', 'news-usa': 'US', 'news-uk': 'UK', 'news-australia': 'AU' };
+
+  const fetchNewsForCountry = async (cc) => {
+    setNewsLoading(prev => ({ ...prev, [cc]: true }));
     try {
-      const snap = await getDocs(query(collection(db, 'news_alerts'), where('country', '==', 'CA')));
+      const snap = await getDocs(query(collection(db, 'news_alerts'), where('country', '==', cc)));
       const items = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
         .sort((a, b) => {
@@ -17754,38 +17811,36 @@ function App() {
           const db_ = b.date?.toDate ? b.date.toDate() : new Date(b.date || 0);
           return db_ - da;
         });
-      setNewsCanadaItems(items);
+      setNewsItems(prev => ({ ...prev, [cc]: items }));
     } catch (err) {
-      console.warn('[NewsCanada] Firestore fetch failed:', err.message);
-      setNewsCanadaItems([]);
+      console.warn(`[News-${cc}] Firestore fetch failed:`, err.message);
+      setNewsItems(prev => ({ ...prev, [cc]: [] }));
     } finally {
-      setNewsCanadaLoading(false);
+      setNewsLoading(prev => ({ ...prev, [cc]: false }));
     }
   };
 
-  const fetchNewsVoteCounts = async () => {
+  const fetchNewsVoteCounts = async (cc) => {
     try {
-      const snap = await getDocs(query(collection(db, 'news_vote_counts'), where('country', '==', 'CA')));
+      const snap = await getDocs(query(collection(db, 'news_vote_counts'), where('country', '==', cc)));
       const counts = {};
       snap.forEach(d => { counts[d.id] = d.data(); });
-      setNewsVoteCounts(counts);
+      setNewsVoteCounts(prev => ({ ...prev, ...counts }));
     } catch (err) {
       console.warn('[NewsVotes] fetch counts failed:', err.message);
     }
   };
 
-  const submitNewsVote = async (itemId, newVote) => {
-    const prevVote = newsCanadaVotes[itemId] || null;
+  const submitNewsVote = async (itemId, newVote, cc) => {
+    const prevVote = newsUserVotes[itemId] || null;
     const nextVote = prevVote === newVote ? null : newVote;
 
-    // Optimistic local update — votes
-    setNewsCanadaVotes(prev => {
+    setNewsUserVotes(prev => {
       const next = { ...prev, [itemId]: nextVote };
       try { localStorage.setItem('cv_news_votes', JSON.stringify(next)); } catch (_) {}
       return next;
     });
 
-    // Optimistic local update — counts
     setNewsVoteCounts(prev => {
       const cur = prev[itemId] || { support: 0, concerned: 0, oppose: 0 };
       const next = { ...cur };
@@ -17795,20 +17850,18 @@ function App() {
     });
 
     try {
-      // Aggregate counter (one doc per news item)
-      const countUpdate = { newsId: itemId, country: 'CA', updated: serverTimestamp() };
+      const countUpdate = { newsId: itemId, country: cc, updated: serverTimestamp() };
       if (prevVote) countUpdate[prevVote] = increment(-1);
       if (nextVote) countUpdate[nextVote] = increment(1);
       if (prevVote || nextVote) {
         await setDoc(doc(db, 'news_vote_counts', itemId), countUpdate, { merge: true });
       }
-      // Individual vote record (audit trail)
       if (nextVote) {
         await addDoc(collection(db, 'news_votes'), {
           newsId: itemId,
           voteType: nextVote,
           userRegion: homeRegion || 'unknown',
-          country: 'CA',
+          country: cc,
           timestamp: serverTimestamp(),
         });
       }
@@ -17818,10 +17871,11 @@ function App() {
   };
 
   useEffect(() => {
-    if (view !== 'news-canada') return;
-    fetchNewsCanada();
-    fetchNewsVoteCounts();
-    const interval = setInterval(fetchNewsCanada, 5 * 60 * 1000);
+    const cc = NEWS_VIEWS[view];
+    if (!cc) return;
+    fetchNewsForCountry(cc);
+    fetchNewsVoteCounts(cc);
+    const interval = setInterval(() => fetchNewsForCountry(cc), 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -36595,7 +36649,10 @@ function App() {
       {view === 'au-contract-detail' && selectedAuContract && renderAuContractDetail()}
       {view === 'au-departments' && renderAuDepartments()}
       {view === 'au-department-detail' && selectedAuDepartment && renderAuDepartmentDetail()}
-      {view === 'news-canada' && renderNewsCanada()}
+      {view === 'news-canada' && renderNewsView('CA')}
+      {view === 'news-usa' && renderNewsView('US')}
+      {view === 'news-uk' && renderNewsView('UK')}
+      {view === 'news-australia' && renderNewsView('AU')}
       {view === 'waste-tracker' && renderWasteTracker()}
       
       {/* Riding selector modal */}
