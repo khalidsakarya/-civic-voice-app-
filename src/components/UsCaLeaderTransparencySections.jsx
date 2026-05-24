@@ -6,6 +6,7 @@ import {
   NOT_DISCLOSED_LABEL,
   REPORTED_HOLDINGS_LABEL,
   buildUsCaTransparencySummaryCards,
+  buildUsCaQuickStats,
   usCaAccordionSubtitle,
   usCaNeedsManualReview,
   usCaSourceUrl,
@@ -143,6 +144,16 @@ function SummaryCard({ title, lines, highlight }) {
           </p>
         ))}
       </div>
+    </div>
+  );
+}
+
+function QuickStatCard({ value, label, sub }) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white px-3 py-3 sm:px-4">
+      <p className="text-lg sm:text-xl font-black text-gray-900 leading-tight truncate">{value}</p>
+      <p className="text-[11px] font-semibold text-gray-600 mt-0.5">{label}</p>
+      {sub && <p className="text-[10px] text-gray-400 mt-0.5 leading-snug">{sub}</p>}
     </div>
   );
 }
@@ -538,6 +549,8 @@ export default function UsCaLeaderTransparencySections({ transparencyRow, loadin
 
   const summaryCards =
     !loading && transparencyRow ? buildUsCaTransparencySummaryCards(transparencyRow) : [];
+  const quickStats =
+    !loading && transparencyRow ? buildUsCaQuickStats(transparencyRow) : [];
 
   return (
     <section className="us-ca-leader-transparency">
@@ -547,6 +560,17 @@ export default function UsCaLeaderTransparencySections({ transparencyRow, loadin
           <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />
           Loading official transparency data…
         </p>
+      )}
+
+      {!loading && quickStats.length > 0 && (
+        <div className="mb-4">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-2">Quick Stats</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {quickStats.map((stat) => (
+              <QuickStatCard key={stat.id} value={stat.value} label={stat.label} sub={stat.sub} />
+            ))}
+          </div>
+        </div>
       )}
 
       {!loading && transparencyRow?.data_completeness_note && (

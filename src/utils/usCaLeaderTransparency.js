@@ -239,6 +239,82 @@ export function buildUsCaTransparencySummaryCards(row) {
   return cards;
 }
 
+/**
+ * Compact headline numbers for the Quick Stats grid at the top of the panel.
+ * Each stat has: id, value (display string), label, sub (optional sub-label).
+ * @param {Record<string, unknown>|null|undefined} row
+ */
+export function buildUsCaQuickStats(row) {
+  if (!row || typeof row !== 'object') return [];
+  const stats = [];
+
+  // Salary
+  const sal = row.salary;
+  if (sal && typeof sal === 'object' && Object.keys(sal).length > 0) {
+    const display = trim(sal.amount_text) || (sal.amount != null ? formatMoney(sal.amount, 'USD', 2) : '');
+    if (display) {
+      stats.push({ id: 'salary', value: display, label: 'Salary', sub: trim(sal.period) || 'Annual' });
+    }
+  }
+
+  // Total Assets Declared
+  const da = row.declared_assets;
+  if (da && typeof da === 'object') {
+    const n = da.row_count ?? da.rows?.length ?? null;
+    if (n != null && n > 0) {
+      stats.push({ id: 'declared_assets', value: Number(n).toLocaleString('en-US'), label: 'Assets Declared', sub: 'reported holdings (Form 700)' });
+    }
+  }
+
+  // Campaign Contributions
+  const cf = row.campaign_finance;
+  if (cf && typeof cf === 'object') {
+    const count = cf.contribution_count ?? cf.committees?.reduce((s, c) => s + (c.contribution_count ?? 0), 0) ?? null;
+    const totalText = trim(cf.total_amount_text) || (() => {
+      if (!Array.isArray(cf.committees)) return '';
+      const totalCents = cf.committees.reduce((s, c) => {
+        const n2 = Number(c.total_amount);
+        return Number.isFinite(n2) ? s + n2 : s;
+      }, 0);
+      return totalCents > 0 ? formatMoney(totalCents, 'USD', 0) : '';
+    })();
+    if (count != null) {
+      stats.push({
+        id: 'campaign_finance',
+        value: Number(count).toLocaleString('en-US'),
+        label: 'Campaign Contributions',
+        sub: totalText ? `totaling ${totalText}` : 'Cal-Access SOS data',
+      });
+    }
+  }
+
+  // Lobbying Meetings
+  const lr = row.lobbying_records;
+  if (lr && typeof lr === 'object') {
+    const n = lr.row_count ?? lr.rows?.length ?? null;
+    if (n != null && n > 0) {
+      stats.push({ id: 'lobbying_records', value: Number(n).toLocaleString('en-US'), label: 'Lobbying Meetings', sub: 'Governor-targeted (Cal-Access)' });
+    }
+  }
+
+  // Gifts Received
+  const gh = row.gifts_hospitality;
+  if (gh && typeof gh === 'object') {
+    const g = gh.gift_count ?? gh.gifts?.length ?? null;
+    if (g != null) {
+      stats.push({ id: 'gifts_hospitality', value: Number(g).toLocaleString('en-US'), label: 'Gifts Received', sub: 'Schedule D disclosures (Form 700)' });
+    }
+  }
+
+  // Recent Activity
+  const ra = row.recent_official_activity;
+  if (Array.isArray(ra) && ra.length > 0) {
+    stats.push({ id: 'recent_official_activity', value: ra.length.toLocaleString('en-US'), label: 'Press Releases', sub: 'recent official activity' });
+  }
+
+  return stats;
+}
+
 /** One-line accordion subtitle when collapsed. */
 export function usCaAccordionSubtitle(sectionKey, row) {
   const card = buildUsCaTransparencySummaryCards(row).find((c) => c.id === sectionKey);
