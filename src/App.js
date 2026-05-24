@@ -41,7 +41,7 @@ import {
   leaderProfilePanelPayloadFromExplorerItem,
 } from './utils/subnationalLeaderProfile';
 import { fetchSubnationalLeaderTransparency } from './firestore/fetchSubnationalLeaderTransparency';
-import { PILOT_LEADER_TRANSPARENCY_IDS } from './utils/subnationalLeaderTransparency';
+import { PILOT_LEADER_TRANSPARENCY_IDS, isCanadianProvincialTransparencyId } from './utils/subnationalLeaderTransparency';
 import SubnationalLeaderTransparencySections from './components/SubnationalLeaderTransparencySections';
 import CaOnLeaderTransparencySections from './components/CaOnLeaderTransparencySections';
 import UsCaLeaderTransparencySections from './components/UsCaLeaderTransparencySections';
@@ -35312,7 +35312,7 @@ function App() {
               )}
 
               {showTransparencyPilot &&
-                (leader.subnationalId === 'CA-ON' ? (
+                (isCanadianProvincialTransparencyId(leader.subnationalId) ? (
                   <CaOnLeaderTransparencySections
                     transparencyRow={subnationalLeaderTransparency}
                     loading={subnationalLeaderTransparencyLoading}

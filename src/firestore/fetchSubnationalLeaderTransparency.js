@@ -5,6 +5,7 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { applyCaOnLeaderTransparencyFields } from '../utils/caOnLeaderTransparency';
+import { isCanadianProvincialTransparencyId } from '../utils/subnationalLeaderTransparency';
 import { applyUsCaLeaderTransparencyFields } from '../utils/usCaLeaderTransparency';
 import { applyAuNswLeaderTransparencyFields } from '../utils/auNswLeaderTransparency';
 import { applyUkLonLeaderTransparencyFields } from '../utils/ukLonLeaderTransparency';
@@ -25,7 +26,7 @@ export async function fetchSubnationalLeaderTransparency(jurisdictionId) {
     const raw = snap.data();
     const rec = { id: snap.id, subnationalId: snap.id };
     applyLeaderTransparencyFieldsFromFirestore(rec, raw);
-    if (id === 'CA-ON') {
+    if (id === 'CA-ON' || isCanadianProvincialTransparencyId(id)) {
       applyCaOnLeaderTransparencyFields(rec, raw);
     }
     if (id === 'US-CA') {

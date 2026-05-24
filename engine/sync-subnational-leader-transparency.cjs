@@ -1,7 +1,7 @@
 /**
  * Sync official leader transparency data → Firestore `subnational_leader_transparency`.
  *
- * Pilot: CA-ON, US-CA, AU-NSW, UK-ENG-LON (official government / disclosure sources only).
+ * Pilot: CA provinces/territories, US-CA, AU-NSW, UK-ENG-LON (official sources only).
  *
  * Usage:
  *   node engine/sync-subnational-leader-transparency.cjs
@@ -28,6 +28,8 @@ const caOn = require('./lib/subnational-leader-transparency-ca-on.cjs');
 const auNsw = require('./lib/subnational-leader-transparency-au-nsw.cjs');
 const ukLon = require('./lib/subnational-leader-transparency-uk-lon.cjs');
 
+const caProvinces = require('./lib/subnational-leader-transparency-ca-provinces.cjs');
+
 const COLLECTION = 'subnational_leader_transparency';
 const REPORT_PATH = path.join(__dirname, 'reports', 'subnational-leader-transparency-latest.json');
 
@@ -37,6 +39,10 @@ const MODULES = {
   'AU-NSW': auNsw,
   'UK-ENG-LON': ukLon,
 };
+
+for (const id of caProvinces.CANADIAN_PROVINCE_IDS) {
+  MODULES[id] = caProvinces.createModule(id);
+}
 
 function parseArgs(argv) {
   const write = argv.includes('--write');

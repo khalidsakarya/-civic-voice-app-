@@ -4,10 +4,27 @@
 
 export const PILOT_LEADER_TRANSPARENCY_IDS = Object.freeze([
   'CA-ON',
+  'CA-BC',
+  'CA-AB',
+  'CA-SK',
+  'CA-MB',
+  'CA-QC',
+  'CA-NB',
+  'CA-NS',
+  'CA-PE',
+  'CA-NL',
+  'CA-YT',
+  'CA-NT',
+  'CA-NU',
   'US-CA',
   'UK-ENG-LON',
   'AU-NSW',
 ]);
+
+/** @param {string} id */
+export function isCanadianProvincialTransparencyId(id) {
+  return /^CA-[A-Z]{2}$/.test(String(id || '').trim());
+}
 
 export const LEADER_TRANSPARENCY_SECTION_LABELS = Object.freeze({
   salary: 'Salary',

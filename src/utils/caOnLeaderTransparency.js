@@ -148,27 +148,33 @@ export function buildCaOnTransparencySummaryCards(row) {
 
   if (caOnTransparencySectionLoaded('salary', row)) {
     const sal = row.salary;
-    const year = caOnSalaryYear(row) || '2024';
-    const benefits = caOnSalaryBenefitsText(row) || '$706.38';
+    const year = caOnSalaryYear(row) || '';
+    const benefits = caOnSalaryBenefitsText(row);
     const amount =
       sal?.amount_text?.split('(')[0]?.trim() ||
       (sal?.amount != null ? formatMoney(sal.amount, 'CAD', 2) : '');
+    const lines = [amount || 'Official salary record'];
+    if (benefits) lines.push(`Benefits ${benefits}`);
+    if (year) lines.push(`Calendar year ${year}`);
     cards.push({
       id: 'salary',
       title: 'Salary',
       highlight: true,
-      lines: [`${amount}, benefits ${benefits}`, `Calendar year ${year}`],
+      lines,
     });
   }
 
   if (caOnTransparencySectionLoaded('conflict_of_interest_filings', row)) {
     const block = row.conflict_of_interest_filings;
-    const count = block?.inquiries?.length || block?.total_requests_naming_ford || 6;
+    const count = block?.inquiries?.length ?? block?.row_count ?? 0;
     cards.push({
       id: 'conflict_of_interest_filings',
       title: 'Conflict of interest',
-      highlight: true,
-      lines: [`${count} OICO reports`, '0 breaches found'],
+      highlight: count > 0,
+      lines:
+        count > 0
+          ? [`${count} official commissioner report${count === 1 ? '' : 's'}`]
+          : [FRAMEWORK_ONLY_NOTE],
     });
   }
 

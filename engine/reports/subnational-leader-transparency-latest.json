@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-22T01:03:14.587Z",
+  "generatedAt": "2026-05-24T02:22:09.711Z",
   "mode": "write",
   "jurisdictions": [
     {
-      "id": "AU-NSW",
+      "id": "CA-BC",
       "transparency_live": true,
       "error": null,
       "sections": [
@@ -11,13 +11,13 @@
           "section": "salary",
           "loaded": true,
           "count": 4,
-          "source": "https://www.parliament.nsw.gov.au/members/Documents/LA%20Members%20Salaries%20%26%20Allowances%20July%202025.pdf"
+          "source": "https://www.leg.bc.ca/about/accountability/members-disclosures/mla-remuneration-and-expenses"
         },
         {
           "section": "financial_disclosure",
           "loaded": true,
           "count": 7,
-          "source": "https://www.parliament.nsw.gov.au/la/papers/Pages/tabled-paper-details.aspx?pk=191919"
+          "source": "https://www.leg.bc.ca/about/accountability/members-disclosures/public-disclosure-statements"
         },
         {
           "section": "assets",
@@ -28,8 +28,8 @@
         {
           "section": "stock_holdings",
           "loaded": true,
-          "count": 5,
-          "source": "https://www.parliament.nsw.gov.au/tp/files/191919/2024-25_Register%20of%20Disclosures%20by%20Members%20of%20the%20Legislative%20Assembly%20_Volume%201.pdf"
+          "count": 6,
+          "source": "https://www.leg.bc.ca/about/accountability/members-disclosures/public-disclosure-statements"
         },
         {
           "section": "campaign_finance",
@@ -52,21 +52,22 @@
         {
           "section": "recent_official_activity",
           "loaded": true,
-          "count": 8,
-          "source": "https://www.nsw.gov.au/media-releases?ministers=The%20Premier"
+          "count": 1,
+          "source": "https://news.gov.bc.ca/feed"
         }
       ],
       "field_sources": {
-        "salary": "https://www.parliament.nsw.gov.au/members/Documents/LA%20Members%20Salaries%20%26%20Allowances%20July%202025.pdf",
-        "financial_disclosure": "https://www.parliament.nsw.gov.au/la/papers/Pages/tabled-paper-details.aspx?pk=191919",
-        "declared_assets": "https://www.parliament.nsw.gov.au/tp/files/191919/2024-25_Register%20of%20Disclosures%20by%20Members%20of%20the%20Legislative%20Assembly%20_Volume%201.pdf",
-        "stock_holdings": "https://www.parliament.nsw.gov.au/tp/files/191919/2024-25_Register%20of%20Disclosures%20by%20Members%20of%20the%20Legislative%20Assembly%20_Volume%201.pdf",
-        "lobbying_records": "https://www.lobbying.nsw.gov.au/",
-        "recent_official_activity": "https://www.nsw.gov.au/media-releases?ministers=The%20Premier"
+        "financial_disclosure": "https://www.leg.bc.ca/about/accountability/members-disclosures/public-disclosure-statements",
+        "gifts_hospitality": "https://www.leg.bc.ca/about/accountability/members-disclosures/public-disclosure-statements",
+        "lobbying_records": "https://lobbyistsregistrar.bc.ca/",
+        "stock_holdings": "https://www.leg.bc.ca/about/accountability/members-disclosures/public-disclosure-statements",
+        "salary": "https://www.leg.bc.ca/about/accountability/members-disclosures/mla-remuneration-and-expenses",
+        "declared_assets": "https://www.leg.bc.ca/about/accountability/members-disclosures/public-disclosure-statements",
+        "recent_official_activity": "https://news.gov.bc.ca/feed"
       }
     },
     {
-      "id": "UK-ENG-LON",
+      "id": "CA-AB",
       "transparency_live": true,
       "error": null,
       "sections": [
@@ -80,7 +81,7 @@
           "section": "financial_disclosure",
           "loaded": true,
           "count": 7,
-          "source": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/register-of-interests"
+          "source": "https://www.assembly.ab.ca/roles/members-of-the-legislative-assembly/conflict-of-interest-commissioner"
         },
         {
           "section": "assets",
@@ -91,8 +92,8 @@
         {
           "section": "stock_holdings",
           "loaded": true,
-          "count": 5,
-          "source": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/register-of-interests"
+          "count": 6,
+          "source": "https://www.assembly.ab.ca/roles/members-of-the-legislative-assembly/conflict-of-interest-commissioner"
         },
         {
           "section": "campaign_finance",
@@ -108,25 +109,646 @@
         },
         {
           "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "recent_official_activity",
           "loaded": true,
-          "count": 80,
-          "source": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/gifts-hospitality"
+          "count": 1,
+          "source": "https://www.alberta.ca/news"
+        }
+      ],
+      "field_sources": {
+        "financial_disclosure": "https://www.assembly.ab.ca/roles/members-of-the-legislative-assembly/conflict-of-interest-commissioner",
+        "gifts_hospitality": "https://www.assembly.ab.ca/roles/members-of-the-legislative-assembly/conflict-of-interest-commissioner",
+        "lobbying_records": "https://www.alberta.ca/lobbyist-registry",
+        "stock_holdings": "https://www.assembly.ab.ca/roles/members-of-the-legislative-assembly/conflict-of-interest-commissioner",
+        "declared_assets": "https://www.assembly.ab.ca/roles/members-of-the-legislative-assembly/conflict-of-interest-commissioner",
+        "recent_official_activity": "https://www.alberta.ca/news"
+      }
+    },
+    {
+      "id": "CA-SK",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": true,
+          "count": 7,
+          "source": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/"
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": true,
+          "count": 6,
+          "source": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/"
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "recent_official_activity",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        }
+      ],
+      "field_sources": {
+        "financial_disclosure": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/",
+        "gifts_hospitality": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/",
+        "lobbying_records": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/",
+        "stock_holdings": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/",
+        "declared_assets": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/"
+      }
+    },
+    {
+      "id": "CA-MB",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": true,
+          "count": 7,
+          "source": "https://www.gov.mb.ca/oeci/"
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": true,
+          "count": 6,
+          "source": "https://www.gov.mb.ca/oeci/"
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "recent_official_activity",
+          "loaded": true,
+          "count": 2,
+          "source": "https://news.gov.mb.ca/news/index.rss"
+        }
+      ],
+      "field_sources": {
+        "financial_disclosure": "https://www.gov.mb.ca/oeci/",
+        "gifts_hospitality": "https://www.gov.mb.ca/oeci/",
+        "lobbying_records": "https://www.gov.mb.ca/oeci/",
+        "stock_holdings": "https://www.gov.mb.ca/oeci/",
+        "declared_assets": "https://www.gov.mb.ca/oeci/",
+        "recent_official_activity": "https://news.gov.mb.ca/news/index.rss"
+      }
+    },
+    {
+      "id": "CA-QC",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": true,
+          "count": 7,
+          "source": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/"
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": true,
+          "count": 6,
+          "source": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/"
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
         },
         {
           "section": "recent_official_activity",
           "loaded": true,
           "count": 8,
-          "source": "https://www.london.gov.uk/media-centre/mayors-press-releases"
+          "source": "https://www.premier-ministre.gouv.qc.ca/premier-ministre/nouvelles/"
         }
       ],
       "field_sources": {
-        "gifts_hospitality": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/gifts-hospitality",
-        "conflict_disclosures": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/gifts-hospitality",
-        "financial_disclosure": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/register-of-interests",
-        "declared_assets": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/register-of-interests",
-        "stock_holdings": "https://www.london.gov.uk/who-we-are/what-mayor-does/mayor-and-his-team/sadiq-khan/register-of-interests",
-        "lobbying_records": "https://www.london.gov.uk/who-we-are/governance-and-spending/decisions-and-governance/meetings-and-decisions",
-        "recent_official_activity": "https://www.london.gov.uk/media-centre/mayors-press-releases"
+        "financial_disclosure": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/",
+        "gifts_hospitality": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/",
+        "lobbying_records": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/",
+        "stock_holdings": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/",
+        "declared_assets": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/",
+        "recent_official_activity": "https://www.premier-ministre.gouv.qc.ca/premier-ministre/nouvelles/"
+      }
+    },
+    {
+      "id": "CA-NB",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": true,
+          "count": 7,
+          "source": "https://gnb.ca/en/org/office-of-the-premier.html"
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": true,
+          "count": 6,
+          "source": "https://gnb.ca/en/org/office-of-the-premier.html"
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "recent_official_activity",
+          "loaded": true,
+          "count": 2,
+          "source": "https://gnb.ca/en/org/office-of-the-premier.html"
+        }
+      ],
+      "field_sources": {
+        "financial_disclosure": "https://gnb.ca/en/org/office-of-the-premier.html",
+        "gifts_hospitality": "https://gnb.ca/en/org/office-of-the-premier.html",
+        "lobbying_records": "https://gnb.ca/en/org/office-of-the-premier.html",
+        "stock_holdings": "https://gnb.ca/en/org/office-of-the-premier.html",
+        "recent_official_activity": "https://gnb.ca/en/org/office-of-the-premier.html"
+      }
+    },
+    {
+      "id": "CA-NS",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": true,
+          "count": 7,
+          "source": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures"
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": true,
+          "count": 6,
+          "source": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures"
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "recent_official_activity",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        }
+      ],
+      "field_sources": {
+        "financial_disclosure": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures",
+        "gifts_hospitality": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures",
+        "lobbying_records": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures",
+        "stock_holdings": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures",
+        "declared_assets": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures"
+      }
+    },
+    {
+      "id": "CA-PE",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": true,
+          "count": 7,
+          "source": "https://www.assembly.pe.ca/conflict-of-interest/disclosures"
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": true,
+          "count": 6,
+          "source": "https://www.assembly.pe.ca/conflict-of-interest/disclosures"
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "recent_official_activity",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        }
+      ],
+      "field_sources": {
+        "financial_disclosure": "https://www.assembly.pe.ca/conflict-of-interest/disclosures",
+        "gifts_hospitality": "https://www.assembly.pe.ca/conflict-of-interest/disclosures",
+        "lobbying_records": "https://www.assembly.pe.ca/conflict-of-interest/disclosures",
+        "stock_holdings": "https://www.assembly.pe.ca/conflict-of-interest/disclosures",
+        "declared_assets": "https://www.assembly.pe.ca/conflict-of-interest/disclosures"
+      }
+    },
+    {
+      "id": "CA-NL",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": true,
+          "count": 7,
+          "source": "https://www.assembly.nl.ca/"
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": true,
+          "count": 6,
+          "source": "https://www.assembly.nl.ca/"
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "recent_official_activity",
+          "loaded": true,
+          "count": 4,
+          "source": "https://www.premier.gov.nl.ca/news/"
+        }
+      ],
+      "field_sources": {
+        "financial_disclosure": "https://www.assembly.nl.ca/",
+        "gifts_hospitality": "https://www.assembly.nl.ca/",
+        "lobbying_records": "https://www.assembly.nl.ca/",
+        "stock_holdings": "https://www.assembly.nl.ca/",
+        "declared_assets": "https://www.assembly.nl.ca/",
+        "recent_official_activity": "https://www.premier.gov.nl.ca/news/"
+      }
+    },
+    {
+      "id": "CA-YT",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": true,
+          "count": 7,
+          "source": "https://yukon.ca/en/elected-officials/conflict-interest-commissioner"
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": true,
+          "count": 6,
+          "source": "https://yukon.ca/en/elected-officials/conflict-interest-commissioner"
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "recent_official_activity",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        }
+      ],
+      "field_sources": {
+        "financial_disclosure": "https://yukon.ca/en/elected-officials/conflict-interest-commissioner",
+        "gifts_hospitality": "https://yukon.ca/en/elected-officials/conflict-interest-commissioner",
+        "lobbying_records": "https://yukon.ca/en/elected-officials/conflict-interest-commissioner",
+        "stock_holdings": "https://yukon.ca/en/elected-officials/conflict-interest-commissioner"
+      }
+    },
+    {
+      "id": "CA-NT",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": true,
+          "count": 7,
+          "source": "https://www.ntassembly.ca/integrity-commissioner"
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": true,
+          "count": 6,
+          "source": "https://www.ntassembly.ca/integrity-commissioner"
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "recent_official_activity",
+          "loaded": true,
+          "count": 2,
+          "source": "https://www.gov.nt.ca/en/newsroom/news-releases"
+        }
+      ],
+      "field_sources": {
+        "financial_disclosure": "https://www.ntassembly.ca/integrity-commissioner",
+        "gifts_hospitality": "https://www.ntassembly.ca/integrity-commissioner",
+        "lobbying_records": "https://www.ntassembly.ca/integrity-commissioner",
+        "stock_holdings": "https://www.ntassembly.ca/integrity-commissioner",
+        "declared_assets": "https://www.ntassembly.ca/integrity-commissioner",
+        "recent_official_activity": "https://www.gov.nt.ca/en/newsroom/news-releases"
+      }
+    },
+    {
+      "id": "CA-NU",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": true,
+          "count": 7,
+          "source": "https://assembly.nu.ca/about/conflict-interest-commissioner"
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": true,
+          "count": 6,
+          "source": "https://assembly.nu.ca/about/conflict-interest-commissioner"
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "recent_official_activity",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        }
+      ],
+      "field_sources": {
+        "financial_disclosure": "https://assembly.nu.ca/about/conflict-interest-commissioner",
+        "gifts_hospitality": "https://assembly.nu.ca/about/conflict-interest-commissioner",
+        "lobbying_records": "https://assembly.nu.ca/about/conflict-interest-commissioner",
+        "stock_holdings": "https://assembly.nu.ca/about/conflict-interest-commissioner"
       }
     }
   ]
