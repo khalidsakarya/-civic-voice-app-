@@ -796,111 +796,10 @@ const DETAIL_COMPONENTS = {
   recent_official_activity: DetailRecentActivity,
 };
 
-function memberTypeText(m) {
-  return String(m.type ?? m.role ?? m.position ?? m.title ?? m.portfolio ?? '');
-}
-
-function CabinetMembers({ cabinetData }) {
-  const [open, setOpen] = useState(false);
-
-  if (cabinetData === null) {
-    return (
-      <section>
-        <p className="panel-section-label">Cabinet</p>
-        <p className="text-xs text-gray-400 italic">Loading cabinet members…</p>
-      </section>
-    );
-  }
-  if (cabinetData.length === 0) return null;
-
-  // eslint-disable-next-line no-console
-  console.log('[CabinetMembers] received', cabinetData.length, 'members; sample:', cabinetData[0]);
-
-  const secretaries = cabinetData.filter((m) => /secretary/i.test(memberTypeText(m)));
-  const directors = cabinetData.filter((m) => /director/i.test(memberTypeText(m)));
-  const others = cabinetData.filter(
-    (m) => !secretaries.includes(m) && !directors.includes(m),
-  );
-
-  const subtitle = [
-    secretaries.length > 0 && `${secretaries.length} secretaries`,
-    directors.length > 0 && `${directors.length} directors`,
-    others.length > 0 && `${others.length} other`,
-  ]
-    .filter(Boolean)
-    .join(' · ');
-
-  return (
-    <section>
-      <p className="panel-section-label">Cabinet</p>
-      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left hover:bg-gray-50 transition-colors touch-manipulation"
-        >
-          <div>
-            <p className="text-sm font-semibold text-gray-900">Cabinet Members</p>
-            <p className="text-xs text-gray-500 mt-0.5">{cabinetData.length} members · {subtitle}</p>
-          </div>
-          <ChevronDown
-            className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-            aria-hidden
-          />
-        </button>
-
-        {open && (
-          <div className="px-4 pb-4 pt-1 border-t border-gray-100 space-y-4">
-            {secretaries.length > 0 && (
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-2">Cabinet Secretaries</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                  {secretaries.map((m, i) => (
-                    <div key={i} className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2">
-                      <p className="text-xs font-semibold text-gray-900 leading-snug">{m.name}</p>
-                      <p className="text-[11px] text-gray-500 mt-0.5">{m.portfolio || m.title || m.position || m.role || ''}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {directors.length > 0 && (
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-2">Agency Directors</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                  {directors.map((m, i) => (
-                    <div key={i} className="rounded-lg bg-gray-50 border border-gray-200 px-3 py-2">
-                      <p className="text-xs font-semibold text-gray-900 leading-snug">{m.name}</p>
-                      <p className="text-[11px] text-gray-500 mt-0.5">{m.portfolio || m.title || m.position || m.role || ''}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {others.length > 0 && (
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-2">Other</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                  {others.map((m, i) => (
-                    <div key={i} className="rounded-lg bg-gray-50 border border-gray-200 px-3 py-2">
-                      <p className="text-xs font-semibold text-gray-900 leading-snug">{m.name}</p>
-                      <p className="text-[11px] text-gray-500 mt-0.5">{m.portfolio || m.title || m.position || m.role || ''}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
 /**
- * @param {{ transparencyRow: Record<string, unknown>|null, loading: boolean, cabinetData: Array|null }} props
+ * @param {{ transparencyRow: Record<string, unknown>|null, loading: boolean }} props
  */
-export default function UsCaLeaderTransparencySections({ transparencyRow, loading, cabinetData }) {
+export default function UsCaLeaderTransparencySections({ transparencyRow, loading }) {
   const [openSections, setOpenSections] = useState(() => ({}));
 
   const toggleSection = useCallback((key) => {
@@ -913,9 +812,7 @@ export default function UsCaLeaderTransparencySections({ transparencyRow, loadin
     !loading && transparencyRow ? buildUsCaQuickStats(transparencyRow) : [];
 
   return (
-    <div className="space-y-7">
-      <CabinetMembers cabinetData={cabinetData} />
-      <section className="us-ca-leader-transparency">
+    <section className="us-ca-leader-transparency">
       <p className="panel-section-label">Official transparency</p>
       {loading && (
         <p className="text-xs text-gray-500 mb-3 flex items-center gap-2">
@@ -990,6 +887,5 @@ export default function UsCaLeaderTransparencySections({ transparencyRow, loadin
         </div>
       )}
     </section>
-    </div>
   );
 }

@@ -1847,7 +1847,6 @@ function App() {
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [subnationalLeaderTransparency, setSubnationalLeaderTransparency] = useState(null);
   const [subnationalLeaderTransparencyLoading, setSubnationalLeaderTransparencyLoading] = useState(false);
-  const [usCaLeaderCabinetData, setUsCaLeaderCabinetData] = useState(null);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -4090,36 +4089,6 @@ function App() {
     };
   }, [showLeaderPanel, selectedLeader?.subnationalId, view, selectedAuLeader]);
 
-  // Fetch US-CA cabinet from subnational_jurisdictions/US-CA when governor panel opens
-  useEffect(() => {
-    if (!showLeaderPanel || selectedLeader?.subnationalId !== 'US-CA') {
-      setUsCaLeaderCabinetData(null);
-      return undefined;
-    }
-    if (usCaLeaderCabinetData !== null) return undefined;
-    let cancelled = false;
-    getDoc(doc(db, 'subnational_jurisdictions', 'US-CA')).then((snap) => {
-      if (cancelled) return;
-      if (!snap.exists()) {
-        console.warn('[US-CA cabinet] subnational_jurisdictions/US-CA document does not exist');
-        setUsCaLeaderCabinetData([]);
-        return;
-      }
-      const d = snap.data();
-      // eslint-disable-next-line no-console
-      console.log('[US-CA cabinet] raw subnational_jurisdictions/US-CA fields:', Object.keys(d));
-      // eslint-disable-next-line no-console
-      console.log('[US-CA cabinet] cabinet field value:', d.cabinet);
-      const arr = Array.isArray(d.cabinet) ? d.cabinet : (Array.isArray(d.cabinet_members) ? d.cabinet_members : []);
-      // eslint-disable-next-line no-console
-      if (arr.length > 0) console.log('[US-CA cabinet] first member:', arr[0]);
-      setUsCaLeaderCabinetData(arr);
-    }).catch((err) => {
-      console.warn('[US-CA cabinet] fetch error:', err);
-      if (!cancelled) setUsCaLeaderCabinetData([]);
-    });
-    return () => { cancelled = true; };
-  }, [showLeaderPanel, selectedLeader?.subnationalId, usCaLeaderCabinetData]);
 
   // Shared helper: fetch member_bios for a given member; tries bioguide_id first, then memberName
   const fetchMemberBio = async (member) => {
@@ -13544,7 +13513,7 @@ function App() {
   useEffect(() => {
     const id = selectedProvince?.subnationalId;
     const isUSA = selectedCountry?.type === 'usa';
-    if (!id || isUSA) {
+    if (!id || (isUSA && id !== 'US-CA')) {
       setProvinceSupplementalData(null);
       return undefined;
     }
@@ -13947,6 +13916,78 @@ function App() {
               {!noDeputy && <p className="text-xs text-emerald-400 font-semibold mt-3 opacity-0 group-hover:opacity-100 transition-opacity text-right">View full profile →</p>}
             </div>
           </div>
+
+          {/* Cabinet Members (US-CA) */}
+          {isUSA && item.subnationalId === 'US-CA' && (() => {
+            const cabinet = provinceSupplementalData?.cabinet;
+            if (!cabinet || cabinet.length === 0) return null;
+            const secretaries = cabinet.filter(m => /secretary/i.test(String(m.type ?? m.role ?? m.position ?? m.title ?? m.portfolio ?? '')));
+            const directors = cabinet.filter(m => /director/i.test(String(m.type ?? m.role ?? m.position ?? m.title ?? m.portfolio ?? '')));
+            const others = cabinet.filter(m => !secretaries.includes(m) && !directors.includes(m));
+            const isOpen = !!expandedSections['us-ca-cabinet'];
+            return (
+              <div className="mt-6 bg-white rounded-2xl shadow-elegant overflow-hidden">
+                <button
+                  className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                  onClick={() => toggleSection('us-ca-cabinet')}
+                >
+                  <div>
+                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Cabinet Members</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {cabinet.length} members
+                      {secretaries.length > 0 ? ` · ${secretaries.length} secretaries` : ''}
+                      {directors.length > 0 ? ` · ${directors.length} directors` : ''}
+                      {others.length > 0 ? ` · ${others.length} other` : ''}
+                    </p>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5 pt-1">
+                    {secretaries.length > 0 && (
+                      <>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Cabinet Secretaries</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                          {secretaries.map((m, i) => (
+                            <div key={i} className="bg-blue-50 rounded-lg px-3 py-2">
+                              <p className="text-sm font-semibold text-gray-800">{m.name}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">{m.portfolio || m.title || m.position || m.role || ''}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    {directors.length > 0 && (
+                      <>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Agency Directors</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                          {directors.map((m, i) => (
+                            <div key={i} className="bg-gray-50 rounded-lg px-3 py-2">
+                              <p className="text-sm font-semibold text-gray-800">{m.name}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">{m.portfolio || m.title || m.position || m.role || ''}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    {others.length > 0 && (
+                      <>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Other</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {others.map((m, i) => (
+                            <div key={i} className="bg-gray-50 rounded-lg px-3 py-2">
+                              <p className="text-sm font-semibold text-gray-800">{m.name}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">{m.portfolio || m.title || m.position || m.role || ''}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Cabinet Members (all Canadian provinces) */}
           {!isUSA && (() => {
@@ -35353,7 +35394,6 @@ function App() {
                   <UsCaLeaderTransparencySections
                     transparencyRow={subnationalLeaderTransparency}
                     loading={subnationalLeaderTransparencyLoading}
-                    cabinetData={usCaLeaderCabinetData}
                   />
                 ) : leader.subnationalId === 'AU-NSW' ? (
                   <AuNswLeaderTransparencySections
