@@ -35163,9 +35163,9 @@ function App() {
     const useOfficial = !!leader.useOfficialProfileOnly;
     const profilePending = !!leader.leaderProfilePending;
     const showTransparencyPilot =
-      useOfficial &&
       leader.subnationalId &&
-      PILOT_LEADER_TRANSPARENCY_IDS.includes(leader.subnationalId);
+      PILOT_LEADER_TRANSPARENCY_IDS.includes(leader.subnationalId) &&
+      (useOfficial || isCanadianProvincialTransparencyId(leader.subnationalId));
     const partyColorMap = {
       'Republican': '#dc2626',            'Democratic': '#2563eb',
       'NDP': '#f97316',                   'Liberal': '#dc2626',
