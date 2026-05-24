@@ -531,44 +531,88 @@ function DetailGiftsHospitality({ row }) {
 function DetailCampaignFinance({ row }) {
   const cf = row?.campaign_finance;
   const src = row?.field_sources?.campaign_finance;
+
+  const committees = Array.isArray(cf?.committees) ? cf.committees : [];
+  const allItems = Array.isArray(cf?.items) ? cf.items : [];
+  const unitemized = allItems.find((it) =>
+    /unitemized/i.test(String(it?.name ?? it?.contributor ?? '')),
+  );
+  const namedItems = allItems
+    .filter((it) => !/unitemized/i.test(String(it?.name ?? it?.contributor ?? '')))
+    .slice(0, 10);
+
+  const totalContribs =
+    cf?.contribution_count ??
+    committees.reduce((s, c) => s + (c.contribution_count ?? 0), 0);
+  const totalText = cf?.total_amount_text || '';
+  const campaignCount = committees.length || null;
+  const earliestYear = committees.length
+    ? Math.min(...committees.map((c) => parseInt(c.cycle_start_year ?? c.year ?? '9999', 10)))
+    : null;
+
+  const bigStat =
+    totalContribs && totalText && campaignCount && earliestYear < 9999
+      ? `${Number(totalContribs).toLocaleString('en-US')} contributions totaling ${totalText} across ${campaignCount} campaigns since ${earliestYear}`
+      : cf?.summary || null;
+
   return (
-    <div className="pt-3 space-y-2">
-      {cf?.summary && <p className="text-xs text-gray-700 leading-relaxed">{cf.summary}</p>}
-      {cf?.data_as_of && <p className="text-xs text-gray-500">Data as of {cf.data_as_of}</p>}
-      {Array.isArray(cf?.committees) && cf.committees.length > 0 && (
-        <ul className="space-y-2">
-          {cf.committees.map((c) => (
-            <li key={c.committee_id} className="text-xs border border-gray-200 rounded-lg p-2.5 bg-gray-50">
-              <p className="font-medium text-gray-900">{c.name}</p>
-              <p className="text-gray-700 mt-0.5">
-                {c.total_amount_text} · {c.contribution_count?.toLocaleString('en-US')} contributions
-              </p>
-              {c.cal_access_url && sourceLink(c.cal_access_url, 'View committee in Cal-Access')}
-            </li>
-          ))}
-        </ul>
+    <div className="pt-3 space-y-3">
+      {bigStat && (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50/80 px-3 py-3">
+          <p className="text-sm font-semibold text-gray-900 leading-snug">{bigStat}</p>
+          {cf?.data_as_of && <p className="text-[11px] text-gray-500 mt-1">Data as of {cf.data_as_of}</p>}
+        </div>
       )}
-      {Array.isArray(cf?.items) && cf.items.length > 0 && (
-        <>
-          <p className="text-xs font-semibold text-gray-800 mt-2">Largest contributors (sample)</p>
-          <ul className="space-y-2">
-            {cf.items.map((it, i) => (
-              <li
-                key={i}
-                className="text-xs text-gray-700 flex justify-between gap-3 py-1.5 border-b border-gray-100 last:border-0"
-              >
-                <span className="min-w-0">{it.name || it.contributor}</span>
-                <span className="font-medium shrink-0">
-                  {it.amount_text || (it.amount != null ? formatMoney(it.amount, 'USD', 2) : '')}
-                </span>
+
+      {committees.length > 0 && (
+        <div>
+          <p className="text-xs font-bold text-gray-700 mb-1.5">Campaign committees</p>
+          <ul className="space-y-1.5">
+            {committees.map((c) => (
+              <li key={c.committee_id} className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-xs font-semibold text-gray-900 leading-snug">{c.name}</p>
+                  {c.cycle_start_year && (
+                    <span className="text-[10px] text-gray-400 shrink-0 mt-0.5">{c.cycle_start_year}</span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  {c.total_amount_text}
+                  {c.contribution_count != null && ` · ${Number(c.contribution_count).toLocaleString('en-US')} contributions`}
+                </p>
               </li>
             ))}
           </ul>
-        </>
+        </div>
       )}
-      {cf?.top_contributors_note && (
-        <p className="text-xs text-gray-500 leading-relaxed">{cf.top_contributors_note}</p>
+
+      {namedItems.length > 0 && (
+        <div>
+          <p className="text-xs font-bold text-gray-700 mb-1.5">Top contributors</p>
+          <div className="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+            {namedItems.map((it, i) => (
+              <div key={i} className="flex items-center justify-between gap-3 px-3 py-1.5">
+                <span className="text-xs text-gray-700 min-w-0 truncate">{it.name || it.contributor}</span>
+                <span className="text-xs font-medium text-gray-900 shrink-0">
+                  {it.amount_text || (it.amount != null ? formatMoney(it.amount, 'USD', 2) : '')}
+                </span>
+              </div>
+            ))}
+          </div>
+          {unitemized && (
+            <p className="text-[11px] text-gray-500 mt-1.5">
+              + Unitemized contributions:{' '}
+              <span className="font-medium text-gray-700">
+                {unitemized.amount_text || (unitemized.amount != null ? formatMoney(unitemized.amount, 'USD', 2) : '')}
+              </span>
+            </p>
+          )}
+          {cf?.top_contributors_note && (
+            <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">{cf.top_contributors_note}</p>
+          )}
+        </div>
       )}
+
       {sourceLink(src, 'SOS Power Search (Cal-Access data)')}
     </div>
   );
