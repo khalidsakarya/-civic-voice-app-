@@ -29,6 +29,7 @@ const auNsw = require('./lib/subnational-leader-transparency-au-nsw.cjs');
 const ukLon = require('./lib/subnational-leader-transparency-uk-lon.cjs');
 
 const caProvinces = require('./lib/subnational-leader-transparency-ca-provinces.cjs');
+const usStates = require('./lib/subnational-leader-transparency-us-states.cjs');
 
 const COLLECTION = 'subnational_leader_transparency';
 const REPORT_PATH = path.join(__dirname, 'reports', 'subnational-leader-transparency-latest.json');
@@ -42,6 +43,10 @@ const MODULES = {
 
 for (const id of caProvinces.CANADIAN_PROVINCE_IDS) {
   MODULES[id] = caProvinces.createModule(id);
+}
+
+for (const id of usStates.CONFIGURED_US_STATE_IDS) {
+  MODULES[id] = usStates.createModule(id);
 }
 
 function parseArgs(argv) {

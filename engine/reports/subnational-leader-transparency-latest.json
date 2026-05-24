@@ -1,23 +1,23 @@
 {
-  "generatedAt": "2026-05-24T02:22:09.711Z",
+  "generatedAt": "2026-05-24T22:46:05.450Z",
   "mode": "write",
   "jurisdictions": [
     {
-      "id": "CA-BC",
+      "id": "US-OH",
       "transparency_live": true,
       "error": null,
       "sections": [
         {
           "section": "salary",
-          "loaded": true,
-          "count": 4,
-          "source": "https://www.leg.bc.ca/about/accountability/members-disclosures/mla-remuneration-and-expenses"
+          "loaded": false,
+          "count": 0,
+          "source": null
         },
         {
           "section": "financial_disclosure",
           "loaded": true,
-          "count": 7,
-          "source": "https://www.leg.bc.ca/about/accountability/members-disclosures/public-disclosure-statements"
+          "count": 8,
+          "source": "https://www.ethics.ohio.gov/financial-disclosure"
         },
         {
           "section": "assets",
@@ -29,13 +29,13 @@
           "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://www.leg.bc.ca/about/accountability/members-disclosures/public-disclosure-statements"
+          "source": "https://ohio.gov/government/resources/ethics"
         },
         {
           "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
+          "loaded": true,
+          "count": 6,
+          "source": "https://www.ohiosos.gov/campaign-finance/"
         },
         {
           "section": "lobbying_disclosures",
@@ -52,22 +52,23 @@
         {
           "section": "recent_official_activity",
           "loaded": true,
-          "count": 1,
-          "source": "https://news.gov.bc.ca/feed"
+          "count": 3,
+          "source": "https://governor.ohio.gov/media/news"
         }
       ],
       "field_sources": {
-        "financial_disclosure": "https://www.leg.bc.ca/about/accountability/members-disclosures/public-disclosure-statements",
-        "gifts_hospitality": "https://www.leg.bc.ca/about/accountability/members-disclosures/public-disclosure-statements",
-        "lobbying_records": "https://lobbyistsregistrar.bc.ca/",
-        "stock_holdings": "https://www.leg.bc.ca/about/accountability/members-disclosures/public-disclosure-statements",
-        "salary": "https://www.leg.bc.ca/about/accountability/members-disclosures/mla-remuneration-and-expenses",
-        "declared_assets": "https://www.leg.bc.ca/about/accountability/members-disclosures/public-disclosure-statements",
-        "recent_official_activity": "https://news.gov.bc.ca/feed"
+        "gifts_hospitality": "https://ohio.gov/government/resources/ethics",
+        "lobbying_records": "https://www.ohio.gov/government/lobbying",
+        "stock_holdings": "https://ohio.gov/government/resources/ethics",
+        "financial_disclosure": "https://www.ethics.ohio.gov/financial-disclosure",
+        "declared_assets": "https://www.ethics.ohio.gov/financial-disclosure",
+        "campaign_finance": "https://www.ohiosos.gov/campaign-finance/",
+        "recent_official_activity": "https://governor.ohio.gov/media/news",
+        "contact_info": "https://governor.ohio.gov/"
       }
     },
     {
-      "id": "CA-AB",
+      "id": "US-MI",
       "transparency_live": true,
       "error": null,
       "sections": [
@@ -80,8 +81,8 @@
         {
           "section": "financial_disclosure",
           "loaded": true,
-          "count": 7,
-          "source": "https://www.assembly.ab.ca/roles/members-of-the-legislative-assembly/conflict-of-interest-commissioner"
+          "count": 8,
+          "source": "https://www.michigan.gov/sos/elections/disclosure/personal-financial-disclosure"
         },
         {
           "section": "assets",
@@ -93,201 +94,13 @@
           "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://www.assembly.ab.ca/roles/members-of-the-legislative-assembly/conflict-of-interest-commissioner"
+          "source": "https://www.michigan.gov/sos/elections/disclosure/personal-financial-disclosure"
         },
         {
           "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "lobbying_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "conflict_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "recent_official_activity",
-          "loaded": true,
-          "count": 1,
-          "source": "https://www.alberta.ca/news"
-        }
-      ],
-      "field_sources": {
-        "financial_disclosure": "https://www.assembly.ab.ca/roles/members-of-the-legislative-assembly/conflict-of-interest-commissioner",
-        "gifts_hospitality": "https://www.assembly.ab.ca/roles/members-of-the-legislative-assembly/conflict-of-interest-commissioner",
-        "lobbying_records": "https://www.alberta.ca/lobbyist-registry",
-        "stock_holdings": "https://www.assembly.ab.ca/roles/members-of-the-legislative-assembly/conflict-of-interest-commissioner",
-        "declared_assets": "https://www.assembly.ab.ca/roles/members-of-the-legislative-assembly/conflict-of-interest-commissioner",
-        "recent_official_activity": "https://www.alberta.ca/news"
-      }
-    },
-    {
-      "id": "CA-SK",
-      "transparency_live": true,
-      "error": null,
-      "sections": [
-        {
-          "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "financial_disclosure",
-          "loaded": true,
-          "count": 7,
-          "source": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/"
-        },
-        {
-          "section": "assets",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/"
-        },
-        {
-          "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "lobbying_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "conflict_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "recent_official_activity",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        }
-      ],
-      "field_sources": {
-        "financial_disclosure": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/",
-        "gifts_hospitality": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/",
-        "lobbying_records": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/",
-        "stock_holdings": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/",
-        "declared_assets": "https://www.legassembly.sk.ca/mlas/mla-disclosure-statements/"
-      }
-    },
-    {
-      "id": "CA-MB",
-      "transparency_live": true,
-      "error": null,
-      "sections": [
-        {
-          "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "financial_disclosure",
-          "loaded": true,
-          "count": 7,
-          "source": "https://www.gov.mb.ca/oeci/"
-        },
-        {
-          "section": "assets",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "stock_holdings",
-          "loaded": true,
-          "count": 6,
-          "source": "https://www.gov.mb.ca/oeci/"
-        },
-        {
-          "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "lobbying_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "conflict_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "recent_official_activity",
-          "loaded": true,
-          "count": 2,
-          "source": "https://news.gov.mb.ca/news/index.rss"
-        }
-      ],
-      "field_sources": {
-        "financial_disclosure": "https://www.gov.mb.ca/oeci/",
-        "gifts_hospitality": "https://www.gov.mb.ca/oeci/",
-        "lobbying_records": "https://www.gov.mb.ca/oeci/",
-        "stock_holdings": "https://www.gov.mb.ca/oeci/",
-        "declared_assets": "https://www.gov.mb.ca/oeci/",
-        "recent_official_activity": "https://news.gov.mb.ca/news/index.rss"
-      }
-    },
-    {
-      "id": "CA-QC",
-      "transparency_live": true,
-      "error": null,
-      "sections": [
-        {
-          "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "financial_disclosure",
-          "loaded": true,
-          "count": 7,
-          "source": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/"
-        },
-        {
-          "section": "assets",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "stock_holdings",
-          "loaded": true,
-          "count": 6,
-          "source": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/"
-        },
-        {
-          "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
+          "source": "https://www.michigan.gov/sos/elections/disclosure/cfr"
         },
         {
           "section": "lobbying_disclosures",
@@ -305,20 +118,22 @@
           "section": "recent_official_activity",
           "loaded": true,
           "count": 8,
-          "source": "https://www.premier-ministre.gouv.qc.ca/premier-ministre/nouvelles/"
+          "source": "https://www.michigan.gov/governor/"
         }
       ],
       "field_sources": {
-        "financial_disclosure": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/",
-        "gifts_hospitality": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/",
-        "lobbying_records": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/",
-        "stock_holdings": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/",
-        "declared_assets": "https://www.ccei.qc.ca/fr/declarations/declarations-des-deputes/",
-        "recent_official_activity": "https://www.premier-ministre.gouv.qc.ca/premier-ministre/nouvelles/"
+        "gifts_hospitality": "https://www.michigan.gov/sos/elections/disclosure/personal-financial-disclosure",
+        "lobbying_records": "https://www.michigan.gov/sos/elections/disclosure/lobby",
+        "stock_holdings": "https://www.michigan.gov/sos/elections/disclosure/personal-financial-disclosure",
+        "financial_disclosure": "https://www.michigan.gov/sos/elections/disclosure/personal-financial-disclosure",
+        "declared_assets": "https://www.michigan.gov/sos/elections/disclosure/personal-financial-disclosure",
+        "campaign_finance": "https://www.michigan.gov/sos/elections/disclosure/cfr",
+        "recent_official_activity": "https://www.michigan.gov/governor/",
+        "contact_info": "https://www.michigan.gov/governor/"
       }
     },
     {
-      "id": "CA-NB",
+      "id": "US-GA",
       "transparency_live": true,
       "error": null,
       "sections": [
@@ -331,8 +146,8 @@
         {
           "section": "financial_disclosure",
           "loaded": true,
-          "count": 7,
-          "source": "https://gnb.ca/en/org/office-of-the-premier.html"
+          "count": 8,
+          "source": "https://media.ethics.ga.gov/Search/Financial/Financial_ByName.aspx"
         },
         {
           "section": "assets",
@@ -344,13 +159,13 @@
           "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://gnb.ca/en/org/office-of-the-premier.html"
+          "source": "https://ethics.ga.gov/"
         },
         {
           "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
+          "loaded": true,
+          "count": 6,
+          "source": "https://media.ethics.ga.gov/Search/Campaign/Campaign_ByName.aspx"
         },
         {
           "section": "lobbying_disclosures",
@@ -367,20 +182,23 @@
         {
           "section": "recent_official_activity",
           "loaded": true,
-          "count": 2,
-          "source": "https://gnb.ca/en/org/office-of-the-premier.html"
+          "count": 8,
+          "source": "https://gov.georgia.gov/press-releases"
         }
       ],
       "field_sources": {
-        "financial_disclosure": "https://gnb.ca/en/org/office-of-the-premier.html",
-        "gifts_hospitality": "https://gnb.ca/en/org/office-of-the-premier.html",
-        "lobbying_records": "https://gnb.ca/en/org/office-of-the-premier.html",
-        "stock_holdings": "https://gnb.ca/en/org/office-of-the-premier.html",
-        "recent_official_activity": "https://gnb.ca/en/org/office-of-the-premier.html"
+        "gifts_hospitality": "https://ethics.ga.gov/",
+        "lobbying_records": "https://ethics.ga.gov/lobbyist-reporting/",
+        "stock_holdings": "https://ethics.ga.gov/",
+        "financial_disclosure": "https://media.ethics.ga.gov/Search/Financial/Financial_ByName.aspx",
+        "declared_assets": "https://media.ethics.ga.gov/Search/Financial/Financial_ByName.aspx",
+        "campaign_finance": "https://media.ethics.ga.gov/Search/Campaign/Campaign_ByName.aspx",
+        "recent_official_activity": "https://gov.georgia.gov/press-releases",
+        "contact_info": "https://gov.georgia.gov/"
       }
     },
     {
-      "id": "CA-NS",
+      "id": "US-NC",
       "transparency_live": true,
       "error": null,
       "sections": [
@@ -393,8 +211,8 @@
         {
           "section": "financial_disclosure",
           "loaded": true,
-          "count": 7,
-          "source": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures"
+          "count": 8,
+          "source": "https://www.ncsbe.gov/results-data"
         },
         {
           "section": "assets",
@@ -406,13 +224,13 @@
           "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures"
+          "source": "https://www.ncsbe.gov/results-data"
         },
         {
           "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
+          "loaded": true,
+          "count": 6,
+          "source": "https://www.ncsbe.gov/campaign-finance/search-campaign-funding-and-spending-reports-and-penalties"
         },
         {
           "section": "lobbying_disclosures",
@@ -428,21 +246,24 @@
         },
         {
           "section": "recent_official_activity",
-          "loaded": false,
-          "count": 0,
-          "source": null
+          "loaded": true,
+          "count": 8,
+          "source": "https://governor.nc.gov/news/feed"
         }
       ],
       "field_sources": {
-        "financial_disclosure": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures",
-        "gifts_hospitality": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures",
-        "lobbying_records": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures",
-        "stock_holdings": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures",
-        "declared_assets": "https://nslegislature.ca/about/conflict-of-interest-commissioner/public-disclosures"
+        "gifts_hospitality": "https://www.ncsbe.gov/results-data",
+        "lobbying_records": "https://www.ncsbe.gov/results-data",
+        "stock_holdings": "https://www.ncsbe.gov/results-data",
+        "financial_disclosure": "https://www.ncsbe.gov/results-data",
+        "declared_assets": "https://www.ncsbe.gov/results-data",
+        "campaign_finance": "https://www.ncsbe.gov/campaign-finance/search-campaign-funding-and-spending-reports-and-penalties",
+        "recent_official_activity": "https://governor.nc.gov/news/feed",
+        "contact_info": "https://governor.nc.gov/"
       }
     },
     {
-      "id": "CA-PE",
+      "id": "US-NJ",
       "transparency_live": true,
       "error": null,
       "sections": [
@@ -455,8 +276,8 @@
         {
           "section": "financial_disclosure",
           "loaded": true,
-          "count": 7,
-          "source": "https://www.assembly.pe.ca/conflict-of-interest/disclosures"
+          "count": 8,
+          "source": "https://www.nj.gov/ethics/"
         },
         {
           "section": "assets",
@@ -468,75 +289,13 @@
           "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://www.assembly.pe.ca/conflict-of-interest/disclosures"
+          "source": "https://www.nj.gov/ethics/"
         },
         {
           "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "lobbying_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "conflict_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "recent_official_activity",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        }
-      ],
-      "field_sources": {
-        "financial_disclosure": "https://www.assembly.pe.ca/conflict-of-interest/disclosures",
-        "gifts_hospitality": "https://www.assembly.pe.ca/conflict-of-interest/disclosures",
-        "lobbying_records": "https://www.assembly.pe.ca/conflict-of-interest/disclosures",
-        "stock_holdings": "https://www.assembly.pe.ca/conflict-of-interest/disclosures",
-        "declared_assets": "https://www.assembly.pe.ca/conflict-of-interest/disclosures"
-      }
-    },
-    {
-      "id": "CA-NL",
-      "transparency_live": true,
-      "error": null,
-      "sections": [
-        {
-          "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "financial_disclosure",
-          "loaded": true,
-          "count": 7,
-          "source": "https://www.assembly.nl.ca/"
-        },
-        {
-          "section": "assets",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://www.assembly.nl.ca/"
-        },
-        {
-          "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
+          "source": "https://www.nj.gov/state/elections/"
         },
         {
           "section": "lobbying_disclosures",
@@ -554,20 +313,22 @@
           "section": "recent_official_activity",
           "loaded": true,
           "count": 4,
-          "source": "https://www.premier.gov.nl.ca/news/"
+          "source": "https://www.nj.gov/governor/"
         }
       ],
       "field_sources": {
-        "financial_disclosure": "https://www.assembly.nl.ca/",
-        "gifts_hospitality": "https://www.assembly.nl.ca/",
-        "lobbying_records": "https://www.assembly.nl.ca/",
-        "stock_holdings": "https://www.assembly.nl.ca/",
-        "declared_assets": "https://www.assembly.nl.ca/",
-        "recent_official_activity": "https://www.premier.gov.nl.ca/news/"
+        "gifts_hospitality": "https://www.nj.gov/ethics/",
+        "lobbying_records": "https://www.njelec.com/lobbying/",
+        "stock_holdings": "https://www.nj.gov/ethics/",
+        "financial_disclosure": "https://www.nj.gov/ethics/",
+        "declared_assets": "https://www.nj.gov/ethics/",
+        "campaign_finance": "https://www.nj.gov/state/elections/",
+        "recent_official_activity": "https://www.nj.gov/governor/",
+        "contact_info": "https://www.nj.gov/governor/"
       }
     },
     {
-      "id": "CA-YT",
+      "id": "US-VA",
       "transparency_live": true,
       "error": null,
       "sections": [
@@ -580,8 +341,8 @@
         {
           "section": "financial_disclosure",
           "loaded": true,
-          "count": 7,
-          "source": "https://yukon.ca/en/elected-officials/conflict-interest-commissioner"
+          "count": 8,
+          "source": "https://ethics.dls.virginia.gov/"
         },
         {
           "section": "assets",
@@ -593,7 +354,137 @@
           "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://yukon.ca/en/elected-officials/conflict-interest-commissioner"
+          "source": "https://ethics.dls.virginia.gov/"
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": true,
+          "count": 6,
+          "source": "https://www.elections.virginia.gov/candidatepac-info/"
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "recent_official_activity",
+          "loaded": true,
+          "count": 8,
+          "source": "https://www.governor.virginia.gov/newsroom/news-releases"
+        }
+      ],
+      "field_sources": {
+        "gifts_hospitality": "https://ethics.dls.virginia.gov/",
+        "lobbying_records": "https://ethics.dls.virginia.gov/",
+        "stock_holdings": "https://ethics.dls.virginia.gov/",
+        "financial_disclosure": "https://ethics.dls.virginia.gov/",
+        "declared_assets": "https://ethics.dls.virginia.gov/",
+        "campaign_finance": "https://www.elections.virginia.gov/candidatepac-info/",
+        "recent_official_activity": "https://www.governor.virginia.gov/newsroom/news-releases",
+        "contact_info": "https://www.governor.virginia.gov/"
+      }
+    },
+    {
+      "id": "US-WA",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": true,
+          "count": 8,
+          "source": "https://www.pdc.wa.gov/registration-reporting/personal-financial-affairs-disclosure"
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": true,
+          "count": 6,
+          "source": "https://www.pdc.wa.gov/registration-reporting/personal-financial-affairs-disclosure"
+        },
+        {
+          "section": "campaign_finance",
+          "loaded": true,
+          "count": 6,
+          "source": "https://www.pdc.wa.gov/political-disclosure-reporting-data"
+        },
+        {
+          "section": "lobbying_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "conflict_disclosures",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "recent_official_activity",
+          "loaded": true,
+          "count": 8,
+          "source": "https://www.governor.wa.gov/news/news-releases"
+        }
+      ],
+      "field_sources": {
+        "gifts_hospitality": "https://www.pdc.wa.gov/registration-reporting/personal-financial-affairs-disclosure",
+        "lobbying_records": "https://www.pdc.wa.gov/lobbyists",
+        "stock_holdings": "https://www.pdc.wa.gov/registration-reporting/personal-financial-affairs-disclosure",
+        "financial_disclosure": "https://www.pdc.wa.gov/registration-reporting/personal-financial-affairs-disclosure",
+        "declared_assets": "https://www.pdc.wa.gov/registration-reporting/personal-financial-affairs-disclosure",
+        "campaign_finance": "https://www.pdc.wa.gov/political-disclosure-reporting-data",
+        "recent_official_activity": "https://www.governor.wa.gov/news/news-releases",
+        "contact_info": "https://www.governor.wa.gov/"
+      }
+    },
+    {
+      "id": "US-AZ",
+      "transparency_live": true,
+      "error": null,
+      "sections": [
+        {
+          "section": "salary",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "financial_disclosure",
+          "loaded": true,
+          "count": 8,
+          "source": "https://azsos.gov/elections/campaign-finance"
+        },
+        {
+          "section": "assets",
+          "loaded": false,
+          "count": 0,
+          "source": null
+        },
+        {
+          "section": "stock_holdings",
+          "loaded": true,
+          "count": 6,
+          "source": "https://azsos.gov/elections/campaign-finance"
         },
         {
           "section": "campaign_finance",
@@ -621,14 +512,15 @@
         }
       ],
       "field_sources": {
-        "financial_disclosure": "https://yukon.ca/en/elected-officials/conflict-interest-commissioner",
-        "gifts_hospitality": "https://yukon.ca/en/elected-officials/conflict-interest-commissioner",
-        "lobbying_records": "https://yukon.ca/en/elected-officials/conflict-interest-commissioner",
-        "stock_holdings": "https://yukon.ca/en/elected-officials/conflict-interest-commissioner"
+        "gifts_hospitality": "https://azsos.gov/elections/campaign-finance",
+        "lobbying_records": "https://azsos.gov/elections/lobbyist/",
+        "stock_holdings": "https://azsos.gov/elections/campaign-finance",
+        "financial_disclosure": "https://azsos.gov/elections/campaign-finance",
+        "declared_assets": "https://azsos.gov/elections/campaign-finance"
       }
     },
     {
-      "id": "CA-NT",
+      "id": "US-MA",
       "transparency_live": true,
       "error": null,
       "sections": [
@@ -641,8 +533,8 @@
         {
           "section": "financial_disclosure",
           "loaded": true,
-          "count": 7,
-          "source": "https://www.ntassembly.ca/integrity-commissioner"
+          "count": 8,
+          "source": "https://www.mass.gov/orgs/state-ethics-commission"
         },
         {
           "section": "assets",
@@ -654,13 +546,13 @@
           "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://www.ntassembly.ca/integrity-commissioner"
+          "source": "https://www.mass.gov/orgs/state-ethics-commission"
         },
         {
           "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
+          "loaded": true,
+          "count": 6,
+          "source": "https://www.sec.state.ma.us/divisions/cis/cisidx.htm"
         },
         {
           "section": "lobbying_disclosures",
@@ -677,21 +569,23 @@
         {
           "section": "recent_official_activity",
           "loaded": true,
-          "count": 2,
-          "source": "https://www.gov.nt.ca/en/newsroom/news-releases"
+          "count": 1,
+          "source": "https://www.mass.gov/orgs/office-of-the-governor"
         }
       ],
       "field_sources": {
-        "financial_disclosure": "https://www.ntassembly.ca/integrity-commissioner",
-        "gifts_hospitality": "https://www.ntassembly.ca/integrity-commissioner",
-        "lobbying_records": "https://www.ntassembly.ca/integrity-commissioner",
-        "stock_holdings": "https://www.ntassembly.ca/integrity-commissioner",
-        "declared_assets": "https://www.ntassembly.ca/integrity-commissioner",
-        "recent_official_activity": "https://www.gov.nt.ca/en/newsroom/news-releases"
+        "gifts_hospitality": "https://www.mass.gov/orgs/state-ethics-commission",
+        "lobbying_records": "https://www.sec.state.ma.us/LobbyingPublic/LobbyingPublic.htm",
+        "stock_holdings": "https://www.mass.gov/orgs/state-ethics-commission",
+        "financial_disclosure": "https://www.mass.gov/orgs/state-ethics-commission",
+        "declared_assets": "https://www.mass.gov/orgs/state-ethics-commission",
+        "campaign_finance": "https://www.sec.state.ma.us/divisions/cis/cisidx.htm",
+        "recent_official_activity": "https://www.mass.gov/orgs/office-of-the-governor",
+        "contact_info": "https://www.mass.gov/orgs/office-of-the-governor"
       }
     },
     {
-      "id": "CA-NU",
+      "id": "US-TN",
       "transparency_live": true,
       "error": null,
       "sections": [
@@ -704,8 +598,8 @@
         {
           "section": "financial_disclosure",
           "loaded": true,
-          "count": 7,
-          "source": "https://assembly.nu.ca/about/conflict-interest-commissioner"
+          "count": 8,
+          "source": "https://sos.tn.gov/"
         },
         {
           "section": "assets",
@@ -717,13 +611,13 @@
           "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://assembly.nu.ca/about/conflict-interest-commissioner"
+          "source": "https://sos.tn.gov/"
         },
         {
           "section": "campaign_finance",
-          "loaded": false,
-          "count": 0,
-          "source": null
+          "loaded": true,
+          "count": 6,
+          "source": "https://sos.tn.gov/elections"
         },
         {
           "section": "lobbying_disclosures",
@@ -745,10 +639,13 @@
         }
       ],
       "field_sources": {
-        "financial_disclosure": "https://assembly.nu.ca/about/conflict-interest-commissioner",
-        "gifts_hospitality": "https://assembly.nu.ca/about/conflict-interest-commissioner",
-        "lobbying_records": "https://assembly.nu.ca/about/conflict-interest-commissioner",
-        "stock_holdings": "https://assembly.nu.ca/about/conflict-interest-commissioner"
+        "gifts_hospitality": "https://sos.tn.gov/",
+        "lobbying_records": "https://sos.tn.gov/lobbying",
+        "stock_holdings": "https://sos.tn.gov/",
+        "financial_disclosure": "https://sos.tn.gov/",
+        "declared_assets": "https://sos.tn.gov/",
+        "campaign_finance": "https://sos.tn.gov/elections",
+        "contact_info": "https://www.tn.gov/governor/"
       }
     }
   ]
