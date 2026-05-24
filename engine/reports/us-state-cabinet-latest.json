@@ -1,95 +1,95 @@
 {
-  "generatedAt": "2026-05-24T23:30:31.193Z",
+  "generatedAt": "2026-05-24T23:49:56.664Z",
   "mode": "write",
   "jurisdictions": [
     {
-      "id": "US-AL",
+      "id": "US-LA",
       "error": null,
       "status": "no_official_records_found",
       "member_count": 0,
-      "source_url": "https://www.governor.alabama.gov/",
+      "source_url": "https://gov.louisiana.gov/",
       "note": "No parseable cabinet roster found on official governor/executive branch pages searched.",
       "members": []
     },
     {
-      "id": "US-AK",
-      "error": null,
-      "status": "no_official_records_found",
-      "member_count": 0,
-      "source_url": "https://gov.alaska.gov/",
-      "note": "No parseable cabinet roster found on official governor/executive branch pages searched.",
-      "members": []
-    },
-    {
-      "id": "US-AR",
-      "error": null,
-      "status": "no_official_records_found",
-      "member_count": 0,
-      "source_url": "https://governor.arkansas.gov/",
-      "note": "No parseable cabinet roster found on official governor/executive branch pages searched.",
-      "members": []
-    },
-    {
-      "id": "US-CO",
+      "id": "US-MD",
       "error": null,
       "status": "needs_manual_review",
       "member_count": 0,
-      "source_url": "https://www.colorado.gov/governor/",
-      "note": "TRACER and SOS lobbyist browse interfaces are client-rendered; Governor-specific rows require interactive search.",
+      "source_url": "https://governor.maryland.gov/",
+      "note": "Governor leadership/cabinet SharePoint paths return HTTP 404.",
       "members": []
     },
     {
-      "id": "US-CT",
+      "id": "US-MN",
       "error": null,
       "status": "no_official_records_found",
       "member_count": 0,
-      "source_url": "https://portal.ct.gov/governor",
+      "source_url": "https://mn.gov/governor/",
       "note": "No parseable cabinet roster found on official governor/executive branch pages searched.",
       "members": []
     },
     {
-      "id": "US-DE",
+      "id": "US-MS",
       "error": null,
       "status": "no_official_records_found",
       "member_count": 0,
-      "source_url": "https://governor.delaware.gov/",
+      "source_url": "https://governor.ms.gov/",
       "note": "No parseable cabinet roster found on official governor/executive branch pages searched.",
       "members": []
     },
     {
-      "id": "US-HI",
-      "error": null,
-      "status": "no_official_records_found",
-      "member_count": 0,
-      "source_url": "https://governor.hawaii.gov/",
-      "note": "No parseable cabinet roster found on official governor/executive branch pages searched.",
-      "members": []
-    },
-    {
-      "id": "US-IN",
-      "error": null,
-      "status": "no_official_records_found",
-      "member_count": 0,
-      "source_url": "https://www.in.gov/gov/",
-      "note": "No parseable cabinet roster found on official governor/executive branch pages searched.",
-      "members": []
-    },
-    {
-      "id": "US-IA",
+      "id": "US-MO",
       "error": null,
       "status": "needs_manual_review",
       "member_count": 0,
-      "source_url": "https://governor.iowa.gov/",
-      "note": "Governor cabinet URL not found at expected path.",
+      "source_url": "https://governor.mo.gov/",
+      "note": "Governor cabinet URL not found at expected path on governor.mo.gov.",
       "members": []
     },
     {
-      "id": "US-KY",
+      "id": "US-MT",
       "error": null,
       "status": "no_official_records_found",
       "member_count": 0,
-      "source_url": "https://governor.ky.gov/",
+      "source_url": "https://governor.mt.gov/",
       "note": "No parseable cabinet roster found on official governor/executive branch pages searched.",
+      "members": []
+    },
+    {
+      "id": "US-NE",
+      "error": null,
+      "status": "needs_manual_review",
+      "member_count": 0,
+      "source_url": "https://governor.nebraska.gov/cabinet",
+      "note": "Governor cabinet page reachable but roster may require manual review.",
+      "members": []
+    },
+    {
+      "id": "US-NV",
+      "error": null,
+      "status": "no_official_records_found",
+      "member_count": 0,
+      "source_url": "https://gov.nv.gov/",
+      "note": "No parseable cabinet roster found on official governor/executive branch pages searched.",
+      "members": []
+    },
+    {
+      "id": "US-NM",
+      "error": null,
+      "status": "no_official_records_found",
+      "member_count": 0,
+      "source_url": "https://www.governor.state.nm.us/",
+      "note": "No parseable cabinet roster found on official governor/executive branch pages searched.",
+      "members": []
+    },
+    {
+      "id": "US-ND",
+      "error": null,
+      "status": "needs_manual_review",
+      "member_count": 0,
+      "source_url": "https://www.governor.nd.gov/cabinet",
+      "note": "Governor cabinet page reachable but roster may require manual review.",
       "members": []
     }
   ]
