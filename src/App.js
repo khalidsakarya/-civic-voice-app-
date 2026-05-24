@@ -4100,10 +4100,24 @@ function App() {
     let cancelled = false;
     getDoc(doc(db, 'subnational_jurisdictions', 'US-CA')).then((snap) => {
       if (cancelled) return;
-      if (!snap.exists()) { setUsCaLeaderCabinetData([]); return; }
+      if (!snap.exists()) {
+        console.warn('[US-CA cabinet] subnational_jurisdictions/US-CA document does not exist');
+        setUsCaLeaderCabinetData([]);
+        return;
+      }
       const d = snap.data();
-      setUsCaLeaderCabinetData(Array.isArray(d.cabinet) ? d.cabinet : []);
-    }).catch(() => { if (!cancelled) setUsCaLeaderCabinetData([]); });
+      // eslint-disable-next-line no-console
+      console.log('[US-CA cabinet] raw subnational_jurisdictions/US-CA fields:', Object.keys(d));
+      // eslint-disable-next-line no-console
+      console.log('[US-CA cabinet] cabinet field value:', d.cabinet);
+      const arr = Array.isArray(d.cabinet) ? d.cabinet : (Array.isArray(d.cabinet_members) ? d.cabinet_members : []);
+      // eslint-disable-next-line no-console
+      if (arr.length > 0) console.log('[US-CA cabinet] first member:', arr[0]);
+      setUsCaLeaderCabinetData(arr);
+    }).catch((err) => {
+      console.warn('[US-CA cabinet] fetch error:', err);
+      if (!cancelled) setUsCaLeaderCabinetData([]);
+    });
     return () => { cancelled = true; };
   }, [showLeaderPanel, selectedLeader?.subnationalId, usCaLeaderCabinetData]);
 

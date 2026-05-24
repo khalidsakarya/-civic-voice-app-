@@ -796,16 +796,28 @@ const DETAIL_COMPONENTS = {
   recent_official_activity: DetailRecentActivity,
 };
 
+function memberTypeText(m) {
+  return String(m.type ?? m.role ?? m.position ?? m.title ?? m.portfolio ?? '');
+}
+
 function CabinetMembers({ cabinetData }) {
   const [open, setOpen] = useState(false);
-  if (!cabinetData || cabinetData.length === 0) return null;
 
-  const secretaries = cabinetData.filter(
-    (m) => /secretary/i.test(String(m.type ?? m.role ?? m.title ?? '')),
-  );
-  const directors = cabinetData.filter(
-    (m) => /director/i.test(String(m.type ?? m.role ?? m.title ?? '')),
-  );
+  if (cabinetData === null) {
+    return (
+      <section>
+        <p className="panel-section-label">Cabinet</p>
+        <p className="text-xs text-gray-400 italic">Loading cabinet members…</p>
+      </section>
+    );
+  }
+  if (cabinetData.length === 0) return null;
+
+  // eslint-disable-next-line no-console
+  console.log('[CabinetMembers] received', cabinetData.length, 'members; sample:', cabinetData[0]);
+
+  const secretaries = cabinetData.filter((m) => /secretary/i.test(memberTypeText(m)));
+  const directors = cabinetData.filter((m) => /director/i.test(memberTypeText(m)));
   const others = cabinetData.filter(
     (m) => !secretaries.includes(m) && !directors.includes(m),
   );
@@ -846,7 +858,7 @@ function CabinetMembers({ cabinetData }) {
                   {secretaries.map((m, i) => (
                     <div key={i} className="rounded-lg bg-blue-50 border border-blue-100 px-3 py-2">
                       <p className="text-xs font-semibold text-gray-900 leading-snug">{m.name}</p>
-                      <p className="text-[11px] text-gray-500 mt-0.5">{m.portfolio || m.title || m.role || ''}</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">{m.portfolio || m.title || m.position || m.role || ''}</p>
                     </div>
                   ))}
                 </div>
@@ -859,7 +871,7 @@ function CabinetMembers({ cabinetData }) {
                   {directors.map((m, i) => (
                     <div key={i} className="rounded-lg bg-gray-50 border border-gray-200 px-3 py-2">
                       <p className="text-xs font-semibold text-gray-900 leading-snug">{m.name}</p>
-                      <p className="text-[11px] text-gray-500 mt-0.5">{m.portfolio || m.title || m.role || ''}</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">{m.portfolio || m.title || m.position || m.role || ''}</p>
                     </div>
                   ))}
                 </div>
@@ -872,7 +884,7 @@ function CabinetMembers({ cabinetData }) {
                   {others.map((m, i) => (
                     <div key={i} className="rounded-lg bg-gray-50 border border-gray-200 px-3 py-2">
                       <p className="text-xs font-semibold text-gray-900 leading-snug">{m.name}</p>
-                      <p className="text-[11px] text-gray-500 mt-0.5">{m.portfolio || m.title || m.role || ''}</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">{m.portfolio || m.title || m.position || m.role || ''}</p>
                     </div>
                   ))}
                 </div>
