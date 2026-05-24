@@ -485,44 +485,70 @@ function DetailStockHoldings({ row }) {
 function DetailGiftsHospitality({ row }) {
   const gh = row?.gifts_hospitality;
   const src = usCaSourceUrl(gh);
+
+  const gifts = Array.isArray(gh?.gifts)
+    ? [...gh.gifts].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0))
+    : [];
+  const travel = Array.isArray(gh?.travel_payments) ? gh.travel_payments : [];
+
+  const giftCount = gh?.gift_count ?? gifts.length;
+  const travelCount = travel.length;
+  const headline =
+    giftCount > 0
+      ? `${giftCount} gift${giftCount === 1 ? '' : 's'} received${gh?.gift_year ? ` in ${gh.gift_year}` : ''}${travelCount > 0 ? `, plus ${travelCount} official travel payment${travelCount === 1 ? '' : 's'}` : ''}`
+      : null;
+
   return (
     <div className="pt-3 space-y-3">
-      {gh?.rule_summary && <p className="text-xs text-gray-700 leading-relaxed">{gh.rule_summary}</p>}
-      {Array.isArray(gh?.gifts) && gh.gifts.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-gray-800 mb-1">Gifts (Schedule D)</p>
-          <ul className="space-y-2 max-h-64 overflow-y-auto">
-            {gh.gifts.map((g, i) => (
-              <li key={i} className="text-xs border border-gray-200 rounded-lg p-2.5 bg-gray-50">
-                <p className="font-medium text-gray-900">{g.source}</p>
-                <p className="text-gray-700">{g.description}</p>
-                <p className="text-gray-500 mt-0.5">
-                  {g.date ? `${g.date} · ` : ''}
-                  {g.value_text || (g.value != null ? formatMoney(g.value, 'USD', 2) : '')}
-                </p>
-              </li>
-            ))}
-          </ul>
+      {headline && (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50/80 px-3 py-2.5">
+          <p className="text-sm font-semibold text-gray-900">{headline}</p>
         </div>
       )}
-      {Array.isArray(gh?.travel_payments) && gh.travel_payments.length > 0 && (
+
+      {gifts.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-gray-800 mb-1">Travel payments (Schedule E)</p>
-          <ul className="space-y-2">
-            {gh.travel_payments.map((t, i) => (
-              <li key={i} className="text-xs border border-gray-200 rounded-lg p-2.5 bg-gray-50">
-                <p className="font-medium text-gray-900">{t.source}</p>
-                <p className="text-gray-700">{t.purpose}</p>
-                <p className="text-gray-800 mt-0.5">
-                  {t.amount_text || (t.amount != null ? formatMoney(t.amount, 'USD', 2) : '')}
-                  {t.travel_destination ? ` · ${t.travel_destination}` : ''}
-                </p>
-                {t.date_range && <p className="text-gray-500">{t.date_range}</p>}
-              </li>
+          <p className="text-xs font-bold text-gray-700 mb-1.5">Gifts (Schedule D)</p>
+          <div className="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+            {gifts.map((g, i) => (
+              <div key={i} className="px-3 py-2">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-xs font-semibold text-gray-900 leading-snug min-w-0 truncate">{g.source}</p>
+                  <span className="text-xs font-medium text-gray-700 shrink-0">
+                    {g.value_text || (g.value != null ? formatMoney(g.value, 'USD', 2) : '')}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 mt-0.5 leading-snug">{g.description}</p>
+                {g.date && <p className="text-[11px] text-gray-400 mt-0.5">{g.date}</p>}
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
+
+      {travel.length > 0 && (
+        <div>
+          <p className="text-xs font-bold text-gray-700 mb-1.5">Official travel (Schedule E)</p>
+          <div className="space-y-2">
+            {travel.map((t, i) => (
+              <div key={i} className="rounded-lg border border-blue-100 bg-blue-50/60 px-3 py-2.5">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-xs font-semibold text-gray-900 leading-snug">
+                    {t.amount_text || (t.amount != null ? formatMoney(t.amount, 'USD', 2) : '')}
+                    {t.travel_destination ? ` · ${t.travel_destination}` : ''}
+                  </p>
+                </div>
+                {t.purpose && <p className="text-xs text-gray-700 mt-0.5">{t.purpose}</p>}
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  {t.source}
+                  {t.date_range ? ` · ${t.date_range}` : ''}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {sourceLink(src, 'Search FPPC Form 700')}
     </div>
   );
