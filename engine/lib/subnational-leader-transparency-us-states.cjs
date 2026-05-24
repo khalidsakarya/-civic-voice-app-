@@ -20,6 +20,7 @@ const {
   PHASE1_IDS,
   BATCH2_IDS,
   BATCH3_IDS,
+  BATCH4_IDS,
   CONFIGURED_US_STATE_IDS,
   getStateConfig,
 } = require('./us-state-leader-transparency-config.cjs');
@@ -654,6 +655,7 @@ module.exports = {
   PHASE1_IDS,
   BATCH2_IDS,
   BATCH3_IDS,
+  BATCH4_IDS,
   CONFIGURED_US_STATE_IDS,
   buildLeaderTransparency,
   createModule,
