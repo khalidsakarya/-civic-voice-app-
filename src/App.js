@@ -1847,6 +1847,7 @@ function App() {
   const [selectedLeader, setSelectedLeader] = useState(null);
   const [subnationalLeaderTransparency, setSubnationalLeaderTransparency] = useState(null);
   const [subnationalLeaderTransparencyLoading, setSubnationalLeaderTransparencyLoading] = useState(false);
+  const [usCaLeaderCabinetData, setUsCaLeaderCabinetData] = useState(null);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -4088,6 +4089,23 @@ function App() {
       cancelled = true;
     };
   }, [showLeaderPanel, selectedLeader?.subnationalId, view, selectedAuLeader]);
+
+  // Fetch US-CA cabinet from subnational_jurisdictions/US-CA when governor panel opens
+  useEffect(() => {
+    if (!showLeaderPanel || selectedLeader?.subnationalId !== 'US-CA') {
+      setUsCaLeaderCabinetData(null);
+      return undefined;
+    }
+    if (usCaLeaderCabinetData !== null) return undefined;
+    let cancelled = false;
+    getDoc(doc(db, 'subnational_jurisdictions', 'US-CA')).then((snap) => {
+      if (cancelled) return;
+      if (!snap.exists()) { setUsCaLeaderCabinetData([]); return; }
+      const d = snap.data();
+      setUsCaLeaderCabinetData(Array.isArray(d.cabinet) ? d.cabinet : []);
+    }).catch(() => { if (!cancelled) setUsCaLeaderCabinetData([]); });
+    return () => { cancelled = true; };
+  }, [showLeaderPanel, selectedLeader?.subnationalId, usCaLeaderCabinetData]);
 
   // Shared helper: fetch member_bios for a given member; tries bioguide_id first, then memberName
   const fetchMemberBio = async (member) => {
@@ -35321,6 +35339,7 @@ function App() {
                   <UsCaLeaderTransparencySections
                     transparencyRow={subnationalLeaderTransparency}
                     loading={subnationalLeaderTransparencyLoading}
+                    cabinetData={usCaLeaderCabinetData}
                   />
                 ) : leader.subnationalId === 'AU-NSW' ? (
                   <AuNswLeaderTransparencySections
