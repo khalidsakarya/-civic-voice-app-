@@ -18,6 +18,27 @@ function pendingNote() {
   return <p className="text-xs text-gray-500 italic py-2">Official data not loaded yet.</p>;
 }
 
+/** Shown when a section is in sections_unavailable — honest about why data is absent. */
+function manualReviewNote(note) {
+  return (
+    <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 mt-1">
+      <p className="text-xs font-semibold text-amber-800">Manual review required</p>
+      <p className="text-xs text-amber-700 mt-0.5">
+        {note || 'Official data is being validated against source registers. Values will appear once verified.'}
+      </p>
+    </div>
+  );
+}
+
+/** Shown inside a loaded section when the section data itself carries needs_manual_review. */
+function frameworkNote() {
+  return (
+    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-2">
+      Official framework available; individual values require manual review.
+    </p>
+  );
+}
+
 function sourceLink(url, label = 'View official source') {
   if (!url) return null;
   return (
@@ -30,6 +51,17 @@ function sourceLink(url, label = 'View official source') {
       {label}
     </a>
   );
+}
+
+function sectionUnavailable(sectionKey, row) {
+  const unavail = row?.sections_unavailable;
+  return Array.isArray(unavail) && unavail.includes(sectionKey);
+}
+
+function sectionNeedsManualReview(data) {
+  if (!data || typeof data !== 'object') return false;
+  const list = data.needs_manual_review;
+  return Array.isArray(list) && list.length > 0;
 }
 
 /**
@@ -54,7 +86,8 @@ export default function SubnationalLeaderTransparencySections({ transparencyRow,
       <div className="space-y-5">
         {sectionOrder.map((sectionKey) => {
           const label = LEADER_TRANSPARENCY_SECTION_LABELS[sectionKey];
-          const loaded = !loading && leaderTransparencySectionLoaded(sectionKey, transparencyRow);
+          const unavailable = !loading && sectionUnavailable(sectionKey, transparencyRow);
+          const loaded = !loading && !unavailable && leaderTransparencySectionLoaded(sectionKey, transparencyRow);
           const src = sourceUrl(sectionKey);
 
           if (sectionKey === 'salary') {
@@ -62,7 +95,9 @@ export default function SubnationalLeaderTransparencySections({ transparencyRow,
             return (
               <div key={sectionKey} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">{label}</p>
-                {!loaded ? (
+                {unavailable ? (
+                  manualReviewNote(sal?.review_note)
+                ) : !loaded ? (
                   pendingNote()
                 ) : (
                   <>
@@ -71,6 +106,7 @@ export default function SubnationalLeaderTransparencySections({ transparencyRow,
                       {sal?.period ? ` · ${sal.period}` : ''}
                     </p>
                     {sal?.description && <p className="text-xs text-gray-600 mt-1">{sal.description}</p>}
+                    {sectionNeedsManualReview(sal) && frameworkNote()}
                     {sourceLink(src)}
                   </>
                 )}
@@ -83,11 +119,14 @@ export default function SubnationalLeaderTransparencySections({ transparencyRow,
             return (
               <div key={sectionKey} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">{label}</p>
-                {!loaded ? (
+                {unavailable ? (
+                  manualReviewNote(fd?.review_note)
+                ) : !loaded ? (
                   pendingNote()
                 ) : (
                   <>
                     {fd?.summary && <p className="text-sm text-gray-700">{fd.summary}</p>}
+                    {fd?.portal && sourceLink(fd.portal, fd?.portal_note || 'View portal')}
                     {fd?.filing_url && sourceLink(fd.filing_url, 'View filing')}
                     {Array.isArray(fd?.items) && fd.items.length > 0 && (
                       <ul className="mt-2 space-y-1">
@@ -99,6 +138,7 @@ export default function SubnationalLeaderTransparencySections({ transparencyRow,
                         ))}
                       </ul>
                     )}
+                    {sectionNeedsManualReview(fd) && frameworkNote()}
                   </>
                 )}
               </div>
@@ -107,21 +147,27 @@ export default function SubnationalLeaderTransparencySections({ transparencyRow,
 
           if (sectionKey === 'assets' || sectionKey === 'stock_holdings') {
             const items = transparencyRow?.[sectionKey];
+            const reviewNote = items?.review_note;
             return (
               <div key={sectionKey} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">{label}</p>
-                {!loaded || !Array.isArray(items) ? (
+                {unavailable ? (
+                  manualReviewNote(reviewNote)
+                ) : !loaded || !Array.isArray(items) ? (
                   pendingNote()
                 ) : (
-                  <ul className="space-y-1">
-                    {items.map((it, i) => (
-                      <li key={i} className="text-xs text-gray-700">
-                        {it.description || it.name || it.type}
-                        {it.value_text ? ` — ${it.value_text}` : ''}
-                        {it.ticker ? ` (${it.ticker})` : ''}
-                      </li>
-                    ))}
-                  </ul>
+                  <>
+                    <ul className="space-y-1">
+                      {items.map((it, i) => (
+                        <li key={i} className="text-xs text-gray-700">
+                          {it.description || it.name || it.type}
+                          {it.value_text ? ` — ${it.value_text}` : ''}
+                          {it.ticker ? ` (${it.ticker})` : ''}
+                        </li>
+                      ))}
+                    </ul>
+                    {sectionNeedsManualReview(transparencyRow?.[sectionKey]) && frameworkNote()}
+                  </>
                 )}
               </div>
             );
@@ -132,7 +178,9 @@ export default function SubnationalLeaderTransparencySections({ transparencyRow,
             return (
               <div key={sectionKey} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">{label}</p>
-                {!loaded ? (
+                {unavailable ? (
+                  manualReviewNote(cf?.review_note)
+                ) : !loaded ? (
                   pendingNote()
                 ) : (
                   <>
@@ -149,6 +197,7 @@ export default function SubnationalLeaderTransparencySections({ transparencyRow,
                         ))}
                       </ul>
                     )}
+                    {sectionNeedsManualReview(cf) && frameworkNote()}
                     {sourceLink(src)}
                   </>
                 )}
@@ -161,7 +210,9 @@ export default function SubnationalLeaderTransparencySections({ transparencyRow,
             return (
               <div key={sectionKey} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">{label}</p>
-                {!loaded || !Array.isArray(items) ? (
+                {unavailable ? (
+                  manualReviewNote()
+                ) : !loaded || !Array.isArray(items) ? (
                   pendingNote()
                 ) : (
                   <ul className="space-y-1">
@@ -182,7 +233,9 @@ export default function SubnationalLeaderTransparencySections({ transparencyRow,
             return (
               <div key={sectionKey} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">{label}</p>
-                {!loaded || !Array.isArray(items) ? (
+                {unavailable ? (
+                  manualReviewNote()
+                ) : !loaded || !Array.isArray(items) ? (
                   pendingNote()
                 ) : (
                   <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -207,7 +260,9 @@ export default function SubnationalLeaderTransparencySections({ transparencyRow,
             return (
               <div key={sectionKey} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">{label}</p>
-                {!loaded || !Array.isArray(items) ? (
+                {unavailable ? (
+                  manualReviewNote()
+                ) : !loaded || !Array.isArray(items) ? (
                   pendingNote()
                 ) : (
                   <div className="space-y-2">
