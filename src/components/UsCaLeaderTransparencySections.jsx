@@ -299,6 +299,130 @@ function DetailFinancialDisclosure({ row }) {
   );
 }
 
+// ── Grouping helpers for declared assets / stock holdings ────────────────────
+
+const TRUST_NAMES_CA = [
+  'Gavin C. Newsom Blind Trust',
+  'Christopher Thomas Trust',
+  'Jennifer Siebel Newsom Blind Trust',
+];
+
+function isContinuationRow(r) {
+  return /\(cont\.\)/i.test(String(r?.asset_or_entity_name ?? ''));
+}
+function isPlumpJackRow(r) {
+  return /plump\s*jack/i.test(String(r?.asset_or_entity_name ?? ''));
+}
+function isRealEstateRow(r) {
+  const type = String(r?.asset_type ?? '');
+  const sched = String(r?.schedule ?? '');
+  return /real property/i.test(type) || /real estate/i.test(type) || sched === 'A-1';
+}
+function isTrustRow(r) {
+  const combined = `${r?.asset_or_entity_name ?? ''} ${r?.trust_entity_name ?? ''}`;
+  return TRUST_NAMES_CA.some((t) =>
+    combined.toLowerCase().includes(t.split(' ').slice(0, 2).join(' ').toLowerCase()),
+  ) || /blind trust/i.test(combined);
+}
+
+function groupHoldingRows(rows) {
+  const plumpjack = [], realEstate = [], trusts = [], individual = [];
+  const seen = { pj: new Set(), re: new Set(), tr: new Set(), ind: new Set() };
+
+  rows
+    .filter((r) => !isContinuationRow(r))
+    .forEach((r) => {
+      const key = String(r?.asset_or_entity_name ?? '').trim().toLowerCase();
+      if (isPlumpJackRow(r)) {
+        if (!seen.pj.has(key)) { seen.pj.add(key); plumpjack.push(r); }
+      } else if (isTrustRow(r)) {
+        const trustKey = TRUST_NAMES_CA.find((t) =>
+          key.includes(t.split(' ').slice(0, 2).join(' ').toLowerCase()),
+        ) || key;
+        if (!seen.tr.has(trustKey)) { seen.tr.add(trustKey); trusts.push(r); }
+      } else if (isRealEstateRow(r)) {
+        if (!seen.re.has(key)) { seen.re.add(key); realEstate.push(r); }
+      } else {
+        if (!seen.ind.has(key)) { seen.ind.add(key); individual.push(r); }
+      }
+    });
+
+  const totalUnique = seen.pj.size + seen.re.size + seen.tr.size + seen.ind.size;
+  return { plumpjack, realEstate, trusts, individual, totalUnique };
+}
+
+const HOLDINGS_PAGE_SIZE = 10;
+
+function GroupedHoldingsDisplay({ rows, totalRaw, src }) {
+  const [showAllInd, setShowAllInd] = useState(false);
+  const { plumpjack, realEstate, trusts, individual, totalUnique } = groupHoldingRows(rows);
+  const visibleInd = showAllInd ? individual : individual.slice(0, HOLDINGS_PAGE_SIZE);
+
+  const CategorySection = ({ title, items, valueField = 'value_range' }) => (
+    <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
+      <p className="text-xs font-bold text-gray-700">{title}</p>
+      <p className="text-[10px] text-gray-400 mb-1.5">{items.length} {items.length === 1 ? 'entry' : 'entries'}</p>
+      <ul className="space-y-0.5">
+        {items.map((r, i) => (
+          <li key={i} className="text-xs text-gray-700 flex justify-between gap-2">
+            <span className="truncate">{r.asset_or_entity_name}</span>
+            {r[valueField] && <span className="text-gray-400 shrink-0">{r[valueField]}</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
+  return (
+    <div className="space-y-2.5">
+      <p className="text-xs text-gray-500">
+        <span className="font-semibold text-gray-700">{totalUnique}</span> unique entities
+        {totalRaw > totalUnique && (
+          <span className="text-gray-400"> · {totalRaw - totalUnique} duplicate / continuation rows removed</span>
+        )}
+      </p>
+
+      {plumpjack.length > 0 && (
+        <CategorySection title="PlumpJack Businesses" items={plumpjack} />
+      )}
+      {realEstate.length > 0 && (
+        <CategorySection title="Real Estate Properties" items={realEstate} />
+      )}
+      {trusts.length > 0 && (
+        <CategorySection title="Blind Trusts" items={trusts} />
+      )}
+
+      {individual.length > 0 && (
+        <div>
+          <p className="text-xs font-bold text-gray-700 mb-1.5">Individual Investments</p>
+          <div className="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100">
+            {visibleInd.map((r, i) => (
+              <div key={i} className="flex items-center justify-between gap-2 px-3 py-1.5">
+                <span className="text-xs text-gray-700 truncate">{r.asset_or_entity_name}</span>
+                <span className="text-xs text-gray-400 shrink-0">{r.value_range || r.income_range || ''}</span>
+              </div>
+            ))}
+          </div>
+          {!showAllInd && individual.length > HOLDINGS_PAGE_SIZE && (
+            <button type="button" onClick={() => setShowAllInd(true)} className="text-xs text-blue-600 hover:underline mt-1.5 font-medium">
+              Show {individual.length - HOLDINGS_PAGE_SIZE} more →
+            </button>
+          )}
+          {showAllInd && individual.length > HOLDINGS_PAGE_SIZE && (
+            <button type="button" onClick={() => setShowAllInd(false)} className="text-xs text-blue-600 hover:underline mt-1.5 font-medium">
+              ← Show less
+            </button>
+          )}
+        </div>
+      )}
+
+      {sourceLink(src, 'Search FPPC Form 700')}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function DetailDeclaredAssets({ row }) {
   const da = row?.declared_assets;
   const src = usCaSourceUrl(da);
@@ -309,7 +433,7 @@ function DetailDeclaredAssets({ row }) {
     <div className="pt-3 space-y-2">
       <p className="text-xs text-gray-700 leading-relaxed">{REPORTED_HOLDINGS_LABEL}</p>
       {rows.length > 0 ? (
-        <ReportedHoldingsTable rows={rows} caption={`${rows.length} official Form 700 row(s)`} />
+        <GroupedHoldingsDisplay rows={rows} totalRaw={rows.length} src={src} />
       ) : (
         <p className="text-xs text-gray-600 italic">
           {da?.status === 'no_official_records_found'
@@ -324,15 +448,12 @@ function DetailDeclaredAssets({ row }) {
           </summary>
           <ul className="px-3 pb-2 space-y-1 text-xs text-gray-600">
             {pageComments.map((c, i) => (
-              <li key={i}>
-                Page {c.page}: {c.comment}
-              </li>
+              <li key={i}>Page {c.page}: {c.comment}</li>
             ))}
           </ul>
         </details>
       )}
       {usCaNeedsManualReview(da) && frameworkNote()}
-      {sourceLink(src, 'Search FPPC Form 700')}
     </div>
   );
 }
@@ -348,10 +469,7 @@ function DetailStockHoldings({ row }) {
         <p className="text-xs text-gray-600 leading-relaxed">{sh.disclosure_note}</p>
       )}
       {rows.length > 0 ? (
-        <ReportedHoldingsTable
-          rows={rows}
-          caption={`${rows.length} investment / entity row(s) from Form 700 (not stock purchases)`}
-        />
+        <GroupedHoldingsDisplay rows={rows} totalRaw={rows.length} src={src} />
       ) : (
         <p className="text-xs text-gray-600 italic">
           {sh?.status === 'no_official_records_found'
@@ -360,7 +478,6 @@ function DetailStockHoldings({ row }) {
         </p>
       )}
       {usCaNeedsManualReview(sh) && frameworkNote()}
-      {sourceLink(src, 'Search FPPC Form 700')}
     </div>
   );
 }
