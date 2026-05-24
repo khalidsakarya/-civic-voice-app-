@@ -18,7 +18,7 @@ const {
   tryLoadDotenv,
 } = require('./firebase-admin-init.cjs');
 const { buildTransparencyMergePatch } = require('./lib/subnational-leader-transparency-shared.cjs');
-const { BATCH2_IDS, PHASE1_IDS, getStateConfig } = require('./lib/us-state-leader-transparency-config.cjs');
+const { BATCH3_IDS, getStateConfig } = require('./lib/us-state-leader-transparency-config.cjs');
 const { fetchCabinetForState } = require('./lib/us-state-cabinet-fetch.cjs');
 
 const COLLECTION = 'subnational_jurisdictions';
@@ -33,7 +33,7 @@ function parseArgs(argv) {
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean)
-    : [...BATCH2_IDS];
+    : [...BATCH3_IDS];
   return { write, only };
 }
 
