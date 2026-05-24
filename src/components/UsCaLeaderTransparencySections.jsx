@@ -733,28 +733,54 @@ function DetailLobbyingRecords({ row }) {
 }
 
 function DetailRecentActivity({ row }) {
-  const items = row?.recent_official_activity || [];
+  const raw = row?.recent_official_activity || [];
   const src = row?.field_sources?.recent_official_activity;
+
+  const items = [...raw].sort((a, b) => {
+    const da = a.date ? new Date(a.date) : new Date(0);
+    const db = b.date ? new Date(b.date) : new Date(0);
+    return db - da;
+  });
+
   return (
-    <div className="pt-3 space-y-2">
-      {items.map((it, i) => (
-        <div key={i} className="text-xs border-b border-gray-100 pb-2.5 last:border-0">
-          {it.url ? (
-            <a
-              href={it.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-blue-700 hover:underline leading-snug"
-            >
-              {it.title}
-            </a>
-          ) : (
-            <p className="font-semibold text-gray-900">{it.title}</p>
-          )}
-          {it.date && <p className="text-gray-500 mt-0.5">{it.date}</p>}
-        </div>
-      ))}
-      {sourceLink(src, 'Governor newsroom')}
+    <div className="pt-3 space-y-0">
+      <div className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white">
+        {items.map((it, i) => (
+          <div key={i} className="px-3 py-3">
+            {it.date && (
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 mb-0.5">
+                {it.date}
+              </p>
+            )}
+            {it.url ? (
+              <a
+                href={it.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-semibold text-blue-700 hover:underline leading-snug"
+              >
+                {it.title}
+              </a>
+            ) : (
+              <p className="text-sm font-semibold text-gray-900 leading-snug">{it.title}</p>
+            )}
+            {it.excerpt && (
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-3">{it.excerpt}</p>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="pt-2.5 flex items-center gap-3">
+        <a
+          href="https://www.gov.ca.gov/newsroom/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-blue-600 hover:underline font-medium"
+        >
+          View more on gov.ca.gov →
+        </a>
+        {src && sourceLink(src, 'Official newsroom feed')}
+      </div>
     </div>
   );
 }
