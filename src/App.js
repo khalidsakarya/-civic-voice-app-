@@ -1800,8 +1800,8 @@ function App() {
   const [selectedProvince, setSelectedProvince] = useState(null);
   /** Modal transparency fields from dedicated Firestore collections (e.g. CA-ON). */
   const [provinceTransparencyFields, setProvinceTransparencyFields] = useState(null);
-  /** CA-ON supplemental data: cabinet, contact_offices, last_updated (not in merge pipeline). */
-  const [caOnSupplementalData, setCaOnSupplementalData] = useState(null);
+  /** Canadian province supplemental data: cabinet, contact_offices, last_updated (not in merge pipeline). */
+  const [provinceSupplementalData, setProvinceSupplementalData] = useState(null);
   const [showEconomicModal, setShowEconomicModal] = useState(false);
   const [economicModalSelectedChart, setEconomicModalSelectedChart] = useState(null);
   const [presidentVotes, setPresidentVotes] = useState(() => {
@@ -13510,25 +13510,27 @@ function App() {
   }, [selectedProvince, selectedCountry]);
 
   useEffect(() => {
-    if (selectedProvince?.subnationalId !== 'CA-ON') {
-      setCaOnSupplementalData(null);
+    const id = selectedProvince?.subnationalId;
+    const isUSA = selectedCountry?.type === 'usa';
+    if (!id || isUSA) {
+      setProvinceSupplementalData(null);
       return undefined;
     }
     let cancelled = false;
-    getDoc(doc(db, 'subnational_jurisdictions', 'CA-ON')).then((snap) => {
+    getDoc(doc(db, 'subnational_jurisdictions', id)).then((snap) => {
       if (cancelled) return;
-      if (!snap.exists()) { setCaOnSupplementalData({}); return; }
+      if (!snap.exists()) { setProvinceSupplementalData({}); return; }
       const d = snap.data();
-      setCaOnSupplementalData({
+      setProvinceSupplementalData({
         cabinet: Array.isArray(d.cabinet) ? d.cabinet : [],
         contact_offices: Array.isArray(d.contact_offices) ? d.contact_offices : [],
         last_updated: d.last_updated || '',
         legislature_source_url: d.legislature_source_url || '',
         legislature_last_updated: d.legislature_last_updated || d.last_updated || '',
       });
-    }).catch(() => { if (!cancelled) setCaOnSupplementalData(null); });
+    }).catch(() => { if (!cancelled) setProvinceSupplementalData(null); });
     return () => { cancelled = true; };
-  }, [selectedProvince?.subnationalId]);
+  }, [selectedProvince?.subnationalId, selectedCountry]);
 
   useEffect(() => {
     if (!showEconomicModal) {
@@ -13914,9 +13916,9 @@ function App() {
             </div>
           </div>
 
-          {/* CA-ON Cabinet Members */}
-          {item.subnationalId === 'CA-ON' && (() => {
-            const cabinet = caOnSupplementalData?.cabinet;
+          {/* Cabinet Members (all Canadian provinces) */}
+          {!isUSA && (() => {
+            const cabinet = provinceSupplementalData?.cabinet;
             if (!cabinet || cabinet.length === 0) return null;
             const ministers = cabinet.filter(m => (m.type || '').toLowerCase() !== 'associate');
             const associates = cabinet.filter(m => (m.type || '').toLowerCase() === 'associate');
@@ -13982,13 +13984,13 @@ function App() {
                 <div className="px-5 pt-5 pb-2">
                   <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Legislature Composition</h2>
                   <p className="text-xs text-gray-400 mt-0.5">{legislatureLabel} &nbsp;·&nbsp; {leg.totalSeats} total seats</p>
-                  {item.subnationalId === 'CA-ON' && caOnSupplementalData && (
+                  {!isUSA && provinceSupplementalData && (
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
-                      {caOnSupplementalData.legislature_last_updated && (
-                        <span className="text-xs text-gray-400">Updated: {caOnSupplementalData.legislature_last_updated}</span>
+                      {provinceSupplementalData.legislature_last_updated && (
+                        <span className="text-xs text-gray-400">Updated: {provinceSupplementalData.legislature_last_updated}</span>
                       )}
-                      {caOnSupplementalData.legislature_source_url && (
-                        <a href={caOnSupplementalData.legislature_source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">Official source ↗</a>
+                      {provinceSupplementalData.legislature_source_url && (
+                        <a href={provinceSupplementalData.legislature_source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">Official source ↗</a>
                       )}
                     </div>
                   )}
@@ -14048,11 +14050,11 @@ function App() {
             );
           })()}
 
-          {/* CA-ON Contact Information */}
-          {item.subnationalId === 'CA-ON' && (() => {
-            const offices = caOnSupplementalData?.contact_offices;
+          {/* Contact Information (all Canadian provinces) */}
+          {!isUSA && (() => {
+            const offices = provinceSupplementalData?.contact_offices;
             if (!offices || offices.length === 0) return null;
-            const lastUpdated = caOnSupplementalData?.last_updated;
+            const lastUpdated = provinceSupplementalData?.last_updated;
             return (
               <div className="mt-6 bg-white rounded-2xl shadow-elegant overflow-hidden">
                 <div className="px-5 pt-5 pb-3">
