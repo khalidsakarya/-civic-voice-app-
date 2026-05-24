@@ -457,12 +457,31 @@ function DetailCampaignFinance({ row }) {
   );
 }
 
+const LOBBYING_ONGOING_LABELS = new Set(['continuing', 'ongoing', 'indefinite']);
+const LOBBYING_PAGE_SIZE = 20;
+
+function filterLobbyingRows(rows) {
+  return rows.filter((r) => {
+    const period = String(r?.reporting_period ?? '').trim();
+    if (!period) return false;
+    if (LOBBYING_ONGOING_LABELS.has(period.toLowerCase())) return true;
+    const years = period.match(/\b(19|20)\d{2}\b/g);
+    if (years) return years.some((y) => parseInt(y, 10) >= 2020);
+    return false;
+  });
+}
+
 function DetailLobbyingRecords({ row }) {
+  const [showAll, setShowAll] = useState(false);
   const lr = row?.lobbying_records;
   const src = usCaSourceUrl(lr);
-  const rows = lr?.rows || [];
+  const allRows = lr?.rows || [];
   const noTarget =
-    lr?.status === 'no_official_target_specific_lobbying_records_found' || rows.length === 0;
+    lr?.status === 'no_official_target_specific_lobbying_records_found' || allRows.length === 0;
+
+  const filteredRows = filterLobbyingRows(allRows);
+  const hiddenCount = allRows.length - filteredRows.length;
+  const displayRows = showAll ? filteredRows : filteredRows.slice(0, LOBBYING_PAGE_SIZE);
 
   return (
     <div className="pt-3 space-y-2">
@@ -476,7 +495,34 @@ function DetailLobbyingRecords({ row }) {
       ) : (
         <>
           {lr?.note && <p className="text-xs text-gray-700 leading-relaxed">{lr.note}</p>}
-          <LobbyingRecordsTable rows={rows} />
+          {allRows.length > 0 && (
+            <p className="text-xs text-gray-500">
+              Showing <span className="font-semibold text-gray-700">{filteredRows.length}</span> relevant of{' '}
+              <span className="font-semibold text-gray-700">{allRows.length}</span> total records
+              {hiddenCount > 0 && (
+                <span className="text-gray-400"> · {hiddenCount} stale pre-2020 entries hidden</span>
+              )}
+            </p>
+          )}
+          <LobbyingRecordsTable rows={displayRows} />
+          {!showAll && filteredRows.length > LOBBYING_PAGE_SIZE && (
+            <button
+              type="button"
+              onClick={() => setShowAll(true)}
+              className="text-xs text-blue-600 hover:underline font-medium mt-1"
+            >
+              Show {filteredRows.length - LOBBYING_PAGE_SIZE} more →
+            </button>
+          )}
+          {showAll && filteredRows.length > LOBBYING_PAGE_SIZE && (
+            <button
+              type="button"
+              onClick={() => setShowAll(false)}
+              className="text-xs text-blue-600 hover:underline font-medium mt-1"
+            >
+              ← Show less
+            </button>
+          )}
         </>
       )}
       {lr?.status === 'official_data_requires_manual_review' && (
@@ -486,7 +532,7 @@ function DetailLobbyingRecords({ row }) {
             : 'Lobbying filings are published in Cal-Access; automated fetch was not available from this environment.'}
         </p>
       )}
-      {rows.length > 0 && (
+      {allRows.length > 0 && (
         <p className="text-[10px] text-gray-500 leading-relaxed">
           Payment amounts are reported on separate Cal-Access lobbying payment filings when not
           shown in LEMP_CD contract registrations.
