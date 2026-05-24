@@ -29,13 +29,22 @@ function classifyRole(title) {
 
 function looksLikePersonName(text) {
   const t = trim(text);
-  if (!t || t.length < 5 || t.length > 60) return false;
-  if (/^(skip|menu|search|home|news|contact|overview|directory|flag|toggle|open|close|more|learn|read|view|click|download|pdf|site|report|privacy|policy|facebook|twitter|instagram|youtube|linkedin|quick links|connect with|school choice|sign up|subscribe|follow us|share|email|phone|address|navigation|agency directory|your government|top services|translation|disclaimer)/i.test(t)) {
+  if (!t || t.length < 5 || t.length > 50) return false;
+  if (/^(skip|menu|search|home|news|contact|overview|directory|flag|toggle|open|close|more|learn|read|view|click|download|pdf|site|report|privacy|policy|facebook|twitter|instagram|youtube|linkedin|quick links|connect with|school choice|sign up|subscribe|follow us|share|email|phone|address|navigation|agency directory|your government|top services|translation|disclaimer|main content|high contrast)/i.test(t)) {
     return false;
   }
-  if (/Time Zone|^Hours$|First Lady of|Connect With|Quick Links|School Choice/i.test(t)) return false;
-  if (!/^[A-Z][a-z]+(?:\s[A-Z]\.?)?\s[A-Z][a-z]/.test(t)) return false;
-  if (/Governor|Texas|Florida|Illinois|Pennsylvania|New York|Department|Office|Commission|Status|Release|Press|Executive|Organization|Appointments|Additional|Resources|Events|Demographics|Policies|Fraud|Map|Staff|Full|Overview|Premier|Minister|Secretary of State$|Choice|Links|Connect|Social|Media|Newsletter|Services|Information|Disclaimer|Directory|Government|Stay Informed|Flag Status|Top services|Translation|More Information|Agency Directory|Your Government/.test(t)) {
+  if (/Time Zone|^Hours$|First Lady of|Connect With|Quick Links|School Choice|Unemployment|Statistics|Contrast|Switch|Content|Pensions|Healthcare|Coloradans|money on/i.test(t)) {
+    return false;
+  }
+  const words = t.split(/\s+/);
+  if (words.length < 2 || words.length > 4) return false;
+  if (/\b(unemployment|history|statistics|contrast|switch|content|pensions|healthcare|health|save|money|lowest|highest|official|department|office|governor|state|mode|main|announcement|initiative|program|services|resources|information|update|release|press)\b/i.test(t)) {
+    return false;
+  }
+  for (const w of words) {
+    if (!/^[A-Z][a-z'-]+$/.test(w) && !/^[A-Z]\.$/.test(w)) return false;
+  }
+  if (/Governor|Texas|Florida|Illinois|Pennsylvania|New York|Department|Office|Commission|Status|Release|Press|Executive|Organization|Appointments|Additional|Resources|Events|Demographics|Policies|Fraud|Map|Staff|Full|Overview|Premier|Minister|Secretary of State$|Choice|Links|Connect|Social|Media|Newsletter|Services|Information|Disclaimer|Directory|Government|Stay Informed|Flag Status|Top services|Translation|More Information|Agency Directory|Your Government|Alabama|Colorado|Kentucky|Arkansas|Connecticut|Delaware|Hawaii|Indiana|Iowa/.test(t)) {
     return false;
   }
   return true;
