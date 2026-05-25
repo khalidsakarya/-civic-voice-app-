@@ -41,10 +41,16 @@ import {
   leaderProfilePanelPayloadFromExplorerItem,
 } from './utils/subnationalLeaderProfile';
 import { fetchSubnationalLeaderTransparency } from './firestore/fetchSubnationalLeaderTransparency';
-import { PILOT_LEADER_TRANSPARENCY_IDS, isCanadianProvincialTransparencyId } from './utils/subnationalLeaderTransparency';
+import {
+  PILOT_LEADER_TRANSPARENCY_IDS,
+  hasLiveLeaderTransparency,
+  isCanadianProvincialTransparencyId,
+  isUsStateTransparencyId,
+} from './utils/subnationalLeaderTransparency';
 import SubnationalLeaderTransparencySections from './components/SubnationalLeaderTransparencySections';
 import CaOnLeaderTransparencySections from './components/CaOnLeaderTransparencySections';
 import UsCaLeaderTransparencySections from './components/UsCaLeaderTransparencySections';
+import UsStateLeaderTransparencySections from './components/UsStateLeaderTransparencySections';
 import AuNswLeaderTransparencySections from './components/AuNswLeaderTransparencySections';
 import { resolveAuNswTransparencyJurisdictionId, shouldShowAuNswLeaderTransparency } from './utils/auNswLeaderTransparency';
 import UkLonLeaderTransparencySections from './components/UkLonLeaderTransparencySections';
@@ -4053,12 +4059,13 @@ function App() {
 
   useEffect(() => {
     let id = '';
+    const subnationalId = String(selectedLeader?.subnationalId || '').trim();
     if (
       showLeaderPanel &&
-      selectedLeader?.subnationalId &&
-      PILOT_LEADER_TRANSPARENCY_IDS.includes(selectedLeader.subnationalId)
+      subnationalId &&
+      (PILOT_LEADER_TRANSPARENCY_IDS.includes(subnationalId) || isUsStateTransparencyId(subnationalId))
     ) {
-      id = selectedLeader.subnationalId;
+      id = subnationalId;
     } else if (
       view === 'au-leader-detail' &&
       selectedAuLeader &&
@@ -35236,9 +35243,12 @@ function App() {
     const useOfficial = !!leader.useOfficialProfileOnly;
     const profilePending = !!leader.leaderProfilePending;
     const showTransparencyPilot =
-      leader.subnationalId &&
-      PILOT_LEADER_TRANSPARENCY_IDS.includes(leader.subnationalId) &&
-      (useOfficial || isCanadianProvincialTransparencyId(leader.subnationalId));
+      (isUsStateTransparencyId(leader.subnationalId) &&
+        (subnationalLeaderTransparencyLoading ||
+          hasLiveLeaderTransparency(subnationalLeaderTransparency))) ||
+      (leader.subnationalId &&
+        PILOT_LEADER_TRANSPARENCY_IDS.includes(leader.subnationalId) &&
+        (useOfficial || isCanadianProvincialTransparencyId(leader.subnationalId)));
     const partyColorMap = {
       'Republican': '#dc2626',            'Democratic': '#2563eb',
       'NDP': '#f97316',                   'Liberal': '#dc2626',
@@ -35392,6 +35402,11 @@ function App() {
                   />
                 ) : leader.subnationalId === 'US-CA' ? (
                   <UsCaLeaderTransparencySections
+                    transparencyRow={subnationalLeaderTransparency}
+                    loading={subnationalLeaderTransparencyLoading}
+                  />
+                ) : isUsStateTransparencyId(leader.subnationalId) ? (
+                  <UsStateLeaderTransparencySections
                     transparencyRow={subnationalLeaderTransparency}
                     loading={subnationalLeaderTransparencyLoading}
                   />

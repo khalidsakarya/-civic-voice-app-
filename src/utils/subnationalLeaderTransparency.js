@@ -26,6 +26,11 @@ export function isCanadianProvincialTransparencyId(id) {
   return /^CA-[A-Z]{2}$/.test(String(id || '').trim());
 }
 
+/** @param {string} id US state governor transparency doc id (US-XX). */
+export function isUsStateTransparencyId(id) {
+  return /^US-[A-Z]{2}$/.test(String(id || '').trim());
+}
+
 export const LEADER_TRANSPARENCY_SECTION_LABELS = Object.freeze({
   salary: 'Salary',
   financial_disclosure: 'Financial disclosure',
@@ -80,6 +85,11 @@ export function applyLeaderTransparencyFieldsFromFirestore(out, fsRow) {
     'sections_unavailable',
     'field_sources',
     'data_completeness_note',
+    'regulatory_act',
+    'regulatory_body',
+    'sources_confirmed',
+    'sources_inaccessible',
+    'contact_info',
     'salary',
     'financial_disclosure',
     'assets',
