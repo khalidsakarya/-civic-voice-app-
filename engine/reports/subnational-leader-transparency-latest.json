@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-24T23:49:20.963Z",
+  "generatedAt": "2026-05-25T00:30:01.421Z",
   "mode": "write",
   "jurisdictions": [
     {
-      "id": "US-LA",
+      "id": "US-KS",
       "transparency_live": true,
       "error": null,
       "sections": [
@@ -17,7 +17,7 @@
           "section": "financial_disclosure",
           "loaded": true,
           "count": 8,
-          "source": "https://www.ethics.la.gov/PFDisclosure/DisclosureSearch.aspx"
+          "source": "https://kpdc.kansas.gov/"
         },
         {
           "section": "assets",
@@ -29,13 +29,13 @@
           "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://www.ethics.la.gov/"
+          "source": "https://ethics.kansas.gov/"
         },
         {
           "section": "campaign_finance",
           "loaded": true,
           "count": 6,
-          "source": "https://www.sos.la.gov/"
+          "source": "https://kpdc.kansas.gov/"
         },
         {
           "section": "lobbying_disclosures",
@@ -53,22 +53,22 @@
           "section": "recent_official_activity",
           "loaded": true,
           "count": 8,
-          "source": "https://gov.louisiana.gov/news"
+          "source": "https://governor.kansas.gov/newsroom/"
         }
       ],
       "field_sources": {
-        "gifts_hospitality": "https://www.ethics.la.gov/",
-        "lobbying_records": "https://www.ethics.la.gov/LobbyingHome.aspx",
-        "stock_holdings": "https://www.ethics.la.gov/",
-        "financial_disclosure": "https://www.ethics.la.gov/PFDisclosure/DisclosureSearch.aspx",
-        "declared_assets": "https://www.ethics.la.gov/PFDisclosure/DisclosureSearch.aspx",
-        "campaign_finance": "https://www.sos.la.gov/",
-        "recent_official_activity": "https://gov.louisiana.gov/news",
-        "contact_info": "https://gov.louisiana.gov/"
+        "gifts_hospitality": "https://ethics.kansas.gov/",
+        "lobbying_records": "https://ethics.kansas.gov/",
+        "stock_holdings": "https://ethics.kansas.gov/",
+        "financial_disclosure": "https://kpdc.kansas.gov/",
+        "declared_assets": "https://kpdc.kansas.gov/",
+        "campaign_finance": "https://kpdc.kansas.gov/",
+        "recent_official_activity": "https://governor.kansas.gov/newsroom/",
+        "contact_info": "https://governor.kansas.gov/"
       }
     },
     {
-      "id": "US-MD",
+      "id": "US-ME",
       "transparency_live": true,
       "error": null,
       "sections": [
@@ -82,7 +82,7 @@
           "section": "financial_disclosure",
           "loaded": true,
           "count": 8,
-          "source": "https://ethics.maryland.gov/"
+          "source": "https://www.maine.gov/ethics/"
         },
         {
           "section": "assets",
@@ -94,13 +94,13 @@
           "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://ethics.maryland.gov/"
+          "source": "https://www.maine.gov/ethics/"
         },
         {
           "section": "campaign_finance",
           "loaded": true,
           "count": 6,
-          "source": "https://elections.maryland.gov/campaign_finance/index.html"
+          "source": "https://www.maine.gov/sos/cec/"
         },
         {
           "section": "lobbying_disclosures",
@@ -118,22 +118,22 @@
           "section": "recent_official_activity",
           "loaded": true,
           "count": 8,
-          "source": "https://governor.maryland.gov/news"
+          "source": "https://www.maine.gov/governor/"
         }
       ],
       "field_sources": {
-        "gifts_hospitality": "https://ethics.maryland.gov/",
-        "lobbying_records": "https://ethics.maryland.gov/",
-        "stock_holdings": "https://ethics.maryland.gov/",
-        "financial_disclosure": "https://ethics.maryland.gov/",
-        "declared_assets": "https://ethics.maryland.gov/",
-        "campaign_finance": "https://elections.maryland.gov/campaign_finance/index.html",
-        "recent_official_activity": "https://governor.maryland.gov/news",
-        "contact_info": "https://governor.maryland.gov/"
+        "gifts_hospitality": "https://www.maine.gov/ethics/",
+        "lobbying_records": "https://www.maine.gov/ethics/",
+        "stock_holdings": "https://www.maine.gov/ethics/",
+        "financial_disclosure": "https://www.maine.gov/ethics/",
+        "declared_assets": "https://www.maine.gov/ethics/",
+        "campaign_finance": "https://www.maine.gov/sos/cec/",
+        "recent_official_activity": "https://www.maine.gov/governor/",
+        "contact_info": "https://www.maine.gov/governor/"
       }
     },
     {
-      "id": "US-MN",
+      "id": "US-NH",
       "transparency_live": true,
       "error": null,
       "sections": [
@@ -147,7 +147,7 @@
           "section": "financial_disclosure",
           "loaded": true,
           "count": 8,
-          "source": "https://cfb.mn.gov/"
+          "source": "https://sos.nh.gov/elections/campaign-finance"
         },
         {
           "section": "assets",
@@ -159,13 +159,13 @@
           "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://cfb.mn.gov/"
+          "source": "https://sos.nh.gov/elections/campaign-finance"
         },
         {
           "section": "campaign_finance",
           "loaded": true,
           "count": 6,
-          "source": "https://cfb.mn.gov/"
+          "source": "https://sos.nh.gov/elections/campaign-finance"
         },
         {
           "section": "lobbying_disclosures",
@@ -181,23 +181,24 @@
         },
         {
           "section": "recent_official_activity",
-          "loaded": false,
-          "count": 0,
-          "source": null
+          "loaded": true,
+          "count": 8,
+          "source": "https://www.governor.nh.gov/"
         }
       ],
       "field_sources": {
-        "gifts_hospitality": "https://cfb.mn.gov/",
-        "lobbying_records": "https://cfb.mn.gov/",
-        "stock_holdings": "https://cfb.mn.gov/",
-        "financial_disclosure": "https://cfb.mn.gov/",
-        "declared_assets": "https://cfb.mn.gov/",
-        "campaign_finance": "https://cfb.mn.gov/",
-        "contact_info": "https://mn.gov/governor/"
+        "gifts_hospitality": "https://sos.nh.gov/elections/campaign-finance",
+        "lobbying_records": "https://sos.nh.gov/",
+        "stock_holdings": "https://sos.nh.gov/elections/campaign-finance",
+        "financial_disclosure": "https://sos.nh.gov/elections/campaign-finance",
+        "declared_assets": "https://sos.nh.gov/elections/campaign-finance",
+        "campaign_finance": "https://sos.nh.gov/elections/campaign-finance",
+        "recent_official_activity": "https://www.governor.nh.gov/",
+        "contact_info": "https://www.governor.nh.gov/"
       }
     },
     {
-      "id": "US-MS",
+      "id": "US-OK",
       "transparency_live": true,
       "error": null,
       "sections": [
@@ -211,7 +212,7 @@
           "section": "financial_disclosure",
           "loaded": true,
           "count": 8,
-          "source": "https://www.ethics.ms.gov/"
+          "source": "https://www.ok.gov/ethics/"
         },
         {
           "section": "assets",
@@ -223,13 +224,13 @@
           "section": "stock_holdings",
           "loaded": true,
           "count": 6,
-          "source": "https://www.ethics.ms.gov/"
+          "source": "https://www.ok.gov/ethics/"
         },
         {
           "section": "campaign_finance",
           "loaded": true,
           "count": 6,
-          "source": "https://www.sos.ms.gov/elections-voting/campaign-finance"
+          "source": "https://www.ok.gov/elections/Campaign_Finance/"
         },
         {
           "section": "lobbying_disclosures",
@@ -247,408 +248,18 @@
           "section": "recent_official_activity",
           "loaded": true,
           "count": 8,
-          "source": "https://governor.ms.gov/news"
+          "source": "https://www.oklahoma.gov/governor/newsroom.html"
         }
       ],
       "field_sources": {
-        "gifts_hospitality": "https://www.ethics.ms.gov/",
-        "lobbying_records": "https://www.ethics.ms.gov/",
-        "stock_holdings": "https://www.ethics.ms.gov/",
-        "financial_disclosure": "https://www.ethics.ms.gov/",
-        "declared_assets": "https://www.ethics.ms.gov/",
-        "campaign_finance": "https://www.sos.ms.gov/elections-voting/campaign-finance",
-        "recent_official_activity": "https://governor.ms.gov/news",
-        "contact_info": "https://governor.ms.gov/"
-      }
-    },
-    {
-      "id": "US-MO",
-      "transparency_live": true,
-      "error": null,
-      "sections": [
-        {
-          "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "financial_disclosure",
-          "loaded": true,
-          "count": 8,
-          "source": "https://www.mec.mo.gov/"
-        },
-        {
-          "section": "assets",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "stock_holdings",
-          "loaded": true,
-          "count": 6,
-          "source": "https://www.mec.mo.gov/"
-        },
-        {
-          "section": "campaign_finance",
-          "loaded": true,
-          "count": 6,
-          "source": "https://www.mec.mo.gov/MEC/Campaign_Finance/Home.aspx"
-        },
-        {
-          "section": "lobbying_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "conflict_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "recent_official_activity",
-          "loaded": true,
-          "count": 8,
-          "source": "https://governor.mo.gov/news"
-        }
-      ],
-      "field_sources": {
-        "gifts_hospitality": "https://www.mec.mo.gov/",
-        "lobbying_records": "https://www.mec.mo.gov/MEC/Lobbying/Home.aspx",
-        "stock_holdings": "https://www.mec.mo.gov/",
-        "financial_disclosure": "https://www.mec.mo.gov/",
-        "declared_assets": "https://www.mec.mo.gov/",
-        "campaign_finance": "https://www.mec.mo.gov/MEC/Campaign_Finance/Home.aspx",
-        "recent_official_activity": "https://governor.mo.gov/news",
-        "contact_info": "https://governor.mo.gov/"
-      }
-    },
-    {
-      "id": "US-MT",
-      "transparency_live": true,
-      "error": null,
-      "sections": [
-        {
-          "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "financial_disclosure",
-          "loaded": true,
-          "count": 8,
-          "source": "https://sosmt.gov/elections/"
-        },
-        {
-          "section": "assets",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "stock_holdings",
-          "loaded": true,
-          "count": 6,
-          "source": "https://sosmt.gov/elections/"
-        },
-        {
-          "section": "campaign_finance",
-          "loaded": true,
-          "count": 6,
-          "source": "https://sosmt.gov/elections/"
-        },
-        {
-          "section": "lobbying_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "conflict_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "recent_official_activity",
-          "loaded": true,
-          "count": 8,
-          "source": "https://governor.mt.gov/newsroom"
-        }
-      ],
-      "field_sources": {
-        "gifts_hospitality": "https://sosmt.gov/elections/",
-        "lobbying_records": "https://sosmt.gov/elections/",
-        "stock_holdings": "https://sosmt.gov/elections/",
-        "financial_disclosure": "https://sosmt.gov/elections/",
-        "declared_assets": "https://sosmt.gov/elections/",
-        "campaign_finance": "https://sosmt.gov/elections/",
-        "recent_official_activity": "https://governor.mt.gov/newsroom",
-        "contact_info": "https://governor.mt.gov/"
-      }
-    },
-    {
-      "id": "US-NE",
-      "transparency_live": true,
-      "error": null,
-      "sections": [
-        {
-          "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "financial_disclosure",
-          "loaded": true,
-          "count": 8,
-          "source": "https://nadc.nebraska.gov/"
-        },
-        {
-          "section": "assets",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "stock_holdings",
-          "loaded": true,
-          "count": 6,
-          "source": "https://nadc.nebraska.gov/"
-        },
-        {
-          "section": "campaign_finance",
-          "loaded": true,
-          "count": 6,
-          "source": "https://nadc.nebraska.gov/"
-        },
-        {
-          "section": "lobbying_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "conflict_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "recent_official_activity",
-          "loaded": true,
-          "count": 8,
-          "source": "https://governor.nebraska.gov/news"
-        }
-      ],
-      "field_sources": {
-        "gifts_hospitality": "https://nadc.nebraska.gov/",
-        "lobbying_records": "https://nadc.nebraska.gov/",
-        "stock_holdings": "https://nadc.nebraska.gov/",
-        "financial_disclosure": "https://nadc.nebraska.gov/",
-        "declared_assets": "https://nadc.nebraska.gov/",
-        "campaign_finance": "https://nadc.nebraska.gov/",
-        "recent_official_activity": "https://governor.nebraska.gov/news",
-        "contact_info": "https://governor.nebraska.gov/"
-      }
-    },
-    {
-      "id": "US-NV",
-      "transparency_live": true,
-      "error": null,
-      "sections": [
-        {
-          "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "financial_disclosure",
-          "loaded": true,
-          "count": 8,
-          "source": "https://ethics.nv.gov/"
-        },
-        {
-          "section": "assets",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "stock_holdings",
-          "loaded": true,
-          "count": 6,
-          "source": "https://ethics.nv.gov/"
-        },
-        {
-          "section": "campaign_finance",
-          "loaded": true,
-          "count": 6,
-          "source": "https://www.nvsos.gov/sos/elections/campaign-finance"
-        },
-        {
-          "section": "lobbying_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "conflict_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "recent_official_activity",
-          "loaded": true,
-          "count": 8,
-          "source": "https://gov.nv.gov/Newsroom/"
-        }
-      ],
-      "field_sources": {
-        "gifts_hospitality": "https://ethics.nv.gov/",
-        "lobbying_records": "https://www.nvsos.gov/sos/lobbyist/lobbyist-home",
-        "stock_holdings": "https://ethics.nv.gov/",
-        "financial_disclosure": "https://ethics.nv.gov/",
-        "declared_assets": "https://ethics.nv.gov/",
-        "campaign_finance": "https://www.nvsos.gov/sos/elections/campaign-finance",
-        "recent_official_activity": "https://gov.nv.gov/Newsroom/",
-        "contact_info": "https://gov.nv.gov/"
-      }
-    },
-    {
-      "id": "US-NM",
-      "transparency_live": true,
-      "error": null,
-      "sections": [
-        {
-          "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "financial_disclosure",
-          "loaded": true,
-          "count": 8,
-          "source": "https://www.sos.nm.gov/"
-        },
-        {
-          "section": "assets",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "stock_holdings",
-          "loaded": true,
-          "count": 6,
-          "source": "https://www.sos.nm.gov/"
-        },
-        {
-          "section": "campaign_finance",
-          "loaded": true,
-          "count": 6,
-          "source": "https://www.sos.nm.gov/campaign-finance/"
-        },
-        {
-          "section": "lobbying_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "conflict_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "recent_official_activity",
-          "loaded": true,
-          "count": 8,
-          "source": "https://www.governor.state.nm.us/press-releases"
-        }
-      ],
-      "field_sources": {
-        "gifts_hospitality": "https://www.sos.nm.gov/",
-        "lobbying_records": "https://www.sos.nm.gov/",
-        "stock_holdings": "https://www.sos.nm.gov/",
-        "financial_disclosure": "https://www.sos.nm.gov/",
-        "declared_assets": "https://www.sos.nm.gov/",
-        "campaign_finance": "https://www.sos.nm.gov/campaign-finance/",
-        "recent_official_activity": "https://www.governor.state.nm.us/press-releases",
-        "contact_info": "https://www.governor.state.nm.us/"
-      }
-    },
-    {
-      "id": "US-ND",
-      "transparency_live": true,
-      "error": null,
-      "sections": [
-        {
-          "section": "salary",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "financial_disclosure",
-          "loaded": true,
-          "count": 8,
-          "source": "https://www.sos.nd.gov/"
-        },
-        {
-          "section": "assets",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "stock_holdings",
-          "loaded": true,
-          "count": 6,
-          "source": "https://www.sos.nd.gov/"
-        },
-        {
-          "section": "campaign_finance",
-          "loaded": true,
-          "count": 6,
-          "source": "https://vip.sos.nd.gov/PortalList.aspx"
-        },
-        {
-          "section": "lobbying_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "conflict_disclosures",
-          "loaded": false,
-          "count": 0,
-          "source": null
-        },
-        {
-          "section": "recent_official_activity",
-          "loaded": true,
-          "count": 8,
-          "source": "https://www.governor.nd.gov/rss/news"
-        }
-      ],
-      "field_sources": {
-        "gifts_hospitality": "https://www.sos.nd.gov/",
-        "lobbying_records": "https://www.sos.nd.gov/",
-        "stock_holdings": "https://www.sos.nd.gov/",
-        "financial_disclosure": "https://www.sos.nd.gov/",
-        "declared_assets": "https://www.sos.nd.gov/",
-        "campaign_finance": "https://vip.sos.nd.gov/PortalList.aspx",
-        "recent_official_activity": "https://www.governor.nd.gov/rss/news",
-        "contact_info": "https://www.governor.nd.gov/"
+        "gifts_hospitality": "https://www.ok.gov/ethics/",
+        "lobbying_records": "https://www.ok.gov/ethics/",
+        "stock_holdings": "https://www.ok.gov/ethics/",
+        "financial_disclosure": "https://www.ok.gov/ethics/",
+        "declared_assets": "https://www.ok.gov/ethics/",
+        "campaign_finance": "https://www.ok.gov/elections/Campaign_Finance/",
+        "recent_official_activity": "https://www.oklahoma.gov/governor/newsroom.html",
+        "contact_info": "https://www.oklahoma.gov/governor.html"
       }
     }
   ]

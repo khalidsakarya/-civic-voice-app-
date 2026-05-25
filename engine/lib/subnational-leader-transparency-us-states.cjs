@@ -21,6 +21,8 @@ const {
   BATCH2_IDS,
   BATCH3_IDS,
   BATCH4_IDS,
+  BATCH5_IDS,
+  CLEANUP_BATCH_IDS,
   CONFIGURED_US_STATE_IDS,
   getStateConfig,
 } = require('./us-state-leader-transparency-config.cjs');
@@ -208,6 +210,14 @@ async function fetchFinancialDisclosure(cfg) {
     declared_assets.disclosure_note = financial_disclosure.filing_status_note;
   }
 
+  if (cfg.disclosure_strategy === 'ri_blocked') {
+    financial_disclosure.status = 'source_blocked';
+    financial_disclosure.filing_status_note =
+      cfg.blocked_notes?.[0] || 'Official Rhode Island portals blocked from automated fetch.';
+    declared_assets.status = 'source_blocked';
+    declared_assets.disclosure_note = financial_disclosure.filing_status_note;
+  }
+
   return { financial_disclosure, declared_assets, sourceUrl: probe.source_url };
 }
 
@@ -215,8 +225,11 @@ async function fetchRssActivity(cfg) {
   const rssUrl = cfg.sources.news_rss;
   if (!rssUrl) return null;
   const xml = await fetchText(rssUrl, 800000);
-  const items = parseRssItems(xml)
-    .filter((it) => cfg.leader_match.test(`${it.title} ${it.description} ${it.link}`))
+  const raw = parseRssItems(xml);
+  const items = raw
+    .filter((it) =>
+      cfg.news_rss_unfiltered || cfg.leader_match.test(`${it.title} ${it.description} ${it.link}`),
+    )
     .slice(0, 8)
     .map((it) => ({
       title: it.title,
@@ -394,6 +407,26 @@ async function fetchOhPortalNews(cfg) {
   return { items, sourceUrl: cfg.sources.newsroom };
 }
 
+async function fetchOrGovNews(cfg) {
+  const html = await fetchText(cfg.sources.governor, 800000);
+  const items = parsePressLinksFromHtml(html, cfg.sources.governor, {
+    limit: 12,
+    titleFilter: (title, href) =>
+      /\/(news|press|media|release|announce)/i.test(href) &&
+      !/priorities|policies|councils|#main|modal/i.test(`${title} ${href}`),
+  })
+    .slice(0, 8)
+    .map((it) => ({
+      title: it.title,
+      date: it.date || '',
+      url: it.url,
+      excerpt: it.excerpt || '',
+      source_url: it.url,
+    }));
+  if (!items.length) return null;
+  return { items, sourceUrl: cfg.sources.governor };
+}
+
 async function fetchHtmlNewsActivity(cfg) {
   const urls = [cfg.sources.newsroom, cfg.sources.newsroom_alt, cfg.sources.governor].filter(Boolean);
   for (const url of urls) {
@@ -446,6 +479,8 @@ async function fetchRecentActivity(cfg) {
       return fetchWaNewsReleases(cfg);
     case 'oh_portal_news':
       return fetchOhPortalNews(cfg);
+    case 'or_gov_news':
+      return fetchOrGovNews(cfg);
     default:
       return fetchHtmlNewsActivity(cfg);
   }
@@ -485,6 +520,9 @@ function isLikelyOfficeAggregateRow(name) {
   if (/^(STATE|COUNTY|CITY|MUNICIPAL)\s+(SENATOR|REPRESENTATIVE|COUNCIL|JUDGE|JUSTICE|EXECUTIVE|GOVERNOR)/i.test(t)) {
     return true;
   }
+  if (/elections home|publications & forms|history publications|search candidates|view reports/i.test(t)) {
+    return true;
+  }
   if (/LEG DISTRICT|SUPREME COURT|HOUSE| - SENATE$/i.test(t)) return true;
   return false;
 }
@@ -492,6 +530,19 @@ function isLikelyOfficeAggregateRow(name) {
 async function fetchCampaignFinancePortal(cfg) {
   const url = cfg.sources.campaign_finance || cfg.sources.elections;
   if (!url || cfg.campaign_strategy === 'pending_batch') return null;
+  if (cfg.campaign_strategy === 'ri_blocked') {
+    return {
+      campaign_finance: {
+        status: 'source_blocked',
+        summary: cfg.blocked_notes?.[0] || 'Official campaign finance portal blocked from automated fetch.',
+        items: [],
+        row_count: 0,
+        portal: url,
+        source_url: url,
+      },
+      sourceUrl: url,
+    };
+  }
   try {
     const html = await fetchText(url, 800000);
     if (/404|error display|page not found/i.test(html.slice(0, 1500))) return null;
@@ -656,6 +707,8 @@ module.exports = {
   BATCH2_IDS,
   BATCH3_IDS,
   BATCH4_IDS,
+  BATCH5_IDS,
+  CLEANUP_BATCH_IDS,
   CONFIGURED_US_STATE_IDS,
   buildLeaderTransparency,
   createModule,
