@@ -24,6 +24,8 @@ export async function fetchSubnationalLeaderTransparency(jurisdictionId) {
     const snap = await getDocFromServer(doc(db, SUBNATIONAL_LEADER_TRANSPARENCY_COLLECTION, id));
     if (!snap.exists()) return null;
     const raw = snap.data();
+    // eslint-disable-next-line no-console
+    if (id === 'US-WA') console.log('RAW FIRESTORE US-WA:', raw);
     const rec = { id: snap.id, subnationalId: snap.id };
     applyLeaderTransparencyFieldsFromFirestore(rec, raw);
     if (id === 'CA-ON' || isCanadianProvincialTransparencyId(id)) {
