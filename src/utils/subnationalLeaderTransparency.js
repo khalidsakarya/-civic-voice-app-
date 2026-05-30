@@ -98,7 +98,9 @@ export function applyLeaderTransparencyFieldsFromFirestore(out, fsRow) {
     'campaign_finance',
     'lobbying_disclosures',
     'lobbying_records',
+    'lobbying',
     'gifts_hospitality',
+    'net_worth',
     'conflict_disclosures',
     'recent_official_activity',
   ];
