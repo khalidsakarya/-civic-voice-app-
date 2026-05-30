@@ -2,7 +2,7 @@
  * Client read helper for `subnational_leader_transparency` (pilot jurisdictions).
  */
 
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDocFromServer } from 'firebase/firestore';
 import { db } from '../firebase';
 import { applyCaOnLeaderTransparencyFields } from '../utils/caOnLeaderTransparency';
 import { isCanadianProvincialTransparencyId } from '../utils/subnationalLeaderTransparency';
@@ -21,7 +21,7 @@ export async function fetchSubnationalLeaderTransparency(jurisdictionId) {
   const id = String(jurisdictionId || '').trim();
   if (!id) return null;
   try {
-    const snap = await getDoc(doc(db, SUBNATIONAL_LEADER_TRANSPARENCY_COLLECTION, id));
+    const snap = await getDocFromServer(doc(db, SUBNATIONAL_LEADER_TRANSPARENCY_COLLECTION, id));
     if (!snap.exists()) return null;
     const raw = snap.data();
     const rec = { id: snap.id, subnationalId: snap.id };
