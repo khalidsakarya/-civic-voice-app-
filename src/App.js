@@ -13520,7 +13520,7 @@ function App() {
   useEffect(() => {
     const id = selectedProvince?.subnationalId;
     const isUSA = selectedCountry?.type === 'usa';
-    if (!id || (isUSA && id !== 'US-CA')) {
+    if (!id || (isUSA && !id.startsWith('US-'))) {
       setProvinceSupplementalData(null);
       return undefined;
     }
@@ -13924,19 +13924,20 @@ function App() {
             </div>
           </div>
 
-          {/* Cabinet Members (US-CA) */}
-          {isUSA && item.subnationalId === 'US-CA' && (() => {
+          {/* Cabinet Members (all US states) */}
+          {isUSA && item.subnationalId?.startsWith('US-') && (() => {
             const cabinet = provinceSupplementalData?.cabinet;
             if (!cabinet || cabinet.length === 0) return null;
             const secretaries = cabinet.filter(m => /secretary/i.test(String(m.type ?? m.role ?? m.position ?? m.title ?? m.portfolio ?? '')));
             const directors = cabinet.filter(m => /director/i.test(String(m.type ?? m.role ?? m.position ?? m.title ?? m.portfolio ?? '')));
             const others = cabinet.filter(m => !secretaries.includes(m) && !directors.includes(m));
-            const isOpen = !!expandedSections['us-ca-cabinet'];
+            const cabinetKey = `${item.subnationalId}-cabinet`;
+            const isOpen = !!expandedSections[cabinetKey];
             return (
               <div className="mt-6 bg-white rounded-2xl shadow-elegant overflow-hidden">
                 <button
                   className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
-                  onClick={() => toggleSection('us-ca-cabinet')}
+                  onClick={() => toggleSection(cabinetKey)}
                 >
                   <div>
                     <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">Cabinet Members</h2>
