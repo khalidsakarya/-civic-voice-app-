@@ -61,9 +61,9 @@ import {
   isExecutiveOrderDoc,
   matchesUsExecutiveOrdersPresident,
 } from './constants/executiveOrderDocumentTypes';
-import { collection, getDocs, getDoc, query, where, addDoc, setDoc, doc, increment, serverTimestamp, getCountFromServer } from 'firebase/firestore';
+import { collection, getDocs, getDoc, query, where, orderBy, limit, addDoc, setDoc, doc, increment, serverTimestamp, getCountFromServer } from 'firebase/firestore';
 import { logEvent } from './analytics';
-import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell, Loader2, Copy } from 'lucide-react';
+import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell, Loader2, Copy, MessageSquare } from 'lucide-react';
 import { BarChart, Bar, AreaChart, Area, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import './App.css';
@@ -1808,6 +1808,10 @@ function App() {
   const [provinceTransparencyFields, setProvinceTransparencyFields] = useState(null);
   /** Canadian province supplemental data: cabinet, contact_offices, last_updated (not in merge pipeline). */
   const [provinceSupplementalData, setProvinceSupplementalData] = useState(null);
+  /** Legislative activity panel for Canadian province pages. */
+  const [caProvinceLegislativeTab, setCaProvinceLegislativeTab] = useState(null);
+  const [caProvinceLegislativeData, setCaProvinceLegislativeData] = useState({});
+  const [caProvinceLegislativeLoading, setCaProvinceLegislativeLoading] = useState(false);
   const [showEconomicModal, setShowEconomicModal] = useState(false);
   const [economicModalSelectedChart, setEconomicModalSelectedChart] = useState(null);
   const [presidentVotes, setPresidentVotes] = useState(() => {
@@ -13518,6 +13522,11 @@ function App() {
   }, [selectedProvince, selectedCountry]);
 
   useEffect(() => {
+    setCaProvinceLegislativeTab(null);
+    setCaProvinceLegislativeData({});
+  }, [selectedProvince?.subnationalId]);
+
+  useEffect(() => {
     const id = selectedProvince?.subnationalId;
     const isUSA = selectedCountry?.type === 'usa';
     if (!id || (isUSA && !id.startsWith('US-'))) {
@@ -13991,6 +14000,146 @@ function App() {
                         </div>
                       </>
                     )}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Legislative Activity buttons (Canadian provinces) */}
+          {!isUSA && (() => {
+            const jId = item.subnationalId;
+            const activeTab = caProvinceLegislativeTab;
+            const tabData = caProvinceLegislativeData;
+            const tabLoading = caProvinceLegislativeLoading;
+
+            const handleTab = async (tab) => {
+              if (activeTab === tab) { setCaProvinceLegislativeTab(null); return; }
+              setCaProvinceLegislativeTab(tab);
+              if (tabData[tab]) return;
+              setCaProvinceLegislativeLoading(true);
+              try {
+                if (tab === 'bills') {
+                  const snap = await getDocs(query(
+                    collection(db, 'subnational_bills', jId, 'bills'),
+                    where('status', '==', 'in_progress'),
+                    orderBy('introduced_date', 'desc'),
+                    limit(20)
+                  ));
+                  setCaProvinceLegislativeData(prev => ({ ...prev, bills: snap.docs.map(d => d.data()) }));
+                } else if (tab === 'laws') {
+                  const snap = await getDocs(query(
+                    collection(db, 'subnational_bills', jId, 'bills'),
+                    where('status', '==', 'royal_assent'),
+                    orderBy('last_action_date', 'desc'),
+                    limit(20)
+                  ));
+                  setCaProvinceLegislativeData(prev => ({ ...prev, laws: snap.docs.map(d => d.data()) }));
+                } else if (tab === 'statements') {
+                  const snap = await getDocs(query(
+                    collection(db, 'member_recent_activity'),
+                    where('jurisdiction', '==', jId),
+                    orderBy('date', 'desc'),
+                    limit(20)
+                  ));
+                  setCaProvinceLegislativeData(prev => ({ ...prev, statements: snap.docs.map(d => d.data()) }));
+                }
+              } catch (err) {
+                console.warn('[legislative-panel]', err.message || err);
+                setCaProvinceLegislativeData(prev => ({ ...prev, [tab]: [] }));
+              } finally {
+                setCaProvinceLegislativeLoading(false);
+              }
+            };
+
+            const btnBase = 'flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95';
+            const activeRing = 'ring-2 ring-white/40 ring-offset-1';
+
+            return (
+              <div className="mt-6">
+                <div className="flex flex-wrap gap-3 mb-4">
+                  <button
+                    onClick={() => handleTab('bills')}
+                    className={`${btnBase} ${activeTab === 'bills' ? activeRing : ''}`}
+                    style={{ background: 'linear-gradient(135deg, #2563eb, #3b82f6)' }}
+                  >
+                    <FileText className="w-5 h-5" />
+                    Recent Bills
+                  </button>
+                  <button
+                    onClick={() => handleTab('laws')}
+                    className={`${btnBase} ${activeTab === 'laws' ? activeRing : ''}`}
+                    style={{ background: 'linear-gradient(135deg, #059669, #10b981)' }}
+                  >
+                    <CheckCircle className="w-5 h-5" />
+                    New Laws
+                  </button>
+                  <button
+                    onClick={() => handleTab('statements')}
+                    className={`${btnBase} ${activeTab === 'statements' ? activeRing : ''}`}
+                    style={{ background: 'linear-gradient(135deg, #7c3aed, #8b5cf6)' }}
+                  >
+                    <MessageSquare className="w-5 h-5" />
+                    Official Statements
+                  </button>
+                </div>
+
+                {activeTab && (
+                  <div className="bg-white rounded-2xl shadow-elegant overflow-hidden mb-2">
+                    <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                      <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">
+                        {activeTab === 'bills' ? 'Recent Bills' : activeTab === 'laws' ? 'New Laws' : 'Official Statements'}
+                      </h2>
+                      <button onClick={() => setCaProvinceLegislativeTab(null)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="px-5 py-4 max-h-96 overflow-y-auto">
+                      {tabLoading ? (
+                        <p className="text-xs text-gray-500 flex items-center gap-2">
+                          <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />
+                          Loading…
+                        </p>
+                      ) : activeTab === 'bills' ? (
+                        !tabData.bills || tabData.bills.length === 0
+                          ? <p className="text-xs text-gray-500 italic">No bills in progress found.</p>
+                          : <div className="space-y-3">
+                              {tabData.bills.map((b, i) => (
+                                <div key={i} className="text-xs border-b border-gray-100 pb-3 last:border-0">
+                                  <p className="font-bold text-gray-800">{b.bill_number}{b.title ? ` — ${b.title}` : ''}</p>
+                                  {b.sponsor && <p className="text-gray-500 mt-0.5">Sponsor: {b.sponsor}</p>}
+                                  {b.introduced_date && <p className="text-gray-400 mt-0.5">Introduced: {b.introduced_date}</p>}
+                                </div>
+                              ))}
+                            </div>
+                      ) : activeTab === 'laws' ? (
+                        !tabData.laws || tabData.laws.length === 0
+                          ? <p className="text-xs text-gray-500 italic">No recently passed laws found.</p>
+                          : <div className="space-y-3">
+                              {tabData.laws.map((b, i) => (
+                                <div key={i} className="text-xs border-b border-gray-100 pb-3 last:border-0">
+                                  <p className="font-bold text-gray-800">{b.bill_number}{b.title ? ` — ${b.title}` : ''}</p>
+                                  {b.sponsor && <p className="text-gray-500 mt-0.5">Sponsor: {b.sponsor}</p>}
+                                  {b.last_action_date && <p className="text-gray-400 mt-0.5">Royal assent: {b.last_action_date}</p>}
+                                </div>
+                              ))}
+                            </div>
+                      ) : (
+                        !tabData.statements || tabData.statements.length === 0
+                          ? <p className="text-xs text-gray-500 italic">No official statements found.</p>
+                          : <div className="space-y-3">
+                              {tabData.statements.map((s, i) => (
+                                <div key={i} className="text-xs border-b border-gray-100 pb-3 last:border-0">
+                                  {s.source_url
+                                    ? <a href={s.source_url} target="_blank" rel="noopener noreferrer" className="font-bold text-blue-700 hover:underline">{s.title}</a>
+                                    : <p className="font-bold text-gray-800">{s.title}</p>}
+                                  {s.date && <p className="text-gray-400 mt-0.5">{s.date}</p>}
+                                  {s.source_name && <p className="text-gray-500 mt-0.5">{s.source_name}</p>}
+                                </div>
+                              ))}
+                            </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
