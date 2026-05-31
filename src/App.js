@@ -1812,6 +1812,8 @@ function App() {
   const [caProvinceLegislativeTab, setCaProvinceLegislativeTab] = useState(null);
   const [caProvinceLegislativeData, setCaProvinceLegislativeData] = useState({});
   const [caProvinceLegislativeLoading, setCaProvinceLegislativeLoading] = useState(false);
+  const [caProvinceLegislativeAiSummary, setCaProvinceLegislativeAiSummary] = useState({});
+  const [caProvinceLegislativeAiLoading, setCaProvinceLegislativeAiLoading] = useState({});
   const [showEconomicModal, setShowEconomicModal] = useState(false);
   const [economicModalSelectedChart, setEconomicModalSelectedChart] = useState(null);
   const [presidentVotes, setPresidentVotes] = useState(() => {
@@ -13524,6 +13526,8 @@ function App() {
   useEffect(() => {
     setCaProvinceLegislativeTab(null);
     setCaProvinceLegislativeData({});
+    setCaProvinceLegislativeAiSummary({});
+    setCaProvinceLegislativeAiLoading({});
   }, [selectedProvince?.subnationalId]);
 
   useEffect(() => {
@@ -14012,6 +14016,37 @@ function App() {
             const activeTab = caProvinceLegislativeTab;
             const tabData = caProvinceLegislativeData;
             const tabLoading = caProvinceLegislativeLoading;
+            const aiSummary = caProvinceLegislativeAiSummary;
+            const aiLoading = caProvinceLegislativeAiLoading;
+
+            const callAiSummary = async (tab, prompt) => {
+              const apiKey = process.env.REACT_APP_ANTHROPIC_API_KEY;
+              if (!apiKey) return;
+              setCaProvinceLegislativeAiLoading(prev => ({ ...prev, [tab]: true }));
+              try {
+                const res = await fetch('https://api.anthropic.com/v1/messages', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'anthropic-dangerous-direct-browser-calls': 'true',
+                  },
+                  body: JSON.stringify({
+                    model: 'claude-sonnet-4-20250514',
+                    max_tokens: 150,
+                    messages: [{ role: 'user', content: prompt }],
+                  }),
+                });
+                const json = await res.json();
+                const text = json?.content?.[0]?.text || '';
+                if (text) setCaProvinceLegislativeAiSummary(prev => ({ ...prev, [tab]: text }));
+              } catch (e) {
+                console.warn('[legislative-ai]', e.message || e);
+              } finally {
+                setCaProvinceLegislativeAiLoading(prev => ({ ...prev, [tab]: false }));
+              }
+            };
 
             const handleTab = async (tab) => {
               if (activeTab === tab) { setCaProvinceLegislativeTab(null); return; }
@@ -14025,7 +14060,12 @@ function App() {
                     orderBy('introduced_date', 'desc'),
                     limit(20)
                   ));
-                  setCaProvinceLegislativeData(prev => ({ ...prev, bills: snap.docs.map(d => d.data()) }));
+                  const bills = snap.docs.map(d => d.data());
+                  setCaProvinceLegislativeData(prev => ({ ...prev, bills }));
+                  if (bills.length > 0) {
+                    const b = bills[0];
+                    callAiSummary('bills', `In 1-2 sentences, explain what this bill does and why it matters to citizens: ${b.bill_number ? b.bill_number + ' — ' : ''}${b.title || ''}. Sponsor: ${b.sponsor || 'Unknown'}.`);
+                  }
                 } else if (tab === 'laws') {
                   const snap = await getDocs(query(
                     collection(db, 'subnational_bills', jId, 'bills'),
@@ -14033,7 +14073,12 @@ function App() {
                     orderBy('last_action_date', 'desc'),
                     limit(20)
                   ));
-                  setCaProvinceLegislativeData(prev => ({ ...prev, laws: snap.docs.map(d => d.data()) }));
+                  const laws = snap.docs.map(d => d.data());
+                  setCaProvinceLegislativeData(prev => ({ ...prev, laws }));
+                  if (laws.length > 0) {
+                    const b = laws[0];
+                    callAiSummary('laws', `In 1-2 sentences, explain what this bill does and why it matters to citizens: ${b.bill_number ? b.bill_number + ' — ' : ''}${b.title || ''}. Sponsor: ${b.sponsor || 'Unknown'}.`);
+                  }
                 } else if (tab === 'statements') {
                   const snap = await getDocs(query(
                     collection(db, 'member_recent_activity'),
@@ -14041,7 +14086,12 @@ function App() {
                     orderBy('date', 'desc'),
                     limit(20)
                   ));
-                  setCaProvinceLegislativeData(prev => ({ ...prev, statements: snap.docs.map(d => d.data()) }));
+                  const statements = snap.docs.map(d => d.data());
+                  setCaProvinceLegislativeData(prev => ({ ...prev, statements }));
+                  if (statements.length > 0) {
+                    const s = statements[0];
+                    callAiSummary('statements', `In 1-2 sentences, explain what this official statement is about in plain language: ${s.title || ''}.`);
+                  }
                 }
               } catch (err) {
                 console.warn('[legislative-panel]', err.message || err);
@@ -14094,6 +14144,14 @@ function App() {
                       </button>
                     </div>
                     <div className="px-5 py-4 max-h-96 overflow-y-auto">
+                      {!tabLoading && (aiLoading[activeTab] || aiSummary[activeTab]) && (
+                        <div className="rounded-xl p-3 mb-4" style={{ background: 'linear-gradient(135deg, #ede9fe, #dbeafe)' }}>
+                          <p className="text-xs font-bold text-purple-700 uppercase tracking-wide mb-1.5">AI Summary</p>
+                          {aiLoading[activeTab]
+                            ? <span className="w-3 h-3 border-2 border-purple-400 border-t-transparent rounded-full animate-spin inline-block" />
+                            : <p className="text-xs text-gray-700 leading-relaxed">{aiSummary[activeTab]}</p>}
+                        </div>
+                      )}
                       {tabLoading ? (
                         <p className="text-xs text-gray-500 flex items-center gap-2">
                           <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />
