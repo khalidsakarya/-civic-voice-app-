@@ -14022,7 +14022,6 @@ function App() {
                 if (tab === 'bills') {
                   const snap = await getDocs(query(
                     collection(db, 'subnational_bills', jId, 'bills'),
-                    where('status', '==', 'in_progress'),
                     orderBy('introduced_date', 'desc'),
                     limit(20)
                   ));
@@ -14102,8 +14101,9 @@ function App() {
                         </p>
                       ) : activeTab === 'bills' ? (
                         !tabData.bills || tabData.bills.length === 0
-                          ? <p className="text-xs text-gray-500 italic">No bills in progress found.</p>
+                          ? <p className="text-xs text-gray-500 italic">No bills found for current session.</p>
                           : <div className="space-y-3">
+                              <p className="text-xs text-gray-400 italic mb-2">Showing most recently introduced bills — legislature may not be in active session.</p>
                               {tabData.bills.map((b, i) => (
                                 <div key={i} className="text-xs border-b border-gray-100 pb-3 last:border-0">
                                   <p className="font-bold text-gray-800">{b.bill_number}{b.title ? ` — ${b.title}` : ''}</p>
