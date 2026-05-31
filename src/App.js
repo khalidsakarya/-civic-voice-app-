@@ -1814,6 +1814,9 @@ function App() {
   const [caProvinceLegislativeLoading, setCaProvinceLegislativeLoading] = useState(false);
   const [caProvinceLegislativeAiSummary, setCaProvinceLegislativeAiSummary] = useState({});
   const [caProvinceLegislativeAiLoading, setCaProvinceLegislativeAiLoading] = useState({});
+  const [caProvinceNewsVoteCounts, setCaProvinceNewsVoteCounts] = useState({});
+  const [caProvinceNewsUserVotes, setCaProvinceNewsUserVotes] = useState(() => { try { return JSON.parse(localStorage.getItem('cv_province_news_votes') || '{}'); } catch (_) { return {}; } });
+  const [caProvinceBillVotes, setCaProvinceBillVotes] = useState({});
   const [showEconomicModal, setShowEconomicModal] = useState(false);
   const [economicModalSelectedChart, setEconomicModalSelectedChart] = useState(null);
   const [presidentVotes, setPresidentVotes] = useState(() => {
@@ -13528,6 +13531,8 @@ function App() {
     setCaProvinceLegislativeData({});
     setCaProvinceLegislativeAiSummary({});
     setCaProvinceLegislativeAiLoading({});
+    setCaProvinceNewsVoteCounts({});
+    setCaProvinceBillVotes({});
   }, [selectedProvince?.subnationalId]);
 
   useEffect(() => {
@@ -14018,6 +14023,34 @@ function App() {
             const tabLoading = caProvinceLegislativeLoading;
             const aiSummary = caProvinceLegislativeAiSummary;
             const aiLoading = caProvinceLegislativeAiLoading;
+            const newsVotes = caProvinceNewsVoteCounts;
+            const newsUserVotes = caProvinceNewsUserVotes;
+            const billVotes = caProvinceBillVotes;
+
+            const impactColor = (score) => score <= 3 ? '#16a34a' : score <= 6 ? '#d97706' : '#dc2626';
+
+            const mapBillStatus = (s) => {
+              if (!s) return 'Unknown';
+              const l = s.toLowerCase();
+              if (l === 'royal_assent') return 'Passed';
+              if (l === 'in_progress') return 'In Progress';
+              if (l === 'first_reading') return 'First Reading';
+              if (l === 'second_reading') return 'Second Reading';
+              if (l === 'third_reading') return 'Third Reading';
+              if (l.includes('committee')) return 'In Committee';
+              return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            };
+
+            const billStatusStyle = (s) => {
+              const l = (s || '').toLowerCase();
+              if (l === 'royal_assent') return 'bg-green-100 text-green-800';
+              if (l === 'in_progress') return 'bg-blue-100 text-blue-800';
+              if (l.includes('reading')) return 'bg-yellow-100 text-yellow-800';
+              return 'bg-gray-100 text-gray-600';
+            };
+
+            const slugify = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+            const newsItemId = (s) => `ca-${jId}-${slugify(s.title)}`;
 
             const callAiSummary = async (tab, prompt) => {
               const apiKey = process.env.REACT_APP_ANTHROPIC_API_KEY;
@@ -14048,6 +14081,42 @@ function App() {
               }
             };
 
+            const submitProvinceNewsVote = async (itemId, newVote) => {
+              const prevVote = newsUserVotes[itemId] || null;
+              const nextVote = prevVote === newVote ? null : newVote;
+              setCaProvinceNewsUserVotes(prev => {
+                const next = { ...prev, [itemId]: nextVote };
+                try { localStorage.setItem('cv_province_news_votes', JSON.stringify(next)); } catch (_) {}
+                return next;
+              });
+              setCaProvinceNewsVoteCounts(prev => {
+                const cur = prev[itemId] || { support: 0, concerned: 0, oppose: 0 };
+                const next = { ...cur };
+                if (prevVote) next[prevVote] = Math.max(0, (next[prevVote] || 0) - 1);
+                if (nextVote) next[nextVote] = (next[nextVote] || 0) + 1;
+                return { ...prev, [itemId]: next };
+              });
+              try {
+                const countUpdate = { newsId: itemId, country: jId, updated: serverTimestamp() };
+                if (prevVote) countUpdate[prevVote] = increment(-1);
+                if (nextVote) countUpdate[nextVote] = increment(1);
+                if (prevVote || nextVote) await setDoc(doc(db, 'news_vote_counts', itemId), countUpdate, { merge: true });
+                if (nextVote) await addDoc(collection(db, 'news_votes'), { newsId: itemId, voteType: nextVote, userRegion: jId, country: jId, timestamp: serverTimestamp() });
+              } catch (e) { console.warn('[province-news-vote]', e.message || e); }
+            };
+
+            const handleBillVote = (key, voteType) => {
+              setCaProvinceBillVotes(prev => {
+                const cur = prev[key] || { userVote: null, support: 0, concerned: 0, oppose: 0 };
+                const prevVote = cur.userVote;
+                const nextVote = prevVote === voteType ? null : voteType;
+                const next = { ...cur, userVote: nextVote };
+                if (prevVote) next[prevVote] = Math.max(0, (next[prevVote] || 0) - 1);
+                if (nextVote) next[nextVote] = (next[nextVote] || 0) + 1;
+                return { ...prev, [key]: next };
+              });
+            };
+
             const handleTab = async (tab) => {
               if (activeTab === tab) { setCaProvinceLegislativeTab(null); return; }
               setCaProvinceLegislativeTab(tab);
@@ -14055,11 +14124,7 @@ function App() {
               setCaProvinceLegislativeLoading(true);
               try {
                 if (tab === 'bills') {
-                  const snap = await getDocs(query(
-                    collection(db, 'subnational_bills', jId, 'bills'),
-                    orderBy('introduced_date', 'desc'),
-                    limit(20)
-                  ));
+                  const snap = await getDocs(query(collection(db, 'subnational_bills', jId, 'bills'), orderBy('introduced_date', 'desc'), limit(20)));
                   const bills = snap.docs.map(d => d.data());
                   setCaProvinceLegislativeData(prev => ({ ...prev, bills }));
                   if (bills.length > 0) {
@@ -14067,30 +14132,27 @@ function App() {
                     callAiSummary('bills', `In 1-2 sentences, explain what this bill does and why it matters to citizens: ${b.bill_number ? b.bill_number + ' — ' : ''}${b.title || ''}. Sponsor: ${b.sponsor || 'Unknown'}.`);
                   }
                 } else if (tab === 'laws') {
-                  const snap = await getDocs(query(
-                    collection(db, 'subnational_bills', jId, 'bills'),
-                    where('status', '==', 'royal_assent'),
-                    orderBy('last_action_date', 'desc'),
-                    limit(20)
-                  ));
+                  const snap = await getDocs(query(collection(db, 'subnational_bills', jId, 'bills'), where('status', '==', 'royal_assent'), orderBy('last_action_date', 'desc'), limit(20)));
                   const laws = snap.docs.map(d => d.data());
                   setCaProvinceLegislativeData(prev => ({ ...prev, laws }));
                   if (laws.length > 0) {
                     const b = laws[0];
                     callAiSummary('laws', `In 1-2 sentences, explain what this bill does and why it matters to citizens: ${b.bill_number ? b.bill_number + ' — ' : ''}${b.title || ''}. Sponsor: ${b.sponsor || 'Unknown'}.`);
                   }
-                } else if (tab === 'statements') {
-                  const snap = await getDocs(query(
-                    collection(db, 'member_recent_activity'),
-                    where('jurisdiction', '==', jId),
-                    orderBy('date', 'desc'),
-                    limit(20)
-                  ));
-                  const statements = snap.docs.map(d => d.data());
-                  setCaProvinceLegislativeData(prev => ({ ...prev, statements }));
-                  if (statements.length > 0) {
-                    const s = statements[0];
-                    callAiSummary('statements', `In 1-2 sentences, explain what this official statement is about in plain language: ${s.title || ''}.`);
+                } else if (tab === 'news') {
+                  const snap = await getDocs(query(collection(db, 'member_recent_activity'), where('jurisdiction', '==', jId), orderBy('date', 'desc'), limit(20)));
+                  const news = snap.docs.map(d => d.data());
+                  setCaProvinceLegislativeData(prev => ({ ...prev, news }));
+                  if (news.length > 0) {
+                    const s = news[0];
+                    callAiSummary('news', `In 1-2 sentences, explain what this official announcement is about in plain language: ${s.title || ''}.`);
+                    const ids = news.map(n => newsItemId(n));
+                    try {
+                      const vcSnap = await getDocs(query(collection(db, 'news_vote_counts'), where('country', '==', jId)));
+                      const counts = {};
+                      vcSnap.forEach(d => { counts[d.id] = d.data(); });
+                      setCaProvinceNewsVoteCounts(prev => ({ ...prev, ...counts }));
+                    } catch (_) {}
                   }
                 }
               } catch (err) {
@@ -14101,103 +14163,144 @@ function App() {
               }
             };
 
+            const voteBtn = (label, icon, type, cur, onClick) => {
+              const active = cur === type;
+              const styles = { support: 'bg-green-50 border-green-300 text-green-700 hover:bg-green-100', concerned: 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100', oppose: 'bg-red-50 border-red-300 text-red-700 hover:bg-red-100' };
+              return (
+                <button key={type} onClick={onClick} className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-semibold transition-all ${active ? styles[type] + ' ring-1 ring-offset-1' : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100'}`}>
+                  {icon} {label}
+                </button>
+              );
+            };
+
             const btnBase = 'flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white shadow-elegant transition-all hover:opacity-90 active:scale-95';
             const activeRing = 'ring-2 ring-white/40 ring-offset-1';
+
+            const renderBillCard = (b, i, tab) => {
+              const key = `${tab}-${i}`;
+              const bv = billVotes[key] || { userVote: null, support: 0, concerned: 0, oppose: 0 };
+              const summaryText = i === 0
+                ? (aiLoading[tab]
+                    ? <span className="flex items-center gap-1.5 text-xs text-gray-400 italic"><span className="w-3 h-3 border-2 border-gray-300 border-t-transparent rounded-full animate-spin inline-block" />Generating summary…</span>
+                    : aiSummary[tab]
+                      ? <span className="text-xs text-gray-600 leading-relaxed">{aiSummary[tab]}</span>
+                      : null)
+                : null;
+              return (
+                <div key={i} className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border-2 border-transparent hover:border-blue-300 p-4">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    {b.bill_number && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold">{b.bill_number}</span>}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${billStatusStyle(b.status)}`}>{mapBillStatus(b.status)}</span>
+                    {(tab === 'bills' ? b.introduced_date : b.last_action_date) && (
+                      <span className="ml-auto text-xs text-gray-400 flex items-center gap-1"><Calendar className="w-3 h-3" />{tab === 'bills' ? b.introduced_date : b.last_action_date}</span>
+                    )}
+                  </div>
+                  <h3 className="font-bold text-gray-800 text-sm leading-snug mb-1">{b.title || '—'}</h3>
+                  {b.sponsor && <p className="text-xs text-gray-500 mb-2">Sponsor: <strong>{b.sponsor}</strong></p>}
+                  {summaryText && <div className="mb-3 p-2 rounded-lg bg-blue-50 border border-blue-100">{summaryText}</div>}
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    {voteBtn('Support', '👍', 'support', bv.userVote, () => handleBillVote(key, 'support'))}
+                    {voteBtn('Concerned', '⚠️', 'concerned', bv.userVote, () => handleBillVote(key, 'concerned'))}
+                    {voteBtn('Oppose', '👎', 'oppose', bv.userVote, () => handleBillVote(key, 'oppose'))}
+                    {bv.support > 0 && <span className="text-xs text-green-600 self-center ml-1">{bv.support} support</span>}
+                    {bv.concerned > 0 && <span className="text-xs text-amber-600 self-center">{bv.concerned} concerned</span>}
+                    {bv.oppose > 0 && <span className="text-xs text-red-600 self-center">{bv.oppose} oppose</span>}
+                  </div>
+                </div>
+              );
+            };
+
+            const renderNewsCard = (s, i) => {
+              const itemId = newsItemId(s);
+              const uv = newsUserVotes[itemId] || null;
+              const counts = newsVotes[itemId] || { support: 0, concerned: 0, oppose: 0 };
+              const impactScore = Math.min(10, Math.max(1, Number(s.impact_score) || 5));
+              const summaryText = i === 0
+                ? (aiLoading.news
+                    ? <span className="flex items-center gap-1.5 text-xs text-gray-400 italic"><span className="w-3 h-3 border-2 border-gray-300 border-t-transparent rounded-full animate-spin inline-block" />Generating summary…</span>
+                    : aiSummary.news
+                      ? <span className="text-xs text-gray-600 leading-relaxed">{aiSummary.news}</span>
+                      : null)
+                : null;
+              return (
+                <div key={i} className="card-gradient rounded-2xl shadow-elegant-lg border-2 border-white/50 overflow-hidden">
+                  <div className="p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border bg-purple-100 text-purple-700 border-purple-200">
+                        {s.category || s.source_name || 'Official'}
+                      </span>
+                      {s.date && <span className="text-xs text-gray-400 flex items-center gap-1"><Calendar className="w-3 h-3" />{s.date}</span>}
+                    </div>
+                    {s.source_url
+                      ? <a href={s.source_url} target="_blank" rel="noopener noreferrer" className="font-bold text-gray-800 text-sm leading-snug hover:text-blue-700 hover:underline block mb-2">{s.title}</a>
+                      : <p className="font-bold text-gray-800 text-sm leading-snug mb-2">{s.title}</p>}
+                    {summaryText && <div className="mb-3 p-2 rounded-lg bg-purple-50 border border-purple-100">{summaryText}</div>}
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Impact Score</span>
+                        <span className="text-xs font-bold" style={{ color: impactColor(impactScore) }}>{impactScore} / 10</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2">
+                        <div className="h-2 rounded-full transition-all duration-500" style={{ width: `${impactScore * 10}%`, background: impactColor(impactScore) }} />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      {voteBtn('Support', '👍', 'support', uv, () => submitProvinceNewsVote(itemId, 'support'))}
+                      {voteBtn('Concerned', '⚠️', 'concerned', uv, () => submitProvinceNewsVote(itemId, 'concerned'))}
+                      {voteBtn('Oppose', '👎', 'oppose', uv, () => submitProvinceNewsVote(itemId, 'oppose'))}
+                      {counts.support > 0 && <span className="text-xs text-green-600 self-center ml-1">{counts.support} support</span>}
+                      {counts.concerned > 0 && <span className="text-xs text-amber-600 self-center">{counts.concerned} concerned</span>}
+                      {counts.oppose > 0 && <span className="text-xs text-red-600 self-center">{counts.oppose} oppose</span>}
+                    </div>
+                  </div>
+                </div>
+              );
+            };
 
             return (
               <div className="mt-6">
                 <div className="flex flex-wrap gap-3 mb-4">
-                  <button
-                    onClick={() => handleTab('bills')}
-                    className={`${btnBase} ${activeTab === 'bills' ? activeRing : ''}`}
-                    style={{ background: 'linear-gradient(135deg, #2563eb, #3b82f6)' }}
-                  >
-                    <FileText className="w-5 h-5" />
-                    Recent Bills
+                  <button onClick={() => handleTab('bills')} className={`${btnBase} ${activeTab === 'bills' ? activeRing : ''}`} style={{ background: 'linear-gradient(135deg, #2563eb, #3b82f6)' }}>
+                    <FileText className="w-5 h-5" />Recent Bills
                   </button>
-                  <button
-                    onClick={() => handleTab('laws')}
-                    className={`${btnBase} ${activeTab === 'laws' ? activeRing : ''}`}
-                    style={{ background: 'linear-gradient(135deg, #059669, #10b981)' }}
-                  >
-                    <CheckCircle className="w-5 h-5" />
-                    New Laws
+                  <button onClick={() => handleTab('laws')} className={`${btnBase} ${activeTab === 'laws' ? activeRing : ''}`} style={{ background: 'linear-gradient(135deg, #059669, #10b981)' }}>
+                    <CheckCircle className="w-5 h-5" />New Laws
                   </button>
-                  <button
-                    onClick={() => handleTab('statements')}
-                    className={`${btnBase} ${activeTab === 'statements' ? activeRing : ''}`}
-                    style={{ background: 'linear-gradient(135deg, #7c3aed, #8b5cf6)' }}
-                  >
-                    <MessageSquare className="w-5 h-5" />
-                    Official Statements
+                  <button onClick={() => handleTab('news')} className={`${btnBase} ${activeTab === 'news' ? activeRing : ''}`} style={{ background: 'linear-gradient(135deg, #7c3aed, #8b5cf6)' }}>
+                    <MessageSquare className="w-5 h-5" />News &amp; Announcements
                   </button>
                 </div>
 
                 {activeTab && (
-                  <div className="bg-white rounded-2xl shadow-elegant overflow-hidden mb-2">
-                    <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-                      <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">
-                        {activeTab === 'bills' ? 'Recent Bills' : activeTab === 'laws' ? 'New Laws' : 'Official Statements'}
-                      </h2>
-                      <button onClick={() => setCaProvinceLegislativeTab(null)} className="text-gray-400 hover:text-gray-600 transition-colors">
-                        <X className="w-4 h-4" />
-                      </button>
+                  <div className="mb-2">
+                    <div className="bg-white rounded-2xl shadow-elegant overflow-hidden mb-3">
+                      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                        <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">
+                          {activeTab === 'bills' ? 'Recent Bills' : activeTab === 'laws' ? 'New Laws' : 'News & Announcements'}
+                        </h2>
+                        <button onClick={() => setCaProvinceLegislativeTab(null)} className="text-gray-400 hover:text-gray-600 transition-colors"><X className="w-4 h-4" /></button>
+                      </div>
                     </div>
-                    <div className="px-5 py-4 max-h-96 overflow-y-auto">
-                      {!tabLoading && (aiLoading[activeTab] || aiSummary[activeTab]) && (
-                        <div className="rounded-xl p-3 mb-4" style={{ background: 'linear-gradient(135deg, #ede9fe, #dbeafe)' }}>
-                          <p className="text-xs font-bold text-purple-700 uppercase tracking-wide mb-1.5">AI Summary</p>
-                          {aiLoading[activeTab]
-                            ? <span className="w-3 h-3 border-2 border-purple-400 border-t-transparent rounded-full animate-spin inline-block" />
-                            : <p className="text-xs text-gray-700 leading-relaxed">{aiSummary[activeTab]}</p>}
-                        </div>
-                      )}
-                      {tabLoading ? (
-                        <p className="text-xs text-gray-500 flex items-center gap-2">
-                          <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />
-                          Loading…
-                        </p>
-                      ) : activeTab === 'bills' ? (
-                        !tabData.bills || tabData.bills.length === 0
-                          ? <p className="text-xs text-gray-500 italic">No bills found for current session.</p>
-                          : <div className="space-y-3">
-                              <p className="text-xs text-gray-400 italic mb-2">Showing most recently introduced bills — legislature may not be in active session.</p>
-                              {tabData.bills.map((b, i) => (
-                                <div key={i} className="text-xs border-b border-gray-100 pb-3 last:border-0">
-                                  <p className="font-bold text-gray-800">{b.bill_number}{b.title ? ` — ${b.title}` : ''}</p>
-                                  {b.sponsor && <p className="text-gray-500 mt-0.5">Sponsor: {b.sponsor}</p>}
-                                  {b.introduced_date && <p className="text-gray-400 mt-0.5">Introduced: {b.introduced_date}</p>}
-                                </div>
-                              ))}
-                            </div>
-                      ) : activeTab === 'laws' ? (
-                        !tabData.laws || tabData.laws.length === 0
-                          ? <p className="text-xs text-gray-500 italic">No recently passed laws found.</p>
-                          : <div className="space-y-3">
-                              {tabData.laws.map((b, i) => (
-                                <div key={i} className="text-xs border-b border-gray-100 pb-3 last:border-0">
-                                  <p className="font-bold text-gray-800">{b.bill_number}{b.title ? ` — ${b.title}` : ''}</p>
-                                  {b.sponsor && <p className="text-gray-500 mt-0.5">Sponsor: {b.sponsor}</p>}
-                                  {b.last_action_date && <p className="text-gray-400 mt-0.5">Royal assent: {b.last_action_date}</p>}
-                                </div>
-                              ))}
-                            </div>
-                      ) : (
-                        !tabData.statements || tabData.statements.length === 0
-                          ? <p className="text-xs text-gray-500 italic">No official statements found.</p>
-                          : <div className="space-y-3">
-                              {tabData.statements.map((s, i) => (
-                                <div key={i} className="text-xs border-b border-gray-100 pb-3 last:border-0">
-                                  {s.source_url
-                                    ? <a href={s.source_url} target="_blank" rel="noopener noreferrer" className="font-bold text-blue-700 hover:underline">{s.title}</a>
-                                    : <p className="font-bold text-gray-800">{s.title}</p>}
-                                  {s.date && <p className="text-gray-400 mt-0.5">{s.date}</p>}
-                                  {s.source_name && <p className="text-gray-500 mt-0.5">{s.source_name}</p>}
-                                </div>
-                              ))}
-                            </div>
-                      )}
-                    </div>
+                    {tabLoading ? (
+                      <p className="text-xs text-gray-500 flex items-center gap-2 px-2">
+                        <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />Loading…
+                      </p>
+                    ) : activeTab === 'bills' ? (
+                      !tabData.bills || tabData.bills.length === 0
+                        ? <p className="text-xs text-gray-500 italic px-2">No bills found for current session.</p>
+                        : <div className="space-y-3">
+                            <p className="text-xs text-gray-400 italic px-1 mb-1">Showing most recently introduced bills — legislature may not be in active session.</p>
+                            {tabData.bills.map((b, i) => renderBillCard(b, i, 'bills'))}
+                          </div>
+                    ) : activeTab === 'laws' ? (
+                      !tabData.laws || tabData.laws.length === 0
+                        ? <p className="text-xs text-gray-500 italic px-2">No recently passed laws found.</p>
+                        : <div className="space-y-3">{tabData.laws.map((b, i) => renderBillCard(b, i, 'laws'))}</div>
+                    ) : (
+                      !tabData.news || tabData.news.length === 0
+                        ? <p className="text-xs text-gray-500 italic px-2">No news or announcements found.</p>
+                        : <div className="space-y-3">{tabData.news.map((s, i) => renderNewsCard(s, i))}</div>
+                    )}
                   </div>
                 )}
               </div>
