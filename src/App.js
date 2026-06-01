@@ -1817,6 +1817,7 @@ function App() {
   const [caProvinceNewsVoteCounts, setCaProvinceNewsVoteCounts] = useState({});
   const [caProvinceNewsUserVotes, setCaProvinceNewsUserVotes] = useState(() => { try { return JSON.parse(localStorage.getItem('cv_province_news_votes') || '{}'); } catch (_) { return {}; } });
   const [caProvinceBillVotes, setCaProvinceBillVotes] = useState({});
+  const [usStateItemVotes, setUsStateItemVotes] = useState(() => { try { return JSON.parse(localStorage.getItem('cv_us_state_item_votes') || '{}'); } catch (_) { return {}; } });
   const [showEconomicModal, setShowEconomicModal] = useState(false);
   const [economicModalSelectedChart, setEconomicModalSelectedChart] = useState(null);
   const [presidentVotes, setPresidentVotes] = useState(() => {
@@ -13788,6 +13789,39 @@ function App() {
     const item = selectedProvince;
     const displayLabel = item.displayName || item.name;
     const isUSA = selectedCountry?.type === 'usa';
+
+    // ── US state vote helpers ────────────────────────────────────────────────
+    const usVoteBtn = (label, icon, type, cur, onClick) => {
+      const active = cur === type;
+      const styles = {
+        support:   'bg-green-50 border-green-300 text-green-700 hover:bg-green-100',
+        concerned: 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100',
+        oppose:    'bg-red-50 border-red-300 text-red-700 hover:bg-red-100',
+      };
+      return (
+        <button
+          key={type}
+          onClick={onClick}
+          className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs font-semibold transition-all ${active ? styles[type] + ' ring-1 ring-offset-1' : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100'}`}
+        >
+          {icon} {label}
+        </button>
+      );
+    };
+
+    const handleUsStateVote = (itemKey, voteType) => {
+      setUsStateItemVotes(prev => {
+        const cur = prev[itemKey] || { userVote: null, support: 0, concerned: 0, oppose: 0 };
+        const prevVote = cur.userVote;
+        const nextVote = prevVote === voteType ? null : voteType;
+        const next = { ...cur, userVote: nextVote };
+        if (prevVote) next[prevVote] = Math.max(0, (next[prevVote] || 0) - 1);
+        if (nextVote) next[nextVote] = (next[nextVote] || 0) + 1;
+        const updated = { ...prev, [itemKey]: next };
+        try { localStorage.setItem('cv_us_state_item_votes', JSON.stringify(updated)); } catch (_) {}
+        return updated;
+      });
+    };
     const defaultLeaderTitle = isUSA ? 'Governor' : 'Premier';
     const leaderTitle =
       typeof item.leaderTitle === 'string' && item.leaderTitle.trim()
@@ -14529,6 +14563,20 @@ function App() {
                               {bill.date && <span>Date: {bill.date}</span>}
                             </div>
                             {bill.url && <a href={bill.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">View bill ↗</a>}
+                            {(() => {
+                              const vKey = `${item.name}-bill-${i}`;
+                              const v = usStateItemVotes[vKey] || { userVote: null, support: 0, concerned: 0, oppose: 0 };
+                              return (
+                                <div className="flex gap-2 mt-3 flex-wrap">
+                                  {usVoteBtn('Support',   '👍', 'support',   v.userVote, () => handleUsStateVote(vKey, 'support'))}
+                                  {usVoteBtn('Concerned', '⚠️', 'concerned', v.userVote, () => handleUsStateVote(vKey, 'concerned'))}
+                                  {usVoteBtn('Oppose',    '👎', 'oppose',    v.userVote, () => handleUsStateVote(vKey, 'oppose'))}
+                                  {v.support   > 0 && <span className="text-xs text-green-600 self-center ml-1">{v.support} support</span>}
+                                  {v.concerned > 0 && <span className="text-xs text-amber-600 self-center">{v.concerned} concerned</span>}
+                                  {v.oppose    > 0 && <span className="text-xs text-red-600 self-center">{v.oppose} oppose</span>}
+                                </div>
+                              );
+                            })()}
                           </div>
                         ))}
                       </div>
@@ -14582,6 +14630,20 @@ function App() {
                               {law.signedBy && <span>Signed by: {law.signedBy}</span>}
                             </div>
                             {law.url && <a href={law.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">View law ↗</a>}
+                            {(() => {
+                              const vKey = `${item.name}-law-${i}`;
+                              const v = usStateItemVotes[vKey] || { userVote: null, support: 0, concerned: 0, oppose: 0 };
+                              return (
+                                <div className="flex gap-2 mt-3 flex-wrap">
+                                  {usVoteBtn('Support',   '👍', 'support',   v.userVote, () => handleUsStateVote(vKey, 'support'))}
+                                  {usVoteBtn('Concerned', '⚠️', 'concerned', v.userVote, () => handleUsStateVote(vKey, 'concerned'))}
+                                  {usVoteBtn('Oppose',    '👎', 'oppose',    v.userVote, () => handleUsStateVote(vKey, 'oppose'))}
+                                  {v.support   > 0 && <span className="text-xs text-green-600 self-center ml-1">{v.support} support</span>}
+                                  {v.concerned > 0 && <span className="text-xs text-amber-600 self-center">{v.concerned} concerned</span>}
+                                  {v.oppose    > 0 && <span className="text-xs text-red-600 self-center">{v.oppose} oppose</span>}
+                                </div>
+                              );
+                            })()}
                           </div>
                         ))}
                       </div>
@@ -14620,16 +14682,30 @@ function App() {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {newsItems.map((item, i) => (
+                        {newsItems.map((newsItem, i) => (
                           <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                            {item.category && <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-xs font-medium mb-2 inline-block">{item.category}</span>}
-                            <p className="text-sm font-semibold text-gray-800 mb-1">{item.title}</p>
-                            {item.summary && <p className="text-xs text-gray-600 leading-relaxed">{item.summary}</p>}
+                            {newsItem.category && <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-xs font-medium mb-2 inline-block">{newsItem.category}</span>}
+                            <p className="text-sm font-semibold text-gray-800 mb-1">{newsItem.title}</p>
+                            {newsItem.summary && <p className="text-xs text-gray-600 leading-relaxed">{newsItem.summary}</p>}
                             <div className="flex gap-4 mt-2 text-xs text-gray-400">
-                              {item.date && <span>{item.date}</span>}
-                              {item.source && <span>Source: {item.source}</span>}
+                              {newsItem.date && <span>{newsItem.date}</span>}
+                              {newsItem.source && <span>Source: {newsItem.source}</span>}
                             </div>
-                            {item.url && <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">Read more ↗</a>}
+                            {newsItem.url && <a href={newsItem.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">Read more ↗</a>}
+                            {(() => {
+                              const vKey = `${item.name}-news-${i}`;
+                              const v = usStateItemVotes[vKey] || { userVote: null, support: 0, concerned: 0, oppose: 0 };
+                              return (
+                                <div className="flex gap-2 mt-3 flex-wrap">
+                                  {usVoteBtn('Support',   '👍', 'support',   v.userVote, () => handleUsStateVote(vKey, 'support'))}
+                                  {usVoteBtn('Concerned', '⚠️', 'concerned', v.userVote, () => handleUsStateVote(vKey, 'concerned'))}
+                                  {usVoteBtn('Oppose',    '👎', 'oppose',    v.userVote, () => handleUsStateVote(vKey, 'oppose'))}
+                                  {v.support   > 0 && <span className="text-xs text-green-600 self-center ml-1">{v.support} support</span>}
+                                  {v.concerned > 0 && <span className="text-xs text-amber-600 self-center">{v.concerned} concerned</span>}
+                                  {v.oppose    > 0 && <span className="text-xs text-red-600 self-center">{v.oppose} oppose</span>}
+                                </div>
+                              );
+                            })()}
                           </div>
                         ))}
                       </div>
