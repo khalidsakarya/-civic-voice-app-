@@ -13553,6 +13553,9 @@ function App() {
         last_updated: d.last_updated || '',
         legislature_source_url: d.legislature_source_url || '',
         legislature_last_updated: d.legislature_last_updated || d.last_updated || '',
+        recent_bills: Array.isArray(d.recent_bills) ? d.recent_bills : [],
+        new_laws: Array.isArray(d.new_laws) ? d.new_laws : [],
+        news_announcements: Array.isArray(d.news_announcements) ? d.news_announcements : [],
       });
     }).catch(() => { if (!cancelled) setProvinceSupplementalData(null); });
     return () => { cancelled = true; };
@@ -14480,6 +14483,159 @@ function App() {
                     </div>
                   ))}
                 </div>
+              </div>
+            );
+          })()}
+
+          {/* ── Recent Bills (US states) ───────────────────────────────── */}
+          {isUSA && (() => {
+            const bills = provinceSupplementalData?.recent_bills || [];
+            const isOpen = !!expandedSections[`${item.name}-recent-bills`];
+            return (
+              <div className="mt-6 bg-white rounded-2xl shadow-elegant overflow-hidden">
+                <button
+                  className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                  onClick={() => toggleSection(`${item.name}-recent-bills`)}
+                >
+                  <div>
+                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">📜 Recent Bills</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {bills.length > 0 ? `${bills.length} bill${bills.length !== 1 ? 's' : ''}` : 'Upcoming & recently introduced legislation'}
+                    </p>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5 pt-1">
+                    {bills.length === 0 ? (
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 text-center">
+                        <p className="text-2xl mb-2">📋</p>
+                        <p className="text-sm font-semibold text-gray-700 mb-1">No bills loaded yet</p>
+                        <p className="text-xs text-gray-500">Bill data for {displayLabel} will appear here once added.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {bills.map((bill, i) => (
+                          <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {bill.billNumber && <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-bold">{bill.billNumber}</span>}
+                              {bill.status && <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">{bill.status}</span>}
+                              {bill.category && <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs">{bill.category}</span>}
+                            </div>
+                            <p className="text-sm font-semibold text-gray-800 mb-1">{bill.title || bill.shortTitle}</p>
+                            {bill.summary && <p className="text-xs text-gray-600 leading-relaxed">{bill.summary}</p>}
+                            <div className="flex gap-4 mt-2 text-xs text-gray-400">
+                              {bill.sponsor && <span>Sponsor: {bill.sponsor}</span>}
+                              {bill.date && <span>Date: {bill.date}</span>}
+                            </div>
+                            {bill.url && <a href={bill.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">View bill ↗</a>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* ── New Laws (US states) ────────────────────────────────────── */}
+          {isUSA && (() => {
+            const newLaws = provinceSupplementalData?.new_laws || [];
+            const isOpen = !!expandedSections[`${item.name}-new-laws`];
+            return (
+              <div className="mt-6 bg-white rounded-2xl shadow-elegant overflow-hidden">
+                <button
+                  className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                  onClick={() => toggleSection(`${item.name}-new-laws`)}
+                >
+                  <div>
+                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">⚖️ New Laws</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {newLaws.length > 0 ? `${newLaws.length} recently enacted law${newLaws.length !== 1 ? 's' : ''}` : 'Recently enacted legislation'}
+                    </p>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5 pt-1">
+                    {newLaws.length === 0 ? (
+                      <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 text-center">
+                        <p className="text-2xl mb-2">⚖️</p>
+                        <p className="text-sm font-semibold text-gray-700 mb-1">No new laws loaded yet</p>
+                        <p className="text-xs text-gray-500">Recently enacted laws for {displayLabel} will appear here once added.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {newLaws.map((law, i) => (
+                          <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {law.billNumber && <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs font-bold">{law.billNumber}</span>}
+                              {law.status && <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">✓ {law.status}</span>}
+                              {law.category && <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs">{law.category}</span>}
+                            </div>
+                            <p className="text-sm font-semibold text-gray-800 mb-1">{law.title || law.shortTitle}</p>
+                            {law.summary && <p className="text-xs text-gray-600 leading-relaxed">{law.summary}</p>}
+                            {law.impact && <div className="bg-blue-50 border border-blue-100 rounded-lg p-2 mt-2"><p className="text-xs text-gray-700"><strong>Impact:</strong> {law.impact}</p></div>}
+                            <div className="flex gap-4 mt-2 text-xs text-gray-400">
+                              {law.dateEnacted && <span>Enacted: {law.dateEnacted}</span>}
+                              {law.signedBy && <span>Signed by: {law.signedBy}</span>}
+                            </div>
+                            {law.url && <a href={law.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">View law ↗</a>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* ── News & Announcements (US states) ───────────────────────── */}
+          {isUSA && (() => {
+            const newsItems = provinceSupplementalData?.news_announcements || [];
+            const isOpen = !!expandedSections[`${item.name}-news`];
+            return (
+              <div className="mt-6 bg-white rounded-2xl shadow-elegant overflow-hidden">
+                <button
+                  className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                  onClick={() => toggleSection(`${item.name}-news`)}
+                >
+                  <div>
+                    <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wide">📰 News & Announcements</h2>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {newsItems.length > 0 ? `${newsItems.length} item${newsItems.length !== 1 ? 's' : ''}` : 'Latest state government news'}
+                    </p>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5 pt-1">
+                    {newsItems.length === 0 ? (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-center">
+                        <p className="text-2xl mb-2">📰</p>
+                        <p className="text-sm font-semibold text-gray-700 mb-1">No news loaded yet</p>
+                        <p className="text-xs text-gray-500">News & announcements for {displayLabel} will appear here once added.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {newsItems.map((item, i) => (
+                          <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            {item.category && <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-xs font-medium mb-2 inline-block">{item.category}</span>}
+                            <p className="text-sm font-semibold text-gray-800 mb-1">{item.title}</p>
+                            {item.summary && <p className="text-xs text-gray-600 leading-relaxed">{item.summary}</p>}
+                            <div className="flex gap-4 mt-2 text-xs text-gray-400">
+                              {item.date && <span>{item.date}</span>}
+                              {item.source && <span>Source: {item.source}</span>}
+                            </div>
+                            {item.url && <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">Read more ↗</a>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })()}
