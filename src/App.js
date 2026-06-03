@@ -33545,16 +33545,34 @@ function App() {
           <div onClick={() => toggleSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
             <div className="flex items-center gap-3">
               <TrendingUp className="w-6 h-6 text-purple-600" />
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
-                {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
-              </div>
+              <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
             </div>
             {expandedSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
           </div>
           {expandedSections.financial && (
             <div className="px-6 pb-6">
-              <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl flex-shrink-0">⚖️</span>
+                  <div>
+                    <p className="text-sm font-bold text-amber-900 mb-2">Not required by Canadian law</p>
+                    <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                      Canada's <strong>Conflict of Interest Act</strong> requires Ministers and Parliamentary Secretaries to file a private disclosure of assets with the Ethics Commissioner — but this is <strong>not made public</strong> for regular Members of Parliament.
+                    </p>
+                    <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                      Backbench MPs have <strong>no legal obligation</strong> to publicly disclose their personal finances, investments, or net worth. Unlike the US STOCK Act or UK register of interests, Canada has no equivalent law requiring full public disclosure.
+                    </p>
+                    <a
+                      href="https://ciec-ccie.parl.gc.ca/en/Pages/default.aspx"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline font-medium"
+                    >
+                      🏛️ Office of the Conflict of Interest and Ethics Commissioner (official) ↗
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -33673,26 +33691,44 @@ function App() {
           )}
         </div>
 
-        {/* Stock Trading Activity - USA ONLY */}
-        {selectedCountry?.type === 'usa' && (
-          <div className="bg-white rounded-lg shadow-md mb-6">
-            <div onClick={() => toggleSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <TrendingUp className="w-6 h-6 text-green-600" />
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold text-gray-800">📈 Stock Trading Activity</h2>
-                  {coverageBadge('limited', 'US House and Senate STOCK Act filings', 'International equivalents not included')}
-                </div>
+        {/* Stock Trading Activity */}
+        <div className="bg-white rounded-lg shadow-md mb-6">
+          <div onClick={() => toggleSection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+            <div className="flex items-center gap-3">
+              <TrendingUp className="w-6 h-6 text-green-600" />
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-gray-800">📈 Stock Trading Activity</h2>
+                {selectedCountry?.type === 'usa' && coverageBadge('limited', 'US House and Senate STOCK Act filings', 'Trades under $1,000 not reported')}
               </div>
-              {expandedSections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
             </div>
-            {expandedSections.stockTrades && (
-              <div className="px-6 pb-6">
-                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-              </div>
-            )}
+            {expandedSections.stockTrades ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
           </div>
-        )}
+          {expandedSections.stockTrades && (
+            <div className="px-6 pb-6">
+              {selectedCountry?.type === 'usa' ? (
+                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">Stock trade data for this member is not yet available.</p>
+              ) : (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl flex-shrink-0">📊</span>
+                    <div>
+                      <p className="text-sm font-bold text-amber-900 mb-2">No public disclosure law in Canada</p>
+                      <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                        Canada has <strong>no equivalent to the US STOCK Act</strong>. Canadian MPs and Senators are not legally required to publicly report personal stock trades or investment activity.
+                      </p>
+                      <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                        Ministers must disclose certain assets privately to the Ethics Commissioner under the <strong>Conflict of Interest Act</strong>, but this does not extend to real-time trade reporting and is <strong>not publicly accessible</strong>.
+                      </p>
+                      <p className="text-xs text-amber-700 italic">
+                        💡 This gap in transparency is a known criticism of Canada's ethics framework. Several advocacy groups have called for a Canadian STOCK Act equivalent.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
