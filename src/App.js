@@ -14564,7 +14564,12 @@ function App() {
                             </div>
                             <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
                               {bill.url && <a href={bill.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">View official bill ↗</a>}
-                              <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200" title="Data sourced from official state legislature records via OpenStates">🏛️ via OpenStates (official legislature data)</span>
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded-full border ${bill.sourceTier === 'official' ? 'text-green-700 bg-green-50 border-green-200' : 'text-gray-400 bg-gray-100 border-gray-200'}`}
+                                title={bill.dataSource || 'Data sourced from official state legislature records via LegiScan'}
+                              >
+                                🏛️ {bill.dataSource || 'via LegiScan (official legislature data)'}
+                              </span>
                             </div>
                             {(() => {
                               const vKey = `${item.name}-bill-${i}`;
@@ -14634,7 +14639,12 @@ function App() {
                             </div>
                             <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
                               {law.url && <a href={law.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">View official record ↗</a>}
-                              <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200" title="Data sourced from official state legislature records via OpenStates">🏛️ via OpenStates (official legislature data)</span>
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded-full border ${law.sourceTier === 'official' ? 'text-green-700 bg-green-50 border-green-200' : 'text-gray-400 bg-gray-100 border-gray-200'}`}
+                                title={law.dataSource || 'Data sourced from official state legislature records via LegiScan'}
+                              >
+                                🏛️ {law.dataSource || 'via LegiScan (official legislature data)'}
+                              </span>
                             </div>
                             {(() => {
                               const vKey = `${item.name}-law-${i}`;
