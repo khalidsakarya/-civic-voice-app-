@@ -24733,7 +24733,10 @@ function App() {
             </div>
           )}
 
-          <p className="text-center text-xs text-gray-400 mt-10 pb-4">Illustrative data · member profiles are statistically modelled</p>
+          <div className="mt-10 pb-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+            <p className="text-xs font-bold text-amber-800 mb-1">⚠️ About the stats shown on member cards</p>
+            <p className="text-xs text-amber-700">Expense totals, wealth estimates, and donation figures shown on member cards are <strong>statistically modelled placeholders</strong> — not real official data. Click any member's profile to see which sections contain verified official data and which are pending live connections.</p>
+          </div>
         </div>
       </div>
     );
@@ -29609,7 +29612,10 @@ function App() {
                 </div>
               )}
 
-              <p className="text-center text-xs text-gray-400 mt-10 pb-4">Illustrative data · member profiles are statistically modelled</p>
+              <div className="mt-10 pb-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+                <p className="text-xs font-bold text-amber-800 mb-1">⚠️ About the stats shown on member cards</p>
+                <p className="text-xs text-amber-700">Expense totals, wealth estimates, and donation figures shown on member cards are <strong>statistically modelled placeholders</strong> — not real official data. Click any member's profile to see which sections contain verified official data.</p>
+              </div>
             </>
           )}
         </div>
@@ -36700,7 +36706,20 @@ function App() {
             </div>
             {expandedSections.voting && (
               <div className="px-6 pb-6">
-                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl flex-shrink-0">🏛️</span>
+                    <div>
+                      <p className="text-sm font-bold text-blue-900 mb-2">Official data available — live feed coming</p>
+                      <p className="text-sm text-blue-800 leading-relaxed mb-3">
+                        The Senate of Canada publishes all official vote records at <strong>sencanada.ca</strong>. We are building the live data connection to show each senator's voting record directly here.
+                      </p>
+                      <a href={`https://sencanada.ca/en/senators/`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
+                        🏛️ View on Senate of Canada official website ↗
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -36711,10 +36730,7 @@ function App() {
               <div className="flex items-center gap-3">
                 <Award className="w-6 h-6 text-blue-600" />
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
-                    {coverageBadge('partial', 'Based on recorded votes', 'Committee attendance excluded')}
-                  </div>
+                  <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
                   <p className="text-sm text-gray-600">Attendance record</p>
                 </div>
               </div>
@@ -36722,7 +36738,20 @@ function App() {
             </div>
             {expandedSections.attendance && (
               <div className="px-6 pb-6">
-                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl flex-shrink-0">📋</span>
+                    <div>
+                      <p className="text-sm font-bold text-blue-900 mb-2">Official data available — live feed coming</p>
+                      <p className="text-sm text-blue-800 leading-relaxed mb-3">
+                        The Senate of Canada tracks and publishes official senator attendance records at <strong>sencanada.ca</strong>. We are building the live data connection to show attendance directly here.
+                      </p>
+                      <a href="https://sencanada.ca/en/senators/attendance/" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
+                        🏛️ View official Senate attendance records ↗
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -36770,7 +36799,20 @@ function App() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl flex-shrink-0">💸</span>
+                          <div>
+                            <p className="text-sm font-bold text-blue-900 mb-2">Official data available — live feed coming</p>
+                            <p className="text-sm text-blue-800 leading-relaxed mb-3">
+                              The Senate of Canada publishes <strong>quarterly expense reports</strong> for all senators at <strong>sencanada.ca</strong>. This includes travel, hospitality, and office expenses. We are building the live data connection.
+                            </p>
+                            <a href="https://sencanada.ca/en/senators/expenditures/" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
+                              🏛️ View official Senate expenditure reports ↗
+                            </a>
+                          </div>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}
@@ -36783,16 +36825,29 @@ function App() {
             <div onClick={() => toggleSection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-6 h-6 text-purple-600" />
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
-                  {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
-                </div>
+                <h2 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h2>
               </div>
               {expandedSections.financial ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
             </div>
             {expandedSections.financial && (
               <div className="px-6 pb-6">
-                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl flex-shrink-0">⚖️</span>
+                    <div>
+                      <p className="text-sm font-bold text-amber-900 mb-2">Limited public disclosure under Senate Ethics rules</p>
+                      <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                        Senators must file a <strong>Confidential Disclosure Statement</strong> with the Senate Ethics Officer listing assets, liabilities, and outside activities. A <strong>Public Disclosure Summary</strong> is published — but it only shows categories, not specific values or amounts.
+                      </p>
+                      <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                        Full financial details (specific investments, property values, debt amounts) remain <strong>confidential</strong> and are not publicly accessible.
+                      </p>
+                      <a href="https://sencanada.ca/en/senators/declaration-of-private-interests/" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
+                        🏛️ Senate Ethics — Declaration of Private Interests (official) ↗
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -36811,7 +36866,20 @@ function App() {
             </div>
             {expandedSections.lobbying && (
               <div className="px-6 pb-6">
-                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl flex-shrink-0">📋</span>
+                    <div>
+                      <p className="text-sm font-bold text-blue-900 mb-2">Official data available — live feed coming</p>
+                      <p className="text-sm text-blue-800 leading-relaxed mb-3">
+                        All registered lobbyist meetings with senators are publicly recorded in <strong>Canada's Lobbying Registry</strong> at lobbycanada.gc.ca — the same official source used for MP lobbying data. We are connecting this data for senators.
+                      </p>
+                      <a href={`https://lobbycanada.gc.ca/app/secure/ocl/lrs/do/guest?lang=eng`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
+                        🏛️ Canada's Lobbying Registry (official) ↗
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -36823,14 +36891,27 @@ function App() {
                 <Briefcase className="w-6 h-6 text-indigo-600" />
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-bold text-gray-800">💼 Corporate Connections</h2>
-                  {coverageBadge('partial', 'Registered interests and lobbying records', 'Unregistered connections not included')}
+                  {coverageBadge('partial', 'Registered lobbying records only', 'Unregistered connections not included')}
                 </div>
               </div>
               {expandedSections.corporate ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
             </div>
             {expandedSections.corporate && (
               <div className="px-6 pb-6">
-                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl flex-shrink-0">🏢</span>
+                    <div>
+                      <p className="text-sm font-bold text-blue-900 mb-2">Official data available — live feed coming</p>
+                      <p className="text-sm text-blue-800 leading-relaxed mb-3">
+                        Corporate connections can be derived from <strong>Canada's Lobbying Registry</strong> — showing which companies have registered to lobby this senator and on what issues. We are building this connection.
+                      </p>
+                      <p className="text-xs text-amber-700 italic mt-2">
+                        ⚠️ Only registered lobbying relationships are captured. Informal, unregistered, or prior-to-appointment corporate roles are not included in any public database.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -37017,7 +37098,10 @@ function App() {
             </div>
           )}
 
-          <p className="text-center text-xs text-gray-400 mt-10 pb-4">Illustrative data · senator profiles are statistically modelled</p>
+          <div className="mt-10 pb-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+            <p className="text-xs font-bold text-amber-800 mb-1">⚠️ About the stats shown on senator cards</p>
+            <p className="text-xs text-amber-700">Expense totals, wealth estimates, and donation figures shown on senator cards are <strong>statistically modelled placeholders</strong> — not real official data. Click any senator's profile to see which sections contain verified official data and which have live feeds coming.</p>
+          </div>
         </div>
       </div>
     );
