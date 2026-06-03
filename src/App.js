@@ -14562,7 +14562,10 @@ function App() {
                               {bill.sponsor && <span>Sponsor: {bill.sponsor}</span>}
                               {bill.date && <span>Date: {bill.date}</span>}
                             </div>
-                            {bill.url && <a href={bill.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">View bill ↗</a>}
+                            <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
+                              {bill.url && <a href={bill.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">View official bill ↗</a>}
+                              <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200" title="Data sourced from official state legislature records via OpenStates">🏛️ via OpenStates (official legislature data)</span>
+                            </div>
                             {(() => {
                               const vKey = `${item.name}-bill-${i}`;
                               const v = usStateItemVotes[vKey] || { userVote: null, support: 0, concerned: 0, oppose: 0 };
@@ -14629,7 +14632,10 @@ function App() {
                               {law.dateEnacted && <span>Enacted: {law.dateEnacted}</span>}
                               {law.signedBy && <span>Signed by: {law.signedBy}</span>}
                             </div>
-                            {law.url && <a href={law.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">View law ↗</a>}
+                            <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
+                              {law.url && <a href={law.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">View official record ↗</a>}
+                              <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200" title="Data sourced from official state legislature records via OpenStates">🏛️ via OpenStates (official legislature data)</span>
+                            </div>
                             {(() => {
                               const vKey = `${item.name}-law-${i}`;
                               const v = usStateItemVotes[vKey] || { userVote: null, support: 0, concerned: 0, oppose: 0 };
@@ -14689,9 +14695,19 @@ function App() {
                             {newsItem.summary && <p className="text-xs text-gray-600 leading-relaxed">{newsItem.summary}</p>}
                             <div className="flex gap-4 mt-2 text-xs text-gray-400">
                               {newsItem.date && <span>{newsItem.date}</span>}
-                              {newsItem.source && <span>Source: {newsItem.source}</span>}
                             </div>
-                            {newsItem.url && <a href={newsItem.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">Read more ↗</a>}
+                            <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
+                              {newsItem.url && <a href={newsItem.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">Read official statement ↗</a>}
+                              {newsItem.source && (
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                                  newsItem.source === "Governor's Office"
+                                    ? 'text-green-700 bg-green-50 border-green-200'
+                                    : 'text-gray-400 bg-gray-100 border-gray-200'
+                                }`}>
+                                  🏛️ {newsItem.source === "Governor's Office" ? "Official Governor's Office" : newsItem.source}
+                                </span>
+                              )}
+                            </div>
                             {(() => {
                               const vKey = `${item.name}-news-${i}`;
                               const v = usStateItemVotes[vKey] || { userVote: null, support: 0, concerned: 0, oppose: 0 };
