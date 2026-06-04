@@ -33546,23 +33546,44 @@ function App() {
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl flex-shrink-0">💸</span>
-                        <div>
-                          <p className="text-sm font-bold text-amber-900 mb-2">Only Ministers and Parliamentary Secretaries are covered</p>
-                          <p className="text-sm text-amber-800 leading-relaxed mb-3">
-                            Canada's Treasury Board publishes proactive expense disclosure only for <strong>Ministers, Parliamentary Secretaries, and senior officials</strong>. Regular backbench MPs are <strong>not required by law</strong> to publicly disclose their office expenses.
-                          </p>
-                          <p className="text-sm text-amber-800 leading-relaxed mb-3">
-                            MPs do receive a <strong>Members' Allowances and Services</strong> budget (currently ~$400,000–$600,000/year depending on riding size) for office, travel, and staff costs — but individual breakdowns are not publicly itemized for backbench members.
-                          </p>
-                          <a href="https://www.tbs-sct.gc.ca/hgw-cgf/finances/rgs-srg/index-eng.asp" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
-                            🏛️ Treasury Board proactive disclosure (ministers only) ↗
-                          </a>
+                    {selectedCountry?.type === 'usa' ? (
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl flex-shrink-0">💸</span>
+                          <div>
+                            <p className="text-sm font-bold text-blue-900 mb-2">Official data available — live feed coming</p>
+                            <p className="text-sm text-blue-800 leading-relaxed mb-3">
+                              The <strong>Statement of Disbursements</strong> published quarterly by the House of Representatives itemizes all office expenditures for every Member — staff payroll, travel, office rent, supplies, and franked mail. This is fully public.
+                            </p>
+                            <p className="text-sm text-blue-800 leading-relaxed mb-3">
+                              Senate office expenditures are published in the <strong>Report of the Secretary of the Senate</strong> semi-annually. We are building the live data connection.
+                            </p>
+                            <div className="flex flex-wrap gap-3">
+                              <a href="https://disbursements.house.gov" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">🏛️ House Statement of Disbursements ↗</a>
+                              <a href="https://www.senate.gov/legislative/common/generic/report_secretary.htm" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">🏛️ Senate Report of the Secretary ↗</a>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl flex-shrink-0">💸</span>
+                          <div>
+                            <p className="text-sm font-bold text-amber-900 mb-2">Only Ministers and Parliamentary Secretaries are covered</p>
+                            <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                              Canada's Treasury Board publishes proactive expense disclosure only for <strong>Ministers, Parliamentary Secretaries, and senior officials</strong>. Regular backbench MPs are <strong>not required by law</strong> to publicly disclose their office expenses.
+                            </p>
+                            <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                              MPs do receive a <strong>Members' Allowances and Services</strong> budget (currently ~$400,000–$600,000/year depending on riding size) for office, travel, and staff costs — but individual breakdowns are not publicly itemized for backbench members.
+                            </p>
+                            <a href="https://www.tbs-sct.gc.ca/hgw-cgf/finances/rgs-srg/index-eng.asp" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
+                              🏛️ Treasury Board proactive disclosure (ministers only) ↗
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   )}
                 </div>
               )}
@@ -33580,6 +33601,26 @@ function App() {
           </div>
           {expandedSections.financial && (
             <div className="px-6 pb-6">
+              {selectedCountry?.type === 'usa' ? (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl flex-shrink-0">🏛️</span>
+                    <div>
+                      <p className="text-sm font-bold text-blue-900 mb-2">Required by law — live feed coming</p>
+                      <p className="text-sm text-blue-800 leading-relaxed mb-3">
+                        Under the <strong>Ethics in Government Act</strong>, all Members of Congress must file annual financial disclosure reports covering assets, income, liabilities, and outside positions. These are <strong>fully public</strong>.
+                      </p>
+                      <p className="text-sm text-blue-800 leading-relaxed mb-3">
+                        House members file with the <strong>Office of the Clerk</strong>. Senators file with the <strong>Secretary of the Senate</strong>. We are building the live data connection to show individual disclosures here.
+                      </p>
+                      <div className="flex flex-wrap gap-3 mt-2">
+                        <a href="https://disclosures.house.gov" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">🏛️ House Financial Disclosures ↗</a>
+                        <a href="https://efts.senate.gov/ETRS/index.html" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">🏛️ Senate Financial Disclosures ↗</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl flex-shrink-0">⚖️</span>
@@ -33602,6 +33643,7 @@ function App() {
                   </div>
                 </div>
               </div>
+              )}
             </div>
           )}
         </div>
@@ -33673,23 +33715,43 @@ function App() {
                       )}
                     </>
                   ) : (
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl flex-shrink-0">📋</span>
-                        <div>
-                          <p className="text-sm font-bold text-gray-700 mb-2">No registered lobbying meetings found</p>
-                          <p className="text-sm text-gray-600 leading-relaxed mb-3">
-                            Canada's Lobbying Registry shows no registered communications between lobbyists and this MP. This could mean they have genuinely received no registered lobbying, or that some meetings were held informally and not required to be registered.
-                          </p>
-                          <p className="text-xs text-gray-500 italic mb-2">
-                            ⚠️ Only meetings with <strong>designated public office holders (DPOHs)</strong> — including Cabinet ministers, Parliamentary Secretaries, and senior officials — must be registered. Regular backbench MP meetings are not always required to be logged.
-                          </p>
-                          <a href="https://lobbycanada.gc.ca" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
-                            🏛️ Search Canada's Lobbying Registry directly ↗
-                          </a>
+                    {selectedCountry?.type === 'usa' ? (
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl flex-shrink-0">📋</span>
+                          <div>
+                            <p className="text-sm font-bold text-blue-900 mb-2">No registered lobbying meetings found</p>
+                            <p className="text-sm text-blue-800 leading-relaxed mb-3">
+                              Under the <strong>Lobbying Disclosure Act</strong>, registered lobbyists must report contacts with Members of Congress semi-annually. No registered lobbying contacts were found for this member in our current data.
+                            </p>
+                            <p className="text-xs text-blue-700 italic mb-2">
+                              ⚠️ The LDA database covers registered lobbying activity — informal contacts, constituent meetings, and unreported communications are not captured.
+                            </p>
+                            <a href="https://lobbyingdisclosure.house.gov" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
+                              🏛️ Search the Lobbying Disclosure Act database ↗
+                            </a>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+                        <div className="flex items-start gap-3">
+                          <span className="text-2xl flex-shrink-0">📋</span>
+                          <div>
+                            <p className="text-sm font-bold text-gray-700 mb-2">No registered lobbying meetings found</p>
+                            <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                              Canada's Lobbying Registry shows no registered communications between lobbyists and this MP. This could mean they have genuinely received no registered lobbying, or that some meetings were held informally and not required to be registered.
+                            </p>
+                            <p className="text-xs text-gray-500 italic mb-2">
+                              ⚠️ Only meetings with <strong>designated public office holders (DPOHs)</strong> — including Cabinet ministers, Parliamentary Secretaries, and senior officials — must be registered. Regular backbench MP meetings are not always required to be logged.
+                            </p>
+                            <a href="https://lobbycanada.gc.ca" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
+                              🏛️ Search Canada's Lobbying Registry directly ↗
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   )}
                 </div>
               )}
@@ -33729,6 +33791,25 @@ function App() {
                     </div>
                   ))}
                 </div>
+              ) : selectedCountry?.type === 'usa' ? (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl flex-shrink-0">🏢</span>
+                    <div>
+                      <p className="text-sm font-bold text-blue-900 mb-2">No registered corporate connections found</p>
+                      <p className="text-sm text-blue-800 leading-relaxed mb-3">
+                        Corporate connections are derived from the <strong>Senate/House Lobbying Disclosure database</strong> — showing companies that have registered to lobby this member. No registered connections were found.
+                      </p>
+                      <p className="text-sm text-blue-800 leading-relaxed mb-3">
+                        US members are required to disclose prior corporate roles, board memberships, and outside income in their annual <strong>financial disclosure reports</strong> under the Ethics in Government Act. These are publicly accessible.
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        <a href="https://disclosures.house.gov" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">🏛️ House disclosures ↗</a>
+                        <a href="https://lobbyingdisclosure.house.gov" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">🏛️ Lobbying Disclosure Act database ↗</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
                   <div className="flex items-start gap-3">
@@ -33766,9 +33847,55 @@ function App() {
           </div>
           {expandedSections.stockTrades && (
             <div className="px-6 pb-6">
-              {selectedCountry?.type === 'usa' ? (
-                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">Stock trade data for this member is not yet available.</p>
-              ) : (
+              {selectedCountry?.type === 'usa' ? (() => {
+                const tradeDocs = memberStockTradeData[selectedMember?.name];
+                const isLoadingTrades = !!memberStockTradeLoading[selectedMember?.name];
+                const allTrades = (tradeDocs || []).flatMap(doc => doc.parsed_trades || []);
+                const hasFilingsOnly = tradeDocs?.length > 0 && allTrades.length === 0;
+                const isSell = (t) => { const s = (t || '').toLowerCase(); return s.includes('sale') || s.includes('sell') || s === 's'; };
+                if (isLoadingTrades) return <p className="text-sm text-gray-500 flex items-center gap-2"><span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />Loading STOCK Act filings…</p>;
+                if (allTrades.length > 0) return (
+                  <div className="space-y-2">
+                    {allTrades.map((trade, i) => {
+                      const sell = isSell(trade.transaction_type || trade.transactionType);
+                      return (
+                        <div key={i} className={`p-3 rounded-lg border ${sell ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-bold text-gray-800 truncate">{trade.company_name || trade.companyName || trade.security_name || trade.asset_name || trade.ticker || 'Unknown'}</p>
+                              <div className="flex flex-wrap gap-1.5 mt-1">
+                                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sell ? 'bg-red-200 text-red-800' : 'bg-green-200 text-green-800'}`}>{sell ? 'Sell' : 'Buy'}</span>
+                                {(trade.amount || trade.amount_range) && <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">{trade.amount || trade.amount_range}</span>}
+                                {(trade.asset_type || trade.assetType) && <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">{trade.asset_type || trade.assetType}</span>}
+                              </div>
+                              {(trade.transaction_date || trade.transactionDate) && <p className="text-xs text-gray-500 mt-1">{trade.transaction_date || trade.transactionDate}</p>}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <p className="text-xs text-gray-400 text-center mt-2">🏛️ Source: STOCK Act filings — disclosures.house.gov / efts.senate.gov (official)</p>
+                  </div>
+                );
+                if (hasFilingsOnly) return <p className="text-sm text-amber-700 bg-amber-50 rounded-lg p-3 border border-amber-200 text-center">Filing on record — trade details being processed</p>;
+                return (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl flex-shrink-0">📈</span>
+                      <div>
+                        <p className="text-sm font-bold text-blue-900 mb-2">Required by law — data loading</p>
+                        <p className="text-sm text-blue-800 leading-relaxed mb-3">
+                          Under the <strong>STOCK Act (2012)</strong>, all Members of Congress must report personal stock trades within <strong>45 days</strong> of the transaction. These filings are fully public. We are connecting this member's trade history now.
+                        </p>
+                        <div className="flex flex-wrap gap-3">
+                          <a href="https://disclosures.house.gov/FinancialDisclosure" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">🏛️ House STOCK Act filings ↗</a>
+                          <a href="https://efts.senate.gov/ETRS/index.html" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">🏛️ Senate STOCK Act filings ↗</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })() : (
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
                   <div className="flex items-start gap-3">
                     <span className="text-2xl flex-shrink-0">📊</span>
