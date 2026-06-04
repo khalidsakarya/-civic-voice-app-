@@ -3659,11 +3659,10 @@ function App() {
     return () => clearTimeout(t);
   }, [searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch US Congress financial disclosures from Firestore when panel opens
-  useEffect(() => {
-    if (!showMemberPanel || !selectedMember?.name) return;
-    const name = selectedMember.name;
-    if (memberDisclosureData[name] !== undefined || memberDisclosureLoading[name]) return;
+  // Fetch US Congress financial disclosures — panel or full-page member detail
+  const fetchMemberDisclosures = (member) => {
+    const name = member?.name;
+    if (!name || memberDisclosureData[name] !== undefined || memberDisclosureLoading[name]) return;
     setMemberDisclosureLoading(prev => ({ ...prev, [name]: true }));
     (async () => {
       try {
@@ -3677,7 +3676,15 @@ function App() {
         setMemberDisclosureLoading(prev => ({ ...prev, [name]: false }));
       }
     })();
+  };
+
+  useEffect(() => {
+    if (showMemberPanel && selectedMember) fetchMemberDisclosures(selectedMember);
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (view === 'member-detail' && selectedMember && selectedCountry?.type === 'usa') fetchMemberDisclosures(selectedMember);
+  }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch financial disclosures for leader profiles on view open
   useEffect(() => {
@@ -33545,8 +33552,7 @@ function App() {
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    {selectedCountry?.type === 'usa' ? (
+                  ) : selectedCountry?.type === 'usa' ? (
                       <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
                         <div className="flex items-start gap-3">
                           <span className="text-2xl flex-shrink-0">💸</span>
@@ -33565,7 +33571,7 @@ function App() {
                           </div>
                         </div>
                       </div>
-                    ) : (
+                  ) : (
                       <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
                         <div className="flex items-start gap-3">
                           <span className="text-2xl flex-shrink-0">💸</span>
@@ -33583,7 +33589,6 @@ function App() {
                           </div>
                         </div>
                       </div>
-                    )}
                   )}
                 </div>
               )}
@@ -33601,26 +33606,48 @@ function App() {
           </div>
           {expandedSections.financial && (
             <div className="px-6 pb-6">
-              {selectedCountry?.type === 'usa' ? (
+              {selectedCountry?.type === 'usa' ? (() => {
+                const discDocs = memberDisclosureData[selectedMember?.name];
+                const isLoadingDisc = !!memberDisclosureLoading[selectedMember?.name];
+                const hasDisc = discDocs && discDocs.length > 0;
+                if (isLoadingDisc) return <p className="text-sm text-gray-500 flex items-center gap-2"><span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />Loading from disclosures-clerk.house.gov…</p>;
+                if (hasDisc) return (
+                  <div className="space-y-3">
+                    {discDocs.map((d, i) => (
+                      <div key={i} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                        <div className="flex items-start justify-between gap-2 flex-wrap">
+                          <div>
+                            <span className="text-xs font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">{d.filing_type}</span>
+                            <p className="text-sm font-semibold text-gray-800 mt-1">{d.filing_year} — {d.office}</p>
+                          </div>
+                          {d.document_url && <a href={d.document_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">View PDF ↗</a>}
+                        </div>
+                      </div>
+                    ))}
+                    <p className="text-xs text-gray-400 text-center">🏛️ Source: US House Clerk — disclosures-clerk.house.gov (official)</p>
+                  </div>
+                );
+                return (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
                   <div className="flex items-start gap-3">
                     <span className="text-2xl flex-shrink-0">🏛️</span>
                     <div>
-                      <p className="text-sm font-bold text-blue-900 mb-2">Required by law — live feed coming</p>
+                      <p className="text-sm font-bold text-blue-900 mb-2">Required by law — filing records available</p>
                       <p className="text-sm text-blue-800 leading-relaxed mb-3">
                         Under the <strong>Ethics in Government Act</strong>, all Members of Congress must file annual financial disclosure reports covering assets, income, liabilities, and outside positions. These are <strong>fully public</strong>.
                       </p>
                       <p className="text-sm text-blue-800 leading-relaxed mb-3">
-                        House members file with the <strong>Office of the Clerk</strong>. Senators file with the <strong>Secretary of the Senate</strong>. We are building the live data connection to show individual disclosures here.
+                        House members file with the <strong>Office of the Clerk</strong>. Senators file with the <strong>Secretary of the Senate</strong>.
                       </p>
                       <div className="flex flex-wrap gap-3 mt-2">
-                        <a href="https://disclosures.house.gov" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">🏛️ House Financial Disclosures ↗</a>
-                        <a href="https://efts.senate.gov/ETRS/index.html" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">🏛️ Senate Financial Disclosures ↗</a>
+                        <a href="https://disclosures-clerk.house.gov/FinancialDisclosure" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">🏛️ House Financial Disclosures ↗</a>
+                        <a href="https://www.senate.gov/legislative/financial_disclosures.htm" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">🏛️ Senate Financial Disclosures ↗</a>
                       </div>
                     </div>
                   </div>
                 </div>
-              ) : (
+                );
+              })() : (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
                 <div className="flex items-start gap-3">
                   <span className="text-2xl flex-shrink-0">⚖️</span>
@@ -33714,8 +33741,7 @@ function App() {
                         </button>
                       )}
                     </>
-                  ) : (
-                    {selectedCountry?.type === 'usa' ? (
+                  ) : selectedCountry?.type === 'usa' ? (
                       <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
                         <div className="flex items-start gap-3">
                           <span className="text-2xl flex-shrink-0">📋</span>
@@ -33733,7 +33759,7 @@ function App() {
                           </div>
                         </div>
                       </div>
-                    ) : (
+                  ) : (
                       <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
                         <div className="flex items-start gap-3">
                           <span className="text-2xl flex-shrink-0">📋</span>
@@ -33751,7 +33777,6 @@ function App() {
                           </div>
                         </div>
                       </div>
-                    )}
                   )}
                 </div>
               )}
