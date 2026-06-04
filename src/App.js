@@ -33546,7 +33546,23 @@ function App() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">Official expense data not yet available.</p>
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl flex-shrink-0">💸</span>
+                        <div>
+                          <p className="text-sm font-bold text-amber-900 mb-2">Only Ministers and Parliamentary Secretaries are covered</p>
+                          <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                            Canada's Treasury Board publishes proactive expense disclosure only for <strong>Ministers, Parliamentary Secretaries, and senior officials</strong>. Regular backbench MPs are <strong>not required by law</strong> to publicly disclose their office expenses.
+                          </p>
+                          <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                            MPs do receive a <strong>Members' Allowances and Services</strong> budget (currently ~$400,000–$600,000/year depending on riding size) for office, travel, and staff costs — but individual breakdowns are not publicly itemized for backbench members.
+                          </p>
+                          <a href="https://www.tbs-sct.gc.ca/hgw-cgf/finances/rgs-srg/index-eng.asp" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
+                            🏛️ Treasury Board proactive disclosure (ministers only) ↗
+                          </a>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
@@ -33657,7 +33673,23 @@ function App() {
                       )}
                     </>
                   ) : (
-                    <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">No registered lobbying meetings on record.</p>
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl flex-shrink-0">📋</span>
+                        <div>
+                          <p className="text-sm font-bold text-gray-700 mb-2">No registered lobbying meetings found</p>
+                          <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                            Canada's Lobbying Registry shows no registered communications between lobbyists and this MP. This could mean they have genuinely received no registered lobbying, or that some meetings were held informally and not required to be registered.
+                          </p>
+                          <p className="text-xs text-gray-500 italic mb-2">
+                            ⚠️ Only meetings with <strong>designated public office holders (DPOHs)</strong> — including Cabinet ministers, Parliamentary Secretaries, and senior officials — must be registered. Regular backbench MP meetings are not always required to be logged.
+                          </p>
+                          <a href="https://lobbycanada.gc.ca" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
+                            🏛️ Search Canada's Lobbying Registry directly ↗
+                          </a>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
@@ -33698,7 +33730,23 @@ function App() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl flex-shrink-0">🏢</span>
+                    <div>
+                      <p className="text-sm font-bold text-amber-900 mb-2">No registered corporate connections found</p>
+                      <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                        Corporate connections are derived from Canada's Lobbying Registry — showing companies that have registered to lobby this MP. No registered connections were found for this member.
+                      </p>
+                      <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                        Canadian MPs are <strong>not required to publicly declare prior corporate roles, board memberships, or business interests</strong> beyond what is filed privately with the Ethics Commissioner under the <strong>Conflict of Interest Act</strong>. Those filings are not public for backbench MPs.
+                      </p>
+                      <a href="https://ciec-ccie.parl.gc.ca/en/Pages/default.aspx" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
+                        🏛️ Office of the Conflict of Interest and Ethics Commissioner ↗
+                      </a>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           )}
