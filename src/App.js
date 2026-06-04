@@ -4195,8 +4195,23 @@ function App() {
         const snap = await getDocs(q);
         docs = snap.docs.map(d => d.data());
       }
-      if (key === 'Mike Johnson') console.log(`[MikeJohnson] member_committees: ${docs.length} doc(s)`, docs);
-      setMemberCommitteeData(prev => ({ ...prev, [key]: docs }));
+      // Normalize: US/UK store one doc with committees[] array; CA stores one doc per committee.
+      // Flatten into a uniform list of committee entries for the display layer.
+      const normalized = docs.flatMap(doc => {
+        if (Array.isArray(doc.committees) && doc.committees.length > 0) {
+          return doc.committees.map(c => ({
+            committeeName: c.name || c.committeeName || c.committee || '',
+            role:          c.role || c.leadership || '',
+            startDate:     c.start_date || c.startDate || '',
+            last_updated:  doc.last_updated || '',
+            type:          c.type || 'committee',
+            rank:          c.rank || null,
+          }));
+        }
+        // CA-style: doc itself is the committee entry
+        return [doc];
+      });
+      setMemberCommitteeData(prev => ({ ...prev, [key]: normalized }));
     } catch (err) {
       console.warn('[LiveData] member_committees fetch failed:', err.message);
       setMemberCommitteeData(prev => ({ ...prev, [key]: [] }));
