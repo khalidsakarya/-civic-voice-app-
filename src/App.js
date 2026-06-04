@@ -3879,6 +3879,13 @@ function App() {
     fetchMemberVotes(selectedUkMember);
   }, [view, selectedUkMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch voting records + attendance when Canadian Senator detail opens
+  useEffect(() => {
+    if (view !== 'senator-detail' || !selectedSenator?.name) return;
+    fetchMemberVotes(selectedSenator);
+    fetchMemberAttendance(selectedSenator);
+  }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Shared helper: fetch member_attendance by memberName (or bioguide_id if present)
   const fetchMemberAttendance = async (member) => {
     const key = member.name;
@@ -36693,68 +36700,123 @@ function App() {
           </div>
 
           {/* Voting History */}
-          <div className="bg-white rounded-lg shadow-md mb-6">
-            <div onClick={() => toggleSection('voting')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <FileText className="w-6 h-6 text-blue-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">📊 Voting History</h2>
-                  <p className="text-sm text-gray-600">Senate voting record</p>
-                </div>
-              </div>
-              {expandedSections.voting ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-            </div>
-            {expandedSections.voting && (
-              <div className="px-6 pb-6">
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-                  <div className="flex items-start gap-3">
-                    <span className="text-2xl flex-shrink-0">🏛️</span>
+          {(() => {
+            const liveVoteDocs = memberVotesData[s.name];
+            const isLoadingVotes = !!memberVotesLoading[s.name];
+            const voteRecord = liveVoteDocs?.[0];
+            const votes = voteRecord?.votes || [];
+            return (
+              <div className="bg-white rounded-lg shadow-md mb-6">
+                <div onClick={() => toggleSection('voting')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-6 h-6 text-blue-600" />
                     <div>
-                      <p className="text-sm font-bold text-blue-900 mb-2">Official data available — live feed coming</p>
-                      <p className="text-sm text-blue-800 leading-relaxed mb-3">
-                        The Senate of Canada publishes all official vote records at <strong>sencanada.ca</strong>. We are building the live data connection to show each senator's voting record directly here.
-                      </p>
-                      <a href={`https://sencanada.ca/en/senators/`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
-                        🏛️ View on Senate of Canada official website ↗
-                      </a>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h2 className="text-xl font-bold text-gray-800">📊 Voting History</h2>
+                        {isLoadingVotes && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {votes.length > 0 && !isLoadingVotes && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">LIVE</span>}
+                      </div>
+                      <p className="text-sm text-gray-600">{votes.length > 0 ? `${votes.length} recent votes — sencanada.ca` : 'Senate voting record'}</p>
                     </div>
                   </div>
+                  {expandedSections.voting ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
                 </div>
+                {expandedSections.voting && (
+                  <div className="px-6 pb-6">
+                    {isLoadingVotes ? (
+                      <p className="text-sm text-gray-500 flex items-center gap-2"><span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />Loading votes from sencanada.ca…</p>
+                    ) : votes.length > 0 ? (
+                      <div className="space-y-3">
+                        {votes.map((v, i) => {
+                          const isYea     = v.ballot === 'Yea';
+                          const isNay     = v.ballot === 'Nay';
+                          const isAbstain = v.ballot === 'Abstain';
+                          const isPassed  = /adopt|pass/i.test(v.result || '');
+                          return (
+                            <div key={i} className={`border rounded-lg p-4 ${isYea ? 'bg-green-50 border-green-200' : isNay ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isYea ? 'bg-green-200 text-green-800' : isNay ? 'bg-red-200 text-red-800' : isAbstain ? 'bg-amber-100 text-amber-800' : 'bg-gray-200 text-gray-600'}`}>
+                                  {isYea ? '✓ Yea' : isNay ? '✗ Nay' : isAbstain ? '— Abstain' : v.ballot || 'Not Voting'}
+                                </span>
+                                {v.result && <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${isPassed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{v.result}</span>}
+                              </div>
+                              <p className="text-sm font-semibold text-gray-800 leading-snug">{v.title}</p>
+                              <div className="flex items-center justify-between mt-1">
+                                {v.date && <span className="text-xs text-gray-400">{v.date}</span>}
+                                {v.source_url && <a href={v.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">View on sencanada.ca ↗</a>}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        <p className="text-xs text-gray-400 text-center mt-2">🏛️ Source: Senate of Canada — sencanada.ca (official)</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic text-center bg-gray-50 rounded-lg p-4">No voting records found for this senator.</p>
+                    )}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            );
+          })()}
 
           {/* Attendance Record */}
-          <div className="bg-white rounded-lg shadow-md mb-6">
-            <div onClick={() => toggleSection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <Award className="w-6 h-6 text-blue-600" />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
-                  <p className="text-sm text-gray-600">Attendance record</p>
-                </div>
-              </div>
-              {expandedSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-            </div>
-            {expandedSections.attendance && (
-              <div className="px-6 pb-6">
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-                  <div className="flex items-start gap-3">
-                    <span className="text-2xl flex-shrink-0">📋</span>
+          {(() => {
+            const liveAtt = memberAttendanceData[s.name];
+            const isLoading = !!memberAttendanceLoading[s.name];
+            const pct      = liveAtt?.percentage ?? null;
+            const attended = liveAtt?.votesParticipated ?? null;
+            const total    = liveAtt?.totalVotes ?? null;
+            const barColor = pct === null ? '#d1d5db' : pct >= 80 ? '#22c55e' : pct >= 60 ? '#eab308' : '#ef4444';
+            const pctColor = pct === null ? 'text-gray-400' : pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-yellow-600' : 'text-red-600';
+            return (
+              <div className="bg-white rounded-lg shadow-md mb-6">
+                <div onClick={() => toggleSection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <Award className="w-6 h-6 text-blue-600" />
                     <div>
-                      <p className="text-sm font-bold text-blue-900 mb-2">Official data available — live feed coming</p>
-                      <p className="text-sm text-blue-800 leading-relaxed mb-3">
-                        The Senate of Canada tracks and publishes official senator attendance records at <strong>sencanada.ca</strong>. We are building the live data connection to show attendance directly here.
-                      </p>
-                      <a href="https://sencanada.ca/en/senators/attendance/" target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
-                        🏛️ View official Senate attendance records ↗
-                      </a>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
+                        {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {pct !== null && !isLoading && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">LIVE</span>}
+                      </div>
+                      <p className={`text-sm font-semibold ${pctColor}`}>{pct !== null ? `${pct}% participation rate` : 'Vote participation rate'}</p>
                     </div>
                   </div>
+                  {expandedSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
                 </div>
+                {expandedSections.attendance && (
+                  <div className="px-6 pb-6">
+                    {isLoading ? (
+                      <p className="text-sm text-gray-500 flex items-center gap-2"><span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />Loading from sencanada.ca…</p>
+                    ) : pct !== null ? (
+                      <>
+                        <div className="grid grid-cols-3 gap-4 mb-4">
+                          <div className="bg-gray-50 p-4 rounded-lg border">
+                            <p className="text-xs text-gray-500 mb-1">Participation Rate</p>
+                            <p className={`text-3xl font-bold ${pctColor}`}>{pct}%</p>
+                          </div>
+                          <div className="bg-gray-50 p-4 rounded-lg border">
+                            <p className="text-xs text-gray-500 mb-1">Votes Participated</p>
+                            <p className="text-3xl font-bold text-gray-800">{attended}</p>
+                          </div>
+                          <div className="bg-gray-50 p-4 rounded-lg border">
+                            <p className="text-xs text-gray-500 mb-1">Total Votes Held</p>
+                            <p className="text-3xl font-bold text-gray-800">{total}</p>
+                          </div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3 mb-3">
+                          <div className="h-3 rounded-full transition-all" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: barColor }} />
+                        </div>
+                        <p className="text-xs text-gray-400 text-center">🏛️ Based on {total} recorded Senate votes — sencanada.ca (official)</p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic text-center bg-gray-50 rounded-lg p-4">No attendance records found for this senator.</p>
+                    )}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            );
+          })()}
 
           {/* Office Expense Reports */}
           {(() => {
