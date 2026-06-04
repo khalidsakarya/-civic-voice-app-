@@ -33397,15 +33397,15 @@ function App() {
                 // openparliament.ca stores data in a nested `vote` object; backends may also flatten it
                 const voteObj = d.vote && typeof d.vote === 'object' && !d.vote.toDate ? d.vote : null;
                 // description can be a {en, fr} multilingual object or a plain string
-                const rawDesc = d.description ?? voteObj?.description ?? d.title ?? d.subject ?? d.motion ?? '';
+                const rawDesc = d.description ?? voteObj?.description ?? d.vote_question ?? d.title ?? d.subject ?? d.motion ?? '';
                 const title = rawDesc && typeof rawDesc === 'object' ? (rawDesc.en || rawDesc.fr || '') : String(rawDesc || '');
                 // ballot is the member's individual vote; result is the overall vote outcome
                 const vote = d.ballot ?? d.member_vote ?? d.vote_value ?? d.choice ?? '';
-                // date may be at top level or nested; handle Firestore Timestamps
-                const rawDate = d.date ?? voteObj?.date ?? '';
+                // date may be at top level or nested; handle Firestore Timestamps + US action_date field
+                const rawDate = d.date ?? d.action_date ?? voteObj?.date ?? '';
                 const dateStr = rawDate?.toDate ? rawDate.toDate().toLocaleDateString('en-CA') : String(rawDate || '');
-                const result = d.result ?? voteObj?.result ?? (typeof d.passed === 'boolean' ? (d.passed ? 'Passed' : 'Failed') : null);
-                const bill = d.bill_number ?? d.bill ?? voteObj?.bill_number ?? null;
+                const result = d.result ?? d.vote_result ?? voteObj?.result ?? (typeof d.passed === 'boolean' ? (d.passed ? 'Passed' : 'Failed') : null);
+                const bill = d.bill_number ?? d.legislation ?? d.bill ?? voteObj?.bill_number ?? null;
                 return { bill, title, vote, date: dateStr, result };
               })
             : (selectedMember.votingHistory || []);
