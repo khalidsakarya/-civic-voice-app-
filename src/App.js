@@ -3682,6 +3682,25 @@ function App() {
     if (showMemberPanel && selectedMember) fetchMemberDisclosures(selectedMember);
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch lobbying data when US Congress member panel opens
+  useEffect(() => {
+    if (!showMemberPanel || !selectedMember?.name) return;
+    const name = selectedMember.name;
+    if (memberLobbyingData[name] !== undefined || memberLobbyingLoading[name]) return;
+    setMemberLobbyingLoading(prev => ({ ...prev, [name]: true }));
+    (async () => {
+      try {
+        const snap = await getDocs(query(collection(db, 'member_lobbying'), where('member_name', '==', name)));
+        setMemberLobbyingData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
+      } catch (err) {
+        console.warn('[LiveData] member_lobbying (congress) fetch failed:', err.message);
+        setMemberLobbyingData(prev => ({ ...prev, [name]: [] }));
+      } finally {
+        setMemberLobbyingLoading(prev => ({ ...prev, [name]: false }));
+      }
+    })();
+  }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (view === 'member-detail' && selectedMember && selectedCountry?.type === 'usa') fetchMemberDisclosures(selectedMember);
   }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -35976,62 +35995,83 @@ function App() {
               {/* FINANCIAL DISCLOSURE */}
               {(() => {
                 const liveDiscDocs = memberDisclosureData[member.name];
-                const liveDisc = liveDiscDocs && liveDiscDocs.length > 0 ? liveDiscDocs[0] : null;
-                const isLiveDisc = !!liveDisc;
+                const hasFilings = liveDiscDocs && liveDiscDocs.length > 0;
                 const isLoadingDisc = !!memberDisclosureLoading[member.name];
                 return (
                   <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                     <div className="flex items-center gap-2 mb-2">
                       <p className="panel-section-label" style={{ marginBottom: 0 }}>Financial Disclosure</p>
                       {isLoadingDisc && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                      {isLiveDisc && !isLoadingDisc && liveBadge(null, 'Annual')}
-                      {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+                      {hasFilings && !isLoadingDisc && liveBadge(null, 'Annual')}
+                      {coverageBadge('official', 'House STOCK Act filings — disclosures.house.gov', 'Senate filings at efts.senate.gov not yet linked')}
                     </div>
-                    {isLiveDisc ? (
-                      <>
-                        <div className="grid grid-cols-2 gap-3 mb-3">
-                          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
-                            <p className="text-xs text-gray-500 mb-0.5">Worth When Elected{liveDisc.electedYear ? ` (${liveDisc.electedYear})` : ''}</p>
-                            <p className="text-lg font-bold text-blue-700">{formatCurrency(liveDisc.worthWhenElected ?? liveDisc.initialWorth ?? 0)}</p>
+                    {hasFilings ? (
+                      <div className="space-y-2">
+                        {liveDiscDocs.map((doc, i) => (
+                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-gray-800">{doc.filing_type || 'Filing'}</p>
+                              <p className="text-xs text-gray-500">{doc.office || doc.state_district || ''}{doc.filing_year ? ` · ${doc.filing_year}` : ''}</p>
+                            </div>
+                            {doc.document_url ? (
+                              <a href={doc.document_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline flex-shrink-0 ml-3">View PDF ↗</a>
+                            ) : (
+                              <span className="text-xs text-gray-400 flex-shrink-0 ml-3">No PDF</span>
+                            )}
                           </div>
-                          <div className="bg-green-50 border border-green-200 rounded-xl p-3">
-                            <p className="text-xs text-gray-500 mb-0.5">Current Net Worth</p>
-                            <p className="text-lg font-bold text-green-700">{formatCurrency(liveDisc.currentWorth ?? 0)}</p>
-                          </div>
-                        </div>
-                        {liveDisc.percentageIncrease != null && (
-                          <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3">
-                            <p className="text-xs text-gray-500 mb-0.5">Wealth Increase</p>
-                            <p className="text-lg font-bold text-purple-700">+{liveDisc.percentageIncrease}%</p>
-                          </div>
-                        )}
-                        {liveDisc.assets && liveDisc.assets.length > 0 && (
-                          <div className="space-y-1.5">
-                            <p className="text-xs font-semibold text-gray-600 mb-2">Asset Breakdown</p>
-                            {liveDisc.assets.map((asset, i) => (
-                              <div key={i} className="flex justify-between items-center p-2.5 bg-gray-50 rounded-lg border border-gray-200">
-                                <span className="text-sm text-gray-700">{asset.type}</span>
-                                <span className="text-sm font-bold text-gray-900">{formatCurrency(asset.value)}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </>
+                        ))}
+                        <p className="text-xs text-gray-400 mt-1">Source: disclosures.house.gov — STOCK Act annual &amp; periodic transaction filings</p>
+                      </div>
                     ) : (
-                      <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                      <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">
+                        {isLoadingDisc ? 'Loading…' : 'No filings found in House disclosure system for this member.'}
+                      </p>
                     )}
                   </section>
                 );
               })()}
 
               {/* LOBBYING */}
-              <section>
-                <div className="flex items-center gap-2 mb-2">
-                  <p className="panel-section-label" style={{ marginBottom: 0 }}>Lobbying Activity</p>
-                  {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
-                </div>
-                <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
-              </section>
+              {(() => {
+                const liveLobbyDocs = memberLobbyingData[member.name];
+                const hasLobby = liveLobbyDocs && liveLobbyDocs.length > 0;
+                const isLoadingLobby = !!memberLobbyingLoading[member.name];
+                const ldaUrl = `https://lda.senate.gov/filings/public/filing/search/?search_term=${encodeURIComponent(member.name || '')}`;
+                return (
+                  <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <p className="panel-section-label" style={{ marginBottom: 0 }}>Lobbying Activity</p>
+                      {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                      {hasLobby && !isLoadingLobby && liveBadge(null, 'Quarterly')}
+                      {coverageBadge('official', 'Senate Office of Public Records — lda.senate.gov', 'LDA tracks registrant filings; per-member contact data not in public API')}
+                    </div>
+                    {hasLobby ? (
+                      <div className="space-y-2">
+                        {liveLobbyDocs.map((doc, i) => (
+                          <div key={i} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-gray-800">{doc.registrant_name || doc.firm_or_client || 'Registrant'}</p>
+                                {doc.client_name && <p className="text-xs text-gray-500 mt-0.5">Client: {doc.client_name}</p>}
+                                {doc.lobbying_issues && <p className="text-xs text-blue-700 mt-1">{doc.lobbying_issues}</p>}
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                {doc.income != null && <p className="text-xs font-bold text-green-700">${Number(doc.income).toLocaleString()}</p>}
+                                {doc.filing_year && <p className="text-xs text-gray-400">{doc.filing_period || doc.filing_year}</p>}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                        <p className="text-sm text-blue-800 mb-2">Federal lobbying disclosures are publicly available via the Senate Office of Public Records (Lobbying Disclosure Act filings).</p>
+                        <a href={ldaUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-blue-700 hover:underline">Search {member.name} on lda.senate.gov ↗</a>
+                      </div>
+                    )}
+                  </section>
+                );
+              })()}
 
               {/* CORPORATE CONNECTIONS */}
               <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
