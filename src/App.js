@@ -35872,9 +35872,16 @@ function App() {
                 const liveDocs = memberVotesData[member.name];
                 const isLiveVotes = liveDocs && liveDocs.length > 0;
                 const isLoadingVotes = !!memberVotesLoading[member.name];
-                const displayVotes = isLiveVotes
-                  ? liveDocs.map(d => ({ bill: d.bill, title: d.title, vote: d.vote, date: d.date, description: d.description }))
+                const rawVotes = isLiveVotes
+                  ? liveDocs.map(d => ({
+                      bill:        d.bill        || d.legislation   || d.bill_id    || null,
+                      title:       d.title       || d.vote_question || d.description_en || null,
+                      vote:        d.vote        || d.member_vote   || null,
+                      date:        d.date        || d.action_date   || null,
+                      description: d.description || d.vote_result   || null,
+                    }))
                   : (member.votingHistory || []);
+                const displayVotes = rawVotes.filter(v => v.title || v.bill || v.vote);
                 if (!displayVotes.length && !isLoadingVotes) return null;
                 return (
                   <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
