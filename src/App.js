@@ -36012,11 +36012,18 @@ function App() {
                     </div>
                     {hasFilings ? (
                       <div className="space-y-2">
-                        {liveDiscDocs.map((doc, i) => (
+                        {liveDiscDocs.map((doc, i) => {
+                          const FD_TYPE = { O: 'Annual Report', A: 'Amendment', P: 'Annual Report (Final)', C: 'Candidate Disclosure', E: 'Extension Request', T: 'Termination Report', W: 'Annual Report (Extension)', X: 'Waiver' };
+                          const typeLabel = FD_TYPE[doc.filing_type] || doc.filing_type || 'Filing';
+                          return (
                           <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-gray-800">{doc.filing_type || 'Filing'}</p>
-                              <p className="text-xs text-gray-500">{doc.office || doc.state_district || ''}{doc.filing_year ? ` · ${doc.filing_year}` : ''}</p>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-gray-800">{typeLabel}</p>
+                              <p className="text-xs text-gray-500">
+                                {doc.state_district || doc.office || ''}
+                                {doc.filing_year ? ` · ${doc.filing_year}` : ''}
+                                {doc.filing_date ? ` · Filed ${doc.filing_date}` : ''}
+                              </p>
                             </div>
                             {doc.document_url ? (
                               <a href={doc.document_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline flex-shrink-0 ml-3">View PDF ↗</a>
@@ -36024,8 +36031,9 @@ function App() {
                               <span className="text-xs text-gray-400 flex-shrink-0 ml-3">No PDF</span>
                             )}
                           </div>
-                        ))}
-                        <p className="text-xs text-gray-400 mt-1">Source: disclosures.house.gov — STOCK Act annual &amp; periodic transaction filings</p>
+                          );
+                        })}
+                        <p className="text-xs text-gray-400 mt-1">Source: disclosures-clerk.house.gov — Official House financial disclosure filings</p>
                       </div>
                     ) : (
                       <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">
