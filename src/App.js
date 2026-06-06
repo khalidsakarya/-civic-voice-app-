@@ -3682,21 +3682,26 @@ function App() {
     if (showMemberPanel && selectedMember) fetchMemberDisclosures(selectedMember);
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch lobbying data when US Congress member panel opens
+  // Fetch recent US LDA lobbying filings when any Congress member panel opens.
+  // LDA filings are not per-member, so we fetch once and cache under a shared key.
+  const US_LOBBY_KEY = '__us_congress_lobbying__';
   useEffect(() => {
     if (!showMemberPanel || !selectedMember?.name) return;
-    const name = selectedMember.name;
-    if (memberLobbyingData[name] !== undefined || memberLobbyingLoading[name]) return;
-    setMemberLobbyingLoading(prev => ({ ...prev, [name]: true }));
+    if (memberLobbyingData[US_LOBBY_KEY] !== undefined || memberLobbyingLoading[US_LOBBY_KEY]) return;
+    setMemberLobbyingLoading(prev => ({ ...prev, [US_LOBBY_KEY]: true }));
     (async () => {
       try {
-        const snap = await getDocs(query(collection(db, 'member_lobbying'), where('member_name', '==', name)));
-        setMemberLobbyingData(prev => ({ ...prev, [name]: snap.docs.map(d => d.data()) }));
+        const snap = await getDocs(query(
+          collection(db, 'member_lobbying'),
+          where('jurisdiction', '==', 'US'),
+          limit(10)
+        ));
+        setMemberLobbyingData(prev => ({ ...prev, [US_LOBBY_KEY]: snap.docs.map(d => d.data()) }));
       } catch (err) {
-        console.warn('[LiveData] member_lobbying (congress) fetch failed:', err.message);
-        setMemberLobbyingData(prev => ({ ...prev, [name]: [] }));
+        console.warn('[LiveData] member_lobbying (US LDA) fetch failed:', err.message);
+        setMemberLobbyingData(prev => ({ ...prev, [US_LOBBY_KEY]: [] }));
       } finally {
-        setMemberLobbyingLoading(prev => ({ ...prev, [name]: false }));
+        setMemberLobbyingLoading(prev => ({ ...prev, [US_LOBBY_KEY]: false }));
       }
     })();
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -36033,41 +36038,49 @@ function App() {
 
               {/* LOBBYING */}
               {(() => {
-                const liveLobbyDocs = memberLobbyingData[member.name];
+                const US_LOBBY_KEY = '__us_congress_lobbying__';
+                const liveLobbyDocs = memberLobbyingData[US_LOBBY_KEY];
                 const hasLobby = liveLobbyDocs && liveLobbyDocs.length > 0;
-                const isLoadingLobby = !!memberLobbyingLoading[member.name];
-                const ldaUrl = `https://lda.senate.gov/filings/public/filing/search/?search_term=${encodeURIComponent(member.name || '')}`;
+                const isLoadingLobby = !!memberLobbyingLoading[US_LOBBY_KEY];
                 return (
                   <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5">
                     <div className="flex items-center gap-2 mb-2">
                       <p className="panel-section-label" style={{ marginBottom: 0 }}>Lobbying Activity</p>
                       {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {hasLobby && !isLoadingLobby && liveBadge(null, 'Quarterly')}
-                      {coverageBadge('official', 'Senate Office of Public Records — lda.senate.gov', 'LDA tracks registrant filings; per-member contact data not in public API')}
+                      {coverageBadge('official', 'Senate Office of Public Records — lda.senate.gov', 'Lobbying Disclosure Act filings')}
                     </div>
                     {hasLobby ? (
                       <div className="space-y-2">
                         {liveLobbyDocs.map((doc, i) => (
                           <div key={i} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                             <div className="flex items-start justify-between gap-2">
-                              <div className="min-w-0">
-                                <p className="text-sm font-semibold text-gray-800">{doc.registrant_name || doc.firm_or_client || 'Registrant'}</p>
-                                {doc.client_name && <p className="text-xs text-gray-500 mt-0.5">Client: {doc.client_name}</p>}
-                                {doc.lobbying_issues && <p className="text-xs text-blue-700 mt-1">{doc.lobbying_issues}</p>}
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-semibold text-gray-800">{doc.registrant_name || 'Registrant'}</p>
+                                {doc.client_name && <p className="text-xs text-gray-600 mt-0.5">Client: <span className="font-medium">{doc.client_name}</span></p>}
+                                {doc.lobbying_issues && (
+                                  <p className="text-xs text-blue-700 mt-1 leading-relaxed">{doc.lobbying_issues}</p>
+                                )}
+                                {doc.posted_date && <p className="text-xs text-gray-400 mt-1">{doc.posted_date?.slice(0, 10)}</p>}
                               </div>
-                              <div className="text-right flex-shrink-0">
-                                {doc.income != null && <p className="text-xs font-bold text-green-700">${Number(doc.income).toLocaleString()}</p>}
-                                {doc.filing_year && <p className="text-xs text-gray-400">{doc.filing_period || doc.filing_year}</p>}
+                              <div className="text-right flex-shrink-0 ml-2">
+                                {doc.income != null && (
+                                  <p className="text-xs font-bold text-green-700">${Number(doc.income).toLocaleString()}</p>
+                                )}
+                                {doc.expenses != null && doc.income == null && (
+                                  <p className="text-xs font-bold text-orange-700">${Number(doc.expenses).toLocaleString()}</p>
+                                )}
+                                <p className="text-xs text-gray-400">{doc.filing_period || doc.filing_year}</p>
                               </div>
                             </div>
                           </div>
                         ))}
+                        <p className="text-xs text-gray-400 mt-1">Source: lda.senate.gov — Lobbying Disclosure Act registrations</p>
                       </div>
                     ) : (
-                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                        <p className="text-sm text-blue-800 mb-2">Federal lobbying disclosures are publicly available via the Senate Office of Public Records (Lobbying Disclosure Act filings).</p>
-                        <a href={ldaUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-blue-700 hover:underline">Search {member.name} on lda.senate.gov ↗</a>
-                      </div>
+                      <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">
+                        {isLoadingLobby ? 'Loading…' : 'No lobbying filings found.'}
+                      </p>
                     )}
                   </section>
                 );
