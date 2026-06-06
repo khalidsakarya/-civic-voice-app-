@@ -1777,6 +1777,81 @@ function governmentContractsHubSubtitle(rows, summaryCount) {
   return `${n} contract record${n === 1 ? '' : 's'}`;
 }
 
+// ── Public-data survey widget ─────────────────────────────────────────────────
+// Shown below empty/partial data sections. Asks users whether the data category
+// should be legally required to be made public.
+// Votes are stored in Firestore: surveys/{surveyId} → { yes, no }
+// localStorage prevents duplicate votes across page loads.
+function SurveyWidget({ surveyId }) {
+  const [voted,   setVoted]   = useState(null);        // 'yes' | 'no' | null
+  const [counts,  setCounts]  = useState({ yes: 0, no: 0 });
+  const [loading, setLoading] = useState(true);
+  const lsKey = `civic_survey_${surveyId}`;
+
+  useEffect(() => {
+    const prior = localStorage.getItem(lsKey);
+    if (prior) setVoted(prior);
+    (async () => {
+      try {
+        const snap = await getDoc(doc(db, 'surveys', surveyId));
+        if (snap.exists()) {
+          const d = snap.data();
+          setCounts({ yes: d.yes || 0, no: d.no || 0 });
+        }
+      } catch (_) { /* silent — surveys are best-effort */ }
+      setLoading(false);
+    })();
+  }, [surveyId, lsKey]);
+
+  const castVote = async (choice) => {
+    if (voted || loading) return;
+    localStorage.setItem(lsKey, choice);
+    setVoted(choice);
+    setCounts(prev => ({ ...prev, [choice]: prev[choice] + 1 }));
+    try {
+      await setDoc(doc(db, 'surveys', surveyId), { [choice]: increment(1) }, { merge: true });
+    } catch (_) { /* silent */ }
+  };
+
+  const total  = counts.yes + counts.no;
+  const yesPct = total > 0 ? Math.round((counts.yes / total) * 100) : 0;
+
+  return (
+    <div className="mt-3 pt-3 border-t border-gray-100">
+      <p className="text-xs text-gray-500 mb-2">Should this information be required to be made public?</p>
+      {voted ? (
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+              <div className="bg-blue-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${yesPct}%` }} />
+            </div>
+            <span className="text-xs font-semibold text-gray-700 w-8 text-right flex-shrink-0">{yesPct}%</span>
+          </div>
+          <p className="text-xs text-gray-500">
+            <span className="font-medium text-blue-700">{yesPct}% said Yes</span>
+            {total > 0 && <span className="text-gray-400"> · {total.toLocaleString()} vote{total !== 1 ? 's' : ''}</span>}
+            <span className="text-gray-400"> · You voted {voted === 'yes' ? 'Yes' : 'No'}</span>
+          </p>
+        </div>
+      ) : !loading ? (
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => castVote('yes')}
+            className="px-3 py-1 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 rounded-md hover:bg-blue-100 active:bg-blue-200 transition-colors"
+          >Yes</button>
+          <button
+            onClick={() => castVote('no')}
+            className="px-3 py-1 text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors"
+          >No</button>
+          {total > 0 && (
+            <span className="text-xs text-gray-400">{total.toLocaleString()} vote{total !== 1 ? 's' : ''}</span>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function App() {
   // ── VOTE DATA VERSION GATE ────────────────────────────────────────────────
   // Bump CV_VOTES_VERSION whenever vote counts are reset so every user gets
@@ -36036,9 +36111,12 @@ function App() {
                         <p className="text-xs text-gray-400 mt-1">Source: disclosures-clerk.house.gov — Official House financial disclosure filings</p>
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">
-                        {isLoadingDisc ? 'Loading…' : 'No filings found in House disclosure system for this member.'}
-                      </p>
+                      <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <p className="text-sm text-gray-500 italic text-center">
+                          {isLoadingDisc ? 'Loading…' : 'No filings found in House disclosure system for this member.'}
+                        </p>
+                        {!isLoadingDisc && <SurveyWidget surveyId="congress_financial_disclosure" />}
+                      </div>
                     )}
                   </section>
                 );
@@ -36101,9 +36179,12 @@ function App() {
                         <p className="text-xs text-gray-400 mt-1">Source: lda.senate.gov — Lobbying Disclosure Act registrations</p>
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">
-                        {isLoadingLobby ? 'Loading…' : 'No lobbying filings found.'}
-                      </p>
+                      <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <p className="text-sm text-gray-500 italic text-center">
+                          {isLoadingLobby ? 'Loading…' : 'No lobbying filings found.'}
+                        </p>
+                        {!isLoadingLobby && <SurveyWidget surveyId="congress_lobbying_activity" />}
+                      </div>
                     )}
                   </section>
                 );
@@ -36133,7 +36214,10 @@ function App() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-3 border border-gray-200 text-center">This information is not publicly disclosed by official government sources.</p>
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <p className="text-sm text-gray-500 italic text-center">This information is not publicly disclosed by official government sources.</p>
+                    <SurveyWidget surveyId="congress_corporate_connections" />
+                  </div>
                 )}
               </section>
 
