@@ -36052,29 +36052,44 @@ function App() {
                     </div>
                     {hasLobby ? (
                       <div className="space-y-2">
-                        {liveLobbyDocs.map((doc, i) => (
+                        {liveLobbyDocs.filter(doc => {
+                          // Skip records that have no meaningful data to show
+                          const name = doc.registrant_name
+                            || (doc.registrant && typeof doc.registrant === 'object' ? doc.registrant.name : null)
+                            || doc.client_name;
+                          return !!name;
+                        }).map((doc, i) => {
+                          const registrantName = doc.registrant_name
+                            || (doc.registrant && typeof doc.registrant === 'object' ? doc.registrant.name : null)
+                            || '—';
+                          const clientName = doc.client_name
+                            || (doc.client && typeof doc.client === 'object' ? doc.client.name : null);
+                          const income = doc.income != null ? Number(doc.income) : null;
+                          const expenses = doc.expenses != null ? Number(doc.expenses) : null;
+                          return (
                           <div key={i} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-gray-800">{doc.registrant_name || 'Registrant'}</p>
-                                {doc.client_name && <p className="text-xs text-gray-600 mt-0.5">Client: <span className="font-medium">{doc.client_name}</span></p>}
+                                <p className="text-sm font-semibold text-gray-800">{registrantName}</p>
+                                {clientName && <p className="text-xs text-gray-600 mt-0.5">Client: <span className="font-medium">{clientName}</span></p>}
                                 {doc.lobbying_issues && (
                                   <p className="text-xs text-blue-700 mt-1 leading-relaxed">{doc.lobbying_issues}</p>
                                 )}
-                                {doc.posted_date && <p className="text-xs text-gray-400 mt-1">{doc.posted_date?.slice(0, 10)}</p>}
+                                {doc.posted_date && <p className="text-xs text-gray-400 mt-1">{String(doc.posted_date).slice(0, 10)}</p>}
                               </div>
                               <div className="text-right flex-shrink-0 ml-2">
-                                {doc.income != null && (
-                                  <p className="text-xs font-bold text-green-700">${Number(doc.income).toLocaleString()}</p>
+                                {income != null && !isNaN(income) && (
+                                  <p className="text-xs font-bold text-green-700">${income.toLocaleString()}</p>
                                 )}
-                                {doc.expenses != null && doc.income == null && (
-                                  <p className="text-xs font-bold text-orange-700">${Number(doc.expenses).toLocaleString()}</p>
+                                {expenses != null && !isNaN(expenses) && income == null && (
+                                  <p className="text-xs font-bold text-orange-700">${expenses.toLocaleString()}</p>
                                 )}
-                                <p className="text-xs text-gray-400">{doc.filing_period || doc.filing_year}</p>
+                                <p className="text-xs text-gray-400">{doc.filing_period || doc.filing_year || ''}</p>
                               </div>
                             </div>
                           </div>
-                        ))}
+                          );
+                        })}
                         <p className="text-xs text-gray-400 mt-1">Source: lda.senate.gov — Lobbying Disclosure Act registrations</p>
                       </div>
                     ) : (
