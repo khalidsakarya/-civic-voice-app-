@@ -3941,8 +3941,19 @@ function App() {
         docs = snap.docs.map(d => d.data());
         if (docs.length > 0) console.log(`[MemberVotes] member_votes slug="${slug}" — ${docs.length} doc(s).`);
       }
-      // Note: for CA House MPs, openparliament.ca votes are fetched live in fetchMemberAttendance
-      // and stored into memberVotesData there. No separate fetch needed here.
+      // For CA House MPs: try member_votes by person_id (set by caHouseVotesFetcher)
+      if (docs.length === 0 && !member.bioguide_id) {
+        const personId = member.id || member.member_id || member.personId || null;
+        if (personId) {
+          const q = query(collection(db, 'member_votes'), where('person_id', '==', String(personId)));
+          const snap = await getDocs(q);
+          if (snap.docs.length > 0) {
+            // member_votes CA doc has nested votes[] array — flatten to individual rows
+            const votesArr = snap.docs[0].data().votes || [];
+            docs = votesArr;
+          }
+        }
+      }
       if (key === 'Mike Johnson') console.log(`[MikeJohnson] member_votes: ${docs.length} doc(s)`, docs);
       setMemberVotesData(prev => ({ ...prev, [key]: docs }));
     } catch (err) {
@@ -3996,46 +4007,29 @@ function App() {
         const snap = await getDocs(q);
         docs = snap.docs.map(d => d.data());
       }
-      // For CA House MPs with no Firestore data, fetch live from openparliament.ca
+      // For CA House MPs: also try matching by person_id (set by caHouseVotesFetcher)
       if (docs.length === 0 && !member.bioguide_id) {
-        try {
-          const slug = key.toLowerCase()
-            .normalize('NFD').replace(/[̀-ͯ]/g, '') // strip accents
-            .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-          const resp = await fetch(
-            `https://api.openparliament.ca/politicians/${slug}/votes/?limit=500&format=json`,
-            { headers: { Accept: 'application/json' } }
+        const personId = member.id || member.member_id || member.personId || null;
+        if (personId) {
+          const q = query(collection(db, 'member_attendance'), where('person_id', '==', String(personId)));
+          const snap = await getDocs(q);
+          docs = snap.docs.map(d => d.data());
+        }
+        // Final fallback: partial name match (handles HTML entity name differences like &#xC9;ric)
+        if (docs.length === 0) {
+          const lastName = key.split(' ').pop();
+          const q = query(
+            collection(db, 'member_attendance'),
+            where('jurisdiction', '==', 'CA'),
+            where('chamber', '==', 'House'),
+            limit(500)
           );
-          if (resp.ok) {
-            const data = await resp.json();
-            const votes = data.objects || [];
-            const participated = votes.filter(v => v.ballot === 'Yes' || v.ballot === 'No' || v.ballot === 'Paired').length;
-            const total = votes.length;
-            docs = [{
-              member_name: key,
-              jurisdiction: 'CA',
-              chamber: 'House',
-              source_name: 'openparliament.ca (live)',
-              totalVotes: total,
-              votesParticipated: participated,
-              percentage: total > 0 ? Math.round((participated / total) * 100) : 0,
-              last_updated: new Date().toISOString(),
-            }];
-            // Also populate vote history so the Voting History section works too
-            if (votes.length > 0 && memberVotesData[key] === undefined) {
-              const voteHistory = votes.map(v => ({
-                ballot: v.ballot,
-                description: v.vote?.description?.en || v.vote?.bill?.number || '',
-                date: v.vote?.date || '',
-                result: v.vote?.result || '',
-                bill_number: v.vote?.bill?.number || null,
-              }));
-              setMemberVotesData(prev => ({ ...prev, [key]: voteHistory }));
-            }
-            console.log(`[openparliament] ${key}: ${participated}/${total} votes participated (${docs[0].percentage}%)`);
-          }
-        } catch (opErr) {
-          console.warn(`[openparliament] attendance fetch failed for ${key}:`, opErr.message);
+          const snap = await getDocs(q);
+          const match = snap.docs.find(d => {
+            const n = (d.data().member_name || '').toLowerCase();
+            return n.includes(lastName.toLowerCase());
+          });
+          if (match) docs = [match.data()];
         }
       }
       if (key === 'Mike Johnson') console.log(`[MikeJohnson] member_attendance: ${docs.length} doc(s)`, docs);
