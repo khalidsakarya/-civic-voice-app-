@@ -33971,35 +33971,38 @@ function App() {
                   {isLiveLobby ? (
                     <>
                       <div className="space-y-4">
-                        {visibleDocs.map((org, idx) => (
-                          <div key={idx} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <h3 className="font-bold text-gray-800 text-sm leading-snug">{org.registrant || '—'}</h3>
-                              {org.meeting_date && (
-                                <span className="text-xs text-gray-400 flex-shrink-0 bg-white border border-gray-200 rounded px-1.5 py-0.5">{fmtDate(org.meeting_date)}</span>
-                              )}
-                            </div>
-                            {org.client && (
-                              <p className="text-xs font-semibold text-blue-700 mb-1">🏢 {org.client}</p>
-                            )}
-                            {org.dpoh_institution && (
-                              <p className="text-xs text-purple-700 font-medium mb-1">🏛 {org.dpoh_institution}</p>
-                            )}
-                            {org.lobbyist_name && (
-                              <p className="text-xs text-gray-500 mb-1">Lobbyist: {org.lobbyist_name}</p>
-                            )}
-                            {Array.isArray(org.issues) && org.issues.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mb-2">
-                                {org.issues.map((iss, ii) => (
-                                  <span key={ii} className="text-xs bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full">{iss}</span>
-                                ))}
+                        {visibleDocs.map((org, idx) => {
+                          // Firestore fields: lobbyist_name, client_organization, meeting_date, subject, dpoh_title, status, source_url
+                          const lobbyistName    = org.lobbyist_name    || org.registrant      || '—';
+                          const clientOrg       = org.client_organization || org.client       || '';
+                          const dpohTitle       = org.dpoh_title       || org.dpoh_institution || '';
+                          const subject         = org.subject          || org.description     || '';
+                          const category        = org.category         || '';
+                          const status          = org.status           || '';
+                          return (
+                            <div key={idx} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <h3 className="font-bold text-gray-800 text-sm leading-snug">{lobbyistName}</h3>
+                                {org.meeting_date && (
+                                  <span className="text-xs text-gray-400 flex-shrink-0 bg-white border border-gray-200 rounded px-1.5 py-0.5">{fmtDate(org.meeting_date)}</span>
+                                )}
                               </div>
-                            )}
-                            {org.description && (
-                              <p className="text-xs text-gray-600 leading-relaxed">{org.description}</p>
-                            )}
-                          </div>
-                        ))}
+                              {clientOrg && (
+                                <p className="text-xs font-semibold text-blue-700 mb-1">🏢 {clientOrg}</p>
+                              )}
+                              {dpohTitle && (
+                                <p className="text-xs text-purple-700 font-medium mb-1">🏛 {dpohTitle}</p>
+                              )}
+                              {subject && (
+                                <p className="text-xs text-gray-600 leading-relaxed mb-1">{subject}</p>
+                              )}
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {category && <span className="text-xs bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded-full">{category}</span>}
+                                {status && <span className="text-xs bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full">{status}</span>}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                       {hasMore && (
                         <button
