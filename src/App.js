@@ -36821,7 +36821,6 @@ function App() {
   const renderSenatorPanel = () => {
     if (!selectedSenator) return null;
     const s = selectedSenator;
-    console.log('[renderSenatorPanel]', s.name, '| votes:', memberVotesData[s.name], '| att:', memberAttendanceData[s.name], '| votesLoading:', memberVotesLoading[s.name], '| attLoading:', memberAttendanceLoading[s.name], '| expanded.voting:', expandedSections.voting, '| expanded.attendance:', expandedSections.attendance);
     const color = getPartyColor(s.party);
     const initials = s.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
