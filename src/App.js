@@ -3941,44 +3941,40 @@ function App() {
         docs = snap.docs.map(d => d.data());
         if (docs.length > 0) console.log(`[MemberVotes] member_votes slug="${slug}" — ${docs.length} doc(s).`);
       }
-      // For CA members (no bioguide_id): try person_id (House) then last-name scan (Senate)
+      // For CA members (no bioguide_id): try member_name direct lookup, then person_id (House)
       if (docs.length === 0 && !member.bioguide_id) {
-        const personId = member.id || member.member_id || member.personId || null;
-        if (personId) {
-          const q = query(collection(db, 'member_votes'), where('person_id', '==', String(personId)));
-          const snap = await getDocs(q);
-          if (snap.docs.length > 0) {
-            // member_votes CA House doc has nested votes[] array — flatten to individual rows
-            const votesArr = snap.docs[0].data().votes || [];
-            docs = votesArr;
+        // 1. Direct member_name match (works for CA House + Senate, single-field query, no index needed)
+        const nameSnap = await getDocs(query(collection(db, 'member_votes'), where('member_name', '==', key)));
+        if (nameSnap.docs.length > 0) {
+          const docData = nameSnap.docs[0].data();
+          // CA House docs have nested votes[] array; CA Senate docs also have votes[]
+          docs = docData.votes || nameSnap.docs.map(d => d.data());
+        }
+        // 2. Try person_id match for CA House MPs (numeric PersonId from ourcommons.ca)
+        if (docs.length === 0) {
+          const personId = member.id || member.member_id || member.personId || null;
+          if (personId) {
+            const q = query(collection(db, 'member_votes'), where('person_id', '==', String(personId)));
+            const snap = await getDocs(q);
+            if (snap.docs.length > 0) {
+              docs = snap.docs[0].data().votes || [];
+            }
           }
         }
-        // Fallback for senators: scan member_votes CA Senate by last-name match
+        // 3. Last-name scan: single-field query on chamber to avoid composite index requirement
         if (docs.length === 0) {
           const isSenator = !!member.dateAppointed || member.chamber === 'Senate';
           if (isSenator) {
             const lastName = key.split(' ').pop().toLowerCase();
-            const q = query(
-              collection(db, 'member_votes'),
-              where('jurisdiction', '==', 'CA'),
-              where('chamber', '==', 'Senate'),
-              limit(200)
-            );
-            const snap = await getDocs(q);
+            const snap = await getDocs(query(collection(db, 'member_votes'), where('chamber', '==', 'Senate'), limit(300)));
             const match = snap.docs.find(d => {
-              const storedName = (d.data().member_name || '')
-                .replace(/&#x([0-9A-Fa-f]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
-                .replace(/&#(\d+);/g, (_, d2) => String.fromCharCode(parseInt(d2, 10)))
-                .toLowerCase();
-              return storedName.includes(lastName);
+              const n = (d.data().member_name || '').toLowerCase();
+              return n.includes(lastName);
             });
-            if (match) {
-              docs = match.data().votes || [];
-            }
+            if (match) docs = match.data().votes || [];
           }
         }
       }
-      if (key === 'Mike Johnson') console.log(`[MikeJohnson] member_votes: ${docs.length} doc(s)`, docs);
       setMemberVotesData(prev => ({ ...prev, [key]: docs }));
     } catch (err) {
       console.warn('[LiveData] member_votes fetch failed:', err.message);
@@ -3994,11 +3990,12 @@ function App() {
     fetchMemberVotes(selectedMember);
   }, [showMemberPanel, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch voting records when Canadian MP detail opens; reset lobbying show-more
+  // Fetch voting records when Canadian MP detail opens; reset lobbying show-more; auto-expand sections
   useEffect(() => {
     if (view !== 'member-detail' || !selectedMember?.name) return;
     fetchMemberVotes(selectedMember);
     setLobbyShowAll(false);
+    setExpandedSections(prev => ({ ...prev, voting: true, attendance: true }));
   }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch voting records when UK MP detail opens
@@ -4007,9 +4004,10 @@ function App() {
     fetchMemberVotes(selectedUkMember);
   }, [view, selectedUkMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch voting records + attendance when Canadian Senator detail opens
+  // Fetch voting records + attendance when Canadian Senator detail opens; auto-expand sections
   useEffect(() => {
     if (view !== 'senator-detail' || !selectedSenator?.name) return;
+    setExpandedSections(prev => ({ ...prev, voting: true, attendance: true }));
     fetchMemberVotes(selectedSenator);
     fetchMemberAttendance(selectedSenator);
   }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -4031,40 +4029,43 @@ function App() {
         const snap = await getDocs(q);
         docs = snap.docs.map(d => d.data());
       }
-      // For CA members (no bioguide_id): try person_id match (House MPs) then name scan fallback
+      // For CA members (no bioguide_id): direct name lookup, then person_id (House)
       if (docs.length === 0 && !member.bioguide_id) {
-        // 1. Try person_id match (set by caHouseVotesFetcher for House MPs)
-        const personId = member.id || member.member_id || member.personId || null;
-        if (personId) {
-          const q = query(collection(db, 'member_attendance'), where('person_id', '==', String(personId)));
-          const snap = await getDocs(q);
-          docs = snap.docs.map(d => d.data());
-        }
-        // 2. Fallback: scan CA attendance docs by chamber and match by last name
-        //    Covers HTML-entity name mismatches (e.g. "&#xC9;ric Forest" vs "Éric Forest")
+        // Normalize old-format field names → standard fields
+        const normalizeAttDoc = (d) => ({
+          ...d,
+          percentage:        d.percentage        ?? d.attendance_pct ?? d.attendanceRate,
+          votesParticipated: d.votesParticipated  ?? d.votes_participated ?? d.sessionsAttended,
+          totalVotes:        d.totalVotes         ?? d.votes_total ?? d.totalSessions,
+        });
+
+        // 1. Direct member_name match (single-field, no composite index needed)
         if (docs.length === 0) {
-          // Senators come from SENATORS_DATA and have dateAppointed; House MPs have id/riding from Firestore
-          const isSenator = !!member.dateAppointed || member.chamber === 'Senate';
-          const chamberFilter = isSenator ? 'Senate' : 'House';
+          const snap = await getDocs(query(collection(db, 'member_attendance'), where('member_name', '==', key)));
+          if (snap.docs.length > 0) docs = snap.docs.map(d => normalizeAttDoc(d.data()));
+        }
+        // 2. Try person_id match for CA House MPs
+        if (docs.length === 0) {
+          const personId = member.id || member.member_id || member.personId || null;
+          if (personId) {
+            const snap = await getDocs(query(collection(db, 'member_attendance'), where('person_id', '==', String(personId))));
+            if (snap.docs.length > 0) docs = snap.docs.map(d => normalizeAttDoc(d.data()));
+          }
+        }
+        // 3. Slug-based lookup for CA House (old docs use politician_slug)
+        if (docs.length === 0) {
+          const slug = key.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          const snap = await getDocs(query(collection(db, 'member_attendance'), where('politician_slug', '==', slug)));
+          if (snap.docs.length > 0) docs = snap.docs.map(d => normalizeAttDoc(d.data()));
+        }
+        // 4. Last-name scan for senators with name mismatches (e.g. "Pierre-Luc Moreau" → "Pierre Moreau")
+        if (docs.length === 0 && (!!member.dateAppointed || member.chamber === 'Senate')) {
           const lastName = key.split(' ').pop().toLowerCase();
-          const q = query(
-            collection(db, 'member_attendance'),
-            where('jurisdiction', '==', 'CA'),
-            where('chamber', '==', chamberFilter),
-            limit(500)
-          );
-          const snap = await getDocs(q);
-          const match = snap.docs.find(d => {
-            const storedName = (d.data().member_name || '')
-              .replace(/&#x([0-9A-Fa-f]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
-              .replace(/&#(\d+);/g, (_, d2) => String.fromCharCode(parseInt(d2, 10)))
-              .toLowerCase();
-            return storedName.includes(lastName);
-          });
-          if (match) docs = [match.data()];
+          const snap = await getDocs(query(collection(db, 'member_attendance'), where('chamber', '==', 'Senate'), limit(300)));
+          const match = snap.docs.find(d => (d.data().member_name || '').toLowerCase().includes(lastName));
+          if (match) docs = [normalizeAttDoc(match.data())];
         }
       }
-      if (key === 'Mike Johnson') console.log(`[MikeJohnson] member_attendance: ${docs.length} doc(s)`, docs);
       setMemberAttendanceData(prev => ({ ...prev, [key]: docs }));
     } catch (err) {
       console.warn('[LiveData] member_attendance fetch failed:', err.message);
@@ -33513,7 +33514,7 @@ function App() {
                 // openparliament.ca stores data in a nested `vote` object; backends may also flatten it
                 const voteObj = d.vote && typeof d.vote === 'object' && !d.vote.toDate ? d.vote : null;
                 // description can be a {en, fr} multilingual object or a plain string
-                const rawDesc = d.description ?? voteObj?.description ?? d.vote_question ?? d.title ?? d.subject ?? d.motion ?? '';
+                const rawDesc = d.description ?? voteObj?.description ?? d.description_en ?? d.vote_question ?? d.title ?? d.subject ?? d.motion ?? '';
                 const title = rawDesc && typeof rawDesc === 'object' ? (rawDesc.en || rawDesc.fr || '') : String(rawDesc || '');
                 // ballot is the member's individual vote; result is the overall vote outcome
                 const vote = d.ballot ?? d.member_vote ?? d.vote_value ?? d.choice ?? '';
@@ -33525,7 +33526,8 @@ function App() {
                 return { bill, title, vote, date: dateStr, result };
               })
             : (selectedMember.votingHistory || []);
-          if (!displayVotes.length && !isLoadingVotes) return null;
+          // Only hide if fetch completed with no data
+          if (!displayVotes.length && !isLoadingVotes && liveDocs !== undefined) return null;
           return (
             <div className="bg-white rounded-lg shadow-md mb-6">
               <div
@@ -36819,6 +36821,7 @@ function App() {
   const renderSenatorPanel = () => {
     if (!selectedSenator) return null;
     const s = selectedSenator;
+    console.log('[renderSenatorPanel]', s.name, '| votes:', memberVotesData[s.name], '| att:', memberAttendanceData[s.name], '| votesLoading:', memberVotesLoading[s.name], '| attLoading:', memberAttendanceLoading[s.name], '| expanded.voting:', expandedSections.voting, '| expanded.attendance:', expandedSections.attendance);
     const color = getPartyColor(s.party);
     const initials = s.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
@@ -37156,8 +37159,8 @@ function App() {
           {(() => {
             const liveVoteDocs = memberVotesData[s.name];
             const isLoadingVotes = !!memberVotesLoading[s.name];
-            const voteRecord = liveVoteDocs?.[0];
-            const votes = voteRecord?.votes || [];
+            // Senate votes are stored flat (each entry is a single vote object)
+            const votes = Array.isArray(liveVoteDocs) ? liveVoteDocs : [];
             return (
               <div className="bg-white rounded-lg shadow-md mb-6">
                 <div onClick={() => toggleSection('voting')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
@@ -37214,7 +37217,7 @@ function App() {
 
           {/* Attendance Record */}
           {(() => {
-            const liveAtt = memberAttendanceData[s.name];
+            const liveAtt  = (memberAttendanceData[s.name] || [])[0] ?? null;
             const isLoading = !!memberAttendanceLoading[s.name];
             const pct      = liveAtt?.percentage ?? null;
             const attended = liveAtt?.votesParticipated ?? null;
