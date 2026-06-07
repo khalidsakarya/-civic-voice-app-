@@ -4007,9 +4007,58 @@ function App() {
   // Fetch voting records + attendance when Canadian Senator detail opens; auto-expand sections
   useEffect(() => {
     if (view !== 'senator-detail' || !selectedSenator?.name) return;
+    const key = selectedSenator.name;
     setExpandedSections(prev => ({ ...prev, voting: true, attendance: true }));
-    fetchMemberVotes(selectedSenator);
-    fetchMemberAttendance(selectedSenator);
+    // Force-fetch votes for this senator (bypasses early-return cache check)
+    const doFetch = async () => {
+      // --- Votes ---
+      setMemberVotesLoading(prev => ({ ...prev, [key]: true }));
+      try {
+        let docs = [];
+        // 1. Direct name match
+        const nameSnap = await getDocs(query(collection(db, 'member_votes'), where('member_name', '==', key)));
+        if (nameSnap.docs.length > 0) docs = nameSnap.docs[0].data().votes || [];
+        // 2. Last-name scan across all Senate docs
+        if (docs.length === 0) {
+          const lastName = key.split(' ').pop().toLowerCase();
+          const senSnap = await getDocs(query(collection(db, 'member_votes'), where('chamber', '==', 'Senate'), limit(300)));
+          const match = senSnap.docs.find(d => (d.data().member_name || '').toLowerCase().includes(lastName));
+          if (match) docs = match.data().votes || [];
+        }
+        setMemberVotesData(prev => ({ ...prev, [key]: docs }));
+      } catch (err) {
+        console.warn('[Senate] votes fetch failed:', err.message);
+        setMemberVotesData(prev => ({ ...prev, [key]: [] }));
+      } finally {
+        setMemberVotesLoading(prev => ({ ...prev, [key]: false }));
+      }
+      // --- Attendance ---
+      setMemberAttendanceLoading(prev => ({ ...prev, [key]: true }));
+      try {
+        const norm = (d) => ({
+          ...d,
+          percentage:        d.percentage        ?? d.attendance_pct ?? d.attendanceRate,
+          votesParticipated: d.votesParticipated  ?? d.votes_participated ?? d.sessionsAttended,
+          totalVotes:        d.totalVotes         ?? d.votes_total ?? d.totalSessions,
+        });
+        let att = [];
+        const attSnap = await getDocs(query(collection(db, 'member_attendance'), where('member_name', '==', key)));
+        if (attSnap.docs.length > 0) att = attSnap.docs.map(d => norm(d.data()));
+        if (att.length === 0) {
+          const lastName = key.split(' ').pop().toLowerCase();
+          const senSnap = await getDocs(query(collection(db, 'member_attendance'), where('chamber', '==', 'Senate'), limit(300)));
+          const match = senSnap.docs.find(d => (d.data().member_name || '').toLowerCase().includes(lastName));
+          if (match) att = [norm(match.data())];
+        }
+        setMemberAttendanceData(prev => ({ ...prev, [key]: att }));
+      } catch (err) {
+        console.warn('[Senate] attendance fetch failed:', err.message);
+        setMemberAttendanceData(prev => ({ ...prev, [key]: [] }));
+      } finally {
+        setMemberAttendanceLoading(prev => ({ ...prev, [key]: false }));
+      }
+    };
+    doFetch();
   }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Shared helper: fetch member_attendance by memberName (or bioguide_id if present)
