@@ -3899,10 +3899,10 @@ function App() {
   }, [showAuMemberPanel, selectedAuMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
-  // Fetch lobbying records for CA/US/UK/AU leader profiles + CA MP detail
+  // Fetch lobbying records for CA/US/UK/AU leader profiles + CA MP detail + CA Senator detail
   useEffect(() => {
     const leaderNames = { 'canada-pm-detail': 'Mark Carney', 'president-detail': 'Donald Trump', 'uk-pm-detail': 'Keir Starmer', 'albanese-detail': 'Anthony Albanese' };
-    const name = leaderNames[view] ?? (view === 'member-detail' ? selectedMember?.name : null);
+    const name = leaderNames[view] ?? (view === 'member-detail' ? selectedMember?.name : null) ?? (view === 'senator-detail' ? selectedSenator?.name : null);
     if (!name) return;
     if (memberLobbyingData[name] !== undefined || memberLobbyingLoading[name]) return;
     setMemberLobbyingLoading(prev => ({ ...prev, [name]: true }));
@@ -3920,7 +3920,7 @@ function App() {
         setMemberLobbyingLoading(prev => ({ ...prev, [name]: false }));
       }
     })();
-  }, [view, selectedMember]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [view, selectedMember, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Shared helper: fetch member_votes for a given member; tries bioguide_id first, then memberName
   const fetchMemberVotes = async (member) => {
@@ -37370,36 +37370,80 @@ function App() {
           </div>
 
           {/* Lobbying Activity */}
-          <div className="bg-white rounded-lg shadow-md mb-6">
-            <div onClick={() => toggleSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <Building2 className="w-6 h-6 text-red-600" />
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
-                  {coverageBadge('partial', 'Registered lobbyist meetings only', 'Informal contacts excluded')}
-                </div>
-              </div>
-              {expandedSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
-            </div>
-            {expandedSections.lobbying && (
-              <div className="px-6 pb-6">
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-                  <div className="flex items-start gap-3">
-                    <span className="text-2xl flex-shrink-0">📋</span>
+          {(() => {
+            const lobbyDocs = memberLobbyingData[s.name] || [];
+            const isLoadingLobby = !!memberLobbyingLoading[s.name];
+            const fetchDone = memberLobbyingData[s.name] !== undefined;
+            // Aggregate by client organization
+            const byOrg = {};
+            lobbyDocs.forEach(d => {
+              const org = d.client_organization || d.client_org || d.organization || 'Unknown';
+              if (!byOrg[org]) byOrg[org] = { meetings: 0, subjects: new Set(), lastDate: '' };
+              byOrg[org].meetings++;
+              if (d.subject) byOrg[org].subjects.add(d.subject);
+              if (d.meeting_date && d.meeting_date > byOrg[org].lastDate) byOrg[org].lastDate = d.meeting_date;
+            });
+            const orgs = Object.entries(byOrg)
+              .map(([name, v]) => ({ name, meetings: v.meetings, subjects: [...v.subjects].slice(0, 2).join(', '), lastDate: v.lastDate }))
+              .sort((a, b) => b.meetings - a.meetings)
+              .slice(0, 10);
+            const totalMeetings = lobbyDocs.length;
+            const uniqueOrgs = Object.keys(byOrg).length;
+            return (
+              <div className="bg-white rounded-lg shadow-md mb-6">
+                <div onClick={() => toggleSection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <Building2 className="w-6 h-6 text-red-600" />
                     <div>
-                      <p className="text-sm font-bold text-blue-900 mb-2">Official data available — live feed coming</p>
-                      <p className="text-sm text-blue-800 leading-relaxed mb-3">
-                        All registered lobbyist meetings with senators are publicly recorded in <strong>Canada's Lobbying Registry</strong> at lobbycanada.gc.ca — the same official source used for MP lobbying data. We are connecting this data for senators.
-                      </p>
-                      <a href={`https://lobbycanada.gc.ca/app/secure/ocl/lrs/do/guest?lang=eng`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
-                        🏛️ Canada's Lobbying Registry (official) ↗
-                      </a>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h2 className="text-xl font-bold text-gray-800">🏛️ Lobbying Activity</h2>
+                        {isLoadingLobby && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {fetchDone && totalMeetings > 0 && !isLoadingLobby && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">LIVE</span>}
+                      </div>
+                      <p className="text-sm text-gray-600">{isLoadingLobby ? 'Loading…' : totalMeetings > 0 ? `${totalMeetings} registered meetings · ${uniqueOrgs} organizations` : 'Registered lobbyist contacts'}</p>
                     </div>
                   </div>
+                  {expandedSections.lobbying ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
                 </div>
+                {expandedSections.lobbying && (
+                  <div className="px-6 pb-6">
+                    {isLoadingLobby ? (
+                      <p className="text-sm text-gray-500 flex items-center gap-2"><span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />Loading from Canada's Lobbying Registry…</p>
+                    ) : totalMeetings > 0 ? (
+                      <>
+                        <div className="grid grid-cols-2 gap-4 mb-5">
+                          <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                            <p className="text-xs text-gray-500 mb-1">Total Registered Meetings</p>
+                            <p className="text-3xl font-bold text-red-700">{totalMeetings}</p>
+                          </div>
+                          <div className="bg-orange-50 p-4 rounded-lg border border-orange-100">
+                            <p className="text-xs text-gray-500 mb-1">Unique Organizations</p>
+                            <p className="text-3xl font-bold text-orange-700">{uniqueOrgs}</p>
+                          </div>
+                        </div>
+                        <h3 className="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Top Organizations by Meetings</h3>
+                        <div className="space-y-3">
+                          {orgs.map((org, i) => (
+                            <div key={i} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <p className="font-semibold text-gray-800 text-sm leading-snug">{org.name}</p>
+                                <span className="text-xs font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full whitespace-nowrap">{org.meetings} meeting{org.meetings !== 1 ? 's' : ''}</span>
+                              </div>
+                              {org.subjects && <p className="text-xs text-gray-500 mt-0.5">Topics: {org.subjects}</p>}
+                              {org.lastDate && <p className="text-xs text-gray-400 mt-0.5">Last: {org.lastDate}</p>}
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-gray-400 text-center mt-4">🏛️ Source: Canada's Lobbying Registry — lobbycanada.gc.ca (official)</p>
+                      </>
+                    ) : fetchDone ? (
+                      <p className="text-sm text-gray-500 italic text-center bg-gray-50 rounded-lg p-4">No registered lobbying contacts found for this senator.</p>
+                    ) : null}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            );
+          })()}
 
           {/* Corporate Connections */}
           <div className="bg-white rounded-lg shadow-md mb-6">
