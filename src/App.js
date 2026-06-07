@@ -33513,17 +33513,38 @@ function App() {
           );
         })()}
 
-        {(selectedMember.attendance || memberAttendanceData[selectedMember.name]?.length > 0 || memberAttendanceLoading[selectedMember.name]) && (() => {
+        {(() => {
           const liveDocs  = memberAttendanceData[selectedMember.name];
           const liveDoc   = liveDocs && liveDocs.length > 0 ? liveDocs[0] : null;
           const isLive    = !!liveDoc;
           const isLoading = !!memberAttendanceLoading[selectedMember.name];
-          const pct       = isLive ? (liveDoc.percentage ?? liveDoc.attendanceRate ?? selectedMember.attendance?.percentage ?? 0) : (selectedMember.attendance?.percentage ?? 0);
-          const attended  = isLive ? (liveDoc.votesParticipated ?? liveDoc.sessionsAttended ?? selectedMember.attendance?.sessionsAttended ?? 0) : (selectedMember.attendance?.sessionsAttended ?? 0);
-          const total     = isLive ? (liveDoc.totalVotes ?? liveDoc.totalSessions ?? selectedMember.attendance?.totalSessions ?? 0) : (selectedMember.attendance?.totalSessions ?? 0);
-          const ranking   = isLive ? (liveDoc.ranking ?? selectedMember.attendance?.ranking) : selectedMember.attendance?.ranking;
-          const barColor  = pct >= 80 ? '#22c55e' : pct >= 60 ? '#eab308' : '#ef4444';
-          const pctColor  = pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-yellow-600' : 'text-red-600';
+          const fetchDone = liveDocs !== undefined; // fetch attempted (even if empty result)
+
+          // Derive attendance from voting history when no dedicated attendance record exists
+          const voteHistory = memberVotesData[selectedMember.name] || [];
+          const derivedAttended = voteHistory.filter(v => {
+            const b = (v.ballot ?? v.member_vote ?? v.vote_value ?? v.choice ?? '').toLowerCase();
+            return b === 'yea' || b === 'nay' || b === 'yes' || b === 'no' || b === 'aye';
+          }).length;
+          const derivedTotal   = voteHistory.length;
+          const isDerived      = !isLive && derivedTotal > 0;
+
+          const pct      = isLive
+            ? Math.round(liveDoc.percentage ?? liveDoc.attendanceRate ?? selectedMember.attendance?.percentage ?? 0)
+            : isDerived
+              ? Math.round((derivedAttended / derivedTotal) * 100)
+              : (selectedMember.attendance?.percentage ?? 0);
+          const attended = isLive
+            ? (liveDoc.votesParticipated ?? liveDoc.sessionsAttended ?? selectedMember.attendance?.sessionsAttended ?? 0)
+            : isDerived ? derivedAttended : (selectedMember.attendance?.sessionsAttended ?? 0);
+          const total    = isLive
+            ? (liveDoc.totalVotes ?? liveDoc.totalSessions ?? selectedMember.attendance?.totalSessions ?? 0)
+            : isDerived ? derivedTotal : (selectedMember.attendance?.totalSessions ?? 0);
+          const ranking  = isLive ? (liveDoc.ranking ?? selectedMember.attendance?.ranking) : selectedMember.attendance?.ranking;
+          const barColor = pct >= 80 ? '#22c55e' : pct >= 60 ? '#eab308' : '#ef4444';
+          const pctColor = pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-yellow-600' : 'text-red-600';
+          const hasData  = isLive || isDerived || !!selectedMember.attendance;
+
           return (
             <div className="bg-white rounded-lg shadow-md mb-6">
               <div onClick={() => toggleSection('attendance')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
@@ -33534,36 +33555,69 @@ function App() {
                       <h2 className="text-xl font-bold text-gray-800">📈 Attendance Record</h2>
                       {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                       {isLive && !isLoading && liveBadge(null, 'Monthly')}
+                      {isDerived && !isLoading && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Derived from votes</span>}
                       {coverageBadge('partial', 'Based on recorded votes', 'Committee attendance excluded')}
                     </div>
-                    <p className={`text-sm font-semibold ${pctColor}`}>{pct}% attendance rate</p>
+                    {hasData
+                      ? <p className={`text-sm font-semibold ${pctColor}`}>{pct}% vote participation rate</p>
+                      : <p className="text-sm text-gray-500">{isLoading ? 'Loading…' : 'Attendance data loading…'}</p>
+                    }
                   </div>
                 </div>
                 {expandedSections.attendance ? <ChevronDown className="w-6 h-6" /> : <ChevronRight className="w-6 h-6" />}
               </div>
               {expandedSections.attendance && (
                 <div className="px-6 pb-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      <p className="text-sm text-gray-600 mb-1">Attendance Rate</p>
-                      <p className={`text-3xl font-bold ${pctColor}`}>{pct}%</p>
+                  {hasData ? (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <p className="text-sm text-gray-600 mb-1">Participation Rate</p>
+                          <p className={`text-3xl font-bold ${pctColor}`}>{pct}%</p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <p className="text-sm text-gray-600 mb-1">Votes Participated</p>
+                          <p className="text-3xl font-bold text-gray-800">{attended}{total ? `/${total}` : ''}</p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <p className="text-sm text-gray-600 mb-1">{total ? 'Votes in Record' : 'National Ranking'}</p>
+                          <p className="text-3xl font-bold text-purple-600">{total ? total : (ranking ? `#${ranking}` : '—')}</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 mb-1">
+                        <span>Votes participated</span>
+                        <span>{attended}{total ? ` / ${total}` : ''}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div className="h-3 rounded-full transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: barColor }} />
+                      </div>
+                      {isDerived && (
+                        <p className="text-xs text-gray-400 mt-3 italic">
+                          * Participation rate calculated from {derivedTotal} recorded votes in openparliament.ca. Votes not recorded (voice votes, committee divisions) are excluded.
+                        </p>
+                      )}
+                    </>
+                  ) : fetchDone ? (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl flex-shrink-0">📋</span>
+                        <div>
+                          <p className="text-sm font-bold text-amber-900 mb-2">No attendance records found</p>
+                          <p className="text-sm text-amber-800 leading-relaxed mb-3">
+                            Attendance data for this MP is not yet available in our database. Parliament attendance records for all 343 MPs are sourced from <strong>openparliament.ca</strong> based on recorded division votes.
+                          </p>
+                          <a href={`https://openparliament.ca/politicians/?q=${encodeURIComponent(selectedMember.name)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">
+                            🔗 Search openparliament.ca →
+                          </a>
+                        </div>
+                      </div>
                     </div>
-                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      <p className="text-sm text-gray-600 mb-1">Votes Participated</p>
-                      <p className="text-3xl font-bold text-gray-800">{attended}{total ? `/${total}` : ''}</p>
+                  ) : (
+                    <div className="flex items-center gap-2 text-gray-500 text-sm py-4">
+                      <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />
+                      Loading attendance data…
                     </div>
-                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      <p className="text-sm text-gray-600 mb-1">{total ? 'Total Votes Held' : 'National Ranking'}</p>
-                      <p className="text-3xl font-bold text-purple-600">{total ? total : (ranking ? `#${ranking}` : '—')}</p>
-                    </div>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
-                    <span>Votes participated</span>
-                    <span>{attended}{total ? ` / ${total}` : ''}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div className="h-3 rounded-full transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: barColor }} />
-                  </div>
+                  )}
                 </div>
               )}
             </div>
