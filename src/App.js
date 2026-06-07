@@ -1614,17 +1614,7 @@ const AU_REPS_DATA = [
 ];
 
 const NOTIFICATIONS_DATA = [
-  // Canada
-  { id: 'ca-1', country: 'canada', type: 'bill-introduced', title: 'Bill C-78: Affordable Housing Act Introduced', description: 'New legislation to fund 100,000 affordable homes across Canada by 2030.', timestamp: '2026-03-04T14:30:00Z' },
-  { id: 'ca-2', country: 'canada', type: 'bill-passed', title: 'Clean Energy Transition Act Passes House', description: 'Bill C-72 approves $8.5B for renewable energy grid upgrades nationwide.', timestamp: '2026-03-03T09:15:00Z' },
-  { id: 'ca-3', country: 'canada', type: 'law-signed', title: 'PM Carney Signs Pharmacare Expansion Act', description: 'Universal prescription drug coverage extended to 4.2 million more Canadians.', timestamp: '2026-03-02T16:00:00Z' },
-  { id: 'ca-4', country: 'canada', type: 'foreign-aid', title: 'Canada Pledges $450M to Ukraine Reconstruction', description: 'PMO announces humanitarian and infrastructure aid package for war-torn regions.', timestamp: '2026-03-01T11:00:00Z' },
-  { id: 'ca-5', country: 'canada', type: 'executive-order', title: 'Cabinet Reviews Foreign Interference in Contracts', description: 'PM directive launched following NSICOP findings on procurement vulnerabilities.', timestamp: '2026-02-28T10:00:00Z' },
-  { id: 'ca-6', country: 'canada', type: 'audit-finding', title: 'AG Flags $1.2B in Unaccounted Pandemic Spending', description: 'Auditor General report identifies oversight gaps in CERB and wage subsidy programs.', timestamp: '2026-02-27T08:45:00Z' },
-  { id: 'ca-7', country: 'canada', type: 'bill-introduced', title: 'Bill C-80: Digital Privacy Protection Act Tabled', description: 'Legislation modernizes PIPEDA with stronger breach notification requirements.', timestamp: '2026-02-26T13:20:00Z' },
-  { id: 'ca-8', country: 'canada', type: 'bill-rejected', title: 'Senate Rejects Foreign Buyer Tax Extension Act', description: 'Upper chamber votes 45-38 against extending the ban on foreign homebuyers.', timestamp: '2026-02-25T15:30:00Z' },
-  { id: 'ca-9', country: 'canada', type: 'foreign-aid', title: 'Canada Commits $200M to Gaza Humanitarian Aid', description: 'DFATD announces aid package for food, medicine, and shelter in conflict zone.', timestamp: '2026-02-24T12:00:00Z' },
-  { id: 'ca-10', country: 'canada', type: 'audit-finding', title: 'PBO Flags $340M in Unused Defence Contracts', description: 'Parliamentary watchdog reveals unspent procurement funds from 2023–24 fiscal year.', timestamp: '2026-02-22T09:00:00Z' },
+  // Canada items are loaded live from Firestore (news_alerts collection, country == 'CA')
   // USA
   { id: 'us-1', country: 'usa', type: 'bill-introduced', title: 'Fiscal Responsibility Enhancement Act Introduced', description: 'Legislation proposes $1.2T in federal spending cuts over the next 10 years.', timestamp: '2026-03-04T15:00:00Z' },
   { id: 'us-2', country: 'usa', type: 'bill-passed', title: 'Border Security and Immigration Reform Act Passes Senate', description: 'Bill allocates $14B for southern border enforcement and processing centers.', timestamp: '2026-03-03T10:30:00Z' },
@@ -1640,18 +1630,7 @@ const NOTIFICATIONS_DATA = [
 
 // ─── Leaderboard fallback data (shown when Firestore returns nothing) ─────────
 const LEADERBOARD_FALLBACK = {
-  CA: [
-    { name: 'Mark Carney',                  title: 'Prime Minister',               country: 'Canada', totalExpenses: 1840000, wasteScore: 7, trend: 'up',   changePercent: 8  },
-    { name: 'Chrystia Freeland',             title: 'Deputy Prime Minister',        country: 'Canada', totalExpenses: 1420000, wasteScore: 6, trend: 'down', changePercent: 12 },
-    { name: 'Mélanie Joly',                  title: 'Minister of Foreign Affairs',  country: 'Canada', totalExpenses: 920000,  wasteScore: 7, trend: 'up',   changePercent: 41 },
-    { name: 'François-Philippe Champagne',   title: 'Minister of Industry',         country: 'Canada', totalExpenses: 1180000, wasteScore: 8, trend: 'up',   changePercent: 34 },
-    { name: 'Bill Blair',                    title: 'Minister of National Defence', country: 'Canada', totalExpenses: 980000,  wasteScore: 5, trend: 'down', changePercent: 18 },
-    { name: 'Steven Guilbeault',             title: 'Minister of Environment',      country: 'Canada', totalExpenses: 860000,  wasteScore: 6, trend: 'up',   changePercent: 11 },
-    { name: 'Mark Holland',                  title: 'Minister of Health',           country: 'Canada', totalExpenses: 740000,  wasteScore: 4, trend: 'down', changePercent: 22 },
-    { name: 'Dominic LeBlanc',               title: 'Minister of Public Safety',    country: 'Canada', totalExpenses: 680000,  wasteScore: 5, trend: 'up',   changePercent: 5  },
-    { name: 'Jonathan Wilkinson',            title: 'Minister of Energy',           country: 'Canada', totalExpenses: 610000,  wasteScore: 3, trend: 'down', changePercent: 8  },
-    { name: 'Sean Fraser',                   title: 'Minister of Housing',          country: 'Canada', totalExpenses: 540000,  wasteScore: 4, trend: 'up',   changePercent: 15 },
-  ],
+  CA: [],
   US: [
     { name: 'Donald Trump',    title: 'President',                       country: 'United States', totalExpenses: 8200000, wasteScore: 9, trend: 'up',   changePercent: 22  },
     { name: 'Elon Musk',       title: 'DOGE — Dept. of Govt Efficiency', country: 'United States', totalExpenses: 1800000, wasteScore: 9, trend: 'up',   changePercent: 120 },
@@ -1692,16 +1671,7 @@ const LEADERBOARD_FALLBACK = {
 
 // ─── Anomaly / Red Flags hardcoded data (always displayed, no Firestore) ──────
 const ANOMALY_DATA = {
-  CA: [
-    { id: 'ca-a1', headline: "PM's 3-Nation Europe Trip — No Deal Signed After CA$68,750 Spend", leader_name: 'Mark Carney', leader_title: 'Prime Minister', scandal_score: 9, category: 'Travel', explanation: "The Prime Minister visited London, Paris, and Berlin over 4 days billed as a critical trade diversification tour. No agreements were signed. The trip cost CA$68,750 including first-class travel and a 5-star hotel in Paris. Ethics Commissioner review requested.", amount: 68750, date: 'May 2025' },
-    { id: 'ca-a2', headline: "Minister Flies Business Class for 4-Hour Domestic Flight", leader_name: 'François-Philippe Champagne', leader_title: 'Minister of Industry', scandal_score: 8, category: 'Travel', explanation: "Economy seats were available on the same Ottawa–Vancouver flight at CA$340. The Minister's office booked a business class seat at CA$4,200 — 12× the cost — citing 'work requirements.' No pre-approval filed.", amount: 4200, date: 'Apr 2025' },
-    { id: 'ca-a3', headline: "Foreign Affairs Minister's 'Emergency' Paris Trip Coincided With Fashion Week", leader_name: 'Mélanie Joly', leader_title: 'Minister of Foreign Affairs', scandal_score: 8, category: 'Travel', explanation: "A CA$41,000 trip to Paris was declared an emergency diplomatic meeting, but the hotel booked — the Hôtel de Crillon — hosted Fashion Week events that week. The Minister's office has not confirmed who attended the 'diplomatic meeting.'", amount: 41000, date: 'Mar 2025' },
-    { id: 'ca-a4', headline: "Taxpayers Billed CA$28,400 for PMO Holiday Party", leader_name: 'Mark Carney', leader_title: 'Prime Minister', scandal_score: 7, category: 'Entertainment', explanation: "The Prime Minister's Office charged CA$28,400 to the public accounts for a holiday event categorized as 'official government entertainment.' The venue was a private Ottawa club; no public officials outside the PMO were invited.", amount: 28400, date: 'Dec 2024' },
-    { id: 'ca-a5', headline: "Defence Minister's Hotel Upgrades Cost 8× the Budget Rate", leader_name: 'Bill Blair', leader_title: 'Minister of National Defence', scandal_score: 6, category: 'Accommodation', explanation: "A DND team upgraded hotel rooms for CA$8,900 during a Vancouver conference. Government travel policy mandates Public Services Canada–approved hotels. The upgraded rooms were not approved and invoices were submitted after the fact.", amount: 8900, date: 'Feb 2025' },
-    { id: 'ca-a6', headline: "CA$114K 'Digital Transformation' Contract Awarded Without Tender", leader_name: 'Dominic LeBlanc', leader_title: 'Minister of Public Safety', scandal_score: 7, category: 'Contracts', explanation: "Public Safety Canada awarded a CA$114,000 sole-source IT contract to a firm employing the Minister's former chief of staff. Contracting rules require competitive bids above CA$40,000. The Auditor General has flagged the procurement as non-compliant.", amount: 114000, date: 'Jan 2025' },
-    { id: 'ca-a7', headline: "Environment Minister's 'Green Summit' Flown to on Private Charter — CA$92K", leader_name: 'Steven Guilbeault', leader_title: 'Minister of Environment', scandal_score: 7, category: 'Travel', explanation: "The Minister responsible for Canada's net-zero commitments chartered a private aircraft to a climate conference in Vancouver at a cost of CA$92,000. Scheduled commercial flights were available for CA$840. The charter emitted an estimated 14× more CO₂ per passenger.", amount: 92000, date: 'Nov 2024' },
-    { id: 'ca-a8', headline: "PMO Communications Team Spent CA$180K on Social Media 'Influencer Strategy'", leader_name: 'Mark Carney', leader_title: 'Prime Minister', scandal_score: 6, category: 'Contracts', explanation: "The PMO awarded CA$180,000 to a digital marketing firm to develop an influencer engagement strategy. Deliverables listed in the contract — 'organic reach amplification' and 'narrative seeding' — were described by communications experts as vague and unverifiable.", amount: 180000, date: 'Oct 2024' },
-  ],
+  CA: [],
   US: [
     { id: 'us-a1', headline: "Mar-a-Lago Weekend Trips Cost Taxpayers $3.4M Per Visit", leader_name: 'Donald Trump', leader_title: 'President', scandal_score: 10, category: 'Travel', explanation: "Secret Service accommodation, Coast Guard patrols, Air Force One operations, and staff logistics for each Mar-a-Lago weekend trip cost an estimated $3.4M per visit. The President has made 8 such trips since inauguration, billing the total to taxpayers while the resort — which he owns — profits from federal spending.", amount: 3400000, date: 'Jan–Mar 2025' },
     { id: 'us-a2', headline: "DOGE 'Efficiency' Team Ran Up $420K Hotel Tab", leader_name: 'Elon Musk', leader_title: 'DOGE — Dept. of Govt Efficiency', scandal_score: 9, category: 'Accommodation', explanation: "The Department of Government Efficiency — tasked with slashing federal costs — expensed $420,000 in luxury hotel stays across Washington D.C. and San Francisco. Staff stayed at the Four Seasons and Ritz-Carlton while publicly demanding agencies cut 'wasteful' spending.", amount: 420000, date: 'Feb 2025' },
@@ -2171,8 +2141,7 @@ function App() {
   const [mps, setMps] = useState([]);
   const [bills, setBills] = useState([]);
   const [laws, setLaws] = useState([]);
-
-  const [governmentData, setGovernmentData] = useState(null);
+  const [liveCANotifs, setLiveCANotifs] = useState([]);
   
   // US data
   const [congressMembers, setCongressMembers] = useState([]);
@@ -3590,7 +3559,6 @@ function App() {
   useEffect(() => {
     fetchMPs();
     fetchBills();
-    fetchGovernmentData();
     fetchLaws();
     fetchCongressMembers();
     initializeUSDepartments();
@@ -3598,6 +3566,23 @@ function App() {
     initializeUSLaws();
     initializeAuBills();
     initializeCanadaLaws();
+    // Load live CA notifications from Firestore
+    getDocs(query(collection(db, 'news_alerts'), where('country', '==', 'CA'), orderBy('timestamp', 'desc'), limit(20)))
+      .then(snap => {
+        const notifs = snap.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            country: 'canada',
+            type: data.type || 'update',
+            title: data.title || data.headline || '',
+            description: data.summary || data.description || '',
+            timestamp: data.timestamp?.toDate?.()?.toISOString?.() || data.timestamp || new Date().toISOString(),
+          };
+        });
+        setLiveCANotifs(notifs);
+      })
+      .catch(e => console.warn('[CA:notifs] Firestore load failed:', e.message));
   }, []);
 
   // Load Firestore vote counts on mount
@@ -5393,17 +5378,22 @@ function App() {
   const fetchMPs = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://civic-voice-backend-e3sz.onrender.com/api/mps');
-      const result = await response.json();
-      
-      if (result.success) {
-        setMps(result.data);
-      } else {
-        setError('Failed to load MP data');
-      }
+      const snap = await getDocs(query(collection(db, 'members'), where('jurisdiction', '==', 'CA'), limit(50)));
+      const data = snap.docs.map(d => {
+        const r = d.data();
+        return {
+          id: d.id,
+          name: r.name || r.member_name || '',
+          riding: r.riding || r.constituency || r.electoral_district || '',
+          party: r.party || '',
+          province: r.province || '',
+          photo_url: r.photo_url || r.photo || null,
+          ...r,
+        };
+      });
+      setMps(data);
     } catch (err) {
-      console.error('Error fetching MPs:', err);
-      setError('Could not connect to API');
+      console.error('Error fetching MPs from Firestore:', err);
     } finally {
       setLoading(false);
     }
@@ -5411,41 +5401,17 @@ function App() {
 
   const fetchBills = async () => {
     try {
-      const response = await fetch('https://civic-voice-backend-e3sz.onrender.com/api/bills');
-      const result = await response.json();
-      
-      if (result.success) {
-        setBills(result.data);
-      }
+      const snap = await getDocs(query(collection(db, 'bills'), where('country', '==', 'CA'), limit(30)));
+      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (data.length > 0) setBills(data);
     } catch (err) {
-      console.error('Error fetching bills:', err);
-    }
-  };
-
-  const fetchGovernmentData = async () => {
-    try {
-      const response = await fetch('https://civic-voice-backend-e3sz.onrender.com/api/government-data');
-      const result = await response.json();
-      
-      if (result.success) {
-        setGovernmentData(result.data);
-      }
-    } catch (err) {
-      console.error('Error fetching government data:', err);
+      console.error('Error fetching bills from Firestore:', err);
     }
   };
 
   const fetchLaws = async () => {
-    try {
-      const response = await fetch('https://civic-voice-backend-e3sz.onrender.com/api/laws');
-      const result = await response.json();
-      
-      if (result.success) {
-        setLaws(result.data);
-      }
-    } catch (err) {
-      console.error('Error fetching laws:', err);
-    }
+    // Laws are initialized from canadaLawsData via initializeCanadaLaws()
+    // No remote fetch needed.
   };
 
 
@@ -5590,29 +5556,20 @@ function App() {
     }));
   };
 
-  const voteBill = async (billId, vote) => {
+  const voteBill = (billId, vote) => {
     logEvent('vote_bill', { country: 'CA', itemId: String(billId) });
     submitVote(toVoteId('ca-bill', billId), 'CA', null, vote);
-    try {
-      const response = await fetch(`https://civic-voice-backend-e3sz.onrender.com/api/bills/${billId}/vote`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ vote })
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        setBills(bills.map(b => b.id === billId ? result.data : b));
-        if (selectedBill && selectedBill.id === billId) {
-          setSelectedBill(result.data);
-        }
-      }
-    } catch (err) {
-      console.error('Error voting:', err);
-    }
+    setBills(prev => prev.map(b => {
+      if (b.id !== billId) return b;
+      const current = b.userVote;
+      let { supportVotes = 0, opposeVotes = 0 } = b;
+      if (current === 'support') supportVotes -= 1;
+      if (current === 'oppose') opposeVotes -= 1;
+      const nv = vote === current ? null : vote;
+      if (nv === 'support') supportVotes += 1;
+      if (nv === 'oppose') opposeVotes += 1;
+      return { ...b, supportVotes, opposeVotes, userVote: nv };
+    }));
   };
 
   const voteUsBill = (billId, vote) => {
@@ -5637,33 +5594,22 @@ function App() {
     }));
   };
 
-  const voteMP = async (mpIndex, vote) => {
+  const voteMP = (mpIndex, vote) => {
     logEvent('vote_politician', { country: 'CA', itemId: String(mpIndex) });
-    try {
-      const response = await fetch(`https://civic-voice-backend-e3sz.onrender.com/api/mps/${mpIndex}/vote`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ vote })
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        // Update MPs list
-        const updatedMps = [...mps];
-        updatedMps[mpIndex] = result.data;
-        setMps(updatedMps);
-        
-        // Update selected member if viewing details
-        if (selectedMember && selectedMember.name === result.data.name) {
-          setSelectedMember(result.data);
-        }
-      }
-    } catch (err) {
-      console.error('Error voting on MP:', err);
-    }
+    setMps(prev => {
+      const updated = [...prev];
+      const mp = updated[mpIndex];
+      if (!mp) return prev;
+      const current = mp.userVote;
+      let { supportVotes = 0, opposeVotes = 0 } = mp;
+      if (current === 'support') supportVotes -= 1;
+      if (current === 'oppose') opposeVotes -= 1;
+      const nv = vote === current ? null : vote;
+      if (nv === 'support') supportVotes += 1;
+      if (nv === 'oppose') opposeVotes += 1;
+      updated[mpIndex] = { ...mp, supportVotes, opposeVotes, userVote: nv };
+      return updated;
+    });
   };
 
   const voteCongressMember = (memberName, vote) => {
@@ -6178,6 +6124,7 @@ function App() {
 
   const visibleNotifs = (() => {
     const country = getRegionCountry(homeRegion);
+    if (country === 'canada') return liveCANotifs;
     return country ? NOTIFICATIONS_DATA.filter(n => n.country === country) : NOTIFICATIONS_DATA;
   })();
 
