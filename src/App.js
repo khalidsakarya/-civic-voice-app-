@@ -2028,6 +2028,7 @@ function App() {
   const [senateSearch, setSenateSearch] = useState('');
   const [senateFilter, setSenateFilter] = useState('All');
   const [selectedSenator, setSelectedSenator] = useState(null);
+  const [showSenatorPanel, setShowSenatorPanel] = useState(false);
   const [senatorVotes, setSenatorVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cvSenatorVotes') || '{}'); } catch { return {}; }
   });
@@ -3902,7 +3903,7 @@ function App() {
   // Fetch lobbying records for CA/US/UK/AU leader profiles + CA MP detail + CA Senator detail
   useEffect(() => {
     const leaderNames = { 'canada-pm-detail': 'Mark Carney', 'president-detail': 'Donald Trump', 'uk-pm-detail': 'Keir Starmer', 'albanese-detail': 'Anthony Albanese' };
-    const name = leaderNames[view] ?? (view === 'member-detail' ? selectedMember?.name : null) ?? (view === 'senator-detail' ? selectedSenator?.name : null);
+    const name = leaderNames[view] ?? (view === 'member-detail' ? selectedMember?.name : null) ?? (showSenatorPanel ? selectedSenator?.name : null);
     if (!name) return;
     if (memberLobbyingData[name] !== undefined || memberLobbyingLoading[name]) return;
     setMemberLobbyingLoading(prev => ({ ...prev, [name]: true }));
@@ -3920,7 +3921,7 @@ function App() {
         setMemberLobbyingLoading(prev => ({ ...prev, [name]: false }));
       }
     })();
-  }, [view, selectedMember, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [view, selectedMember, showSenatorPanel, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Shared helper: fetch member_votes for a given member; tries bioguide_id first, then memberName
   const fetchMemberVotes = async (member) => {
@@ -4007,7 +4008,7 @@ function App() {
   // Fetch voting records + attendance when Canadian Senator detail opens; auto-expand sections
   // Always force-fetches fresh data (never uses cached empty results)
   useEffect(() => {
-    if (view !== 'senator-detail' || !selectedSenator?.name) return;
+    if (!showSenatorPanel || !selectedSenator?.name) return;
     const key = selectedSenator.name;
     setExpandedSections(prev => ({ ...prev, voting: true, attendance: true }));
 
@@ -4091,7 +4092,7 @@ function App() {
     };
 
     doFetch();
-  }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showSenatorPanel, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Shared helper: fetch member_attendance by memberName (or bioguide_id if present)
   const fetchMemberAttendance = async (member) => {
@@ -4410,9 +4411,9 @@ function App() {
 
   // Fetch bio when Canadian senator detail opens
   useEffect(() => {
-    if (view !== 'senator-detail' || !selectedSenator?.name) return;
+    if (!showSenatorPanel || !selectedSenator?.name) return;
     fetchMemberBio(selectedSenator);
-  }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showSenatorPanel, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Shared helper: fetch member_committees by memberName (or bioguide_id if present)
   const fetchMemberCommittees = async (member) => {
@@ -4482,9 +4483,9 @@ function App() {
 
   // Fetch committees when Canadian senator detail opens
   useEffect(() => {
-    if (view !== 'senator-detail' || !selectedSenator?.name) return;
+    if (!showSenatorPanel || !selectedSenator?.name) return;
     fetchMemberCommittees(selectedSenator);
-  }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showSenatorPanel, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchMemberExpenses = async (member, opts = {}) => {
     const key = member.name;
@@ -4536,9 +4537,9 @@ function App() {
 
   // Fetch expenses when Canadian senator detail opens
   useEffect(() => {
-    if (view !== 'senator-detail' || !selectedSenator?.name) return;
+    if (!showSenatorPanel || !selectedSenator?.name) return;
     fetchMemberExpenses(selectedSenator);
-  }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showSenatorPanel, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchCongressMembers = async () => {
     setCongressLoading(true);
@@ -29757,7 +29758,7 @@ function App() {
                   return (
                     <div key={i} className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-red-400 hover:shadow-xl transition-all cursor-pointer"
                       onClick={() => {
-                        if (isSenate) { setSelectedSenator(member); setView('senator-detail'); }
+                        if (isSenate) { setSelectedSenator(member); setShowSenatorPanel(true); }
                         else { setSelectedMember(member); setView('member-detail'); }
                       }}
                     >
@@ -36900,8 +36901,9 @@ function App() {
   };
 
   const renderSenatorPanel = () => {
-    if (!selectedSenator) return null;
+    if (!selectedSenator || !showSenatorPanel) return null;
     const s = selectedSenator;
+    const closePanel = () => { setShowSenatorPanel(false); setSelectedSenator(null); };
     const color = getPartyColor(s.party);
     const initials = s.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
@@ -37069,19 +37071,21 @@ function App() {
     }));
 
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm">
-          <div className="max-w-6xl mx-auto px-4 py-4">
-            <button
-              onClick={() => { setSelectedSenator(null); setView('senate'); }}
-              className="text-blue-600 hover:text-blue-800 flex items-center gap-2 mb-4"
-            >
-              <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Canadian Senate</span>
+      <div className="fixed inset-0 z-50 flex justify-end">
+        <div className="panel-backdrop absolute inset-0 bg-black bg-opacity-50" onClick={closePanel} />
+        <div className="panel-slide-in relative flex flex-col bg-gray-50 shadow-2xl w-full md:w-[70vw] md:max-w-5xl h-full overflow-y-auto">
+
+          {/* Top close bar */}
+          <div className="flex-shrink-0 bg-white shadow-sm px-6 py-3 flex items-center justify-between border-b border-gray-200">
+            <button onClick={closePanel} className="text-blue-600 hover:text-blue-800 flex items-center gap-2 text-sm font-medium">
+              ← Back to Canadian Senate
+            </button>
+            <button onClick={closePanel} className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" aria-label="Close panel">
+              <X className="w-5 h-5" />
             </button>
           </div>
-        </div>
 
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-8 w-full">
           {/* Header */}
           <div className="bg-white rounded-lg shadow-md p-8 mb-6">
             <div className="flex items-start gap-6">
@@ -37661,7 +37665,7 @@ function App() {
               const initials = senator.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
               const color = getPartyColor(senator.party);
               return (
-                <div key={i} onClick={() => { setSelectedSenator(senator); setView('senator-detail'); }} className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-teal-400 hover:shadow-xl transition-all cursor-pointer">
+                <div key={i} onClick={() => { setSelectedSenator(senator); setShowSenatorPanel(true); }} className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-teal-400 hover:shadow-xl transition-all cursor-pointer">
                   {/* Share */}
                   <button
                     onClick={e => handleShare(e, { id: senator.name, title: senator.name, text: `🏛️ ${senator.name} (${senator.party}, ${senator.province}) — Canadian Senator. civic-voice-app.vercel.app`, url: window.location.href })}
@@ -38179,7 +38183,6 @@ function App() {
       {view === 'us-bills' && renderUSBills()}
       {view === 'us-bill-detail' && selectedBill && renderUSBillDetail()}
       {view === 'senate' && renderSenate()}
-      {view === 'senator-detail' && selectedSenator && renderSenatorPanel()}
       {view === 'canada-pm-detail' && renderCarneyDetail()}
       {view === 'au-leader-detail' && selectedAuLeader && renderAuLeaderDetail()}
       {view === 'albanese-detail' && renderAlbaneseDetail()}
@@ -38237,7 +38240,8 @@ function App() {
       {/* Australian Parliament member profile panel */}
       {showAuMemberPanel && selectedAuMember && renderAuMemberPanel()}
 
-      {/* Senator profile panel removed — now renders as full page via view === 'senator-detail' */}
+      {/* Canadian Senate member profile panel — overlay, same pattern as AU */}
+      {showSenatorPanel && selectedSenator && renderSenatorPanel()}
 
       {/* Economic & Social Data modal */}
       {showEconomicModal && selectedProvince && renderEconomicModal()}
