@@ -3941,16 +3941,40 @@ function App() {
         docs = snap.docs.map(d => d.data());
         if (docs.length > 0) console.log(`[MemberVotes] member_votes slug="${slug}" — ${docs.length} doc(s).`);
       }
-      // For CA House MPs: try member_votes by person_id (set by caHouseVotesFetcher)
+      // For CA members (no bioguide_id): try person_id (House) then last-name scan (Senate)
       if (docs.length === 0 && !member.bioguide_id) {
         const personId = member.id || member.member_id || member.personId || null;
         if (personId) {
           const q = query(collection(db, 'member_votes'), where('person_id', '==', String(personId)));
           const snap = await getDocs(q);
           if (snap.docs.length > 0) {
-            // member_votes CA doc has nested votes[] array — flatten to individual rows
+            // member_votes CA House doc has nested votes[] array — flatten to individual rows
             const votesArr = snap.docs[0].data().votes || [];
             docs = votesArr;
+          }
+        }
+        // Fallback for senators: scan member_votes CA Senate by last-name match
+        if (docs.length === 0) {
+          const isSenator = !!member.dateAppointed || member.chamber === 'Senate';
+          if (isSenator) {
+            const lastName = key.split(' ').pop().toLowerCase();
+            const q = query(
+              collection(db, 'member_votes'),
+              where('jurisdiction', '==', 'CA'),
+              where('chamber', '==', 'Senate'),
+              limit(200)
+            );
+            const snap = await getDocs(q);
+            const match = snap.docs.find(d => {
+              const storedName = (d.data().member_name || '')
+                .replace(/&#x([0-9A-Fa-f]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+                .replace(/&#(\d+);/g, (_, d2) => String.fromCharCode(parseInt(d2, 10)))
+                .toLowerCase();
+              return storedName.includes(lastName);
+            });
+            if (match) {
+              docs = match.data().votes || [];
+            }
           }
         }
       }
@@ -4007,27 +4031,35 @@ function App() {
         const snap = await getDocs(q);
         docs = snap.docs.map(d => d.data());
       }
-      // For CA House MPs: also try matching by person_id (set by caHouseVotesFetcher)
+      // For CA members (no bioguide_id): try person_id match (House MPs) then name scan fallback
       if (docs.length === 0 && !member.bioguide_id) {
+        // 1. Try person_id match (set by caHouseVotesFetcher for House MPs)
         const personId = member.id || member.member_id || member.personId || null;
         if (personId) {
           const q = query(collection(db, 'member_attendance'), where('person_id', '==', String(personId)));
           const snap = await getDocs(q);
           docs = snap.docs.map(d => d.data());
         }
-        // Final fallback: partial name match (handles HTML entity name differences like &#xC9;ric)
+        // 2. Fallback: scan CA attendance docs by chamber and match by last name
+        //    Covers HTML-entity name mismatches (e.g. "&#xC9;ric Forest" vs "Éric Forest")
         if (docs.length === 0) {
-          const lastName = key.split(' ').pop();
+          // Senators come from SENATORS_DATA and have dateAppointed; House MPs have id/riding from Firestore
+          const isSenator = !!member.dateAppointed || member.chamber === 'Senate';
+          const chamberFilter = isSenator ? 'Senate' : 'House';
+          const lastName = key.split(' ').pop().toLowerCase();
           const q = query(
             collection(db, 'member_attendance'),
             where('jurisdiction', '==', 'CA'),
-            where('chamber', '==', 'House'),
+            where('chamber', '==', chamberFilter),
             limit(500)
           );
           const snap = await getDocs(q);
           const match = snap.docs.find(d => {
-            const n = (d.data().member_name || '').toLowerCase();
-            return n.includes(lastName.toLowerCase());
+            const storedName = (d.data().member_name || '')
+              .replace(/&#x([0-9A-Fa-f]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+              .replace(/&#(\d+);/g, (_, d2) => String.fromCharCode(parseInt(d2, 10)))
+              .toLowerCase();
+            return storedName.includes(lastName);
           });
           if (match) docs = [match.data()];
         }
