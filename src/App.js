@@ -3939,8 +3939,10 @@ function App() {
         const q = query(collection(db, 'member_votes'), where('politician_slug', '==', slug));
         const snap = await getDocs(q);
         docs = snap.docs.map(d => d.data());
-        if (docs.length > 0) console.log(`[MemberVotes] CA slug="${slug}" — ${docs.length} doc(s). Sample keys:`, Object.keys(docs[0]), '\nSample doc:', docs[0]);
+        if (docs.length > 0) console.log(`[MemberVotes] member_votes slug="${slug}" — ${docs.length} doc(s).`);
       }
+      // Note: for CA House MPs, openparliament.ca votes are fetched live in fetchMemberAttendance
+      // and stored into memberVotesData there. No separate fetch needed here.
       if (key === 'Mike Johnson') console.log(`[MikeJohnson] member_votes: ${docs.length} doc(s)`, docs);
       setMemberVotesData(prev => ({ ...prev, [key]: docs }));
     } catch (err) {
@@ -3993,6 +3995,48 @@ function App() {
         const q = query(collection(db, 'member_attendance'), where('member_name', '==', key));
         const snap = await getDocs(q);
         docs = snap.docs.map(d => d.data());
+      }
+      // For CA House MPs with no Firestore data, fetch live from openparliament.ca
+      if (docs.length === 0 && !member.bioguide_id) {
+        try {
+          const slug = key.toLowerCase()
+            .normalize('NFD').replace(/[̀-ͯ]/g, '') // strip accents
+            .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          const resp = await fetch(
+            `https://api.openparliament.ca/politicians/${slug}/votes/?limit=500&format=json`,
+            { headers: { Accept: 'application/json' } }
+          );
+          if (resp.ok) {
+            const data = await resp.json();
+            const votes = data.objects || [];
+            const participated = votes.filter(v => v.ballot === 'Yes' || v.ballot === 'No' || v.ballot === 'Paired').length;
+            const total = votes.length;
+            docs = [{
+              member_name: key,
+              jurisdiction: 'CA',
+              chamber: 'House',
+              source_name: 'openparliament.ca (live)',
+              totalVotes: total,
+              votesParticipated: participated,
+              percentage: total > 0 ? Math.round((participated / total) * 100) : 0,
+              last_updated: new Date().toISOString(),
+            }];
+            // Also populate vote history so the Voting History section works too
+            if (votes.length > 0 && memberVotesData[key] === undefined) {
+              const voteHistory = votes.map(v => ({
+                ballot: v.ballot,
+                description: v.vote?.description?.en || v.vote?.bill?.number || '',
+                date: v.vote?.date || '',
+                result: v.vote?.result || '',
+                bill_number: v.vote?.bill?.number || null,
+              }));
+              setMemberVotesData(prev => ({ ...prev, [key]: voteHistory }));
+            }
+            console.log(`[openparliament] ${key}: ${participated}/${total} votes participated (${docs[0].percentage}%)`);
+          }
+        } catch (opErr) {
+          console.warn(`[openparliament] attendance fetch failed for ${key}:`, opErr.message);
+        }
       }
       if (key === 'Mike Johnson') console.log(`[MikeJohnson] member_attendance: ${docs.length} doc(s)`, docs);
       setMemberAttendanceData(prev => ({ ...prev, [key]: docs }));
