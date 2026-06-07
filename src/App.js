@@ -4005,51 +4005,82 @@ function App() {
   }, [view, selectedUkMember]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch voting records + attendance when Canadian Senator detail opens; auto-expand sections
+  // Always force-fetches fresh data (never uses cached empty results)
   useEffect(() => {
     if (view !== 'senator-detail' || !selectedSenator?.name) return;
     const key = selectedSenator.name;
     setExpandedSections(prev => ({ ...prev, voting: true, attendance: true }));
-    // Force-fetch votes for this senator (bypasses early-return cache check)
+
+    // Build the same doc ID the backend uses: "CA-SEN-{name-slug}"
+    // senateDataFetcher.js: 'CA-SEN-' + senator.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    const senDocId = 'CA-SEN-' + key.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+    const norm = (d) => ({
+      ...d,
+      percentage:        d.percentage        ?? d.attendance_pct  ?? d.attendanceRate,
+      votesParticipated: d.votesParticipated  ?? d.votes_participated ?? d.sessionsAttended,
+      totalVotes:        d.totalVotes         ?? d.votes_total    ?? d.totalSessions,
+    });
+
     const doFetch = async () => {
-      // --- Votes ---
+      // ── Votes ─────────────────────────────────────────────────────────────
       setMemberVotesLoading(prev => ({ ...prev, [key]: true }));
       try {
-        let docs = [];
-        // 1. Direct name match
-        const nameSnap = await getDocs(query(collection(db, 'member_votes'), where('member_name', '==', key)));
-        if (nameSnap.docs.length > 0) docs = nameSnap.docs[0].data().votes || [];
-        // 2. Last-name scan across all Senate docs
-        if (docs.length === 0) {
+        let votes = [];
+
+        // 1. Direct document ID lookup (fastest, no query needed, matches backend storage exactly)
+        const voteDocSnap = await getDoc(doc(db, 'member_votes', senDocId));
+        if (voteDocSnap.exists()) {
+          votes = voteDocSnap.data().votes || [];
+        }
+
+        // 2. Fallback: query by member_name (handles slight name variations)
+        if (votes.length === 0) {
+          const nameSnap = await getDocs(query(collection(db, 'member_votes'), where('member_name', '==', key)));
+          if (nameSnap.docs.length > 0) votes = nameSnap.docs[0].data().votes || [];
+        }
+
+        // 3. Last resort: scan all Senate docs and match by last name
+        if (votes.length === 0) {
           const lastName = key.split(' ').pop().toLowerCase();
           const senSnap = await getDocs(query(collection(db, 'member_votes'), where('chamber', '==', 'Senate'), limit(300)));
           const match = senSnap.docs.find(d => (d.data().member_name || '').toLowerCase().includes(lastName));
-          if (match) docs = match.data().votes || [];
+          if (match) votes = match.data().votes || [];
         }
-        setMemberVotesData(prev => ({ ...prev, [key]: docs }));
+
+        setMemberVotesData(prev => ({ ...prev, [key]: votes }));
       } catch (err) {
         console.warn('[Senate] votes fetch failed:', err.message);
         setMemberVotesData(prev => ({ ...prev, [key]: [] }));
       } finally {
         setMemberVotesLoading(prev => ({ ...prev, [key]: false }));
       }
-      // --- Attendance ---
+
+      // ── Attendance ────────────────────────────────────────────────────────
       setMemberAttendanceLoading(prev => ({ ...prev, [key]: true }));
       try {
-        const norm = (d) => ({
-          ...d,
-          percentage:        d.percentage        ?? d.attendance_pct ?? d.attendanceRate,
-          votesParticipated: d.votesParticipated  ?? d.votes_participated ?? d.sessionsAttended,
-          totalVotes:        d.totalVotes         ?? d.votes_total ?? d.totalSessions,
-        });
         let att = [];
-        const attSnap = await getDocs(query(collection(db, 'member_attendance'), where('member_name', '==', key)));
-        if (attSnap.docs.length > 0) att = attSnap.docs.map(d => norm(d.data()));
+
+        // 1. Direct document ID lookup (same ID as member_votes doc)
+        const attDocSnap = await getDoc(doc(db, 'member_attendance', senDocId));
+        if (attDocSnap.exists()) {
+          att = [norm(attDocSnap.data())];
+        }
+
+        // 2. Fallback: query by member_name
+        if (att.length === 0) {
+          const attSnap = await getDocs(query(collection(db, 'member_attendance'), where('member_name', '==', key)));
+          if (attSnap.docs.length > 0) att = attSnap.docs.map(d => norm(d.data()));
+        }
+
+        // 3. Last resort: last-name scan
         if (att.length === 0) {
           const lastName = key.split(' ').pop().toLowerCase();
           const senSnap = await getDocs(query(collection(db, 'member_attendance'), where('chamber', '==', 'Senate'), limit(300)));
           const match = senSnap.docs.find(d => (d.data().member_name || '').toLowerCase().includes(lastName));
           if (match) att = [norm(match.data())];
         }
+
         setMemberAttendanceData(prev => ({ ...prev, [key]: att }));
       } catch (err) {
         console.warn('[Senate] attendance fetch failed:', err.message);
@@ -4058,6 +4089,7 @@ function App() {
         setMemberAttendanceLoading(prev => ({ ...prev, [key]: false }));
       }
     };
+
     doFetch();
   }, [view, selectedSenator]); // eslint-disable-line react-hooks/exhaustive-deps
 
