@@ -17337,15 +17337,15 @@ function App() {
                 const advisors = sec?.advisors ?? [];
                 return (
                   <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div onClick={() => toggleCarneySection('advisors')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                    <div onClick={() => toggleCarneySection('advisors')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
                       <div className="flex items-center gap-2">
                         <h3 className="text-xl font-bold text-gray-800">🌟 Senior Advisors</h3>
                         {cpdLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                         {sec && !cpdLoading && liveBadge(null, 'Live')}
                       </div>
-                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.advisors ? 'rotate-0' : '-rotate-90'}`} />
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedCarneySections.advisors ? 'rotate-0' : '-rotate-90'}`} />
                     </div>
-                    <div className={`px-6 pb-6 ${expandedCarneySections.advisors ? '' : 'hidden sm:block'}`}>
+                    <div className={`px-6 pb-6 ${expandedCarneySections.advisors ? '' : 'hidden'}`}>
                       {isNoSource ? (
                         <p className="text-sm text-gray-500 italic bg-yellow-50 rounded-lg p-4 border border-yellow-200 text-center">Senior advisor information not publicly available from official sources.</p>
                       ) : advisors.length > 0 ? (
