@@ -31474,7 +31474,7 @@ function App() {
                     <p className="text-gray-600">Run the bills scraper to load bill data!</p>
                   </div>
                 ) : (
-                  caBillSource.slice(0, 5).map(bill => {
+                  caBillSource.map(bill => {
                     const isExpanded = expandedCaBills[bill.id] || false;
                     const uv = caBillVotes[bill.id] || null;
                     return (
@@ -31559,13 +31559,6 @@ function App() {
                     );
                   })
                 )}
-                <button
-                  onClick={() => setView('bills')}
-                  className="w-full button-success text-white px-6 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2"
-                >
-                  View All Parliamentary Bills
-                  <ChevronRight className="w-6 h-6" />
-                </button>
               </div>
               </>);
               })()}
