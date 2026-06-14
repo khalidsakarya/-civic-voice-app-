@@ -2158,7 +2158,22 @@ function App() {
 
   const handleShare = (e, { id, title, text, url }) => {
     e.stopPropagation();
-    setShareModal({ title: title || '', description: text || '', url: url || window.location.href });
+    const shareUrl  = url || window.location.href;
+    const shareText = title || '';
+    // Try native OS share sheet first (works on all mobile browsers + modern desktop)
+    if (navigator.share) {
+      navigator.share({
+        title: shareText,
+        text:  text  || shareText,
+        url:   shareUrl,
+      }).then(() => {
+        setCopiedShareId(id);
+        setTimeout(() => setCopiedShareId(null), 1800);
+      }).catch(() => {}); // user cancelled — silently ignore
+    } else {
+      // Desktop fallback: open the share modal with platform links
+      setShareModal({ title: shareText, description: text || '', url: shareUrl });
+    }
   };
 
   // Canadian data
