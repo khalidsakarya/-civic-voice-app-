@@ -2156,15 +2156,22 @@ function App() {
     };
   };
 
-  const handleShare = (e, { id, title, text, url }) => {
+  const handleShare = (e, { id, title, text, url, type = 'default', meta = '' }) => {
     e.stopPropagation();
-    const shareUrl  = url || window.location.href;
+    // Build an /api/share URL so Facebook / WhatsApp link previews show the actual content
+    const base = `${window.location.origin}/api/share`;
+    const params = new URLSearchParams();
+    if (type)  params.set('type',  type);
+    if (title) params.set('title', title);
+    if (text)  params.set('desc',  text.slice(0, 200));
+    if (meta)  params.set('meta',  meta);
+    const shareUrl  = `${base}?${params.toString()}`;
     const shareText = title || '';
     // Try native OS share sheet first (works on all mobile browsers + modern desktop)
     if (navigator.share) {
       navigator.share({
         title: shareText,
-        text:  text  || shareText,
+        text:  text || shareText,
         url:   shareUrl,
       }).then(() => {
         setCopiedShareId(id);
@@ -29930,7 +29937,7 @@ function App() {
                 key={bill.id}
                 className="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
               >
-                <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.billNumber}: ${bill.shortTitle}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+                <button onClick={(e) => handleShare(e, { id: bill.id, type: 'bill', title: `${bill.billNumber}: ${bill.shortTitle}`, text: bill.summary, meta: `Status: ${bill.status}` })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -31497,7 +31504,7 @@ function App() {
                         key={bill.id}
                         className="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-green-500"
                       >
-                        <button onClick={(e) => handleShare(e, { id: bill.id, title: `${bill.billNumber}: ${bill.shortTitle}`, text: bill.summary, url: window.location.href })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+                        <button onClick={(e) => handleShare(e, { id: bill.id, type: 'bill', title: `${bill.billNumber}: ${bill.shortTitle}`, text: bill.summary, meta: `Status: ${bill.status}` })} className={`absolute top-3 right-3 p-1.5 rounded-lg transition-colors z-10 ${copiedShareId === bill.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === bill.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
 
                         {/* Collapsed header */}
                         <div
@@ -33953,7 +33960,7 @@ function App() {
                       <p className="text-xs sm:text-sm text-gray-500">{ministry.description}</p>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      <button onClick={(e) => handleShare(e, { id: ministry.id, title: ministry.name, text: `🏛️ ${ministry.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === ministry.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === ministry.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+                      <button onClick={(e) => handleShare(e, { id: ministry.id, type: 'ministry', title: ministry.name, text: ministry.description, meta: deptBudgetData[`CA:${ministry.name}`]?.budget_authority ? `Budget: CA$${(deptBudgetData[`CA:${ministry.name}`].budget_authority/1e9).toFixed(1)}B` : '' })} className={`p-2 rounded-lg transition-colors z-10 ${copiedShareId === ministry.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === ministry.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
                       <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
                     </div>
                   </div>
@@ -34003,7 +34010,7 @@ function App() {
         <div className="max-w-6xl mx-auto px-4 py-8">
           {/* Ministry Header */}
           <div className="relative bg-white rounded-lg shadow-md p-8 mb-6">
-            <button onClick={(e) => handleShare(e, { id: selectedMinistry.id, title: selectedMinistry.name, text: `🏛️ ${selectedMinistry.name} — civic-voice-app.vercel.app`, url: window.location.href })} className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === selectedMinistry.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === selectedMinistry.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
+            <button onClick={(e) => handleShare(e, { id: selectedMinistry.id, type: 'ministry', title: selectedMinistry.name, text: selectedMinistry.description, meta: deptBudgetData[`CA:${selectedMinistry.name}`]?.budget_authority ? `Budget: CA$${(deptBudgetData[`CA:${selectedMinistry.name}`].budget_authority/1e9).toFixed(1)}B · Minister: ${deptHeadsData[`CA:${selectedMinistry.name}`]?.name || ''}` : '' })} className={`absolute top-4 right-4 p-2 rounded-lg transition-colors z-10 ${copiedShareId === selectedMinistry.id ? 'text-green-500 bg-green-50' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} aria-label="Share">{copiedShareId === selectedMinistry.id ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}</button>
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h1 className="text-4xl font-bold text-gray-800 mb-2">{selectedMinistry.name}</h1>
