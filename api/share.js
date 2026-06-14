@@ -41,11 +41,16 @@ module.exports = (req, res) => {
   const ogTitle    = `${emoji} ${decodeURIComponent(title)} — ${APP_NAME}`;
   const ogDesc     = [decodeURIComponent(desc), decodeURIComponent(meta)].filter(Boolean).join(' · ');
   const ogImage    = decodeURIComponent(img) || DEFAULT_IMG;
-  const canonical  = APP_URL;
+
+  // Use the ACTUAL share URL as og:url so Facebook caches each item separately.
+  // Real users are redirected to APP_URL via JS below.
+  const proto    = (req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+  const host     = req.headers['x-forwarded-host'] || req.headers.host || 'civic-voice-app.vercel.app';
+  const selfUrl  = `${proto}://${host}${req.url}`;
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  // Cache 10 minutes on CDN — fast for crawlers, not stale for users
-  res.setHeader('Cache-Control', 'public, max-age=600, s-maxage=600');
+  // Cache 5 minutes — short enough to re-scrape, long enough to not hammer the function
+  res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=300');
 
   res.send(`<!DOCTYPE html>
 <html lang="en">
@@ -57,31 +62,28 @@ module.exports = (req, res) => {
   <!-- Open Graph (Facebook, WhatsApp, Telegram, iMessage link previews) -->
   <meta property="og:type"        content="website" />
   <meta property="og:site_name"   content="${escHtml(APP_NAME)}" />
-  <meta property="og:url"         content="${escHtml(canonical)}" />
+  <meta property="og:url"         content="${escHtml(selfUrl)}" />
   <meta property="og:title"       content="${escHtml(ogTitle)}" />
   <meta property="og:description" content="${escHtml(ogDesc)}" />
   <meta property="og:image"       content="${escHtml(ogImage)}" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
+  <meta property="og:image:width" content="192" />
+  <meta property="og:image:height" content="192" />
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card"        content="summary_large_image" />
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card"        content="summary" />
   <meta name="twitter:title"       content="${escHtml(ogTitle)}" />
   <meta name="twitter:description" content="${escHtml(ogDesc)}" />
   <meta name="twitter:image"       content="${escHtml(ogImage)}" />
-
-  <!-- Redirect real users to the app immediately -->
-  <meta http-equiv="refresh" content="0; url=${escHtml(canonical)}" />
 </head>
 <body style="font-family:sans-serif;text-align:center;padding:40px;background:#f9fafb;">
   <p style="font-size:3rem;margin:0">${escHtml(emoji)}</p>
   <h1 style="color:#1e293b;margin:16px 0 8px">${escHtml(decodeURIComponent(title))}</h1>
   <p style="color:#475569;max-width:480px;margin:0 auto 24px">${escHtml(ogDesc)}</p>
-  <a href="${escHtml(canonical)}"
+  <a href="${escHtml(APP_URL)}"
      style="display:inline-block;background:#16a34a;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700">
     Open in Civic Voice →
   </a>
-  <script>window.location.replace("${canonical}")</script>
+  <script>window.location.replace("${APP_URL}")</script>
 </body>
 </html>`);
 };

@@ -2156,31 +2156,21 @@ function App() {
     };
   };
 
-  const handleShare = (e, { id, title, text, url, type = 'default', meta = '' }) => {
+  const handleShare = (e, { id, title, text, type = 'default', meta = '' }) => {
     e.stopPropagation();
-    // Build an /api/share URL so Facebook / WhatsApp link previews show the actual content
+    // Build a /api/share URL with proper OG meta tags so Facebook/WhatsApp previews
+    // show the actual content (ministry name, description, budget, etc.)
     const base = `${window.location.origin}/api/share`;
     const params = new URLSearchParams();
     if (type)  params.set('type',  type);
     if (title) params.set('title', title);
     if (text)  params.set('desc',  text.slice(0, 200));
     if (meta)  params.set('meta',  meta);
-    const shareUrl  = `${base}?${params.toString()}`;
+    const ogUrl     = `${base}?${params.toString()}`;
     const shareText = title || '';
-    // Try native OS share sheet first (works on all mobile browsers + modern desktop)
-    if (navigator.share) {
-      navigator.share({
-        title: shareText,
-        text:  text || shareText,
-        url:   shareUrl,
-      }).then(() => {
-        setCopiedShareId(id);
-        setTimeout(() => setCopiedShareId(null), 1800);
-      }).catch(() => {}); // user cancelled — silently ignore
-    } else {
-      // Desktop fallback: open the share modal with platform links
-      setShareModal({ title: shareText, description: text || '', url: shareUrl });
-    }
+    // Always show the modal so user can pick the platform.
+    // Facebook's sharer fetches OG tags live when the dialog opens → rich preview.
+    setShareModal({ id, title: shareText, description: text || '', meta, url: ogUrl });
   };
 
   // Canadian data
@@ -37951,7 +37941,8 @@ function App() {
             </div>
             <div className="px-5 py-4 border-b bg-gray-50">
               <p className="text-sm font-semibold text-gray-800 mb-1 line-clamp-2">{shareModal.title}</p>
-              {shareModal.description && <p className="text-xs text-gray-500 line-clamp-3">{shareModal.description}</p>}
+              {shareModal.description && <p className="text-xs text-gray-500 line-clamp-2">{shareModal.description}</p>}
+              {shareModal.meta && <p className="text-xs text-green-700 font-medium mt-1">{shareModal.meta}</p>}
               <p className="text-xs text-blue-500 mt-1.5 truncate">civic-voice-app.vercel.app</p>
             </div>
             <div className="grid grid-cols-4 gap-4 px-5 py-5">
@@ -38000,7 +37991,20 @@ function App() {
                 <span className="text-xs text-gray-600 font-medium">LinkedIn</span>
               </a>
             </div>
-            <div className="px-5 pb-5">
+            <div className="px-5 pb-5 flex flex-col gap-2">
+              {typeof navigator !== 'undefined' && navigator.share && (
+                <button
+                  onClick={() => {
+                    navigator.share({ title: shareModal.title, text: [shareModal.description, shareModal.meta].filter(Boolean).join(' · '), url: shareModal.url })
+                      .then(() => setShareModal(null))
+                      .catch(() => {});
+                  }}
+                  className="w-full py-3 rounded-xl bg-green-600 text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                  Share via Device
+                </button>
+              )}
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(shareModal.url).then(() => {
