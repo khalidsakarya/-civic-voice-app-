@@ -34361,14 +34361,29 @@ function App() {
                 <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
                 <h3 className="text-base sm:text-lg font-bold text-gray-800">Combined Budget</h3>
               </div>
-              <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>
+              {(() => {
+                const total = ministries.reduce((sum, m) => {
+                  const v = deptBudgetData[`CA:${m.name}`]?.budget_authority;
+                  return sum + (typeof v === 'number' ? v : 0);
+                }, 0);
+                if (total === 0) return <p className="text-sm font-medium text-gray-400 italic">Loading…</p>;
+                const display = total >= 1e12 ? `CA$${(total/1e12).toFixed(2)}T` : `CA$${(total/1e9).toFixed(0)}B`;
+                return <><p className="text-2xl sm:text-3xl font-bold text-green-600">{display}</p><p className="text-xs text-gray-400 mt-1">2024-25 Main Estimates</p></>;
+              })()}
             </div>
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-300 rounded-lg p-4 sm:p-6">
               <div className="flex items-center gap-2 sm:gap-3 mb-2">
                 <Users className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
                 <h3 className="text-base sm:text-lg font-bold text-gray-800">Total Employees</h3>
               </div>
-              <p className="text-sm font-medium text-gray-400 italic">Official data loading</p>
+              {(() => {
+                const total = ministries.reduce((sum, m) => {
+                  const v = deptBudgetData[`CA:${m.name}`]?.employee_count;
+                  return sum + (typeof v === 'number' ? v : 0);
+                }, 0);
+                if (total === 0) return <p className="text-sm font-medium text-gray-400 italic">Loading…</p>;
+                return <><p className="text-2xl sm:text-3xl font-bold text-purple-600">{total.toLocaleString()}</p><p className="text-xs text-gray-400 mt-1">Full-time equivalents (FTEs)</p></>;
+              })()}
             </div>
           </div>
 
