@@ -13151,7 +13151,8 @@ function App() {
                 </div>
               </div>
 
-              {/* Waste Tracker */}
+              {/* Waste Tracker — hidden for v1, re-enable by changing false to true */}
+              {false && (
               <div
                 onClick={() => setView('waste-tracker')}
                 className="rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 animate-scale-in col-span-1 sm:col-span-2 lg:col-span-1 mc mc-dark"
@@ -13167,6 +13168,7 @@ function App() {
                   <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
+              )}
             </div>
           </div>
         </div>
@@ -13264,7 +13266,8 @@ function App() {
                 </div>
               </div>
 
-              {/* Waste Tracker */}
+              {/* Waste Tracker — hidden for v1, re-enable by changing false to true */}
+              {false && (
               <div
                 onClick={() => setView('waste-tracker')}
                 className="rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 animate-scale-in col-span-1 sm:col-span-2 lg:col-span-1 mc mc-dark"
@@ -13280,6 +13283,7 @@ function App() {
                   <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
+              )}
             </div>
           </div>
         </div>
@@ -13394,7 +13398,8 @@ function App() {
               </div>
             )}
 
-            {/* Waste Tracker */}
+            {/* Waste Tracker — hidden for v1, re-enable by changing false to true */}
+            {false && (
             <div
               onClick={() => setView('waste-tracker')}
               className="rounded-2xl shadow-elegant-lg p-8 cursor-pointer hover-lift interactive-card border-2 animate-scale-in mc mc-dark"
@@ -13410,6 +13415,7 @@ function App() {
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
+            )}
           </div>
         </div>
       </div>
@@ -38242,7 +38248,7 @@ function App() {
       {view === 'news-usa' && renderNewsView('US')}
       {view === 'news-uk' && renderNewsView('UK')}
       {view === 'news-australia' && renderNewsView('AU')}
-      {view === 'waste-tracker' && renderWasteTracker()}
+      {/* Waste Tracker — hidden for v1: {view === 'waste-tracker' && renderWasteTracker()} */}
       
       {/* Riding selector modal */}
       {showLocationPrompt && renderRidingSelector()}
