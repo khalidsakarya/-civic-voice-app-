@@ -16985,16 +16985,16 @@ function App() {
                 const isLoadingCorp = !!memberCorporateLoading['Mark Carney'];
                 return (
                   <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div onClick={() => toggleCarneySection('stockTrades')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                    <div onClick={() => toggleCarneySection('stockTrades')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
                       <div className="flex items-center gap-2">
                         <h3 className="text-xl font-bold text-gray-800">🏢 Corporate Affiliations</h3>
                         {isLoadingCorp && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                         {liveCorp?.length > 0 && !isLoadingCorp && liveBadge(null, 'Monthly')}
                         {coverageBadge('partial', 'Registered interests and lobbying records only', 'Undisclosed holdings not included')}
                       </div>
-                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedCarneySections.stockTrades ? 'rotate-0' : '-rotate-90'}`} />
                     </div>
-                    <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.stockTrades ? '' : 'hidden sm:block'}`}>
+                    <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.stockTrades ? '' : 'hidden'}`}>
                       {liveCorp?.length > 0 ? (
                         liveCorp.map((aff, i) => (
                           <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
@@ -17152,15 +17152,15 @@ function App() {
 
               {/* Cabinet Members */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('cabinet')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                <div onClick={() => toggleCarneySection('cabinet')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
                   <div className="flex items-center gap-2">
                     <h3 className="text-xl font-bold text-gray-800">🏛️ Cabinet Members</h3>
                     {carneyCabinetLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                     {carneyCabinetData?.length > 0 && !carneyCabinetLoading && liveBadge(null, 'Live')}
                   </div>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.cabinet ? 'rotate-0' : '-rotate-90'}`} />
+                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedCarneySections.cabinet ? 'rotate-0' : '-rotate-90'}`} />
                 </div>
-                <div className={`px-6 pb-6 ${expandedCarneySections.cabinet ? '' : 'hidden sm:block'}`}>
+                <div className={`px-6 pb-6 ${expandedCarneySections.cabinet ? '' : 'hidden'}`}>
                   {carneyCabinetData?.length > 0 ? (
                     <div className="space-y-2">
                       {carneyCabinetData.map((c, i) => (
@@ -17372,15 +17372,15 @@ function App() {
                 const isLoading = !!leaderExecActionsLoading['Mark Carney'];
                 return (
                   <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div onClick={() => toggleCarneySection('keyDecisions')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
+                    <div onClick={() => toggleCarneySection('keyDecisions')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
                       <div className="flex items-center gap-2">
                         <h3 className="text-xl font-bold text-gray-800">⚖️ Key Government Priorities</h3>
                         {isLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
                         {acts?.length > 0 && !isLoading && liveBadge(null, 'Live')}
                       </div>
-                      <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedCarneySections.keyDecisions ? 'rotate-0' : '-rotate-90'}`} />
                     </div>
-                    <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.keyDecisions ? '' : 'hidden sm:block'}`}>
+                    <div className={`px-6 pb-6 space-y-3 ${expandedCarneySections.keyDecisions ? '' : 'hidden'}`}>
                       {acts?.length > 0 ? acts.map((item, i) => (
                         <div key={i} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
                           <div className="flex items-start justify-between gap-2 mb-1">
