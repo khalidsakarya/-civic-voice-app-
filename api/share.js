@@ -34,13 +34,27 @@ const TYPE_EMOJI = {
   default:  '🗳️',
 };
 
+// Vercel's query parser already URL-decodes values — calling decodeURIComponent again
+// would throw URIError on any description containing a literal '%' character, crashing
+// the function silently and leaving Facebook with only the image and no text.
+function safe(str) {
+  if (!str) return '';
+  try { return decodeURIComponent(str); } catch { return str; }
+}
+
 module.exports = (req, res) => {
   const { type = 'default', title = APP_NAME, desc = '', meta = '', img = '' } = req.query;
 
-  const emoji      = TYPE_EMOJI[type] || TYPE_EMOJI.default;
-  const ogTitle    = `${emoji} ${decodeURIComponent(title)} — ${APP_NAME}`;
-  const ogDesc     = [decodeURIComponent(desc), decodeURIComponent(meta)].filter(Boolean).join(' · ');
-  const ogImage    = decodeURIComponent(img) || DEFAULT_IMG;
+  // req.query values are already decoded by Vercel — safe() is just a safety net
+  const cleanTitle = safe(title) || APP_NAME;
+  const cleanDesc  = safe(desc);
+  const cleanMeta  = safe(meta);
+
+  const emoji   = TYPE_EMOJI[type] || TYPE_EMOJI.default;
+  // Keep emoji out of og:title — some Facebook crawler versions drop the whole tag on emoji
+  const ogTitle = `${cleanTitle} — ${APP_NAME}`;
+  const ogDesc  = [cleanDesc, cleanMeta].filter(Boolean).join(' · ') || `Explore Canadian government on ${APP_NAME}`;
+  const ogImage = safe(img) || DEFAULT_IMG;
 
   // Use the ACTUAL share URL as og:url so Facebook caches each item separately.
   // Real users are redirected to APP_URL via JS below.
@@ -79,7 +93,7 @@ module.exports = (req, res) => {
 </head>
 <body style="font-family:sans-serif;text-align:center;padding:40px;background:#f9fafb;">
   <p style="font-size:3rem;margin:0">${escHtml(emoji)}</p>
-  <h1 style="color:#1e293b;margin:16px 0 8px">${escHtml(decodeURIComponent(title))}</h1>
+  <h1 style="color:#1e293b;margin:16px 0 8px">${escHtml(cleanTitle)}</h1>
   <p style="color:#475569;max-width:480px;margin:0 auto 24px">${escHtml(ogDesc)}</p>
   <a href="${escHtml(APP_URL)}"
      style="display:inline-block;background:#16a34a;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700">
