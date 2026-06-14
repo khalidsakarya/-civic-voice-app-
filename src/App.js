@@ -29781,18 +29781,20 @@ function App() {
           </div>
 
           {/* Chamber tab switcher */}
-          <div className="flex gap-3 mb-6">
+          <div className="flex gap-2 sm:gap-3 mb-6">
             <button
               onClick={() => { setCaChamber('Senate'); setCaPartyFilter('All'); setCaSearch(''); }}
-              className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${caChamber === 'Senate' ? 'bg-red-600 text-white border-red-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-red-400'}`}
+              className={`flex-1 sm:flex-none px-3 sm:px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border text-center ${caChamber === 'Senate' ? 'bg-red-600 text-white border-red-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-red-400'}`}
             >
               Senate ({caSenateHeadline})
             </button>
             <button
               onClick={() => { setCaChamber('House'); setCaPartyFilter('All'); setCaSearch(''); }}
-              className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border ${caChamber === 'House' ? 'bg-red-600 text-white border-red-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-red-400'}`}
+              className={`flex-1 sm:flex-none px-3 sm:px-5 py-2.5 rounded-xl font-semibold text-sm transition-all border text-center ${caChamber === 'House' ? 'bg-red-600 text-white border-red-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:border-red-400'}`}
             >
-              House of Commons ({caHoCHeadline})
+              <span className="hidden sm:inline">House of Commons</span>
+              <span className="sm:hidden">House</span>
+              <span> ({caHoCHeadline})</span>
             </button>
           </div>
 
@@ -29852,7 +29854,7 @@ function App() {
           {/* Member cards */}
           {(!(!isSenate && loading)) && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {filtered.map((member, i) => {
                   const _caVcId = toVoteId('ca-mp', member.name);
                   const support = getVC(_caVcId, 'support');
@@ -29866,18 +29868,18 @@ function App() {
                     : (member.yearsInOffice || 0);
                   const roleBadge = !isSenate ? getRoleBadge(member) : null;
                   return (
-                    <div key={i} className="relative bg-white rounded-xl shadow-md p-6 border-2 border-transparent hover:border-red-400 hover:shadow-xl transition-all cursor-pointer"
+                    <div key={i} className="relative bg-white rounded-xl shadow-md p-4 sm:p-6 border-2 border-transparent hover:border-red-400 hover:shadow-xl transition-all cursor-pointer"
                       onClick={() => {
                         if (isSenate) { setSelectedSenator(member); setShowSenatorPanel(true); }
                         else { setSelectedMember(member); setView('member-detail'); }
                       }}
                     >
                       {/* Avatar */}
-                      <div style={{ backgroundColor: color }} className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-4">
+                      <div style={{ backgroundColor: color }} className="w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-white text-lg sm:text-2xl font-bold mb-3 sm:mb-4">
                         {initials}
                       </div>
 
-                      <h3 className="text-xl font-bold text-gray-800 mb-1">{member.name}</h3>
+                      <h3 className="text-base sm:text-xl font-bold text-gray-800 mb-1 leading-tight">{member.name}</h3>
 
                       {/* Role badge for MPs */}
                       {roleBadge && <div className="mb-2">{roleBadge}</div>}
@@ -33484,24 +33486,24 @@ function App() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-md p-8 mb-6">
-          <div className="flex items-start gap-6">
-            <div style={{backgroundColor: getPartyColor(selectedMember.party)}} className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold">
+      <div className="max-w-6xl mx-auto px-4 py-4 sm:py-8">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-8 mb-6">
+          <div className="flex items-start gap-3 sm:gap-6">
+            <div style={{backgroundColor: getPartyColor(selectedMember.party)}} className="w-14 h-14 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-white text-xl sm:text-3xl font-bold flex-shrink-0">
               {selectedMember.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
             </div>
-            
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-800 mb-3">{selectedMember.name}</h1>
-              
+
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-3xl font-bold text-gray-800 mb-2 sm:mb-3 leading-tight">{selectedMember.name}</h1>
+
               {getRoleBadge(selectedMember) && (
-                <div className="mb-3">
+                <div className="mb-2 sm:mb-3">
                   {getRoleBadge(selectedMember)}
                 </div>
               )}
 
               {selectedMember.portfolio && (
-                <p className="text-lg text-gray-700 italic mb-4">{selectedMember.portfolio}</p>
+                <p className="text-sm sm:text-lg text-gray-700 italic mb-3 sm:mb-4">{selectedMember.portfolio}</p>
               )}
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -37085,17 +37087,17 @@ function App() {
             </button>
           </div>
 
-        <div className="max-w-6xl mx-auto px-4 py-8 w-full">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8 w-full">
           {/* Header */}
-          <div className="bg-white rounded-lg shadow-md p-8 mb-6">
-            <div className="flex items-start gap-6">
-              <div style={{ backgroundColor: color }} className="w-24 h-24 rounded-full flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-8 mb-6">
+            <div className="flex items-start gap-3 sm:gap-6">
+              <div style={{ backgroundColor: color }} className="w-14 h-14 sm:w-24 sm:h-24 rounded-full flex items-center justify-center text-white text-xl sm:text-3xl font-bold flex-shrink-0">
                 {initials}
               </div>
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-800 mb-3">{s.name}</h1>
-                <div className="mb-3">
-                  <span style={{ backgroundColor: color }} className="text-white text-sm font-bold px-3 py-1.5 rounded-full">Senator – {s.party}</span>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl sm:text-3xl font-bold text-gray-800 mb-2 sm:mb-3 leading-tight">{s.name}</h1>
+                <div className="mb-2 sm:mb-3">
+                  <span style={{ backgroundColor: color }} className="text-white text-xs sm:text-sm font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full">Senator – {s.party}</span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex items-center gap-2 text-gray-600">
@@ -37145,28 +37147,28 @@ function App() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3 items-center">
+                <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 items-stretch sm:items-center w-full sm:w-auto">
                   {locInfoBtn()}
                   <button
                     onClick={() => requireRegion(() => voteSenator(s.name, 'support'))}
-                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${userVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-6 py-3 rounded-lg font-medium transition-colors ${userVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
                   >
-                    <ThumbsUp className="w-5 h-5" />
-                    <span className="text-sm sm:text-base">{userVote === 'support' ? 'Supporting' : 'Support This Senator'}</span>
+                    <ThumbsUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-xs sm:text-base">{userVote === 'support' ? 'Supporting' : 'Support'}</span>
                   </button>
                   <button
                     onClick={() => requireRegion(() => voteSenator(s.name, 'concerned'))}
-                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${userVote === 'concerned' ? 'bg-orange-600 text-white' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'}`}
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-6 py-3 rounded-lg font-medium transition-colors ${userVote === 'concerned' ? 'bg-orange-600 text-white' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'}`}
                   >
-                    <AlertCircle className="w-5 h-5" />
-                    <span className="text-sm sm:text-base">{userVote === 'concerned' ? 'Concerned' : 'Concerned About This Senator'}</span>
+                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-xs sm:text-base">Concerned</span>
                   </button>
                   <button
                     onClick={() => requireRegion(() => voteSenator(s.name, 'oppose'))}
-                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors ${userVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-6 py-3 rounded-lg font-medium transition-colors ${userVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}
                   >
-                    <ThumbsDown className="w-5 h-5" />
-                    <span className="text-sm sm:text-base">{userVote === 'oppose' ? 'Opposing' : 'Oppose This Senator'}</span>
+                    <ThumbsDown className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-xs sm:text-base">{userVote === 'oppose' ? 'Opposing' : 'Oppose'}</span>
                   </button>
                 </div>
               </div>
@@ -37174,32 +37176,32 @@ function App() {
           </div>
 
           {/* Contact */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">📧 Contact Your Senator</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Email Address</p>
-                <a href={`mailto:${memberBioData[s.name]?.email || email}`} className="text-blue-600 hover:text-blue-800 font-medium break-all">{memberBioData[s.name]?.email || email}</a>
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">📧 Contact Your Senator</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2 font-medium">Email Address</p>
+                <a href={`mailto:${memberBioData[s.name]?.email || email}`} className="text-blue-600 hover:text-blue-800 font-medium text-sm break-all">{memberBioData[s.name]?.email || email}</a>
               </div>
               {memberBioData[s.name]?.phone ? (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-2 font-medium">Phone</p>
-                  <a href={`tel:${memberBioData[s.name].phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{memberBioData[s.name].phone}</a>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2 font-medium">Phone</p>
+                  <a href={`tel:${memberBioData[s.name].phone}`} className="text-green-600 hover:text-green-800 font-medium">{memberBioData[s.name].phone}</a>
                 </div>
               ) : (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-2 font-medium">Official Profile</p>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2 font-medium">Official Profile</p>
                   <a href={senProfileUrl} target="_blank" rel="noopener noreferrer" className="text-green-700 hover:text-green-900 font-medium text-sm">View on sencanada.ca ↗</a>
                   <p className="text-xs text-gray-400 mt-1">Phone numbers listed on official profile</p>
                 </div>
               )}
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Senate Address</p>
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2 font-medium">Senate Address</p>
                 <p className="text-gray-700 text-sm">{officeAddress}</p>
               </div>
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Official Senate Page</p>
-                <a href={senProfileUrl} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-800 font-medium text-sm break-all">{senProfileUrl}</a>
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 sm:p-4">
+                <p className="text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2 font-medium">Official Senate Page</p>
+                <a href={senProfileUrl} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-800 font-medium text-sm flex items-center gap-1">🏛️ {s.name} on sencanada.ca ↗</a>
               </div>
             </div>
           </div>
