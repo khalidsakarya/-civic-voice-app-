@@ -16911,9 +16911,23 @@ function App() {
 
               {/* Lobbying Activity */}
               {(() => {
-                const liveLobby = memberLobbyingData['Mark Carney'];
+                const liveLobby = memberLobbyingData['Mark Carney'] || [];
                 const isLoadingLobby = !!memberLobbyingLoading['Mark Carney'];
-                const count = liveLobby?.length ?? 0;
+                const count = liveLobby.length;
+                // Aggregate by client organization
+                const byOrg = {};
+                liveLobby.forEach(d => {
+                  const org = d.client_organization || d.client_org || d.organization || 'Unknown';
+                  if (!byOrg[org]) byOrg[org] = { meetings: 0, subjects: new Set(), lastDate: '' };
+                  byOrg[org].meetings++;
+                  if (d.subject) byOrg[org].subjects.add(d.subject);
+                  if (d.meeting_date && d.meeting_date > byOrg[org].lastDate) byOrg[org].lastDate = d.meeting_date;
+                });
+                const topOrgs = Object.entries(byOrg)
+                  .map(([name, v]) => ({ name, meetings: v.meetings, subjects: [...v.subjects].slice(0, 2).join(', '), lastDate: v.lastDate }))
+                  .sort((a, b) => b.meetings - a.meetings)
+                  .slice(0, 10);
+                const uniqueOrgs = Object.keys(byOrg).length;
                 return (
                   <div className="bg-white rounded-lg shadow-md overflow-hidden">
                     <div onClick={() => toggleCarneySection('lobbying')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
@@ -16926,22 +16940,36 @@ function App() {
                       <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedCarneySections.lobbying ? 'rotate-0' : '-rotate-90'}`} />
                     </div>
                     {expandedCarneySections.lobbying && (
-                      <div className="px-6 pb-6 space-y-3">
+                      <div className="px-6 pb-6 space-y-4">
                         {count > 0 ? (
-                          liveLobby.map((org, idx) => (
-                            <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                              <div className="flex items-start justify-between gap-2 mb-1">
-                                <p className="font-semibold text-gray-800 text-sm">{org.registrant}</p>
-                                {org.date && <span className="text-xs text-gray-400 flex-shrink-0">{org.date}</span>}
+                          <>
+                            {/* Stats */}
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="bg-red-50 p-4 rounded-lg border border-red-100 text-center">
+                                <p className="text-3xl font-bold text-red-700">{count}</p>
+                                <p className="text-xs text-gray-500 mt-1">Total Registered Meetings</p>
                               </div>
-                              {org.title && <p className="text-xs font-medium text-gray-700 mb-0.5">{org.title}</p>}
-                              {org.client && <p className="text-xs text-blue-700 font-medium">{org.client}</p>}
-                              {org.filing_period && <p className="text-xs text-gray-400 mt-0.5">Period: {org.filing_period}</p>}
-                              {org.issues?.length > 0 && <div className="flex flex-wrap gap-1 mt-1">{org.issues.map((iss, ii) => <span key={ii} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{iss}</span>)}</div>}
-                              {org.description && <p className="text-xs text-gray-600 mt-1 leading-relaxed">{org.description}</p>}
-                              {org.source_url && <a href={org.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">📄 Source</a>}
+                              <div className="bg-orange-50 p-4 rounded-lg border border-orange-100 text-center">
+                                <p className="text-3xl font-bold text-orange-700">{uniqueOrgs}</p>
+                                <p className="text-xs text-gray-500 mt-1">Unique Organizations</p>
+                              </div>
                             </div>
-                          ))
+                            {/* Top orgs */}
+                            <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Top Organizations by Meetings</h4>
+                            <div className="space-y-2">
+                              {topOrgs.map((org, i) => (
+                                <div key={i} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <p className="font-semibold text-gray-800 text-sm leading-snug">{org.name}</p>
+                                    <span className="text-xs font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full whitespace-nowrap">{org.meetings} meeting{org.meetings !== 1 ? 's' : ''}</span>
+                                  </div>
+                                  {org.subjects && <p className="text-xs text-gray-500 mt-0.5">Topics: {org.subjects}</p>}
+                                  {org.lastDate && <p className="text-xs text-gray-400 mt-0.5">Last meeting: {org.lastDate}</p>}
+                                </div>
+                              ))}
+                            </div>
+                            <p className="text-xs text-gray-400 text-center">Source: Canada's Lobbying Registry — lobbycanada.gc.ca</p>
+                          </>
                         ) : (
                           <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{isLoadingLobby ? 'Loading…' : 'No lobbying records found in official database.'}</p>
                         )}
