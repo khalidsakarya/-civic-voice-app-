@@ -31443,7 +31443,7 @@ function App() {
               {(() => {
                 const caBillSource = caLiveData && caFirestoreBills.length > 0
                   ? caFirestoreBills.map(mapFirestoreBillToCA)
-                  : bills;
+                  : bills.map(mapFirestoreBillToCA);
                 return (<>
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-6 mb-8">
                 <div className="flex items-center gap-3 mb-2">
@@ -31508,6 +31508,7 @@ function App() {
                             <ChevronDown className="w-4 h-4 text-gray-400 ml-auto" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                           </div>
                           <h3 className="text-xl sm:text-lg font-bold text-gray-800 mb-2">{bill.shortTitle}</h3>
+                          {bill.summary && <p className="text-sm text-gray-600 mb-2 leading-relaxed">{bill.summary}</p>}
                           <div className="flex items-center justify-between gap-2">
                             {bill.sponsor && <p className="text-sm sm:text-[13px] text-gray-500 font-bold sm:font-normal">Sponsor: <strong>{bill.sponsor}</strong></p>}
                             {bill.last_updated && liveBadge(bill.last_updated, 'Weekly', 'shrink-0')}
@@ -31517,7 +31518,7 @@ function App() {
                         {/* Expanded details */}
                         {isExpanded && (
                           <div className="px-6 border-t border-gray-100">
-                            <p className="text-[17px] sm:text-[15px] text-gray-600 py-4 font-bold sm:font-normal">{bill.summary}</p>
+                            <div className="py-2" />
                             {bill.pros?.length > 0 && (
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                                 <div className="bg-green-50 border border-green-200 rounded-lg p-3">
@@ -31529,9 +31530,6 @@ function App() {
                                   <ul className="space-y-1">{bill.cons?.slice(0,3).map((c,i) => <li key={i} className="text-sm text-red-800">• {c}</li>)}</ul>
                                 </div>
                               </div>
-                            )}
-                            {bill.citizenImpactScore && (
-                              <p className="text-sm text-gray-500 mb-3">Citizen Impact Score: <strong className="text-blue-700">{bill.citizenImpactScore}/10</strong></p>
                             )}
                             {!caLiveData && (
                               <button
