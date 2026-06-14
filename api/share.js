@@ -23,7 +23,7 @@
 
 const APP_URL   = 'https://civic-voice-app.vercel.app';
 const APP_NAME  = 'Civic Voice';
-const DEFAULT_IMG = `${APP_URL}/logo192.png`;
+const DEFAULT_IMG = `${APP_URL}/logo512.png`; // 512×512 — above Facebook's 200×200 minimum
 
 const TYPE_EMOJI = {
   ministry: '🏛️',
@@ -60,14 +60,16 @@ module.exports = (req, res) => {
   <title>${escHtml(ogTitle)}</title>
 
   <!-- Open Graph (Facebook, WhatsApp, Telegram, iMessage link previews) -->
-  <meta property="og:type"        content="website" />
-  <meta property="og:site_name"   content="${escHtml(APP_NAME)}" />
-  <meta property="og:url"         content="${escHtml(selfUrl)}" />
-  <meta property="og:title"       content="${escHtml(ogTitle)}" />
-  <meta property="og:description" content="${escHtml(ogDesc)}" />
-  <meta property="og:image"       content="${escHtml(ogImage)}" />
-  <meta property="og:image:width" content="192" />
-  <meta property="og:image:height" content="192" />
+  <meta property="og:type"             content="website" />
+  <meta property="og:site_name"        content="${escHtml(APP_NAME)}" />
+  <meta property="og:url"              content="${escHtml(selfUrl)}" />
+  <meta property="og:title"            content="${escHtml(ogTitle)}" />
+  <meta property="og:description"      content="${escHtml(ogDesc)}" />
+  <meta property="og:image"            content="${escHtml(ogImage)}" />
+  <meta property="og:image:secure_url" content="${escHtml(ogImage)}" />
+  <meta property="og:image:width"      content="512" />
+  <meta property="og:image:height"     content="512" />
+  <meta property="og:image:type"       content="image/png" />
 
   <!-- Twitter / X Card -->
   <meta name="twitter:card"        content="summary" />
@@ -83,6 +85,12 @@ module.exports = (req, res) => {
      style="display:inline-block;background:#16a34a;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700">
     Open in Civic Voice →
   </a>
+  <!--
+    NOTE: No <meta http-equiv="refresh"> here.
+    That tag causes Facebook's crawler to follow the redirect BEFORE reading OG tags,
+    which means it ends up on the generic app root and loses all custom preview data.
+    Real users are redirected only by the JS below (which crawlers do not execute).
+  -->
   <script>window.location.replace("${APP_URL}")</script>
 </body>
 </html>`);
