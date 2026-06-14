@@ -37003,22 +37003,17 @@ function App() {
       return 'Mark Carney';
     };
 
-    const senHash = (str) => {
-      let h = 5381;
-      for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0x7fffffff;
-      return h;
-    };
-
-    const h = senHash(s.name);
-
-    // Contact
+    // Contact \u2014 email formula matches official sen.parl.gc.ca format
     const emailSlug = s.name.toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z\s]/g, '').trim().split(/\s+/).join('.');
     const email = `${emailSlug}@sen.parl.gc.ca`;
-    const phone = `613-992-${String((h % 9000) + 1000)}`;
-    const constituencyPhone = `613-947-${String(((h >> 5) % 9000) + 1000)}`;
     const officeAddress = 'Senate of Canada Building, 2 Rideau Street, Ottawa, ON K1A 0A4';
+    // sencanada.ca profile slug: lastname-firstname
+    const senProfileSlug = s.name.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z\s]/g, '').trim().split(/\s+/).reverse().join('-');
+    const senProfileUrl = `https://sencanada.ca/en/senators/${senProfileSlug}/`;
 
     // Appointment
     const appointedBy = getAppointingPM(s.dateAppointed);
@@ -37048,114 +37043,6 @@ function App() {
       });
     };
 
-    // Senate Committees
-    const ALL_COMMITTEES = [
-      'Agriculture and Forestry', 'Banking, Commerce and the Economy',
-      'Energy, the Environment and Natural Resources', 'Foreign Affairs and International Trade',
-      'Human Rights', 'Indigenous Peoples', 'Legal and Constitutional Affairs',
-      'National Finance', 'National Security, Defence and Veterans Affairs',
-      'Official Languages', 'Social Affairs, Science and Technology',
-      'Transport and Communications', 'Fisheries and Oceans',
-      'Internal Economy, Budgets and Administration',
-    ];
-    const committees = [
-      ALL_COMMITTEES[h % ALL_COMMITTEES.length],
-      ALL_COMMITTEES[(h >> 3) % ALL_COMMITTEES.length],
-    ].filter((c, i, arr) => arr.indexOf(c) === i);
-    if (committees.length < 2) committees.push(ALL_COMMITTEES[(h >> 7) % ALL_COMMITTEES.length]);
-
-    // Voting History
-    const SENATE_BILLS = [
-      { bill: 'S-1', title: 'Senate Modernization Act', description: 'Proposes reforms to Senate appointment processes and committee structures.' },
-      { bill: 'S-5', title: 'Strengthening Environmental Protection Act', description: 'Amends the Canadian Environmental Protection Act to modernize environmental regulation.' },
-      { bill: 'C-11', title: 'Online Streaming Act', description: 'Modernizes the Broadcasting Act to include online streaming platforms.' },
-      { bill: 'C-18', title: 'Online News Act', description: 'Requires digital news intermediaries to negotiate agreements with news businesses.' },
-      { bill: 'C-22', title: 'Canada Disability Benefit Act', description: 'Establishes a new federal benefit for working-age Canadians with disabilities.' },
-      { bill: 'C-30', title: 'Cost of Living Relief Act', description: 'Provides targeted financial relief to lower-income Canadians.' },
-      { bill: 'C-46', title: 'Drug Checking Services Act', description: 'Authorizes drug checking services to operate legally across Canada.' },
-      { bill: 'S-14', title: 'Fighting Foreign Interference Act', description: 'Strengthens Canada\'s ability to combat foreign interference in democratic institutions.' },
-    ];
-    const VOTE_TYPES = ['For', 'Against', 'Abstained'];
-    const VOTE_DATES = ['2024-03-15', '2024-05-22', '2024-06-18', '2024-09-30', '2024-11-14', '2025-01-28', '2025-02-11', '2025-03-04'];
-    const votingHistory = SENATE_BILLS.map((bill, i) => ({
-      ...bill,
-      vote: VOTE_TYPES[(h + i * 3) % 3],
-      date: VOTE_DATES[(h + i) % VOTE_DATES.length],
-    }));
-
-    // Attendance
-    const attendance = {
-      percentage: 75 + (h % 20),
-      sessionsAttended: 108 + (h % 30),
-      totalSessions: 138,
-      ranking: (h % 90) + 1,
-    };
-
-    // Expenses
-    const expTotal = 100000 + (h % 120000);
-    const expenses = {
-      total: expTotal,
-      year: 2024,
-      breakdown: {
-        'Travel & Transportation': Math.round(expTotal * 0.32),
-        'Staff Salaries': Math.round(expTotal * 0.38),
-        'Office Operations': Math.round(expTotal * 0.16),
-        'Communications': Math.round(expTotal * 0.08),
-        'Research & Training': Math.round(expTotal * 0.06),
-      },
-    };
-
-    // Financial Disclosure
-    const worthWhenAppointed = 800000 + (h % 4200000);
-    const percentageIncrease = 15 + (h % 80);
-    const currentWorth = Math.round(worthWhenAppointed * (1 + percentageIncrease / 100));
-    const financialDisclosure = {
-      electedYear: appointedYear,
-      worthWhenElected: worthWhenAppointed,
-      currentWorth,
-      percentageIncrease,
-      annualSalary: 170400,
-      assets: [
-        { type: 'Primary Residence', value: Math.round(worthWhenAppointed * 0.38) },
-        { type: 'Investment Portfolio', value: Math.round(worthWhenAppointed * 0.32) },
-        { type: 'Pension & Retirement Funds', value: Math.round(worthWhenAppointed * 0.18) },
-        { type: 'Other Assets', value: Math.round(worthWhenAppointed * 0.12) },
-      ],
-    };
-
-    // Lobbying
-    const LOBBY_ORGS = [
-      { name: 'Canadian Chamber of Commerce', sector: 'Business & Trade' },
-      { name: 'Canadian Medical Association', sector: 'Healthcare' },
-      { name: 'Mining Association of Canada', sector: 'Natural Resources' },
-      { name: 'Canadian Bankers Association', sector: 'Financial Services' },
-      { name: 'Pharmaceutical Research & Manufacturers', sector: 'Pharmaceutical' },
-      { name: 'Canadian Federation of Independent Business', sector: 'Small Business' },
-      { name: 'Clean Energy Canada', sector: 'Energy & Environment' },
-      { name: 'Canadian Real Estate Association', sector: 'Real Estate' },
-      { name: 'Aerospace Industries Association of Canada', sector: 'Aerospace & Defence' },
-      { name: 'Insurance Bureau of Canada', sector: 'Insurance' },
-      { name: 'Grain Growers of Canada', sector: 'Agriculture' },
-      { name: 'Canadian Wireless Telecommunications Association', sector: 'Telecommunications' },
-    ];
-    const LOBBY_DATES = ['2025-09-14', '2025-10-03', '2025-11-18', '2025-08-27', '2025-12-05', '2026-01-22', '2025-07-11', '2026-02-08', '2025-06-30', '2026-01-15'];
-    const lobbyOrgs = Array.from({ length: (h % 2) + 2 }, (_, i) => {
-      const org = LOBBY_ORGS[(h + i * 11) % LOBBY_ORGS.length];
-      return { name: org.name, sector: org.sector, value: ((h + i * 13) % 80 + 20) * 1000, meetings: ((h + i * 7) % 8) + 2, lastMeeting: LOBBY_DATES[(h + i * 3) % LOBBY_DATES.length] };
-    });
-    const lobbying = { totalMeetings: lobbyOrgs.reduce((sum, o) => sum + o.meetings, 0), totalValue: lobbyOrgs.reduce((sum, o) => sum + o.value, 0), organizations: lobbyOrgs };
-
-    // Corporate Connections
-    const CORP_COMPANIES = ['RBC Capital Markets', 'TD Securities', 'Brookfield Asset Management', 'Manulife Financial', 'Sun Life Financial', 'Scotiabank', 'BCE Inc.', 'Rogers Communications', 'Shopify Inc.', 'Canadian National Railway', 'Enbridge Inc.', 'TC Energy', 'Barrick Gold', 'Bombardier Inc.', 'Magna International', 'Teck Resources', 'Suncor Energy', 'CIBC', 'Power Corporation of Canada', 'Thomson Reuters', 'Loblaw Companies', 'Saputo Inc.'];
-    const CORP_ROLES = ['Board Director', 'Advisory Board Member', 'Senior Advisor', 'Board Chair', 'Audit Committee Member', 'Governance Committee Member', 'Independent Director'];
-    const CORP_PERIODS = ['2018–present', '2019–present', '2020–present', '2016–2021', '2015–2019', '2017–2022', '2021–present', '2014–2018', '2020–2023'];
-    const CORP_DESCS = ['Provides strategic oversight on regulatory affairs and public policy matters.', 'Advises on governance frameworks and stakeholder engagement strategies.', 'Offers counsel on federal policy, Indigenous relations, and environmental compliance.', 'Contributes expertise in fiscal policy and financial regulation.', 'Guides corporate strategy on government relations and legislative developments.'];
-    const corporateConnections = Array.from({ length: (h % 2) + 2 }, (_, i) => ({
-      company: CORP_COMPANIES[(h + i * 7) % CORP_COMPANIES.length],
-      role: CORP_ROLES[(h + i * 3) % CORP_ROLES.length],
-      period: CORP_PERIODS[(h + i * 5) % CORP_PERIODS.length],
-      description: CORP_DESCS[(h + i * 2) % CORP_DESCS.length],
-    }));
 
     return (
       <div className="fixed inset-0 z-50 flex justify-end">
@@ -37266,19 +37153,27 @@ function App() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-2 font-medium">Email Address</p>
-                <a href={`mailto:${email}`} className="text-blue-600 hover:text-blue-800 font-medium break-all">{email}</a>
+                <a href={`mailto:${memberBioData[s.name]?.email || email}`} className="text-blue-600 hover:text-blue-800 font-medium break-all">{memberBioData[s.name]?.email || email}</a>
               </div>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Senate Office</p>
-                <a href={`tel:${phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{phone}</a>
-              </div>
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-2 font-medium">Constituency Office</p>
-                <a href={`tel:${constituencyPhone}`} className="text-purple-600 hover:text-purple-800 font-medium text-lg">{constituencyPhone}</a>
-              </div>
+              {memberBioData[s.name]?.phone ? (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-2 font-medium">Phone</p>
+                  <a href={`tel:${memberBioData[s.name].phone}`} className="text-green-600 hover:text-green-800 font-medium text-lg">{memberBioData[s.name].phone}</a>
+                </div>
+              ) : (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-2 font-medium">Official Profile</p>
+                  <a href={senProfileUrl} target="_blank" rel="noopener noreferrer" className="text-green-700 hover:text-green-900 font-medium text-sm">View on sencanada.ca ↗</a>
+                  <p className="text-xs text-gray-400 mt-1">Phone numbers listed on official profile</p>
+                </div>
+              )}
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                 <p className="text-sm text-gray-600 mb-2 font-medium">Senate Address</p>
                 <p className="text-gray-700 text-sm">{officeAddress}</p>
+              </div>
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-2 font-medium">Official Senate Page</p>
+                <a href={senProfileUrl} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-800 font-medium text-sm break-all">{senProfileUrl}</a>
               </div>
             </div>
           </div>
@@ -37307,23 +37202,33 @@ function App() {
               {memberCommitteeLoading[s.name] && <span className="text-xs text-blue-500 flex items-center gap-1 font-normal"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
               {memberCommitteeData[s.name]?.length > 0 && !memberCommitteeLoading[s.name] && liveBadge(memberCommitteeData[s.name]?.[0]?.last_updated, 'Monthly')}
             </h4>
-            <div className="space-y-2">
-              {(memberCommitteeData[s.name]?.length > 0 ? memberCommitteeData[s.name] : committees.map(c => ({ committeeName: `Standing Senate Committee on ${c}` }))).map((c, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div style={{ backgroundColor: color }} className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" />
-                  <div className="min-w-0">
-                    <span className="text-gray-700">{c.committeeName || c.committee || c.name || `Standing Senate Committee on ${c}`}</span>
-                    {(c.role || c.startDate) && (
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {c.role && <span className="font-medium">{c.role}</span>}
-                        {c.role && c.startDate && <span className="mx-1">·</span>}
-                        {c.startDate && <span>Since {c.startDate}</span>}
-                      </p>
-                    )}
+            {memberCommitteeData[s.name]?.length > 0 ? (
+              <div className="space-y-2">
+                {memberCommitteeData[s.name].map((c, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div style={{ backgroundColor: color }} className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" />
+                    <div className="min-w-0">
+                      <span className="text-gray-700">{c.committeeName || c.committee || c.name}</span>
+                      {(c.role || c.startDate) && (
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {c.role && <span className="font-medium">{c.role}</span>}
+                          {c.role && c.startDate && <span className="mx-1">·</span>}
+                          {c.startDate && <span>Since {c.startDate}</span>}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : memberCommitteeLoading[s.name] ? (
+              <p className="text-sm text-gray-400 italic">Loading committee assignments…</p>
+            ) : (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm font-medium text-blue-900 mb-1">Committee assignments available on sencanada.ca</p>
+                <p className="text-xs text-blue-700 mb-2">The Senate of Canada website uses JavaScript rendering — committee data cannot be automatically extracted. View this senator's full profile for current assignments.</p>
+                <a href={senProfileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline font-medium">🏛️ View {s.name}'s profile on sencanada.ca ↗</a>
+              </div>
+            )}
           </div>
 
           {/* Voting History */}
