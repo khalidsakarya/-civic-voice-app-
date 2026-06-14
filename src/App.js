@@ -16705,13 +16705,19 @@ function App() {
   const renderCarneyDetail = () => {
     const partyColor = '#EF4444'; // Liberal red
 
-    const carney = {
-      name: 'Mark J. Carney',
-      party: 'Liberal',
-    };
     const carneyBio = memberBioData['Mark Carney'];
     const carneyBioLoading = !!memberBioLoading['Mark Carney'];
     const cpd = leaderProfileData['Mark Carney'] ?? {};
+    const ti = cpd.term_information ?? {};
+    // Read profile constants from Firestore leader_profile_data; fall back to known values
+    const carney = {
+      name:      ti.name       || 'Mark J. Carney',
+      party:     ti.party      || 'Liberal',
+      title:     ti.pm_number  ? `${ti.pm_number}${['th','st','nd','rd'][((ti.pm_number % 100 - 20) % 10)] || 'th'} Prime Minister` : '24th Prime Minister',
+      termStart: ti.term_start || 'March 14, 2025',
+      priorRole: ti.prior_role || 'Former Bank of Canada & Bank of England Governor',
+      location:  ti.location   || 'Ottawa, ON',
+    };
     const cpdLoading = !!leaderProfileLoading['Mark Carney'];
 
     return (
@@ -16749,12 +16755,12 @@ function App() {
                       style={{ backgroundColor: partyColor }}
                       className="text-white text-xs md:text-sm font-bold px-2.5 md:px-3 py-1 md:py-1.5 rounded-full shadow-sm"
                     >
-                      24th Prime Minister
+                      {carney.title}
                     </span>
                     <span className="text-sm text-gray-600 font-medium">Canada</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">{carney.party} · Ottawa, ON</p>
-                  <p className="text-sm text-gray-500">In office since Mar 14, 2025</p>
+                  <p className="text-sm text-gray-500 mt-1">{carney.party} · {carney.location}</p>
+                  <p className="text-sm text-gray-500">In office since {carney.termStart}</p>
                   <div className="hidden md:grid md:grid-cols-2 gap-4 mt-4">
                     <div className="flex items-center gap-2 text-gray-600">
                       <span className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: partyColor }}></span>
@@ -16762,15 +16768,15 @@ function App() {
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <MapPin className="w-4 h-4" />
-                      <span>Ottawa, Ontario</span>
+                      <span>{carney.location}</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4" />
-                      <span>In office since March 14, 2025</span>
+                      <span>In office since {carney.termStart}</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <Clock className="w-4 h-4" />
-                      <span>Former Bank of Canada & Bank of England Governor</span>
+                      <span>{carney.priorRole}</span>
                     </div>
                   </div>
                 </div>
@@ -16871,7 +16877,7 @@ function App() {
                     </div>
                     {expandedCarneySections.expenses && (
                       <div className="px-6 pb-6 space-y-4">
-                        <p className="text-xs text-gray-400 bg-blue-50 border border-blue-100 rounded-lg px-4 py-2">ℹ️ Personal travel and hospitality expenses are published quarterly. Q1 2025–26 data expected late 2025.</p>
+                        <p className="text-xs text-gray-400 bg-blue-50 border border-blue-100 rounded-lg px-4 py-2">ℹ️ Ministers' office expenses are published quarterly by the Treasury Board Secretariat.{exp?.period ? ` Showing: ${exp.period}.` : ' New quarters typically appear 3–4 months after period end.'}</p>
                         {exp ? (
                           <>
                             <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
@@ -16978,24 +16984,92 @@ function App() {
               })()}
 
               {/* Financial Disclosures */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h3>
-                    {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
-                  </div>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedCarneySections.financial ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                {expandedCarneySections.financial && (
-                  <div className="px-6 pb-6">
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm text-gray-700 leading-relaxed">
-                      Financial disclosure filed with the Conflict of Interest and Ethics Commissioner. Registry currently unavailable — check{' '}
-                      <a href="https://ciec-ccie.oic.gc.ca" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium">ciec-ccie.oic.gc.ca</a>{' '}
-                      directly.
+              {(() => {
+                const discDocs = memberDisclosureData['Mark Carney'];
+                const isLoadingDisc = !!memberDisclosureLoading['Mark Carney'];
+                const disc = discDocs?.[0] ?? null;
+                return (
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div onClick={() => toggleCarneySection('financial')} className="p-6 cursor-pointer flex items-center justify-between hover:bg-gray-50">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-xl font-bold text-gray-800">💰 Financial Disclosures</h3>
+                        {isLoadingDisc && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
+                        {disc && !isLoadingDisc && liveBadge(null, 'Annual')}
+                        {coverageBadge('partial', 'Publicly declared interests only', 'Undisclosed holdings not included')}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 flex-shrink-0 ${expandedCarneySections.financial ? 'rotate-0' : '-rotate-90'}`} />
                     </div>
+                    {expandedCarneySections.financial && (
+                      <div className="px-6 pb-6 space-y-4">
+                        {disc ? (
+                          <>
+                            <p className="text-sm text-gray-600 leading-relaxed">{disc.summary}</p>
+
+                            {/* Declared Assets */}
+                            {Array.isArray(disc.declared_assets) && disc.declared_assets.length > 0 && (
+                              <div>
+                                <h4 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Declared Assets</h4>
+                                <div className="space-y-2">
+                                  {disc.declared_assets.map((a, i) => (
+                                    <div key={i} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                                      <div className="flex items-start justify-between gap-2">
+                                        <div>
+                                          <span className="text-xs font-bold text-purple-700 mr-2">{a.category}</span>
+                                          <span className="text-sm text-gray-800">{a.description}</span>
+                                        </div>
+                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${a.status?.includes('Recused') ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>{a.status}</span>
+                                      </div>
+                                      {a.estimated_value && <p className="text-xs text-gray-500 mt-1">Estimated value: {a.estimated_value}</p>}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Declared Interests */}
+                            {Array.isArray(disc.declared_interests) && disc.declared_interests.length > 0 && (
+                              <div>
+                                <h4 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Declared Interests</h4>
+                                <div className="space-y-2">
+                                  {disc.declared_interests.map((d, i) => (
+                                    <div key={i} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                                      <p className="text-sm font-semibold text-gray-800">{d.organization}</p>
+                                      <p className="text-xs text-gray-500">{d.role}</p>
+                                      {d.conflict_status && <p className="text-xs text-orange-700 mt-1">⚠️ {d.conflict_status}</p>}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Recusals */}
+                            {Array.isArray(disc.recusals) && disc.recusals.length > 0 && (
+                              <div>
+                                <h4 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Active Recusals</h4>
+                                <ul className="space-y-1">
+                                  {disc.recusals.map((r, i) => <li key={i} className="text-xs text-gray-700 flex items-start gap-2"><span className="text-orange-500 flex-shrink-0">⚠️</span>{r}</li>)}
+                                </ul>
+                              </div>
+                            )}
+
+                            <p className="text-xs text-gray-400">
+                              Source: <a href={disc.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{disc.source_name} ↗</a>
+                              {disc.filed_date && ` · Filed ${disc.filed_date}`}
+                            </p>
+                          </>
+                        ) : isLoadingDisc ? (
+                          <p className="text-sm text-gray-500 flex items-center gap-2"><span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />Loading disclosures…</p>
+                        ) : (
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm text-gray-700 leading-relaxed">
+                            Financial disclosure filed with the Conflict of Interest and Ethics Commissioner.{' '}
+                            <a href="https://ciec-ccie.oic.gc.ca/en/public-registry" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium">View full registry ↗</a>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                );
+              })()}
 
               {/* Attendance Record */}
               {(() => {
