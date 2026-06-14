@@ -17099,8 +17099,8 @@ function App() {
                 );
               })()}
 
-              {/* Attendance Record */}
-              {(() => {
+              {/* Attendance Record — removed per product decision */}
+              {false && (() => {
                 const attDocs = memberAttendanceData['Mark Carney'];
                 const isLoadingAtt = !!memberAttendanceLoading['Mark Carney'];
                 const att = attDocs?.[0] ?? null;
@@ -17227,8 +17227,8 @@ function App() {
                 );
               })()}
 
-              {/* Key Policy Areas */}
-              {(() => {
+              {/* Key Policy Areas — removed per product decision */}
+              {false && (() => {
                 const sec = cpd['key_policy_areas'];
                 const policies = sec?.policies ?? sec?.items ?? [];
                 return (
@@ -17259,8 +17259,8 @@ function App() {
                 );
               })()}
 
-              {/* Term Information */}
-              {(() => {
+              {/* Term Information — removed per product decision */}
+              {false && (() => {
                 const sec = cpd['term_information'];
                 const hasData = sec && Object.keys(sec).some(k => k !== 'section' && k !== 'member_name' && sec[k]);
                 return (
