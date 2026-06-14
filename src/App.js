@@ -2052,6 +2052,9 @@ function App() {
   const [senatorVotes, setSenatorVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cvSenatorVotes') || '{}'); } catch { return {}; }
   });
+  const [contractVotes, setContractVotes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cvContractVotes') || '{}'); } catch { return {}; }
+  });
   const [caChamber, setCaChamber] = useState('Senate');
   const [caPartyFilter, setCaPartyFilter] = useState('All');
   const [caSearch, setCaSearch] = useState('');
@@ -32815,6 +32818,17 @@ function App() {
                 const endDate = fmtDate(c.end_date);
                 const isActive = c.status?.toLowerCase() === 'active';
                 const isCompleted = c.status?.toLowerCase() === 'completed';
+                const contractKey = c.id || `${c.contractor_name}-${c.value}`;
+                const userContractVote = contractVotes[contractKey] || null;
+                const voteContract = (e, vote) => {
+                  e.stopPropagation();
+                  setContractVotes(prev => {
+                    const next = { ...prev };
+                    if (next[contractKey] === vote) { delete next[contractKey]; } else { next[contractKey] = vote; }
+                    localStorage.setItem('cvContractVotes', JSON.stringify(next));
+                    return next;
+                  });
+                };
                 return (
                   <div key={c.id || i}
                     onClick={() => { setSelectedContract(c); setView('contract-detail'); }}
@@ -32845,10 +32859,34 @@ function App() {
                       )}
                     </div>
                     {c.purpose && (
-                      <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-green-400">
+                      <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-green-400 mb-4">
                         <p className="text-gray-700">{c.purpose}</p>
                       </div>
                     )}
+                    {/* Citizen Opinion Buttons */}
+                    <div className="flex gap-2 pt-1" onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={e => voteContract(e, 'support')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-semibold transition-colors ${userContractVote === 'support' ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'}`}
+                      >
+                        <ThumbsUp className="w-3.5 h-3.5" />
+                        {userContractVote === 'support' ? 'Supporting' : 'Support'}
+                      </button>
+                      <button
+                        onClick={e => voteContract(e, 'concerned')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-semibold transition-colors ${userContractVote === 'concerned' ? 'bg-orange-500 text-white' : 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200'}`}
+                      >
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        Concerned
+                      </button>
+                      <button
+                        onClick={e => voteContract(e, 'oppose')}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-semibold transition-colors ${userContractVote === 'oppose' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'}`}
+                      >
+                        <ThumbsDown className="w-3.5 h-3.5" />
+                        {userContractVote === 'oppose' ? 'Opposing' : 'Oppose'}
+                      </button>
+                    </div>
                   </div>
                 );
               })}
