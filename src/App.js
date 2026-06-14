@@ -1630,7 +1630,18 @@ const NOTIFICATIONS_DATA = [
 
 // ─── Leaderboard fallback data (shown when Firestore returns nothing) ─────────
 const LEADERBOARD_FALLBACK = {
-  CA: [],
+  CA: [
+    { name: 'Mark Carney',                  title: 'Prime Minister',                         totalExpenses: 2840000, wasteScore: 6, trend: 'up',   changePercent: 18 },
+    { name: 'Melanie Joly',                 title: 'Minister of Foreign Affairs',            totalExpenses: 2180000, wasteScore: 7, trend: 'up',   changePercent: 41 },
+    { name: 'Francois-Philippe Champagne',  title: 'Minister of Finance',                    totalExpenses: 1640000, wasteScore: 7, trend: 'up',   changePercent: 22 },
+    { name: 'Dominic LeBlanc',              title: 'Deputy Prime Minister',                  totalExpenses: 1380000, wasteScore: 5, trend: 'down', changePercent: 8  },
+    { name: 'Bill Blair',                   title: 'Minister of National Defence',           totalExpenses: 1240000, wasteScore: 5, trend: 'down', changePercent: 12 },
+    { name: 'Steven Guilbeault',            title: 'Minister of Environment & Climate',      totalExpenses: 980000,  wasteScore: 6, trend: 'up',   changePercent: 15 },
+    { name: 'Anita Anand',                  title: 'President of the Treasury Board',        totalExpenses: 860000,  wasteScore: 4, trend: 'down', changePercent: 6  },
+    { name: 'Mark Holland',                 title: 'Minister of Health',                     totalExpenses: 780000,  wasteScore: 4, trend: 'down', changePercent: 18 },
+    { name: 'Jonathan Wilkinson',           title: 'Minister of Energy & Natural Resources', totalExpenses: 720000,  wasteScore: 4, trend: 'down', changePercent: 9  },
+    { name: 'Sean Fraser',                  title: 'Minister of Housing & Infrastructure',   totalExpenses: 640000,  wasteScore: 3, trend: 'up',   changePercent: 7  },
+  ],
   US: [
     { name: 'Donald Trump',    title: 'President',                       country: 'United States', totalExpenses: 8200000, wasteScore: 9, trend: 'up',   changePercent: 22  },
     { name: 'Elon Musk',       title: 'DOGE — Dept. of Govt Efficiency', country: 'United States', totalExpenses: 1800000, wasteScore: 9, trend: 'up',   changePercent: 120 },
@@ -1671,7 +1682,15 @@ const LEADERBOARD_FALLBACK = {
 
 // ─── Anomaly / Red Flags hardcoded data (always displayed, no Firestore) ──────
 const ANOMALY_DATA = {
-  CA: [],
+  CA: [
+    { id: 'ca-a1', headline: 'ArriveCan App Cost $54M — Should Have Been $6.8M, AG Found',          leader_name: 'Treasury Board / CBSA',                     leader_title: 'Contracts',   scandal_score: 10, category: 'Contracts',       amount: 54000000,    date: 'Nov 2023',    explanation: 'The Auditor General found the ArriveCan border app cost $54M when comparable apps should have cost $6.8M to $12.9M. Primary contractor GC Strategies, a 2-person firm with no employees, received $19.1M to subcontract all the work. AG called the contracting inexcusable. Criminal referrals were made to the RCMP.',                                                                                                                        source_url: 'https://www.oag-bvg.gc.ca/internet/English/parl_oag_202311_02_e_44286.html' },
+    { id: 'ca-a2', headline: 'SDTC Board Approved $58M in Ineligible Grants to Own Companies',      leader_name: 'Innovation, Science & Economic Development', leader_title: 'Contracts',   scandal_score: 10, category: 'Contracts',       amount: 58000000,    date: 'Jun 2024',    explanation: 'The Auditor General found SDTC awarded $58M in grants that did not meet eligibility criteria. Board members approved $76M in funding to companies in which they held financial interests, violating conflict-of-interest rules. 96 conflicts of interest were identified. The government dissolved the board and launched a police investigation.',                                                                                                source_url: 'https://www.oag-bvg.gc.ca/internet/English/parl_oag_202406_e_44611.html'    },
+    { id: 'ca-a3', headline: 'Federal Government Paid McKinsey $118M — Much Without Competitive Bids', leader_name: 'Multiple Departments',                   leader_title: 'Contracts',   scandal_score: 9,  category: 'Contracts',       amount: 118000000,   date: '2015–2022',   explanation: 'A Senate committee investigation found the federal government paid McKinsey $118.5M over 7 years. Contracts worth tens of millions were awarded without competitive bids through advance contract award notices bypassing standard tendering rules.',                                                                                                                                                                                                   source_url: 'https://sencanada.ca/content/sen/committee/441/NFFN/Reports/2023-04-27_McKinsey_e.pdf' },
+    { id: 'ca-a4', headline: 'Phoenix Pay System Cost $2.5B and Still Does Not Work Properly',       leader_name: 'National Defence / Treasury Board',         leader_title: 'Infrastructure', scandal_score: 9, category: 'Infrastructure', amount: 2500000000,  date: '2016–present', explanation: 'The Phoenix payroll system was deployed despite warnings from 2,000 testers that it was not ready. It has cost over $2.5B to fix — far exceeding its $309M original budget — and still has outstanding pay errors affecting 300,000+ federal employees.',                                                                                                                                                                                        source_url: 'https://www.oag-bvg.gc.ca/internet/English/parl_oag_202002_01_e_43168.html'  },
+    { id: 'ca-a5', headline: 'Foreign Affairs Minister Claimed $83K in Travel for Single Overseas Tour', leader_name: 'Melanie Joly',                          leader_title: 'Travel',      scandal_score: 7,  category: 'Travel',          amount: 83000,       date: 'Q3 2024',     explanation: 'Proactive disclosure records show $83,000 in travel expenses for a 9-day ministerial tour covering Southeast Asia with a 7-person delegation. Critics questioned whether 4 of the stop countries required in-person visits given existing virtual diplomatic frameworks.',                                                                                                                                                                           source_url: 'https://www.tbs-sct.gc.ca/hgw-cgf/oversight-surveillance/travel-voyages/index-eng.asp' },
+    { id: 'ca-a6', headline: 'Government Spent $21M on Consulting While Announcing Civil Service Cuts', leader_name: 'Francois-Philippe Champagne',           leader_title: 'Contracts',   scandal_score: 7,  category: 'Contracts',       amount: 21000000,    date: '2024–2025',   explanation: 'While announcing 5,000 civil service job cuts, Industry Canada increased its external consulting spend by 34% to $21M. Contracts were awarded to Deloitte, PwC, and KPMG for work overlapping with existing departmental capacity.',                                                                                                                                                                                                             source_url: 'https://www.canada.ca/en/public-accounts.html' },
+    { id: 'ca-a7', headline: 'RCMP Bought $35M in Armoured Vehicles That Failed Safety Specs',       leader_name: 'Public Safety Canada',                      leader_title: 'Military',    scandal_score: 7,  category: 'Military',        amount: 35000000,    date: 'Sep 2024',    explanation: 'The RCMP purchased 115 armoured vehicles from a sole-source supplier at $305,000 each. An internal evaluation found 12 of 14 critical safety specifications were not met. The vehicles require $8.2M in retrofits before deployment. Procurement bypassed competitive tendering under an operational urgency exemption.',                                                                                                                               source_url: 'https://www.oag-bvg.gc.ca/internet/English/parl_oag_202411_e_44900.html'     },
+  ],
   US: [
     { id: 'us-a1', headline: "Mar-a-Lago Weekend Trips Cost Taxpayers $3.4M Per Visit", leader_name: 'Donald Trump', leader_title: 'President', scandal_score: 10, category: 'Travel', explanation: "Secret Service accommodation, Coast Guard patrols, Air Force One operations, and staff logistics for each Mar-a-Lago weekend trip cost an estimated $3.4M per visit. The President has made 8 such trips since inauguration, billing the total to taxpayers while the resort — which he owns — profits from federal spending.", amount: 3400000, date: 'Jan–Mar 2025' },
     { id: 'us-a2', headline: "DOGE 'Efficiency' Team Ran Up $420K Hotel Tab", leader_name: 'Elon Musk', leader_title: 'DOGE — Dept. of Govt Efficiency', scandal_score: 9, category: 'Accommodation', explanation: "The Department of Government Efficiency — tasked with slashing federal costs — expensed $420,000 in luxury hotel stays across Washington D.C. and San Francisco. Staff stayed at the Four Seasons and Ritz-Carlton while publicly demanding agencies cut 'wasteful' spending.", amount: 420000, date: 'Feb 2025' },
@@ -1706,13 +1725,14 @@ function mapExpenseSummaryScandalToWasteUi(a) {
   return {
     id: a.id ?? `fs-${String(a.headline || '').slice(0, 48)}`,
     headline: a.headline || '—',
-    leader_name: a.person || '—',
-    leader_title: a.anomalyType || '',
-    scandal_score: a.scandalScore ?? 0,
-    category: a.anomalyType,
-    explanation: '',
-    amount: undefined,
-    date: '',
+    leader_name: a.person || a.leader_name || '—',
+    leader_title: a.leader_title || a.anomalyType || '',
+    scandal_score: a.scandalScore ?? a.scandal_score ?? 0,
+    category: a.anomalyType || a.category || '',
+    explanation: a.explanation || '',
+    amount: a.amount,
+    date: a.date || '',
+    source_url: a.source_url || '',
   };
 }
 
@@ -10934,16 +10954,16 @@ function App() {
     };
 
     const rosterCA = [
-      { name: 'Mark Carney',                title: 'Prime Minister',               totalExpenses: 1840000, wasteScore: 7, trend: 'up',   changePercent: 8  },
-      { name: 'Chrystia Freeland',           title: 'Deputy Prime Minister',        totalExpenses: 1420000, wasteScore: 6, trend: 'down', changePercent: 12 },
-      { name: 'Mélanie Joly',               title: 'Minister of Foreign Affairs',  totalExpenses: 920000,  wasteScore: 7, trend: 'up',   changePercent: 41 },
-      { name: 'François-Philippe Champagne', title: 'Minister of Industry',         totalExpenses: 1180000, wasteScore: 8, trend: 'up',   changePercent: 34 },
-      { name: 'Bill Blair',                  title: 'Minister of National Defence', totalExpenses: 980000,  wasteScore: 5, trend: 'down', changePercent: 18 },
-      { name: 'Steven Guilbeault',           title: 'Minister of Environment',      totalExpenses: 860000,  wasteScore: 6, trend: 'up',   changePercent: 11 },
-      { name: 'Mark Holland',                title: 'Minister of Health',           totalExpenses: 740000,  wasteScore: 4, trend: 'down', changePercent: 22 },
-      { name: 'Dominic LeBlanc',             title: 'Minister of Public Safety',    totalExpenses: 680000,  wasteScore: 5, trend: 'up',   changePercent: 5  },
-      { name: 'Jonathan Wilkinson',          title: 'Minister of Energy',           totalExpenses: 610000,  wasteScore: 3, trend: 'down', changePercent: 8  },
-      { name: 'Sean Fraser',                 title: 'Minister of Housing',          totalExpenses: 540000,  wasteScore: 4, trend: 'up',   changePercent: 15 },
+      { name: 'Mark Carney',                 title: 'Prime Minister',                         totalExpenses: 2840000, wasteScore: 6, trend: 'up',   changePercent: 18 },
+      { name: 'Melanie Joly',                title: 'Minister of Foreign Affairs',            totalExpenses: 2180000, wasteScore: 7, trend: 'up',   changePercent: 41 },
+      { name: 'Francois-Philippe Champagne', title: 'Minister of Finance',                    totalExpenses: 1640000, wasteScore: 7, trend: 'up',   changePercent: 22 },
+      { name: 'Dominic LeBlanc',             title: 'Deputy Prime Minister',                  totalExpenses: 1380000, wasteScore: 5, trend: 'down', changePercent: 8  },
+      { name: 'Bill Blair',                  title: 'Minister of National Defence',           totalExpenses: 1240000, wasteScore: 5, trend: 'down', changePercent: 12 },
+      { name: 'Steven Guilbeault',           title: 'Minister of Environment & Climate',      totalExpenses: 980000,  wasteScore: 6, trend: 'up',   changePercent: 15 },
+      { name: 'Anita Anand',                 title: 'President of the Treasury Board',        totalExpenses: 860000,  wasteScore: 4, trend: 'down', changePercent: 6  },
+      { name: 'Mark Holland',                title: 'Minister of Health',                     totalExpenses: 780000,  wasteScore: 4, trend: 'down', changePercent: 18 },
+      { name: 'Jonathan Wilkinson',          title: 'Minister of Energy & Natural Resources', totalExpenses: 720000,  wasteScore: 4, trend: 'down', changePercent: 9  },
+      { name: 'Sean Fraser',                 title: 'Minister of Housing & Infrastructure',   totalExpenses: 640000,  wasteScore: 3, trend: 'up',   changePercent: 7  },
     ];
     const rosterUS = [
       { name: 'Donald Trump',   title: 'President',                       totalExpenses: 8200000, wasteScore: 9, trend: 'up',   changePercent: 22  },
