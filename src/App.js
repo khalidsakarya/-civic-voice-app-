@@ -31252,7 +31252,7 @@ function App() {
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
-                🏛️ Ongoing Parliamentary Bills
+                🏛️ Ongoing Parliamentary and Signed Bills
               </button>
             </div>
           </div>
@@ -31427,7 +31427,7 @@ function App() {
             </div>
           )}
 
-          {/* Ongoing Parliamentary Bills Tab */}
+          {/* Ongoing Parliamentary and Signed Bills Tab */}
           {legislativeTab === 'parliamentary' && (
             <div className="animate-fade-in">
               {(() => {
@@ -31437,7 +31437,7 @@ function App() {
                 return (<>
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-6 mb-8">
                 <div className="flex items-center gap-3 mb-2">
-                  <h2 className="text-2xl font-bold text-gray-800">🏛️ Ongoing Parliamentary Bills</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">🏛️ Ongoing Parliamentary and Signed Bills</h2>
                   {caLiveData && !caFirestoreLoading && caFirestoreBills.length > 0 && liveBadge(caFirestoreBills[0]?.last_updated, 'Weekly')}
                   {caFirestoreLoading && <span className="text-sm text-gray-400 animate-pulse">Fetching from Firestore…</span>}
                 </div>
