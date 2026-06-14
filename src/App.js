@@ -16835,24 +16835,6 @@ function App() {
           {/* Single-column section layout */}
           <div className="space-y-4">
 
-              {/* Biography */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div onClick={() => toggleCarneySection('bio')} className="p-6 cursor-pointer sm:cursor-default flex items-center justify-between hover:bg-gray-50 sm:hover:bg-white">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold text-gray-800">📖 Biography</h3>
-                    {carneyBioLoading && <span className="text-xs text-blue-500 flex items-center gap-1"><span className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />Fetching…</span>}
-                    {carneyBio?.bio && !carneyBioLoading && liveBadge(null, 'Live')}
-                  </div>
-                  <ChevronDown className={`w-5 h-5 text-gray-400 sm:hidden transition-transform duration-200 ${expandedCarneySections.bio ? 'rotate-0' : '-rotate-90'}`} />
-                </div>
-                <div className={`px-6 pb-6 ${expandedCarneySections.bio ? '' : 'hidden sm:block'}`}>
-                  {carneyBio?.bio
-                    ? <p className="text-gray-700 leading-relaxed">{carneyBio.bio}</p>
-                    : <p className="text-sm text-gray-500 italic bg-gray-50 rounded-lg p-4 border border-gray-200 text-center">{carneyBioLoading ? 'Loading…' : 'No biography data available yet.'}</p>
-                  }
-                </div>
-              </div>
-
               {/* Controversies */}
               {renderControversiesSection('Mark Carney', toggleCarneySection, expandedCarneySections, '#EF4444')}
 
