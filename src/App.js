@@ -29877,38 +29877,40 @@ function App() {
     );
   };
 
-  const renderBills = () => (
+  const renderBills = () => {
+    const mappedBills = bills.map(mapFirestoreBillToCA);
+    return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button
-            onClick={() => setView('categories')}
+            onClick={() => setView('legislative-hub')}
             className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
           >
-            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Government Levels</span>
+            <span className="sm:hidden">← Back</span><span className="hidden sm:inline">← Back to Legislative Hub</span>
           </button>
-          
+
           <h1 className="text-2xl font-bold text-gray-800">Parliamentary Bills</h1>
-          
+
           <div className="w-20"></div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">📜 Upcoming & Recent Bills</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">📜 Ongoing Parliamentary and Signed Bills</h2>
           <p className="text-gray-600">Vote to show your support or opposition for each bill</p>
         </div>
 
-        {bills.length === 0 ? (
+        {mappedBills.length === 0 ? (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
             <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
             <h3 className="text-lg font-semibold text-gray-800 mb-2">No Bills Found</h3>
-            <p className="text-gray-600">Run the bills scraper to load bill data!</p>
+            <p className="text-gray-600">No parliamentary bills available yet.</p>
           </div>
         ) : (
           <div className="space-y-6">
-            {bills.map(bill => (
+            {mappedBills.map(bill => (
               <div
                 key={bill.id}
                 className="relative bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow border-2 border-transparent hover:border-blue-500"
@@ -30016,7 +30018,7 @@ function App() {
         )}
       </div>
     </div>
-  );
+  );};
 
   const renderBillDetail = () => (
     <div className="min-h-screen bg-gray-50">
