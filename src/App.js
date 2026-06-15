@@ -2066,6 +2066,43 @@ function App() {
     try { return JSON.parse(localStorage.getItem('cvCaFollowNotifs') || '{}'); } catch { return {}; }
   });
 
+  // ── CA MP Follow system (House of Commons members) ────────────────────────
+  // caMpFollows: { [mpName]: true }
+  // caMpFollowNotifs: { [mpName]: true }  — new activity since last visit
+  const [caMpFollows, setCaMpFollows] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cvCaMpFollows') || '{}'); } catch { return {}; }
+  });
+  const [caMpFollowNotifs, setCaMpFollowNotifs] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cvCaMpFollowNotifs') || '{}'); } catch { return {}; }
+  });
+
+  const toggleMpFollow = (e, mpName) => {
+    e.stopPropagation();
+    setCaMpFollows(prev => {
+      const next = { ...prev };
+      if (next[mpName]) { delete next[mpName]; } else { next[mpName] = true; }
+      localStorage.setItem('cvCaMpFollows', JSON.stringify(next));
+      return next;
+    });
+    setCaMpFollowNotifs(prev => {
+      const next = { ...prev };
+      delete next[mpName];
+      localStorage.setItem('cvCaMpFollowNotifs', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const clearMpFollowNotif = (mpName) => {
+    setCaMpFollowNotifs(prev => {
+      if (!prev[mpName]) return prev;
+      const next = { ...prev };
+      delete next[mpName];
+      localStorage.setItem('cvCaMpFollowNotifs', JSON.stringify(next));
+      return next;
+    });
+  };
+  // ─────────────────────────────────────────────────────────────────────────
+
   const toggleCaFollow = (e, sectionId) => {
     e.stopPropagation();
     setCaFollows(prev => {
@@ -3154,8 +3191,19 @@ function App() {
       localStorage.setItem('cvCaFollowNotifs', JSON.stringify(next));
       return next;
     });
+    // Also notify followed MPs when live data refreshes
+    setCaMpFollowNotifs(prev => {
+      const next = { ...prev };
+      let changed = false;
+      Object.keys(caMpFollows).forEach(name => {
+        if (!next[name]) { next[name] = true; changed = true; }
+      });
+      if (!changed) return prev;
+      localStorage.setItem('cvCaMpFollowNotifs', JSON.stringify(next));
+      return next;
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [caLiveData, caFollows]);
+  }, [caLiveData, caFollows, caMpFollows]);
   // ────────────────────────────────────────────────────────────────────────────
 
   // Provincial / state explorer: Firestore identity + enriched fields overlaid on hardcoded rows.
@@ -29646,6 +29694,25 @@ function App() {
             </div>
           )}
 
+          {/* MP Follow summary bar — House tab only */}
+          {!isSenate && (() => {
+            const mpFollowCount = Object.keys(caMpFollows).length;
+            const mpNotifCount  = Object.keys(caMpFollowNotifs).length;
+            if (mpFollowCount === 0) return null;
+            return (
+              <div className="mb-4 flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                <Bell className="w-4 h-4 text-red-600 fill-red-200 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-red-800">
+                    Following {mpFollowCount} MP{mpFollowCount !== 1 ? 's' : ''}
+                    {mpNotifCount > 0 && <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{mpNotifCount} new update{mpNotifCount !== 1 ? 's' : ''}</span>}
+                  </p>
+                  <p className="text-xs text-red-500 truncate">🔔 New badge appears on followed MP cards when live data refreshes</p>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Results count */}
           {(!(!isSenate && loading)) && (
             <p className="text-sm text-gray-500 mb-4">
@@ -29674,7 +29741,7 @@ function App() {
                     <div key={i} className="relative bg-white rounded-xl shadow-md p-4 sm:p-6 border-2 border-transparent hover:border-red-400 hover:shadow-xl transition-all cursor-pointer"
                       onClick={() => {
                         if (isSenate) { setSelectedSenator(member); setShowSenatorPanel(true); }
-                        else { setSelectedMember(member); setView('member-detail'); }
+                        else { clearMpFollowNotif(member.name); setSelectedMember(member); setView('member-detail'); }
                       }}
                     >
                       {/* Avatar */}
@@ -29742,6 +29809,23 @@ function App() {
                           <span>{oppose.toLocaleString()}</span>
                         </button>
                       </div>
+
+                      {/* Follow button — House of Commons only */}
+                      {!isSenate && (
+                        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+                          <button
+                            onClick={e => toggleMpFollow(e, member.name)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caMpFollows[member.name] ? 'text-white border-transparent' : 'bg-white text-gray-500 border-gray-200 hover:text-red-600 hover:border-red-300'}`}
+                            style={caMpFollows[member.name] ? { backgroundColor: color, borderColor: color } : {}}
+                          >
+                            <Bell className={`w-3.5 h-3.5 ${caMpFollows[member.name] ? 'fill-white' : ''}`} />
+                            {caMpFollows[member.name] ? 'Following' : 'Follow'}
+                          </button>
+                          {caMpFollowNotifs[member.name] && (
+                            <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
