@@ -11151,7 +11151,7 @@ function App() {
                 const sc = a.scandal_score || 0;
                 const scandalColor = sc >= 9 ? '#ef4444' : sc >= 7 ? '#f97316' : sc >= 5 ? '#eab308' : '#9ca3af';
                 const voteState = anomalyVotes[a.id || i];
-                const handleVote = (v) => {
+                const handleVote = (v) => requireRegion(() => {
                   setAnomalyVotes(prev => {
                     const next = { ...prev };
                     if (next[a.id || i] === v) delete next[a.id || i]; else next[a.id || i] = v;
@@ -11159,7 +11159,7 @@ function App() {
                     return next;
                   });
                   logEvent(v === 'support' ? 'waste_support' : 'waste_oppose', { country, itemId: String(a.id || i) });
-                };
+                });
                 return (
                   <div
                     key={a.id || i}
@@ -26710,7 +26710,7 @@ function App() {
     const initVotes = { support: 0, oppose: 0, concerned: 0, userVote: null };
     const currentVotes = auLeaderVotes[voteKey] || initVotes;
 
-    const castVote = (type) => {
+    const castVote = (type) => requireRegion(() => {
       setAuLeaderVotes(prev => {
         const cur = prev[voteKey] || initVotes;
         if (cur.userVote === type) return prev;
@@ -26723,7 +26723,7 @@ function App() {
         }
         return { ...prev, [voteKey]: next };
       });
-    };
+    });
 
     const toggle = (section) => setExpandedAuLeaderSections(prev => ({ ...prev, [section]: !prev[section] }));
     const exp = expandedAuLeaderSections;
@@ -31549,19 +31549,19 @@ function App() {
                         {/* Vote buttons */}
                         <div className="px-6 pb-6 pt-4 flex gap-3">
                           <button
-                            onClick={(e) => { e.stopPropagation(); requireRegion() && (setCaBillVotes(prev => ({ ...prev, [bill.id]: prev[bill.id] === 'support' ? null : 'support' })), voteBill(bill.id, 'support')); }}
+                            onClick={(e) => { e.stopPropagation(); requireRegion(() => { setCaBillVotes(prev => ({ ...prev, [bill.id]: prev[bill.id] === 'support' ? null : 'support' })); voteBill(bill.id, 'support'); }); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
                           >
                             <ThumbsUp className="w-4 h-4" /> Support {bill.supportVotes > 0 && <span className="text-xs opacity-75">({bill.supportVotes})</span>}
                           </button>
                           <button
-                            onClick={(e) => { e.stopPropagation(); requireRegion() && (setCaBillVotes(prev => ({ ...prev, [bill.id]: prev[bill.id] === 'concerned' ? null : 'concerned' })), voteBill(bill.id, 'concerned')); }}
+                            onClick={(e) => { e.stopPropagation(); requireRegion(() => { setCaBillVotes(prev => ({ ...prev, [bill.id]: prev[bill.id] === 'concerned' ? null : 'concerned' })); voteBill(bill.id, 'concerned'); }); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'concerned' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-700 border-orange-300 hover:border-orange-500 hover:bg-orange-50'}`}
                           >
                             <AlertCircle className="w-4 h-4" /> Concerned
                           </button>
                           <button
-                            onClick={(e) => { e.stopPropagation(); requireRegion() && (setCaBillVotes(prev => ({ ...prev, [bill.id]: prev[bill.id] === 'oppose' ? null : 'oppose' })), voteBill(bill.id, 'oppose')); }}
+                            onClick={(e) => { e.stopPropagation(); requireRegion(() => { setCaBillVotes(prev => ({ ...prev, [bill.id]: prev[bill.id] === 'oppose' ? null : 'oppose' })); voteBill(bill.id, 'oppose'); }); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
                           >
                             <ThumbsDown className="w-4 h-4" /> Oppose {bill.opposeVotes > 0 && <span className="text-xs opacity-75">({bill.opposeVotes})</span>}
@@ -31897,19 +31897,19 @@ function App() {
                         {/* Vote buttons — always visible */}
                         <div className="px-6 pb-6 pt-4 flex gap-3">
                           <button
-                            onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'support'); }}
+                            onClick={(e) => { e.stopPropagation(); requireRegion(() => voteUsBill(bill.id, 'support')); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
                           >
                             <ThumbsUp className="w-4 h-4" /> Support {bill.supportVotes > 0 && <span className="text-xs opacity-75">({bill.supportVotes})</span>}
                           </button>
                           <button
-                            onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'concerned'); }}
+                            onClick={(e) => { e.stopPropagation(); requireRegion(() => voteUsBill(bill.id, 'concerned')); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'concerned' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-700 border-orange-300 hover:border-orange-500 hover:bg-orange-50'}`}
                           >
                             <AlertCircle className="w-4 h-4" /> Concerned {(bill.concernedVotes ?? 0) > 0 && <span className="text-xs opacity-75">({bill.concernedVotes})</span>}
                           </button>
                           <button
-                            onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'oppose'); }}
+                            onClick={(e) => { e.stopPropagation(); requireRegion(() => voteUsBill(bill.id, 'oppose')); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
                           >
                             <ThumbsDown className="w-4 h-4" /> Oppose {bill.opposeVotes > 0 && <span className="text-xs opacity-75">({bill.opposeVotes})</span>}
@@ -32030,19 +32030,19 @@ function App() {
                             {/* Vote buttons — always visible */}
                             <div className="px-6 pb-6 pt-4 flex gap-3">
                               <button
-                                onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'support'); }}
+                                onClick={(e) => { e.stopPropagation(); requireRegion(() => voteUsBill(bill.id, 'support')); }}
                                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
                               >
                                 <ThumbsUp className="w-4 h-4" /> Support {bill.supportVotes > 0 && <span className="text-xs opacity-75">({bill.supportVotes})</span>}
                               </button>
                               <button
-                                onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'concerned'); }}
+                                onClick={(e) => { e.stopPropagation(); requireRegion(() => voteUsBill(bill.id, 'concerned')); }}
                                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'concerned' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-700 border-orange-300 hover:border-orange-500 hover:bg-orange-50'}`}
                               >
                                 <AlertCircle className="w-4 h-4" /> Concerned {(bill.concernedVotes ?? 0) > 0 && <span className="text-xs opacity-75">({bill.concernedVotes})</span>}
                               </button>
                               <button
-                                onClick={(e) => { e.stopPropagation(); requireRegion() && voteUsBill(bill.id, 'oppose'); }}
+                                onClick={(e) => { e.stopPropagation(); requireRegion(() => voteUsBill(bill.id, 'oppose')); }}
                                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
                               >
                                 <ThumbsDown className="w-4 h-4" /> Oppose {bill.opposeVotes > 0 && <span className="text-xs opacity-75">({bill.opposeVotes})</span>}
@@ -32199,19 +32199,19 @@ function App() {
           {/* Vote buttons — always visible */}
           <div className="px-6 pb-6 pt-4 flex gap-3">
             <button
-              onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'support'); }}
+              onClick={(e) => { e.stopPropagation(); requireRegion(() => voteAuBill(bill.id, 'support')); }}
               className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
             >
               <ThumbsUp className="w-4 h-4" /> Support
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'concerned'); }}
+              onClick={(e) => { e.stopPropagation(); requireRegion(() => voteAuBill(bill.id, 'concerned')); }}
               className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'concerned' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-700 border-orange-300 hover:border-orange-500 hover:bg-orange-50'}`}
             >
               <AlertCircle className="w-4 h-4" /> Concerned
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'oppose'); }}
+              onClick={(e) => { e.stopPropagation(); requireRegion(() => voteAuBill(bill.id, 'oppose')); }}
               className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
             >
               <ThumbsDown className="w-4 h-4" /> Oppose
@@ -32414,19 +32414,19 @@ function App() {
                         {/* Vote buttons — always visible */}
                         <div className="px-6 pb-6 pt-4 flex gap-3">
                           <button
-                            onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'support'); }}
+                            onClick={(e) => { e.stopPropagation(); requireRegion(() => voteAuBill(bill.id, 'support')); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'support' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:border-green-500 hover:bg-green-50'}`}
                           >
                             <ThumbsUp className="w-4 h-4" /> Support
                           </button>
                           <button
-                            onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'concerned'); }}
+                            onClick={(e) => { e.stopPropagation(); requireRegion(() => voteAuBill(bill.id, 'concerned')); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'concerned' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-orange-700 border-orange-300 hover:border-orange-500 hover:bg-orange-50'}`}
                           >
                             <AlertCircle className="w-4 h-4" /> Concerned
                           </button>
                           <button
-                            onClick={(e) => { e.stopPropagation(); requireRegion() && voteAuBill(bill.id, 'oppose'); }}
+                            onClick={(e) => { e.stopPropagation(); requireRegion(() => voteAuBill(bill.id, 'oppose')); }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${uv === 'oppose' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-600 border-red-300 hover:border-red-500 hover:bg-red-50'}`}
                           >
                             <ThumbsDown className="w-4 h-4" /> Oppose
@@ -32699,11 +32699,13 @@ function App() {
                 const userContractVote = contractVotes[contractKey] || null;
                 const voteContract = (e, vote) => {
                   e.stopPropagation();
-                  setContractVotes(prev => {
-                    const next = { ...prev };
-                    if (next[contractKey] === vote) { delete next[contractKey]; } else { next[contractKey] = vote; }
-                    localStorage.setItem('cvContractVotes', JSON.stringify(next));
-                    return next;
+                  requireRegion(() => {
+                    setContractVotes(prev => {
+                      const next = { ...prev };
+                      if (next[contractKey] === vote) { delete next[contractKey]; } else { next[contractKey] = vote; }
+                      localStorage.setItem('cvContractVotes', JSON.stringify(next));
+                      return next;
+                    });
                   });
                 };
                 return (
