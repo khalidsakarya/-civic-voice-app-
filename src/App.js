@@ -28609,7 +28609,10 @@ function App() {
     }
   };
 
-  const renderTransparencyBanner = (countryCode) => {
+  // Transparency banner removed — stub keeps call sites from breaking
+  // eslint-disable-next-line no-unused-vars
+  const renderTransparencyBanner = (_countryCode) => null;
+  const _transparencyBannerArchive = (countryCode) => {
     const FALLBACK = {
       CA: {
         score: 61, grade: 'C', last_updated: '2026-03-01',
