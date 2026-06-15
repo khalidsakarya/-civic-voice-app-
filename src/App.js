@@ -2135,7 +2135,19 @@ function App() {
   const [caPartyFilter, setCaPartyFilter] = useState('All');
   const [caSearch, setCaSearch] = useState('');
   const [caMemberVotes, setCaMemberVotes] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('cvCaMemberVotes') || '{}'); } catch { return {}; }
+    try {
+      const saved = JSON.parse(localStorage.getItem('cvCaMemberVotes') || '{}');
+      // Migrate old format (name → voteChoice string) to new format (name → { support, oppose, concerned, userVote })
+      const migrated = {};
+      for (const [k, v] of Object.entries(saved)) {
+        if (typeof v === 'string') {
+          migrated[k] = { support: v === 'support' ? 1 : 0, oppose: v === 'oppose' ? 1 : 0, concerned: v === 'concerned' ? 1 : 0, userVote: v };
+        } else {
+          migrated[k] = v;
+        }
+      }
+      return migrated;
+    } catch { return {}; }
   });
   const [firestoreVoteCounts, setFirestoreVoteCounts] = useState({});
   const [newsItems, setNewsItems] = useState({});           // keyed by cc: 'CA'|'US'|'UK'|'AU'
@@ -29457,17 +29469,24 @@ function App() {
   };
 
   const voteCaMember = (name, vote) => {
-    logEvent('vote_politician', { country: 'CA', itemId: name });
-    const caMpPrev = caMemberVotes[name] || null;
-    submitVote(toVoteId('ca-mp', name), 'CA', caMpPrev, caMpPrev === vote ? null : vote);
-    setCaMemberVotes(prev => {
-      const next = { ...prev };
-      if (next[name] === vote) { delete next[name]; } else {
-        next[name] = vote;
-        if (vote === 'concerned') storeConcernedRegion('ca-member', name);
-      }
-      try { localStorage.setItem('cvCaMemberVotes', JSON.stringify(next)); } catch (_) {}
-      return next;
+    requireRegion(() => {
+      logEvent('vote_politician', { country: 'CA', itemId: name });
+      setCaMemberVotes(prev => {
+        const cur = prev[name] || { support: 0, oppose: 0, concerned: 0, userVote: null };
+        const newVote = cur.userVote === vote ? null : vote;
+        let support = cur.support, oppose = cur.oppose, concerned = cur.concerned || 0;
+        if (cur.userVote === 'support') support = Math.max(0, support - 1);
+        if (cur.userVote === 'oppose') oppose = Math.max(0, oppose - 1);
+        if (cur.userVote === 'concerned') concerned = Math.max(0, concerned - 1);
+        if (newVote === 'support') support++;
+        if (newVote === 'oppose') oppose++;
+        if (newVote === 'concerned') concerned++;
+        const next = { ...prev, [name]: { support, oppose, concerned, userVote: newVote } };
+        try { localStorage.setItem('cvCaMemberVotes', JSON.stringify(next)); } catch (_) {}
+        if (newVote === 'concerned') storeConcernedRegion('ca-member', name);
+        submitVote(toVoteId('ca-mp', name), 'CA', cur.userVote, newVote);
+        return next;
+      });
     });
   };
 
@@ -29625,11 +29644,11 @@ function App() {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {filtered.map((member, i) => {
-                  const _caVcId = toVoteId('ca-mp', member.name);
-                  const support = getVC(_caVcId, 'support');
-                  const oppose = getVC(_caVcId, 'oppose');
-                  const concerned = getVC(_caVcId, 'concerned');
-                  const userVote = caMemberVotes[member.name] || null;
+                  const _caMpVc = caMemberVotes[member.name] || { support: 0, oppose: 0, concerned: 0, userVote: null };
+                  const support = _caMpVc.support || 0;
+                  const oppose = _caMpVc.oppose || 0;
+                  const concerned = _caMpVc.concerned || 0;
+                  const userVote = _caMpVc.userVote || null;
                   const initials = (member.name || '').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
                   const color = getPartyColor(member.party);
                   const yearsInOffice = isSenate
@@ -33215,7 +33234,8 @@ function App() {
 
           {/* MP Voting Section */}
           {(() => {
-            const mpUserVote = caMemberVotes[selectedMember.name] || null;
+            const _mpVc = caMemberVotes[selectedMember.name] || { support: 0, oppose: 0, concerned: 0, userVote: null };
+            const mpUserVote = _mpVc.userVote || null;
             return (
               <div className="border-t pt-6 mt-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-4">Citizen Opinion</h3>
@@ -33224,21 +33244,21 @@ function App() {
                     <div className="flex items-center gap-3">
                       <ThumbsUp className="w-6 h-6 text-green-600" />
                       <div>
-                        <div className="text-2xl font-bold text-gray-800">0</div>
+                        <div className="text-2xl font-bold text-gray-800">{(_mpVc.support || 0).toLocaleString()}</div>
                         <div className="text-sm text-gray-600">Support</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <AlertCircle className="w-6 h-6 text-amber-500" />
                       <div>
-                        <div className="text-2xl font-bold text-gray-800">0</div>
+                        <div className="text-2xl font-bold text-gray-800">{(_mpVc.concerned || 0).toLocaleString()}</div>
                         <div className="text-sm text-gray-600">Concerned</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <ThumbsDown className="w-6 h-6 text-red-600" />
                       <div>
-                        <div className="text-2xl font-bold text-gray-800">0</div>
+                        <div className="text-2xl font-bold text-gray-800">{(_mpVc.oppose || 0).toLocaleString()}</div>
                         <div className="text-sm text-gray-600">Oppose</div>
                       </div>
                     </div>
