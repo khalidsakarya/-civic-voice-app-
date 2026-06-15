@@ -2055,6 +2055,45 @@ function App() {
   const [contractVotes, setContractVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cvContractVotes') || '{}'); } catch { return {}; }
   });
+
+  // ── CA Follow system ────────────────────────────────────────────────────────
+  // caFollows: { [sectionId]: true }  — which sections the user follows
+  // caFollowNotifs: { [sectionId]: number }  — unread update count per section
+  const [caFollows, setCaFollows] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cvCaFollows') || '{}'); } catch { return {}; }
+  });
+  const [caFollowNotifs, setCaFollowNotifs] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cvCaFollowNotifs') || '{}'); } catch { return {}; }
+  });
+
+  const toggleCaFollow = (e, sectionId) => {
+    e.stopPropagation();
+    setCaFollows(prev => {
+      const next = { ...prev };
+      if (next[sectionId]) { delete next[sectionId]; } else { next[sectionId] = true; }
+      localStorage.setItem('cvCaFollows', JSON.stringify(next));
+      return next;
+    });
+    // Clear any pending notification when toggling
+    setCaFollowNotifs(prev => {
+      const next = { ...prev };
+      delete next[sectionId];
+      localStorage.setItem('cvCaFollowNotifs', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const clearCaFollowNotif = (sectionId) => {
+    setCaFollowNotifs(prev => {
+      if (!prev[sectionId]) return prev;
+      const next = { ...prev };
+      delete next[sectionId];
+      localStorage.setItem('cvCaFollowNotifs', JSON.stringify(next));
+      return next;
+    });
+  };
+  // ────────────────────────────────────────────────────────────────────────────
+
   const [caChamber, setCaChamber] = useState('Senate');
   const [caPartyFilter, setCaPartyFilter] = useState('All');
   const [caSearch, setCaSearch] = useState('');
@@ -3099,6 +3138,25 @@ function App() {
       cancelled = true;
     };
   }, [showLocationGate]);
+
+  // ── CA Follow notifications: fire when live data loads new content ──────────
+  useEffect(() => {
+    if (!caLiveData) return;
+    // Sections that have live data driven by Firestore bills
+    const liveSections = ['legislative-hub', 'ministries', 'contracts', 'money-canada'];
+    setCaFollowNotifs(prev => {
+      let changed = false;
+      const next = { ...prev };
+      liveSections.forEach(id => {
+        if (caFollows[id] && !next[id]) { next[id] = 1; changed = true; }
+      });
+      if (!changed) return prev;
+      localStorage.setItem('cvCaFollowNotifs', JSON.stringify(next));
+      return next;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [caLiveData, caFollows]);
+  // ────────────────────────────────────────────────────────────────────────────
 
   // Provincial / state explorer: Firestore identity + enriched fields overlaid on hardcoded rows.
   useEffect(() => {
@@ -28659,6 +28717,25 @@ function App() {
 
         {renderTransparencyBanner(isUSA ? 'US' : 'CA')}
 
+        {/* Follow summary bar — Canada only */}
+        {!isUSA && (() => {
+          const followCount = Object.keys(caFollows).length;
+          const notifCount  = Object.keys(caFollowNotifs).length;
+          if (followCount === 0) return null;
+          return (
+            <div className="mb-6 flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+              <Bell className="w-5 h-5 text-green-600 fill-green-200 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-green-800">
+                  Following {followCount} section{followCount !== 1 ? 's' : ''}
+                  {notifCount > 0 && <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{notifCount} new update{notifCount !== 1 ? 's' : ''}</span>}
+                </p>
+                <p className="text-xs text-green-600 truncate">You'll see 🔔 New Update on cards when live data refreshes</p>
+              </div>
+            </div>
+          );
+        })()}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mc-grid">
 
           {/* President & Executive — USA only */}
@@ -28697,7 +28774,7 @@ function App() {
           {/* Prime Minister & Executive — Canada only */}
           {!isUSA && (
             <div
-              onClick={() => setView('canada-pm-detail')}
+              onClick={() => { clearCaFollowNotif('pm-executive'); setView('canada-pm-detail'); }}
               className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
               style={{ animationDelay: '0.05s' }}
             >
@@ -28714,6 +28791,16 @@ function App() {
                   )}
                   <ChevronRight className="w-5 h-5" />
                 </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={e => toggleCaFollow(e, 'pm-executive')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['pm-executive'] ? 'bg-red-600 text-white border-red-600' : 'bg-white text-gray-500 border-gray-200 hover:border-red-400 hover:text-red-600'}`}
+                >
+                  <Bell className={`w-3.5 h-3.5 ${caFollows['pm-executive'] ? 'fill-white' : ''}`} />
+                  {caFollows['pm-executive'] ? 'Following' : 'Follow'}
+                </button>
+                {caFollowNotifs['pm-executive'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
               </div>
             </div>
           )}
@@ -28739,7 +28826,7 @@ function App() {
 
           {/* Analytics Dashboard - Available for both countries */}
           <div
-            onClick={() => setView(isUSA ? 'us-analytics' : 'analytics')}
+            onClick={() => { if (!isUSA) clearCaFollowNotif('analytics'); setView(isUSA ? 'us-analytics' : 'analytics'); }}
             className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
             style={{ animationDelay: '0.3s' }}
           >
@@ -28756,12 +28843,24 @@ function App() {
               <span className="font-medium">12 Sections</span>
               <ChevronRight className="w-5 h-5 text-purple-600" />
             </div>
+            {!isUSA && (
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={e => toggleCaFollow(e, 'analytics')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['analytics'] ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-500 border-gray-200 hover:border-purple-400 hover:text-purple-600'}`}
+                >
+                  <Bell className={`w-3.5 h-3.5 ${caFollows['analytics'] ? 'fill-white' : ''}`} />
+                  {caFollows['analytics'] ? 'Following' : 'Follow'}
+                </button>
+                {caFollowNotifs['analytics'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
+              </div>
+            )}
           </div>
 
           {/* Legislative Hub - Canada */}
           {!isUSA && (
             <div
-              onClick={() => setView('legislative-hub')}
+              onClick={() => { clearCaFollowNotif('legislative-hub'); setView('legislative-hub'); }}
               className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
             >
               <div className="text-green-600 mb-3 sm:mb-4">
@@ -28773,17 +28872,29 @@ function App() {
                 <span className="font-medium">{bills.length} Bills • {laws.length} Laws</span>
                 <ChevronRight className="w-5 h-5 text-green-600" />
               </div>
-              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                <button
-                  onClick={(e) => { e.stopPropagation(); const next = !caLiveData; setCaLiveData(next); if (next) { logEvent('live_data_toggle', { country: 'CA' }); fetchFirestoreBills('CA', setCaFirestoreBills, setCaFirestoreLoading); } }}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all ${caLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400'}`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${caLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
-                  {caFirestoreLoading ? 'Loading…' : caLiveData ? 'Live: On' : 'Live Data'}
-                </button>
-                {caLiveData && !caFirestoreLoading && caFirestoreBills.length > 0 && (
-                  <span className="text-xs text-green-600 font-medium">{caFirestoreBills.length} live bills</span>
-                )}
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); const next = !caLiveData; setCaLiveData(next); if (next) { logEvent('live_data_toggle', { country: 'CA' }); fetchFirestoreBills('CA', setCaFirestoreBills, setCaFirestoreLoading); } }}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all ${caLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400'}`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${caLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
+                    {caFirestoreLoading ? 'Loading…' : caLiveData ? 'Live: On' : 'Live Data'}
+                  </button>
+                  {caLiveData && !caFirestoreLoading && caFirestoreBills.length > 0 && (
+                    <span className="text-xs text-green-600 font-medium">{caFirestoreBills.length} live bills</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={e => toggleCaFollow(e, 'legislative-hub')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['legislative-hub'] ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400 hover:text-green-600'}`}
+                  >
+                    <Bell className={`w-3.5 h-3.5 ${caFollows['legislative-hub'] ? 'fill-white' : ''}`} />
+                    {caFollows['legislative-hub'] ? 'Following' : 'Follow'}
+                  </button>
+                  {caFollowNotifs['legislative-hub'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New</span>}
+                </div>
               </div>
             </div>
           )}
@@ -28820,7 +28931,7 @@ function App() {
 
           {/* Government Ministries (Canada) / Federal Departments (USA) */}
           <div
-            onClick={() => setView(isUSA ? 'departments' : 'ministries')}
+            onClick={() => { if (!isUSA) clearCaFollowNotif('ministries'); setView(isUSA ? 'departments' : 'ministries'); }}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95 mc"
           >
             <div className="text-orange-600 mb-3 sm:mb-4">
@@ -28830,7 +28941,7 @@ function App() {
               {isUSA ? 'Federal Departments' : 'Government Ministries'}
             </h2>
             <p className="text-gray-600 mb-3 text-sm sm:text-base">
-              {isUSA 
+              {isUSA
                 ? 'Review cabinet budgets, grants & approve department performance'
                 : 'Review budgets, grants & approve ministerial performance'
               }
@@ -28839,11 +28950,23 @@ function App() {
               <span>{isUSA ? usDeptHubCount : caDeptHubCount} {isUSA ? 'Departments' : 'Ministries'}</span>
               <ChevronRight className="w-5 h-5" />
             </div>
+            {!isUSA && (
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={e => toggleCaFollow(e, 'ministries')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['ministries'] ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-gray-500 border-gray-200 hover:border-orange-400 hover:text-orange-600'}`}
+                >
+                  <Bell className={`w-3.5 h-3.5 ${caFollows['ministries'] ? 'fill-white' : ''}`} />
+                  {caFollows['ministries'] ? 'Following' : 'Follow'}
+                </button>
+                {caFollowNotifs['ministries'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
+              </div>
+            )}
           </div>
 
           {/* Government Contracts - Available for both countries */}
           <div
-            onClick={() => setView(isUSA ? 'us-contracts' : 'contracts')}
+            onClick={() => { if (!isUSA) clearCaFollowNotif('contracts'); setView(isUSA ? 'us-contracts' : 'contracts'); }}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 active:scale-95 mc"
           >
             <div className="text-red-600 mb-3 sm:mb-4">
@@ -28853,7 +28976,7 @@ function App() {
               {isUSA ? 'Federal Contracts' : 'Government Contracts'}
             </h2>
             <p className="text-gray-600 mb-3 text-sm sm:text-base">
-              {isUSA 
+              {isUSA
                 ? 'See which companies get billions in taxpayer money'
                 : 'Follow taxpayer money and major government spending'
               }
@@ -28867,11 +28990,23 @@ function App() {
               </span>
               <ChevronRight className="w-5 h-5" />
             </div>
+            {!isUSA && (
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={e => toggleCaFollow(e, 'contracts')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['contracts'] ? 'bg-red-600 text-white border-red-600' : 'bg-white text-gray-500 border-gray-200 hover:border-red-400 hover:text-red-600'}`}
+                >
+                  <Bell className={`w-3.5 h-3.5 ${caFollows['contracts'] ? 'fill-white' : ''}`} />
+                  {caFollows['contracts'] ? 'Following' : 'Follow'}
+                </button>
+                {caFollowNotifs['contracts'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
+              </div>
+            )}
           </div>
 
           {/* Where the Money Goes - Financial Transparency */}
           <div
-            onClick={() => setView(isUSA ? 'money-usa' : 'money-canada')}
+            onClick={() => { if (!isUSA) clearCaFollowNotif('money-canada'); setView(isUSA ? 'money-usa' : 'money-canada'); }}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-emerald-500 active:scale-95 mc"
           >
             <div className="text-emerald-600 mb-3 sm:mb-4">
@@ -28905,11 +29040,23 @@ function App() {
               </span>
               <ChevronRight className="w-5 h-5 text-emerald-600" />
             </div>
+            {!isUSA && (
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={e => toggleCaFollow(e, 'money-canada')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['money-canada'] ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-500 border-gray-200 hover:border-emerald-400 hover:text-emerald-600'}`}
+                >
+                  <Bell className={`w-3.5 h-3.5 ${caFollows['money-canada'] ? 'fill-white' : ''}`} />
+                  {caFollows['money-canada'] ? 'Following' : 'Follow'}
+                </button>
+                {caFollowNotifs['money-canada'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
+              </div>
+            )}
           </div>
 
           {/* Supreme Court - Available for both countries */}
           <div
-            onClick={() => setView(isUSA ? 'us-supreme-court' : 'supreme-court')}
+            onClick={() => { if (!isUSA) clearCaFollowNotif('supreme-court'); setView(isUSA ? 'us-supreme-court' : 'supreme-court'); }}
             className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-yellow-500 active:scale-95 mc"
           >
             <div className="text-yellow-600 mb-3 sm:mb-4">
@@ -28926,6 +29073,18 @@ function App() {
               <span>9 Justices • {isUSA ? '10' : '10'} Cases</span>
               <ChevronRight className="w-5 h-5" />
             </div>
+            {!isUSA && (
+              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+                <button
+                  onClick={e => toggleCaFollow(e, 'supreme-court')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['supreme-court'] ? 'bg-yellow-600 text-white border-yellow-600' : 'bg-white text-gray-500 border-gray-200 hover:border-yellow-400 hover:text-yellow-600'}`}
+                >
+                  <Bell className={`w-3.5 h-3.5 ${caFollows['supreme-court'] ? 'fill-white' : ''}`} />
+                  {caFollows['supreme-court'] ? 'Following' : 'Follow'}
+                </button>
+                {caFollowNotifs['supreme-court'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
+              </div>
+            )}
           </div>
 
           {/* Election Tracker */}
@@ -28938,7 +29097,7 @@ function App() {
             const polling = isUsa ? 'Rep 48% · Dem 44%' : 'LPC 37% · CPC 34% · NDP 18%';
             return (
               <div
-                onClick={() => setView('election-tracker')}
+                onClick={() => { if (!isUsa) clearCaFollowNotif('election-tracker'); setView('election-tracker'); }}
                 className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
                 onMouseEnter={e => e.currentTarget.style.borderColor = accent}
                 onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
@@ -28954,6 +29113,19 @@ function App() {
                   <span className="px-2 py-0.5 rounded-full text-xs font-bold text-white" style={{ background: accent }}>LIVE POLLING</span>
                   <span className="text-xs text-gray-500">{polling}</span>
                 </div>
+                {!isUsa && (
+                  <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+                    <button
+                      onClick={e => toggleCaFollow(e, 'election-tracker')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['election-tracker'] ? 'text-white border-transparent' : 'bg-white text-gray-500 border-gray-200 hover:text-red-600'}`}
+                      style={caFollows['election-tracker'] ? { background: accent, borderColor: accent } : {}}
+                    >
+                      <Bell className={`w-3.5 h-3.5 ${caFollows['election-tracker'] ? 'fill-white' : ''}`} />
+                      {caFollows['election-tracker'] ? 'Following' : 'Follow'}
+                    </button>
+                    {caFollowNotifs['election-tracker'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
+                  </div>
+                )}
               </div>
             );
           })()}
