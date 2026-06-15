@@ -38013,6 +38013,8 @@ function App() {
       {showOnboarding && renderOnboarding()}
 
       {/* ── Fixed header icons — grouped in one container, top-right, safe-area aware ── */}
+      {/* Hide search & dark-mode on the Canada hub page (has its own sticky header) */}
+      {!(view === 'categories' && selectedCountry?.type !== 'usa') && (
       <div
         className="fixed right-3 z-[52] flex items-center gap-2"
         style={{ top: 'max(12px, env(safe-area-inset-top, 12px))' }}
@@ -38056,6 +38058,7 @@ function App() {
           </button>
         )}
       </div>
+      )}
 
       {/* Search overlay */}
       {showGlobalSearch && renderSearchOverlay()}
