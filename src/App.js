@@ -28680,7 +28680,6 @@ function App() {
                 {grade}
               </div>
               <div>
-                <div className="font-bold text-gray-800 text-sm sm:text-base leading-snug max-w-xs">{verdict}</div>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   {/* Ranking badge */}
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold text-white" style={{ background: rankBadgeColor }}>
