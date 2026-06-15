@@ -28737,18 +28737,226 @@ function App() {
 
   const renderCategories = () => {
     const isUSA = selectedCountry?.type === 'usa';
-    const countryName = isUSA ? 'United States' : 'Canadian';
-    const legislatureName = isUSA ? 'Congress' : 'Federal Parliament';
-    const memberCount = isUSA ? usMembersHub : canadaMembersHub;
-    const memberTitle = isUSA ? 'Members of Congress' : 'Members of Parliament';
-    const legislativeBody = isUSA ? 'Bills' : 'Parliamentary Bills';
-    const caCommonsForLabel = sumDash?.memberCACommons ?? 338;
-    const caSenateForLabel = sumDash?.memberCASenate ?? 105;
-    const caBicameralFootnote =
-      sumDash?.memberCAParliament != null && (sumDash.memberCACommons == null || sumDash.memberCASenate == null)
-        ? `${sumDash.memberCAParliament} Parliamentarians`
-        : `${caCommonsForLabel} MPs · ${caSenateForLabel} Senators`;
-    
+
+    // ── Canada: dedicated mobile-first unified theme ─────────────────────────
+    if (!isUSA) {
+      const caCommonsForLabel = sumDash?.memberCACommons ?? 338;
+      const caSenateForLabel  = sumDash?.memberCASenate  ?? 105;
+      const caBicameralFootnote =
+        sumDash?.memberCAParliament != null && (sumDash.memberCACommons == null || sumDash.memberCASenate == null)
+          ? `${sumDash.memberCAParliament} Parliamentarians`
+          : `${caCommonsForLabel} MPs · ${caSenateForLabel} Senators`;
+
+      // Helper: individual CA card
+      const CaCard = ({ id, icon, title, subtitle, meta, onClick, accent = '#C41230', noFollow = false, children }) => {
+        const followed = caFollows[id];
+        const hasNotif = caFollowNotifs[id];
+        return (
+          <div
+            onClick={onClick}
+            className="bg-white rounded-2xl shadow-sm active:scale-95 transition-transform cursor-pointer overflow-hidden border border-gray-100"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            {/* Coloured top stripe */}
+            <div className="h-1.5 w-full" style={{ background: accent }} />
+            <div className="p-4 sm:p-5">
+              {/* Icon + title row */}
+              <div className="flex items-start gap-3 mb-2">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${accent}18` }}>
+                  <span style={{ color: accent }}>{icon}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-base font-bold text-gray-900 leading-snug">{title}</h2>
+                  <p className="text-xs text-gray-500 mt-0.5 leading-snug">{subtitle}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400 shrink-0 mt-1" />
+              </div>
+              {/* Meta row */}
+              {meta && <p className="text-xs font-semibold mt-1 mb-3" style={{ color: accent }}>{meta}</p>}
+              {children}
+              {/* Follow row */}
+              {!noFollow && (
+                <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+                  <button
+                    onClick={e => toggleCaFollow(e, id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all"
+                    style={followed
+                      ? { background: accent, borderColor: accent, color: '#fff' }
+                      : { background: '#fff', borderColor: '#e5e7eb', color: '#6b7280' }}
+                  >
+                    <Bell className="w-3.5 h-3.5" style={followed ? { fill: '#fff' } : {}} />
+                    {followed ? 'Following' : 'Follow'}
+                  </button>
+                  {hasNotif && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New</span>}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      const followCount = Object.keys(caFollows).length;
+      const notifCount  = Object.keys(caFollowNotifs).length;
+
+      return (
+        <div className="min-h-screen animate-fade-in" style={{ background: '#f8f9fa' }}>
+          {/* Hero header */}
+          <div className="sticky top-0 z-20 shadow-sm" style={{ background: '#C41230' }}>
+            <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+              <button
+                onClick={() => setView('government-levels')}
+                className="text-white/80 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <ChevronRight className="w-5 h-5 rotate-180" />
+              </button>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">🍁</span>
+                  <h1 className="text-lg font-black text-white tracking-tight">Canadian Federal Government</h1>
+                </div>
+                <p className="text-red-200 text-xs">Explore all areas of federal governance</p>
+              </div>
+              {notifCount > 0 && (
+                <span className="bg-white text-red-700 text-xs font-black px-2 py-0.5 rounded-full">{notifCount} new</span>
+              )}
+            </div>
+          </div>
+
+          <div className="max-w-2xl mx-auto px-4 pt-4 pb-8">
+            {/* Follow summary */}
+            {followCount > 0 && (
+              <div className="mb-4 flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
+                <Bell className="w-4 h-4 shrink-0" style={{ color: '#C41230', fill: '#fecaca' }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800">
+                    Following {followCount} section{followCount !== 1 ? 's' : ''}
+                    {notifCount > 0 && <span className="ml-2 text-white text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: '#C41230' }}>{notifCount} update{notifCount !== 1 ? 's' : ''}</span>}
+                  </p>
+                  <p className="text-xs text-gray-400">🔔 New badge shows on cards with fresh updates</p>
+                </div>
+              </div>
+            )}
+
+            {/* Cards grid — 2 cols on wider phones, 1 col on small */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+              {/* Prime Minister */}
+              <CaCard
+                id="pm-executive"
+                icon={<Crown className="w-6 h-6" />}
+                title="Prime Minister & Executive"
+                subtitle="PMO, Cabinet & Executive Branch"
+                meta={`24th PM · Mark Carney${(controversiesData['Mark Carney']?.length ?? 0) > 0 ? ` · ⚡${controversiesData['Mark Carney'].length}` : ''}`}
+                accent="#C41230"
+                onClick={() => { clearCaFollowNotif('pm-executive'); setView('canada-pm-detail'); }}
+              />
+
+              {/* Federal Parliament — no follow */}
+              <CaCard
+                id="ca-parliament"
+                icon={<Users className="w-6 h-6" />}
+                title="Federal Parliament"
+                subtitle="House of Commons & Senate"
+                meta={caBicameralFootnote}
+                accent="#1e40af"
+                noFollow
+                onClick={() => setView('ca-parliament')}
+              />
+
+              {/* Legislative Hub */}
+              <CaCard
+                id="legislative-hub"
+                icon={<FileText className="w-6 h-6" />}
+                title="Legislative Hub"
+                subtitle="Bills, laws & legislation"
+                meta={`${bills.length} Bills · ${laws.length} Laws`}
+                accent="#16a34a"
+                onClick={() => { clearCaFollowNotif('legislative-hub'); setView('legislative-hub'); }}
+              />
+
+              {/* Government Ministries */}
+              <CaCard
+                id="ministries"
+                icon={<Building2 className="w-6 h-6" />}
+                title="Government Ministries"
+                subtitle="Budgets, grants & performance"
+                meta={`${caDeptHubCount} Ministries`}
+                accent="#ea580c"
+                onClick={() => { clearCaFollowNotif('ministries'); setView('ministries'); }}
+              />
+
+              {/* Government Contracts */}
+              <CaCard
+                id="contracts"
+                icon={<DollarSign className="w-6 h-6" />}
+                title="Government Contracts"
+                subtitle="Taxpayer money & spending"
+                meta={governmentContractsHubSubtitle(liveContracts.CA, sumDash?.contractsCA)}
+                accent="#dc2626"
+                onClick={() => { clearCaFollowNotif('contracts'); setView('contracts'); }}
+              />
+
+              {/* Where the Money Goes */}
+              <CaCard
+                id="money-canada"
+                icon={<PieChart className="w-6 h-6" />}
+                title="Where the Money Goes"
+                subtitle="Federal spending breakdown"
+                meta="FY 2024-25 · $534.8B"
+                accent="#059669"
+                onClick={() => { clearCaFollowNotif('money-canada'); setView('money-canada'); }}
+              />
+
+              {/* Important Stats */}
+              <CaCard
+                id="analytics"
+                icon={<BarChart3 className="w-6 h-6" />}
+                title="Government Stats"
+                subtitle="Budget, debt, unemployment"
+                meta="12 Sections"
+                accent="#7c3aed"
+                onClick={() => { clearCaFollowNotif('analytics'); setView('analytics'); }}
+              />
+
+              {/* Supreme Court */}
+              <CaCard
+                id="supreme-court"
+                icon={<Scale className="w-6 h-6" />}
+                title="Supreme Court"
+                subtitle="Cases, decisions & Charter"
+                meta="9 Justices · 10 Cases"
+                accent="#b45309"
+                onClick={() => { clearCaFollowNotif('supreme-court'); setView('supreme-court'); }}
+              />
+
+              {/* Election Tracker — full width */}
+              {(() => {
+                const elDate = new Date('2025-10-20');
+                const days   = Math.max(0, Math.floor((elDate - new Date()) / 86400000));
+                return (
+                  <div className="sm:col-span-2">
+                    <CaCard
+                      id="election-tracker"
+                      icon={<span className="text-xl">🗳️</span>}
+                      title="Election Tracker"
+                      subtitle="Canadian Federal Election"
+                      meta={`${days} days to next election · LPC 37% · CPC 34% · NDP 18%`}
+                      accent="#C41230"
+                      onClick={() => { clearCaFollowNotif('election-tracker'); setView('election-tracker'); }}
+                    />
+                  </div>
+                );
+              })()}
+
+            </div>
+          </div>
+        </div>
+      );
+    }
+    // ── End Canada theme ──────────────────────────────────────────────────────
+
+    // USA path below
+
     return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-8 animate-fade-in">
       <div className="max-w-6xl mx-auto">
@@ -28765,405 +28973,106 @@ function App() {
           <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
         </div>
 
-        {renderTransparencyBanner(isUSA ? 'US' : 'CA')}
-
-        {/* Follow summary bar — Canada only */}
-        {!isUSA && (() => {
-          const followCount = Object.keys(caFollows).length;
-          const notifCount  = Object.keys(caFollowNotifs).length;
-          if (followCount === 0) return null;
-          return (
-            <div className="mb-6 flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-              <Bell className="w-5 h-5 text-green-600 fill-green-200 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-green-800">
-                  Following {followCount} section{followCount !== 1 ? 's' : ''}
-                  {notifCount > 0 && <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{notifCount} new update{notifCount !== 1 ? 's' : ''}</span>}
-                </p>
-                <p className="text-xs text-green-600 truncate">You'll see 🔔 New Update on cards when live data refreshes</p>
-              </div>
-            </div>
-          );
-        })()}
+        {renderTransparencyBanner('US')}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mc-grid">
 
-          {/* President & Executive — USA only */}
-          {isUSA && (
-            <div
-              onClick={() => setView('president-executive')}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
-              style={{ animationDelay: '0.05s' }}
-            >
-              <div className="text-red-600 mb-3 sm:mb-4">
-                <Crown className="w-10 h-10 sm:w-12 sm:h-12" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">President &amp; Executive</h2>
-              <p className="text-gray-600 mb-2 text-sm sm:text-base">White House, president profile, and cabinet roster (official heads from Firestore when synced)</p>
-              {(usCabinetRosterLoading || usCabinetRosterCount != null) && (
-                <p className="text-[11px] text-gray-500 mb-3 leading-snug">
-                  {usCabinetRosterLoading
-                    ? 'Loading cabinet roster count…'
-                    : usCabinetRosterCount === -1
-                      ? 'Cabinet roster count unavailable.'
-                      : `${usCabinetRosterCount} department head record${usCabinetRosterCount === 1 ? '' : 's'} (US) in Firestore.`}
-                </p>
-              )}
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span className="leading-snug">Editorial profile: 47th President · Donald J. Trump <span className="text-gray-400">(pending leaders API)</span></span>
-                <div className="flex items-center gap-2 shrink-0">
-                  {(controversiesData['Donald Trump']?.length ?? 0) > 0 && (
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Donald Trump'].length}</span>
-                  )}
-                  <ChevronRight className="w-5 h-5" />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Prime Minister & Executive — Canada only */}
-          {!isUSA && (
-            <div
-              onClick={() => { clearCaFollowNotif('pm-executive'); setView('canada-pm-detail'); }}
-              className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
-              style={{ animationDelay: '0.05s' }}
-            >
-              <div className="text-red-600 mb-3 sm:mb-4">
-                <Crown className="w-10 h-10 sm:w-12 sm:h-12" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Prime Minister &amp; Executive</h2>
-              <p className="text-gray-600 mb-3 text-sm sm:text-base">The PMO, Cabinet &amp; Executive Branch</p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>24th Prime Minister · Mark Carney</span>
-                <div className="flex items-center gap-2">
-                  {(controversiesData['Mark Carney']?.length ?? 0) > 0 && (
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Mark Carney'].length}</span>
-                  )}
-                  <ChevronRight className="w-5 h-5" />
-                </div>
-              </div>
-              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
-                <button
-                  onClick={e => toggleCaFollow(e, 'pm-executive')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['pm-executive'] ? 'bg-red-600 text-white border-red-600' : 'bg-white text-gray-500 border-gray-200 hover:border-red-400 hover:text-red-600'}`}
-                >
-                  <Bell className={`w-3.5 h-3.5 ${caFollows['pm-executive'] ? 'fill-white' : ''}`} />
-                  {caFollows['pm-executive'] ? 'Following' : 'Follow'}
-                </button>
-                {caFollowNotifs['pm-executive'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
-              </div>
-            </div>
-          )}
-
-          {/* Legislature (Congress/Parliament) */}
-          <div
-            onClick={() => { if (isUSA) { setUsaChamber('House'); setUsaPartyFilter('All'); setUsaSearch(''); setView('us-parliament'); } else { setView('ca-parliament'); } }}
-            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
-            style={{ animationDelay: '0.1s' }}
-          >
-            <div className="text-blue-600 mb-3 sm:mb-4">
-              <Users className="w-10 h-10 sm:w-12 sm:h-12" />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">{legislatureName}</h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">
-              {isUSA ? `Explore ${memberCount} ${memberTitle} across all parties` : 'House of Commons and Senate — Canada\'s bicameral Parliament'}
-            </p>
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{isUSA ? `${memberCount} Members` : caBicameralFootnote}</span>
-              <ChevronRight className="w-5 h-5" />
-            </div>
-          </div>
-
-          {/* Analytics Dashboard - Available for both countries */}
-          <div
-            onClick={() => { if (!isUSA) clearCaFollowNotif('analytics'); setView(isUSA ? 'us-analytics' : 'analytics'); }}
-            className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc"
-            style={{ animationDelay: '0.3s' }}
-          >
-            <div className="text-purple-600 mb-3 sm:mb-4">
-              <BarChart3 className="w-10 h-10 sm:w-12 sm:h-12" />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
-              Important Government Stats
-            </h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">
-              Budget, deficit, debt, unemployment & foreign aid
-            </p>
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span className="font-medium">12 Sections</span>
-              <ChevronRight className="w-5 h-5 text-purple-600" />
-            </div>
-            {!isUSA && (
-              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
-                <button
-                  onClick={e => toggleCaFollow(e, 'analytics')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['analytics'] ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-500 border-gray-200 hover:border-purple-400 hover:text-purple-600'}`}
-                >
-                  <Bell className={`w-3.5 h-3.5 ${caFollows['analytics'] ? 'fill-white' : ''}`} />
-                  {caFollows['analytics'] ? 'Following' : 'Follow'}
-                </button>
-                {caFollowNotifs['analytics'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
-              </div>
+          {/* President & Executive */}
+          <div onClick={() => setView('president-executive')} className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc" style={{ animationDelay: '0.05s' }}>
+            <div className="text-red-600 mb-3 sm:mb-4"><Crown className="w-10 h-10 sm:w-12 sm:h-12" /></div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">President &amp; Executive</h2>
+            <p className="text-gray-600 mb-2 text-sm sm:text-base">White House, president profile, and cabinet roster</p>
+            {(usCabinetRosterLoading || usCabinetRosterCount != null) && (
+              <p className="text-[11px] text-gray-500 mb-3 leading-snug">{usCabinetRosterLoading ? 'Loading cabinet roster count…' : usCabinetRosterCount === -1 ? 'Cabinet roster count unavailable.' : `${usCabinetRosterCount} department head record${usCabinetRosterCount === 1 ? '' : 's'} (US) in Firestore.`}</p>
             )}
-          </div>
-
-          {/* Legislative Hub - Canada */}
-          {!isUSA && (
-            <div
-              onClick={() => { clearCaFollowNotif('legislative-hub'); setView('legislative-hub'); }}
-              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
-            >
-              <div className="text-green-600 mb-3 sm:mb-4">
-                <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Legislative Hub</h2>
-              <p className="text-gray-600 mb-3 text-sm sm:text-base">Bills, laws & legislation all in one place</p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span className="font-medium">{bills.length} Bills • {laws.length} Laws</span>
-                <ChevronRight className="w-5 h-5 text-green-600" />
-              </div>
-              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={e => toggleCaFollow(e, 'legislative-hub')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['legislative-hub'] ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400 hover:text-green-600'}`}
-                  >
-                    <Bell className={`w-3.5 h-3.5 ${caFollows['legislative-hub'] ? 'fill-white' : ''}`} />
-                    {caFollows['legislative-hub'] ? 'Following' : 'Follow'}
-                  </button>
-                  {caFollowNotifs['legislative-hub'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New</span>}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Legislative Hub - USA */}
-          {isUSA && (
-            <div
-              onClick={() => setView('us-legislative-hub')}
-              className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95"
-            >
-              <div className="text-green-600 mb-3 sm:mb-4">
-                <FileText className="w-10 h-10 sm:w-12 sm:h-12" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Legislative Hub</h2>
-              <p className="text-gray-600 mb-3 text-sm sm:text-base">Bills, laws & legislation all in one place</p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span className="font-medium">{usBills.length} Bills • {usLaws.length} Laws</span>
-                <ChevronRight className="w-5 h-5 text-green-600" />
-              </div>
-              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                <button
-                  onClick={(e) => { e.stopPropagation(); const next = !usLiveData; setUsLiveData(next); if (next) { logEvent('live_data_toggle', { country: 'US' }); if (usFirestoreBills.length === 0) fetchFirestoreBills('US', setUsFirestoreBills, setUsFirestoreLoading); } }}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all ${usLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400'}`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${usLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
-                  {usFirestoreLoading ? 'Loading…' : usLiveData ? 'Live: On' : 'Live Data'}
-                </button>
-                {usLiveData && !usFirestoreLoading && usFirestoreBills.length > 0 && (
-                  <span className="text-xs text-green-600 font-medium">{usFirestoreBills.length} live bills</span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Government Ministries (Canada) / Federal Departments (USA) */}
-          <div
-            onClick={() => { if (!isUSA) clearCaFollowNotif('ministries'); setView(isUSA ? 'departments' : 'ministries'); }}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95 mc"
-          >
-            <div className="text-orange-600 mb-3 sm:mb-4">
-              <Building2 className="w-10 h-10 sm:w-12 sm:h-12" />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
-              {isUSA ? 'Federal Departments' : 'Government Ministries'}
-            </h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">
-              {isUSA
-                ? 'Review cabinet budgets, grants & approve department performance'
-                : 'Review budgets, grants & approve ministerial performance'
-              }
-            </p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>{isUSA ? usDeptHubCount : caDeptHubCount} {isUSA ? 'Departments' : 'Ministries'}</span>
-              <ChevronRight className="w-5 h-5" />
-            </div>
-            {!isUSA && (
-              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
-                <button
-                  onClick={e => toggleCaFollow(e, 'ministries')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['ministries'] ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-gray-500 border-gray-200 hover:border-orange-400 hover:text-orange-600'}`}
-                >
-                  <Bell className={`w-3.5 h-3.5 ${caFollows['ministries'] ? 'fill-white' : ''}`} />
-                  {caFollows['ministries'] ? 'Following' : 'Follow'}
-                </button>
-                {caFollowNotifs['ministries'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
+              <span className="leading-snug">47th President · Donald J. Trump</span>
+              <div className="flex items-center gap-2 shrink-0">
+                {(controversiesData['Donald Trump']?.length ?? 0) > 0 && <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">⚡ {controversiesData['Donald Trump'].length}</span>}
+                <ChevronRight className="w-5 h-5" />
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Government Contracts - Available for both countries */}
-          <div
-            onClick={() => { if (!isUSA) clearCaFollowNotif('contracts'); setView(isUSA ? 'us-contracts' : 'contracts'); }}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 active:scale-95 mc"
-          >
-            <div className="text-red-600 mb-3 sm:mb-4">
-              <DollarSign className="w-10 h-10 sm:w-12 sm:h-12" />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
-              {isUSA ? 'Federal Contracts' : 'Government Contracts'}
-            </h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">
-              {isUSA
-                ? 'See which companies get billions in taxpayer money'
-                : 'Follow taxpayer money and major government spending'
-              }
-            </p>
+          {/* Congress */}
+          <div onClick={() => { setUsaChamber('House'); setUsaPartyFilter('All'); setUsaSearch(''); setView('us-parliament'); }} className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc" style={{ animationDelay: '0.1s' }}>
+            <div className="text-blue-600 mb-3 sm:mb-4"><Users className="w-10 h-10 sm:w-12 sm:h-12" /></div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Congress</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Explore {usMembersHub} Members of Congress across all parties</p>
             <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>
-                {governmentContractsHubSubtitle(
-                  isUSA ? liveContracts.US : liveContracts.CA,
-                  isUSA ? sumDash?.contractsUS : sumDash?.contractsCA,
-                )}
-              </span>
-              <ChevronRight className="w-5 h-5" />
+              <span>{usMembersHub} Members</span><ChevronRight className="w-5 h-5" />
             </div>
-            {!isUSA && (
-              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
-                <button
-                  onClick={e => toggleCaFollow(e, 'contracts')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['contracts'] ? 'bg-red-600 text-white border-red-600' : 'bg-white text-gray-500 border-gray-200 hover:border-red-400 hover:text-red-600'}`}
-                >
-                  <Bell className={`w-3.5 h-3.5 ${caFollows['contracts'] ? 'fill-white' : ''}`} />
-                  {caFollows['contracts'] ? 'Following' : 'Follow'}
-                </button>
-                {caFollowNotifs['contracts'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
-              </div>
-            )}
           </div>
 
-          {/* Where the Money Goes - Financial Transparency */}
-          <div
-            onClick={() => { if (!isUSA) clearCaFollowNotif('money-canada'); setView(isUSA ? 'money-usa' : 'money-canada'); }}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-emerald-500 active:scale-95 mc"
-          >
-            <div className="text-emerald-600 mb-3 sm:mb-4">
-              <PieChart className="w-10 h-10 sm:w-12 sm:h-12" />
+          {/* Government Stats */}
+          <div onClick={() => setView('us-analytics')} className="card-gradient rounded-2xl shadow-elegant-lg p-6 sm:p-8 cursor-pointer hover-lift interactive-card border-2 border-white/50 animate-scale-in mc" style={{ animationDelay: '0.3s' }}>
+            <div className="text-purple-600 mb-3 sm:mb-4"><BarChart3 className="w-10 h-10 sm:w-12 sm:h-12" /></div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Important Government Stats</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Budget, deficit, debt, unemployment &amp; foreign aid</p>
+            <div className="flex items-center justify-between text-sm text-gray-500"><span className="font-medium">12 Sections</span><ChevronRight className="w-5 h-5 text-purple-600" /></div>
+          </div>
+
+          {/* Legislative Hub */}
+          <div onClick={() => setView('us-legislative-hub')} className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-green-500 active:scale-95">
+            <div className="text-green-600 mb-3 sm:mb-4"><FileText className="w-10 h-10 sm:w-12 sm:h-12" /></div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Legislative Hub</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Bills, laws &amp; legislation all in one place</p>
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span className="font-medium">{usBills.length} Bills • {usLaws.length} Laws</span><ChevronRight className="w-5 h-5 text-green-600" />
             </div>
+            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2" onClick={e => e.stopPropagation()}>
+              <button onClick={(e) => { e.stopPropagation(); const next = !usLiveData; setUsLiveData(next); if (next) { logEvent('live_data_toggle', { country: 'US' }); if (usFirestoreBills.length === 0) fetchFirestoreBills('US', setUsFirestoreBills, setUsFirestoreLoading); } }} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all ${usLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400'}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${usLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
+                {usFirestoreLoading ? 'Loading…' : usLiveData ? 'Live: On' : 'Live Data'}
+              </button>
+              {usLiveData && !usFirestoreLoading && usFirestoreBills.length > 0 && <span className="text-xs text-green-600 font-medium">{usFirestoreBills.length} live bills</span>}
+            </div>
+          </div>
+
+          {/* Federal Departments */}
+          <div onClick={() => setView('departments')} className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-orange-500 active:scale-95 mc">
+            <div className="text-orange-600 mb-3 sm:mb-4"><Building2 className="w-10 h-10 sm:w-12 sm:h-12" /></div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Federal Departments</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Review cabinet budgets, grants &amp; approve department performance</p>
+            <div className="flex items-center justify-between text-sm text-gray-500"><span>{usDeptHubCount} Departments</span><ChevronRight className="w-5 h-5" /></div>
+          </div>
+
+          {/* Federal Contracts */}
+          <div onClick={() => setView('us-contracts')} className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-red-500 active:scale-95 mc">
+            <div className="text-red-600 mb-3 sm:mb-4"><DollarSign className="w-10 h-10 sm:w-12 sm:h-12" /></div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Federal Contracts</h2>
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">See which companies get billions in taxpayer money</p>
+            <div className="flex items-center justify-between text-sm text-gray-500"><span>{governmentContractsHubSubtitle(liveContracts.US, sumDash?.contractsUS)}</span><ChevronRight className="w-5 h-5" /></div>
+          </div>
+
+          {/* Where the Money Goes */}
+          <div onClick={() => setView('money-usa')} className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-emerald-500 active:scale-95 mc">
+            <div className="text-emerald-600 mb-3 sm:mb-4"><PieChart className="w-10 h-10 sm:w-12 sm:h-12" /></div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Where the Money Goes</h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">
-              {isUSA
-                ? (() => {
-                    const usDoc = pickLatestBudgetDoc(budgetFirestoreData['US']);
-                    const v = Number(usDoc?.totalGovtExpenditureUSD);
-                    if (usDoc && !isNaN(v) && v > 0) {
-                      const f = v >= 1e12 ? `$${(v / 1e12).toFixed(2)}T` : v >= 1e9 ? `$${(v / 1e9).toFixed(1)}B` : `$${Math.round(v).toLocaleString()}`;
-                      return `Financial transparency: headline scale ${f} (World Bank macro envelope — see dashboard for methodology)`;
-                    }
-                    return 'Financial transparency: federal spending overview (syncs from budget_data when available)';
-                  })()
-                : 'Financial transparency: how $534.8B in federal spending reaches citizens'
-              }
-            </p>
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span className="font-medium">
-                {isUSA
-                  ? (() => {
-                      const usDoc = pickLatestBudgetDoc(budgetFirestoreData['US']);
-                      const fy = usDoc?.budgetFunctions?.fiscalYear ?? usDoc?.fiscalYear;
-                      return fy != null ? `FY ${fy}` : 'FY —';
-                    })()
-                  : 'FY 2024-25'}
-                {' '}· Overview
-              </span>
-              <ChevronRight className="w-5 h-5 text-emerald-600" />
-            </div>
-            {!isUSA && (
-              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
-                <button
-                  onClick={e => toggleCaFollow(e, 'money-canada')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['money-canada'] ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-gray-500 border-gray-200 hover:border-emerald-400 hover:text-emerald-600'}`}
-                >
-                  <Bell className={`w-3.5 h-3.5 ${caFollows['money-canada'] ? 'fill-white' : ''}`} />
-                  {caFollows['money-canada'] ? 'Following' : 'Follow'}
-                </button>
-                {caFollowNotifs['money-canada'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
-              </div>
-            )}
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">{(() => { const usDoc = pickLatestBudgetDoc(budgetFirestoreData['US']); const v = Number(usDoc?.totalGovtExpenditureUSD); if (usDoc && !isNaN(v) && v > 0) { const f = v >= 1e12 ? `$${(v/1e12).toFixed(2)}T` : `$${(v/1e9).toFixed(1)}B`; return `Financial transparency: headline scale ${f}`; } return 'Financial transparency: federal spending overview'; })()}</p>
+            <div className="flex items-center justify-between text-sm text-gray-500"><span className="font-medium">{(() => { const usDoc = pickLatestBudgetDoc(budgetFirestoreData['US']); const fy = usDoc?.budgetFunctions?.fiscalYear ?? usDoc?.fiscalYear; return fy != null ? `FY ${fy}` : 'FY —'; })()} · Overview</span><ChevronRight className="w-5 h-5 text-emerald-600" /></div>
           </div>
 
-          {/* Supreme Court - Available for both countries */}
-          <div
-            onClick={() => { if (!isUSA) clearCaFollowNotif('supreme-court'); setView(isUSA ? 'us-supreme-court' : 'supreme-court'); }}
-            className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-yellow-500 active:scale-95 mc"
-          >
-            <div className="text-yellow-600 mb-3 sm:mb-4">
-              <Scale className="w-10 h-10 sm:w-12 sm:h-12" />
-            </div>
+          {/* Supreme Court */}
+          <div onClick={() => setView('us-supreme-court')} className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent hover:border-yellow-500 active:scale-95 mc">
+            <div className="text-yellow-600 mb-3 sm:mb-4"><Scale className="w-10 h-10 sm:w-12 sm:h-12" /></div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Supreme Court</h2>
-            <p className="text-gray-600 mb-3 text-sm sm:text-base">
-              {isUSA
-                ? 'Track major cases, decisions & constitutional rulings'
-                : 'Track major cases, decisions & Charter challenges'
-              }
-            </p>
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <span>9 Justices • {isUSA ? '10' : '10'} Cases</span>
-              <ChevronRight className="w-5 h-5" />
-            </div>
-            {!isUSA && (
-              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
-                <button
-                  onClick={e => toggleCaFollow(e, 'supreme-court')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['supreme-court'] ? 'bg-yellow-600 text-white border-yellow-600' : 'bg-white text-gray-500 border-gray-200 hover:border-yellow-400 hover:text-yellow-600'}`}
-                >
-                  <Bell className={`w-3.5 h-3.5 ${caFollows['supreme-court'] ? 'fill-white' : ''}`} />
-                  {caFollows['supreme-court'] ? 'Following' : 'Follow'}
-                </button>
-                {caFollowNotifs['supreme-court'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
-              </div>
-            )}
+            <p className="text-gray-600 mb-3 text-sm sm:text-base">Track major cases, decisions &amp; constitutional rulings</p>
+            <div className="flex items-center justify-between text-sm text-gray-500"><span>9 Justices • 10 Cases</span><ChevronRight className="w-5 h-5" /></div>
           </div>
 
           {/* Election Tracker */}
           {(() => {
-            const isUsa = isUSA;
-            const label = isUsa ? 'US Midterm Election' : 'Canadian Federal Election';
-            const elDate = isUsa ? new Date('2026-11-03') : new Date('2025-10-20');
-            const days = Math.max(0, Math.floor((elDate - new Date()) / 86400000));
-            const accent = isUsa ? '#ef4444' : '#dc2626';
-            const polling = isUsa ? 'Rep 48% · Dem 44%' : 'LPC 37% · CPC 34% · NDP 18%';
+            const elDate = new Date('2026-11-03');
+            const days   = Math.max(0, Math.floor((elDate - new Date()) / 86400000));
+            const accent = '#ef4444';
             return (
-              <div
-                onClick={() => { if (!isUsa) clearCaFollowNotif('election-tracker'); setView('election-tracker'); }}
-                className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95"
-                onMouseEnter={e => e.currentTarget.style.borderColor = accent}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
-              >
+              <div onClick={() => setView('election-tracker')} className="bg-white rounded-xl shadow-lg p-6 sm:p-8 cursor-pointer hover:shadow-2xl transition-all border-2 border-transparent active:scale-95" onMouseEnter={e => e.currentTarget.style.borderColor = accent} onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}>
                 <div className="mb-3 sm:mb-4 text-3xl">🗳️</div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">🗳️ Election Tracker</h2>
-                <p className="text-gray-500 text-xs mb-3">{label}</p>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-2xl font-black" style={{ color: accent }}>{days} days</span>
-                  <span className="text-sm text-gray-500">until next election</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-full text-xs font-bold text-white" style={{ background: accent }}>LIVE POLLING</span>
-                  <span className="text-xs text-gray-500">{polling}</span>
-                </div>
-                {!isUsa && (
-                  <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
-                    <button
-                      onClick={e => toggleCaFollow(e, 'election-tracker')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['election-tracker'] ? 'text-white border-transparent' : 'bg-white text-gray-500 border-gray-200 hover:text-red-600'}`}
-                      style={caFollows['election-tracker'] ? { background: accent, borderColor: accent } : {}}
-                    >
-                      <Bell className={`w-3.5 h-3.5 ${caFollows['election-tracker'] ? 'fill-white' : ''}`} />
-                      {caFollows['election-tracker'] ? 'Following' : 'Follow'}
-                    </button>
-                    {caFollowNotifs['election-tracker'] && <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full animate-pulse">🔔 New Update</span>}
-                  </div>
-                )}
+                <p className="text-gray-500 text-xs mb-3">US Midterm Election</p>
+                <div className="flex items-center gap-2 mb-2"><span className="text-2xl font-black" style={{ color: accent }}>{days} days</span><span className="text-sm text-gray-500">until next election</span></div>
+                <div className="flex items-center gap-2"><span className="px-2 py-0.5 rounded-full text-xs font-bold text-white" style={{ background: accent }}>LIVE POLLING</span><span className="text-xs text-gray-500">Rep 48% · Dem 44%</span></div>
               </div>
             );
           })()}
