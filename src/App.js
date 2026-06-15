@@ -28923,18 +28923,6 @@ function App() {
               <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={(e) => { e.stopPropagation(); const next = !caLiveData; setCaLiveData(next); if (next) { logEvent('live_data_toggle', { country: 'CA' }); fetchFirestoreBills('CA', setCaFirestoreBills, setCaFirestoreLoading); } }}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border-2 transition-all ${caLiveData ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400'}`}
-                  >
-                    <span className={`w-1.5 h-1.5 rounded-full ${caLiveData ? 'bg-white animate-pulse' : 'bg-gray-400'}`} />
-                    {caFirestoreLoading ? 'Loading…' : caLiveData ? 'Live: On' : 'Live Data'}
-                  </button>
-                  {caLiveData && !caFirestoreLoading && caFirestoreBills.length > 0 && (
-                    <span className="text-xs text-green-600 font-medium">{caFirestoreBills.length} live bills</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
                     onClick={e => toggleCaFollow(e, 'legislative-hub')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${caFollows['legislative-hub'] ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-500 border-gray-200 hover:border-green-400 hover:text-green-600'}`}
                   >
