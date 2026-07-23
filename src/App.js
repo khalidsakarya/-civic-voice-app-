@@ -6833,12 +6833,46 @@ function App() {
   const caDeptHubCount = sumDash?.departmentsCA ?? ministries.length ?? 15;
   const auDeptHubCount = sumDash?.departmentsAU ?? 15;
 
+  // ── LAUNCH FLAGS ──────────────────────────────────────────────────────────
+  // Flip a flag to true when that country is ready for public access.
+  // All underlying code, data, and Firestore collections are preserved —
+  // only the UI entry points are gated.
+  const LAUNCH_FLAGS = {
+    SHOW_CANADA:    true,
+    SHOW_US:        false,
+    SHOW_AUSTRALIA: false,
+    SHOW_UK:        false,
+  };
+
   const countries = [
-    { id: 1, name: 'Canada', flag: '🇨🇦', members: canadaMembersHub, type: 'canada' },
-    { id: 2, name: 'United States', flag: '🇺🇸', members: usMembersHub, type: 'usa' },
-    { id: 3, name: 'Australia', flag: '🇦🇺', members: auMembersHub, type: 'australia' },
-    { id: 4, name: 'United Kingdom', flag: '🇬🇧', members: ukMembersHub, type: 'uk' }
-  ];
+    { id: 1, name: 'Canada',        flag: '🇨🇦', members: canadaMembersHub, type: 'canada'    },
+    { id: 2, name: 'United States', flag: '🇺🇸', members: usMembersHub,     type: 'usa'       },
+    { id: 3, name: 'Australia',     flag: '🇦🇺', members: auMembersHub,     type: 'australia' },
+    { id: 4, name: 'United Kingdom',flag: '🇬🇧', members: ukMembersHub,     type: 'uk'        },
+  ].filter(c =>
+    (c.type === 'canada'    && LAUNCH_FLAGS.SHOW_CANADA)    ||
+    (c.type === 'usa'       && LAUNCH_FLAGS.SHOW_US)        ||
+    (c.type === 'australia' && LAUNCH_FLAGS.SHOW_AUSTRALIA) ||
+    (c.type === 'uk'        && LAUNCH_FLAGS.SHOW_UK)
+  );
+
+  // Shown when a user navigates directly to a hidden-country view
+  const renderRegionUnavailable = (countryName) => (
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 animate-fade-in" style={{ background: '#f8f9fa' }}>
+      <span className="text-6xl mb-6">🍁</span>
+      <h1 className="text-2xl font-bold text-gray-800 mb-3 text-center">Canadian Launch Only</h1>
+      <p className="text-gray-500 text-center max-w-sm mb-8">
+        {countryName ? `${countryName} is` : 'This region is'} currently not available in the Canadian launch version.
+      </p>
+      <button
+        onClick={() => { setSelectedCountry({ id: 1, name: 'Canada', flag: '🇨🇦', members: canadaMembersHub, type: 'canada' }); setView('government-levels'); }}
+        className="px-6 py-3 rounded-xl text-white font-semibold active:scale-95 transition-transform"
+        style={{ background: '#C41230' }}
+      >
+        ← Back to Canada
+      </button>
+    </div>
+  );
 
   const categories = [
     { id: 1, name: 'Federal Parliament', icon: <Globe className="w-6 h-6" />, count: canadaMembersHub, type: 'parliament' },
@@ -12807,6 +12841,11 @@ function App() {
     const isAustralia = selectedCountry?.type === 'australia';
     const isUK = selectedCountry?.type === 'uk';
     const countryName = isUSA ? 'United States' : isAustralia ? 'Australia' : isUK ? 'United Kingdom' : 'Canada';
+
+    // Gate hidden countries — show friendly screen instead of their hub
+    if (isUSA       && !LAUNCH_FLAGS.SHOW_US)        return renderRegionUnavailable('United States');
+    if (isAustralia && !LAUNCH_FLAGS.SHOW_AUSTRALIA) return renderRegionUnavailable('Australia');
+    if (isUK        && !LAUNCH_FLAGS.SHOW_UK)        return renderRegionUnavailable('United Kingdom');
     const flag = isUSA ? '🇺🇸' : isAustralia ? '🇦🇺' : isUK ? '🇬🇧' : '🇨🇦';
 
     if (isUK) {
@@ -37895,22 +37934,17 @@ function App() {
         {view === 'provincial' && renderProvincial()}
         {view === 'province-detail' && selectedProvince && renderProvinceDetail()}
         {view === 'categories' && renderCategories()}
-        {view === 'us-parliament' && renderCongressParliament()}
+        {/* ── Canada views (always shown) ── */}
         {view === 'chambers' && renderChambers()}
         {view === 'ca-parliament' && renderCaParliament()}
         {view === 'parties' && renderParties()}
         {view === 'members' && renderMembers()}
         {view === 'member-detail' && selectedMember && renderMemberDetail()}
         {view === 'analytics' && renderAnalytics()}
-        {view === 'us-analytics' && renderUSAnalytics()}
         {view === 'bills' && renderBills()}
         {view === 'ca-tax-full' && renderCaTaxFull()}
-        {view === 'us-tax-full' && renderUsTaxFull()}
-        {view === 'au-tax-full' && renderAuTaxFull()}
-        {view === 'uk-tax-full' && renderUkTaxFull()}
         {view === 'ca-tax-calculator' && renderCaTaxCalculator()}
         {view === 'legislative-hub' && renderLegislativeHub()}
-        {view === 'us-legislative-hub' && renderUSLegislativeHub()}
         {view === 'bill-detail' && selectedBill && renderBillDetail()}
         {view === 'laws' && renderLaws()}
         {view === 'law-detail' && selectedLaw && renderLawDetail()}
@@ -37918,61 +37952,78 @@ function App() {
       {view === 'contract-detail' && selectedContract && renderContractDetail()}
       {view === 'ministries' && renderMinistries()}
       {view === 'ministry-detail' && selectedMinistry && renderMinistryDetail()}
-      {view === 'departments' && renderDepartments()}
-      {view === 'department-detail' && selectedDepartment && renderDepartmentDetail()}
       {view === 'supreme-court' && renderCanadaSupremeCourt()}
-      {view === 'us-supreme-court' && renderUSSupremeCourt()}
       {view === 'case-detail' && selectedCase && renderCaseDetail()}
-      {view === 'us-contracts' && renderUSContracts()}
-      {view === 'us-bills' && renderUSBills()}
-      {view === 'us-bill-detail' && selectedBill && renderUSBillDetail()}
       {view === 'senate' && renderSenate()}
       {view === 'canada-pm-detail' && renderCarneyDetail()}
-      {view === 'au-leader-detail' && selectedAuLeader && renderAuLeaderDetail()}
-      {view === 'albanese-detail' && renderAlbaneseDetail()}
-      {view === 'au-parliament' && renderAustralianParliament()}
-      {view === 'au-states' && renderAustralianStates()}
-      {view === 'au-state-detail' && selectedAuState && renderAustralianStateDetail()}
-      {view === 'president-executive' && renderPresidentExecutive()}
-      {view === 'president-detail' && renderPresidentDetail()}
-      {view === 'executive-orders' && renderExecutiveOrders()}
-      {view === 'bills-signed-laws' && renderBillsSignedByPresident()}
-      {view === 'laws-search' && renderLawsSearch()}
-      {view === 'us-laws-search' && renderLawsSearch()}
-      {view === 'money-usa' && renderFinancialDashboard()}
       {view === 'money-canada' && renderFinancialDashboard()}
-      {view === 'money-australia' && renderFinancialDashboard()}
-      {view === 'money-uk' && renderFinancialDashboard()}
-      {view === 'au-legislative-hub' && renderAuLegislativeHub()}
-      {view === 'au-categories' && renderAuCategories()}
       {view === 'promise-tracker-page' && renderPromiseTrackerPage()}
       {view === 'election-tracker' && renderElectionTracker()}
-      {view === 'au-high-court' && renderAuHighCourt()}
-      {view === 'uk-national' && renderUKNational()}
-      {view === 'uk-pm-detail' && renderStarmerDetail()}
-      {view === 'uk-commons' && renderUKCommons()}
-      {view === 'uk-member-detail' && selectedUkMember && renderUKMemberDetail()}
-      {view === 'uk-lords' && renderUKLords()}
-      {view === 'uk-lord-detail' && selectedUkLord && renderUKLordDetail()}
-      {view === 'uk-legislative-hub' && renderUKLegislativeHub()}
-      {view === 'uk-departments' && renderUKDepartments()}
-      {view === 'uk-department-detail' && selectedUkDepartment && renderUKDepartmentDetail()}
-      {view === 'uk-supreme-court' && renderUKSupremeCourt()}
-      {view === 'uk-regions' && renderUKRegions()}
-      {view === 'uk-region-detail' && selectedUkRegion && renderUKRegionDetail()}
-      {view === 'uk-contracts' && renderUKContracts()}
-      {view === 'uk-contract-detail' && selectedUkContract && renderUKContractDetail()}
-      {view === 'uk-analytics' && renderUKAnalytics()}
-      {view === 'uk-coming-soon' && renderUKComingSoon()}
-      {view === 'au-analytics' && renderAuAnalytics()}
-      {view === 'au-contracts' && renderAuContracts()}
-      {view === 'au-contract-detail' && selectedAuContract && renderAuContractDetail()}
-      {view === 'au-departments' && renderAuDepartments()}
-      {view === 'au-department-detail' && selectedAuDepartment && renderAuDepartmentDetail()}
       {view === 'news-canada' && renderNewsView('CA')}
-      {view === 'news-usa' && renderNewsView('US')}
-      {view === 'news-uk' && renderNewsView('UK')}
-      {view === 'news-australia' && renderNewsView('AU')}
+
+        {/* ── US views — gated by LAUNCH_FLAGS.SHOW_US ── */}
+        {LAUNCH_FLAGS.SHOW_US && view === 'us-parliament'      && renderCongressParliament()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'us-analytics'       && renderUSAnalytics()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'us-tax-full'        && renderUsTaxFull()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'us-legislative-hub' && renderUSLegislativeHub()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'departments'        && renderDepartments()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'department-detail'  && selectedDepartment && renderDepartmentDetail()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'us-supreme-court'   && renderUSSupremeCourt()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'us-contracts'       && renderUSContracts()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'us-bills'           && renderUSBills()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'us-bill-detail'     && selectedBill && renderUSBillDetail()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'president-executive'&& renderPresidentExecutive()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'president-detail'   && renderPresidentDetail()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'executive-orders'   && renderExecutiveOrders()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'bills-signed-laws'  && renderBillsSignedByPresident()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'laws-search'        && renderLawsSearch()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'us-laws-search'     && renderLawsSearch()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'money-usa'          && renderFinancialDashboard()}
+        {LAUNCH_FLAGS.SHOW_US && view === 'news-usa'           && renderNewsView('US')}
+
+        {/* ── Australia views — gated by LAUNCH_FLAGS.SHOW_AUSTRALIA ── */}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'au-leader-detail'     && selectedAuLeader && renderAuLeaderDetail()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'albanese-detail'       && renderAlbaneseDetail()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'au-parliament'         && renderAustralianParliament()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'au-states'             && renderAustralianStates()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'au-state-detail'       && selectedAuState && renderAustralianStateDetail()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'au-categories'         && renderAuCategories()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'au-legislative-hub'    && renderAuLegislativeHub()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'au-high-court'         && renderAuHighCourt()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'au-analytics'          && renderAuAnalytics()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'au-contracts'          && renderAuContracts()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'au-contract-detail'    && selectedAuContract && renderAuContractDetail()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'au-departments'        && renderAuDepartments()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'au-department-detail'  && selectedAuDepartment && renderAuDepartmentDetail()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'au-tax-full'           && renderAuTaxFull()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'money-australia'       && renderFinancialDashboard()}
+        {LAUNCH_FLAGS.SHOW_AUSTRALIA && view === 'news-australia'        && renderNewsView('AU')}
+
+        {/* ── UK views — gated by LAUNCH_FLAGS.SHOW_UK ── */}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-national'          && renderUKNational()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-pm-detail'         && renderStarmerDetail()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-commons'           && renderUKCommons()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-member-detail'     && selectedUkMember && renderUKMemberDetail()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-lords'             && renderUKLords()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-lord-detail'       && selectedUkLord && renderUKLordDetail()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-legislative-hub'   && renderUKLegislativeHub()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-departments'       && renderUKDepartments()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-department-detail' && selectedUkDepartment && renderUKDepartmentDetail()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-supreme-court'     && renderUKSupremeCourt()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-regions'           && renderUKRegions()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-region-detail'     && selectedUkRegion && renderUKRegionDetail()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-contracts'         && renderUKContracts()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-contract-detail'   && selectedUkContract && renderUKContractDetail()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-analytics'         && renderUKAnalytics()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-coming-soon'       && renderUKComingSoon()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'uk-tax-full'          && renderUkTaxFull()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'money-uk'             && renderFinancialDashboard()}
+        {LAUNCH_FLAGS.SHOW_UK && view === 'news-uk'              && renderNewsView('UK')}
+
+        {/* ── Catch-all: friendly screen for any hidden-country direct-link ── */}
+        {!LAUNCH_FLAGS.SHOW_US && ['us-parliament','us-analytics','us-tax-full','us-legislative-hub','departments','department-detail','us-supreme-court','us-contracts','us-bills','us-bill-detail','president-executive','president-detail','executive-orders','bills-signed-laws','laws-search','us-laws-search','money-usa','news-usa'].includes(view) && renderRegionUnavailable('United States')}
+        {!LAUNCH_FLAGS.SHOW_AUSTRALIA && ['au-leader-detail','albanese-detail','au-parliament','au-states','au-state-detail','au-categories','au-legislative-hub','au-high-court','au-analytics','au-contracts','au-contract-detail','au-departments','au-department-detail','au-tax-full','money-australia','news-australia'].includes(view) && renderRegionUnavailable('Australia')}
+        {!LAUNCH_FLAGS.SHOW_UK && ['uk-national','uk-pm-detail','uk-commons','uk-member-detail','uk-lords','uk-lord-detail','uk-legislative-hub','uk-departments','uk-department-detail','uk-supreme-court','uk-regions','uk-region-detail','uk-contracts','uk-contract-detail','uk-analytics','uk-coming-soon','uk-tax-full','money-uk','news-uk'].includes(view) && renderRegionUnavailable('United Kingdom')}
       {/* Waste Tracker — hidden for v1: {view === 'waste-tracker' && renderWasteTracker()} */}
       
       {/* Riding selector modal */}
