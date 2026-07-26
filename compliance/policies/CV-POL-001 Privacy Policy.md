@@ -80,8 +80,10 @@ The following personal information may be collected or processed when you use Ci
 When you choose to submit a citizen-opinion vote (Support, Concern, or Oppose) on a
 government official or piece of legislation, the App asks for your device's location permission.
 
-- Your device's GPS coordinates are used **only to determine your province or territory**.
-- **Precise GPS coordinates are not stored, logged, or transmitted.**
+- If location permission is granted, your device's GPS coordinates may be processed
+  temporarily on-device or in-memory **only to determine your province or territory**.
+- **Precise GPS coordinates are not stored, logged, or transmitted.** Once your province
+  or territory is resolved, the coordinates are discarded and are not retained in any form.
 - Only the derived province or territory label (e.g., "Ontario") is saved — to your device
   and, anonymously alongside your vote, to our database.
 - You may deny or revoke location permission at any time in your device settings.
@@ -131,8 +133,9 @@ to opt out at any time. See Section 11 for more detail.
 
 We do not intentionally collect, and have designed the App to avoid collecting:
 
-- **Precise GPS coordinates** — coordinates are used only in-memory to resolve your province
-  or territory and are immediately discarded.
+- **Precise GPS coordinates** — if location permission is granted, coordinates may be
+  processed temporarily on-device or in-memory only to resolve your province or territory,
+  and are then discarded. Precise GPS coordinates are not stored, logged, or transmitted.
 - **Your name, date of birth, SIN, health information, or financial information.**
 - **Political opinions, party affiliations, or voting intentions** — citizen-opinion votes
   are anonymous and are not linked to your identity. Civic Voice does not create political
@@ -267,7 +270,8 @@ loss, theft, unauthorised access, disclosure, copying, use, or modification, inc
   identifying information are access-restricted; anonymous vote records are write-accessible
   to the App but not bulk-readable by clients.
 - **Data minimisation** — we design features to collect the minimum information necessary.
-  For example, location is resolved to province/territory only; coordinates are discarded.
+  For example, if location permission is granted, coordinates are processed in-memory only
+  to resolve province/territory and are not stored.
 - **Processor agreements** — our service providers are contractually bound to protect data.
 
 No method of transmission or storage is 100% secure. We cannot guarantee absolute security,
