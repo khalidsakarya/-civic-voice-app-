@@ -50,8 +50,8 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 
 | Metric | Count |
 |---|---|
-| Total documents in package | 20 (including this index) |
-| Status: Draft | 20 |
+| Total documents in package | 29 (including this index) |
+| Status: Draft | 29 |
 | Status: Ready for Review | 0 |
 | Status: Approved | 0 |
 | Status: Retired | 0 |
@@ -89,6 +89,15 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 | **CV-PLAN-001** | Public Legal Pages Implementation Plan | `compliance/plans/CV-PLAN-001 Public Legal Pages Implementation Plan.md` | Plan | Founder / Product Lead | Draft | Before public launch; before App Store submission; when public routes, navigation, or legal document content changes materially | Internal | Defines which compliance documents become public app pages, proposed routes, footer link requirements, App Store URL requirements, content readiness gates, and implementation rules | CV-POL-001 · CV-POL-002 · CV-POL-003 · CV-POL-004 · CV-POL-005 · CV-REG-001 · CV-REG-003 · CV-CHK-002 · CV-CHK-003 | No app code to be written until all readiness gates in §9 are resolved and source documents are Approved |
 | **CV-PLAN-002** | Canadian Launch Scope Control Plan | `compliance/plans/CV-PLAN-002 Canadian Launch Scope Control Plan.md` | Plan | Founder / Product Lead | Draft | Before public launch; before adding any non-Canadian jurisdiction back into the public UI | Internal | Defines Canadian-only launch scope, hide-not-delete rules for US/UK/AU, direct-route handling, data and code retention, and reactivation criteria for hidden jurisdictions | CV-COMP-001 · CV-POL-002 · CV-POL-004 · CV-CHK-002 · CV-REG-003 | US, UK, and Australia code and Firestore data must not be deleted; hidden jurisdictions must not appear in App Store listing or marketing |
 | **CV-CHK-004** | Public UI Compliance Implementation Checklist | `compliance/checklists/CV-CHK-004 Public UI Compliance Implementation Checklist.md` | Checklist | Founder / Product Lead | Draft | Before public launch; before App Store submission; before major UI changes affecting legal links, disclaimers, navigation scope, or data display labels | Internal | 67-item UI compliance checklist covering legal links, disclaimer placement, Canada-only scope, hidden jurisdiction handling, source attribution, data freshness labels, prohibited claims, privacy controls, accessibility, and App Store screenshots | CV-PLAN-001 · CV-PLAN-002 · CV-POL-001 through CV-POL-005 · CV-CHK-001 · CV-CHK-002 · CV-CHK-003 · CV-REG-003 | Must be completed and signed off before public launch; all Critical items must be Pass or NA |
+| **CV-REC-001** | Data Verification Checklist Template | `compliance/records/templates/CV-REC-001 Data Verification Checklist Template.md` | Record Template | Founder / Data Lead | Draft | When CV-SOP-001 is updated | Internal | Blank template for recording per-dataset verification events: dataset identification, verification checklist, transformation record, reviewer sign-off, and final decision | CV-SOP-001 · CV-POL-002 · CV-REG-001 | Complete one record per verification event; retain minimum 3 years |
+| **CV-REC-002** | Monthly Update Log Template | `compliance/records/templates/CV-REC-002 Monthly Update Log Template.md` | Record Template | Founder / Data Lead | Draft | When CV-SOP-002 is updated | Internal | Blank template for recording monthly data update cycles: source summary, records written, manual review flags, Firestore write controls, post-write checks, UI checks, deviations, and approval | CV-SOP-002 · CV-POL-002 · CV-REG-001 | Complete one record per monthly update cycle; retain minimum 3 years |
+| **CV-REC-003** | Manual Review Register Template | `compliance/records/templates/CV-REC-003 Manual Review Register Template.md` | Record Template | Founder / Data Lead | Draft | When CV-SOP-001 or CV-SOP-002 is updated | Internal | Living register template for tracking open and closed manual review flags on data items; includes flag ID, jurisdiction, app area, data item, reason, status label, priority, and resolution | CV-SOP-001 · CV-SOP-002 · CV-POL-002 | Living register — do not delete closed rows; retain minimum 3 years from last entry |
+| **CV-REC-004** | Correction Request Record Template | `compliance/records/templates/CV-REC-004 Correction Request Record Template.md` | Record Template | Founder / Compliance Lead | Draft | When CV-SOP-003 is updated | Internal | Blank template for recording individual correction requests: all 20 fields from CV-SOP-003 including correction ID, triage decision, verification evidence, implementation action, and closure status | CV-SOP-003 · CV-POL-003 | Complete one record per correction request; retain minimum 3 years from closure |
+| **CV-REC-005** | Deviation and Risk Acceptance Record Template | `compliance/records/templates/CV-REC-005 Deviation and Risk Acceptance Record Template.md` | Record Template | Founder / Compliance Lead | Draft | When related SOPs or checklists are updated | Internal | Blank template for recording deviations from compliance procedures and formal risk acceptance decisions: deviation description, severity, root cause, immediate action, risk assessment, acceptance conditions, corrective action, and approval | CV-SOP-002 · CV-SOP-003 · CV-CHK-002 | Complete one record per deviation or risk acceptance; retain minimum 3 years from closure |
+| **CV-REC-006** | Access Review Record Template | `compliance/records/templates/CV-REC-006 Access Review Record Template.md` | Record Template | Founder / Technical Lead | Draft | When CV-SOP-004 is updated | Internal | Blank template for recording access reviews across all systems (Firebase, Vercel, GitHub, domain registrar): access inventory, keep/remove/change decisions, service account review, findings, and approval | CV-SOP-004 · CV-POL-001 | Complete one record per access review; retain minimum 3 years |
+| **CV-REC-007** | Firestore Rules Review Record Template | `compliance/records/templates/CV-REC-007 Firestore Rules Review Record Template.md` | Record Template | Founder / Technical Lead | Draft | When CV-SOP-004 is updated | Internal | Blank template for recording Firestore security rules reviews: collections reviewed, public read/restricted write confirmations, admin-only actions, test evidence, findings, and approval | CV-SOP-004 · CV-POL-001 · CV-REG-002 | Required before public launch (CV-ISS-015); complete one record per rules review; retain minimum 3 years |
+| **CV-REC-008** | Secrets and Environment Variable Register Template | `compliance/records/templates/CV-REC-008 Secrets and Environment Variable Register Template.md` | Record Template | Founder / Technical Lead | Draft | When CV-SOP-004 is updated | Internal | Living register template for tracking secrets and environment variables: name, system, environment, purpose, storage location, access level, rotation frequency, and rotation dates. Never records actual secret values. | CV-SOP-004 | Living register — review quarterly; never store actual secret values; retain minimum 3 years per version |
+| **CV-REC-009** | Launch Approval Record Template | `compliance/records/templates/CV-REC-009 Launch Approval Record Template.md` | Record Template | Founder / Compliance Lead | Draft | When CV-CHK-002 is updated | Internal | Blank template for recording the formal launch gate approval: launch overview, checklist completion status, open Critical/High issues, risk acceptances, content readiness gates, final launch decision (Approved / Approved with open items / Not approved / Deferred), and approver sign-offs | CV-CHK-002 · CV-PLAN-001 · CV-PLAN-002 | Complete one record per major public launch; retain minimum 5 years |
 
 ---
 
@@ -103,6 +112,7 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 | **Standard Operating Procedures (SOPs)** | CV-SOP-001 · CV-SOP-002 · CV-SOP-003 · CV-SOP-004 · CV-SOP-005 | 5 |
 | **Checklists** | CV-CHK-001 · CV-CHK-002 · CV-CHK-003 · CV-CHK-004 | 4 |
 | **Plans** | CV-PLAN-001 · CV-PLAN-002 | 2 |
+| **Records / Templates** | CV-REC-001 · CV-REC-002 · CV-REC-003 · CV-REC-004 · CV-REC-005 · CV-REC-006 · CV-REC-007 · CV-REC-008 · CV-REC-009 | 9 |
 
 ---
 
@@ -117,10 +127,10 @@ Each document has a named owner who is responsible for:
 
 | Owner Role | Documents Owned |
 |---|---|
-| **Founder / Compliance Lead** | CV-IDX-001 · CV-COMP-001 · CV-POL-003 · CV-POL-004 · CV-SOP-003 · CV-SOP-005 |
+| **Founder / Compliance Lead** | CV-IDX-001 · CV-COMP-001 · CV-POL-003 · CV-POL-004 · CV-SOP-003 · CV-SOP-005 · CV-REC-004 · CV-REC-005 · CV-REC-009 |
 | **Founder / Privacy Lead** | CV-POL-001 · CV-REG-002 |
-| **Founder / Data Lead** | CV-REG-001 · CV-POL-002 · CV-SOP-001 · CV-SOP-002 |
-| **Founder / Technical Lead** | CV-SOP-004 |
+| **Founder / Data Lead** | CV-REG-001 · CV-POL-002 · CV-SOP-001 · CV-SOP-002 · CV-REC-001 · CV-REC-002 · CV-REC-003 |
+| **Founder / Technical Lead** | CV-SOP-004 · CV-REC-006 · CV-REC-007 · CV-REC-008 |
 | **Founder / Product Lead** | CV-POL-005 · CV-CHK-001 · CV-PLAN-001 · CV-PLAN-002 · CV-CHK-004 |
 
 > Note: In the current single-founder phase, the Founder holds all owner roles. As the
@@ -132,8 +142,8 @@ Each document has a named owner who is responsible for:
 
 | Frequency | Documents |
 |---|---|
-| **Monthly** (or on source / document changes) | CV-IDX-001 · CV-REG-001 · CV-POL-002 · CV-SOP-001 · CV-SOP-002 |
-| **Quarterly** (or on incident / infrastructure / workflow change) | CV-REG-002 · CV-SOP-003 · CV-SOP-004 |
+| **Monthly** (or on source / document changes) | CV-IDX-001 · CV-REG-001 · CV-POL-002 · CV-SOP-001 · CV-SOP-002 · CV-REC-002 · CV-REC-003 |
+| **Quarterly** (or on incident / infrastructure / workflow change) | CV-REG-002 · CV-SOP-003 · CV-SOP-004 · CV-REC-006 · CV-REC-007 · CV-REC-008 |
 | **Before launch + major UI changes** | CV-POL-001 · CV-POL-003 · CV-POL-004 · CV-POL-005 · CV-CHK-001 · CV-PLAN-001 · CV-PLAN-002 · CV-CHK-004 |
 | **Before launch of communication feature** | CV-SOP-005 |
 | **When app scope or positioning changes** | CV-COMP-001 · CV-POL-003 · CV-POL-004 |
@@ -240,6 +250,7 @@ added, documents approved, documents retired, and major revisions.
 | 2026-08-02 | CV-PLAN-001 Public Legal Pages Implementation Plan created; compliance/plans/ directory added; index updated to 18 documents; Plans category added; CV-REG-003 registered in categories table | CV-PLAN-001 · CV-IDX-001 | Founder / Product Lead |
 | 2026-08-02 | CV-PLAN-002 Canadian Launch Scope Control Plan created; index updated to 19 documents | CV-PLAN-002 · CV-IDX-001 | Founder / Product Lead |
 | 2026-08-02 | CV-CHK-004 Public UI Compliance Implementation Checklist created; index updated to 20 documents, 4 checklists | CV-CHK-004 · CV-IDX-001 | Founder / Product Lead |
+| 2026-08-02 | 9 compliance record templates created (CV-REC-001 through CV-REC-009); compliance/records/templates/ directory added; Records / Templates category added to index; index updated to 29 documents | CV-REC-001–009 · CV-IDX-001 | Founder / Compliance Lead |
 
 ---
 
