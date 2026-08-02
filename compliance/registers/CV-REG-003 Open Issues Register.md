@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Document ID** | CV-REG-003 |
-| **Version** | 0.1 |
+| **Version** | 0.2 |
 | **Status** | Draft |
 | **Owner** | Founder / Compliance Lead |
 | **Effective Date** | 2026-08-02 |
@@ -105,7 +105,7 @@ This register does **not** track:
 | **CV-ISS-013** | 2026-08-02 | Legal review of public-facing documents | Legal counsel review of CV-POL-001 (Privacy Policy), CV-POL-003 (Terms of Use), CV-POL-004 (Public Disclaimer), and CV-POL-005 (Accessibility Statement) has not been conducted. All four documents remain Draft. | CV-POL-001 · CV-POL-003 · CV-POL-004 · CV-POL-005 | Critical | Pending External Review | Founder | TBD | Legal counsel review completed; all four public-facing documents updated with counsel's recommendations; documents set to Approved status; Effective Dates set | | | | Blocked by CV-ISS-001 (legal name), CV-ISS-002 (contact email), CV-ISS-003 (mailing address), CV-ISS-004 (governing province) — these must be resolved before legal review can be completed. |
 | **CV-ISS-014** | 2026-08-02 | Accessibility review | CV-CHK-001 (Accessibility Checklist) has not been completed against the live app. The Accessibility Statement (CV-POL-005) Known Limitations table cannot be finalised until the review is done. | CV-CHK-001 · CV-POL-005 · CV-CHK-002 | High | Open | Product Lead · Developer | TBD | CV-CHK-001 completed and signed off; all Fail items either resolved or documented as known limitations in CV-POL-005 §5; CV-POL-005 Known Limitations table updated | | | | Requires access to the live app or a production-equivalent build. Separate from legal review. |
 | **CV-ISS-015** | 2026-08-02 | Firestore security rules review | The Firestore security rules review defined in CV-SOP-004 §7 has not been conducted. No Firestore Rules Review Record exists. Production rules have not been validated against intended read/write behaviour. | CV-SOP-004 | High | Open | Technical Lead | TBD | Firestore Rules Review Record created and signed off; all collections reviewed against CV-SOP-004 §7.2 checklist; no unintended public read or write access confirmed | | | | Cannot close until production rules are reviewed — not dev/emulator rules. |
-| **CV-ISS-016** | 2026-08-02 | Data Source Register licence review | All 11 current CV-REG-001 entries are at Licence Status: Review Required. No source has been cleared for public display. Sources must reach Approved or Public Registry status before the data they provide can be shown to users. | CV-REG-001 · CV-POL-002 · CV-CHK-002 | Critical | Open | Data Lead | TBD | All active launch sources in CV-REG-001 updated to Licence Status: Approved or Public Registry; source URL, source owner, reporting period, fetched date, and verification status confirmed for each; no source at Review Required status used for public display | | | | Review each source against CV-POL-002 §7. OGL-Canada 2.0, Statistics Canada Open Licence, and provincial open licences are the primary frameworks to confirm. |
+| **CV-ISS-016** | 2026-08-02 | Data Source Register licence review | All 11 current CV-REG-001 entries are at Licence Status: Review Required. No source has been cleared for public display. Sources must reach Approved or Public Registry status before the data they provide can be shown to users. | CV-REG-001 · CV-POL-002 · CV-CHK-002 · CV-RPT-001 | Critical | **In Progress** | Data Lead | TBD | All active launch sources in CV-REG-001 updated to Licence Status: Approved or Public Registry; source URL, source owner, reporting period, fetched date, and verification status confirmed for each; no source at Review Required status used for public display | | | | **2026-08-02 update:** Source Approval Batches 1 and 2 (Steps 23–24) completed. All 11 sources now have confirmed licence/terms decisions — no source remains at Review Required. Decisions: Approved (OGL-Canada 2.0): SRC-FED-003, 004, 005, 006; Approved (Statistics Canada Open Licence): SRC-FED-001; Approved (OGL-Canada 2.0, open.canada.ca): SRC-FED-002; Public Registry (Parliament terms): SRC-FED-007; Approved (OGL-Ontario): SRC-ONT-001, 002, 003; Public Registry (Ontario Legislature terms): SRC-ONT-004. **Remaining to close this issue:** exact dataset URLs, reporting periods, first fetch dates, and verification status (CV-REC-001) must be confirmed for all active launch sources before this issue can be closed. Second reviewers must be assigned for 5 high-risk sources. See CV-RPT-001 Section 10 for full launch blocker list. |
 
 ---
 
@@ -180,6 +180,7 @@ A Critical issue may be closed as Risk Accepted only if:
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 0.1 | 2026-08-02 | Founder / Compliance Lead | Initial register created — 16 open issues from CV-IDX-001 pre-launch open items |
+| 0.2 | 2026-08-02 | Founder / Data Lead | Step 25: CV-ISS-016 status updated from Open to In Progress. Source Approval Batches 1 and 2 completed — all 11 sources now have confirmed licence/terms decisions; no source remains at Review Required. Remaining open: dataset URLs, reporting periods, fetch dates, verification (CV-REC-001), second reviewer assignments. |
 
 ---
 

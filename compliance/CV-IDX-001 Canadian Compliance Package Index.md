@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Document ID** | CV-IDX-001 |
-| **Version** | 0.1 |
+| **Version** | 0.2 |
 | **Status** | Draft |
 | **Owner** | Founder / Compliance Lead |
 | **Effective Date** | TBD — pending review |
@@ -50,7 +50,7 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 
 | Metric | Count |
 |---|---|
-| Total documents in package | 41 (including this index) |
+| Total documents in package | 42 (including this index) |
 | Status: Draft | 41 |
 | Status: Ready for Review | 0 |
 | Status: Approved | 0 |
@@ -59,6 +59,7 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 | Internal documents | 11 |
 | Registers | 3 (CV-REG-001 · CV-REG-002 · CV-REG-003) |
 | Source Review Records | 11 (CV-SRC-REV-001 through CV-SRC-REV-011) |
+| Reports | 1 (CV-RPT-001) |
 | Pre-launch open items outstanding | 15 — see Section 10 |
 
 > This table must be updated whenever a document status changes.
@@ -111,7 +112,9 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 | **CV-SRC-REV-008** | Ontario Budget Review | `compliance/records/source-reviews/CV-SRC-REV-008 Ontario Budget Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-008 (Ontario Budget) | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | Pending Review |
 | **CV-SRC-REV-009** | Ontario Public Accounts and Grants Review | `compliance/records/source-reviews/CV-SRC-REV-009 Ontario Public Accounts and Grants Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-009 (Ontario Public Accounts) | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | Pending Review |
 | **CV-SRC-REV-010** | Ontario Public Sector Salary Disclosure Review | `compliance/records/source-reviews/CV-SRC-REV-010 Ontario Public Sector Salary Disclosure Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-010 (Sunshine List) — **HIGH-RISK** — named individuals with salaries; Privacy Commissioner guidance must be reviewed; second reviewer required | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | **High-Risk** — Pending Review — Privacy Commissioner guidance review and second reviewer required |
-| **CV-SRC-REV-011** | Ontario Integrity Commissioner Review | `compliance/records/source-reviews/CV-SRC-REV-011 Ontario Integrity Commissioner Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-011 (Ontario Integrity Commissioner) — **HIGHEST RISK** — named MPPs, ethics findings; second reviewer required | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | **Highest Risk** — Pending Review — second reviewer mandatory |
+| **CV-SRC-REV-011** | Ontario Integrity Commissioner Review | `compliance/records/source-reviews/CV-SRC-REV-011 Ontario Integrity Commissioner Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-011 (Ontario Integrity Commissioner) — **HIGHEST RISK** — named MPPs, ethics findings; second reviewer required | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | **Highest Risk** — Manual Review Only — second reviewer mandatory |
+
+| **CV-RPT-001** | Canadian Source Decision Summary | `compliance/reports/CV-RPT-001 Canadian Source Decision Summary.md` | Report | Founder / Data Lead | Draft | After each Source Approval Batch; before public launch | Internal | Consolidated launch-readiness summary of all 11 Canadian source decisions: decision type, licence status, machine-readability, high-risk flags, second review requirements, launch blockers, and required next actions | CV-REG-001 · CV-SRC-REV-001–011 · CV-REG-003 · CV-IDX-001 | Updated after each Source Approval Batch. As of 2026-08-02: 4 Approved with Limitations, 4 Public Registry, 2 Manual Review Only, 1 Pending Review. No source cleared for public display. |
 
 ---
 
@@ -128,6 +131,7 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 | **Plans** | CV-PLAN-001 · CV-PLAN-002 | 2 |
 | **Records / Templates** | CV-REC-001 · CV-REC-002 · CV-REC-003 · CV-REC-004 · CV-REC-005 · CV-REC-006 · CV-REC-007 · CV-REC-008 · CV-REC-009 | 9 |
 | **Source Review Records** | CV-SRC-REV-001 · CV-SRC-REV-002 · CV-SRC-REV-003 · CV-SRC-REV-004 · CV-SRC-REV-005 · CV-SRC-REV-006 · CV-SRC-REV-007 · CV-SRC-REV-008 · CV-SRC-REV-009 · CV-SRC-REV-010 · CV-SRC-REV-011 | 11 |
+| **Reports** | CV-RPT-001 | 1 |
 
 ---
 
@@ -144,7 +148,7 @@ Each document has a named owner who is responsible for:
 |---|---|
 | **Founder / Compliance Lead** | CV-IDX-001 · CV-COMP-001 · CV-POL-003 · CV-POL-004 · CV-SOP-003 · CV-SOP-005 · CV-REC-004 · CV-REC-005 · CV-REC-009 |
 | **Founder / Privacy Lead** | CV-POL-001 · CV-REG-002 |
-| **Founder / Data Lead** | CV-REG-001 · CV-POL-002 · CV-SOP-001 · CV-SOP-002 · CV-REC-001 · CV-REC-002 · CV-REC-003 · CV-CHK-005 · CV-SRC-REV-001 through CV-SRC-REV-011 |
+| **Founder / Data Lead** | CV-REG-001 · CV-POL-002 · CV-SOP-001 · CV-SOP-002 · CV-REC-001 · CV-REC-002 · CV-REC-003 · CV-CHK-005 · CV-SRC-REV-001 through CV-SRC-REV-011 · CV-RPT-001 |
 | **Founder / Technical Lead** | CV-SOP-004 · CV-REC-006 · CV-REC-007 · CV-REC-008 |
 | **Founder / Product Lead** | CV-POL-005 · CV-CHK-001 · CV-PLAN-001 · CV-PLAN-002 · CV-CHK-004 |
 
@@ -162,6 +166,7 @@ Each document has a named owner who is responsible for:
 | **Before launch + major UI changes** | CV-POL-001 · CV-POL-003 · CV-POL-004 · CV-POL-005 · CV-CHK-001 · CV-PLAN-001 · CV-PLAN-002 · CV-CHK-004 |
 | **Before launch of communication feature** | CV-SOP-005 |
 | **When app scope or positioning changes** | CV-COMP-001 · CV-POL-003 · CV-POL-004 |
+| **After each Source Approval Batch; before public launch** | CV-RPT-001 |
 
 ---
 
@@ -222,7 +227,7 @@ CV-SOP-002 · CV-SOP-003 · CV-CHK-001 · CV-SOP-004 · CV-SOP-005
 The following items must be resolved before public launch of Civic Voice Canada. Each
 item is flagged as a TBD placeholder in one or more documents in this package.
 
-**Last status update: 2026-08-02**
+**Last status update: 2026-08-02 (Step 25)**
 
 | # | Open Item | Affects | Priority | Status | Notes |
 |---|---|---|---|---|---|
@@ -241,12 +246,13 @@ item is flagged as a TBD placeholder in one or more documents in this package.
 | 13 | **Legal review of public-facing documents** before Approved status is set | CV-POL-001 · CV-POL-003 · CV-POL-004 · CV-POL-005 | Critical | 🔴 **Open — Pending** | Legal review not yet conducted. All public-facing documents remain Draft. No document can be published until review is complete and operator legal name / governing province are confirmed. |
 | 14 | **Accessibility review** — complete CV-CHK-001 against the live app before CV-POL-005 is published | CV-CHK-001 · CV-POL-005 | High | 🟡 **Open — Not yet started** | CV-CHK-001 not yet completed against live app. |
 | 15 | **Firestore security rules review** — complete the review in CV-SOP-004 Section 7 before public launch | CV-SOP-004 | High | 🔴 **Open — Pending** | Review not yet conducted. Required before public launch. Firestore Rules Review Record does not yet exist. |
-| 16 | **Data Source Register licence review** — all active CV-REG-001 source entries must reach Licence Status: Approved or Public Registry before public display | CV-REG-001 · CV-POL-002 | Critical | 🔴 **Open — Pending** | All 11 current CV-REG-001 entries are at Licence Status: Review Required. No source has been cleared for public display. |
+| 16 | **Data Source Register licence review** — all active CV-REG-001 source entries must reach Licence Status: Approved or Public Registry before public display | CV-REG-001 · CV-POL-002 · CV-RPT-001 | Critical | 🟡 **In Progress** | **2026-08-02:** Source Approval Batches 1 and 2 complete. All 11 sources now have confirmed licence/terms decisions — no source remains at Review Required. Remaining open: dataset URLs, reporting periods, first fetch dates, and CV-REC-001 verification must be confirmed for all active launch sources. Second reviewers required for 5 high-risk sources. See CV-RPT-001 for full launch blocker detail. |
 
-> **15 of 16 items are open.** All Critical items must be resolved before the package
-> status is changed from Draft to Ready for Review. Items 1–4 (legal name, contact
-> email, mailing address, governing province) are the prerequisite for all others — no
-> public-facing document can be finalised until these are confirmed.
+> **15 of 16 items are open.** Item 16 (Data Source Register licence review) has moved
+> from Open to In Progress — licence decisions confirmed for all 11 sources; dataset-level
+> verification remains open. All other Critical items are unchanged. Items 1–4 (legal name,
+> contact email, mailing address, governing province) are the prerequisite for all others —
+> no public-facing document can be finalised until these are confirmed.
 
 ---
 
@@ -268,6 +274,7 @@ added, documents approved, documents retired, and major revisions.
 | 2026-08-02 | 9 compliance record templates created (CV-REC-001 through CV-REC-009); compliance/records/templates/ directory added; Records / Templates category added to index; index updated to 29 documents | CV-REC-001–009 · CV-IDX-001 | Founder / Compliance Lead |
 | 2026-08-02 | CV-CHK-005 Canadian Source Review Checklist created; index updated to 30 documents, 5 checklists | CV-CHK-005 · CV-IDX-001 | Founder / Data Lead |
 | 2026-08-02 | 11 source review records created (CV-SRC-REV-001 through CV-SRC-REV-011) — one per CV-REG-001 source; compliance/records/source-reviews/ directory added; Source Review Records category added to index; index updated to 41 documents; 4 sources flagged high-risk (CV-SRC-REV-005, 006, 007, 010, 011) | CV-SRC-REV-001–011 · CV-IDX-001 | Founder / Data Lead |
+| 2026-08-02 | Step 25: CV-RPT-001 Canadian Source Decision Summary created; compliance/reports/ directory added; Reports category added to index; index updated to 42 documents. CV-ISS-016 status updated to In Progress in pre-launch open items. CV-REG-003 updated to v0.2. | CV-RPT-001 · CV-REG-003 · CV-IDX-001 | Founder / Data Lead |
 
 ---
 
@@ -301,3 +308,4 @@ This index is considered complete when:
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 0.1 | 2026-07-26 | Founder / Compliance Lead | Initial draft — Canadian launch scope; 14 documents indexed |
+| 0.2 | 2026-08-02 | Founder / Data Lead | Step 25: CV-RPT-001 added; Reports category and compliance/reports/ directory added; document count updated to 42; CV-ISS-016 status updated to In Progress; Review Frequency table updated; owner table updated; change history updated. |
