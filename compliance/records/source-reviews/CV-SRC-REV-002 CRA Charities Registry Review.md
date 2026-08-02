@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Review Record ID** | CV-SRC-REV-002 |
-| **Related Source ID (CV-REG-001)** | SRC-002 |
+| **Related Source ID (CV-REG-001)** | SRC-FED-002 |
 | **Source Name** | Canada Revenue Agency — Charities Registry |
 | **Jurisdiction** | Canada Federal |
 | **Data Category** | Registered charities · Charitable organization disclosures |

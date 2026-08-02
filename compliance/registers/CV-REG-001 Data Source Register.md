@@ -97,14 +97,14 @@ to display factual data.
 | **Data Category** | Economic / Statistical Indicators | Charity / Non-Profit Registry | Federal Budget | Public Accounts | Lobbying Registry | Elections / Campaign Finance | Conflict of Interest / Ethics |
 | **Source Name** | Statistics Canada Key Indicators | CRA Charities Listings | Government of Canada Federal Budget | Public Accounts of Canada | Office of the Commissioner of Lobbying — Registry of Lobbyists | Elections Canada — Electoral Results and Campaign Finance | Office of the Conflict of Interest and Ethics Commissioner |
 | **Source Owner** | Statistics Canada | Canada Revenue Agency (CRA) | Department of Finance Canada | Office of the Comptroller General | Office of the Commissioner of Lobbying of Canada | Elections Canada | Office of the Conflict of Interest and Ethics Commissioner |
-| **Source URL** | [statcan.gc.ca](https://www.statcan.gc.ca) — TBD: confirm specific dataset URLs | [apps.cra-arc.gc.ca/ebci/hacc/srch/pub/dsplyBscSrch](https://apps.cra-arc.gc.ca/ebci/hacc/srch/pub/dsplyBscSrch) / open.canada.ca T3010 dataset | [budget.canada.ca](https://www.budget.canada.ca) | [tpsgc-pwgsc.gc.ca — Public Accounts](https://www.tpsgc-pwgsc.gc.ca/recgen/cpc-pac/index-eng.html) | [lobbycanada.gc.ca](https://lobbycanada.gc.ca) | [elections.ca](https://www.elections.ca) | [ciec-ccie.gc.ca](https://www.ciec-ccie.gc.ca) |
-| **Licence / Terms** | Statistics Canada Open Licence | OGL-Canada 2.0 (open.canada.ca dataset) / CRA public registry terms | OGL-Canada 2.0 | OGL-Canada 2.0 | Public registry — confirm terms | Public registry — OGL-Canada 2.0 for open data files | Public registry — confirm terms |
-| **Licence Status** | Review Required | Review Required | Review Required | Review Required | Review Required | Review Required | Review Required |
+| **Source URL** | Main: https://www.statcan.gc.ca · Open data: https://www150.statcan.gc.ca/n1/en/type/data · API: https://www.statcan.gc.ca/en/developers/wds · **Specific dataset URL: TBD — confirm which indicators are in scope** | [apps.cra-arc.gc.ca/ebci/hacc/srch/pub/dsplyBscSrch](https://apps.cra-arc.gc.ca/ebci/hacc/srch/pub/dsplyBscSrch) / open.canada.ca T3010 dataset | Budget page: https://www.canada.ca/en/department-finance/services/publications/federal-budget.html · Fiscal Reference Tables (XLSX): https://www.canada.ca/en/department-finance/services/publications/fiscal-reference-tables.html · Open data: https://open.canada.ca/data/en/organization/fin | TBS Public Accounts: https://www.canada.ca/en/treasury-board-secretariat/services/reporting-government-spending/public-accounts-canada.html · Proactive disclosure (grants/contributions CSV): https://open.canada.ca — **confirm exact dataset ID** | [lobbycanada.gc.ca](https://lobbycanada.gc.ca) | [elections.ca](https://www.elections.ca) | [ciec-ccie.gc.ca](https://www.ciec-ccie.gc.ca) |
+| **Licence / Terms** | Statistics Canada Open Licence — https://www.statcan.gc.ca/en/reference/licence | OGL-Canada 2.0 (open.canada.ca dataset) / CRA public registry terms | OGL-Canada 2.0 — https://open.canada.ca/en/open-government-licence-canada | OGL-Canada 2.0 — https://open.canada.ca/en/open-government-licence-canada | Public registry — confirm terms | Public registry — OGL-Canada 2.0 for open data files | Public registry — confirm terms |
+| **Licence Status** | **Approved** (Statistics Canada Open Licence confirmed — CV-SRC-REV-001 v0.2) | Review Required | **Approved** (OGL-Canada 2.0 confirmed — CV-SRC-REV-003 v0.2) | **Approved** (OGL-Canada 2.0 confirmed — CV-SRC-REV-004 v0.2) | Review Required | Review Required | Review Required |
 | **Reporting Period** | TBD — varies by indicator | Most recent T3010 filing year available | TBD — confirm budget year (e.g., FY 2024–25) | TBD — most recent Public Accounts year | TBD — rolling / current Parliament | TBD — 45th General Election + historical | TBD — most recent disclosure year |
 | **Update Frequency** | Varies — monthly / quarterly / annual by indicator | Annual (T3010 filings published on lag) | Annual (budget day) | Annual (fall tabling) | Continuous (lobbyist registration updates) | Post-election; periodic for campaign finance | Annual / on disclosure |
 | **App Update Frequency** | TBD | TBD | Annual | Annual | TBD — monthly check | Post-election; annual campaign finance | Annual |
-| **Fetch Method** | TBD — Statistics Canada API or CSV download | TBD — open.canada.ca CSV download or CRA search | TBD — PDF / HTML / open data file | TBD — PDF / open data file | TBD — lobbycanada.gc.ca API or CSV download | TBD — elections.ca open data files | TBD — PDF / web |
-| **Machine Readable?** | Partial (varies by indicator) | Partial (open.canada.ca CSV; CRA search is HTML) | Partial (PDF primary; some open data available) | Partial (PDF primary; some CSV available) | Yes (lobbycanada.gc.ca has search and CSV export) | Yes (elections.ca open data files) | No (PDF / web) |
+| **Fetch Method** | Web Data Service API (JSON) or CSV download — **confirm per specific dataset** | TBD — open.canada.ca CSV download or CRA search | Recommended: XLSX download from Fiscal Reference Tables page. Fallback: PDF extraction. Confirm at first fetch. | Recommended: CSV download from open.canada.ca proactive disclosure grants/contributions dataset. Fallback: PDF Public Accounts volumes. | TBD — lobbycanada.gc.ca API or CSV download | TBD — elections.ca open data files | TBD — PDF / web |
+| **Machine Readable?** | Yes for most public datasets (API/CSV) — **confirm per specific dataset** | Partial (open.canada.ca CSV; CRA search is HTML) | **Yes (Fiscal Reference Tables XLSX) / Partial (PDF budget)** — recommended path: XLSX | **Yes (proactive disclosure CSV on open.canada.ca) / Partial (Public Accounts PDF)** — recommended path: CSV | Yes (lobbycanada.gc.ca has search and CSV export) | Yes (elections.ca open data files) | No (PDF / web) |
 | **Personal Information Risk** | Low — aggregate statistical data | Low — organisation records, not individuals | Low — aggregate | Low — aggregate | Medium — named lobbyists and registrants | Medium — named candidates; financial disclosures | High — named public officials; financial disclosures |
 | **Public Figure / Official Data?** | No | No (organisations) | No | No | Yes — named registrants and lobbyists | Yes — named candidates | Yes — named public officials |
 | **Transformation Performed** | TBD | TBD — grouping by province/category planned | TBD — departmental spending grouping planned | TBD — departmental grouping planned | TBD | TBD | TBD |
@@ -114,7 +114,7 @@ to display factual data.
 | **Last Verified Date** | Not yet verified | Not yet verified | Not yet verified | Not yet verified | Not yet verified | Not yet verified | Not yet verified |
 | **Verification Status** | Needs Review | Needs Review | Needs Review | Needs Review | Needs Review | Needs Review | Needs Review |
 | **Manual Review Flag Needed?** | TBD | TBD | Yes — PDF extraction may require manual review | Yes — PDF extraction may require manual review | TBD | TBD | Yes — PDF / manual extraction required |
-| **Notes** | Confirm which specific Statistics Canada indicators are displayed (e.g., CPI, GDP, unemployment rate). Separate row per indicator may be needed once confirmed. | T3010 open data on open.canada.ca is preferred over CRA HTML search. Confirm dataset ID. Charity status (active/revoked) is high-risk — see CV-SOP-001 §11. | Confirm if open data file is available for the applicable budget year. PDF-only years require manual extraction. | Confirm open data availability for most recent year. Departmental totals are the primary display need. | Confirm whether lobbycanada.gc.ca offers a bulk export or API. Named lobbyist data is high-risk — second review required per CV-SOP-001 §10. | Elections Canada open data portal provides structured files. Confirm most recent election dataset URL after 45th General Election. | Named public official financial disclosure data. Manual review only. High-risk — second review required per CV-SOP-001 §10. |
+| **Notes** | **Step 23 (2026-08-02):** Licence Approved (Statistics Canada Open Licence). Source owner confirmed. Attribution: "Source: Statistics Canada, [Dataset name], [reporting period]. Adapted from Statistics Canada under the Statistics Canada Open Licence." **Blocking:** Specific dataset(s)/indicators not yet defined — source URL at dataset level, reporting period, and fetch method are TBD. See CV-SRC-REV-001 v0.2. | T3010 open data on open.canada.ca is preferred over CRA HTML search. Confirm dataset ID. Charity status (active/revoked) is high-risk — see CV-SOP-001 §11. | **Step 23 (2026-08-02):** Licence Approved (OGL-Canada 2.0). Source URLs confirmed. Preferred path: Fiscal Reference Tables XLSX. Attribution: "Source: Department of Finance Canada — Federal Budget [year], Government of Canada. Contains information licensed under the Open Government Licence – Canada. Fetched [date]." Reporting year and fetch date TBD. See CV-SRC-REV-003 v0.2. | **Step 23 (2026-08-02):** Licence Approved (OGL-Canada 2.0). Source URLs confirmed. Preferred path: proactive disclosure grants/contributions CSV on open.canada.ca (confirm dataset ID). Attribution: "Source: Receiver General for Canada — Public Accounts of Canada [fiscal year], Government of Canada. Contains information licensed under the Open Government Licence – Canada. Fetched [date]." Reporting year and fetch date TBD. See CV-SRC-REV-004 v0.2. | Confirm whether lobbycanada.gc.ca offers a bulk export or API. Named lobbyist data is high-risk — second review required per CV-SOP-001 §10. | Elections Canada open data portal provides structured files. Confirm most recent election dataset URL after 45th General Election. | Named public official financial disclosure data. Manual review only. High-risk — second review required per CV-SOP-001 §10. |
 
 ---
 
@@ -128,14 +128,14 @@ to display factual data.
 | **Data Category** | Provincial Budget | Public Accounts / Grants and Contributions | Public Sector Salary Disclosure (Sunshine List) | Conflict of Interest / Ethics |
 | **Source Name** | Ontario Budget | Ontario Public Accounts and Grants / Transfer Payments | Ontario Public Sector Salary Disclosure | Ontario Integrity Commissioner |
 | **Source Owner** | Ontario Ministry of Finance | Treasury Board Secretariat of Ontario | Treasury Board Secretariat of Ontario | Office of the Integrity Commissioner of Ontario |
-| **Source URL** | [ontario.ca/page/ontario-budget](https://www.ontario.ca/page/ontario-budget) | [ontario.ca/page/public-accounts](https://www.ontario.ca/page/public-accounts) / ontario.ca grants data — TBD | [ontario.ca/page/public-sector-salary-disclosure](https://www.ontario.ca/page/public-sector-salary-disclosure) | [oico.on.ca](https://www.oico.on.ca) |
-| **Licence / Terms** | Open Government Licence – Ontario — TBD confirm | Open Government Licence – Ontario — TBD confirm | Open Government Licence – Ontario — TBD confirm | Public registry — TBD confirm terms |
-| **Licence Status** | Review Required | Review Required | Review Required | Review Required |
+| **Source URL** | Budget page: https://www.ontario.ca/page/ontario-budget · Open data: https://data.ontario.ca — **confirm specific dataset URL** | Public Accounts: https://www.ontario.ca/page/public-accounts · Transfer payments CSV: https://data.ontario.ca — **confirm specific dataset URL** | [ontario.ca/page/public-sector-salary-disclosure](https://www.ontario.ca/page/public-sector-salary-disclosure) | [oico.on.ca](https://www.oico.on.ca) |
+| **Licence / Terms** | Open Government Licence – Ontario — https://www.ontario.ca/page/open-government-licence-ontario | Open Government Licence – Ontario — https://www.ontario.ca/page/open-government-licence-ontario | Open Government Licence – Ontario — TBD confirm | Public registry — TBD confirm terms |
+| **Licence Status** | **Approved** (OGL-Ontario confirmed — CV-SRC-REV-008 v0.2) | **Approved** (OGL-Ontario confirmed — CV-SRC-REV-009 v0.2) | Review Required | Review Required |
 | **Reporting Period** | TBD — most recent Ontario budget year | TBD — most recent Public Accounts year | TBD — most recent disclosure year (typically prior calendar year, published March) | TBD — most recent disclosure year |
 | **Update Frequency** | Annual (budget day) | Annual (fall) | Annual (March) | Annual / on disclosure |
 | **App Update Frequency** | Annual | Annual | Annual | Annual |
-| **Fetch Method** | TBD — PDF / HTML / open data file | TBD — PDF / open data file | TBD — CSV / XLSX download from ontario.ca | TBD — PDF / web |
-| **Machine Readable?** | Partial (PDF primary; some data files available) | Partial (PDF primary; some CSV available) | Yes (CSV/XLSX available from ontario.ca) | No (PDF / web) |
+| **Fetch Method** | Recommended: data.ontario.ca CSV/XLSX download (confirm availability for applicable year). Fallback: PDF from ontario.ca/page/ontario-budget. | Recommended: CSV download from data.ontario.ca transfer payments dataset. Fallback: PDF Public Accounts volumes. | TBD — CSV / XLSX download from ontario.ca or data.ontario.ca | TBD — PDF / web |
+| **Machine Readable?** | **Yes (data.ontario.ca path if available) / Partial (PDF path)** — confirm data.ontario.ca availability for applicable year | **Yes (data.ontario.ca transfer payments CSV)** | Yes (CSV/XLSX available from ontario.ca) | No (PDF / web) |
 | **Personal Information Risk** | Low — aggregate | Low — aggregate (grants to organisations) | High — named individuals; salary amounts | High — named public officials; financial disclosures |
 | **Public Figure / Official Data?** | No | No (organisations) | Yes — named public-sector employees | Yes — named public officials |
 | **Transformation Performed** | TBD | TBD — grouping by ministry/category planned | TBD — employer / salary band grouping planned | TBD |
@@ -145,7 +145,7 @@ to display factual data.
 | **Last Verified Date** | Not yet verified | Not yet verified | Not yet verified | Not yet verified |
 | **Verification Status** | Needs Review | Needs Review | Needs Review | Needs Review |
 | **Manual Review Flag Needed?** | Yes — PDF extraction may require manual review | TBD | TBD — CSV availability reduces manual review need | Yes — PDF / manual extraction required |
-| **Notes** | Confirm whether Ontario publishes a structured open data file for the budget or whether only a PDF is available. | Confirm grants/transfer payments dataset URL on ontario.ca open data portal. | The Sunshine List is high-risk — named individuals with salary data. Second review required per CV-SOP-001 §10. Confirm exact CSV URL and column structure. | Named public official financial disclosure data. Manual review only. High-risk — second review required. |
+| **Notes** | **Step 23 (2026-08-02):** Licence Approved (OGL-Ontario). Source URLs confirmed: ontario.ca/page/ontario-budget and data.ontario.ca. Preferred path: data.ontario.ca CSV/XLSX if available for applicable year; fallback: PDF. Attribution: "Source: Ontario Ministry of Finance — Ontario Budget [year], Government of Ontario. Contains information licensed under the Open Government Licence – Ontario. Fetched [date]." Confirm data.ontario.ca availability for applicable budget year. Reporting year and fetch date TBD. See CV-SRC-REV-008 v0.2. | **Step 23 (2026-08-02):** Licence Approved (OGL-Ontario). Source URLs confirmed: ontario.ca/page/public-accounts and data.ontario.ca. Preferred path: data.ontario.ca transfer payments CSV (machine-readable: Yes). Attribution: "Source: Government of Ontario — Transfer Payments and Grants [fiscal year], data.ontario.ca. Contains information licensed under the Open Government Licence – Ontario. Fetched [date]." Confirm exact dataset URL on data.ontario.ca. Reporting year and fetch date TBD. See CV-SRC-REV-009 v0.2. | The Sunshine List is high-risk — named individuals with salary data. Second review required per CV-SOP-001 §10. Confirm exact CSV URL and column structure. | Named public official financial disclosure data. Manual review only. High-risk — second review required. |
 
 ---
 
@@ -155,18 +155,21 @@ The following attribution statements are the approved formats for sources in thi
 register, consistent with CV-POL-002 Section 6.2. Update the reporting period and
 fetched date for each cycle.
 
-**Statistics Canada:**
-> "Source: Statistics Canada, [indicator name], [reporting period], fetched [date].
-> Adapted from Statistics Canada under the Statistics Canada Open Licence."
+**Statistics Canada:** *(Licence: Approved — Statistics Canada Open Licence)*
+> "Source: Statistics Canada, [Dataset name], [reporting period]. Adapted from Statistics Canada under the Statistics Canada Open Licence. Fetched [date]."
 
 **CRA Charities:**
 > "Source: Canada Revenue Agency Charities Listings (open.canada.ca), [fiscal year],
 > fetched [date]. Contains information licensed under the Open Government Licence –
 > Canada (OGL-Canada 2.0)."
 
-**Federal Budget / Public Accounts:**
-> "Source: [Report name], [fiscal year]. Contains information licensed under the Open
-> Government Licence – Canada (OGL-Canada 2.0). Fetched [date]."
+**Federal Budget:** *(Licence: Approved — OGL-Canada 2.0)*
+> "Source: Department of Finance Canada — Federal Budget [year], Government of Canada. Contains information licensed under the Open Government Licence – Canada. Fetched [date]."
+
+**Public Accounts of Canada:** *(Licence: Approved — OGL-Canada 2.0)*
+> "Source: Receiver General for Canada — Public Accounts of Canada [fiscal year], Government of Canada. Contains information licensed under the Open Government Licence – Canada. Fetched [date]."
+>
+> *Proactive disclosure path:* "Source: Government of Canada — Proactive Disclosure: Grants and Contributions [fiscal year], open.canada.ca. Contains information licensed under the Open Government Licence – Canada. Fetched [date]."
 
 **Lobbying Registry:**
 > "Source: Office of the Commissioner of Lobbying of Canada (lobbycanada.gc.ca),
@@ -180,9 +183,11 @@ fetched date for each cycle.
 > "Source: Office of the Conflict of Interest and Ethics Commissioner (ciec-ccie.gc.ca),
 > [disclosure year], fetched [date]."
 
-**Ontario Budget / Public Accounts:**
-> "Source: [Ontario Ministry / report name], [fiscal year], fetched [date].
-> Contains information licensed under the Open Government Licence – Ontario."
+**Ontario Budget:** *(Licence: Approved — OGL-Ontario)*
+> "Source: Ontario Ministry of Finance — Ontario Budget [year], Government of Ontario. Contains information licensed under the Open Government Licence – Ontario. Fetched [date]."
+
+**Ontario Public Accounts / Transfer Payments:** *(Licence: Approved — OGL-Ontario)*
+> "Source: Government of Ontario — Transfer Payments and Grants [fiscal year], data.ontario.ca. Contains information licensed under the Open Government Licence – Ontario. Fetched [date]."
 
 **Ontario Sunshine List:**
 > "Source: Ontario Public Sector Salary Disclosure (ontario.ca), [year], fetched [date].
@@ -238,3 +243,4 @@ fetched date for each cycle.
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 0.1 | 2026-07-26 | Founder / Data Lead | Initial draft — 11 placeholder source entries across federal and Ontario scope |
+| 0.2 | 2026-08-02 | Founder / Data Lead | Step 23 Source Approval Batch 1: Licence Status updated to Approved for SRC-FED-001 (Statistics Canada Open Licence), SRC-FED-003 (OGL-Canada 2.0), SRC-FED-004 (OGL-Canada 2.0), SRC-ONT-001 (OGL-Ontario), SRC-ONT-002 (OGL-Ontario). Source URLs confirmed for these five sources. Preferred fetch method (XLSX/CSV paths) documented. Attribution statements updated with confirmed wording. Machine-readability updated. SRC-FED-002, 005, 006, 007 and SRC-ONT-003, 004 remain at Review Required. |

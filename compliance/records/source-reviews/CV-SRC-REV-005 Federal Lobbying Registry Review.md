@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Review Record ID** | CV-SRC-REV-005 |
-| **Related Source ID (CV-REG-001)** | SRC-005 |
+| **Related Source ID (CV-REG-001)** | SRC-FED-005 |
 | **Source Name** | Office of the Commissioner of Lobbying of Canada — Registry of Lobbyists |
 | **Jurisdiction** | Canada Federal |
 | **Data Category** | Lobbying disclosures · Lobbyist registrations · Communication reports |

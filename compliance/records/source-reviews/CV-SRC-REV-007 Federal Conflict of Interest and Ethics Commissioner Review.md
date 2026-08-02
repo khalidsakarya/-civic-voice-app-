@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Review Record ID** | CV-SRC-REV-007 |
-| **Related Source ID (CV-REG-001)** | SRC-007 |
+| **Related Source ID (CV-REG-001)** | SRC-FED-007 |
 | **Source Name** | Office of the Conflict of Interest and Ethics Commissioner of Canada |
 | **Jurisdiction** | Canada Federal |
 | **Data Category** | Ethics disclosures · Conflict of interest reports · Examination reports |

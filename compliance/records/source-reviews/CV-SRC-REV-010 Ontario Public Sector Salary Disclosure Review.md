@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Review Record ID** | CV-SRC-REV-010 |
-| **Related Source ID (CV-REG-001)** | SRC-010 |
+| **Related Source ID (CV-REG-001)** | SRC-ONT-003 |
 | **Source Name** | Government of Ontario — Public Sector Salary Disclosure ("Sunshine List") |
 | **Jurisdiction** | Ontario |
 | **Data Category** | Named public sector salary disclosures · "Sunshine List" |

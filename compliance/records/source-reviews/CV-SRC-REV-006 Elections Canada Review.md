@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Review Record ID** | CV-SRC-REV-006 |
-| **Related Source ID (CV-REG-001)** | SRC-006 |
+| **Related Source ID (CV-REG-001)** | SRC-FED-006 |
 | **Source Name** | Elections Canada — Election Results and Campaign Finance Data |
 | **Jurisdiction** | Canada Federal |
 | **Data Category** | Federal election results · Candidate and party campaign finance · Riding data |
