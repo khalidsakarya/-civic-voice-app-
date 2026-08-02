@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Document ID** | CV-IDX-001 |
-| **Version** | 0.2 |
+| **Version** | 0.3 |
 | **Status** | Draft |
 | **Owner** | Founder / Compliance Lead |
 | **Effective Date** | TBD — pending review |
@@ -50,7 +50,7 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 
 | Metric | Count |
 |---|---|
-| Total documents in package | 42 (including this index) |
+| Total documents in package | 43 (including this index) |
 | Status: Draft | 41 |
 | Status: Ready for Review | 0 |
 | Status: Approved | 0 |
@@ -90,6 +90,7 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 | **CV-CHK-003** | App Store Privacy Labels Checklist | `compliance/checklists/CV-CHK-003 App Store Privacy Labels Checklist.md` | Checklist | Founder / Privacy Lead | Draft | Before App Store submission; on any SDK or data collection change | Internal | Maps all app and SDK data collection to Apple App Store and Google Play privacy label declarations; confirms labels match CV-REG-002 and CV-POL-001 | CV-REG-002 · CV-POL-001 · CV-POL-003 · CV-SOP-005 · CV-CHK-002 · CV-REG-003 | Satisfies CV-ISS-012 in CV-REG-003; must be completed before App Store submission |
 | **CV-PLAN-001** | Public Legal Pages Implementation Plan | `compliance/plans/CV-PLAN-001 Public Legal Pages Implementation Plan.md` | Plan | Founder / Product Lead | Draft | Before public launch; before App Store submission; when public routes, navigation, or legal document content changes materially | Internal | Defines which compliance documents become public app pages, proposed routes, footer link requirements, App Store URL requirements, content readiness gates, and implementation rules | CV-POL-001 · CV-POL-002 · CV-POL-003 · CV-POL-004 · CV-POL-005 · CV-REG-001 · CV-REG-003 · CV-CHK-002 · CV-CHK-003 | No app code to be written until all readiness gates in §9 are resolved and source documents are Approved |
 | **CV-PLAN-002** | Canadian Launch Scope Control Plan | `compliance/plans/CV-PLAN-002 Canadian Launch Scope Control Plan.md` | Plan | Founder / Product Lead | Draft | Before public launch; before adding any non-Canadian jurisdiction back into the public UI | Internal | Defines Canadian-only launch scope, hide-not-delete rules for US/UK/AU, direct-route handling, data and code retention, and reactivation criteria for hidden jurisdictions | CV-COMP-001 · CV-POL-002 · CV-POL-004 · CV-CHK-002 · CV-REG-003 | US, UK, and Australia code and Firestore data must not be deleted; hidden jurisdictions must not appear in App Store listing or marketing |
+| **CV-PLAN-003** | Canadian Launch Dataset Selection Plan | `compliance/plans/CV-PLAN-003 Canadian Launch Dataset Selection Plan.md` | Plan | Founder / Product Lead · Founder / Data Lead | Draft | Before public launch; when datasets, app pages, or Firestore collections change | Internal | Defines exact Canadian dataset candidates, selection status, reporting periods, Firestore collection targets, and app display locations; controls which datasets are confirmed for launch vs deferred; links to CV-REC-001 verification requirements | CV-REG-001 · CV-RPT-001 · CV-SRC-REV-001–011 · CV-CHK-005 · CV-SOP-001 · CV-REC-001 | 16 dataset candidates (CV-DATA-001–016); all Pending Product Decision / Candidate / Manual Review Only; no dataset selected; 13 open product decisions outstanding |
 | **CV-CHK-004** | Public UI Compliance Implementation Checklist | `compliance/checklists/CV-CHK-004 Public UI Compliance Implementation Checklist.md` | Checklist | Founder / Product Lead | Draft | Before public launch; before App Store submission; before major UI changes affecting legal links, disclaimers, navigation scope, or data display labels | Internal | 67-item UI compliance checklist covering legal links, disclaimer placement, Canada-only scope, hidden jurisdiction handling, source attribution, data freshness labels, prohibited claims, privacy controls, accessibility, and App Store screenshots | CV-PLAN-001 · CV-PLAN-002 · CV-POL-001 through CV-POL-005 · CV-CHK-001 · CV-CHK-002 · CV-CHK-003 · CV-REG-003 | Must be completed and signed off before public launch; all Critical items must be Pass or NA |
 | **CV-CHK-005** | Canadian Source Review Checklist | `compliance/checklists/CV-CHK-005 Canadian Source Review Checklist.md` | Checklist | Founder / Data Lead | Draft | Before public launch for all active launch sources; monthly for first 3 months post-launch; when any source, licence, or terms change | Internal | Source approval checklist covering eligibility, licence/terms, attribution, reporting period, machine-readability, privacy, high-risk data, transformation, app display, and Firestore mapping; produces CV-REG-001 Licence Status decision | CV-REG-001 · CV-POL-002 · CV-SOP-001 · CV-SOP-002 · CV-CHK-002 · CV-REG-003 | One instance per source per review event; 7 final decision options; must be completed before any source is used in the public app |
 | **CV-REC-001** | Data Verification Checklist Template | `compliance/records/templates/CV-REC-001 Data Verification Checklist Template.md` | Record Template | Founder / Data Lead | Draft | When CV-SOP-001 is updated | Internal | Blank template for recording per-dataset verification events: dataset identification, verification checklist, transformation record, reviewer sign-off, and final decision | CV-SOP-001 · CV-POL-002 · CV-REG-001 | Complete one record per verification event; retain minimum 3 years |
@@ -128,7 +129,7 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 | **Policies** | CV-POL-001 · CV-POL-002 · CV-POL-003 · CV-POL-004 · CV-POL-005 | 5 |
 | **Standard Operating Procedures (SOPs)** | CV-SOP-001 · CV-SOP-002 · CV-SOP-003 · CV-SOP-004 · CV-SOP-005 | 5 |
 | **Checklists** | CV-CHK-001 · CV-CHK-002 · CV-CHK-003 · CV-CHK-004 · CV-CHK-005 | 5 |
-| **Plans** | CV-PLAN-001 · CV-PLAN-002 | 2 |
+| **Plans** | CV-PLAN-001 · CV-PLAN-002 · CV-PLAN-003 | 3 |
 | **Records / Templates** | CV-REC-001 · CV-REC-002 · CV-REC-003 · CV-REC-004 · CV-REC-005 · CV-REC-006 · CV-REC-007 · CV-REC-008 · CV-REC-009 | 9 |
 | **Source Review Records** | CV-SRC-REV-001 · CV-SRC-REV-002 · CV-SRC-REV-003 · CV-SRC-REV-004 · CV-SRC-REV-005 · CV-SRC-REV-006 · CV-SRC-REV-007 · CV-SRC-REV-008 · CV-SRC-REV-009 · CV-SRC-REV-010 · CV-SRC-REV-011 | 11 |
 | **Reports** | CV-RPT-001 | 1 |
@@ -150,7 +151,7 @@ Each document has a named owner who is responsible for:
 | **Founder / Privacy Lead** | CV-POL-001 · CV-REG-002 |
 | **Founder / Data Lead** | CV-REG-001 · CV-POL-002 · CV-SOP-001 · CV-SOP-002 · CV-REC-001 · CV-REC-002 · CV-REC-003 · CV-CHK-005 · CV-SRC-REV-001 through CV-SRC-REV-011 · CV-RPT-001 |
 | **Founder / Technical Lead** | CV-SOP-004 · CV-REC-006 · CV-REC-007 · CV-REC-008 |
-| **Founder / Product Lead** | CV-POL-005 · CV-CHK-001 · CV-PLAN-001 · CV-PLAN-002 · CV-CHK-004 |
+| **Founder / Product Lead** | CV-POL-005 · CV-CHK-001 · CV-PLAN-001 · CV-PLAN-002 · CV-PLAN-003 · CV-CHK-004 |
 
 > Note: In the current single-founder phase, the Founder holds all owner roles. As the
 > team grows, ownership should be delegated to named individuals and this table updated.
@@ -163,7 +164,7 @@ Each document has a named owner who is responsible for:
 |---|---|
 | **Monthly** (or on source / document changes) | CV-IDX-001 · CV-REG-001 · CV-POL-002 · CV-SOP-001 · CV-SOP-002 · CV-REC-002 · CV-REC-003 · CV-CHK-005 |
 | **Quarterly** (or on incident / infrastructure / workflow change) | CV-REG-002 · CV-SOP-003 · CV-SOP-004 · CV-REC-006 · CV-REC-007 · CV-REC-008 |
-| **Before launch + major UI changes** | CV-POL-001 · CV-POL-003 · CV-POL-004 · CV-POL-005 · CV-CHK-001 · CV-PLAN-001 · CV-PLAN-002 · CV-CHK-004 |
+| **Before launch + major UI changes** | CV-POL-001 · CV-POL-003 · CV-POL-004 · CV-POL-005 · CV-CHK-001 · CV-PLAN-001 · CV-PLAN-002 · CV-PLAN-003 · CV-CHK-004 |
 | **Before launch of communication feature** | CV-SOP-005 |
 | **When app scope or positioning changes** | CV-COMP-001 · CV-POL-003 · CV-POL-004 |
 | **After each Source Approval Batch; before public launch** | CV-RPT-001 |
@@ -275,6 +276,7 @@ added, documents approved, documents retired, and major revisions.
 | 2026-08-02 | CV-CHK-005 Canadian Source Review Checklist created; index updated to 30 documents, 5 checklists | CV-CHK-005 · CV-IDX-001 | Founder / Data Lead |
 | 2026-08-02 | 11 source review records created (CV-SRC-REV-001 through CV-SRC-REV-011) — one per CV-REG-001 source; compliance/records/source-reviews/ directory added; Source Review Records category added to index; index updated to 41 documents; 4 sources flagged high-risk (CV-SRC-REV-005, 006, 007, 010, 011) | CV-SRC-REV-001–011 · CV-IDX-001 | Founder / Data Lead |
 | 2026-08-02 | Step 25: CV-RPT-001 Canadian Source Decision Summary created; compliance/reports/ directory added; Reports category added to index; index updated to 42 documents. CV-ISS-016 status updated to In Progress in pre-launch open items. CV-REG-003 updated to v0.2. | CV-RPT-001 · CV-REG-003 · CV-IDX-001 | Founder / Data Lead |
+| 2026-08-02 | Step 26: CV-PLAN-003 Canadian Launch Dataset Selection Plan created; Plans count updated to 3; document count updated to 43; owner and review frequency tables updated. | CV-PLAN-003 · CV-IDX-001 | Founder / Data Lead |
 
 ---
 
@@ -309,3 +311,4 @@ This index is considered complete when:
 |---|---|---|---|
 | 0.1 | 2026-07-26 | Founder / Compliance Lead | Initial draft — Canadian launch scope; 14 documents indexed |
 | 0.2 | 2026-08-02 | Founder / Data Lead | Step 25: CV-RPT-001 added; Reports category and compliance/reports/ directory added; document count updated to 42; CV-ISS-016 status updated to In Progress; Review Frequency table updated; owner table updated; change history updated. |
+| 0.3 | 2026-08-02 | Founder / Data Lead | Step 26: CV-PLAN-003 Canadian Launch Dataset Selection Plan added; Plans count updated to 3; document count updated to 43; owner table and review frequency table updated. |
