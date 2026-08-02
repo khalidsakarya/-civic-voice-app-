@@ -50,8 +50,8 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 
 | Metric | Count |
 |---|---|
-| Total documents in package | 16 (including this index) |
-| Status: Draft | 16 |
+| Total documents in package | 18 (including this index) |
+| Status: Draft | 18 |
 | Status: Ready for Review | 0 |
 | Status: Approved | 0 |
 | Status: Retired | 0 |
@@ -84,6 +84,9 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 | **CV-CHK-001** | Accessibility Checklist | `compliance/checklists/CV-CHK-001 Accessibility Checklist.md` | Checklist | Founder / Product Lead | Draft | Before launch; before App Store submission; after major UI changes | Internal | 79-item WCAG 2.1 AA checklist covering structure, contrast, keyboard navigation, screen readers, charts, mobile layout, status labels, and source links | CV-POL-005 | Must be completed and signed off before CV-POL-005 is published |
 | **CV-SOP-004** | Security and Firebase Access Procedure | `compliance/procedures/CV-SOP-004 Security and Firebase Access Procedure.md` | SOP | Founder / Technical Lead | Draft | Quarterly; after security incidents or major infrastructure changes | Internal | Defines access control, Firestore rules review, secrets management, GitHub/Vercel/Firebase access, backups, incident response, and offboarding | CV-POL-001 · CV-REG-002 · CV-SOP-002 | |
 | **CV-SOP-005** | CASL Communications Procedure | `compliance/procedures/CV-SOP-005 CASL Communications Procedure.md` | SOP | Founder / Compliance Lead | Draft | Before launch of any email/push/SMS/donation feature | Internal | Defines CASL consent, identification, unsubscribe, consent records, prohibited practices, and pre-send review for all electronic communications | CV-POL-001 · CV-POL-003 · CV-REG-002 | No communication features currently deployed; this SOP activates before any are launched |
+| **CV-CHK-002** | Pre-Launch Compliance Checklist | `compliance/checklists/CV-CHK-002 Pre-Launch Compliance Checklist.md` | Checklist | Founder / Compliance Lead | Draft | Before App Store submission; before public launch | Internal | Master pre-launch gate checklist covering App Store submission, public documents, Firebase/Vercel config, CASL, accessibility, data sources, security, and operational readiness | CV-IDX-001 · CV-REG-003 · all policies and SOPs | Must be completed and signed off before public launch |
+| **CV-CHK-003** | App Store Privacy Labels Checklist | `compliance/checklists/CV-CHK-003 App Store Privacy Labels Checklist.md` | Checklist | Founder / Privacy Lead | Draft | Before App Store submission; on any SDK or data collection change | Internal | Maps all app and SDK data collection to Apple App Store and Google Play privacy label declarations; confirms labels match CV-REG-002 and CV-POL-001 | CV-REG-002 · CV-POL-001 · CV-POL-003 · CV-SOP-005 · CV-CHK-002 · CV-REG-003 | Satisfies CV-ISS-012 in CV-REG-003; must be completed before App Store submission |
+| **CV-PLAN-001** | Public Legal Pages Implementation Plan | `compliance/plans/CV-PLAN-001 Public Legal Pages Implementation Plan.md` | Plan | Founder / Product Lead | Draft | Before public launch; before App Store submission; when public routes, navigation, or legal document content changes materially | Internal | Defines which compliance documents become public app pages, proposed routes, footer link requirements, App Store URL requirements, content readiness gates, and implementation rules | CV-POL-001 · CV-POL-002 · CV-POL-003 · CV-POL-004 · CV-POL-005 · CV-REG-001 · CV-REG-003 · CV-CHK-002 · CV-CHK-003 | No app code to be written until all readiness gates in §9 are resolved and source documents are Approved |
 
 ---
 
@@ -93,10 +96,11 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 |---|---|---|
 | **Index** | CV-IDX-001 | 1 |
 | **Position Statement** | CV-COMP-001 | 1 |
-| **Registers** | CV-REG-001 · CV-REG-002 | 2 |
+| **Registers** | CV-REG-001 · CV-REG-002 · CV-REG-003 | 3 |
 | **Policies** | CV-POL-001 · CV-POL-002 · CV-POL-003 · CV-POL-004 · CV-POL-005 | 5 |
 | **Standard Operating Procedures (SOPs)** | CV-SOP-001 · CV-SOP-002 · CV-SOP-003 · CV-SOP-004 · CV-SOP-005 | 5 |
-| **Checklists** | CV-CHK-001 | 1 |
+| **Checklists** | CV-CHK-001 · CV-CHK-002 · CV-CHK-003 | 3 |
+| **Plans** | CV-PLAN-001 | 1 |
 
 ---
 
@@ -115,7 +119,7 @@ Each document has a named owner who is responsible for:
 | **Founder / Privacy Lead** | CV-POL-001 · CV-REG-002 |
 | **Founder / Data Lead** | CV-REG-001 · CV-POL-002 · CV-SOP-001 · CV-SOP-002 |
 | **Founder / Technical Lead** | CV-SOP-004 |
-| **Founder / Product Lead** | CV-POL-005 · CV-CHK-001 |
+| **Founder / Product Lead** | CV-POL-005 · CV-CHK-001 · CV-PLAN-001 |
 
 > Note: In the current single-founder phase, the Founder holds all owner roles. As the
 > team grows, ownership should be delegated to named individuals and this table updated.
@@ -128,7 +132,7 @@ Each document has a named owner who is responsible for:
 |---|---|
 | **Monthly** (or on source / document changes) | CV-IDX-001 · CV-REG-001 · CV-POL-002 · CV-SOP-001 · CV-SOP-002 |
 | **Quarterly** (or on incident / infrastructure / workflow change) | CV-REG-002 · CV-SOP-003 · CV-SOP-004 |
-| **Before launch + major UI changes** | CV-POL-001 · CV-POL-003 · CV-POL-004 · CV-POL-005 · CV-CHK-001 |
+| **Before launch + major UI changes** | CV-POL-001 · CV-POL-003 · CV-POL-004 · CV-POL-005 · CV-CHK-001 · CV-PLAN-001 |
 | **Before launch of communication feature** | CV-SOP-005 |
 | **When app scope or positioning changes** | CV-COMP-001 · CV-POL-003 · CV-POL-004 |
 
@@ -230,6 +234,8 @@ added, documents approved, documents retired, and major revisions.
 | 2026-08-02 | CV-REG-001 created — status updated from TBD to Draft; 11 placeholder source entries added | CV-REG-001 · CV-IDX-001 | Founder / Data Lead |
 | 2026-08-02 | Pre-launch open items status updated — 8 items confirmed open/pending; Status column and item 16 (licence review) added to Section 10 | CV-IDX-001 | Founder / Compliance Lead |
 | 2026-08-02 | CV-REG-003 Open Issues Register created — 16 initial issues; index updated to 16 documents, 3 registers | CV-REG-003 · CV-IDX-001 | Founder / Compliance Lead |
+| 2026-08-02 | CV-CHK-002 Pre-Launch Compliance Checklist and CV-CHK-003 App Store Privacy Labels Checklist created; index updated to 17 documents, 3 checklists | CV-CHK-002 · CV-CHK-003 · CV-IDX-001 | Founder / Compliance Lead |
+| 2026-08-02 | CV-PLAN-001 Public Legal Pages Implementation Plan created; compliance/plans/ directory added; index updated to 18 documents; Plans category added; CV-REG-003 registered in categories table | CV-PLAN-001 · CV-IDX-001 | Founder / Product Lead |
 
 ---
 
