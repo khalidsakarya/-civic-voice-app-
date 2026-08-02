@@ -50,14 +50,15 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 
 | Metric | Count |
 |---|---|
-| Total documents in package | 30 (including this index) |
-| Status: Draft | 30 |
+| Total documents in package | 41 (including this index) |
+| Status: Draft | 41 |
 | Status: Ready for Review | 0 |
 | Status: Approved | 0 |
 | Status: Retired | 0 |
 | Public-facing documents | 4 |
 | Internal documents | 11 |
 | Registers | 3 (CV-REG-001 · CV-REG-002 · CV-REG-003) |
+| Source Review Records | 11 (CV-SRC-REV-001 through CV-SRC-REV-011) |
 | Pre-launch open items outstanding | 15 — see Section 10 |
 
 > This table must be updated whenever a document status changes.
@@ -100,6 +101,18 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 | **CV-REC-008** | Secrets and Environment Variable Register Template | `compliance/records/templates/CV-REC-008 Secrets and Environment Variable Register Template.md` | Record Template | Founder / Technical Lead | Draft | When CV-SOP-004 is updated | Internal | Living register template for tracking secrets and environment variables: name, system, environment, purpose, storage location, access level, rotation frequency, and rotation dates. Never records actual secret values. | CV-SOP-004 | Living register — review quarterly; never store actual secret values; retain minimum 3 years per version |
 | **CV-REC-009** | Launch Approval Record Template | `compliance/records/templates/CV-REC-009 Launch Approval Record Template.md` | Record Template | Founder / Compliance Lead | Draft | When CV-CHK-002 is updated | Internal | Blank template for recording the formal launch gate approval: launch overview, checklist completion status, open Critical/High issues, risk acceptances, content readiness gates, final launch decision (Approved / Approved with open items / Not approved / Deferred), and approver sign-offs | CV-CHK-002 · CV-PLAN-001 · CV-PLAN-002 | Complete one record per major public launch; retain minimum 5 years |
 
+| **CV-SRC-REV-001** | Statistics Canada Indicators Review | `compliance/records/source-reviews/CV-SRC-REV-001 Statistics Canada Indicators Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-001 (Statistics Canada) — eligibility, licence, attribution, privacy, transformation, and Firestore mapping | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | Pending Review — all items TBD |
+| **CV-SRC-REV-002** | CRA Charities Registry Review | `compliance/records/source-reviews/CV-SRC-REV-002 CRA Charities Registry Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-002 (CRA Charities Registry) — director name privacy assessment required | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | Pending Review — director name privacy and licence TBD |
+| **CV-SRC-REV-003** | Government of Canada Budget Review | `compliance/records/source-reviews/CV-SRC-REV-003 Government of Canada Budget Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-003 (Federal Budget) — PDF vs CSV format decision required | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | Pending Review — source format and licence TBD |
+| **CV-SRC-REV-004** | Public Accounts of Canada Review | `compliance/records/source-reviews/CV-SRC-REV-004 Public Accounts of Canada Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-004 (Public Accounts of Canada) | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | Pending Review |
+| **CV-SRC-REV-005** | Federal Lobbying Registry Review | `compliance/records/source-reviews/CV-SRC-REV-005 Federal Lobbying Registry Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-005 (Lobbying Registry) — **HIGH-RISK** — named DPOHs and lobbyists; second reviewer required | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | **High-Risk** — Pending Review — second reviewer required |
+| **CV-SRC-REV-006** | Elections Canada Review | `compliance/records/source-reviews/CV-SRC-REV-006 Elections Canada Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-006 (Elections Canada) — **HIGH-RISK (campaign finance sub-category)** — named donors; second reviewer required for campaign finance | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | **High-Risk (campaign finance)** — Pending Review — second reviewer required |
+| **CV-SRC-REV-007** | Federal Conflict of Interest and Ethics Commissioner Review | `compliance/records/source-reviews/CV-SRC-REV-007 Federal Conflict of Interest and Ethics Commissioner Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-007 (Federal Ethics Commissioner) — **HIGHEST RISK** — named officials, examination findings; second reviewer required | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | **Highest Risk** — Pending Review — second reviewer mandatory |
+| **CV-SRC-REV-008** | Ontario Budget Review | `compliance/records/source-reviews/CV-SRC-REV-008 Ontario Budget Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-008 (Ontario Budget) | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | Pending Review |
+| **CV-SRC-REV-009** | Ontario Public Accounts and Grants Review | `compliance/records/source-reviews/CV-SRC-REV-009 Ontario Public Accounts and Grants Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-009 (Ontario Public Accounts) | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | Pending Review |
+| **CV-SRC-REV-010** | Ontario Public Sector Salary Disclosure Review | `compliance/records/source-reviews/CV-SRC-REV-010 Ontario Public Sector Salary Disclosure Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-010 (Sunshine List) — **HIGH-RISK** — named individuals with salaries; Privacy Commissioner guidance must be reviewed; second reviewer required | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | **High-Risk** — Pending Review — Privacy Commissioner guidance review and second reviewer required |
+| **CV-SRC-REV-011** | Ontario Integrity Commissioner Review | `compliance/records/source-reviews/CV-SRC-REV-011 Ontario Integrity Commissioner Review.md` | Source Review Record | Founder / Data Lead | Draft | Before public launch; when source or licence changes | Internal | Pre-launch source review for SRC-011 (Ontario Integrity Commissioner) — **HIGHEST RISK** — named MPPs, ethics findings; second reviewer required | CV-REG-001 · CV-CHK-005 · CV-SOP-001 · CV-POL-002 | **Highest Risk** — Pending Review — second reviewer mandatory |
+
 ---
 
 ## 5. Document Categories
@@ -114,6 +127,7 @@ launches — those will be tracked in separate jurisdiction-specific indexes.
 | **Checklists** | CV-CHK-001 · CV-CHK-002 · CV-CHK-003 · CV-CHK-004 · CV-CHK-005 | 5 |
 | **Plans** | CV-PLAN-001 · CV-PLAN-002 | 2 |
 | **Records / Templates** | CV-REC-001 · CV-REC-002 · CV-REC-003 · CV-REC-004 · CV-REC-005 · CV-REC-006 · CV-REC-007 · CV-REC-008 · CV-REC-009 | 9 |
+| **Source Review Records** | CV-SRC-REV-001 · CV-SRC-REV-002 · CV-SRC-REV-003 · CV-SRC-REV-004 · CV-SRC-REV-005 · CV-SRC-REV-006 · CV-SRC-REV-007 · CV-SRC-REV-008 · CV-SRC-REV-009 · CV-SRC-REV-010 · CV-SRC-REV-011 | 11 |
 
 ---
 
@@ -130,7 +144,7 @@ Each document has a named owner who is responsible for:
 |---|---|
 | **Founder / Compliance Lead** | CV-IDX-001 · CV-COMP-001 · CV-POL-003 · CV-POL-004 · CV-SOP-003 · CV-SOP-005 · CV-REC-004 · CV-REC-005 · CV-REC-009 |
 | **Founder / Privacy Lead** | CV-POL-001 · CV-REG-002 |
-| **Founder / Data Lead** | CV-REG-001 · CV-POL-002 · CV-SOP-001 · CV-SOP-002 · CV-REC-001 · CV-REC-002 · CV-REC-003 · CV-CHK-005 |
+| **Founder / Data Lead** | CV-REG-001 · CV-POL-002 · CV-SOP-001 · CV-SOP-002 · CV-REC-001 · CV-REC-002 · CV-REC-003 · CV-CHK-005 · CV-SRC-REV-001 through CV-SRC-REV-011 |
 | **Founder / Technical Lead** | CV-SOP-004 · CV-REC-006 · CV-REC-007 · CV-REC-008 |
 | **Founder / Product Lead** | CV-POL-005 · CV-CHK-001 · CV-PLAN-001 · CV-PLAN-002 · CV-CHK-004 |
 
@@ -253,6 +267,7 @@ added, documents approved, documents retired, and major revisions.
 | 2026-08-02 | CV-CHK-004 Public UI Compliance Implementation Checklist created; index updated to 20 documents, 4 checklists | CV-CHK-004 · CV-IDX-001 | Founder / Product Lead |
 | 2026-08-02 | 9 compliance record templates created (CV-REC-001 through CV-REC-009); compliance/records/templates/ directory added; Records / Templates category added to index; index updated to 29 documents | CV-REC-001–009 · CV-IDX-001 | Founder / Compliance Lead |
 | 2026-08-02 | CV-CHK-005 Canadian Source Review Checklist created; index updated to 30 documents, 5 checklists | CV-CHK-005 · CV-IDX-001 | Founder / Data Lead |
+| 2026-08-02 | 11 source review records created (CV-SRC-REV-001 through CV-SRC-REV-011) — one per CV-REG-001 source; compliance/records/source-reviews/ directory added; Source Review Records category added to index; index updated to 41 documents; 4 sources flagged high-risk (CV-SRC-REV-005, 006, 007, 010, 011) | CV-SRC-REV-001–011 · CV-IDX-001 | Founder / Data Lead |
 
 ---
 
