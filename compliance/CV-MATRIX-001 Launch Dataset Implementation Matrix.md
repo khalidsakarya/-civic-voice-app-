@@ -17,7 +17,7 @@
 |---|---|---|
 | CV-DATA-002 — Stats Can unemployment | **Ready to fetch** | Firestore slot exists; app renders it today for Ontario |
 | CV-DATA-008 — CRA Charities | **Ready to fetch** | Firestore slot exists; app renders it today for Ontario |
-| CV-DATA-014 — Ontario Transfer Payments | **Ready to fetch** | Firestore slot exists; app renders it today for Ontario |
+| CV-DATA-014 — Ontario Transfer Payments | **Written — MVP Approved with controls** | Firestore slot populated (FY 2024-25, fetched 2026-05-17). Audit 2026-08-04 confirmed 100% transfer payment rows, zero debt service/vendor/OHIP rows. Future refreshes must filter by purpose values: Government Transfer, Operating Transfer Payments, Capital Transfer Payments. |
 | CV-DATA-013 — Ontario Budget | **Needs product decision** | Firestore slot exists; need to confirm which budget table and whether distribution or spending vs budget |
 | CV-DATA-001 — Stats Can population | **Needs product decision** | No display slot exists in the app; population is not in the economic modal or province card |
 
@@ -64,16 +64,18 @@
 
 | Field | Value |
 |---|---|
-| **Official dataset URL** | https://data.ontario.ca/dataset/transfer-payment-programs — "Transfer Payment Programs" CSV on data.ontario.ca |
-| **Reporting period at launch** | Most recent fiscal year published (confirm at fetch — typically FY 2023-24 or FY 2024-25) |
-| **Fetch method** | Download CSV from data.ontario.ca. No authentication required. |
+| **Official dataset URL** | https://data.ontario.ca/dataset/public-accounts-detailed-schedule-of-payments |
+| **Resource ID** | `1677dc37-00e5-437a-bb39-c918b243f9a9` |
+| **Reporting period** | FY 2024-25 (April 2024 – March 2025) |
+| **Fetched date** | 2026-05-17T01:19:15Z |
 | **Firestore collection / doc** | `subnational_grants/CA-ON` |
-| **Firestore fields to write** | `records` (array of normalized rows) · `data_source` · `source_url` · `fiscal_year` · `records_stored` · `total_in_source` · `fmt_total_top100` |
-| **App display location** | Ontario province page → Grants modal → "Public Accounts / Grants" list. Already rendered by `parseSubnationalGrantsFromGrantsDoc` / `normalizeGrantRow`. No app code changes needed. |
-| **Attribution wording** | `Contains information licensed under the Open Government Licence — Ontario. Source: Government of Ontario, Treasury Board Secretariat.` |
-| **Transformation needed** | Yes — map Ontario CSV columns to `{recipientName, typeLabel, purpose, dept, rawAmount, date}` schema. Ontario fields: program/recipient name → `recipientName`; ministry → `dept`; program type → `typeLabel`; payment amount → `rawAmount`. |
-| **Can fetch now** | Yes. OGL-Ontario open data, no authentication. |
-| **Remaining blocker** | Confirm exact CSV download URL and column names at fetch (data.ontario.ca dataset URLs are stable but CSV column headers change between releases). CV-REC-001 before Firestore write. |
+| **Firestore fields written** | `records` · `data_source` · `source_url` · `fiscal_year` · `records_stored` · `total_in_source` · `fmt_total_top100` · `resource_id` · `reporting_period` · `fetched_at` |
+| **App display location** | Ontario province page → Grants modal. Rendered by existing app parser. No app code changes needed. |
+| **Attribution wording** | `Contains information licensed under the Open Government Licence — Ontario. Source: Government of Ontario — Ontario Public Accounts, Detailed Schedule of Payments, FY 2024-25 (data.ontario.ca).` |
+| **Status** | **Written to Firestore. MVP Approved with controls.** |
+| **Audit result** | 2026-08-04 read-only audit confirmed: 100 records, all transfer payment rows. Purpose distribution: Government Transfer (62), Operating Transfer Payments (36), Capital Transfer Payments (2). Zero debt service, zero vendor/procurement, zero OHIP/drug benefit rows. |
+| **Refresh control — mandatory** | Future refreshes must filter by `purpose` values: `Government Transfer`, `Operating Transfer Payments`, `Capital Transfer Payments`. Do NOT take raw top-100 by amount from the full Public Accounts CSV without purpose filter. |
+| **UI label** | "Grants" is acceptable for MVP. "Transfer Payments" is more precise and may be adopted in a future UI iteration. |
 
 ---
 
@@ -117,7 +119,7 @@
 
 2. **Fetch CV-DATA-008** (CRA Charities) — open data CSV confirmed. Decide on whether to show dollar values (receipted gifts column) or name/type/status only. Either way the slot is ready. Complete CV-REC-001, write to `subnational_tax_exempt_entities/CA-ON`.
 
-3. **Fetch CV-DATA-014** (Ontario Transfer Payments) — confirm CSV URL on data.ontario.ca, map columns, complete CV-REC-001, write to `subnational_grants/CA-ON`.
+3. ~~**Fetch CV-DATA-014** (Ontario Transfer Payments)~~ — **COMPLETE.** Written to `subnational_grants/CA-ON` (FY 2024-25, fetched 2026-05-17). Audit 2026-08-04: all 100 records are transfer payment rows. Approved for MVP with purpose-filter control on future refreshes.
 
 4. **Decide CV-DATA-013** (Ontario Budget) — pick: budget distribution pie or spending vs budget bar. Confirm FY 2025-26 CSV exists on data.ontario.ca. If PDF-only, defer or use FY 2023-24 actuals as a fallback.
 

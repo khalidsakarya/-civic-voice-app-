@@ -1,0 +1,235 @@
+{
+  "firestore_path": "subnational_grants/CA-ON",
+  "document_exists": true,
+  "audit_at": "2026-08-04T00:13:37.131Z",
+  "metadata": {
+    "jurisdiction_id": "CA-ON",
+    "records_stored": 100,
+    "data_source": "Ontario Public Accounts — Detailed Schedule of Payments",
+    "source_url": "https://data.ontario.ca/dataset/public-accounts-detailed-schedule-of-payments",
+    "note": "Top 100 Transfer Payments by amount from Ontario Ministry of Finance Public Accounts FY 2024-25. Includes grants, transfers, and subsidies to organizations and institutions.",
+    "fmt_total_top100": "$20.78B",
+    "fetched_at": "2026-05-17T01:19:15.190Z",
+    "fiscal_year": "2024-25",
+    "resource_id": "1677dc37-00e5-437a-bb39-c918b243f9a9",
+    "total_in_source": 8413,
+    "total_raw_top100": 20775227875,
+    "reporting_period": "FY 2024-25 (April 2024 – March 2025)"
+  },
+  "record_count": 100,
+  "category_distribution": {
+    "(none)": 100
+  },
+  "top_20_records": [
+    {
+      "recipientName": "Accounts Under $120,000/Comptes Inférieurs À 120 000$",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Government Transfer",
+      "dept": "Min. of Children, Community And Social Services",
+      "fmtAmount": "$6.27B",
+      "rawAmount": 6269803760,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "Dh Corporation/Societe Dh",
+      "typeLabel": "Company",
+      "typeColor": "bg-blue-100 text-blue-700",
+      "purpose": "Operating Transfer Payments",
+      "dept": "Min. of Colleges And Universities",
+      "fmtAmount": "$1.71B",
+      "rawAmount": 1706000001,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "City Of Toronto",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Government Transfer",
+      "dept": "Min. of Children, Community And Social Services",
+      "fmtAmount": "$1.17B",
+      "rawAmount": 1168951616,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "University Of Toronto",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Operating Transfer Payments",
+      "dept": "Min. of Colleges And Universities",
+      "fmtAmount": "$713.5M",
+      "rawAmount": 713541514,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "Family Service Toronto",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Government Transfer",
+      "dept": "Min. of Children, Community And Social Services",
+      "fmtAmount": "$558.1M",
+      "rawAmount": 558130602,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "Accerta Services Inc",
+      "typeLabel": "Company",
+      "typeColor": "bg-blue-100 text-blue-700",
+      "purpose": "Government Transfer",
+      "dept": "Min. of Children, Community And Social Services",
+      "fmtAmount": "$482.7M",
+      "rawAmount": 482731077,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "University Of Ottawa",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Operating Transfer Payments",
+      "dept": "Min. of Colleges And Universities",
+      "fmtAmount": "$346.4M",
+      "rawAmount": 346438800,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "York University",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Operating Transfer Payments",
+      "dept": "Min. of Colleges And Universities",
+      "fmtAmount": "$328.9M",
+      "rawAmount": 328888591,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "University Of Western Ontario",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Operating Transfer Payments",
+      "dept": "Min. of Colleges And Universities",
+      "fmtAmount": "$328.3M",
+      "rawAmount": 328293405,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "Agricorp",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Government Transfer",
+      "dept": "Min. of Agriculture, Food And Rural Affairs",
+      "fmtAmount": "$302.0M",
+      "rawAmount": 301963688,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "Nextstar Energy Inc",
+      "typeLabel": "Company",
+      "typeColor": "bg-blue-100 text-blue-700",
+      "purpose": "Government Transfer",
+      "dept": "Min. of Economic Development,Job Creation And Trad",
+      "fmtAmount": "$294.0M",
+      "rawAmount": 293968316,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "Toronto Metropolitan University",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Operating Transfer Payments",
+      "dept": "Min. of Colleges And Universities",
+      "fmtAmount": "$291.1M",
+      "rawAmount": 291074555,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "Regional Municipality Of Peel",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Government Transfer",
+      "dept": "Min. of Children, Community And Social Services",
+      "fmtAmount": "$284.2M",
+      "rawAmount": 284160804,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "Mcmaster University",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Operating Transfer Payments",
+      "dept": "Min. of Colleges And Universities",
+      "fmtAmount": "$273.1M",
+      "rawAmount": 273144805,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "University Of Waterloo",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Operating Transfer Payments",
+      "dept": "Min. of Colleges And Universities",
+      "fmtAmount": "$265.7M",
+      "rawAmount": 265704404,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "Queen'S University",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Operating Transfer Payments",
+      "dept": "Min. of Colleges And Universities",
+      "fmtAmount": "$233.1M",
+      "rawAmount": 233139033,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "City Of Ottawa",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Government Transfer",
+      "dept": "Min. of Children, Community And Social Services",
+      "fmtAmount": "$231.5M",
+      "rawAmount": 231494829,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "University Of Guelph",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Operating Transfer Payments",
+      "dept": "Min. of Colleges And Universities",
+      "fmtAmount": "$230.8M",
+      "rawAmount": 230847008,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "Karis Disability Services",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Government Transfer",
+      "dept": "Min. of Children, Community And Social Services",
+      "fmtAmount": "$188.2M",
+      "rawAmount": 188233672,
+      "date": "2024-25"
+    },
+    {
+      "recipientName": "Carleton University",
+      "typeLabel": "Organization",
+      "typeColor": "bg-green-100 text-green-700",
+      "purpose": "Operating Transfer Payments",
+      "dept": "Min. of Colleges And Universities",
+      "fmtAmount": "$181.0M",
+      "rawAmount": 180993400,
+      "date": "2024-25"
+    }
+  ],
+  "all_fields_on_records": [
+    "recipientName",
+    "typeLabel",
+    "typeColor",
+    "purpose",
+    "dept",
+    "fmtAmount",
+    "rawAmount",
+    "date"
+  ]
+}

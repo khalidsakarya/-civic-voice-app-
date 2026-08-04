@@ -420,19 +420,25 @@ requirements.
 
 **Source:** SRC-ONT-002 — Ontario Public Accounts / Transfer Payments  
 **Source decision:** Approved with Limitations (OGL-Ontario)  
-**Path:** CV-DATA-014 — data.ontario.ca transfer payments CSV
+**Path:** CV-DATA-014 — data.ontario.ca Public Accounts Detailed Schedule of Payments CSV
 
-### Open decisions for CV-DATA-014
+### Decisions resolved for CV-DATA-014
 
-| Decision | Current Status |
+| Decision | Resolution |
 |---|---|
-| Confirm exact dataset URL on data.ontario.ca | TBD — Data Lead must confirm at fetch |
-| Which fiscal year? | **TBD — product decision required** |
-| Filter by ministry, recipient type, or program? | **TBD — product decision required** |
-| Firestore collection | TBD |
-| App display location | TBD |
+| Dataset URL | https://data.ontario.ca/dataset/public-accounts-detailed-schedule-of-payments |
+| Resource ID | `1677dc37-00e5-437a-bb39-c918b243f9a9` |
+| Fiscal year | **FY 2024-25** (April 2024 – March 2025) |
+| Filter rule | **Purpose values only:** Government Transfer · Operating Transfer Payments · Capital Transfer Payments. Do not use raw top-100 from the full file without this filter. |
+| Firestore collection | `subnational_grants/CA-ON` — **written** |
+| App display location | Ontario → Grants modal — existing parser, no code changes needed |
+| UI label | "Grants" acceptable for MVP. "Transfer Payments" may be adopted later. |
 
-**Decision Status for CV-DATA-014:** Candidate
+### Audit result (2026-08-04)
+
+Read-only Firestore audit confirmed: 100 records, all transfer payment rows. Purpose distribution: Government Transfer (62), Operating Transfer Payments (36), Capital Transfer Payments (2). Zero debt service, vendor/procurement, or OHIP rows. Approved for MVP with purpose-filter control on future refreshes.
+
+**Decision Status for CV-DATA-014:** Selected — Written to Firestore — MVP Approved with controls
 
 ---
 

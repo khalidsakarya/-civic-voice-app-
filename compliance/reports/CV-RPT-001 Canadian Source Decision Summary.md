@@ -69,9 +69,9 @@ of scope for the current launch. It does not cover US, UK, or Australian sources
 | **High-risk sources** | 5 | SRC-FED-005; SRC-FED-006; SRC-FED-007; SRC-ONT-003; SRC-ONT-004 |
 | **Second review required before display** | 5 | SRC-FED-005; SRC-FED-006; SRC-FED-007; SRC-ONT-003; SRC-ONT-004 |
 | **Second reviewer assigned** | 0 | All pending assignment |
-| **Sources fetched** | 0 | No source has been fetched yet |
-| **Sources verified (CV-REC-001 complete)** | 0 | No source has been verified yet |
-| **Sources cleared for public display** | 0 | No source is cleared for public display |
+| **Sources fetched** | 3 | SRC-FED-001 (CV-DATA-002 unemployment), SRC-FED-002 (CV-DATA-008 CRA Charities), SRC-ONT-002 (CV-DATA-014 Ontario Transfer Payments) |
+| **Sources verified (CV-REC-001 complete)** | 2 | CV-DATA-002 (CV-REC-001 2026-08-03); CV-DATA-008 (CV-REC-001 2026-08-03). CV-DATA-014 audit completed 2026-08-04 (existing data verified — no separate CV-REC-001 raised as data was previously written). |
+| **Sources cleared for public display** | 3 | SRC-FED-001 (unemployment — written, verified); SRC-FED-002 (CRA Charities — written, verified); SRC-ONT-002 (Ontario Transfer Payments — written, audit-confirmed, MVP approved with purpose-filter control) |
 
 > **Key finding:** Licence/terms decisions are confirmed for all 11 sources. However,
 > no source is ready for public display because no source has been fetched, verified,
@@ -92,7 +92,7 @@ of scope for the current launch. It does not cover US, UK, or Australian sources
 | SRC-FED-006 | Elections Canada — Results and Campaign Finance | Federal | **Public Registry — Use with Attribution** | Approved (OGL-Canada 2.0) | Not yet fetched | Yes (results CSV/XML) / Partial (campaign finance) | **Yes — High-Risk (campaign finance / named donors)** | **Yes — second reviewer required for named donor / campaign finance display** | ❌ Not ready — second reviewer unassigned; specific file URLs, named donor scope, Firestore, display TBD | CV-SRC-REV-006 |
 | SRC-FED-007 | Office of the Conflict of Interest and Ethics Commissioner | Federal | **Manual Review Only** | Public Registry (Parliament website terms — OGL-Canada does not apply) | Not yet fetched | **No — PDF/HTML only** | **Yes — Highest Risk** | **Yes — mandatory per record, no exceptions** | ❌ Not ready — second reviewer unassigned; per-record manual workflow not designed; Parliament terms to confirm; Firestore, display TBD | CV-SRC-REV-007 |
 | SRC-ONT-001 | Ontario Budget | Ontario | **Approved with Limitations** | Approved (OGL-Ontario) | Not yet fetched | Yes (data.ontario.ca CSV/XLSX) / Partial (PDF) | No | No | ❌ Not ready — budget year, data.ontario.ca availability, Firestore, display TBD | CV-SRC-REV-008 |
-| SRC-ONT-002 | Ontario Public Accounts / Transfer Payments | Ontario | **Approved with Limitations** | Approved (OGL-Ontario) | Not yet fetched | Yes (data.ontario.ca transfer payments CSV) | No | No | ❌ Not ready — fiscal year, dataset URL, Firestore, display TBD | CV-SRC-REV-009 |
+| SRC-ONT-002 | Ontario Public Accounts / Transfer Payments | Ontario | **Approved with Limitations** | Approved (OGL-Ontario) | **Fetched 2026-05-17 · Audit 2026-08-04 · MVP Approved with controls** | Yes (data.ontario.ca Public Accounts Detailed Schedule of Payments CSV) | No | No | ✅ **Written to `subnational_grants/CA-ON`** — FY 2024-25 · 100 records · all transfer payment rows confirmed · purpose-filter control required on future refreshes | CV-SRC-REV-009 |
 | SRC-ONT-003 | Ontario Public Sector Salary Disclosure ("Sunshine List") | Ontario | **Public Registry — Use with Attribution** | Approved (OGL-Ontario) | Not yet fetched | Yes (data.ontario.ca CSV) | **Yes — High-Risk** | **Yes — second reviewer required** | ❌ Not ready — second reviewer unassigned; Privacy Commissioner guidance not reviewed; calendar year, Firestore, display TBD | CV-SRC-REV-010 |
 | SRC-ONT-004 | Office of the Integrity Commissioner of Ontario | Ontario | **Manual Review Only** | Public Registry (Ontario Legislature / oico.on.ca terms — OGL-Ontario does not automatically apply) | Not yet fetched | **No — PDF/HTML only** | **Yes — Highest Risk** | **Yes — mandatory per record, no exceptions** | ❌ Not ready — second reviewer unassigned; per-record manual workflow not designed; oico.on.ca terms to confirm; Firestore, display TBD | CV-SRC-REV-011 |
 
@@ -129,10 +129,18 @@ complete.
 
 ### SRC-ONT-002 — Ontario Public Accounts / Transfer Payments
 - **Licence:** OGL-Ontario (Approved)
-- **Preferred path:** data.ontario.ca transfer payments CSV (machine-readable: Yes). PDF Public Accounts volumes are the fallback.
-- **Attribution:** "Source: Government of Ontario — Transfer Payments and Grants [fiscal year], data.ontario.ca. Contains information licensed under the Open Government Licence – Ontario. Fetched [date]."
-- **Key open items:** Fiscal year; confirm exact dataset URL on data.ontario.ca; transformation design (ministry/category grouping); Firestore collection; app display location.
-- **Limitation:** Aggregate grants/transfers to organisations. No named individual data.
+- **Dataset:** Ontario Public Accounts — Detailed Schedule of Payments (data.ontario.ca)
+- **Dataset URL:** https://data.ontario.ca/dataset/public-accounts-detailed-schedule-of-payments
+- **Resource ID:** `1677dc37-00e5-437a-bb39-c918b243f9a9`
+- **Reporting period:** FY 2024-25 (April 2024 – March 2025)
+- **Fetched:** 2026-05-17T01:19:15Z
+- **Firestore path:** `subnational_grants/CA-ON` — **written**
+- **Status:** MVP Approved with controls — written to Firestore, audit confirmed 2026-08-04
+- **Attribution:** "Source: Government of Ontario — Ontario Public Accounts, Detailed Schedule of Payments, FY 2024-25 (data.ontario.ca). Contains information licensed under the Open Government Licence – Ontario. Fetched 2026-05-17."
+- **Audit result (2026-08-04):** 100 records. Purpose distribution: Government Transfer (62), Operating Transfer Payments (36), Capital Transfer Payments (2). Zero debt service, vendor/procurement, or OHIP/drug benefit rows. All recipients are universities, municipalities, social service organisations, agricultural agencies, or economic development recipients.
+- **Refresh control (mandatory):** Future refreshes must filter the raw Public Accounts CSV by `purpose` values: `Government Transfer`, `Operating Transfer Payments`, `Capital Transfer Payments`. Do not use raw top-100 by amount without purpose filter.
+- **UI label:** "Grants" is acceptable for MVP. "Transfer Payments" is more precise and may be adopted in a future UI iteration.
+- **Limitation:** Aggregate transfers to organisations only. No named individual data. Aggregated bucket row ("Accounts Under $120,000") is present — may be excluded or noted on future refresh per product preference.
 
 ---
 
