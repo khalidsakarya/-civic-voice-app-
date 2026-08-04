@@ -57,7 +57,7 @@ export default function EconomicModalMetricChart({
 
   if (chartKey === 'budget' && budgetData.length > 0) {
     return (
-      <Card title="Government Budget Distribution" desc="Share of total budget per spending category (%)">
+      <Card title="Public Accounts — Spending by Sector" desc="Actual expense distribution by sector (% of total spending)">
         <ResponsiveContainer width="100%" height={220}>
           <BarChart layout="vertical" data={budgetData} margin={MARGIN}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />

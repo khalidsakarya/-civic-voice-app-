@@ -50,7 +50,7 @@ export const SUBNATIONAL_SERIES_PERIOD_INTRO = {
 
 const ECONOMIC_PERIOD_SERIES = [
   {
-    label: 'Approved Budget',
+    label: 'Actual Spending Distribution',
     arrayKeys: ['budget_distribution', 'budgetDistribution'],
     periodKeys: ['budget_reporting_period', 'budget_distribution_reporting_period'],
     sourceKeys: ['budget_distribution_source'],
@@ -1220,7 +1220,7 @@ function formatCrimeHeadlinePair(violent, property, metricType) {
 
 /** Snapshot row → chart panel id for the economic modal. */
 export const ECONOMIC_METRIC_CHART_SECTION_TITLE = Object.freeze({
-  budget: 'Approved Budget — trend chart',
+  budget: 'Actual Spending Distribution — trend chart',
   spending: 'Actual Spending — trend chart',
   crime: 'Crime Report — trend chart',
   unemployment: 'Unemployment — trend chart',
@@ -1277,7 +1277,7 @@ export function buildEconomicTransparencyHeadlines(economic, jurisdictionLabel) 
   if (economic.budgetData.length) {
     const top = [...economic.budgetData].sort((a, b) => b.value - a.value)[0];
     metrics.push({
-      label: 'Approved Budget',
+      label: 'Actual Spending Distribution',
       value: `${top.value}%`,
       sub: `Largest share: ${top.name}`,
       chartKey: 'budget',
