@@ -1,0 +1,75 @@
+{
+  "dataset_id": "CV-DATA-008",
+  "refresh_reason": "CRA designation codes A/B corrected to Public Foundation / Private Foundation",
+  "firestore_path": "subnational_tax_exempt_entities/CA-ON",
+  "write_mode": "merge",
+  "write_at": "2026-08-04T00:08:19.967Z",
+  "status": "WRITTEN",
+  "records_written": 100,
+  "total_in_source": 25822,
+  "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
+  "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+  "designation_mapping_applied": {
+    "A": "Public Foundation",
+    "B": "Private Foundation",
+    "C": "Charitable Organization",
+    "PF": "Private Foundation",
+    "PBF": "Public Foundation",
+    "QD": "Qualified Donee"
+  },
+  "foundation_records_in_batch": 18,
+  "sample_foundation_records": [
+    {
+      "name": "BESSIN FAMILY FOUNDATION",
+      "exemType": "Private Foundation",
+      "industry": "Other",
+      "rawValue": 0
+    },
+    {
+      "name": "CANADIAN FRIENDS OF BOYS TOWN JERUSALEM / LES AMIS CANADIENSDE LA CITE DES GARCONS A JERUSALEM",
+      "exemType": "Public Foundation",
+      "industry": "Other",
+      "rawValue": 0
+    },
+    {
+      "name": "CANADIAN HOSPITALITY FOUNDATION",
+      "exemType": "Public Foundation",
+      "industry": "Other",
+      "rawValue": 0
+    },
+    {
+      "name": "CANADIAN INSTITUTE FOR ADVANCED LEGAL STUDIES - INSTITUT CANADIEN D'ETUDES JURIDIQUES SUPERIEURES",
+      "exemType": "Public Foundation",
+      "industry": "Other",
+      "rawValue": 0
+    },
+    {
+      "name": "CANADIAN TURFGRASS RESEARCH FOUNDATION",
+      "exemType": "Public Foundation",
+      "industry": "Other",
+      "rawValue": 0
+    }
+  ],
+  "sample_all_records": [
+    {
+      "name": "ADAS ISRAEL CONGREGATION OF HAMILTON",
+      "exemType": "Charitable Organization",
+      "industry": "Other",
+      "rawValue": 0
+    },
+    {
+      "name": "AGA KHAN FOUNDATION CANADA / FONDATION AGA KHAN CANADA",
+      "exemType": "Charitable Organization",
+      "industry": "Other",
+      "rawValue": 0
+    },
+    {
+      "name": "ALAE AQUILAE CHARISMATIC SERVICES INC.",
+      "exemType": "Charitable Organization",
+      "industry": "Other",
+      "rawValue": 0
+    }
+  ],
+  "other_datasets_touched": "none",
+  "mvp_note": "Name/type/category only. rawValue=0 for all records per CV-LAUNCH-DEC-001."
+}

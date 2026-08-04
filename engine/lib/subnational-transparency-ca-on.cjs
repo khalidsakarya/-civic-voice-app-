@@ -129,12 +129,15 @@ async function buildTax() {
     candidates.push(row);
   }
 
-  // CRA Designation column contains codes: C=Charitable Organization, PF=Private Foundation,
-  // PBF=Public Benefit Foundation, QD=Qualified Donee (other). Map to readable labels.
+  // CRA Designation codes — source: codes_en.pdf (CRA Charities IT system, last revised 2025-11-28)
+  // A=Public Foundation, B=Private Foundation, C=Charitable Organization
+  // PF/PBF/QD appear in some resource variants; mapped for completeness.
   const CRA_DESIG = {
+    A: 'Public Foundation',
+    B: 'Private Foundation',
     C: 'Charitable Organization',
     PF: 'Private Foundation',
-    PBF: 'Public Benefit Foundation',
+    PBF: 'Public Foundation',
     QD: 'Qualified Donee',
   };
 
