@@ -1,0 +1,62 @@
+{
+  "cv_data_id": "CV-DATA-013",
+  "source_url": "https://data.ontario.ca/dataset/public-accounts-annual-report",
+  "csv_url": "https://data.ontario.ca/dataset/48c75909-67a0-4348-98cd-bf880a361882/resource/f3017a27-bf52-48b9-b186-3121e06c6272/download/tbs-public-accounts-annual-report-statement-of-operations-2024-25-en-fr.csv",
+  "reporting_period": "2024-25",
+  "data_type": "actual expenses — NOT approved budget plan",
+  "total_expenses_millions": 227251,
+  "category_count": 7,
+  "budget_distribution": [
+    {
+      "name": "Health",
+      "value": 40.3,
+      "color": "#6366f1"
+    },
+    {
+      "name": "Education",
+      "value": 17.6,
+      "color": "#10b981"
+    },
+    {
+      "name": "Other Programs",
+      "value": 16.9,
+      "color": "#f59e0b"
+    },
+    {
+      "name": "Children's and Social Services",
+      "value": 9.1,
+      "color": "#ef4444"
+    },
+    {
+      "name": "Interest and Other Debt Servicing Charges",
+      "value": 6.7,
+      "color": "#3b82f6"
+    },
+    {
+      "name": "Postsecondary Education",
+      "value": 6.2,
+      "color": "#8b5cf6"
+    },
+    {
+      "name": "Justice",
+      "value": 3.2,
+      "color": "#14b8a6"
+    }
+  ],
+  "pct_sum": 100,
+  "firestore_collection": "subnational_economic_social_stats",
+  "firestore_doc": "CA-ON",
+  "write_mode": "merge",
+  "fields_written": [
+    "budget_distribution",
+    "budget_reporting_period",
+    "budget_distribution_source",
+    "budget_distribution_url",
+    "budget_distribution_fetched_date",
+    "budget_distribution_transformation_note",
+    "budget_verification_status",
+    "cv_data_id"
+  ],
+  "written_at": "2026-08-04T01:02:05.014Z",
+  "ui_warning": "EconomicModalMetricChart renders chartKey=\"budget\" with title \"Government Budget Distribution\" and desc \"Share of total budget per spending category (%)\". The headline metric label in buildEconomicTransparencyHeadlines is hardcoded as \"Approved Budget\". These labels are technically imprecise for actual-spending data from Public Accounts. Post-MVP UI copy fix recommended: change headline to \"Actual Spending Distribution\" or similar."
+}
