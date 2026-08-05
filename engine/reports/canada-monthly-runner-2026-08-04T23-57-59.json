@@ -1,0 +1,155 @@
+{
+  "run_at": "2026-08-04T23:57:59.680Z",
+  "mode": "dry-run",
+  "jurisdiction": "CA-ON",
+  "datasets_requested": [
+    "CV-DATA-001",
+    "CV-DATA-002",
+    "CV-DATA-008",
+    "CV-DATA-013",
+    "CV-DATA-014"
+  ],
+  "grants_purpose_filter": true,
+  "firestore_writes_occurred": false,
+  "summary": {
+    "total": 5,
+    "written": 0,
+    "dry_run": 5,
+    "blocked": 0
+  },
+  "datasets": [
+    {
+      "id": "CV-DATA-001",
+      "status": "DRY-RUN",
+      "meta": {
+        "chosen_date": "2025",
+        "raw_value": 16258260,
+        "population_display": "16.3M",
+        "total_matched_rows": 55
+      },
+      "error": null,
+      "collection": "subnational_jurisdictions",
+      "payload_keys": [
+        "population_display",
+        "population",
+        "population_source_url",
+        "population_reporting_period",
+        "population_source_note",
+        "population_fetched_date",
+        "population_verification_status",
+        "cv_data_id"
+      ],
+      "verification_id": "CV-REC-2026-08-04-CV-DATA-001",
+      "firestore_path": "subnational_jurisdictions/CA-ON"
+    },
+    {
+      "id": "CV-DATA-002",
+      "status": "DRY-RUN",
+      "meta": {
+        "latest_rate": 7,
+        "latest_period": "Jun 2026",
+        "monthly_points": 24
+      },
+      "error": null,
+      "collection": "subnational_economic_social_stats",
+      "payload_keys": [
+        "reporting_period",
+        "unemployment_latest_rate",
+        "unemployment_latest_period",
+        "unemployment_frequency",
+        "unemployment_series_monthly",
+        "unemployment_source_url",
+        "unemployment_source",
+        "unemployment_url",
+        "unemployment_reporting_period",
+        "unemployment_rate",
+        "cv_data_id",
+        "unemployment_verification_status"
+      ],
+      "verification_id": "CV-REC-2026-08-04-CV-DATA-002",
+      "firestore_path": "subnational_economic_social_stats/CA-ON"
+    },
+    {
+      "id": "CV-DATA-008",
+      "status": "DRY-RUN",
+      "meta": {
+        "records_stored": 100,
+        "total_in_source": 25822
+      },
+      "error": null,
+      "collection": "subnational_tax_exempt_entities",
+      "payload_keys": [
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records",
+        "cv_data_id",
+        "verification_status",
+        "licence_note"
+      ],
+      "verification_id": "CV-REC-2026-08-04-CV-DATA-008",
+      "firestore_path": "subnational_tax_exempt_entities/CA-ON"
+    },
+    {
+      "id": "CV-DATA-013",
+      "status": "DRY-RUN",
+      "meta": {
+        "fiscal_year": "2024-25",
+        "expense_categories": 7,
+        "total_expenses_millions": 227251,
+        "csv_url": "https://data.ontario.ca/dataset/48c75909-67a0-4348-98cd-bf880a361882/resource/f3017a27-bf52-48b9-b186-3121e06c6272/download/tbs-public-accounts-annual-report-statement-of-operations-2024-25-en-fr.csv"
+      },
+      "error": null,
+      "collection": "subnational_economic_social_stats",
+      "payload_keys": [
+        "budget_distribution",
+        "budget_reporting_period",
+        "budget_distribution_source",
+        "budget_distribution_url",
+        "budget_distribution_fetched_date",
+        "budget_distribution_transformation_note",
+        "budget_verification_status",
+        "cv_data_id"
+      ],
+      "verification_id": "CV-REC-2026-08-04-CV-DATA-013",
+      "firestore_path": "subnational_economic_social_stats/CA-ON"
+    },
+    {
+      "id": "CV-DATA-014",
+      "status": "DRY-RUN",
+      "meta": {
+        "records_stored": 100,
+        "total_after_filter": 165,
+        "fiscal_year": "2024-25",
+        "purpose_filter_applied": true,
+        "approved_purposes": [
+          "government transfer",
+          "operating transfer payments",
+          "capital transfer payments"
+        ]
+      },
+      "error": null,
+      "collection": "subnational_grants",
+      "payload_keys": [
+        "fiscal_year",
+        "reporting_period",
+        "data_source",
+        "source_url",
+        "note",
+        "purpose_filter_applied",
+        "approved_purposes",
+        "total_after_filter",
+        "records_stored",
+        "total_raw_top100",
+        "fmt_total_top100",
+        "records",
+        "cv_data_id",
+        "verification_status"
+      ],
+      "verification_id": "CV-REC-2026-08-04-CV-DATA-014",
+      "firestore_path": "subnational_grants/CA-ON"
+    }
+  ]
+}

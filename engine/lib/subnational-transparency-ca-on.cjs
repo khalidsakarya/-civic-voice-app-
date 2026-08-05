@@ -224,8 +224,24 @@ async function buildGrants() {
     );
   }
 
-  // 4. Filter to non-empty rows, sort descending by amount
-  const all = rows.filter((r) => trim(r[recipientCol]));
+  // 4. Mandatory purpose filter — CV-DATA-014 audit decision (2026-08-04):
+  // Keep only transfer-payment rows. The full Public Accounts CSV includes debt service,
+  // vendor payments, and other non-grant rows. This filter is required before any write.
+  const APPROVED_PURPOSES = new Set([
+    'government transfer',
+    'operating transfer payments',
+    'capital transfer payments',
+  ]);
+  const purposeFilterApplied = !!programCol;
+  const withRecipient = rows.filter((r) => trim(r[recipientCol]));
+  const all = purposeFilterApplied
+    ? withRecipient.filter((r) => APPROVED_PURPOSES.has(trim(r[programCol]).toLowerCase()))
+    : withRecipient; // no Payment Detail column — warn but don't block
+
+  if (!purposeFilterApplied) {
+    console.warn('[buildGrants] WARNING: Payment Detail column not found — purpose filter not applied. Review output before writing.');
+  }
+
   if (amountCol) {
     all.sort((a, b) => parseMoneyish(b[amountCol] || '0') - parseMoneyish(a[amountCol] || '0'));
   }
@@ -266,8 +282,12 @@ async function buildGrants() {
     data_source:
       'Government of Ontario — Public Accounts: Detailed Schedule of Payments (data.ontario.ca). Ontario.ca Terms of Use.',
     source_url: SOURCES.transferPayments,
-    note: 'Top 100 payments by amount. Includes transfers, debt service, and vendor payments — not transfer-payment-recipients only. Ontario.ca Terms of Use (not OGL-Ontario). Product review recommended before display.',
-    total_in_source: all.length,
+    note: purposeFilterApplied
+      ? 'Top 100 transfer payments by amount. Filtered to: Government Transfer, Operating Transfer Payments, Capital Transfer Payments only. Ontario.ca Terms of Use (not OGL-Ontario).'
+      : 'Top 100 payments by amount. WARNING: purpose filter not applied (Payment Detail column missing). Ontario.ca Terms of Use (not OGL-Ontario). Review before display.',
+    purpose_filter_applied: purposeFilterApplied,
+    approved_purposes: purposeFilterApplied ? [...APPROVED_PURPOSES] : [],
+    total_after_filter: all.length,
     records_stored: records.length,
     total_raw_top100: totalRaw,
     fmt_total_top100: fmtCompact(totalRaw),
