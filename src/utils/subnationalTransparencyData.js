@@ -1078,6 +1078,7 @@ export function buildTransparencyFieldsFromModalDocs(docs, jurisdictionName, isU
       out.subnationalTaxHeadlineMeta = {
         recordsStored: numOrNull(taxDoc.records_stored),
         totalInSource: numOrNull(taxDoc.total_in_source),
+        cvDataId: trimStr(taxDoc.cv_data_id) || null,
       };
     }
   }

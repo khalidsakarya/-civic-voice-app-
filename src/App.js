@@ -15310,6 +15310,7 @@ function App() {
 
     const totalRaw = companies.reduce((s, c) => s + c.rawValue, 0);
     const fmtTotal = formatCurrencyCompact(totalRaw);
+    const isCraCharities = item.subnationalTaxHeadlineMeta?.cvDataId === 'CV-DATA-008';
 
     const closeModal = () => { setShowTaxExemptModal(false); setTaxExemptSearch(''); };
 
@@ -15370,7 +15371,7 @@ function App() {
             {!transparencyLoading && hasLiveData ? (
               <p className="sn-trans-record-summary text-xs text-gray-500 mb-3 hidden md:block">
                 {companies.length} {companies.length === 1 ? 'record' : 'records'} in listing
-                {Number.isFinite(totalRaw) && totalRaw > 0
+                {Number.isFinite(totalRaw) && totalRaw > 0 && !isCraCharities
                   ? ` · Total reported exemption: ${fmtTotal}`
                   : ''}
               </p>
@@ -15399,7 +15400,7 @@ function App() {
             {!transparencyLoading && hasLiveData ? (
               <p className="sn-trans-record-summary text-xs text-gray-500 mb-3 md:hidden">
                 {companies.length} {companies.length === 1 ? 'record' : 'records'} in listing
-                {Number.isFinite(totalRaw) && totalRaw > 0
+                {Number.isFinite(totalRaw) && totalRaw > 0 && !isCraCharities
                   ? ` · Total reported exemption: ${fmtTotal}`
                   : ''}
               </p>
@@ -15426,11 +15427,14 @@ function App() {
                     <div key={i} className="p-4">
                       <div className="flex items-start justify-between gap-2">
                         <p className="font-semibold text-gray-800 text-sm leading-snug">{co.name}</p>
-                        <span className="font-bold text-amber-700 text-sm whitespace-nowrap flex-shrink-0">{co.fmtValue}</span>
+                        {isCraCharities
+                          ? <span className="text-xs text-gray-400 italic whitespace-nowrap flex-shrink-0">Financial value not displayed in MVP</span>
+                          : <span className="font-bold text-amber-700 text-sm whitespace-nowrap flex-shrink-0">{co.fmtValue}</span>
+                        }
                       </div>
                       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${co.industryColor}`}>{co.industry}</span>
-                        <span className="text-xs text-gray-400">Granted {co.year}</span>
+                        {!isCraCharities && <span className="text-xs text-gray-400">Granted {co.year}</span>}
                       </div>
                       <p className="text-xs text-gray-500 mt-1.5">{co.exemType}</p>
                     </div>
@@ -15445,8 +15449,11 @@ function App() {
                         <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Company Name</th>
                         <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Industry</th>
                         <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Exemption Type</th>
-                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Annual Value</th>
-                        <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Year Granted</th>
+                        {isCraCharities
+                          ? <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Financial Value</th>
+                          : <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Annual Value</th>
+                        }
+                        {!isCraCharities && <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Year Granted</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -15461,8 +15468,11 @@ function App() {
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${co.industryColor}`}>{co.industry}</span>
                           </td>
                           <td className="px-4 py-3 text-gray-600 text-xs whitespace-nowrap">{co.exemType}</td>
-                          <td className="px-4 py-3 text-right font-bold text-amber-700 whitespace-nowrap">{co.fmtValue}</td>
-                          <td className="px-4 py-3 text-right text-gray-500 text-xs">{co.year}</td>
+                          {isCraCharities
+                            ? <td className="px-4 py-3 text-right text-gray-400 text-xs italic whitespace-nowrap">Financial value not displayed in MVP</td>
+                            : <td className="px-4 py-3 text-right font-bold text-amber-700 whitespace-nowrap">{co.fmtValue}</td>
+                          }
+                          {!isCraCharities && <td className="px-4 py-3 text-right text-gray-500 text-xs">{co.year}</td>}
                         </tr>
                       ))}
                     </tbody>
@@ -15474,6 +15484,11 @@ function App() {
                   </div>
                 )}
               </div>
+            )}
+            {isCraCharities && hasLiveData && (
+              <p className="text-xs text-gray-500 mt-4 px-1 leading-relaxed">
+                For MVP, CRA charity records show organization name, designation/type, and status only. Financial values are not displayed.
+              </p>
             )}
             {hasLiveData && sourceUrl && (
               <p className="text-center text-xs text-gray-500 mt-4">
