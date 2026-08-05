@@ -543,6 +543,13 @@ async function main() {
   fs.mkdirSync(REPORTS_DIR, { recursive: true });
   fs.mkdirSync(TMP_DIR, { recursive: true });
 
+  // Initialise Firestore once — shared across all dataset writes; terminated after the loop.
+  const db = write ? tryGetFirestore() : null;
+  if (write && !db) {
+    console.error('[runner] FATAL: Firestore credentials not available.');
+    process.exit(1);
+  }
+
   const targets = only
     ? ALL_DATASETS.filter((d) => only.has(d.id))
     : ALL_DATASETS;
@@ -561,12 +568,10 @@ async function main() {
       ds.verification_id = verificationId(id);
 
       if (write) {
-        const db = tryGetFirestore();
         if (!db) throw new Error('Firestore credentials not available');
         const wr = await writeDataset(db, result);
         ds.status = 'WRITTEN';
         ds.firestore_path = wr.firestore_path;
-        await db.terminate();
         log(id, `Written → ${wr.firestore_path}`);
       } else {
         ds.status = 'DRY-RUN';
@@ -629,6 +634,8 @@ async function main() {
   const reportPath = path.join(REPORTS_DIR, `canada-monthly-runner-${RUN_STAMP}.json`);
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2), 'utf8');
   console.log(`\n  Report: ${reportPath}`);
+
+  if (db) await db.terminate();
 
   if (blockedCount > 0) {
     console.log('\n  WARNING: Some datasets were blocked — review errors above before writing.');
