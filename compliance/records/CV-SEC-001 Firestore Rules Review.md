@@ -8,7 +8,7 @@
 | **Reviewer** | Founder / Technical Lead |
 | **Related Issues** | CV-ISS-015 |
 | **Related Documents** | CV-SOP-004 · CV-REG-003 |
-| **Status** | In Progress — rules v1.0 deployed to production (`civic-voice-5ea94`) 2026-08-15; pending Rules Playground verification |
+| **Status** | **Ready for Review** — rules v1.0 deployed and verified via browser automation 2026-08-15; all read/write/deny checks passed; Canadian MVP UI confirmed functional |
 
 ---
 
@@ -228,9 +228,9 @@ service cloud.firestore {
 | **Critical** | ~~Add `firestore.rules` to repository~~ | ✅ Done — v1.0 draft created | Technical Lead |
 | **Critical** | ~~Add `firebase.json` firestore config~~ | ✅ Done | Technical Lead |
 | **Critical** | ~~Add `.env` to `.gitignore`~~ | ✅ Done | Founder / Developer |
-| **Critical** | Compare drafted rules against current production rules in Firebase console. Reconcile any differences. | ⚠️ Skipped — deployed without prior console export; verify post-deploy | Technical Lead |
+| **Critical** | Compare drafted rules against prior production rules in Firebase console version history. | ⚠️ Prior ruleset not captured — no pre-deploy export was made; post-deploy verification substituted | Technical Lead |
 | **Critical** | ~~Deploy reviewed rules: `firebase deploy --only firestore:rules`~~ | ✅ Done — deployed 2026-08-15, exit code 0, compiled successfully | Technical Lead |
-| **Critical** | Verify rules in Firebase console Rules Playground — test public read, blocked write, and client-write collections. | Open | Technical Lead |
+| **Critical** | ~~Verify rules — test public read, blocked write, client-write, and default deny~~ | ✅ Done — browser automation verification 2026-08-15 (see Section 10) | Technical Lead |
 | **Low** | Rotate `REACT_APP_FIREBASE_API_KEY` if repo has been public or shared externally. `.env` is gitignored going forward. | Open | Founder / Developer |
 
 **To deploy:** run from the app repo root (requires Firebase CLI and project access):
@@ -242,10 +242,63 @@ firebase deploy --only firestore:rules
 
 ---
 
-## 10. Change History
+## 10. Post-Deployment Verification (2026-08-15)
+
+Verification performed via browser automation against production Firestore (`civic-voice-5ea94`) at commit `e04e6b3`+. All tests executed using the Firestore REST API from the app's browser context (unauthenticated — same as a public user).
+
+### 10a. Firestore Rules Checks
+
+| Test | Expected | Result | Pass/Fail |
+|---|---|---|---|
+| GET `subnational_economic_social_stats/CA-ON` | 200 OK | 200 | **Pass** |
+| GET `subnational_tax_exempt_entities/CA-ON` | 200 OK | 200 | **Pass** |
+| GET `subnational_grants/CA-ON` | 200 OK | 200 | **Pass** |
+| GET `subnational_jurisdictions/CA-ON` | 200 OK | 200 | **Pass** |
+| PATCH `subnational_economic_social_stats/CA-ON` | 403 Denied | 403 | **Pass** |
+| PATCH `subnational_tax_exempt_entities/CA-ON` | 403 Denied | 403 | **Pass** |
+| PATCH `subnational_grants/CA-ON` | 403 Denied | 403 | **Pass** |
+| PATCH `subnational_jurisdictions/CA-ON` | 403 Denied | 403 | **Pass** |
+| GET `_rules_test_unknown_/test` | 403 Denied (default deny) | 403 | **Pass** |
+| PATCH `_rules_test_unknown_/test` | 403 Denied (default deny) | 403 | **Pass** |
+| POST `citizen_votes` — valid fields | 200 OK | 200 | **Pass** |
+| POST `citizen_votes` — extra `email` field | 403 Denied (field validation) | 403 | **Pass** |
+| POST `user_events` — valid fields | 200 OK | 200 | **Pass** |
+| POST `user_events` — with `email` PII field | 403 Denied (field validation) | 403 | **Pass** |
+| PATCH `vote_counts/rules-test-delete-me` | 200 OK | 200 | **Pass** |
+| POST `news_votes` — valid fields | 200 OK | 200 | **Pass** |
+| DELETE `vote_counts/rules-test-delete-me` | 403 Denied (`delete: if false`) | 403 | **Pass** |
+| Rules file contains no secrets/API keys | No matches | No matches | **Pass** |
+
+**18 / 18 — Pass.**
+
+> **Residual action:** Test doc `vote_counts/rules-test-delete-me` was written during verification and cannot be deleted by client (delete rule is `false`). Delete it via Firebase console or Admin SDK before launch.
+
+### 10b. Canadian MVP UI Checks
+
+| Test | Expected | Result | Pass/Fail |
+|---|---|---|---|
+| Ontario Economic & Social modal loads | Unemployment data visible | `hasUnemployment: true`, no error state | **Pass** |
+| Ontario Tax Exempt / Charities modal loads | CRA charities visible, source note present | `hasCharities: true`, `hasRecordCount: true` | **Pass** |
+| Ontario Transfer Payments modal loads | Transfer payment records visible | `hasTransfer: true`, `hasRecords: true` | **Pass** |
+| Legal page `#privacy` | Loads with content, no TBD | `loaded: true`, `noTBD: true` | **Pass** |
+| Legal page `#terms` | Loads with content, no TBD | `loaded: true`, `noTBD: true` | **Pass** |
+| Legal page `#accessibility` | Loads with content, no TBD | `loaded: true`, `noTBD: true` | **Pass** |
+| Legal page `#sources` | Loads with content, no TBD | `loaded: true`, `noTBD: true` | **Pass** |
+| Legal page `#disclaimer` | Loads with content, no TBD | `loaded: true`, `noTBD: true` | **Pass** |
+| Legal page `#contact` | Loads with content, no TBD | `loaded: true`, `noTBD: true` | **Pass** |
+| Canada-only scope | US/UK/AU not visible in navigation | `no_usa: true`, `no_uk: true`, `no_au: true` | **Pass** |
+| Footer links | All 7 links present | Privacy · Terms · Accessibility · Sources · Disclaimer · Contact · About | **Pass** |
+| No secrets in rendered page | No service account / admin key text | `no_service_account: true`, `no_admin_sdk_key: true` | **Pass** |
+
+**12 / 12 — Pass.**
+
+---
+
+## 11. Change History
 
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 1.0 | 2026-08-15 | Founder / Technical Lead | Initial record — code audit complete. No rules file found. Two launch blockers identified (F-001, F-003). Recommended rules drafted. |
 | 1.1 | 2026-08-15 | Founder / Technical Lead | `firestore.rules` v1.0 created in app repo. `firebase.json` created with firestore rules config. `.env` added to `.gitignore`. Rules cover 5 categories: Canadian MVP data (3), federal/national read-only (37+), client-writable interaction (8), admin-only (1), default deny. F-001 and F-002 resolved at repo level. F-003 remains open until rules are deployed and verified in Firebase console. |
 | 1.2 | 2026-08-15 | Founder / Technical Lead | `firestore.rules` v1.0 deployed to `civic-voice-5ea94` via `firebase deploy --only firestore:rules`. Compiled successfully, exit code 0. Note: production rules were not exported before deployment — Rules Playground verification required to confirm no regressions. CV-ISS-015 remains In Progress pending that verification step. |
+| 1.3 | 2026-08-15 | Founder / Technical Lead | Post-deployment verification completed via browser automation against production Firestore. All 18 test cases passed (see Section 10). Canadian MVP UI confirmed functional. CV-ISS-015 updated to Ready for Review. One minor residual: test doc `vote_counts/rules-test-delete-me` written during verification — delete via Firebase console or Admin SDK. |
