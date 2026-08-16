@@ -15523,6 +15523,8 @@ function App() {
     const transparencyLoading =
       Boolean(subnationalTransparencyJurisdictionId(item, isUSA)) &&
       provinceTransparencyFields === null;
+    const jurisdictionId = subnationalTransparencyJurisdictionId(item, isUSA);
+    const isCaOnGrantsDeferred = jurisdictionId === 'CA-ON';
     const grantsHeadlines = buildGrantsTransparencyHeadlines(
       grantsLive,
       item.subnationalGrantsHeadlineMeta,
@@ -15560,7 +15562,9 @@ function App() {
               </button>
               <div className="sn-trans-modal-header-text flex-1 min-w-0">
                 <h2 className="sn-trans-modal-title font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Grants Given</h2>
-                {(hasLiveData || transparencyLoading) ? (
+                {isCaOnGrantsDeferred ? (
+                  <p className="sn-trans-modal-subtitle text-xs text-amber-700 mt-1 font-medium">Source under review — data not displayed for MVP</p>
+                ) : (hasLiveData || transparencyLoading) ? (
                   <p className="sn-trans-modal-subtitle text-xs text-gray-500 mt-1">
                     Official grant awards
                     {sourceName ? ` · ${sourceName}` : ''}
@@ -15573,7 +15577,8 @@ function App() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            {/* Search bar */}
+            {/* Search bar — hidden when deferred */}
+            {!isCaOnGrantsDeferred && (
             <div className="sn-trans-modal-header-search relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <input
@@ -15589,10 +15594,43 @@ function App() {
                 </button>
               )}
             </div>
+            )}
           </div>
 
           {/* Table */}
           <div className="sn-trans-modal-body p-3 sm:p-5">
+            {isCaOnGrantsDeferred ? (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-6 mb-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-amber-800 leading-snug">Official grants/transfer-payment data is under review for the Canadian MVP.</p>
+                    <p className="text-xs text-amber-700 mt-2 leading-relaxed">
+                      We are reviewing the correct official source and category filters before displaying Ontario grants. Broad Public Accounts payment records, such as debt service or vendor payments, are not shown here to avoid misleading users.
+                    </p>
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                      <div className="bg-white rounded-xl border border-amber-100 px-3 py-2">
+                        <p className="text-gray-500 uppercase tracking-wide font-semibold text-[10px] mb-0.5">Status</p>
+                        <p className="text-amber-800 font-medium">Under review</p>
+                      </div>
+                      <div className="bg-white rounded-xl border border-amber-100 px-3 py-2">
+                        <p className="text-gray-500 uppercase tracking-wide font-semibold text-[10px] mb-0.5">Reason</p>
+                        <p className="text-amber-800 font-medium">Source scope requires review</p>
+                      </div>
+                      <div className="bg-white rounded-xl border border-amber-100 px-3 py-2">
+                        <p className="text-gray-500 uppercase tracking-wide font-semibold text-[10px] mb-0.5">Next action</p>
+                        <p className="text-amber-800 font-medium">Confirm true transfer-payment / grant category before publication</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
             {renderSubnationalHeadlineSnapshot(grantsHeadlines, transparencyLoading)}
             {!transparencyLoading ? (
               <div className="mb-4">{renderSubnationalPeriodMeta(item, 'grants')}</div>
@@ -15713,6 +15751,8 @@ function App() {
               </p>
             )}
             </div>
+              </>
+            )}
             <button onClick={closeModal} className="sn-trans-modal-close-btn w-full mt-3 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors shadow-sm flex items-center justify-center gap-2">
               <X className="w-4 h-4" /> Close
             </button>
