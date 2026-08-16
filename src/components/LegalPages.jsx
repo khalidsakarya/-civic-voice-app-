@@ -34,11 +34,180 @@ const LEGAL_PAGES = {
   },
 };
 
-function PlaceholderPage({ title }) {
+function PrivacyContent() {
+  const sections = [
+    {
+      title: 'No account required',
+      text: 'You can browse all public civic information on Civic Voice Canada without creating an account or providing any personal information.',
+    },
+    {
+      title: 'What this app displays',
+      text: 'Civic Voice Canada displays public and open-government information sourced from official government portals and public registries. This information is already publicly available. We do not add personal information about members of the public.',
+    },
+    {
+      title: 'We do not sell personal information',
+      text: 'Civic Voice Canada does not sell, rent, or trade any personal information to third parties, advertisers, or data brokers.',
+    },
+    {
+      title: 'No political profiles or voting recommendations',
+      text: 'This app does not build political profiles about users. It does not track your political views, infer your voting intentions, or make voting recommendations based on your usage.',
+    },
+    {
+      title: 'Location information',
+      text: 'If you choose to use location features, your general location (province or region) may be used temporarily to show relevant local information. Precise GPS coordinates are not stored. Location data is not shared with third parties and is not retained after your session ends.',
+    },
+    {
+      title: 'Analytics, accounts, and notifications',
+      text: 'Analytics, crash reporting, user accounts, push notifications, and email features are not currently enabled. If any of these are introduced in the future, this policy will be updated and users will be clearly informed before the feature is activated.',
+    },
+    {
+      title: 'Correction and contact submissions',
+      text: 'If you submit a correction request or contact us once the contact channel is available, any information you provide voluntarily — such as your name, email address, or description of an issue — will be used only to review and respond to your submission. It will not be used for marketing or shared with third parties.',
+    },
+    {
+      title: 'Operator details',
+      text: 'Operator details will be finalised before public launch. This policy will be updated at that time to include the legal name and contact information of the operator.',
+    },
+  ];
+
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
-      <p className="text-amber-800 font-medium text-base mb-1">{title} — Coming Soon</p>
-      <p className="text-amber-700 text-sm">This page is being prepared for the Canadian MVP launch.</p>
+    <div className="space-y-5">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <p className="text-blue-800 text-sm leading-relaxed">
+          Civic Voice Canada is designed to be a low-data, privacy-respecting civic transparency tool.
+          This page explains what information is and is not collected when you use the app.
+        </p>
+      </div>
+      {sections.map(({ title, text }, i) => (
+        <div key={title} className="pb-5 border-b border-gray-100 last:border-0 last:pb-0">
+          <h3 className="font-semibold text-gray-800 text-sm mb-1.5">
+            <span className="text-gray-400 font-normal mr-1.5">{i + 1}.</span>{title}
+          </h3>
+          <p className="text-gray-600 text-sm leading-relaxed">{text}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TermsContent() {
+  const sections = [
+    {
+      title: 'Independent, non-government platform',
+      text: 'Civic Voice Canada is an independent project. It is not affiliated with, endorsed by, or acting on behalf of any government body, political party, candidate, lobby group, or advocacy organization. Use of this platform does not constitute interaction with any government service.',
+    },
+    {
+      title: 'Informational and educational use only',
+      text: 'All content on this platform is provided for general informational and educational purposes only. By using this platform you agree not to rely on it as a substitute for professional advice of any kind.',
+    },
+    {
+      title: 'No professional advice of any kind',
+      text: 'Nothing on this platform constitutes legal advice, financial advice, investment advice, tax advice, voting guidance, political advice, or any other form of professional or regulated advice. Do not make legal, financial, investment, tax, voting, or political decisions based solely on content displayed here. Consult a qualified professional for advice relevant to your specific situation.',
+    },
+    {
+      title: 'Verify important information with official sources',
+      text: 'Data displayed here is sourced from official government portals but may be delayed, incomplete, filtered, or under review. Users are responsible for verifying any important information directly with the original official source before citing, sharing, or acting on it. Source links are provided wherever available.',
+    },
+    {
+      title: 'Data accuracy limitations',
+      text: 'Data may be delayed, incomplete, transformed for display, or pending refresh. Financial figures may differ from official publications due to rounding, reporting period differences, or filtering decisions. We make no warranties regarding the accuracy, completeness, or fitness for purpose of any content.',
+    },
+    {
+      title: 'No corruption findings, legal conclusions, or endorsements',
+      text: 'This platform does not make findings of corruption, legal violations, or wrongdoing about any individual or organisation. It does not endorse, oppose, or make voting recommendations about any political candidate, party, or policy. Descriptions of government programs and public spending are intended to be neutral and factual.',
+    },
+    {
+      title: 'Acceptable use',
+      text: 'You may use this platform for personal, research, journalistic, and educational purposes. You may not use it to harass individuals, manufacture false claims about public figures, or misrepresent the platform as an official government service.',
+    },
+    {
+      title: 'Changes to these terms',
+      text: 'These terms may be updated before or after public launch. Continued use of the platform after an update constitutes acceptance of the revised terms.',
+    },
+    {
+      title: 'Operator details and governing law',
+      text: 'Operator details and the governing province for these terms will be finalised before public launch.',
+    },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <p className="text-blue-800 text-sm leading-relaxed">
+          By using Civic Voice Canada you agree to the following terms. Please read them before using the platform.
+        </p>
+      </div>
+      {sections.map(({ title, text }, i) => (
+        <div key={title} className="pb-5 border-b border-gray-100 last:border-0 last:pb-0">
+          <h3 className="font-semibold text-gray-800 text-sm mb-1.5">
+            <span className="text-gray-400 font-normal mr-1.5">{i + 1}.</span>{title}
+          </h3>
+          <p className="text-gray-600 text-sm leading-relaxed">{text}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AccessibilityContent() {
+  const features = [
+    'Interactive elements include accessible labels and ARIA attributes where practical.',
+    'Colour contrast targets WCAG 2.1 AA minimum ratios for text and interactive components.',
+    'Data tables and charts include labels or summary text where practical.',
+    'Modal dialogs are dismissible by keyboard and include close buttons with accessible labels.',
+    'The app is designed to work at standard browser zoom levels up to 200%.',
+    'Touch targets on mobile are sized to meet minimum tap-area guidelines.',
+  ];
+
+  return (
+    <div className="space-y-5">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <p className="text-blue-800 text-sm leading-relaxed">
+          Civic Voice Canada aims to be accessible to all users, including those using assistive
+          technologies. We target WCAG 2.1/2.2 Level AA as our practical baseline.
+        </p>
+      </div>
+
+      <div>
+        <h3 className="font-semibold text-gray-800 text-sm mb-3">
+          Current accessibility features
+        </h3>
+        <div className="space-y-2">
+          {features.map((f) => (
+            <div key={f} className="flex items-start gap-2.5">
+              <span className="text-green-500 font-bold text-sm mt-0.5 flex-shrink-0">✓</span>
+              <p className="text-gray-600 text-sm leading-relaxed">{f}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="border border-gray-200 rounded-xl p-4">
+        <h3 className="font-semibold text-gray-800 text-sm mb-1.5">Known limitations</h3>
+        <p className="text-gray-600 text-sm leading-relaxed">
+          Some complex data visualisations — such as multi-series charts — may not be fully
+          navigable by screen reader in all contexts. We are working to improve text alternatives
+          and summaries for these sections. A formal accessibility review against the live app
+          is planned before public launch.
+        </p>
+      </div>
+
+      <div className="border border-amber-200 bg-amber-50 rounded-xl p-4">
+        <p className="text-amber-800 font-semibold text-sm mb-1">Report an accessibility barrier</p>
+        <p className="text-amber-700 text-sm leading-relaxed">
+          If you encounter an accessibility barrier, we want to know about it. A public contact
+          channel will be posted before public launch. Once available, accessibility reports will
+          be reviewed and prioritised.
+        </p>
+      </div>
+
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+        <p className="text-gray-500 text-xs leading-relaxed">
+          Accessibility conformance is an ongoing process. This statement will be updated as the
+          app is reviewed and improved. Target standard: WCAG 2.1 Level AA, with reference to
+          WCAG 2.2 where applicable.
+        </p>
+      </div>
     </div>
   );
 }
@@ -260,10 +429,13 @@ export default function LegalPageOverlay({ page, onClose }) {
   if (!meta) return null;
 
   const renderContent = () => {
+    if (page === 'privacy') return <PrivacyContent />;
+    if (page === 'terms') return <TermsContent />;
+    if (page === 'accessibility') return <AccessibilityContent />;
     if (page === 'sources') return <SourcesContent />;
     if (page === 'disclaimer') return <DisclaimerContent />;
     if (page === 'contact') return <ContactContent />;
-    return <PlaceholderPage title={meta.title} />;
+    return null;
   };
 
   return (
