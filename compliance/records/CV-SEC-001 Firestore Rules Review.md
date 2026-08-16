@@ -8,7 +8,7 @@
 | **Reviewer** | Founder / Technical Lead |
 | **Related Issues** | CV-ISS-015 |
 | **Related Documents** | CV-SOP-004 · CV-REG-003 |
-| **Status** | In Progress — version-controlled rules file created (v1.0 draft); pending deployment to Firebase console and production verification |
+| **Status** | In Progress — rules v1.0 deployed to production (`civic-voice-5ea94`) 2026-08-15; pending Rules Playground verification |
 
 ---
 
@@ -228,8 +228,8 @@ service cloud.firestore {
 | **Critical** | ~~Add `firestore.rules` to repository~~ | ✅ Done — v1.0 draft created | Technical Lead |
 | **Critical** | ~~Add `firebase.json` firestore config~~ | ✅ Done | Technical Lead |
 | **Critical** | ~~Add `.env` to `.gitignore`~~ | ✅ Done | Founder / Developer |
-| **Critical** | Compare drafted rules against current production rules in Firebase console. Reconcile any differences. | Open | Technical Lead |
-| **Critical** | Deploy reviewed rules: `firebase deploy --only firestore:rules` (from app repo root). | Open | Technical Lead |
+| **Critical** | Compare drafted rules against current production rules in Firebase console. Reconcile any differences. | ⚠️ Skipped — deployed without prior console export; verify post-deploy | Technical Lead |
+| **Critical** | ~~Deploy reviewed rules: `firebase deploy --only firestore:rules`~~ | ✅ Done — deployed 2026-08-15, exit code 0, compiled successfully | Technical Lead |
 | **Critical** | Verify rules in Firebase console Rules Playground — test public read, blocked write, and client-write collections. | Open | Technical Lead |
 | **Low** | Rotate `REACT_APP_FIREBASE_API_KEY` if repo has been public or shared externally. `.env` is gitignored going forward. | Open | Founder / Developer |
 
@@ -248,3 +248,4 @@ firebase deploy --only firestore:rules
 |---|---|---|---|
 | 1.0 | 2026-08-15 | Founder / Technical Lead | Initial record — code audit complete. No rules file found. Two launch blockers identified (F-001, F-003). Recommended rules drafted. |
 | 1.1 | 2026-08-15 | Founder / Technical Lead | `firestore.rules` v1.0 created in app repo. `firebase.json` created with firestore rules config. `.env` added to `.gitignore`. Rules cover 5 categories: Canadian MVP data (3), federal/national read-only (37+), client-writable interaction (8), admin-only (1), default deny. F-001 and F-002 resolved at repo level. F-003 remains open until rules are deployed and verified in Firebase console. |
+| 1.2 | 2026-08-15 | Founder / Technical Lead | `firestore.rules` v1.0 deployed to `civic-voice-5ea94` via `firebase deploy --only firestore:rules`. Compiled successfully, exit code 0. Note: production rules were not exported before deployment — Rules Playground verification required to confirm no regressions. CV-ISS-015 remains In Progress pending that verification step. |
