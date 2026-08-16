@@ -48,6 +48,7 @@ import {
   isUsStateTransparencyId,
 } from './utils/subnationalLeaderTransparency';
 import SubnationalLeaderTransparencySections from './components/SubnationalLeaderTransparencySections';
+import LegalPageOverlay from './components/LegalPages';
 import CaOnLeaderTransparencySections from './components/CaOnLeaderTransparencySections';
 import UsCaLeaderTransparencySections from './components/UsCaLeaderTransparencySections';
 import UsStateLeaderTransparencySections from './components/UsStateLeaderTransparencySections';
@@ -1930,6 +1931,11 @@ function App() {
   const [subnationalLeaderTransparencyLoading, setSubnationalLeaderTransparencyLoading] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [legalPage, setLegalPage] = useState(() => {
+    const hash = typeof window !== 'undefined' ? window.location.hash.replace(/^#\/?/, '') : '';
+    const LEGAL = ['privacy', 'terms', 'accessibility', 'sources', 'disclaimer', 'contact'];
+    return LEGAL.includes(hash) ? hash : null;
+  });
   const [showNotifications, setShowNotifications] = useState(false);
   const [readNotifIds, setReadNotifIds] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cvNotifRead') || '[]'); } catch { return []; }
@@ -3118,6 +3124,17 @@ function App() {
     { id: 15, name: 'Canadian Heritage',                          description: 'Promoting Canadian culture and heritage',                                                          responsibilities: ['Arts funding', 'Broadcasting', 'Official languages', 'Sport'] },
   ]);
   
+  // Legal page hash routing — handles direct links like #privacy, #terms, etc.
+  useEffect(() => {
+    const LEGAL = ['privacy', 'terms', 'accessibility', 'sources', 'disclaimer', 'contact'];
+    const handleHash = () => {
+      const hash = window.location.hash.replace(/^#\/?/, '');
+      setLegalPage(LEGAL.includes(hash) ? hash : null);
+    };
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
   // Location gate: optional Firestore-backed US/CA dropdown labels (values stay legacy strings for storage + getRegionCountry).
   useEffect(() => {
     if (!showLocationGate || locationGateSubnationalFetchDoneRef.current) return;
@@ -38180,23 +38197,46 @@ function App() {
       {/* About modal */}
       {showAbout && renderAboutModal()}
 
-      {/* Global footer */}
-      <footer className="fixed bottom-0 left-0 right-0 z-30 bg-blue-50 border-t border-blue-200 py-3 text-center">
-        <div className="inline-flex items-center gap-4">
+      {/* Legal page overlay */}
+      {legalPage && (
+        <LegalPageOverlay
+          page={legalPage}
+          onClose={() => { setLegalPage(null); window.location.hash = ''; }}
+        />
+      )}
+
+      {/* Canadian MVP footer */}
+      <footer className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 text-center" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        {/* Independence statement */}
+        <p className="text-[10px] text-gray-400 px-4 pt-2 leading-snug">
+          Civic Voice Canada is independent and is not affiliated with or endorsed by any government body.
+        </p>
+        {/* Legal links */}
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2">
+          {[
+            { key: 'privacy',       label: 'Privacy' },
+            { key: 'terms',         label: 'Terms' },
+            { key: 'accessibility', label: 'Accessibility' },
+            { key: 'sources',       label: 'Sources' },
+            { key: 'disclaimer',    label: 'Disclaimer' },
+            { key: 'contact',       label: 'Contact' },
+          ].map(({ key, label }, i, arr) => (
+            <React.Fragment key={key}>
+              <button
+                onClick={() => { setLegalPage(key); window.location.hash = key; }}
+                className="text-xs text-gray-500 hover:text-blue-700 transition-colors"
+              >
+                {label}
+              </button>
+              {i < arr.length - 1 && <span className="text-gray-200 text-xs select-none" aria-hidden>·</span>}
+            </React.Fragment>
+          ))}
+          <span className="text-gray-200 text-xs select-none" aria-hidden>·</span>
           <button
             onClick={() => setShowAbout(true)}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
+            className="text-xs text-gray-500 hover:text-blue-700 transition-colors"
           >
-            <Info className="w-4 h-4" />
             About
-          </button>
-          <span className="text-blue-300 text-xs">|</span>
-          <button
-            onClick={() => setShowDisclaimer(true)}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
-          >
-            <Info className="w-4 h-4" />
-            Disclaimer
           </button>
         </div>
       </footer>
