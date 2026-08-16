@@ -116,22 +116,20 @@ using the in-app browser automation tools.
 | VER-001-04 | Ontario Transfer Payments modal — filtered records displayed; modal renamed | **Pass** |
 | VER-001-05 | Canada-only scope — US/UK/AU hidden from public navigation | **Pass** |
 
-**Overall: 4 / 5 Pass · 1 dataset group (CV-DATA-001, CV-DATA-013) not yet verified**
+**Overall: 3 / 3 active MVP datasets verified — Pass. CV-DATA-001 and CV-DATA-013 deferred from MVP launch scope (not required for launch).**
 
 ---
 
 ## Scope Limitations
 
-The following two datasets are **not written to Firestore** and were not verified in the UI at this step. They remain pending decisions:
+The following two datasets are **formally deferred from the MVP launch scope** as of 2026-08-16 and are **not required for launch**. They are not failed items — they are post-launch work.
 
-| Dataset | Status | Reason Not Written |
+| Dataset | Status | Reason Deferred |
 |---|---|---|
-| CV-DATA-001 — Statistics Canada Population | Not written | Pending display slot and product decision on where Ontario population should appear in the UI |
-| CV-DATA-013 — Ontario Budget (Actual Spending) | Not written | Pending product and chart decision |
+| CV-DATA-001 — Statistics Canada Population | Deferred — Post-launch | Display slot and product decision not yet made |
+| CV-DATA-013 — Ontario Budget (Actual Spending) | Deferred — Post-launch | Chart design and product decision not yet made |
 
-CV-DATA-014 (Ontario Transfer Payments) was previously blocked and is now written and verified — see VER-001-04 above.
-
-These items must be resolved before this verification record can be marked complete for all 5 MVP datasets.
+This verification record covers all 3 active MVP datasets. It may be extended for CV-DATA-001 and CV-DATA-013 when those product decisions are made post-launch.
 
 ---
 
@@ -141,3 +139,4 @@ These items must be resolved before this verification record can be marked compl
 |---|---|---|---|
 | 1.0 | 2026-08-05 | Founder / Data Lead | Initial record — 5 items verified at commit 5408e81 |
 | 1.1 | 2026-08-16 | Founder / Data Lead | VER-001-04 updated from Blocked to Pass. CV-DATA-014 written to Firestore (commit f0d2c7d) with Category = "Transfer Payments" filter; modal renamed from "Grants Given" to "Transfer Payments". Summary updated to 4/5 Pass. Scope Limitations updated — CV-DATA-014 removed from blocked list. |
+| 1.2 | 2026-08-16 | Founder / Data Lead | MVP scope finalised to 3 active datasets. Summary updated: 3/3 active MVP datasets Pass. Scope Limitations updated: CV-DATA-001 and CV-DATA-013 reclassified from "pending decisions" to "Deferred — Post-launch" — not launch blockers. |

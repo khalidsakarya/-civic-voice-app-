@@ -64,20 +64,22 @@ CV-DATA-016). Each dataset is assigned one of three statuses:
 
 | Category | Count | Dataset IDs |
 |---|---|---|
-| **Selected with Limitations** | 3 | CV-DATA-008, CV-DATA-013, CV-DATA-014 |
-| **Pending Dataset Definition (intended for launch)** | 2 | CV-DATA-001, CV-DATA-002 |
+| **Written — Verified for MVP** | 3 | CV-DATA-002, CV-DATA-008, CV-DATA-014 |
+| **Deferred — MVP Launch (re-evaluate post-launch)** | 2 | CV-DATA-001, CV-DATA-013 |
 | **Deferred — Post-Launch** | 11 | CV-DATA-003–007, CV-DATA-009–012, CV-DATA-015–016 |
 
-**Total launch scope:** 5 datasets (3 confirmed + 2 pending Statistics Canada table selection)
+**Active MVP launch scope:** 3 datasets — all written to Firestore and visually verified as of 2026-08-16.
 
-**Deferred:** 11 datasets — all high-risk, all Manual Review Only, all PDF-fallback paths, and all federal non-budget sources except CRA Charities.
+**Deferred from MVP launch:** CV-DATA-001 (population — display slot pending) and CV-DATA-013 (Ontario Budget — chart/product decision pending). These are not blockers to launch.
+
+**Deferred post-launch:** 11 datasets — all high-risk, all Manual Review Only, all PDF-fallback paths, and all federal non-budget sources except CRA Charities.
 
 ---
 
 ## 4. Selected Launch Datasets
 
 ### CV-DATA-001 — Statistics Canada Population Indicator
-**Status: Pending Dataset Definition (intended for launch)**
+**Status: Deferred — Display Slot and Product Decision Pending**
 
 | Field | Value |
 |---|---|
@@ -96,7 +98,7 @@ CV-DATA-016). Each dataset is assigned one of three statuses:
 ---
 
 ### CV-DATA-002 — Statistics Canada Unemployment / Labour Force Indicator
-**Status: Pending Dataset Definition (intended for launch)**
+**Status: Written — Verified for MVP**
 
 | Field | Value |
 |---|---|
@@ -115,7 +117,7 @@ CV-DATA-016). Each dataset is assigned one of three statuses:
 ---
 
 ### CV-DATA-008 — CRA Charities Registry Extract
-**Status: Selected with Limitations**
+**Status: Written — Verified for MVP**
 
 | Field | Value |
 |---|---|
@@ -136,7 +138,7 @@ CV-DATA-016). Each dataset is assigned one of three statuses:
 ---
 
 ### CV-DATA-013 — Ontario Budget
-**Status: Selected with Limitations**
+**Status: Deferred — Chart and Product Decision Pending**
 
 | Field | Value |
 |---|---|
@@ -157,7 +159,7 @@ CV-DATA-016). Each dataset is assigned one of three statuses:
 ---
 
 ### CV-DATA-014 — Ontario Public Accounts / Transfer Payments
-**Status: Selected with Limitations**
+**Status: Written — Verified for MVP**
 
 | Field | Value |
 |---|---|
@@ -185,6 +187,8 @@ their specific blockers are resolved.
 
 | Dataset ID | Source Name | Reason for Deferral | Earliest Re-evaluation |
 |---|---|---|---|
+| CV-DATA-001 | Statistics Canada — Population Estimates | Display slot not confirmed; product decision on where population should appear in the UI not yet made | Post-launch — re-evaluate when display slot is defined |
+| CV-DATA-013 | Ontario Budget | Chart design and product decisions not yet made; no CSV/XLSX availability confirmed for applicable year | Post-launch — re-evaluate when chart/product decisions are made |
 | CV-DATA-003 | Statistics Canada — crime/safety indicator | Not confirmed as in launch scope by Founder; requires separate approval | Post-launch; requires Founder approval |
 | CV-DATA-004 | Government of Canada Fiscal Reference Tables (Federal Budget XLSX) | Federal budget data deferred for first launch — prove workflow on lower-risk Ontario data first | Post-launch |
 | CV-DATA-005 | Government of Canada Federal Budget (PDF fallback) | PDF fallback path; also deferred as CV-DATA-004 is deferred | Post-launch |
@@ -267,16 +271,20 @@ The following controls apply to all selected launch datasets:
 For each selected dataset, **all of the following conditions must be met** before it is
 fetched, written to Firestore, or displayed to users:
 
-| # | Condition | CV-DATA-001 | CV-DATA-002 | CV-DATA-008 | CV-DATA-013 | CV-DATA-014 |
-|---|---|---|---|---|---|---|
-| 1 | Exact table/dataset/URL confirmed | ❌ Pending — table number TBD | ❌ Pending — table number TBD | ❌ Pending — dataset ID TBD | ❌ Pending | ❌ Pending — dataset URL TBD |
-| 2 | Reporting period confirmed | ❌ | ❌ | ❌ | ❌ | ❌ |
-| 3 | First fetch executed and fetch date recorded in CV-REG-001 | ❌ | ❌ | ❌ | ❌ | ❌ |
-| 4 | Firestore collection name confirmed | ❌ | ❌ | ❌ | ❌ | ❌ |
-| 5 | App display location confirmed | ❌ | ❌ | ❌ | ❌ | ❌ |
-| 6 | Attribution wording finalised and implemented in UI | ❌ | ❌ | ❌ | ❌ | ❌ |
-| 7 | CV-REC-001 Data Verification Checklist completed | ❌ | ❌ | ❌ | ❌ | ❌ |
-| 8 | Source label visible in app UI | ❌ | ❌ | ❌ | ❌ | ❌ |
+**Active MVP datasets (CV-DATA-002, CV-DATA-008, CV-DATA-014):**
+
+| # | Condition | CV-DATA-002 | CV-DATA-008 | CV-DATA-014 |
+|---|---|---|---|---|
+| 1 | Exact table/dataset/URL confirmed | ✅ Table 14-10-0287-01 | ✅ open.canada.ca ident_updated.csv | ✅ data.ontario.ca pkg 56c9a95f |
+| 2 | Reporting period confirmed | ✅ Monthly — Jun 2026 | ✅ Most recent T3010 filing | ✅ FY 2024-25 |
+| 3 | First fetch executed and fetch date recorded | ✅ 2026-08-05 | ✅ 2026-08-05 | ✅ 2026-08-16 |
+| 4 | Firestore collection name confirmed | ✅ `subnational_economic_social_stats/CA-ON` | ✅ `subnational_tax_exempt_entities/CA-ON` | ✅ `subnational_grants/CA-ON` |
+| 5 | App display location confirmed | ✅ Ontario Economic & Social modal | ✅ Ontario Tax Exempt / Charities modal | ✅ Ontario Transfer Payments modal |
+| 6 | Attribution wording finalised and in UI | ✅ | ✅ | ✅ |
+| 7 | CV-REC-001 Data Verification Checklist completed | ✅ CV-REC-2026-08-05-CV-DATA-002 | ✅ CV-REC-2026-08-05-CV-DATA-008 | ✅ CV-REC-2026-08-16-CV-DATA-014 |
+| 8 | Source label visible in app UI | ✅ | ✅ | ✅ |
+
+**Deferred MVP datasets (CV-DATA-001, CV-DATA-013):** Not applicable — both deferred from MVP launch scope as of 2026-08-16. No verification conditions apply until product decisions are made.
 
 > ✅ = complete &nbsp;&nbsp; ❌ = not yet complete
 >
@@ -292,20 +300,20 @@ Section 4 as follows:
 
 | Dataset ID | Previous Status | New Status |
 |---|---|---|
-| CV-DATA-001 | Pending Product Decision | **Pending Dataset Definition (intended for launch)** |
-| CV-DATA-002 | Pending Product Decision | **Pending Dataset Definition (intended for launch)** |
+| CV-DATA-001 | Pending Dataset Definition (intended for launch) | **Deferred — Display Slot and Product Decision Pending** (updated 2026-08-16) |
+| CV-DATA-002 | Pending Dataset Definition (intended for launch) | **Written — Verified for MVP** (updated 2026-08-16) |
 | CV-DATA-003 | Candidate | **Deferred — Post-Launch** |
 | CV-DATA-004 | Candidate | **Deferred — Post-Launch** |
 | CV-DATA-005 | Deferred — use XLSX | **Deferred — Post-Launch** |
 | CV-DATA-006 | Candidate | **Deferred — Post-Launch** |
 | CV-DATA-007 | Deferred — use CSV | **Deferred — Post-Launch** |
-| CV-DATA-008 | Candidate | **Selected with Limitations** (director names excluded) |
+| CV-DATA-008 | Candidate | **Written — Verified for MVP** (updated 2026-08-16) |
 | CV-DATA-009 | Candidate | **Deferred — Post-Launch** |
 | CV-DATA-010 | Candidate | **Deferred — Post-Launch** |
 | CV-DATA-011 | Candidate | **Deferred — Post-Launch** |
 | CV-DATA-012 | Manual Review Only | **Deferred — Post-Launch** |
-| CV-DATA-013 | Candidate | **Selected with Limitations** |
-| CV-DATA-014 | Candidate | **Selected with Limitations** |
+| CV-DATA-013 | Selected with Limitations | **Deferred — Chart and Product Decision Pending** (updated 2026-08-16) |
+| CV-DATA-014 | Candidate | **Written — Verified for MVP** (updated 2026-08-16) |
 | CV-DATA-015 | Candidate | **Deferred — Post-Launch** |
 | CV-DATA-016 | Manual Review Only | **Deferred — Post-Launch** |
 
@@ -318,13 +326,13 @@ these statuses. See the updated CV-PLAN-003 v0.2.
 
 | # | Issue | Priority | Owner | Status | Notes |
 |---|---|---|---|---|---|
-| 1 | **Confirm exact Statistics Canada table number(s) for CV-DATA-001 (population) and CV-DATA-002 (unemployment/labour force)** | **Critical** | Founder / Product Lead | Open | Must be resolved before CV-DATA-001 and 002 can be marked Selected and fetched. Candidate tables: 17-10-0005-01 (population); 14-10-0287-01 (labour force). Founder / Product Lead must confirm or substitute. |
+| 1 | **Confirm exact Statistics Canada table number(s) for CV-DATA-001 (population) and CV-DATA-002 (unemployment/labour force)** | **Critical** | Founder / Product Lead | **Partially Closed 2026-08-16** | CV-DATA-002: Table 14-10-0287-01 confirmed, written, and verified. CV-DATA-001: deferred — display slot/product decision pending; no table confirmation required until deferred scope is revisited. |
 | 2 | **Confirm exact dataset URLs for CV-DATA-008 (open.canada.ca CRA charities CSV), CV-DATA-013 (data.ontario.ca Ontario Budget), and CV-DATA-014 (data.ontario.ca transfer payments CSV)** | High | Data Lead | Open | Confirm at first data fetch. Dataset URLs may change; confirm at time of fetch and record in CV-REG-001. |
 | 3 | **Confirm reporting periods for all 5 selected datasets** | High | Data Lead | Open | Confirm specific fiscal/calendar year for each at first fetch. |
 | 4 | **Confirm Firestore collection names for all 5 selected datasets** | High | Technical Lead + Data Lead | Open | Required before any Firestore write. Proposed naming convention: `ca_[source_type]_[jurisdiction]` — confirm with Technical Lead. |
 | 5 | **Confirm app display locations for all 5 selected datasets** | High | Product Lead | Open | Required before Firestore write. Which app screen/section/modal will display each dataset? |
 | 6 | **Complete CV-REC-001 for each of the 5 selected datasets at first fetch** | High | Data Lead | Open | One CV-REC-001 per dataset fetch event. Must be completed before Firestore write. |
-| 7 | **Confirm data.ontario.ca CSV/XLSX availability for applicable Ontario budget year (CV-DATA-013)** | Medium | Data Lead | Open | If only PDF is available, assess whether PDF extraction is acceptable or defer to post-launch. |
+| 7 | **Confirm data.ontario.ca CSV/XLSX availability for applicable Ontario budget year (CV-DATA-013)** | Medium | Data Lead | **Deferred — Not a launch blocker** | CV-DATA-013 deferred from MVP launch scope 2026-08-16. Revisit when chart/product decisions are made. |
 
 ---
 
@@ -352,3 +360,4 @@ This decision record is considered active when:
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 0.1 | 2026-08-02 | Founder / Data Lead | Initial decision record — minimum launch scope defined; 5 datasets selected (3 confirmed + 2 pending Statistics Canada table selection); 11 datasets deferred. |
+| 0.2 | 2026-08-16 | Founder / Data Lead | MVP scope finalised to 3 active datasets. CV-DATA-002, CV-DATA-008, and CV-DATA-014 written and verified — status updated to Written — Verified for MVP. CV-DATA-001 reclassified to Deferred (display slot/product decision pending). CV-DATA-013 reclassified to Deferred (chart/product decision pending). Section 3 summary updated. Section 5 deferred list updated (CV-DATA-001 and CV-DATA-013 added). Section 8 verification table updated to show all 3 active datasets fully verified. Section 9 impact table updated. Section 10 open issue 1 partially closed; item 7 deferred. |
