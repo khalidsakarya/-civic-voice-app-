@@ -1,0 +1,249 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Civic Voice — Firestore Security Rules
+// Version: 1.0 (draft — pending Firebase console deployment)
+// Created: 2026-08-15
+// See: compliance/records/CV-SEC-001 Firestore Rules Review.md
+//
+// Structure:
+//   1. Public read-only — Canadian MVP data collections (Admin SDK writes only)
+//   2. Public read-only — Federal / national data collections (Admin SDK writes only)
+//   3. Client-writable — anonymous user interaction collections (narrow field rules)
+//   4. Admin-only — engine / ingestion collections (no client access)
+//   5. Default deny
+// ═══════════════════════════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SECTION 1 — CANADIAN MVP DATA COLLECTIONS
+    // Written exclusively by Admin SDK (engine runner / Cloud Functions).
+    // Public users may read; no client writes permitted.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // CV-DATA-002: Ontario unemployment (Statistics Canada LFS)
+    match /subnational_economic_social_stats/{docId} {
+      allow read:  if true;
+      allow write: if false;
+    }
+
+    // CV-DATA-008: Ontario CRA registered charities
+    match /subnational_tax_exempt_entities/{docId} {
+      allow read:  if true;
+      allow write: if false;
+    }
+
+    // CV-DATA-014: Ontario transfer payments (Public Accounts)
+    match /subnational_grants/{docId} {
+      allow read:  if true;
+      allow write: if false;
+    }
+
+    // Province/state supplemental data (cabinet, bills list, offices)
+    match /subnational_jurisdictions/{docId} {
+      allow read:  if true;
+      allow write: if false;
+    }
+
+    // Provincial bills subcollection
+    match /subnational_bills/{jId}/bills/{billId} {
+      allow read:  if true;
+      allow write: if false;
+    }
+
+    // Leader transparency data — admin-managed, client read allowed
+    match /subnational_leader_transparency/{docId} {
+      allow read:  if true;
+      allow write: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SECTION 2 — FEDERAL / NATIONAL READ-ONLY COLLECTIONS
+    // All written by Admin SDK or engine scripts only.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /members/{docId}               { allow read: if true; allow write: if false; }
+    match /congress_members/{docId}      { allow read: if true; allow write: if false; }
+    match /bills/{docId}                 { allow read: if true; allow write: if false; }
+    match /department_heads/{docId}      { allow read: if true; allow write: if false; }
+    match /senior_advisors/{docId}       { allow read: if true; allow write: if false; }
+    match /leader_profile_data/{docId}   { allow read: if true; allow write: if false; }
+    match /news_alerts/{docId}           { allow read: if true; allow write: if false; }
+    match /federal_departments/{docId}   { allow read: if true; allow write: if false; }
+    match /supreme_court_justices/{docId}{ allow read: if true; allow write: if false; }
+    match /supreme_court_cases/{docId}   { allow read: if true; allow write: if false; }
+    match /elections/{docId}             { allow read: if true; allow write: if false; }
+    match /audit_findings/{docId}        { allow read: if true; allow write: if false; }
+    match /government_contracts/{docId}  { allow read: if true; allow write: if false; }
+    match /surveys/{docId}               { allow read: if true; allow write: if false; }
+    match /vote_counts/{docId}           { allow read: if true; allow write: if false; }
+    match /executive_actions/{docId}     { allow read: if true; allow write: if false; }
+    match /leader_expenses/{docId}       { allow read: if true; allow write: if false; }
+    match /foreign_aid/{docId}           { allow read: if true; allow write: if false; }
+    match /military_spending/{docId}     { allow read: if true; allow write: if false; }
+    match /promise_tracker/{docId}       { allow read: if true; allow write: if false; }
+    match /transparency_scores/{docId}   { allow read: if true; allow write: if false; }
+    match /government_stats/{docId}      { allow read: if true; allow write: if false; }
+    match /social_stats/{docId}          { allow read: if true; allow write: if false; }
+    match /budget_validation/{docId}     { allow read: if true; allow write: if false; }
+    match /budget_data/{docId}           { allow read: if true; allow write: if false; }
+    match /lobbying_correlations/{docId} { allow read: if true; allow write: if false; }
+    match /waste_reports/{docId}         { allow read: if true; allow write: if false; }
+
+    // Member detail collections
+    match /member_bios/{docId}                   { allow read: if true; allow write: if false; }
+    match /member_votes/{docId}                  { allow read: if true; allow write: if false; }
+    match /member_attendance/{docId}             { allow read: if true; allow write: if false; }
+    match /member_committees/{docId}             { allow read: if true; allow write: if false; }
+    match /member_disclosures/{docId}            { allow read: if true; allow write: if false; }
+    match /member_lobbying/{docId}               { allow read: if true; allow write: if false; }
+    match /member_corporate_affiliations/{docId} { allow read: if true; allow write: if false; }
+    match /member_stock_trades/{docId}           { allow read: if true; allow write: if false; }
+    match /member_expenses/{docId}               { allow read: if true; allow write: if false; }
+    match /member_recent_activity/{docId}        { allow read: if true; allow write: if false; }
+
+    // Expense / financial detail collections
+    match /credit_card_spending/{docId}  { allow read: if true; allow write: if false; }
+    match /department_expenses/{docId}   { allow read: if true; allow write: if false; }
+    match /expense_anomalies/{docId}     { allow read: if true; allow write: if false; }
+    match /expense_leaderboard/{docId}   { allow read: if true; allow write: if false; }
+    match /flagged_expenses/{docId}      { allow read: if true; allow write: if false; }
+    match /controversies/{docId}         { allow read: if true; allow write: if false; }
+    match /analytics_data/{docId}        { allow read: if true; allow write: if false; }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SECTION 3 — CLIENT-WRITABLE INTERACTION COLLECTIONS
+    // Anonymous user interaction. No user accounts or authentication.
+    // Field rules applied where practical to limit abuse surface.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // Politician approval votes (one record per interaction)
+    // Fields: politicianId (string), voteType (string), userRegion (string),
+    //         country (string), timestamp (server timestamp)
+    match /citizen_votes/{docId} {
+      allow read:   if false;
+      allow create: if request.resource.data.keys().hasOnly(
+                        ['politicianId', 'voteType', 'userRegion', 'country', 'timestamp']
+                      )
+                    && request.resource.data.politicianId is string
+                    && request.resource.data.voteType    is string
+                    && request.resource.data.country     is string;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // Politician approval vote aggregates (incremented per vote)
+    // Uses merge:true / increment() — needs update permission.
+    // Doc id = politicianId; fields are dynamic vote-type keys + increments.
+    match /vote_counts/{docId} {
+      allow read:   if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // Survey vote increments (merge:true, one field per choice)
+    // Doc id = surveyId; field key = choice string, value = increment
+    match /surveys/{docId} {
+      allow read:   if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // News item votes (one record per interaction)
+    // Fields: newsId (string), voteType (string), userRegion (string),
+    //         country (string), timestamp (server timestamp)
+    match /news_votes/{docId} {
+      allow read:   if false;
+      allow create: if request.resource.data.keys().hasOnly(
+                        ['newsId', 'voteType', 'userRegion', 'country', 'timestamp']
+                      )
+                    && request.resource.data.newsId    is string
+                    && request.resource.data.voteType  is string
+                    && request.resource.data.country   is string;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // News vote aggregates (incremented per vote)
+    // Fields: newsId (string), country (string), updated (timestamp),
+    //         plus dynamic vote-type increment keys
+    match /news_vote_counts/{docId} {
+      allow read:   if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // Department approval votes (merge:true, one doc per dept+jurisdiction)
+    // Fields: jurisdiction (string), department_name (string),
+    //         updated (timestamp), plus dynamic vote-type increment keys
+    match /department_votes/{docId} {
+      allow read:   if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if false;
+    }
+
+    // Anonymous usage analytics — no PII permitted
+    // Fields: event_type (string), country (string|null), region (string|null),
+    //         item_id (string|null), timestamp (string), meta (map, optional)
+    // Client cannot read its own or other records.
+    match /user_events/{docId} {
+      allow read:   if false;
+      allow create: if request.resource.data.keys().hasOnly(
+                        ['event_type', 'country', 'region', 'item_id', 'timestamp', 'meta']
+                      )
+                    && request.resource.data.event_type is string
+                    // Reject any field that looks like a personal identifier
+                    && !('userId'    in request.resource.data)
+                    && !('email'     in request.resource.data)
+                    && !('name'      in request.resource.data)
+                    && !('ip'        in request.resource.data);
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // FCM push notification tokens
+    // Doc id = token string. Fields: token (string), ts (timestamp),
+    // plus one topic boolean field (e.g. 'canada-news': true).
+    // Privacy note: FCM tokens are pseudonymous device identifiers.
+    // Only created when user explicitly enables push notifications.
+    match /fcm_tokens/{tokenId} {
+      allow read:   if false;
+      allow create: if request.resource.data.keys().hasOnly(
+                        ['token', 'ts',
+                         'canada-news', 'us-news', 'uk-news', 'australia-news', 'general-news']
+                      )
+                    && request.resource.data.token is string
+                    && request.resource.data.token == tokenId;
+      allow update: if request.resource.data.keys().hasOnly(
+                        ['token', 'ts',
+                         'canada-news', 'us-news', 'uk-news', 'australia-news', 'general-news']
+                      );
+      allow delete: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SECTION 4 — ADMIN / ENGINE-ONLY COLLECTIONS
+    // These collections are written by Cloud Functions or Admin SDK scripts.
+    // No client read or write permitted.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // Summary stats and aggregation docs maintained by the engine
+    match /summary_stats/{docId} { allow read, write: if false; }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SECTION 5 — DEFAULT DENY
+    // Any collection not explicitly matched above is blocked.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+  }
+}
