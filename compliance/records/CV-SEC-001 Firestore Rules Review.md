@@ -8,7 +8,7 @@
 | **Reviewer** | Founder / Technical Lead |
 | **Related Issues** | CV-ISS-015 |
 | **Related Documents** | CV-SOP-004 · CV-REG-003 |
-| **Status** | **Ready for Review** — rules v1.0 deployed and verified via browser automation 2026-08-15; all read/write/deny checks passed; Canadian MVP UI confirmed functional |
+| **Status** | **Closed** — rules v1.0 deployed, verified, and all residual actions resolved 2026-08-15 |
 
 ---
 
@@ -271,7 +271,7 @@ Verification performed via browser automation against production Firestore (`civ
 
 **18 / 18 — Pass.**
 
-> **Residual action:** Test doc `vote_counts/rules-test-delete-me` was written during verification and cannot be deleted by client (delete rule is `false`). Delete it via Firebase console or Admin SDK before launch.
+> **Residual action resolved 2026-08-15:** Test doc `vote_counts/rules-test-delete-me` deleted via Admin SDK. Confirmed `post-delete exists: false`.
 
 ### 10b. Canadian MVP UI Checks
 
@@ -302,3 +302,4 @@ Verification performed via browser automation against production Firestore (`civ
 | 1.1 | 2026-08-15 | Founder / Technical Lead | `firestore.rules` v1.0 created in app repo. `firebase.json` created with firestore rules config. `.env` added to `.gitignore`. Rules cover 5 categories: Canadian MVP data (3), federal/national read-only (37+), client-writable interaction (8), admin-only (1), default deny. F-001 and F-002 resolved at repo level. F-003 remains open until rules are deployed and verified in Firebase console. |
 | 1.2 | 2026-08-15 | Founder / Technical Lead | `firestore.rules` v1.0 deployed to `civic-voice-5ea94` via `firebase deploy --only firestore:rules`. Compiled successfully, exit code 0. Note: production rules were not exported before deployment — Rules Playground verification required to confirm no regressions. CV-ISS-015 remains In Progress pending that verification step. |
 | 1.3 | 2026-08-15 | Founder / Technical Lead | Post-deployment verification completed via browser automation against production Firestore. All 18 test cases passed (see Section 10). Canadian MVP UI confirmed functional. CV-ISS-015 updated to Ready for Review. One minor residual: test doc `vote_counts/rules-test-delete-me` written during verification — delete via Firebase console or Admin SDK. |
+| 1.4 | 2026-08-15 | Founder / Technical Lead | Test doc `vote_counts/rules-test-delete-me` deleted via Admin SDK (`delete-verification-test-doc.cjs`, engine repo). Confirmed `post-delete exists: false`. All residual actions resolved. CV-ISS-015 closed. Closure note: "Firestore rules v1.0 deployed and verified post-deployment. Prior production ruleset was not exported before deployment; residual risk accepted because post-deployment functional and security verification passed." |
