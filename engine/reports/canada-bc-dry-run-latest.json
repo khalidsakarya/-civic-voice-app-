@@ -1,0 +1,219 @@
+{
+  "run_type": "DRY_RUN",
+  "run_at": "2026-08-16T23:20:06.988Z",
+  "jurisdiction": "CA-BC",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-BC-001",
+      "dataset_name": "Statistics Canada — BC Unemployment (Table 14-10-0287-01)",
+      "statcan_coord_used": "11.7.1.1.1.1.0.0.0.0",
+      "firestore_target": {
+        "collection": "subnational_economic_social_stats",
+        "doc_id": "CA-BC",
+        "path": "subnational_economic_social_stats/CA-BC",
+        "write_mode": "merge"
+      },
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+      "fetched_at": "2026-08-16T23:20:06.988Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Monthly provincial unemployment rate (seasonally adjusted)",
+      "records_fetched": 24,
+      "records_transformed": 24,
+      "fields_to_write": [
+        "unemployment_latest_rate",
+        "unemployment_latest_period",
+        "unemployment_frequency",
+        "unemployment_series_monthly",
+        "unemployment_source_url",
+        "unemployment_source",
+        "unemployment_url",
+        "unemployment_reporting_period",
+        "unemployment_rate",
+        "reporting_period",
+        "data_status"
+      ],
+      "sample_records": [
+        {
+          "period": "2024-08",
+          "period_label": "Aug 2024",
+          "jurisdiction": 5.7,
+          "national_average": 6.6,
+          "British Columbia": 5.7,
+          "CA Average": 6.6
+        },
+        {
+          "period": "2024-09",
+          "period_label": "Sep 2024",
+          "jurisdiction": 5.9,
+          "national_average": 6.5,
+          "British Columbia": 5.9,
+          "CA Average": 6.5
+        },
+        {
+          "period": "2024-10",
+          "period_label": "Oct 2024",
+          "jurisdiction": 5.7,
+          "national_average": 6.6,
+          "British Columbia": 5.7,
+          "CA Average": 6.6
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "unemployment_latest_rate": 6.2,
+      "unemployment_latest_period": "Jul 2026"
+    },
+    {
+      "dataset_id": "CV-DATA-BC-002",
+      "dataset_name": "CRA Charities Registry — BC org-level extract",
+      "firestore_target": {
+        "collection": "subnational_tax_exempt_entities",
+        "doc_id": "CA-BC",
+        "path": "subnational_tax_exempt_entities/CA-BC",
+        "write_mode": "merge"
+      },
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
+      "fetched_at": "2026-08-16T23:20:06.988Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_fetched": 9537,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records"
+      ],
+      "sample_records": [
+        {
+          "name": "ALBERNI VALLEY SENIOR CITIZENS HOMES SOCIETY",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CARIBOO CHRISTIAN LIFE FELLOWSHIP",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CREATION ISIS INC",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "mvp_note": "Name/type/category only — no dollar values per MVP product decision."
+    },
+    {
+      "dataset_id": "CV-DATA-BC-003",
+      "dataset_name": "BC Government Grants / Payments (BC Data Catalogue)",
+      "firestore_target": {
+        "collection": "subnational_grants",
+        "doc_id": "CA-BC",
+        "path": "subnational_grants/CA-BC",
+        "write_mode": "merge"
+      },
+      "source_url": "https://catalogue.data.gov.bc.ca/dataset/crf-detailed-schedules-of-payments-other-supplier-payments",
+      "fetched_at": "2026-08-16T23:20:06.988Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "BC CRF Detailed Schedules of Payments - Other Supplier Payments — FYE 2024 - Suppliers to BC Government",
+      "records_fetched": 5931,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "fiscal_year",
+        "reporting_period",
+        "data_source",
+        "source_url",
+        "resource_url",
+        "discovery_note",
+        "licence",
+        "note",
+        "total_after_filter",
+        "records_stored",
+        "total_raw_top100",
+        "fmt_total_top100",
+        "detected_columns",
+        "all_headers",
+        "raw_first_rows",
+        "records"
+      ],
+      "sample_records": [
+        {
+          "recipientName": "PUBLIC DEBT SERVICING COSTS",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$3.45B",
+          "rawAmount": 3448448271,
+          "date": ""
+        },
+        {
+          "recipientName": "RECEIVER GENERAL FOR CANADA (RCMP OTTAWA)",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$610.29M",
+          "rawAmount": 610290840,
+          "date": ""
+        },
+        {
+          "recipientName": "REVENUE REFUNDS",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$400.82M",
+          "rawAmount": 400823408,
+          "date": ""
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "discovered_source": {
+        "package_title": "Government of British Columbia — CRF Detailed Schedules of Payments - Other Supplier Payments. Open Government Licence - British Columbia.",
+        "source_url": "https://catalogue.data.gov.bc.ca/dataset/crf-detailed-schedules-of-payments-other-supplier-payments",
+        "resource_url": "https://catalogue.data.gov.bc.ca/dataset/f6bad1d5-d1dc-4fdd-a076-650f55cc3fbc/resource/24ec8890-5d43-4115-998d-46481dec3971/download/fye24-other-suppliers.csv",
+        "licence": "Open Government Licence - British Columbia",
+        "discovery_note": "Discovered via CKAN search \"payments suppliers\" — verified CSV URL (not XLSX)"
+      },
+      "detected_columns": {
+        "recipient": "Other Suppliers",
+        "amount": "(empty string)",
+        "ministry": null,
+        "program": null,
+        "type": null,
+        "fiscal_year": null
+      },
+      "all_headers": [
+        "Other Suppliers",
+        ""
+      ],
+      "recommended_modal_label": "Public Payments"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "dry_run_ok": 3,
+    "blocked": 0,
+    "warnings_total": 0
+  }
+}
