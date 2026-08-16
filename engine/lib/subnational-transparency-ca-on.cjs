@@ -224,22 +224,20 @@ async function buildGrants() {
     );
   }
 
-  // 4. Mandatory purpose filter — CV-DATA-014 audit decision (2026-08-04):
-  // Keep only transfer-payment rows. The full Public Accounts CSV includes debt service,
-  // vendor payments, and other non-grant rows. This filter is required before any write.
-  const APPROVED_PURPOSES = new Set([
-    'government transfer',
-    'operating transfer payments',
-    'capital transfer payments',
-  ]);
-  const purposeFilterApplied = !!programCol;
+  // 4. Mandatory category filter — approved decision 2026-08-15:
+  // Use Category = "Transfer Payments" as the primary filter axis.
+  // Payment Detail is NOT used as the primary filter because ~60% of valid transfer-payment
+  // rows have Payment Detail = "No Value". The Category column cleanly separates transfer
+  // payments from Other Payments, Travel Expenses, Statutory Payments, Salaries, and
+  // Employee Benefits. Confirmed via full-dataset analysis of 15,571 rows.
+  const categoryFilterApplied = !!typeCol;
   const withRecipient = rows.filter((r) => trim(r[recipientCol]));
-  const all = purposeFilterApplied
-    ? withRecipient.filter((r) => APPROVED_PURPOSES.has(trim(r[programCol]).toLowerCase()))
-    : withRecipient; // no Payment Detail column — warn but don't block
+  const all = categoryFilterApplied
+    ? withRecipient.filter((r) => /^transfer payments$/i.test(trim(r[typeCol])))
+    : withRecipient; // no Category column — warn but don't block
 
-  if (!purposeFilterApplied) {
-    console.warn('[buildGrants] WARNING: Payment Detail column not found — purpose filter not applied. Review output before writing.');
+  if (!categoryFilterApplied) {
+    console.warn('[buildGrants] WARNING: Category column not found — transfer-payment filter not applied. Review output before writing.');
   }
 
   if (amountCol) {
@@ -257,7 +255,9 @@ async function buildGrants() {
       recipientName: trim(row[recipientCol]) || 'Recipient',
       typeLabel: typeRaw || 'Organization',
       typeColor: 'bg-green-100 text-green-700',
-      purpose: programCol ? trim(row[programCol]) || 'Transfer payment' : 'Transfer payment',
+      purpose: (programCol && trim(row[programCol]) && !/^no value$/i.test(trim(row[programCol])))
+        ? trim(row[programCol])
+        : (typeCol ? trim(row[typeCol]) || 'Transfer Payment' : 'Transfer Payment'),
       dept: ministryCol ? trim(row[ministryCol]) || 'Government of Ontario' : 'Government of Ontario',
       fmtAmount: fmtCompact(amt),
       rawAmount: amt,
@@ -282,11 +282,11 @@ async function buildGrants() {
     data_source:
       'Government of Ontario — Public Accounts: Detailed Schedule of Payments (data.ontario.ca). Ontario.ca Terms of Use.',
     source_url: SOURCES.transferPayments,
-    note: purposeFilterApplied
-      ? 'Top 100 transfer payments by amount. Filtered to: Government Transfer, Operating Transfer Payments, Capital Transfer Payments only. Ontario.ca Terms of Use (not OGL-Ontario).'
-      : 'Top 100 payments by amount. WARNING: purpose filter not applied (Payment Detail column missing). Ontario.ca Terms of Use (not OGL-Ontario). Review before display.',
-    purpose_filter_applied: purposeFilterApplied,
-    approved_purposes: purposeFilterApplied ? [...APPROVED_PURPOSES] : [],
+    note: categoryFilterApplied
+      ? 'Top 100 Ontario transfer payments by amount. Filtered to Category = "Transfer Payments" only. Excludes: Other Payments, Travel Expenses, Statutory Payments, Salaries, Employee Benefits. Ontario.ca Terms of Use (not OGL-Ontario).'
+      : 'Top 100 payments by amount. WARNING: category filter not applied (Category column missing). Ontario.ca Terms of Use (not OGL-Ontario). Review before display.',
+    purpose_filter_applied: categoryFilterApplied,
+    approved_purposes: categoryFilterApplied ? ['Transfer Payments'] : [],
     total_after_filter: all.length,
     records_stored: records.length,
     total_raw_top100: totalRaw,

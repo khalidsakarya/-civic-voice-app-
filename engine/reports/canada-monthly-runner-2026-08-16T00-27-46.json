@@ -1,0 +1,51 @@
+{
+  "run_at": "2026-08-16T00:27:46.892Z",
+  "mode": "dry-run",
+  "jurisdiction": "CA-ON",
+  "datasets_requested": [
+    "CV-DATA-014"
+  ],
+  "grants_purpose_filter": true,
+  "firestore_writes_occurred": false,
+  "summary": {
+    "total": 1,
+    "written": 0,
+    "dry_run": 1,
+    "blocked": 0
+  },
+  "datasets": [
+    {
+      "id": "CV-DATA-014",
+      "status": "DRY-RUN",
+      "meta": {
+        "records_stored": 100,
+        "total_after_filter": 8592,
+        "fiscal_year": "2024-25",
+        "purpose_filter_applied": true,
+        "approved_purposes": [
+          "Transfer Payments"
+        ]
+      },
+      "error": null,
+      "collection": "subnational_grants",
+      "payload_keys": [
+        "fiscal_year",
+        "reporting_period",
+        "data_source",
+        "source_url",
+        "note",
+        "purpose_filter_applied",
+        "approved_purposes",
+        "total_after_filter",
+        "records_stored",
+        "total_raw_top100",
+        "fmt_total_top100",
+        "records",
+        "cv_data_id",
+        "verification_status"
+      ],
+      "verification_id": "CV-REC-2026-08-16-CV-DATA-014",
+      "firestore_path": "subnational_grants/CA-ON"
+    }
+  ]
+}

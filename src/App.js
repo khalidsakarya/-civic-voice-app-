@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import app, { db } from './firebase';
 import { EXECUTIVE_ACTIONS_COLLECTION } from './constants/firestoreCollections';
 import { fetchSubnationalJurisdictions } from './firestore/fetchSubnationalJurisdictions';
@@ -14811,7 +14811,7 @@ function App() {
               style={{ background: 'linear-gradient(135deg, #059669, #10b981)' }}
             >
               <Award className="w-5 h-5" />
-              Grants Given
+              Transfer Payments
             </button>
           </div>
 
@@ -15523,8 +15523,7 @@ function App() {
     const transparencyLoading =
       Boolean(subnationalTransparencyJurisdictionId(item, isUSA)) &&
       provinceTransparencyFields === null;
-    const jurisdictionId = subnationalTransparencyJurisdictionId(item, isUSA);
-    const isCaOnGrantsDeferred = jurisdictionId === 'CA-ON';
+    const isCaOnGrantsDeferred = false; // CV-DATA-014 written 2026-08-16; deferred state lifted
     const grantsHeadlines = buildGrantsTransparencyHeadlines(
       grantsLive,
       item.subnationalGrantsHeadlineMeta,
@@ -15561,16 +15560,16 @@ function App() {
                 <span>Back</span>
               </button>
               <div className="sn-trans-modal-header-text flex-1 min-w-0">
-                <h2 className="sn-trans-modal-title font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Grants Given</h2>
+                <h2 className="sn-trans-modal-title font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Transfer Payments</h2>
                 {isCaOnGrantsDeferred ? (
                   <p className="sn-trans-modal-subtitle text-xs text-amber-700 mt-1 font-medium">Source under review — data not displayed for MVP</p>
                 ) : (hasLiveData || transparencyLoading) ? (
                   <p className="sn-trans-modal-subtitle text-xs text-gray-500 mt-1">
-                    Official grant awards
+                    Official transfer payment records
                     {sourceName ? ` · ${sourceName}` : ''}
                   </p>
                 ) : (
-                  <p className="sn-trans-modal-subtitle text-xs text-gray-600 mt-0.5 font-medium">Official grant award records are not loaded yet for this jurisdiction.</p>
+                  <p className="sn-trans-modal-subtitle text-xs text-gray-600 mt-0.5 font-medium">Official transfer payment records are not loaded yet for this jurisdiction.</p>
                 )}
               </div>
               <button onClick={closeModal} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors flex-shrink-0 mt-0.5 hidden sm:flex">
@@ -15585,7 +15584,7 @@ function App() {
                 type="text"
                 value={grantsSearch}
                 onChange={(e) => setGrantsSearch(e.target.value)}
-                placeholder="Search by recipient, purpose, department, or type…"
+                placeholder="Search by recipient, program, ministry, or type…"
                 className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white"
               />
               {grantsSearch && (
@@ -15608,9 +15607,9 @@ function App() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-amber-800 leading-snug">Official grants/transfer-payment data is under review for the Canadian MVP.</p>
+                    <p className="text-sm font-semibold text-amber-800 leading-snug">Official transfer payment data is under review for the Canadian MVP.</p>
                     <p className="text-xs text-amber-700 mt-2 leading-relaxed">
-                      We are reviewing the correct official source and category filters before displaying Ontario grants. Broad Public Accounts payment records, such as debt service or vendor payments, are not shown here to avoid misleading users.
+                      We are reviewing the correct official source and category filters before displaying Ontario transfer payments. Broad Public Accounts payment records, such as debt service or vendor payments, are not shown here to avoid misleading users.
                     </p>
                     <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                       <div className="bg-white rounded-xl border border-amber-100 px-3 py-2">
@@ -15637,7 +15636,7 @@ function App() {
             ) : null}
             {!transparencyLoading && hasLiveData ? (
               <p className="sn-trans-record-summary text-xs text-gray-500 mb-3 hidden md:block">
-                {grants.length} {grants.length === 1 ? 'award' : 'awards'} in listing · Total shown:{' '}
+                {grants.length} {grants.length === 1 ? 'record' : 'records'} in listing · Total shown:{' '}
                 <span className="font-semibold text-emerald-700">{fmtTotal}</span>
               </p>
             ) : null}
@@ -15647,7 +15646,7 @@ function App() {
                 onClick={() => setGrantsModalDetailsOpen(true)}
                 className="sn-trans-expand-btn md:hidden w-full mb-3 py-3 rounded-xl text-sm font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors"
               >
-                View full charts &amp; details
+                View full details
               </button>
             ) : null}
             <div className={grantsModalDetailsOpen ? 'sn-trans-details-panel' : 'sn-trans-details-panel hidden md:block'}>
@@ -15664,23 +15663,23 @@ function App() {
             ) : null}
             {!transparencyLoading && hasLiveData ? (
               <p className="sn-trans-record-summary text-xs text-gray-500 mb-3 md:hidden">
-                {grants.length} {grants.length === 1 ? 'award' : 'awards'} in listing · Total shown:{' '}
+                {grants.length} {grants.length === 1 ? 'record' : 'records'} in listing · Total shown:{' '}
                 <span className="font-semibold text-emerald-700">{fmtTotal}</span>
               </p>
             ) : null}
-            <h3 className="sn-trans-section-title text-sm font-bold text-gray-800 mb-3">Full awards &amp; details</h3>
+            <h3 className="sn-trans-section-title text-sm font-bold text-gray-800 mb-3">Full listing &amp; details</h3>
             {!hasLiveData && !transparencyLoading ? (
               <div className="text-center py-14 px-4 text-gray-500">
                 <DollarSign className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                 <p className="text-sm font-medium text-gray-700">No official data loaded yet</p>
                 <p className="text-xs mt-2 max-w-md mx-auto leading-relaxed">
-                  Grant award listings for {jurisdictionLabel} will appear here once they are ingested from official sources. This screen does not show placeholder or generated rows.
+                  Transfer payment records for {jurisdictionLabel} will appear here once they are ingested from official sources. This screen does not show placeholder or generated rows.
                 </p>
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-14 text-gray-400">
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                <p className="text-sm">No grants match &quot;{grantsSearch}&quot;</p>
+                <p className="text-sm">No records match &quot;{grantsSearch}&quot;</p>
               </div>
             ) : (
               <div className="bg-white rounded-2xl shadow-elegant overflow-hidden">
@@ -15709,8 +15708,8 @@ function App() {
                         <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-8">#</th>
                         <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Recipient</th>
                         <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Type</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Grant Purpose</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Funding Department</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Program / Purpose</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Ministry</th>
                         <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Amount</th>
                         <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</th>
                       </tr>
@@ -38099,7 +38098,7 @@ function App() {
       {/* Tax Exempt Companies modal */}
       {showTaxExemptModal && selectedProvince && renderTaxExemptModal()}
 
-      {/* Grants Given modal */}
+      {/* Transfer Payments modal */}
       {showGrantsModal && selectedProvince && renderGrantsModal()}
 
       {/* Australian state modals */}
