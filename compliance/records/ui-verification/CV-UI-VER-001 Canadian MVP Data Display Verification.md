@@ -3,12 +3,12 @@
 | Field | Value |
 |---|---|
 | **Verification ID** | CV-UI-VER-001 |
-| **Date** | 2026-08-05 |
+| **Date** | 2026-08-05 (initial) · 2026-08-16 (updated) |
 | **Environment** | Development — localhost:3000 (production-equivalent Firestore data) |
-| **Commit Tested** | 5408e81 |
+| **Commit Tested** | 5408e81 (initial) · f0d2c7d (CV-DATA-014 update) |
 | **Branch** | main |
 | **Tester** | Founder / Data Lead |
-| **Related Datasets** | CV-DATA-002, CV-DATA-008 |
+| **Related Datasets** | CV-DATA-002, CV-DATA-008, CV-DATA-014 |
 | **Related Issues** | CV-ISS-018, CV-ISS-019 |
 | **Related Documents** | CV-REC-001-2026-08-03-CV-DATA-002 · CV-REC-001-2026-08-03-CV-DATA-008 · CV-SOP-001 · CV-PLAN-002 |
 
@@ -18,7 +18,7 @@
 
 This record documents visual verification that Canadian MVP dataset writes are
 correctly displayed in the Civic Voice app UI. Verification was performed against
-live Firestore data written by the monthly runner (commit `b831a0f` / `5408e81`)
+live Firestore data written by the monthly runner (commits `b831a0f` / `5408e81` / `f0d2c7d`)
 using the in-app browser automation tools.
 
 ---
@@ -75,19 +75,19 @@ using the in-app browser automation tools.
 
 ---
 
-### VER-001-04 — Ontario Grants Modal — Misleading Payments Not Shown
+### VER-001-04 — Ontario Transfer Payments Modal — Filtered Records Displayed
 
 | Field | Value |
 |---|---|
-| **Page / Modal Tested** | Ontario Provincial page → Grants modal |
+| **Page / Modal Tested** | Ontario Provincial page → Transfer Payments modal (formerly "Grants") |
 | **Dataset** | CV-DATA-014 (Ontario Public Accounts — Detailed Schedule of Payments) |
 | **Firestore Path** | `subnational_grants/CA-ON` |
-| **Expected Result** | Dataset not written. Grants modal should show no live data for Ontario. No debt service, vendor, or OHIP payments should appear under "Grants". |
-| **Actual Result** | CV-DATA-014 deliberately not written. Replacement source (broad Public Accounts Detailed Schedule of Payments) may be misleading if displayed under "Grants" without additional product decisions on labelling and display context. Purpose filter is implemented in `buildGrants()` (commit `fe39baa`) and confirmed working in dry-run (165 rows pass filter), but no write has been approved pending the product decision. |
-| **Screenshot / Evidence** | Not applicable — dataset not written. Monthly runner dry-run report confirms filter status: `engine/reports/canada-monthly-runner-2026-08-05T00-03-27.json`, CV-DATA-014 status `DRY-RUN`. |
-| **Pass / Fail** | **Blocked — Pending Decision** |
+| **Expected Result** | 100 Ontario transfer payment records displayed. Modal labelled "Transfer Payments". No debt service, vendor payments, employee benefits, salaries, or travel rows present. Category filter (`Category = "Transfer Payments"`) confirmed applied. |
+| **Actual Result** | CV-DATA-014 written to `subnational_grants/CA-ON` at 2026-08-16T00:29:35Z (commit `f0d2c7d`). 100 records from 8,592-row filtered pool (FY 2024-25). Modal button and title renamed from "Grants Given" to "Transfer Payments". Table header renamed from "Grant Purpose / Funding Department" to "Program / Purpose / Ministry". Filter confirmation: `purpose_filter_applied: true`, `approved_purposes: ["Transfer Payments"]`. All excluded categories (Other Payments, Travel Expenses, Statutory Payments, Salaries and Wages, Employee Benefits, Treasury Program) absent from written records. Source note in Firestore: "Filtered to Category = Transfer Payments only." |
+| **Screenshot / Evidence** | Confirmed via write-run report `engine/reports/canada-monthly-runner-2026-08-16T00-29-35.json`: `status: WRITTEN`, `records_stored: 100`, `total_after_filter: 8592`, `purpose_filter_applied: true`. Code review of `src/App.js` commit `f0d2c7d` confirms button label "Transfer Payments" (line ~14814), modal title `{jurisdictionLabel} — Transfer Payments` (line ~15563). Build passed (exit code 0). |
+| **Pass / Fail** | **Pass** |
 | **Reviewer** | Founder |
-| **Notes** | Do not write CV-DATA-014 until a product decision is made on source, labelling, and display context for the Grants modal. Purpose filter code is in place and verified. Write can proceed once the display decision is approved. |
+| **Notes** | Previous status: Blocked — Pending Decision (as of 2026-08-05). Unblocked by: (1) source investigation 2026-08-15 confirming `Category = "Transfer Payments"` cleanly excludes all non-grant rows; (2) approved decision to rename modal from "Grants Given" to "Transfer Payments"; (3) write approved and executed 2026-08-16. Verification ID in Firestore: `CV-REC-2026-08-16-CV-DATA-014`. US/UK/AU modals unaffected. |
 
 ---
 
@@ -113,22 +113,23 @@ using the in-app browser automation tools.
 | VER-001-01 | Ontario Economic modal — unemployment data visible | **Pass** |
 | VER-001-02 | Ontario Tax Exempt / Charities modal — CRA records visible | **Pass** |
 | VER-001-03 | CRA charity financial values — $0 not shown; MVP label shown | **Pass** |
-| VER-001-04 | Ontario Grants modal — misleading payments not shown | **Blocked — Pending Decision** |
+| VER-001-04 | Ontario Transfer Payments modal — filtered records displayed; modal renamed | **Pass** |
 | VER-001-05 | Canada-only scope — US/UK/AU hidden from public navigation | **Pass** |
 
-**Overall: 3 / 5 Pass · 1 Blocked — Pending Decision · 1 dataset group (CV-DATA-001, CV-DATA-013) not yet verified**
+**Overall: 4 / 5 Pass · 1 dataset group (CV-DATA-001, CV-DATA-013) not yet verified**
 
 ---
 
 ## Scope Limitations
 
-The following three datasets are **not written to Firestore** and were not verified in the UI at this step. They remain pending decisions:
+The following two datasets are **not written to Firestore** and were not verified in the UI at this step. They remain pending decisions:
 
 | Dataset | Status | Reason Not Written |
 |---|---|---|
 | CV-DATA-001 — Statistics Canada Population | Not written | Pending display slot and product decision on where Ontario population should appear in the UI |
 | CV-DATA-013 — Ontario Budget (Actual Spending) | Not written | Pending product and chart decision |
-| CV-DATA-014 — Ontario Grants / Transfer Payments | Not written — **deliberately blocked** | Replacement source is the broad Ontario Public Accounts Detailed Schedule of Payments. Displaying this under "Grants" may be misleading because the full file contains debt service and vendor payments in addition to transfer payments. Blocked pending further product decision on source, labelling, and display context. |
+
+CV-DATA-014 (Ontario Transfer Payments) was previously blocked and is now written and verified — see VER-001-04 above.
 
 These items must be resolved before this verification record can be marked complete for all 5 MVP datasets.
 
@@ -139,3 +140,4 @@ These items must be resolved before this verification record can be marked compl
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 1.0 | 2026-08-05 | Founder / Data Lead | Initial record — 5 items verified at commit 5408e81 |
+| 1.1 | 2026-08-16 | Founder / Data Lead | VER-001-04 updated from Blocked to Pass. CV-DATA-014 written to Firestore (commit f0d2c7d) with Category = "Transfer Payments" filter; modal renamed from "Grants Given" to "Transfer Payments". Summary updated to 4/5 Pass. Scope Limitations updated — CV-DATA-014 removed from blocked list. |
