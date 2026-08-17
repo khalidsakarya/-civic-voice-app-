@@ -2337,7 +2337,8 @@ function App() {
   // Location-based MP finder states
   const [userMP, setUserMP] = useState(null);
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
-  
+  const [ridingSearch, setRidingSearch] = useState('');
+
   // Ministries state
   const [selectedMinistry, setSelectedMinistry] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
@@ -29094,7 +29095,7 @@ function App() {
         </button>
 
         <div className="mb-8 animate-slide-in">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">{countryName} Federal Government</h1>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 text-shadow">{selectedCountry?.name || 'United States'} Federal Government</h1>
           <p className="text-gray-600 text-base sm:text-lg">Explore different aspects of federal governance</p>
           <div className="w-24 h-1 bg-gradient-blue mt-3 rounded-full"></div>
         </div>
@@ -35443,7 +35444,6 @@ function App() {
 
   // Manual riding selector if location fails
   const renderRidingSelector = () => {
-    const [ridingSearch, setRidingSearch] = useState('');
     const allRidings = Array.from(new Set(mps.map(mp => mp.riding))).sort();
     const filteredRidings = ridingSearch 
       ? allRidings.filter(r => r.toLowerCase().includes(ridingSearch.toLowerCase()))

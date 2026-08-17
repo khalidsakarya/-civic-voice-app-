@@ -406,7 +406,7 @@ function DetailGiftsHospitality({ row }) {
         <div>
           <p className="text-xs font-semibold text-gray-800 mb-1">Travel payments (Schedule E)</p>
           <ul className="space-y-2">
-            {travel.map((t, i) => (
+            {gh.travel_payments.map((t, i) => (
               <li key={i} className="text-xs border border-gray-200 rounded-lg p-2.5 bg-gray-50">
                 <p className="font-medium text-gray-900">{t.source}</p>
                 <p className="text-gray-700">{t.purpose}</p>
