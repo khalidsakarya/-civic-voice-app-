@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  LEADER_TRANSPARENCY_SECTION_LABELS,
   leaderTransparencySectionLoaded,
 } from '../utils/subnationalLeaderTransparency';
 
@@ -88,14 +87,10 @@ function StatusBlock({ data, sourceUrl }) {
 }
 
 export default function SubnationalLeaderTransparencySections({ transparencyRow, loading }) {
-  const sectionOrder = Object.keys(LEADER_TRANSPARENCY_SECTION_LABELS);
   const sourceUrl = (key) => {
     const fs = transparencyRow?.field_sources;
     return fs && typeof fs === 'object' ? fs[key] : '';
   };
-
-  // Extra sections not in LEADER_TRANSPARENCY_SECTION_LABELS but present in new data
-  const extraSections = ['lobbying', 'net_worth'];
 
   return (
     <section>

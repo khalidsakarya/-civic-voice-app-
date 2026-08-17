@@ -191,21 +191,6 @@ function TransparencyAccordion({ id, title, subtitle, open, onToggle, children, 
   );
 }
 
-function giftsBlock(row) {
-  if (row?.gifts_hospitality && typeof row.gifts_hospitality === 'object') {
-    return row.gifts_hospitality;
-  }
-  if (Array.isArray(row?.conflict_disclosures) && row.conflict_disclosures.length > 0) {
-    return {
-      gifts: row.conflict_disclosures,
-      gift_count: row.conflict_disclosures.length,
-      travel_payments: [],
-      travel_count: 0,
-    };
-  }
-  return null;
-}
-
 function DetailSalary({ row }) {
   const sal = row?.salary;
   const src = row?.field_sources?.salary;

@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  LEADER_TRANSPARENCY_SECTION_LABELS,
   leaderTransparencySectionLoaded,
 } from '../utils/subnationalLeaderTransparency';
 

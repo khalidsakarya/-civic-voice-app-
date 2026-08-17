@@ -3,7 +3,6 @@ import { ChevronDown } from 'lucide-react';
 import {
   US_CA_TRANSPARENCY_SECTIONS,
   FRAMEWORK_ONLY_NOTE,
-  NOT_DISCLOSED_LABEL,
   REPORTED_HOLDINGS_LABEL,
   buildUsCaTransparencySummaryCards,
   buildUsCaQuickStats,
@@ -52,49 +51,6 @@ function ResultRow({ label, value }) {
 function cell(v) {
   const s = v == null ? '' : String(v).trim();
   return s || '—';
-}
-
-function ReportedHoldingsTable({ rows, caption }) {
-  if (!Array.isArray(rows) || !rows.length) return null;
-  return (
-    <div className="mt-2">
-      {caption && <p className="text-xs font-semibold text-gray-800 mb-1.5">{caption}</p>}
-      <div className="overflow-x-auto -mx-1 px-1">
-        <table className="w-full min-w-[640px] text-[11px] sm:text-xs border border-gray-200 rounded-lg overflow-hidden">
-          <thead className="bg-gray-100 text-left">
-            <tr>
-              <th className="px-2 py-1.5 font-semibold text-gray-700">Asset / entity</th>
-              <th className="px-2 py-1.5 font-semibold text-gray-700">Sched.</th>
-              <th className="px-2 py-1.5 font-semibold text-gray-700">Type</th>
-              <th className="px-2 py-1.5 font-semibold text-gray-700">Value range</th>
-              <th className="px-2 py-1.5 font-semibold text-gray-700">Income range</th>
-              <th className="px-2 py-1.5 font-semibold text-gray-700">Trust / entity</th>
-              <th className="px-2 py-1.5 font-semibold text-gray-700">Pg</th>
-              <th className="px-2 py-1.5 font-semibold text-gray-700">Ticker</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 bg-white">
-            {rows.map((r, i) => (
-              <tr key={`${r.schedule}-${r.asset_or_entity_name}-${r.page_number}-${i}`} className="align-top">
-                <td className="px-2 py-1.5 text-gray-900 max-w-[10rem]">{cell(r.asset_or_entity_name)}</td>
-                <td className="px-2 py-1.5 text-gray-700 whitespace-nowrap">{cell(r.schedule)}</td>
-                <td className="px-2 py-1.5 text-gray-600 max-w-[8rem]">{cell(r.asset_type)}</td>
-                <td className="px-2 py-1.5 text-gray-800 whitespace-nowrap">{cell(r.value_range)}</td>
-                <td className="px-2 py-1.5 text-gray-800 whitespace-nowrap">{cell(r.income_range)}</td>
-                <td className="px-2 py-1.5 text-gray-600 max-w-[8rem]">{cell(r.trust_entity_name)}</td>
-                <td className="px-2 py-1.5 text-gray-500">{r.page_number != null ? r.page_number : '—'}</td>
-                <td className="px-2 py-1.5 text-gray-500">{cell(r.ticker)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="text-[10px] text-gray-500 mt-1.5 leading-relaxed">
-        Share counts, exact tickers, and purchase amounts: {NOT_DISCLOSED_LABEL} Transaction dates only
-        when shown on the official Form 700 filing.
-      </p>
-    </div>
-  );
 }
 
 function LobbyingRecordsTable({ rows }) {
