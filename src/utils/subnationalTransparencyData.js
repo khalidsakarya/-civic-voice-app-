@@ -1079,6 +1079,9 @@ export function buildTransparencyFieldsFromModalDocs(docs, jurisdictionName, isU
         recordsStored: numOrNull(taxDoc.records_stored),
         totalInSource: numOrNull(taxDoc.total_in_source),
         cvDataId: trimStr(taxDoc.cv_data_id) || null,
+        dataSource: trimStr(taxDoc.data_source) || null,
+        sourceUrl: trimStr(taxDoc.source_url) || null,
+        note: trimStr(taxDoc.note) || null,
       };
     }
   }
@@ -1146,6 +1149,61 @@ export function economicSocialFromExplorerItem(item, isUSA) {
     trimStr(item.displayName || item.name),
     isUSA,
   );
+}
+
+/** Text fragments that identify a CRA Charities Directorate extract regardless of jurisdiction. */
+const CRA_CHARITIES_TEXT_RE =
+  /cra charities|charities directorate|canada revenue agency.*charit|registered charit(y|ies)|open\.canada\.ca.*charit/i;
+
+/** Known CRA charity dataset ids. Extend this set as new provinces/territories are added. */
+const KNOWN_CRA_CHARITIES_CV_DATA_IDS = new Set(['CV-DATA-008', 'CV-DATA-BC-002']);
+
+/** Exemption-type labels used only by the CRA charities transform (see engine `CRA_DESIG` map). */
+const CRA_CHARITY_DESIGNATION_LABELS = new Set([
+  'Charitable Organization',
+  'Private Foundation',
+  'Public Foundation',
+  'Qualified Donee',
+]);
+
+/**
+ * True when a tax-exempt-entities dataset is a CRA Charities Directorate extract — for any
+ * Canadian jurisdiction, not just Ontario. Used to suppress dollar-value display (MVP: CRA
+ * charity records intentionally carry `rawValue: 0`, no financial figures are published).
+ *
+ * Detection order:
+ *   1. Known `cv_data_id` (explicit allowlist — fast path for existing datasets).
+ *   2. Any `cv_data_id` starting with `CV-DATA-` combined with CRA-identifying text in the
+ *      dataset's source/attribution fields.
+ *   3. CRA-identifying text alone, in `dataSource`, `sourceUrl`, `sourceName`, or `note`.
+ *   4. Structural fallback: every record has a CRA-style designation label AND `rawValue` is
+ *      zero/absent on all records (the MVP no-dollar-values convention for CRA data).
+ *
+ * @param {{ cvDataId?: string|null, dataSource?: string|null, sourceUrl?: string|null, sourceName?: string|null, note?: string|null }|null|undefined} meta
+ * @param {Array<{ exemType?: string, rawValue?: number }>|null|undefined} records
+ * @returns {boolean}
+ */
+export function isCraCharitiesDataset(meta, records) {
+  const cvDataId = trimStr(meta?.cvDataId);
+  const dataSource = trimStr(meta?.dataSource);
+  const sourceUrl = trimStr(meta?.sourceUrl);
+  const sourceName = trimStr(meta?.sourceName);
+  const note = trimStr(meta?.note);
+
+  if (cvDataId && KNOWN_CRA_CHARITIES_CV_DATA_IDS.has(cvDataId)) return true;
+
+  const haystack = [dataSource, sourceUrl, sourceName, note].filter(Boolean).join(' ');
+  if (haystack && CRA_CHARITIES_TEXT_RE.test(haystack)) return true;
+
+  if (Array.isArray(records) && records.length) {
+    const allZeroOrMissingValue = records.every((r) => !r || !(Number(r.rawValue) > 0));
+    const hasCraDesignation = records.some(
+      (r) => r && CRA_CHARITY_DESIGNATION_LABELS.has(trimStr(r.exemType)),
+    );
+    if (allZeroOrMissingValue && hasCraDesignation) return true;
+  }
+
+  return false;
 }
 
 /** @param {Record<string, unknown>|null|undefined} item */

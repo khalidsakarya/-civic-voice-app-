@@ -22,6 +22,7 @@ import { formatExecutiveOrderDisplayDate } from './utils/executiveOrderDates';
 import {
   economicSocialFromExplorerItem,
   taxExemptFromExplorerItem,
+  isCraCharitiesDataset,
   grantsGivenFromExplorerItem,
   formatCurrencyCompact,
   REPORTING_PERIOD_NOT_SPECIFIED,
@@ -15327,7 +15328,8 @@ function App() {
 
     const totalRaw = companies.reduce((s, c) => s + c.rawValue, 0);
     const fmtTotal = formatCurrencyCompact(totalRaw);
-    const isCraCharities = item.subnationalTaxHeadlineMeta?.cvDataId === 'CV-DATA-008';
+    const taxHeadlineMeta = item.subnationalTaxHeadlineMeta;
+    const isCraCharities = isCraCharitiesDataset(taxHeadlineMeta, companies);
 
     const closeModal = () => { setShowTaxExemptModal(false); setTaxExemptSearch(''); };
 
@@ -15350,8 +15352,10 @@ function App() {
                 <h2 className="sn-trans-modal-title font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Tax Exempt / Charities</h2>
                 {(hasLiveData || transparencyLoading) ? (
                   <p className="sn-trans-modal-subtitle text-xs text-gray-500 mt-1">
-                    Official registry listing
-                    {sourceName ? ` · ${sourceName}` : ''}
+                    {isCraCharities ? 'CRA Charities Registry' : 'Official registry listing'}
+                    {isCraCharities
+                      ? ` · ${taxHeadlineMeta?.dataSource || 'Canada Revenue Agency — Charities Directorate'}`
+                      : (sourceName ? ` · ${sourceName}` : '')}
                   </p>
                 ) : (
                   <p className="sn-trans-modal-subtitle text-xs text-gray-600 mt-0.5 font-medium">Official tax-exempt company records are not loaded yet for this jurisdiction.</p>
