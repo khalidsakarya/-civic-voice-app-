@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Document ID** | CV-RPT-002 |
-| **Version** | 1.0 |
+| **Version** | 1.1 |
 | **Status** | Final |
 | **Author** | Founder / Technical Lead |
 | **Date** | 2026-08-16 |
@@ -155,7 +155,7 @@ Data not collected: Name, Email, Phone, Address, Health, Financial, Contacts, Br
 | Warning | Source | Assessment |
 |---|---|---|
 | `permission-denied` on `summary_stats` | `fetchSummaryStatsDashboard` tries to read `summary_stats` | **Expected and intentional.** `summary_stats` is admin-only in Firestore rules v1.0. App handles silently with `console.warn`. Not user-visible. |
-| `The query requires an index` on `news_alerts` | `[CA:notifs]` news feed query | **Functional gap.** Canada news feed fails silently due to missing composite Firestore index on `(country, timestamp)`. See CV-ISS-020. |
+| `The query requires an index` on `news_alerts` | `[CA:notifs]` news feed query | **Resolved 2026-08-23.** Composite index `(country, timestamp)` deployed and confirmed `READY`. See CV-ISS-020 (Closed). |
 
 ---
 
@@ -286,10 +286,9 @@ a static hosted version of CV-POL-001).
 
 | Issue | Title | Notes |
 |---|---|---|
-| CV-ISS-020 | Canada news feed — missing Firestore composite index | `news_alerts` query on `(country, timestamp)` requires a composite index. News feed fails silently for Canadian users. Create index in Firebase console using the link in the browser error message. |
 | CV-ISS-011 | Public Data Sources page route | Production URL for sources page not yet confirmed |
 
-### 10.3 Known Issues — Accepted / Not Blockers
+### 10.3 Known Issues — Accepted / Not Blockers / Resolved
 
 | Item | Status |
 |---|---|
@@ -297,6 +296,7 @@ a static hosted version of CV-POL-001).
 | `.env` double-entry in `.gitignore` | Harmless — git deduplicates ignore rules |
 | FCM web API key in `firebase-messaging-sw.js` | Web client key — not a server secret; acceptable |
 | Pre-deployment Firestore rules export not available | Residual risk accepted (CV-ISS-015 closure note) |
+| CV-ISS-020 — `news_alerts` missing composite index | **Resolved 2026-08-23.** Index deployed and confirmed `READY`; failing query re-verified directly against Firestore with no error. See CV-REG-003 v1.4. |
 
 ---
 
@@ -316,7 +316,6 @@ blockers:
 2. Privacy Policy and Terms of Use must undergo legal review and be published at a live URL (CV-ISS-013).
 3. App Store privacy labels must be completed accurately (CV-ISS-012).
 4. A live support URL must be available before App Store submission (requires CV-ISS-002).
-5. Canada news feed composite Firestore index should be created before public launch (CV-ISS-020).
 
 Once CV-ISS-001–004 are resolved and CV-ISS-012 and CV-ISS-013 follow, the app is
 expected to be ready for App Store submission.
@@ -328,3 +327,4 @@ expected to be ready for App Store submission.
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 1.0 | 2026-08-16 | Founder / Technical Lead | Initial report — approval-readiness hardening pass complete |
+| 1.1 | 2026-08-23 | Founder / Technical Lead | CV-ISS-020 resolved and moved out of the blocker lists (§7.1, §10.2 → §10.3, §11). Composite index deployed, confirmed `READY`, and the previously failing query re-verified directly against Firestore with no error. |
