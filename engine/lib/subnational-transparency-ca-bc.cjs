@@ -255,6 +255,30 @@ async function discoverBcGrantsSource() {
   );
 }
 
+/**
+ * Recipient names that are accounting-category aggregates in the BC CRF Other Supplier
+ * Payments schedule, not real payees — e.g. "PUBLIC DEBT SERVICING COSTS" is a budget line
+ * for interest payments, not a company or organization. Exact-match (case-insensitive,
+ * trimmed) on purpose: broad substring/regex matching risks excluding real vendors whose
+ * names happen to contain a matched word (e.g. a company named "... Revenue Services Ltd").
+ *
+ * Extend this set only with names confirmed (by manual review of the source CSV) to be
+ * accounting buckets rather than identifiable recipients. Do not add municipalities,
+ * authorities, societies, universities, First Nations, or companies here.
+ */
+const BC_ACCOUNTING_AGGREGATE_PAYEES = new Set([
+  'PUBLIC DEBT SERVICING COSTS',
+  'REVENUE REFUNDS',
+  'MISCELLANEOUS',
+]);
+
+/** @param {string} name */
+function isBcAccountingAggregatePayee(name) {
+  const n = trim(name).toUpperCase();
+  if (!n) return false;
+  return BC_ACCOUNTING_AGGREGATE_PAYEES.has(n);
+}
+
 async function buildGrants() {
   // 1. Discover source dynamically
   const discovered = await discoverBcGrantsSource();
@@ -314,13 +338,25 @@ async function buildGrants() {
     return true;
   });
 
+  // 4b. Exclude accounting-category aggregate rows (not real payees) before sorting/display.
+  const recordCountBeforeAggregateFilter = withRecipient.length;
+  const excludedAggregatePayees = [];
+  const filtered = withRecipient.filter((r) => {
+    const name = trim(r[recipientCol]);
+    if (isBcAccountingAggregatePayee(name)) {
+      excludedAggregatePayees.push(name);
+      return false;
+    }
+    return true;
+  });
+
   // 5. Sort by amount descending (if amount column present)
   // Use != null check — amountCol may be "" (empty string header) which is falsy but valid
   if (amountCol != null) {
-    withRecipient.sort((a, b) => parseMoneyish(b[amountCol] || '0') - parseMoneyish(a[amountCol] || '0'));
+    filtered.sort((a, b) => parseMoneyish(b[amountCol] || '0') - parseMoneyish(a[amountCol] || '0'));
   }
 
-  const top = withRecipient.slice(0, MAX_RECORDS);
+  const top = filtered.slice(0, MAX_RECORDS);
   let totalRaw = 0;
   const records = top.map((row) => {
     const amt = (amountCol != null) ? parseMoneyish(row[amountCol] || '') : 0;
@@ -363,8 +399,11 @@ async function buildGrants() {
     resource_url: discovered.resourceUrl,
     discovery_note: discovered.note,
     licence: discovered.licence,
-    note: `Top 100 BC government payments by amount. Source: ${discovered.packageTitle}. ${discovered.licence}.`,
-    total_after_filter: withRecipient.length,
+    note: `Top 100 BC government payments by amount, excluding accounting-category aggregate rows (e.g. debt servicing costs, revenue refunds). Source: ${discovered.packageTitle}. ${discovered.licence}.`,
+    total_before_aggregate_filter: recordCountBeforeAggregateFilter,
+    aggregate_rows_excluded_count: excludedAggregatePayees.length,
+    aggregate_rows_excluded: [...new Set(excludedAggregatePayees)],
+    total_after_filter: filtered.length,
     records_stored: records.length,
     total_raw_top100: totalRaw,
     fmt_total_top100: fmtCompact(totalRaw),
@@ -393,4 +432,5 @@ module.exports = {
   buildTax,
   buildGrants,
   discoverBcGrantsSource,
+  isBcAccountingAggregatePayee,
 };

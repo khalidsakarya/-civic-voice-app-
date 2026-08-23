@@ -1,6 +1,6 @@
 {
   "run_type": "DRY_RUN",
-  "run_at": "2026-08-16T23:20:06.988Z",
+  "run_at": "2026-08-23T23:37:12.818Z",
   "jurisdiction": "CA-BC",
   "datasets": [
     {
@@ -14,56 +14,20 @@
         "write_mode": "merge"
       },
       "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
-      "fetched_at": "2026-08-16T23:20:06.988Z",
-      "status": "DRY_RUN_OK",
-      "error": null,
-      "reporting_period": "Monthly provincial unemployment rate (seasonally adjusted)",
-      "records_fetched": 24,
-      "records_transformed": 24,
-      "fields_to_write": [
-        "unemployment_latest_rate",
-        "unemployment_latest_period",
-        "unemployment_frequency",
-        "unemployment_series_monthly",
-        "unemployment_source_url",
-        "unemployment_source",
-        "unemployment_url",
-        "unemployment_reporting_period",
-        "unemployment_rate",
-        "reporting_period",
-        "data_status"
+      "fetched_at": "2026-08-23T23:37:12.818Z",
+      "status": "BLOCKED",
+      "error": "No economic payload returned — coordinate may be wrong or API returned no data",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [
+        "unemployment: read ECONNRESET",
+        "Coord attempted: 11.7.1.1.1.1.0.0.0.0"
       ],
-      "sample_records": [
-        {
-          "period": "2024-08",
-          "period_label": "Aug 2024",
-          "jurisdiction": 5.7,
-          "national_average": 6.6,
-          "British Columbia": 5.7,
-          "CA Average": 6.6
-        },
-        {
-          "period": "2024-09",
-          "period_label": "Sep 2024",
-          "jurisdiction": 5.9,
-          "national_average": 6.5,
-          "British Columbia": 5.9,
-          "CA Average": 6.5
-        },
-        {
-          "period": "2024-10",
-          "period_label": "Oct 2024",
-          "jurisdiction": 5.7,
-          "national_average": 6.6,
-          "British Columbia": 5.7,
-          "CA Average": 6.6
-        }
-      ],
-      "warnings": [],
-      "ui_renderable": true,
-      "safe_to_write_after_review": true,
-      "unemployment_latest_rate": 6.2,
-      "unemployment_latest_period": "Jul 2026"
+      "ui_renderable": false,
+      "safe_to_write_after_review": false
     },
     {
       "dataset_id": "CV-DATA-BC-002",
@@ -75,7 +39,7 @@
         "write_mode": "merge"
       },
       "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
-      "fetched_at": "2026-08-16T23:20:06.988Z",
+      "fetched_at": "2026-08-23T23:37:12.818Z",
       "status": "DRY_RUN_OK",
       "error": null,
       "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
@@ -128,11 +92,11 @@
         "write_mode": "merge"
       },
       "source_url": "https://catalogue.data.gov.bc.ca/dataset/crf-detailed-schedules-of-payments-other-supplier-payments",
-      "fetched_at": "2026-08-16T23:20:06.988Z",
+      "fetched_at": "2026-08-23T23:37:12.818Z",
       "status": "DRY_RUN_OK",
       "error": null,
-      "reporting_period": "BC CRF Detailed Schedules of Payments - Other Supplier Payments — FYE 2024 - Suppliers to BC Government",
-      "records_fetched": 5931,
+      "reporting_period": "BC CRF Detailed Schedules of Payments - Other Supplier Payments — FYE 2026 - Suppliers to BC Government",
+      "records_fetched": 4891,
       "records_transformed": 100,
       "fields_to_write": [
         "jurisdiction_id",
@@ -144,6 +108,9 @@
         "discovery_note",
         "licence",
         "note",
+        "total_before_aggregate_filter",
+        "aggregate_rows_excluded_count",
+        "aggregate_rows_excluded",
         "total_after_filter",
         "records_stored",
         "total_raw_top100",
@@ -155,13 +122,13 @@
       ],
       "sample_records": [
         {
-          "recipientName": "PUBLIC DEBT SERVICING COSTS",
+          "recipientName": "DRAGADOS CANADA, INC.SKYLINK TRANSIT LIMITED PARTNERSHIP",
           "typeLabel": "Grant",
           "typeColor": "bg-green-100 text-green-700",
           "purpose": "Government Grant",
           "dept": "Government of British Columbia",
-          "fmtAmount": "$3.45B",
-          "rawAmount": 3448448271,
+          "fmtAmount": "$776.25M",
+          "rawAmount": 776254264,
           "date": ""
         },
         {
@@ -170,18 +137,18 @@
           "typeColor": "bg-green-100 text-green-700",
           "purpose": "Government Grant",
           "dept": "Government of British Columbia",
-          "fmtAmount": "$610.29M",
-          "rawAmount": 610290840,
+          "fmtAmount": "$689.95M",
+          "rawAmount": 689945569,
           "date": ""
         },
         {
-          "recipientName": "REVENUE REFUNDS",
+          "recipientName": "AE B C GRANTS",
           "typeLabel": "Grant",
           "typeColor": "bg-green-100 text-green-700",
           "purpose": "Government Grant",
           "dept": "Government of British Columbia",
-          "fmtAmount": "$400.82M",
-          "rawAmount": 400823408,
+          "fmtAmount": "$502.63M",
+          "rawAmount": 502629185,
           "date": ""
         }
       ],
@@ -191,7 +158,7 @@
       "discovered_source": {
         "package_title": "Government of British Columbia — CRF Detailed Schedules of Payments - Other Supplier Payments. Open Government Licence - British Columbia.",
         "source_url": "https://catalogue.data.gov.bc.ca/dataset/crf-detailed-schedules-of-payments-other-supplier-payments",
-        "resource_url": "https://catalogue.data.gov.bc.ca/dataset/f6bad1d5-d1dc-4fdd-a076-650f55cc3fbc/resource/24ec8890-5d43-4115-998d-46481dec3971/download/fye24-other-suppliers.csv",
+        "resource_url": "https://catalogue.data.gov.bc.ca/dataset/f6bad1d5-d1dc-4fdd-a076-650f55cc3fbc/resource/5345a4b9-a68c-4f80-b6f6-a6d01fe4db27/download/fye26-other-suppliers.csv",
         "licence": "Open Government Licence - British Columbia",
         "discovery_note": "Discovered via CKAN search \"payments suppliers\" — verified CSV URL (not XLSX)"
       },
@@ -207,13 +174,221 @@
         "Other Suppliers",
         ""
       ],
-      "recommended_modal_label": "Public Payments"
+      "recommended_modal_label": "Public Payments",
+      "total_before_aggregate_filter": 4893,
+      "aggregate_rows_excluded_count": 2,
+      "aggregate_rows_excluded": [
+        "MISCELLANEOUS",
+        "PUBLIC DEBT SERVICING COSTS"
+      ],
+      "top_20_after_filter": [
+        {
+          "recipientName": "DRAGADOS CANADA, INC.SKYLINK TRANSIT LIMITED PARTNERSHIP",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$776.25M",
+          "rawAmount": 776254264,
+          "date": ""
+        },
+        {
+          "recipientName": "RECEIVER GENERAL FOR CANADA (RCMP OTTAWA)",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$689.95M",
+          "rawAmount": 689945569,
+          "date": ""
+        },
+        {
+          "recipientName": "AE B C GRANTS",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$502.63M",
+          "rawAmount": 502629185,
+          "date": ""
+        },
+        {
+          "recipientName": "BRITISH COLUMBIA HOUSING MANAGEMENT COMMISSION",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$498.60M",
+          "rawAmount": 498595711,
+          "date": ""
+        },
+        {
+          "recipientName": "Z/FC PUBLIC SERVICE SUPERANNUATION FUND",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$333.77M",
+          "rawAmount": 333774155,
+          "date": ""
+        },
+        {
+          "recipientName": "BROADWAY SUBWAY PROJECT CORPORATION",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$288.37M",
+          "rawAmount": 288374287,
+          "date": ""
+        },
+        {
+          "recipientName": "THE CANADA LIFE ASSURANCE COMPANY",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$287.68M",
+          "rawAmount": 287676531,
+          "date": ""
+        },
+        {
+          "recipientName": "BRITISH COLUMBIA FERRY SERVICES INC.",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$251.12M",
+          "rawAmount": 251124320,
+          "date": ""
+        },
+        {
+          "recipientName": "CBRE LIMITED",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$239.80M",
+          "rawAmount": 239797856,
+          "date": ""
+        },
+        {
+          "recipientName": "RECEIVER GENERAL FOR CANADA",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$227.72M",
+          "rawAmount": 227723729,
+          "date": ""
+        },
+        {
+          "recipientName": "ACCIONA INFRASTRUCTURE CANADA INC., POMERLEAU BC INC., ET AL",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$190.11M",
+          "rawAmount": 190105226,
+          "date": ""
+        },
+        {
+          "recipientName": "SOUTH COAST BRITISH COLUMBIA TRANSPORTATION AUTHORITY",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$170.51M",
+          "rawAmount": 170514606,
+          "date": ""
+        },
+        {
+          "recipientName": "FRASER CROSSING PROJECT CORPORATION",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$143.89M",
+          "rawAmount": 143894678,
+          "date": ""
+        },
+        {
+          "recipientName": "CROSS FRASER PARTNERSHIP",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$143.19M",
+          "rawAmount": 143188050,
+          "date": ""
+        },
+        {
+          "recipientName": "KSV RESTRUCTURING INC.",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$130.41M",
+          "rawAmount": 130406712,
+          "date": ""
+        },
+        {
+          "recipientName": "ESIT ADVANCED SOLUTIONS INC.",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$113.35M",
+          "rawAmount": 113351339,
+          "date": ""
+        },
+        {
+          "recipientName": "DAWSON ROAD MAINTENANCE LTD.",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$111.80M",
+          "rawAmount": 111804064,
+          "date": ""
+        },
+        {
+          "recipientName": "WESTERN HIGHWAYS AND INFRASTRUCTURE INC.",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$105.95M",
+          "rawAmount": 105953144,
+          "date": ""
+        },
+        {
+          "recipientName": "EMIL ANDERSON CONSTRUCTION (EAC) INC., KIEWIT INFRASTRUCTURE BC ULC",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$103.50M",
+          "rawAmount": 103503935,
+          "date": ""
+        },
+        {
+          "recipientName": "GREATER VANCOUVER SEWERAGE & DRAINAGE DISTRICT",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$101.27M",
+          "rawAmount": 101274730,
+          "date": ""
+        }
+      ]
     }
   ],
   "summary": {
     "total": 3,
-    "dry_run_ok": 3,
-    "blocked": 0,
-    "warnings_total": 0
+    "dry_run_ok": 2,
+    "blocked": 1,
+    "warnings_total": 2
   }
 }

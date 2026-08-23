@@ -223,6 +223,10 @@ async function runGrants() {
     detected_columns: null,
     all_headers: null,
     recommended_modal_label: null,
+    total_before_aggregate_filter: null,
+    aggregate_rows_excluded_count: null,
+    aggregate_rows_excluded: null,
+    top_20_after_filter: [],
   };
 
   try {
@@ -279,6 +283,11 @@ async function runGrants() {
     result.fields_to_write = topKeys(doc);
     result.ui_renderable = true;
     result.safe_to_write_after_review = true;
+
+    result.total_before_aggregate_filter = doc.total_before_aggregate_filter ?? null;
+    result.aggregate_rows_excluded_count = doc.aggregate_rows_excluded_count ?? null;
+    result.aggregate_rows_excluded = doc.aggregate_rows_excluded || [];
+    result.top_20_after_filter = doc.records.slice(0, 20).map(trimRecord);
 
     // Recommend modal label based on discovered dataset title
     const titleLower = (doc.data_source || '').toLowerCase();
@@ -368,6 +377,8 @@ async function main() {
       console.log(`    source:     ${r.discovered_source.package_title}`);
     if (r.recommended_modal_label)
       console.log(`    modal label: ${r.recommended_modal_label}`);
+    if (r.total_before_aggregate_filter != null)
+      console.log(`    aggregate filter: ${r.total_before_aggregate_filter} before → ${r.aggregate_rows_excluded_count} excluded (${(r.aggregate_rows_excluded || []).join(', ')})`);
     if (r.warnings?.length) console.log(`    warnings:   ${r.warnings.join('; ')}`);
     console.log(`    ui render:  ${r.ui_renderable ? 'yes' : 'no'}`);
     console.log(`    safe write: ${r.safe_to_write_after_review ? 'yes (after review)' : 'no'}`);
