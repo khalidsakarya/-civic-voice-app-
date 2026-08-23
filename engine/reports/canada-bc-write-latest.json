@@ -2,9 +2,7 @@
   "run_type": "FIRESTORE_WRITE",
   "write_at": "2026-08-16T23:27:14.950Z",
   "jurisdiction": "CA-BC",
-  "deliberately_excluded": [
-    "CV-DATA-BC-003 — BC Public Payments — top records include accounting aggregates (PUBLIC DEBT SERVICING COSTS, REVENUE REFUNDS); needs reviewer decision/filter before write"
-  ],
+  "deliberately_excluded": [],
   "datasets": [
     {
       "dataset_id": "CV-DATA-BC-001",
@@ -114,12 +112,166 @@
       "ui_renderable": true,
       "mvp_note": "Name/type/category only. rawValue=0 enforced. No dollar values written.",
       "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5"
+    },
+    {
+      "dataset_id": "CV-DATA-BC-003",
+      "dataset_name": "BC Government Public Payments (BC Data Catalogue — CRF Other Supplier Payments)",
+      "verification_id": "CV-REC-001-2026-08-23-CV-DATA-BC-003",
+      "firestore_path": "subnational_grants/CA-BC",
+      "write_mode": "merge",
+      "write_at": "2026-08-23T23:40:35.187Z",
+      "status": "WRITTEN",
+      "error": null,
+      "reporting_period": "BC CRF Detailed Schedules of Payments - Other Supplier Payments — FYE 2026 - Suppliers to BC Government",
+      "records_written": 100,
+      "aggregate_rows_excluded_count": 2,
+      "aggregate_rows_excluded": [
+        "MISCELLANEOUS",
+        "PUBLIC DEBT SERVICING COSTS"
+      ],
+      "fields_written": [
+        "jurisdiction_id",
+        "fiscal_year",
+        "reporting_period",
+        "data_source",
+        "source_url",
+        "resource_url",
+        "discovery_note",
+        "licence",
+        "note",
+        "total_before_aggregate_filter",
+        "aggregate_rows_excluded_count",
+        "aggregate_rows_excluded",
+        "total_after_filter",
+        "records_stored",
+        "total_raw_top100",
+        "fmt_total_top100",
+        "detected_columns",
+        "all_headers",
+        "raw_first_rows",
+        "records",
+        "verification_status",
+        "licence_note",
+        "cv_data_id",
+        "modal_label",
+        "filter_note",
+        "fetched_at_write"
+      ],
+      "sample_written": [
+        {
+          "recipientName": "DRAGADOS CANADA, INC.SKYLINK TRANSIT LIMITED PARTNERSHIP",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$776.25M",
+          "rawAmount": 776254264,
+          "date": ""
+        },
+        {
+          "recipientName": "RECEIVER GENERAL FOR CANADA (RCMP OTTAWA)",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$689.95M",
+          "rawAmount": 689945569,
+          "date": ""
+        },
+        {
+          "recipientName": "AE B C GRANTS",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$502.63M",
+          "rawAmount": 502629185,
+          "date": ""
+        },
+        {
+          "recipientName": "BRITISH COLUMBIA HOUSING MANAGEMENT COMMISSION",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$498.60M",
+          "rawAmount": 498595711,
+          "date": ""
+        },
+        {
+          "recipientName": "Z/FC PUBLIC SERVICE SUPERANNUATION FUND",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$333.77M",
+          "rawAmount": 333774155,
+          "date": ""
+        },
+        {
+          "recipientName": "BROADWAY SUBWAY PROJECT CORPORATION",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$288.37M",
+          "rawAmount": 288374287,
+          "date": ""
+        },
+        {
+          "recipientName": "THE CANADA LIFE ASSURANCE COMPANY",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$287.68M",
+          "rawAmount": 287676531,
+          "date": ""
+        },
+        {
+          "recipientName": "BRITISH COLUMBIA FERRY SERVICES INC.",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$251.12M",
+          "rawAmount": 251124320,
+          "date": ""
+        },
+        {
+          "recipientName": "CBRE LIMITED",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$239.80M",
+          "rawAmount": 239797856,
+          "date": ""
+        },
+        {
+          "recipientName": "RECEIVER GENERAL FOR CANADA",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Government Grant",
+          "dept": "Government of British Columbia",
+          "fmtAmount": "$227.72M",
+          "rawAmount": 227723729,
+          "date": ""
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "modal_label": "Public Payments",
+      "source_url": "https://catalogue.data.gov.bc.ca/dataset/crf-detailed-schedules-of-payments-other-supplier-payments",
+      "resource_url": "https://catalogue.data.gov.bc.ca/dataset/f6bad1d5-d1dc-4fdd-a076-650f55cc3fbc/resource/5345a4b9-a68c-4f80-b6f6-a6d01fe4db27/download/fye26-other-suppliers.csv",
+      "licence": "Open Government Licence - British Columbia"
     }
   ],
   "summary": {
-    "total_attempted": 2,
-    "written": 2,
+    "total_attempted": 3,
+    "written": 3,
     "failed": 0,
     "warnings_total": 0
-  }
+  },
+  "last_updated": "2026-08-23T23:40:35.187Z"
 }
