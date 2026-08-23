@@ -28739,128 +28739,6 @@ function App() {
   // Transparency banner removed — stub keeps call sites from breaking
   // eslint-disable-next-line no-unused-vars
   const renderTransparencyBanner = (_countryCode) => null;
-  const _transparencyBannerArchive = (countryCode) => {
-    const FALLBACK = {
-      CA: {
-        score: 61, grade: 'C', last_updated: '2026-03-01',
-        verdict: 'Moderate transparency — good disclosure framework, weak enforcement on lobbying and waste.',
-        categories: { Efficiency: 65, Promises: 48, Waste: 58, Military: 62, 'Foreign Aid': 72, Lobbying: 55 },
-      },
-      US: {
-        score: 44, grade: 'D', last_updated: '2026-03-01',
-        verdict: 'Well below average — significant accountability gaps in military spending, lobbying, and promise delivery.',
-        categories: { Efficiency: 40, Promises: 38, Waste: 35, Military: 48, 'Foreign Aid': 52, Lobbying: 42 },
-      },
-      UK: {
-        score: 68, grade: 'B', last_updated: '2026-03-01',
-        verdict: 'Above average — strong public finance rules, but lobbying and military procurement remain opaque.',
-        categories: { Efficiency: 72, Promises: 60, Waste: 65, Military: 58, 'Foreign Aid': 78, Lobbying: 62 },
-      },
-      AU: {
-        score: 63, grade: 'C', last_updated: '2026-03-01',
-        verdict: 'Decent transparency framework — but implementation is inconsistent and lobbying disclosure is weak.',
-        categories: { Efficiency: 68, Promises: 55, Waste: 60, Military: 64, 'Foreign Aid': 70, Lobbying: 58 },
-      },
-    };
-
-    // Rankings by score descending
-    const ALL_SCORES = { CA: 61, US: 44, UK: 68, AU: 63 };
-    const ranked = Object.entries(ALL_SCORES).sort((a, b) => b[1] - a[1]).map(([c]) => c);
-    const rankPos = ranked.indexOf(countryCode) + 1;
-    const rankSuffix = ['', 'st', 'nd', 'rd', 'th'][rankPos] || 'th';
-    const rankLabel = `${rankPos}${rankSuffix} most transparent of 4 countries`;
-
-    const live = transparencyScores[countryCode];
-    const data = live || FALLBACK[countryCode];
-    if (!data) return null;
-
-    const { score, grade, verdict, categories, last_updated } = data;
-
-    const gradeColor = (g) => {
-      if (g === 'A') return { text: '#16a34a', bg: 'rgba(22,163,74,0.15)', border: 'rgba(22,163,74,0.35)', badge: '#16a34a' };
-      if (g === 'B') return { text: '#15803d', bg: 'rgba(21,128,61,0.12)', border: 'rgba(21,128,61,0.3)', badge: '#15803d' };
-      if (g === 'C') return { text: '#d97706', bg: 'rgba(217,119,6,0.12)', border: 'rgba(217,119,6,0.3)', badge: '#d97706' };
-      if (g === 'D') return { text: '#dc2626', bg: 'rgba(220,38,38,0.1)', border: 'rgba(220,38,38,0.3)', badge: '#dc2626' };
-      return { text: '#991b1b', bg: 'rgba(153,27,27,0.12)', border: 'rgba(153,27,27,0.35)', badge: '#991b1b' };
-    };
-    const gc = gradeColor(grade);
-
-    const rankBadgeColor = rankPos === 1 ? '#f59e0b' : rankPos === 2 ? '#94a3b8' : rankPos === 3 ? '#b45309' : '#6b7280';
-
-    const catBarColor = (v) => v >= 70 ? '#16a34a' : v >= 50 ? '#d97706' : '#dc2626';
-
-    const shareId = `transparency-${countryCode}`;
-
-    return (
-      <div className="mb-6 rounded-2xl overflow-hidden shadow-lg" style={{ background: gc.bg, border: `1.5px solid ${gc.border}` }}>
-        <div className="p-5 sm:p-6">
-          {/* Top row: score + grade + ranking + share */}
-          <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-            <div className="flex items-center gap-4">
-              {/* Big score */}
-              <div className="text-center">
-                <div className="font-black leading-none" style={{ fontSize: '3.5rem', color: gc.text }}>{score}</div>
-                <div className="text-xs font-semibold text-gray-400 mt-0.5">out of 100</div>
-              </div>
-              {/* Grade badge */}
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-3xl text-white shadow-md"
-                style={{ background: gc.badge }}
-              >
-                {grade}
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  {/* Ranking badge */}
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold text-white" style={{ background: rankBadgeColor }}>
-                    {rankPos === 1 ? '🥇' : rankPos === 2 ? '🥈' : rankPos === 3 ? '🥉' : '🏅'} {rankLabel}
-                  </span>
-                  {last_updated && liveBadge(last_updated, 'Monthly')}
-                </div>
-              </div>
-            </div>
-            {/* Share + refresh */}
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => fetchTransparencyScores(countryCode)}
-                className="text-xs border border-gray-300 text-gray-500 hover:bg-gray-100 px-2.5 py-1.5 rounded-lg font-semibold transition-all"
-              >
-                {transparencyLoading ? '⏳' : '↻'}
-              </button>
-              <button
-                onClick={(e) => handleShare(e, {
-                  id: shareId,
-                  title: 'Government Transparency Score',
-                  text: `My government scored ${score} out of 100 for transparency 👀 Check Civic Voice`,
-                  url: window.location.href,
-                })}
-                className="flex items-center gap-1.5 text-xs border border-gray-300 text-gray-500 hover:bg-gray-100 px-2.5 py-1.5 rounded-lg font-semibold transition-all"
-              >
-                {copiedShareId === shareId ? <><CheckCircle className="w-3.5 h-3.5 text-green-500" /> Copied!</> : <><Share2 className="w-3.5 h-3.5" /> Share</>}
-              </button>
-            </div>
-          </div>
-
-          {/* Category mini bars */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2.5">
-            {Object.entries(categories).map(([cat, val]) => (
-              <div key={cat}>
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-xs font-semibold text-gray-600">{cat}</span>
-                  <span className="text-xs font-black" style={{ color: catBarColor(val) }}>{val}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                  <div className="h-2 rounded-full transition-all duration-700" style={{ width: `${val}%`, backgroundColor: catBarColor(val) }} />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-xs text-gray-400 mt-3">Transparency Score · Civic Voice AI · Based on public spending, lobbying, promises &amp; military data</p>
-        </div>
-      </div>
-    );
-  };
 
   const renderCategories = () => {
     const isUSA = selectedCountry?.type === 'usa';
@@ -29606,12 +29484,6 @@ function App() {
   };
 
   const renderCaParliament = () => {
-    const caHash = (str) => {
-      let h = 5381;
-      for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0x7fffffff;
-      return h;
-    };
-
     const CA_SENATE_PARTIES = ['ISG', 'Conservative', 'CSG', 'PSG', 'Non-affiliated'];
     const CA_MP_PARTIES = [...new Set(mps.map(m => m.party))].sort();
 
@@ -29886,19 +29758,7 @@ function App() {
   const renderParties = () => {
     const parties = getParties();
     const isUSA = selectedCountry?.type === 'usa';
-    const chamberName = selectedChamber || 'Congress';
     const legislatureName = isUSA ? (selectedChamber ? `U.S. ${selectedChamber}` : 'U.S. Congress') : 'Federal Parliament';
-    const memberTitle = isUSA ? 'Representative' : 'MP';
-    const ridingLabel = isUSA ? 'District' : 'Riding';
-    
-    const totalMembers = parties.reduce((sum, party) => sum + party.count, 0);
-    
-    // Prepare data for pie chart
-    const pieData = parties.map(party => ({
-      name: party.name,
-      value: party.count,
-      percentage: ((party.count / totalMembers) * 100).toFixed(1)
-    }));
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -35671,10 +35531,6 @@ function App() {
     const _cOppose = getVC(_congressVcId, 'oppose');
     const totalVotes = _cSupport + _cOppose;
     const approvalPct = totalVotes > 0 ? Math.round((_cSupport / totalVotes) * 100) : null;
-    const conflictTrades = member.stockTrades?.filter(t => t.conflict) || [];
-    const worthWhenElected = member.financialDisclosure?.worthWhenElected ?? member.financialDisclosure?.initialWorth;
-    const lobbyingList = member.lobbying?.organizations || member.lobbying?.meetings || [];
-    const electedYear = member.financialDisclosure?.electedYear;
 
     const STATE_AREA_CODES = {
       'Alabama':['205','251','256','334','938'],'Alaska':['907'],'Arizona':['480','520','602','623','928'],
@@ -36883,8 +36739,6 @@ function App() {
     // Appointment
     const appointedBy = getAppointingPM(s.dateAppointed);
     const appointedDate = new Date(s.dateAppointed).toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
-    const appointedYear = new Date(s.dateAppointed).getFullYear();
-    const yearsInSenate = new Date().getFullYear() - appointedYear;
 
     // Citizen votes
     const _senVcId = toVoteId('ca-senator', s.name);
@@ -37425,14 +37279,7 @@ function App() {
   };
 
   const renderSenate = () => {
-    const SENATE_PARTIES = ['All', 'ISG', 'Conservative', 'CSG', 'PSG', 'Non-affiliated'];
     const PARTY_LABELS = { ISG: 'Independent Senators Group', Conservative: 'Conservative', CSG: 'Canadian Senators Group', PSG: 'Progressive Senate Group', 'Non-affiliated': 'Non-affiliated' };
-
-    const senHash = (str) => {
-      let h = 5381;
-      for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0x7fffffff;
-      return h;
-    };
 
     const voteSenator = (name, vote) => {
       logEvent('vote_politician', { country: 'US', itemId: name });
@@ -37515,7 +37362,6 @@ function App() {
           {/* Senator cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((senator, i) => {
-              const h = senHash(senator.name);
               const support = 0;
               const oppose = 0;
               const concerned = 0;
