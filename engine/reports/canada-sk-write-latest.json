@@ -1,0 +1,117 @@
+{
+  "run_type": "FIRESTORE_WRITE",
+  "jurisdiction": "CA-SK",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-SK-002",
+      "dataset_name": "CRA Charities Registry — Saskatchewan org-level extract (MVP: name/type/category)",
+      "verification_id": "CV-REC-001-2026-08-24-CV-DATA-SK-002",
+      "firestore_path": "subnational_tax_exempt_entities/CA-SK",
+      "write_mode": "merge",
+      "write_at": "2026-08-24T01:03:27.164Z",
+      "status": "WRITTEN",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_written": 100,
+      "fields_written": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records",
+        "verification_status",
+        "licence_note",
+        "cv_data_id"
+      ],
+      "sample_written": [
+        {
+          "name": "ABBA HOUSE INC",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CREIGHTON ALCOHOL & DRUG ABUSE COUNCIL INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "HUDSON BAY HERITAGE PARK INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "KYLE LUTHERAN PARISH INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "North East Outreach and Support Services  Inc.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "REGINA VETERINARY SPAY & NEUTER FUND INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "ROULEAU & DISTRICT SENIOR'S ASSOCIATION INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "SASKATOON LIONS BAND INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "SHERBROOKE FOUNDATION INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Public Foundation",
+          "rawValue": 0
+        },
+        {
+          "name": "HALDISSE COMMUNITY SERVICES INC",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "mvp_note": "Name/type/category only. rawValue=0 enforced. No dollar values written.",
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5"
+    }
+  ],
+  "deliberately_excluded": [
+    "CV-DATA-SK-001 — Unemployment — automated Node fetch pipeline hit a transient ECONNRESET against the Stats Can API; coordinate independently confirmed correct via curl; write only after a clean automated fetch succeeds.",
+    "CV-DATA-SK-003 — Grants/Public Payments — no official machine-readable Saskatchewan source exists. data.saskatchewan.ca does not resolve; no CKAN open data portal; federal open.canada.ca aggregator has zero financial datasets for organization=sk (413 datasets, all geospatial/geological); Saskatchewan Public Accounts Volume 2 (General Revenue Fund Details) is published as PDF only. The PDF was identified but NOT used — PDF extraction is not authorized for this data pipeline. This dataset cannot be written until Saskatchewan publishes a structured (CSV/XLSX/API) source, or PDF extraction is explicitly authorized."
+  ],
+  "last_updated": "2026-08-24T01:03:27.164Z",
+  "summary": {
+    "total_attempted": 1,
+    "written": 1,
+    "failed": 0,
+    "warnings_total": 0
+  }
+}
