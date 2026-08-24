@@ -1,0 +1,117 @@
+{
+  "run_type": "FIRESTORE_WRITE",
+  "jurisdiction": "CA-AB",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-AB-002",
+      "dataset_name": "CRA Charities Registry — Alberta org-level extract (MVP: name/type/category)",
+      "verification_id": "CV-REC-001-2026-08-24-CV-DATA-AB-002",
+      "firestore_path": "subnational_tax_exempt_entities/CA-AB",
+      "write_mode": "merge",
+      "write_at": "2026-08-24T00:11:12.158Z",
+      "status": "WRITTEN",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_written": 100,
+      "fields_written": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records",
+        "verification_status",
+        "licence_note",
+        "cv_data_id"
+      ],
+      "sample_written": [
+        {
+          "name": "ALBERTA SOCIETY OF OPHTHALMIC MEDICAL ASSISTANTS  EDMONTON",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Private Foundation",
+          "rawValue": 0
+        },
+        {
+          "name": "ART ASSOCIATES OF THE EDMONTON ART GALLERY SOCIETY",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "AUSTIN S NELSON FOUNDATION",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Private Foundation",
+          "rawValue": 0
+        },
+        {
+          "name": "CENTRE FOR NEWCOMERS SOCIETY OF CALGARY",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CHINOOK APPLIED RESEARCH ASSOCIATION",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "COCHRANE CREATIVE PLAYSCHOOL SOCIETY",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "VOLUNTEER LETHBRIDGE ASSOCIATION",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CROWSNEST PASS ECOMUSEUM TRUST SOCIETY",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "DINOSAUR NATURAL HISTORY ASSOCIATION",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "DRUMHELLER AND DISTRICT SENIORS FOUNDATION",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "mvp_note": "Name/type/category only. rawValue=0 enforced. No dollar values written.",
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5"
+    }
+  ],
+  "deliberately_excluded": [
+    "CV-DATA-AB-001 — Unemployment — automated Node fetch pipeline hit a transient ECONNRESET against the Stats Can API; coordinate independently confirmed correct via curl; write only after a clean automated fetch succeeds.",
+    "CV-DATA-AB-003 — Grants — reviewer approved an aggregated-by-recipient+program transformation (2026-08-24) but has not yet approved the write itself; pending final review of the aggregated preview."
+  ],
+  "last_updated": "2026-08-24T00:11:12.158Z",
+  "summary": {
+    "total_attempted": 1,
+    "written": 1,
+    "failed": 0,
+    "warnings_total": 0
+  }
+}

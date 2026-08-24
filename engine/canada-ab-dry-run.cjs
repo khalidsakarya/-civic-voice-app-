@@ -225,7 +225,9 @@ async function runGrants() {
     recommended_modal_label: null,
     total_rows_in_source: null,
     blank_recipient_rows_excluded: null,
-    duplicate_installment_rows_in_top: null,
+    raw_row_count: null,
+    aggregated_group_count: null,
+    transformation_note: null,
     top_20_after_filter: [],
   };
 
@@ -284,7 +286,9 @@ async function runGrants() {
 
     result.total_rows_in_source = doc.total_rows_in_source ?? null;
     result.blank_recipient_rows_excluded = doc.blank_recipient_rows_excluded ?? null;
-    result.duplicate_installment_rows_in_top = doc.duplicate_installment_rows_in_top ?? null;
+    result.raw_row_count = doc.raw_row_count ?? null;
+    result.aggregated_group_count = doc.aggregated_group_count ?? null;
+    result.transformation_note = doc.transformation_note ?? null;
     result.top_20_after_filter = doc.records.slice(0, 20).map(trimRecord);
 
     if (Array.isArray(doc.warnings) && doc.warnings.length) {
@@ -389,6 +393,8 @@ async function main() {
       console.log(`    modal label: ${r.recommended_modal_label}`);
     if (r.total_rows_in_source != null)
       console.log(`    blank-recipient filter: ${r.total_rows_in_source} total → ${r.blank_recipient_rows_excluded} excluded (no named recipient)`);
+    if (r.raw_row_count != null)
+      console.log(`    aggregation: ${r.raw_row_count} raw rows → ${r.aggregated_group_count} distinct recipient+program groups → top ${r.records_transformed} stored`);
     if (r.warnings?.length) console.log(`    warnings:   ${r.warnings.join('; ')}`);
     console.log(`    ui render:  ${r.ui_renderable ? 'yes' : 'no'}`);
     console.log(`    safe write: ${r.safe_to_write_after_review ? 'yes (after review)' : 'no'}`);

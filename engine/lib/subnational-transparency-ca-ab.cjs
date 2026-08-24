@@ -298,33 +298,59 @@ async function buildGrants() {
   const totalRows = rows.length;
   const withRecipient = rows.filter((r) => trim(r[recipientCol]));
   const blankRecipientCount = totalRows - withRecipient.length;
+  const rawRowCountAfterFilter = withRecipient.length;
 
-  // 5. Sort by amount descending
-  if (amountCol) {
-    withRecipient.sort((a, b) => parseMoneyish(b[amountCol] || '0') - parseMoneyish(a[amountCol] || '0'));
-  }
-
-  const top = withRecipient.slice(0, MAX_RECORDS);
-  let totalRaw = 0;
-  const seenPayeeProgramAmount = new Set();
-  let duplicateInstallmentCount = 0;
-  const records = top.map((row) => {
-    const amt = amountCol ? parseMoneyish(row[amountCol] || '') : 0;
-    totalRaw += amt;
+  // 5. Reviewer decision (2026-08-24): aggregate repeated payment installments by
+  // recipient + program before publication. Alberta discloses each individual
+  // payment installment as its own row, so large recurring grants (e.g. a health
+  // authority's operating funding paid out across the fiscal year) appear as dozens
+  // of near-identical rows and would otherwise dominate a naive "top 100 by amount"
+  // list. Aggregation combines installments — it does not delete or alter any
+  // underlying payment, and installment counts are preserved and shown.
+  const groups = new Map();
+  const GROUP_SEP = '␟'; // unlikely to appear in source text
+  for (const row of withRecipient) {
     const recipientName = trim(row[recipientCol]) || 'Recipient';
     const programRaw = programCol ? trim(row[programCol]) : '';
-    const key = `${recipientName}|${programRaw}|${amt}`;
-    if (seenPayeeProgramAmount.has(key)) duplicateInstallmentCount += 1;
-    seenPayeeProgramAmount.add(key);
+    const purpose = programRaw || 'Government Grant';
+    const dept = ministryCol ? trim(row[ministryCol]) || 'Government of Alberta' : 'Government of Alberta';
+    const amt = amountCol ? parseMoneyish(row[amountCol] || '') : 0;
+    const dateVal = dateCol ? trim(row[dateCol]) : '';
+    const key = `${recipientName}${GROUP_SEP}${purpose}`;
+    let g = groups.get(key);
+    if (!g) {
+      g = { recipientName, purpose, dept, totalAmount: 0, installmentCount: 0, minDate: null, maxDate: null };
+      groups.set(key, g);
+    }
+    g.totalAmount += amt;
+    g.installmentCount += 1;
+    if (dateVal) {
+      if (!g.minDate || dateVal < g.minDate) g.minDate = dateVal;
+      if (!g.maxDate || dateVal > g.maxDate) g.maxDate = dateVal;
+    }
+  }
+
+  const aggregatedGroups = [...groups.values()];
+  const aggregatedGroupCount = aggregatedGroups.length;
+  aggregatedGroups.sort((a, b) => b.totalAmount - a.totalAmount);
+
+  const top = aggregatedGroups.slice(0, MAX_RECORDS);
+  let totalRaw = 0;
+  const records = top.map((g) => {
+    totalRaw += g.totalAmount;
+    const dateLabel = g.installmentCount > 1
+      ? `${g.installmentCount} payments${g.minDate && g.maxDate ? ` (${g.minDate} to ${g.maxDate})` : ''}`
+      : (g.minDate || '');
     return {
-      recipientName,
+      recipientName: g.recipientName,
       typeLabel: 'Grant',
       typeColor: 'bg-green-100 text-green-700',
-      purpose: programRaw || 'Government Grant',
-      dept: ministryCol ? trim(row[ministryCol]) || 'Government of Alberta' : 'Government of Alberta',
-      fmtAmount: fmtCompact(amt),
-      rawAmount: amt,
-      date: (dateCol && trim(row[dateCol])) || (fiscalCol && trim(row[fiscalCol])) || '',
+      purpose: g.purpose,
+      dept: g.dept,
+      fmtAmount: fmtCompact(g.totalAmount),
+      rawAmount: g.totalAmount,
+      installmentCount: g.installmentCount,
+      date: dateLabel,
     };
   });
 
@@ -334,15 +360,17 @@ async function buildGrants() {
     'latest';
 
   const warnings = [];
-  if (duplicateInstallmentCount > 0) {
+  const multiInstallmentInTop = top.filter((g) => g.installmentCount > 1).length;
+  if (multiInstallmentInTop > 0) {
     warnings.push(
-      `${duplicateInstallmentCount} of the top ${records.length} rows share an identical recipient+program+amount ` +
-      `with another row already in the top list (repeated payment installments on different dates for the same ` +
-      `grant — e.g. large recurring health-authority operating payments). Real data, not fabricated, but the top-100 ` +
-      `list is dominated by a small number of large recurring payees as a result. Reviewer may want to consider ` +
-      `deduplicating/aggregating by recipient+program before publication.`,
+      `${multiInstallmentInTop} of the top ${records.length} aggregated rows combine more than one payment ` +
+      `installment (real, unaltered payments to the same recipient/program summed together) — expected given ` +
+      `Alberta discloses each installment as a separate row.`,
     );
   }
+
+  const transformationNote =
+    'Multiple payment installments to the same recipient/program were aggregated for public display.';
 
   return {
     jurisdiction_id: JURISDICTION_ID,
@@ -353,12 +381,15 @@ async function buildGrants() {
     resource_url: discovered.resourceUrl,
     discovery_note: discovered.note,
     licence: discovered.licence,
-    note: `Top 100 Alberta grant payments by amount. Excludes rows with no named recipient (privacy-protected ` +
-      `program-level totals for individual benefit/assistance recipients). Source: ${discovered.packageTitle}. ${discovered.licence}.`,
+    note: `Top 100 Alberta grants by aggregated total amount, grouped by recipient + program. Excludes rows with ` +
+      `no named recipient (privacy-protected program-level totals for individual benefit/assistance recipients). ` +
+      `Source: ${discovered.packageTitle}. ${discovered.licence}.`,
+    transformation_note: transformationNote,
     total_rows_in_source: totalRows,
     blank_recipient_rows_excluded: blankRecipientCount,
-    total_after_filter: withRecipient.length,
-    duplicate_installment_rows_in_top: duplicateInstallmentCount,
+    total_after_filter: rawRowCountAfterFilter,
+    raw_row_count: rawRowCountAfterFilter,
+    aggregated_group_count: aggregatedGroupCount,
     records_stored: records.length,
     total_raw_top100: totalRaw,
     fmt_total_top100: fmtCompact(totalRaw),
