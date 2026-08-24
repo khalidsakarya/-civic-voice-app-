@@ -1,0 +1,135 @@
+{
+  "run_type": "DRY_RUN",
+  "run_at": "2026-08-24T01:00:12.695Z",
+  "jurisdiction": "CA-SK",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-SK-001",
+      "dataset_name": "Statistics Canada — Saskatchewan Unemployment (Table 14-10-0287-01)",
+      "statcan_coord_used": "9.7.1.1.1.1.0.0.0.0",
+      "firestore_target": {
+        "collection": "subnational_economic_social_stats",
+        "doc_id": "CA-SK",
+        "path": "subnational_economic_social_stats/CA-SK",
+        "write_mode": "merge"
+      },
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+      "fetched_at": "2026-08-24T01:00:12.695Z",
+      "status": "BLOCKED",
+      "error": "No economic payload returned — coordinate may be wrong or API returned no data",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [
+        "unemployment: read ECONNRESET",
+        "Coord attempted: 9.7.1.1.1.1.0.0.0.0",
+        "Transient Node-level connection reset against the Stats Can API — same class of issue observed for CA-BC/CA-AB/CA-QC unemployment fetches in this environment. Report separately; do not write."
+      ],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false
+    },
+    {
+      "dataset_id": "CV-DATA-SK-002",
+      "dataset_name": "CRA Charities Registry — SK org-level extract",
+      "firestore_target": {
+        "collection": "subnational_tax_exempt_entities",
+        "doc_id": "CA-SK",
+        "path": "subnational_tax_exempt_entities/CA-SK",
+        "write_mode": "merge"
+      },
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
+      "fetched_at": "2026-08-24T01:00:12.695Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_fetched": 4407,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records"
+      ],
+      "sample_records": [
+        {
+          "name": "ABBA HOUSE INC",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CREIGHTON ALCOHOL & DRUG ABUSE COUNCIL INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "HUDSON BAY HERITAGE PARK INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "mvp_note": "Name/type/category only — no dollar values per MVP product decision."
+    },
+    {
+      "dataset_id": "CV-DATA-SK-003",
+      "dataset_name": "Saskatchewan Grants / Public Payments — NOT FOUND",
+      "firestore_target": {
+        "collection": "subnational_grants",
+        "doc_id": "CA-SK",
+        "path": "subnational_grants/CA-SK",
+        "write_mode": "merge"
+      },
+      "source_url": null,
+      "fetched_at": "2026-08-24T01:00:12.695Z",
+      "status": "NOT_FOUND",
+      "error": "SK Grants: no official machine-readable Saskatchewan grants/payments/public-accounts source exists. Saskatchewan has no CKAN open data portal (data.saskatchewan.ca does not resolve). The federal open.canada.ca aggregator indexes 413 SK-tagged datasets but none are financial (all geospatial/geological). Saskatchewan's own Public Accounts Volume 2 (General Revenue Fund Details) is published as PDF only, not CSV/XLSX. This is a genuine data-availability gap, not a fetch failure — see module header comment for the full search performed.",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false,
+      "recommended_modal_label": null,
+      "sources_checked": [
+        {
+          "source": "data.saskatchewan.ca (task candidate URL)",
+          "result": "DNS does not resolve — no such host"
+        },
+        {
+          "source": "open.canada.ca federal aggregator, organization=sk (413 datasets indexed)",
+          "result": "Searched \"grants payments\", \"public accounts\", \"transfer payments\", \"subventions\", \"supplier payments\", \"government spending\" — 0 results for all six queries. The 413 SK-tagged datasets on the federal portal are geospatial/geological (oil & gas structure maps, environmental sites, wildlife data) — none are financial."
+        },
+        {
+          "source": "Saskatchewan Public Accounts Volume 2 (General Revenue Fund Details)",
+          "result": "Published as PDF only (e.g. saskatchewan.ca/-/media/news-release-backgrounders/2025/jun/…2024-25-public-accounts-volume-1-4751.pdf, and Volume 2 equivalent) — no CSV/XLSX/open-data version found."
+        },
+        {
+          "source": "Dedicated grant-disclosure dataset search (comparable to Alberta's \"Grant payments disclosure\")",
+          "result": "No dedicated Saskatchewan provincial grant-disclosure dataset with open data in CSV format was found."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "dry_run_ok": 1,
+    "blocked": 1,
+    "not_found": 1,
+    "warnings_total": 3
+  }
+}
