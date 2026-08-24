@@ -1,0 +1,436 @@
+{
+  "run_type": "DRY_RUN",
+  "run_at": "2026-08-24T00:01:20.437Z",
+  "jurisdiction": "CA-AB",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-AB-001",
+      "dataset_name": "Statistics Canada — Alberta Unemployment (Table 14-10-0287-01)",
+      "statcan_coord_used": "10.7.1.1.1.1.0.0.0.0",
+      "firestore_target": {
+        "collection": "subnational_economic_social_stats",
+        "doc_id": "CA-AB",
+        "path": "subnational_economic_social_stats/CA-AB",
+        "write_mode": "merge"
+      },
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+      "fetched_at": "2026-08-24T00:01:20.437Z",
+      "status": "BLOCKED",
+      "error": "No economic payload returned — coordinate may be wrong or API returned no data",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [
+        "unemployment: read ECONNRESET",
+        "Coord attempted: 10.7.1.1.1.1.0.0.0.0",
+        "Automated Node.js fetch pipeline hit a transient connection reset in this environment (same intermittent issue observed for CA-BC's unemployment fetch in an earlier session run). Coordinate independently confirmed correct via direct curl call to the Stats Can WDS API outside the Node pipeline — see manual_verification below. Re-running this script at a later time is expected to succeed once the transient condition clears; no code or coordinate change needed."
+      ],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false,
+      "manual_verification": {
+        "method": "Direct curl POST to https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods, bypassing the Node fetch pipeline, to confirm the coordinate independently of the ECONNRESET failure above.",
+        "verified_at": "2026-08-24T00:02:00Z",
+        "coordinate": "10.7.1.1.1.1.0.0.0.0",
+        "result": "SUCCESS — 24 monthly data points returned, plausible published Alberta unemployment rates",
+        "series_monthly": [
+          { "period": "2024-08", "rate": 7.3 },
+          { "period": "2024-09", "rate": 7.4 },
+          { "period": "2024-10", "rate": 7.4 },
+          { "period": "2024-11", "rate": 7.6 },
+          { "period": "2024-12", "rate": 6.8 },
+          { "period": "2025-01", "rate": 6.8 },
+          { "period": "2025-02", "rate": 6.8 },
+          { "period": "2025-03", "rate": 7.2 },
+          { "period": "2025-04", "rate": 7.2 },
+          { "period": "2025-05", "rate": 7.4 },
+          { "period": "2025-06", "rate": 6.8 },
+          { "period": "2025-07", "rate": 7.9 },
+          { "period": "2025-08", "rate": 8.2 },
+          { "period": "2025-09", "rate": 7.7 },
+          { "period": "2025-10", "rate": 7.6 },
+          { "period": "2025-11", "rate": 6.5 },
+          { "period": "2025-12", "rate": 6.7 },
+          { "period": "2026-01", "rate": 6.4 },
+          { "period": "2026-02", "rate": 6.3 },
+          { "period": "2026-03", "rate": 6.5 },
+          { "period": "2026-04", "rate": 7.0 },
+          { "period": "2026-05", "rate": 6.6 },
+          { "period": "2026-06", "rate": 7.0 },
+          { "period": "2026-07", "rate": 7.0 }
+        ],
+        "latest_rate": 7.0,
+        "latest_period": "Jul 2026"
+      }
+    },
+    {
+      "dataset_id": "CV-DATA-AB-002",
+      "dataset_name": "CRA Charities Registry — AB org-level extract",
+      "firestore_target": {
+        "collection": "subnational_tax_exempt_entities",
+        "doc_id": "CA-AB",
+        "path": "subnational_tax_exempt_entities/CA-AB",
+        "write_mode": "merge"
+      },
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
+      "fetched_at": "2026-08-24T00:01:20.437Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_fetched": 7731,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records"
+      ],
+      "sample_records": [
+        {
+          "name": "ALBERTA SOCIETY OF OPHTHALMIC MEDICAL ASSISTANTS  EDMONTON",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Private Foundation",
+          "rawValue": 0
+        },
+        {
+          "name": "ART ASSOCIATES OF THE EDMONTON ART GALLERY SOCIETY",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "AUSTIN S NELSON FOUNDATION",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Private Foundation",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "mvp_note": "Name/type/category only — no dollar values per MVP product decision."
+    },
+    {
+      "dataset_id": "CV-DATA-AB-003",
+      "dataset_name": "Alberta Grant Payments Disclosure (Alberta Open Government)",
+      "firestore_target": {
+        "collection": "subnational_grants",
+        "doc_id": "CA-AB",
+        "path": "subnational_grants/CA-AB",
+        "write_mode": "merge"
+      },
+      "source_url": "https://open.alberta.ca/publications/grant-disclosure",
+      "fetched_at": "2026-08-24T00:01:20.437Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "AB Grant payments disclosure — 2025 - 2026",
+      "records_fetched": 180048,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "fiscal_year",
+        "reporting_period",
+        "data_source",
+        "source_url",
+        "resource_url",
+        "discovery_note",
+        "licence",
+        "note",
+        "total_rows_in_source",
+        "blank_recipient_rows_excluded",
+        "total_after_filter",
+        "duplicate_installment_rows_in_top",
+        "records_stored",
+        "total_raw_top100",
+        "fmt_total_top100",
+        "detected_columns",
+        "all_headers",
+        "raw_first_rows",
+        "warnings"
+      ],
+      "sample_records": [
+        {
+          "recipientName": "AGRICULTURE FINANCIAL SERVICES CORPORATION",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AFSC - INSURANCE",
+          "dept": "AGRICULTURE AND IRRIGATION",
+          "fmtAmount": "$259.73M",
+          "rawAmount": 259730724,
+          "date": "2025-06-17"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "PHYS DEV-MEDICAL RESIDENT SERV COMP OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.78M",
+          "rawAmount": 99784830,
+          "date": "2025-04-01"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-04-01"
+        }
+      ],
+      "warnings": [
+        "91 of the top 100 rows share an identical recipient+program+amount with another row already in the top list (repeated payment installments on different dates for the same grant — e.g. large recurring health-authority operating payments). Real data, not fabricated, but the top-100 list is dominated by a small number of large recurring payees as a result. Reviewer may want to consider deduplicating/aggregating by recipient+program before publication.",
+        "420 of 180468 source rows had no named recipient (privacy-protected program-level totals for individual assistance/benefit programs) and were excluded — not written or displayed."
+      ],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "discovered_source": {
+        "package_title": "Government of Alberta — Grant payments disclosure. Open Government Licence - Alberta.",
+        "source_url": "https://open.alberta.ca/publications/grant-disclosure",
+        "resource_url": "https://open.alberta.ca/dataset/faef5592-9ea0-4b60-92db-79a8a9673fe5/resource/1e95ba75-b4b1-44df-9426-988d60b6cff7/download/tbf-grants-disclosure-2025-26.csv",
+        "licence": "Open Government Licence - Alberta",
+        "discovery_note": "Discovered via CKAN search \"grant payments disclosure\" — verified CSV URL (not XLSX/PDF), most recent non-standardized resource"
+      },
+      "detected_columns": {
+        "recipient": "Recipient",
+        "amount": "Amount",
+        "ministry": "Ministry",
+        "program": "Program",
+        "fiscal_year": "DisplayFiscalYear",
+        "date": "PaymentDate"
+      },
+      "all_headers": [
+        "Ministry",
+        "BUName",
+        "Recipient",
+        "Program",
+        "Amount",
+        "Lottery",
+        "PaymentDate",
+        "FiscalYear",
+        "DisplayFiscalYear"
+      ],
+      "recommended_modal_label": "Grants",
+      "total_rows_in_source": 180468,
+      "blank_recipient_rows_excluded": 420,
+      "duplicate_installment_rows_in_top": 91,
+      "top_20_after_filter": [
+        {
+          "recipientName": "AGRICULTURE FINANCIAL SERVICES CORPORATION",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AFSC - INSURANCE",
+          "dept": "AGRICULTURE AND IRRIGATION",
+          "fmtAmount": "$259.73M",
+          "rawAmount": 259730724,
+          "date": "2025-06-17"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "PHYS DEV-MEDICAL RESIDENT SERV COMP OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.78M",
+          "rawAmount": 99784830,
+          "date": "2025-04-01"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-04-01"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-04-01"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-04-01"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-04-13"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-04-13"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-04-13"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-05-01"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-05-01"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-05-01"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-05-13"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-05-13"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HEALTH",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-05-13"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HOSPITAL AND SURGICAL HEALTH SERVICES",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-09-02"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HOSPITAL AND SURGICAL HEALTH SERVICES",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-09-02"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HOSPITAL AND SURGICAL HEALTH SERVICES",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-09-02"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HOSPITAL AND SURGICAL HEALTH SERVICES",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-09-13"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HOSPITAL AND SURGICAL HEALTH SERVICES",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-09-13"
+        },
+        {
+          "recipientName": "ALBERTA HEALTH SERVICES",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "AHS ACUTE CARE OP",
+          "dept": "HOSPITAL AND SURGICAL HEALTH SERVICES",
+          "fmtAmount": "$99.00M",
+          "rawAmount": 99000000,
+          "date": "2025-09-13"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "dry_run_ok": 2,
+    "blocked": 1,
+    "warnings_total": 4
+  }
+}
