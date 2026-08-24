@@ -1099,6 +1099,10 @@ export function buildTransparencyFieldsFromModalDocs(docs, jurisdictionName, isU
         totalInSource: numOrNull(grantsDoc.total_in_source),
         fmtTotalTop: trimStr(grantsDoc.fmt_total_top100),
         fiscalYear: trimStr(grantsDoc.fiscal_year),
+        dataSource: trimStr(grantsDoc.data_source) || null,
+        sourceUrl: trimStr(grantsDoc.source_url) || null,
+        note: trimStr(grantsDoc.note) || null,
+        modalLabel: trimStr(grantsDoc.modal_label) || null,
       };
     }
   }
@@ -1206,14 +1210,26 @@ export function isCraCharitiesDataset(meta, records) {
   return false;
 }
 
-/** @param {Record<string, unknown>|null|undefined} item */
+/**
+ * @param {Record<string, unknown>|null|undefined} item
+ * Prefers the tax-modal-specific source name/url (`subnationalTaxHeadlineMeta`,
+ * sourced from the `subnational_tax_exempt_entities` doc's own `data_source`/
+ * `source_url` fields) over the shared `subnationalTransparencySourceName` field.
+ * The shared field is a single value derived with economic > tax > grants
+ * precedence (see `buildTransparencyFieldsFromModalDocs`) and reflects whichever
+ * modal's source happened to be picked first — not necessarily this one. Using
+ * it here caused the Tax Exempt / Charities modal to show the Economic modal's
+ * source text (e.g. "Statistics Canada — Labour Force Survey…") whenever a
+ * jurisdiction had both an economic doc and a tax doc.
+ */
 export function taxExemptFromExplorerItem(item) {
   if (!item) return parseSubnationalTaxExemptCompanies(null);
   if (Array.isArray(item.subnationalTaxExemptCompanies) && item.subnationalTaxExemptCompanies.length) {
+    const meta = item.subnationalTaxHeadlineMeta;
     return {
       companies: item.subnationalTaxExemptCompanies,
-      sourceName: trimStr(item.subnationalTransparencySourceName),
-      sourceUrl: trimStr(item.subnationalTransparencySourceUrl),
+      sourceName: trimStr(meta?.dataSource) || trimStr(item.subnationalTransparencySourceName),
+      sourceUrl: trimStr(meta?.sourceUrl) || trimStr(item.subnationalTransparencySourceUrl),
     };
   }
   return parseSubnationalTaxExemptCompanies({
@@ -1225,14 +1241,25 @@ export function taxExemptFromExplorerItem(item) {
   });
 }
 
-/** @param {Record<string, unknown>|null|undefined} item */
+/**
+ * @param {Record<string, unknown>|null|undefined} item
+ * Prefers the grants-modal-specific source name/url (`subnationalGrantsHeadlineMeta`,
+ * sourced from the `subnational_grants` doc's own `data_source`/`source_url`
+ * fields) over the shared `subnationalTransparencySourceName` field — see
+ * {@link taxExemptFromExplorerItem} for why the shared field is unreliable here.
+ * This is the fix for the Transfer Payments / Grants modal showing the wrong
+ * dataset's source (e.g. CRA Charities text on an Alberta Grants modal, because
+ * the shared field's economic > tax > grants precedence picked the tax doc's
+ * source when no economic doc existed for that jurisdiction yet).
+ */
 export function grantsGivenFromExplorerItem(item) {
   if (!item) return parseSubnationalGrantsGiven(null);
   if (Array.isArray(item.subnationalGrantsGiven) && item.subnationalGrantsGiven.length) {
+    const meta = item.subnationalGrantsHeadlineMeta;
     return {
       grants: item.subnationalGrantsGiven,
-      sourceName: trimStr(item.subnationalTransparencySourceName),
-      sourceUrl: trimStr(item.subnationalTransparencySourceUrl),
+      sourceName: trimStr(meta?.dataSource) || trimStr(item.subnationalTransparencySourceName),
+      sourceUrl: trimStr(meta?.sourceUrl) || trimStr(item.subnationalTransparencySourceUrl),
     };
   }
   return parseSubnationalGrantsGiven({
