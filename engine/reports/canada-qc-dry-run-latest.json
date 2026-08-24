@@ -1,0 +1,395 @@
+{
+  "run_type": "DRY_RUN",
+  "run_at": "2026-08-24T00:43:12.248Z",
+  "jurisdiction": "CA-QC",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-QC-001",
+      "dataset_name": "Statistics Canada — Québec Unemployment (Table 14-10-0287-01)",
+      "statcan_coord_used": "6.7.1.1.1.1.0.0.0.0",
+      "firestore_target": {
+        "collection": "subnational_economic_social_stats",
+        "doc_id": "CA-QC",
+        "path": "subnational_economic_social_stats/CA-QC",
+        "write_mode": "merge"
+      },
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+      "fetched_at": "2026-08-24T00:43:12.248Z",
+      "status": "BLOCKED",
+      "error": "No economic payload returned — coordinate may be wrong or API returned no data",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [
+        "unemployment: read ECONNRESET",
+        "Coord attempted: 6.7.1.1.1.1.0.0.0.0",
+        "Transient Node-level connection reset against the Stats Can API — same class of issue observed for CA-BC and CA-AB unemployment fetches in this environment. Report separately; do not write."
+      ],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false
+    },
+    {
+      "dataset_id": "CV-DATA-QC-002",
+      "dataset_name": "CRA Charities Registry — QC org-level extract",
+      "firestore_target": {
+        "collection": "subnational_tax_exempt_entities",
+        "doc_id": "CA-QC",
+        "path": "subnational_tax_exempt_entities/CA-QC",
+        "write_mode": "merge"
+      },
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
+      "fetched_at": "2026-08-24T00:43:12.248Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_fetched": 13719,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records"
+      ],
+      "sample_records": [
+        {
+          "name": "ACADEMIE LAFONTAINE INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "COLLEGE LAURENTIEN INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "Action santé de Pointe St-Charles",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "mvp_note": "Name/type/category only — no dollar values per MVP product decision."
+    },
+    {
+      "dataset_id": "CV-DATA-QC-003",
+      "dataset_name": "Québec Comptes publics Volume 2 — Dépenses de transfert par bénéficiaires",
+      "firestore_target": {
+        "collection": "subnational_grants",
+        "doc_id": "CA-QC",
+        "path": "subnational_grants/CA-QC",
+        "write_mode": "merge"
+      },
+      "source_url": "https://www.donneesquebec.ca/recherche/dataset/comptes-publics-du-gouvernement-volume-2",
+      "fetched_at": "2026-08-24T00:43:12.248Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "QC Comptes publics du gouvernement – Volume 2 — Dépenses de transfert du fonds général par bénéficiaires 2024-2025",
+      "records_fetched": 127,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "fiscal_year",
+        "reporting_period",
+        "data_source",
+        "data_source_fr",
+        "data_source_en",
+        "source_url",
+        "resource_url",
+        "discovery_note",
+        "licence",
+        "licence_url",
+        "note",
+        "total_rows_in_source",
+        "blank_beneficiary_rows_excluded",
+        "total_after_filter",
+        "records_stored",
+        "total_raw_top100",
+        "fmt_total_top100",
+        "detected_columns",
+        "all_headers"
+      ],
+      "sample_records": [
+        {
+          "recipientName": "Établissements de santé et de services sociaux",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Santé et Services sociaux",
+          "dept": "Santé et Services sociaux",
+          "fmtAmount": "$44.01B",
+          "rawAmount": 44014167000,
+          "date": ""
+        },
+        {
+          "recipientName": "Institutions d'enseignement",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Éducation",
+          "dept": "Éducation",
+          "fmtAmount": "$22.71B",
+          "rawAmount": 22711452000,
+          "date": ""
+        },
+        {
+          "recipientName": "Organismes et entreprises du gouvernement",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Santé et Services sociaux",
+          "dept": "Santé et Services sociaux",
+          "fmtAmount": "$10.66B",
+          "rawAmount": 10656069000,
+          "date": ""
+        }
+      ],
+      "warnings": [
+        "IMPORTANT DATA-SHAPE DIFFERENCE from CA-ON/CA-BC/CA-AB: this dataset is aggregated by ministry portfolio × beneficiary CATEGORY (e.g. \"Municipalités\", \"Organismes à but non lucratif\", \"Personnes\"), not by individual named organization/company. Québec's Comptes publics Volume 2 does not publish an itemized by-recipient-name schedule at the provincial level (a broad search of données Québec found no such dataset). The \"Recipient\" field therefore shows a beneficiary category, not a specific payee name, for every record in this dataset. This is real, official, unaltered government data — not fabricated — but it is structurally different from the other three provinces and should be reviewed before deciding how (or whether) to publish it under the same UI pattern used for named-recipient data."
+      ],
+      "ui_renderable": true,
+      "safe_to_write_after_review": false,
+      "discovered_source": {
+        "package_title": "Ministère des Finances du Québec — Comptes publics du gouvernement – Volume 2 (Dépenses de transfert du fonds général par bénéficiaires 2024-2025). Licence Attribution (CC-BY 4.0).",
+        "package_title_fr": "Ministère des Finances du Québec — Comptes publics du gouvernement – Volume 2 (Dépenses de transfert du fonds général par bénéficiaires 2024-2025)",
+        "package_title_en": "Ministère des Finances du Québec — Public Accounts of the Government, Volume 2 — Transfer expenses by beneficiary",
+        "source_url": "https://www.donneesquebec.ca/recherche/dataset/comptes-publics-du-gouvernement-volume-2",
+        "resource_url": "https://www.donneesquebec.ca/recherche/dataset/f94cd34c-8202-4cfe-9610-6ae10bf34bc3/resource/3a582f87-b0cb-4591-b681-874708b2a1c8/download/donnees_ouvertes_vol2_dep_transfert_ben_24-25.csv",
+        "licence": "Attribution (CC-BY 4.0)",
+        "licence_url": "https://www.donneesquebec.ca/licence/#cc-by",
+        "discovery_note": "Discovered via CKAN search \"comptes publics transfert\" — publisher confirmed as Ministère des Finances du Québec, verified CSV resource \"par bénéficiaires\" (not XLSX/PDF, not a municipal dataset)"
+      },
+      "detected_columns": {
+        "portfolio": "Portefeuille",
+        "beneficiary_category": "Beneficiaire",
+        "amount": "Montant"
+      },
+      "all_headers": [
+        "Portefeuille",
+        "Beneficiaire",
+        "Montant"
+      ],
+      "recommended_modal_label": "Transfer Payments",
+      "total_rows_in_source": 127,
+      "blank_beneficiary_rows_excluded": 0,
+      "top_20_after_filter": [
+        {
+          "recipientName": "Établissements de santé et de services sociaux",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Santé et Services sociaux",
+          "dept": "Santé et Services sociaux",
+          "fmtAmount": "$44.01B",
+          "rawAmount": 44014167000,
+          "date": ""
+        },
+        {
+          "recipientName": "Institutions d'enseignement",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Éducation",
+          "dept": "Éducation",
+          "fmtAmount": "$22.71B",
+          "rawAmount": 22711452000,
+          "date": ""
+        },
+        {
+          "recipientName": "Organismes et entreprises du gouvernement",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Santé et Services sociaux",
+          "dept": "Santé et Services sociaux",
+          "fmtAmount": "$10.66B",
+          "rawAmount": 10656069000,
+          "date": ""
+        },
+        {
+          "recipientName": "Institutions d'enseignement",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Enseignement supérieur",
+          "dept": "Enseignement supérieur",
+          "fmtAmount": "$9.00B",
+          "rawAmount": 9002111000,
+          "date": ""
+        },
+        {
+          "recipientName": "Personnes",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Emploi et Solidarité sociale",
+          "dept": "Emploi et Solidarité sociale",
+          "fmtAmount": "$3.64B",
+          "rawAmount": 3643983000,
+          "date": ""
+        },
+        {
+          "recipientName": "Municipalités",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Affaires municipales et Habitation",
+          "dept": "Affaires municipales et Habitation",
+          "fmtAmount": "$2.59B",
+          "rawAmount": 2590002000,
+          "date": ""
+        },
+        {
+          "recipientName": "Personnes",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Santé et Services sociaux",
+          "dept": "Santé et Services sociaux",
+          "fmtAmount": "$2.46B",
+          "rawAmount": 2462579000,
+          "date": ""
+        },
+        {
+          "recipientName": "Organismes à but non lucratif",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Santé et Services sociaux",
+          "dept": "Santé et Services sociaux",
+          "fmtAmount": "$1.39B",
+          "rawAmount": 1393069000,
+          "date": ""
+        },
+        {
+          "recipientName": "Personnes",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Enseignement supérieur",
+          "dept": "Enseignement supérieur",
+          "fmtAmount": "$1.10B",
+          "rawAmount": 1096766000,
+          "date": ""
+        },
+        {
+          "recipientName": "Entreprises du secteur privé",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Santé et Services sociaux",
+          "dept": "Santé et Services sociaux",
+          "fmtAmount": "$779.10M",
+          "rawAmount": 779104000,
+          "date": ""
+        },
+        {
+          "recipientName": "Entreprises du secteur privé",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Agriculture, Pêcheries et Alimentation",
+          "dept": "Agriculture, Pêcheries et Alimentation",
+          "fmtAmount": "$747.90M",
+          "rawAmount": 747900000,
+          "date": ""
+        },
+        {
+          "recipientName": "Personnes",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Justice",
+          "dept": "Justice",
+          "fmtAmount": "$544.31M",
+          "rawAmount": 544306000,
+          "date": ""
+        },
+        {
+          "recipientName": "Organismes à but non lucratif",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Culture et Communications",
+          "dept": "Culture et Communications",
+          "fmtAmount": "$442.95M",
+          "rawAmount": 442953000,
+          "date": ""
+        },
+        {
+          "recipientName": "Personnes",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Affaires municipales et Habitation",
+          "dept": "Affaires municipales et Habitation",
+          "fmtAmount": "$399.70M",
+          "rawAmount": 399698000,
+          "date": ""
+        },
+        {
+          "recipientName": "Municipalités",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Conseil exécutif",
+          "dept": "Conseil exécutif",
+          "fmtAmount": "$383.73M",
+          "rawAmount": 383726000,
+          "date": ""
+        },
+        {
+          "recipientName": "Organismes à but non lucratif",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Affaires municipales et Habitation",
+          "dept": "Affaires municipales et Habitation",
+          "fmtAmount": "$375.42M",
+          "rawAmount": 375424000,
+          "date": ""
+        },
+        {
+          "recipientName": "Organismes et entreprises du gouvernement",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Culture et Communications",
+          "dept": "Culture et Communications",
+          "fmtAmount": "$347.64M",
+          "rawAmount": 347638000,
+          "date": ""
+        },
+        {
+          "recipientName": "Organismes et entreprises du gouvernement",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Tourisme",
+          "dept": "Tourisme",
+          "fmtAmount": "$343.03M",
+          "rawAmount": 343026000,
+          "date": ""
+        },
+        {
+          "recipientName": "Organismes à but non lucratif",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Économie, Innovation et Énergie",
+          "dept": "Économie, Innovation et Énergie",
+          "fmtAmount": "$334.49M",
+          "rawAmount": 334486000,
+          "date": ""
+        },
+        {
+          "recipientName": "Municipalités",
+          "typeLabel": "Transfer",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Sécurité publique",
+          "dept": "Sécurité publique",
+          "fmtAmount": "$292.48M",
+          "rawAmount": 292479000,
+          "date": ""
+        }
+      ],
+      "data_shape_warning": "IMPORTANT DATA-SHAPE DIFFERENCE from CA-ON/CA-BC/CA-AB: this dataset is aggregated by ministry portfolio × beneficiary CATEGORY (e.g. \"Municipalités\", \"Organismes à but non lucratif\", \"Personnes\"), not by individual named organization/company. Québec's Comptes publics Volume 2 does not publish an itemized by-recipient-name schedule at the provincial level (a broad search of données Québec found no such dataset). The \"Recipient\" field therefore shows a beneficiary category, not a specific payee name, for every record in this dataset. This is real, official, unaltered government data — not fabricated — but it is structurally different from the other three provinces and should be reviewed before deciding how (or whether) to publish it under the same UI pattern used for named-recipient data."
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "dry_run_ok": 2,
+    "blocked": 1,
+    "warnings_total": 4
+  }
+}
