@@ -1,0 +1,139 @@
+{
+  "run_type": "DRY_RUN",
+  "run_at": "2026-09-07T21:27:41.529Z",
+  "jurisdiction": "CA-PE",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-PE-001",
+      "dataset_name": "Statistics Canada — Prince Edward Island Unemployment (Table 14-10-0287-01)",
+      "statcan_coord_used": "3.7.1.1.1.1.0.0.0.0",
+      "firestore_target": {
+        "collection": "subnational_economic_social_stats",
+        "doc_id": "CA-PE",
+        "path": "subnational_economic_social_stats/CA-PE",
+        "write_mode": "merge"
+      },
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+      "fetched_at": "2026-09-07T21:27:41.529Z",
+      "status": "BLOCKED",
+      "error": "No economic payload returned — coordinate may be wrong or API returned no data",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [
+        "unemployment: read ECONNRESET",
+        "Coord attempted: 3.7.1.1.1.1.0.0.0.0",
+        "Transient Node-level connection reset against the Stats Can API — same class of issue observed for CA-BC/CA-AB/CA-QC/CA-SK/CA-MB/CA-NS/CA-NB/CA-NL unemployment fetches in this environment. Report separately; do not write."
+      ],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false
+    },
+    {
+      "dataset_id": "CV-DATA-PE-002",
+      "dataset_name": "CRA Charities Registry — PE org-level extract",
+      "firestore_target": {
+        "collection": "subnational_tax_exempt_entities",
+        "doc_id": "CA-PE",
+        "path": "subnational_tax_exempt_entities/CA-PE",
+        "write_mode": "merge"
+      },
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
+      "fetched_at": "2026-09-07T21:27:41.529Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_fetched": 514,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records"
+      ],
+      "sample_records": [
+        {
+          "name": "COOPER INSTITUTE LTD",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "P.E.I. CITIZEN ADVOCACY INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "PRINCE EDWARD ISLAND ASSOCIATION ON GERONTOLOGY  INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "mvp_note": "Name/type/category only — no dollar values per MVP product decision."
+    },
+    {
+      "dataset_id": "CV-DATA-PE-003",
+      "dataset_name": "Prince Edward Island Grants / Public Payments — NOT FOUND",
+      "firestore_target": {
+        "collection": "subnational_grants",
+        "doc_id": "CA-PE",
+        "path": "subnational_grants/CA-PE",
+        "write_mode": "merge"
+      },
+      "source_url": null,
+      "fetched_at": "2026-09-07T21:27:41.529Z",
+      "status": "NOT_FOUND",
+      "error": "PE Grants: no current, machine-readable, whole-of-government, payee-level Prince Edward Island grants/payments/public-accounts source exists. The province's ArcGIS Hub open data portal (data.princeedwardisland.ca) was searched across \"grants\", \"payments\", \"supplier\", \"expenditure\", \"disclosure\", \"transfer payment\", \"public accounts\", \"vendor\", and \"spending\" — the only financial-adjacent datasets found are either aggregate category/department-level totals with no recipient names (e.g. \"PEI Consolidated Expenses\", stale to 2018/19) or narrow single-program statistics with no recipient names (Student Loan Grant Assessments, Seniors Home Repair Program). PEI is not mirrored on the federal open.canada.ca CKAN aggregator (0 datasets). PEI Public Accounts are PDF only. This is a genuine data-availability/granularity gap, not a fetch failure — see module header comment for the full search performed.",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false,
+      "recommended_modal_label": null,
+      "sources_checked": [
+        {
+          "source": "data.princeedwardisland.ca (task candidate portal) — ArcGIS Hub open data site",
+          "result": "Resolves and is browsable (ArcGIS Hub, owner org \"pei_enterprise_admin\" on arcgis.com — not CKAN/Socrata). Content search across \"grants\", \"payments\", \"supplier\", \"expenditure\", \"disclosure\", \"transfer payment\", \"public accounts\", \"vendor\", \"spending\" returned only 4 financial/grant-adjacent datasets: \"OD0031 PEI Consolidated Expenses\", \"OD0047 Expenditure Budget Estimates And Forecasts\", \"OD0011 Student Loan Grant Assessments And Awards\", \"OD0060 Seniors Home Repair Program Activity\"."
+        },
+        {
+          "source": "\"OD0031 PEI Consolidated Expenses\" — closest candidate to a whole-of-government dataset",
+          "result": "CATEGORY-LEVEL, not payee-level: schema is Area_of_Expenditure / Financial_Year / Value (department totals only — no recipient names). Data spans fiscal years 2011/12-2018/19 only, confirmed via direct FeatureServer query — stale, 7+ years out of date. Rejected: wrong granularity (aggregate, not individual grants/payments) AND stale."
+        },
+        {
+          "source": "\"OD0047 Expenditure Budget Estimates And Forecasts\", \"OD0011 Student Loan Grant Assessments and Awards\", \"OD0060 Seniors Home Repair Program Activity\"",
+          "result": "All confirmed via direct FeatureServer schema inspection to be aggregate category/department totals or narrow single-program statistics (e.g. Number_of_Recipients as a count, not names) — none contain individual recipient names. Not usable for a payee-level grants/payments dataset."
+        },
+        {
+          "source": "Federal open.canada.ca CKAN aggregator, organization \"pe\" / \"pei\"",
+          "result": "0 datasets found under either organization slug — unlike Newfoundland and Labrador (org \"nl-tnl\", 76 datasets) and New Brunswick (Socrata, indexed via catalog search), PEI's open data is not mirrored on the federal aggregator."
+        },
+        {
+          "source": "Prince Edward Island Public Accounts (Department of Finance, Volume I and Volume III)",
+          "result": "Published as PDF only (princeedwardisland.ca/sites/default/files/publications/...) — no CSV/XLSX/open-data version found. Per project rules, PDF extraction is not used."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "dry_run_ok": 1,
+    "blocked": 1,
+    "not_found": 1,
+    "warnings_total": 3
+  }
+}
