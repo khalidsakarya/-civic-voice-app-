@@ -1,0 +1,392 @@
+{
+  "run_type": "DRY_RUN",
+  "run_at": "2026-09-07T20:45:15.313Z",
+  "jurisdiction": "CA-NB",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-NB-001",
+      "dataset_name": "Statistics Canada — New Brunswick Unemployment (Table 14-10-0287-01)",
+      "statcan_coord_used": "5.7.1.1.1.1.0.0.0.0",
+      "firestore_target": {
+        "collection": "subnational_economic_social_stats",
+        "doc_id": "CA-NB",
+        "path": "subnational_economic_social_stats/CA-NB",
+        "write_mode": "merge"
+      },
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+      "fetched_at": "2026-09-07T20:45:15.313Z",
+      "status": "BLOCKED",
+      "error": "No economic payload returned — coordinate may be wrong or API returned no data",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [
+        "unemployment: read ECONNRESET",
+        "Coord attempted: 5.7.1.1.1.1.0.0.0.0",
+        "Transient Node-level connection reset against the Stats Can API — same class of issue observed for CA-BC/CA-AB/CA-QC/CA-SK/CA-MB/CA-NS unemployment fetches in this environment. Report separately; do not write."
+      ],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false
+    },
+    {
+      "dataset_id": "CV-DATA-NB-002",
+      "dataset_name": "CRA Charities Registry — NB org-level extract",
+      "firestore_target": {
+        "collection": "subnational_tax_exempt_entities",
+        "doc_id": "CA-NB",
+        "path": "subnational_tax_exempt_entities/CA-NB",
+        "write_mode": "merge"
+      },
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
+      "fetched_at": "2026-09-07T20:45:15.313Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_fetched": 2480,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records"
+      ],
+      "sample_records": [
+        {
+          "name": "SAINT JOHN ARTS CENTRE INC./CENTRE DES ARTS DE SAINT JOHN INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "L'ATELIER R.A.D.O. INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "BETH SHALOM INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "mvp_note": "Name/type/category only — no dollar values per MVP product decision."
+    },
+    {
+      "dataset_id": "CV-DATA-NB-003",
+      "dataset_name": "New Brunswick Combined Supplier and Grant Payments",
+      "firestore_target": {
+        "collection": "subnational_grants",
+        "doc_id": "CA-NB",
+        "path": "subnational_grants/CA-NB",
+        "write_mode": "merge"
+      },
+      "source_url": "https://gnb.socrata.com/d/edw7-9596",
+      "fetched_at": "2026-09-07T20:45:15.313Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "NB 2025 - Combined Supplier and Grant Payments / Paiements aux fournisseurs et subventions combinés — fiscal year 2025",
+      "records_fetched": 6012,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "fiscal_year",
+        "reporting_period",
+        "data_source",
+        "source_url",
+        "resource_url",
+        "discovery_note",
+        "licence",
+        "note",
+        "total_rows_in_source",
+        "blank_recipient_rows_excluded",
+        "total_after_filter",
+        "records_stored",
+        "total_raw_top100",
+        "fmt_total_top100",
+        "payment_type_breakdown_in_top",
+        "detected_columns",
+        "all_headers",
+        "raw_first_rows",
+        "warnings"
+      ],
+      "sample_records": [
+        {
+          "recipientName": "Horizon Health Network",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$1.74B",
+          "rawAmount": 1741881837,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Réseau de santé Vitalité",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$1.13B",
+          "rawAmount": 1125631071,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Medavie Inc",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$431.70M",
+          "rawAmount": 431695273,
+          "date": "2025"
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "discovered_source": {
+        "package_title": "Government of New Brunswick — 2025 - Combined Supplier and Grant Payments / Paiements aux fournisseurs et subventions combinés. New Brunswick Open Government Licence.",
+        "source_url": "https://gnb.socrata.com/d/edw7-9596",
+        "resource_url": "https://gnb.socrata.com/resource/edw7-9596.csv",
+        "licence": "New Brunswick Open Government Licence",
+        "discovery_note": "Discovered via Socrata catalog search on gnb.socrata.com, filtered to \"Combined Supplier and Grant Payments\" datasets, sorted by most recently updated to select the current fiscal year automatically (2026-02-25T15:00:39.000Z)."
+      },
+      "detected_columns": {
+        "recipient": "supplier_name_nom_du",
+        "amount": "payment_paiement",
+        "payment_type": "payment_type_type_de_paiement"
+      },
+      "all_headers": [
+        "supplier_name_nom_du",
+        "payment_paiement",
+        "payment_type_type_de_paiement"
+      ],
+      "recommended_modal_label": "Public Payments",
+      "total_rows_in_source": 6012,
+      "blank_recipient_rows_excluded": 0,
+      "payment_type_breakdown_in_top": {
+        "Payments & Grants / Paiements et subventions": 100
+      },
+      "top_20_after_filter": [
+        {
+          "recipientName": "Horizon Health Network",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$1.74B",
+          "rawAmount": 1741881837,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Réseau de santé Vitalité",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$1.13B",
+          "rawAmount": 1125631071,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Medavie Inc",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$431.70M",
+          "rawAmount": 431695273,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Receiver General for Canada",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$373.04M",
+          "rawAmount": 373036446,
+          "date": "2025"
+        },
+        {
+          "recipientName": "EM/ANB Inc",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$295.76M",
+          "rawAmount": 295756726,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Regional Development Corporation",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$227.50M",
+          "rawAmount": 227500000,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Vestcor Inc-Public Service",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$188.94M",
+          "rawAmount": 188944956,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Vestcor Inc-Teachers",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$168.82M",
+          "rawAmount": 168824329,
+          "date": "2025"
+        },
+        {
+          "recipientName": "University of New Brunswick",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$154.21M",
+          "rawAmount": 154214364,
+          "date": "2025"
+        },
+        {
+          "recipientName": "NB Power Corporation",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$140.75M",
+          "rawAmount": 140745515,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Université de Moncton",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$106.93M",
+          "rawAmount": 106929430,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Shannex RLC Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$100.32M",
+          "rawAmount": 100317030,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Northern Construction Inc",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$72.14M",
+          "rawAmount": 72142848,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Vestcor Inc-SRP-CBE",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$67.13M",
+          "rawAmount": 67133038,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Dexter Construction Company Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$63.36M",
+          "rawAmount": 63361654,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Minister of Finance - Nova Scotia",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$60.61M",
+          "rawAmount": 60612128,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Mastercard-Bank of Montreal-Purchasing Card",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$48.47M",
+          "rawAmount": 48468262,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Flextrack Inc",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$45.85M",
+          "rawAmount": 45850282,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Canadian Blood Services",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$44.23M",
+          "rawAmount": 44228441,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Énergie NB Power",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$40.80M",
+          "rawAmount": 40796647,
+          "date": "2025"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "dry_run_ok": 2,
+    "blocked": 1,
+    "warnings_total": 3
+  }
+}
