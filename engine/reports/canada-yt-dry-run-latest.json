@@ -1,0 +1,140 @@
+{
+  "run_type": "DRY_RUN",
+  "run_at": "2026-09-07T21:44:57.298Z",
+  "jurisdiction": "CA-YT",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-YT-001",
+      "dataset_name": "Statistics Canada — Yukon Unemployment (Table 14-10-0292-01, territorial LFS)",
+      "statcan_coord_used": "1.8.1.1.1.1.0.0.0.0",
+      "statcan_table_note": "Table 14-10-0287-01 (used for the 10 provinces) does NOT cover territories — confirmed via getCubeMetadata (geo dimension = Canada + 10 provinces only). Yukon has a dedicated table, 14-10-0292-01 (\"Labour force characteristics by territory, three-month moving average, seasonally adjusted and unadjusted\"), where a valid Yukon coordinate DOES exist and was confirmed via getSeriesInfoFromCubePidCoord (SeriesTitleEn: \"Yukon;Unemployment rate;Total - Gender;15 years and over;Estimate;Seasonally adjusted\").",
+      "firestore_target": {
+        "collection": "subnational_economic_social_stats",
+        "doc_id": "CA-YT",
+        "path": "subnational_economic_social_stats/CA-YT",
+        "write_mode": "merge"
+      },
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410029201",
+      "fetched_at": "2026-09-07T21:44:57.298Z",
+      "status": "BLOCKED",
+      "error": "No economic payload returned — coordinate may be wrong or API returned no data",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [
+        "unemployment: read ECONNRESET",
+        "Coord attempted: 1.8.1.1.1.1.0.0.0.0 (Table 14-10-0292-01)",
+        "Transient Node-level connection reset against the Stats Can API — same class of issue observed for every province processed so far in this environment (confirmed independently working via direct curl for this exact coordinate). Report separately; do not write."
+      ],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false
+    },
+    {
+      "dataset_id": "CV-DATA-YT-002",
+      "dataset_name": "CRA Charities Registry — YT org-level extract",
+      "firestore_target": {
+        "collection": "subnational_tax_exempt_entities",
+        "doc_id": "CA-YT",
+        "path": "subnational_tax_exempt_entities/CA-YT",
+        "write_mode": "merge"
+      },
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
+      "fetched_at": "2026-09-07T21:44:57.298Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_fetched": 111,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records"
+      ],
+      "sample_records": [
+        {
+          "name": "CHALLENGE-DISABILITY RESOURCE GROUP",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CHILD DEVELOPMENT CENTRE",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "DAWSON COMMUNITY CHAPEL",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "mvp_note": "Name/type/category only — no dollar values per MVP product decision."
+    },
+    {
+      "dataset_id": "CV-DATA-YT-003",
+      "dataset_name": "Yukon Grants / Public Payments — NOT FOUND",
+      "firestore_target": {
+        "collection": "subnational_grants",
+        "doc_id": "CA-YT",
+        "path": "subnational_grants/CA-YT",
+        "write_mode": "merge"
+      },
+      "source_url": null,
+      "fetched_at": "2026-09-07T21:44:57.298Z",
+      "status": "NOT_FOUND",
+      "error": "YT Grants: no current, machine-readable (CSV/XLSX/JSON), whole-of-government Yukon grants/payments/public-accounts source exists. yukon.ca returns HTTP 403 to automated requests (bot-protection) and was not scraped. Yukon's CKAN open data portal (open.yukon.ca) was searched across 8 financial-related terms; the only candidates found are either narrow single-program grants (Pioneer Utility Grant, Spark Tourism Micro Grant), an unverified self-reported vendor directory with no payment amounts, or the genuinely comprehensive and current Public Accounts (fiscal years 2001-02 through 2024-25, including \"Schedule 8 - Schedule of legislated grants\" and \"Schedule 9 - Schedule of other government transfers\") — but every one of the 170 Finance-organization datasets on open.yukon.ca is published as PDF only (confirmed via a full organization-wide format scan: 100% PDF, zero CSV/XLSX/JSON). PDF extraction was not authorized for this task. This is a genuine data-format gap, not a fetch failure — see module header comment for the full search performed.",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false,
+      "recommended_modal_label": null,
+      "sources_checked": [
+        {
+          "source": "yukon.ca (task primary candidate domain)",
+          "result": "Returns HTTP 403 on direct request — confirmed via curl. Bot-protected. Not scraped, per project rules against anti-bot-blocked sources."
+        },
+        {
+          "source": "open.yukon.ca (Yukon's official CKAN open data portal, licence \"Open Government Licence - Yukon\")",
+          "result": "Resolves and is fully browsable/searchable via the CKAN API. Full-text search across \"grants\" (647 results), \"payments\" (28), \"supplier\" (9), \"expenditure\" (80), \"public accounts\" (81), \"transfer payments\" (4), \"spending\" (20), \"disclosure\" (36) performed."
+        },
+        {
+          "source": "\"Yukon Government Supplier Directory\"",
+          "result": "A self-reported, UNVERIFIED business directory of vendors who WANT to do business with the Yukon government — not a disclosure of actual payments made, no payment amounts. Explicit CKAN notes: \"Government of Yukon does not verify this information.\" Rejected: not a payments record."
+        },
+        {
+          "source": "Narrow single-program grant datasets (Pioneer Utility Grant, Spark Tourism Micro Grant, Crown grants - 50k, Community Development Fund/Economic Development Fund/Media Development funding programs annual reports)",
+          "result": "All single-program in scope (not whole-of-government) and the \"fund annual report\" datasets are PDF-only. Rejected: wrong scope and/or wrong format."
+        },
+        {
+          "source": "Yukon Public Accounts (fiscal years 2001-02 through 2024-25, on open.yukon.ca under organization \"finance\") — INCLUDING Schedule 8 (Schedule of legislated grants) and Schedule 9 (Schedule of other government transfers), which would be exactly the payee-level data needed",
+          "result": "Genuinely current (2024-25 Public Accounts package last modified 2025-11-05) and comprehensive (whole-of-government) — BUT confirmed via a full organization-wide resource-format scan (170 Finance-org datasets, every resource inspected) to be 100% PDF, 0% CSV/XLSX/JSON. PDF extraction was not authorized for this task, so this otherwise-ideal source could not be used."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "dry_run_ok": 1,
+    "blocked": 1,
+    "not_found": 1,
+    "warnings_total": 3
+  }
+}

@@ -9,6 +9,13 @@ const STATCAN_UNEMP_PRODUCT_ID = 14100287;
 const STATCAN_ON_COORD = '7.7.1.1.1.1.0.0.0.0';
 const STATCAN_CA_COORD = '1.7.1.1.1.1.0.0.0.0';
 
+// Table 14-10-0292-01 — Labour force characteristics by territory, three-month
+// moving average, seasonally adjusted and unadjusted. Territories (YT, NT, NU)
+// are NOT covered by Table 14-10-0287-01 (that table's geography dimension is
+// Canada + the 10 provinces only) — they have their own dedicated table due to
+// smaller LFS sample sizes.
+const STATCAN_TERR_UNEMP_PRODUCT_ID = 14100292;
+
 function postJson(url, body) {
   return new Promise((resolve, reject) => {
     const data = JSON.stringify(body);
@@ -161,11 +168,11 @@ function buildUnemploymentFirestoreFields(opts) {
   };
 }
 
-/** @param {string} coordinate @param {number} latestN */
-async function statcanUnemploymentMonthly(coordinate, latestN = 24) {
+/** @param {number} productId @param {string} coordinate @param {number} latestN */
+async function statcanUnemploymentMonthlyFromProduct(productId, coordinate, latestN = 24) {
   const j = await postJson(
     'https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods',
-    [{ productId: STATCAN_UNEMP_PRODUCT_ID, coordinate, latestN }],
+    [{ productId, coordinate, latestN }],
   );
   const pts = j?.[0]?.object?.vectorDataPoint || [];
   return pts
@@ -174,6 +181,11 @@ async function statcanUnemploymentMonthly(coordinate, latestN = 24) {
       jurisdiction: num(p.value),
     }))
     .filter((p) => p.period && p.jurisdiction != null);
+}
+
+/** @param {string} coordinate @param {number} latestN */
+async function statcanUnemploymentMonthly(coordinate, latestN = 24) {
+  return statcanUnemploymentMonthlyFromProduct(STATCAN_UNEMP_PRODUCT_ID, coordinate, latestN);
 }
 
 /**
@@ -211,6 +223,51 @@ async function statcanProvincialUnemployment(
     sourceUrl:
       'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701',
     reportingPeriod: 'Monthly provincial unemployment rate (seasonally adjusted)',
+  });
+}
+
+/**
+ * Territorial (YT/NT/NU) monthly unemployment — Statistics Canada Table
+ * 14-10-0292-01. The territorial rate is a 3-month moving average (smaller
+ * LFS sample sizes than the provinces), published monthly; the national
+ * comparator is still sourced from the provincial table (14-10-0287-01,
+ * Canada coordinate) since Table 14-10-0292-01 has no Canada-wide aggregate
+ * of its own (its geography dimension is Yukon / Northwest Territories /
+ * Nunavut only).
+ * @param {string} territoryCoord
+ * @param {string} nationalCoord Coordinate in Table 14-10-0287-01 (e.g. STATCAN_CA_COORD)
+ * @param {string} jurisdictionKey
+ * @param {string} natKey
+ * @param {number} latestN
+ */
+async function statcanTerritorialUnemployment(
+  territoryCoord,
+  nationalCoord,
+  jurisdictionKey,
+  natKey,
+  latestN = 24,
+) {
+  const [jPts, nPts] = await Promise.all([
+    statcanUnemploymentMonthlyFromProduct(STATCAN_TERR_UNEMP_PRODUCT_ID, territoryCoord, latestN),
+    statcanUnemploymentMonthly(nationalCoord, latestN),
+  ]);
+  const natByPeriod = new Map(nPts.map((p) => [p.period, p.jurisdiction]));
+  const monthly = jPts.map((p) => ({
+    period: p.period,
+    period_label: formatMonthLabel(p.period),
+    jurisdiction: p.jurisdiction,
+    national_average: natByPeriod.get(p.period) ?? null,
+  }));
+  return buildUnemploymentFirestoreFields({
+    monthly,
+    jurisdictionKey,
+    natKey,
+    frequency: 'rolling_3_month',
+    seriesField: 'unemployment_series_rolling_3_month',
+    source: 'Statistics Canada — Labour Force Survey (Table 14-10-0292-01, three-month moving average, seasonally adjusted)',
+    sourceUrl:
+      'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410029201',
+    reportingPeriod: 'Monthly territorial unemployment rate (3-month moving average, seasonally adjusted)',
   });
 }
 
@@ -359,8 +416,10 @@ async function onsLondonRollingUnemployment(fetchText, fetchBuffer, XLSX) {
 module.exports = {
   STATCAN_ON_COORD,
   STATCAN_CA_COORD,
+  STATCAN_TERR_UNEMP_PRODUCT_ID,
   buildUnemploymentFirestoreFields,
   statcanProvincialUnemployment,
+  statcanTerritorialUnemployment,
   fredMonthlyUnemployment,
   absNswMonthlyUnemployment,
   onsLondonRollingUnemployment,
