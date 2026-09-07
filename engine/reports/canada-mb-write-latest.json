@@ -1,0 +1,117 @@
+{
+  "run_type": "FIRESTORE_WRITE",
+  "jurisdiction": "CA-MB",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-MB-002",
+      "dataset_name": "CRA Charities Registry — Manitoba org-level extract (MVP: name/type/category)",
+      "verification_id": "CV-REC-001-2026-08-24-CV-DATA-MB-002",
+      "firestore_path": "subnational_tax_exempt_entities/CA-MB",
+      "write_mode": "merge",
+      "write_at": "2026-09-07T20:15:43.861Z",
+      "status": "WRITTEN",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_written": 100,
+      "fields_written": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records",
+        "verification_status",
+        "licence_note",
+        "cv_data_id"
+      ],
+      "sample_written": [
+        {
+          "name": "ACCUEIL PRECIEUX-SANG LTEE",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "MANITOBA THEATRE FOR YOUNG PEOPLE INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "AGASSIZ CHILD CARE CENTRE INC",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "L'ALLIANCE FRANCAISE DU MANITOBA INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "ALONSA AND DISTRICT RECREATIONAL CO-OP INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "SPRINGFIELD LEARNING CENTRES INCORPORATED",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "ASSINIBOINE EARLY LEARNING CENTRE INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "BEGINNINGS PRESCHOOL INC",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "BINSCARTH CURLING CLUB INC",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "BRANDON NURSERY SCHOOL INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "mvp_note": "Name/type/category only. rawValue=0 enforced. No dollar values written.",
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5"
+    }
+  ],
+  "deliberately_excluded": [
+    "CV-DATA-MB-001 — Unemployment — automated Node fetch pipeline hit a transient ECONNRESET against the Stats Can API; coordinate independently confirmed correct via curl; write only after a clean automated fetch succeeds.",
+    "CV-DATA-MB-003 — Grants/Public Payments — no official machine-readable Manitoba source exists. opendata.gov.mb.ca does not resolve; geoportal.gov.mb.ca (\"Data MB\") is geospatial only; federal open.canada.ca aggregator has no financial datasets for organization=mb beyond public-sector compensation (salary) disclosure, a different category. Manitoba's \"Contract Disclosure\" proactive-disclosure page (contracts >=$10,000/month) was identified but NOT used — it links only to an interactive/search-only web app (web.gov.mb.ca/DisclosureOfContracts/, ASP.NET MVC + Knockout.js/AJAX) with no bulk CSV or documented API export. Extracting it would require scraping rendered results or an undocumented internal endpoint, which was not authorized for this data pipeline. This dataset cannot be written until Manitoba publishes a structured (CSV/XLSX/API) source, or scraping/PDF extraction is explicitly authorized as a separate decision."
+  ],
+  "last_updated": "2026-09-07T20:15:43.861Z",
+  "summary": {
+    "total_attempted": 1,
+    "written": 1,
+    "failed": 0,
+    "warnings_total": 0
+  }
+}
