@@ -1,0 +1,172 @@
+{
+  "run_type": "DRY_RUN",
+  "run_at": "2026-09-07T22:25:36.500Z",
+  "jurisdiction": "CA-NU",
+  "firestore_interaction": "none — no reads, no writes, no probes (Firestore quota exhausted at time of this run)",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-NU-001",
+      "dataset_name": "Statistics Canada — Nunavut Unemployment (Table 14-10-0292-01, territorial LFS)",
+      "statcan_coord_used": "3.8.1.1.1.1.0.0.0.0",
+      "statcan_table_note": "Table 14-10-0287-01 (used for the 10 provinces) does NOT cover territories — its geo dimension is Canada + 10 provinces only. Nunavut has a dedicated table, 14-10-0292-01 (\"Labour force characteristics by territory, three-month moving average, seasonally adjusted and unadjusted\"), where a valid Nunavut coordinate DOES exist and was confirmed via getSeriesInfoFromCubePidCoord (SeriesTitleEn: \"Nunavut;Unemployment rate;Total - Gender;15 years and over;Estimate;Seasonally adjusted\"). Fetched via the statcanTerritorialUnemployment() helper, which itself uses the hardened statcanWdsPostJson() reliability fetch helper (https retry -> fetch retry -> curl fallback).",
+      "firestore_target": {
+        "collection": "subnational_economic_social_stats",
+        "doc_id": "CA-NU",
+        "path": "subnational_economic_social_stats/CA-NU",
+        "write_mode": "merge"
+      },
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410029201",
+      "fetched_at": "2026-09-07T22:25:36.500Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Monthly territorial unemployment rate (3-month moving average, seasonally adjusted)",
+      "records_fetched": 24,
+      "records_transformed": 24,
+      "fields_to_write": [
+        "unemployment_latest_rate",
+        "unemployment_latest_period",
+        "unemployment_frequency",
+        "unemployment_series_rolling_3_month",
+        "unemployment_source_url",
+        "unemployment_source",
+        "unemployment_url",
+        "unemployment_reporting_period",
+        "unemployment_rate",
+        "reporting_period",
+        "data_status"
+      ],
+      "sample_records": [
+        {
+          "period": "2024-09",
+          "period_label": "Sep 2024",
+          "jurisdiction": 9.5,
+          "national_average": 6.5,
+          "Nunavut": 9.5,
+          "CA Average": 6.5
+        },
+        {
+          "period": "2024-10",
+          "period_label": "Oct 2024",
+          "jurisdiction": 7.5,
+          "national_average": 6.6,
+          "Nunavut": 7.5,
+          "CA Average": 6.6
+        },
+        {
+          "period": "2024-11",
+          "period_label": "Nov 2024",
+          "jurisdiction": 6.2,
+          "national_average": 7,
+          "Nunavut": 6.2,
+          "CA Average": 7
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "unemployment_latest_rate": 11.3,
+      "unemployment_latest_period": "Aug 2026"
+    },
+    {
+      "dataset_id": "CV-DATA-NU-002",
+      "dataset_name": "CRA Charities Registry — NU org-level extract",
+      "firestore_target": {
+        "collection": "subnational_tax_exempt_entities",
+        "doc_id": "CA-NU",
+        "path": "subnational_tax_exempt_entities/CA-NU",
+        "write_mode": "merge"
+      },
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
+      "fetched_at": "2026-09-07T22:25:36.500Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_fetched": 26,
+      "records_transformed": 26,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records"
+      ],
+      "sample_records": [
+        {
+          "name": "PULAARVIK KABLU FRIENDSHIP CENTRE",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "BAKER LAKE HOSPICE SOCIETY",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "BAFFIN REGIONAL HEALTH AND SOCIAL SERVICES BOARD",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "mvp_note": "Name/type/category only — no dollar values per MVP product decision."
+    },
+    {
+      "dataset_id": "CV-DATA-NU-003",
+      "dataset_name": "Nunavut Grants / Public Payments — NOT FOUND",
+      "firestore_target": {
+        "collection": "subnational_grants",
+        "doc_id": "CA-NU",
+        "path": "subnational_grants/CA-NU",
+        "write_mode": "merge"
+      },
+      "source_url": null,
+      "fetched_at": "2026-09-07T22:25:36.500Z",
+      "status": "NOT_FOUND",
+      "error": "NU Grants: no current, machine-readable, whole-of-government Nunavut grants/payments/public-accounts source exists. Nunavut has no open data portal at all — opendata.gov.nu.ca and data.gov.nu.ca do not resolve, and gov.nu.ca (the main government domain) returns HTTP 403 to automated requests (bot-protected, not scraped). Nunavut is not mirrored on the federal open.canada.ca CKAN aggregator (0 datasets under organization \"nu\"; the sole dataset titled \"Nunavut\" there is an unrelated NRCan political map). Nunavut's Public Accounts are reasonably current but published exclusively as PDF (hosted on the bot-blocked gov.nu.ca and mirrored on assembly.nu.ca, still PDF-only) — PDF extraction was not authorized for this task. This is a genuine data-availability/format gap, not a fetch failure — see module header comment for the full search performed.",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false,
+      "recommended_modal_label": null,
+      "sources_checked": [
+        {
+          "source": "gov.nu.ca (task primary candidate domain, and its subpaths e.g. /eia/information/nunavut-bureau-statistics)",
+          "result": "Returns HTTP 403 on direct request — confirmed via curl. Bot-protected. Not scraped, per project rules against anti-bot-blocked sources."
+        },
+        {
+          "source": "opendata.gov.nu.ca and data.gov.nu.ca",
+          "result": "Neither resolves (no such host). Nunavut has no dedicated open data portal — confirmed via DNS lookup and via web search (\"The Government of Nunavut doesn't provide an open data portal per se.\")."
+        },
+        {
+          "source": "Federal open.canada.ca CKAN aggregator, organization \"nu\"",
+          "result": "0 datasets found. The only dataset titled \"Nunavut\" found via general search is an unrelated Natural Resources Canada political boundary map, not a Government of Nunavut financial dataset."
+        },
+        {
+          "source": "Nunavut Public Accounts (e.g. \"Public Accounts of the Government of Nunavut for the Year Ended March 31, 2024\", tabled at the Legislative Assembly)",
+          "result": "Reasonably current and exists — but published exclusively as PDF, hosted on the bot-blocked gov.nu.ca and mirrored on assembly.nu.ca (accessible, but still PDF-only, no CSV/XLSX/open-data version). PDF extraction was not authorized for this task, so this source could not be used despite being current."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "dry_run_ok": 2,
+    "blocked": 0,
+    "not_found": 1,
+    "warnings_total": 0
+  }
+}
