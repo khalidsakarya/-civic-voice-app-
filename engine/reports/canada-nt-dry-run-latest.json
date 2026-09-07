@@ -1,0 +1,180 @@
+{
+  "run_type": "DRY_RUN",
+  "run_at": "2026-09-07T22:20:16.783Z",
+  "jurisdiction": "CA-NT",
+  "firestore_interaction": "none — no reads, no writes, no probes (Firestore quota exhausted at time of this run)",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-NT-001",
+      "dataset_name": "Statistics Canada — Northwest Territories Unemployment (Table 14-10-0292-01, territorial LFS)",
+      "statcan_coord_used": "2.8.1.1.1.1.0.0.0.0",
+      "statcan_table_note": "Table 14-10-0287-01 (used for the 10 provinces) does NOT cover territories — its geo dimension is Canada + 10 provinces only. Northwest Territories has a dedicated table, 14-10-0292-01 (\"Labour force characteristics by territory, three-month moving average, seasonally adjusted and unadjusted\"), where a valid NWT coordinate DOES exist and was confirmed via getSeriesInfoFromCubePidCoord (SeriesTitleEn: \"Northwest Territories;Unemployment rate;Total - Gender;15 years and over;Estimate;Seasonally adjusted\"). Fetched via the new statcanTerritorialUnemployment() helper, which itself uses the hardened statcanWdsPostJson() reliability fetch helper (https retry -> fetch retry -> curl fallback).",
+      "firestore_target": {
+        "collection": "subnational_economic_social_stats",
+        "doc_id": "CA-NT",
+        "path": "subnational_economic_social_stats/CA-NT",
+        "write_mode": "merge"
+      },
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410029201",
+      "fetched_at": "2026-09-07T22:20:16.783Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Monthly territorial unemployment rate (3-month moving average, seasonally adjusted)",
+      "records_fetched": 24,
+      "records_transformed": 24,
+      "fields_to_write": [
+        "unemployment_latest_rate",
+        "unemployment_latest_period",
+        "unemployment_frequency",
+        "unemployment_series_rolling_3_month",
+        "unemployment_source_url",
+        "unemployment_source",
+        "unemployment_url",
+        "unemployment_reporting_period",
+        "unemployment_rate",
+        "reporting_period",
+        "data_status"
+      ],
+      "sample_records": [
+        {
+          "period": "2024-09",
+          "period_label": "Sep 2024",
+          "jurisdiction": 5.3,
+          "national_average": 6.5,
+          "Northwest Territories": 5.3,
+          "CA Average": 6.5
+        },
+        {
+          "period": "2024-10",
+          "period_label": "Oct 2024",
+          "jurisdiction": 5.7,
+          "national_average": 6.6,
+          "Northwest Territories": 5.7,
+          "CA Average": 6.6
+        },
+        {
+          "period": "2024-11",
+          "period_label": "Nov 2024",
+          "jurisdiction": 6.1,
+          "national_average": 7,
+          "Northwest Territories": 6.1,
+          "CA Average": 7
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "unemployment_latest_rate": 7.6,
+      "unemployment_latest_period": "Aug 2026"
+    },
+    {
+      "dataset_id": "CV-DATA-NT-002",
+      "dataset_name": "CRA Charities Registry — NT org-level extract",
+      "firestore_target": {
+        "collection": "subnational_tax_exempt_entities",
+        "doc_id": "CA-NT",
+        "path": "subnational_tax_exempt_entities/CA-NT",
+        "write_mode": "merge"
+      },
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
+      "fetched_at": "2026-09-07T22:20:16.783Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_fetched": 122,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records"
+      ],
+      "sample_records": [
+        {
+          "name": "CALVARY COMMUNITY CHURCH",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CANADIAN MENTAL HEALTH ASSOC NWT DIVISION",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CERTIFIED GENERAL ACCOUNTANTS ASSOC OF THE N W T",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "mvp_note": "Name/type/category only — no dollar values per MVP product decision."
+    },
+    {
+      "dataset_id": "CV-DATA-NT-003",
+      "dataset_name": "Northwest Territories Grants / Public Payments — NOT FOUND",
+      "firestore_target": {
+        "collection": "subnational_grants",
+        "doc_id": "CA-NT",
+        "path": "subnational_grants/CA-NT",
+        "write_mode": "merge"
+      },
+      "source_url": null,
+      "fetched_at": "2026-09-07T22:20:16.783Z",
+      "status": "NOT_FOUND",
+      "error": "NT Grants: no current, machine-readable, whole-of-government, payee-level Northwest Territories grants/payments/public-accounts source exists. The territory's CKAN open data portal (opendata.gov.nt.ca) was searched across 9 financial-related terms; the only \"payments\" hit is an unrelated wildlife-harvest remuneration program (Moose Jaw Payments for North Slave Region). The GNWT Sole Source Contracts Report (fin.gov.nt.ca) is the closest candidate but is stale (last published for FY2017-2018, ~8 years out of date) and narrow in scope (sole-source contracts only). NWT Public Accounts are almost entirely PDF; the one structured (.xlsx) resource found, \"Public Accounts 2022-2023 - Tables\", is itself the most recent Public Accounts data published (no FY2023-24/2024-25 found) — roughly 3 fiscal years stale — and is department-level summary tables, not payee-level data. NWT is not mirrored on the federal open.canada.ca CKAN aggregator. This is a genuine data-availability/currency/granularity gap, not a fetch failure — see module header comment for the full search performed.",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false,
+      "recommended_modal_label": null,
+      "sources_checked": [
+        {
+          "source": "opendata.gov.nt.ca (NWT's official CKAN open data portal, ckan 2.9.8, Open Government Licence)",
+          "result": "Resolves and is fully browsable/searchable via the CKAN API. Full-text search across \"grants\" (0 results), \"payments\" (1), \"supplier\" (0), \"expenditure\" (13), \"public accounts\" (0), \"transfer payments\" (0), \"spending\" (8), \"disclosure\" (0), \"vendor\" (0) performed."
+        },
+        {
+          "source": "\"Moose Jaw Payments for North Slave Region\" — the sole \"payments\" hit",
+          "result": "A wildlife-harvest remuneration program (Dept. of Environment and Climate Change) to help determine sex/age/location of moose harvested — not a government financial disclosure of any kind. Rejected: wrong subject entirely."
+        },
+        {
+          "source": "\"expenditure\"/\"spending\" hits (13 and 8 results)",
+          "result": "All are household expenditure SURVEYS (2003-2019, statistical surveys of resident spending habits) or capital expenditure INTENTIONS (industry investment-intention economic indicators) — not government payment/grant records. Rejected: wrong subject entirely."
+        },
+        {
+          "source": "Federal open.canada.ca CKAN aggregator, organization \"nt\" / \"nwt\"",
+          "result": "0 datasets found under either organization slug — NWT's open data is not mirrored on the federal aggregator (unlike Newfoundland and Labrador)."
+        },
+        {
+          "source": "GNWT Sole Source Contracts Report (fin.gov.nt.ca) — the closest candidate, and the only one with a structured (non-PDF) resource found on first inspection",
+          "result": "STALE — the most recently published reporting period listed is April 1, 2017 - March 31, 2018 (confirmed via the live page listing), roughly 8 years out of date with no newer report published since. Also NARROW even if current — sole-source (non-competitive) contracts only, excluding competitively-tendered contracts, grants, and regular transfer payments. Rejected on both currency and scope grounds."
+        },
+        {
+          "source": "NWT Public Accounts (fin.gov.nt.ca/en/public-accounts)",
+          "result": "Almost entirely PDF (Sections I-IV per fiscal year). One structured resource found, \"Public Accounts 2022-2023 - Tables\" (.xlsx) — but fiscal year 2022-2023 is confirmed to be the MOST RECENT Public Accounts data published at all (no FY2023-24 or FY2024-25 listed), making it roughly 3 fiscal years stale as of this dry-run, and it contains department/category-level summary tables rather than payee-level grants/payments data. Rejected: stale AND (even setting staleness aside) wrong granularity."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "dry_run_ok": 2,
+    "blocked": 0,
+    "not_found": 1,
+    "warnings_total": 0
+  }
+}
