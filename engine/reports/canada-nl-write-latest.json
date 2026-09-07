@@ -1,0 +1,117 @@
+{
+  "run_type": "FIRESTORE_WRITE",
+  "jurisdiction": "CA-NL",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-NL-002",
+      "dataset_name": "CRA Charities Registry — Newfoundland and Labrador org-level extract (MVP: name/type/category)",
+      "verification_id": "CV-REC-001-2026-09-07-CV-DATA-NL-002",
+      "firestore_path": "subnational_tax_exempt_entities/CA-NL",
+      "write_mode": "merge",
+      "write_at": "2026-09-07T21:16:21.897Z",
+      "status": "WRITTEN",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_written": 100,
+      "fields_written": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records",
+        "verification_status",
+        "licence_note",
+        "cv_data_id"
+      ],
+      "sample_written": [
+        {
+          "name": "Canadian Parents for French (Newfoundland/Labrador) Inc.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "LIBRA HOUSE INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "THE AGNES PRATT HOME",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "ATLANTIC MISSION SOCIETY THE PRESBYTERIAN CHURCH IN CANADA",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "BAY ROBERTS PASTORAL CHARGE",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "BIG BROTHERS BIG SISTERS OF EASTERN NEWFOUNDLAND INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "BLACKHEAD WESTERN BAY PASTORAL CHARGE",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "BONAVISTA-TRINITY-PLACENTIA INTEGRATED SCHOOL BOARD",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "Murphy Centre Inc.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "MACDERMOTT MEMORIAL UNITED CHURCH",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "mvp_note": "Name/type/category only. rawValue=0 enforced. No dollar values written.",
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5"
+    }
+  ],
+  "deliberately_excluded": [
+    "CV-DATA-NL-001 — Unemployment — automated Node fetch pipeline hit a transient ECONNRESET against the Stats Can API; coordinate 2.7.1.1.1.1.0.0.0.0 independently confirmed correct via curl (8.2%, 9.3%, 8.6% for Jun-Aug 2026); write only after a clean automated fetch succeeds.",
+    "CV-DATA-NL-003 — Grants/Public Payments — not written. No current, comprehensive, machine-readable whole-of-government Newfoundland and Labrador grants/payments/public-accounts source was found. NL's open data portal (opendata.gov.nl.ca, bespoke non-CKAN/non-Socrata platform, 71 datasets, mirrored 1:1 on open.canada.ca under organization \"nl-tnl\", 76 datasets) was fully enumerated. The only candidate resembling a whole-of-government payments disclosure, \"Grant payments over $250,000 2014-2015\" (Dept. of Finance), was identified but deliberately REJECTED — confirmed via its own metadata to be a one-time snapshot covering fiscal year April 2014-March 2015 only, released and modified 2015-09-28, never updated since (over a decade stale). Publishing stale single-year 2014-2015 data as this province's current grants/payments dataset would misrepresent it to users, so it was not written. Three other narrow grant-related NL datasets (Municipal Operating Grant Allocations, CYFS Community Partners operating grants, Community Enhancement Employment Program) were also found and rejected for the same reason (single fiscal-year snapshots from 2013-2016, never updated, narrow single-department/single-program scope). Newfoundland and Labrador Public Accounts were identified as published by the Department of Finance, but only as PDF volumes, not CSV/XLSX/open data — PDF extraction was not authorized for this task, so Public Accounts were not used. This is a genuine data-availability/currency gap, not a fetch failure — see engine/lib/subnational-transparency-ca-nl.cjs module header and engine/reports/canada-nl-dry-run-latest.json for the full search performed."
+  ],
+  "last_updated": "2026-09-07T21:16:21.897Z",
+  "summary": {
+    "total_attempted": 1,
+    "written": 1,
+    "failed": 0,
+    "warnings_total": 0
+  }
+}
