@@ -3,7 +3,11 @@
  */
 
 const https = require('https');
+const { execFile } = require('child_process');
+const { promisify } = require('util');
 const { annualFromMonthly, num, trim } = require('./subnational-transparency-shared.cjs');
+
+const execFileAsync = promisify(execFile);
 
 const STATCAN_UNEMP_PRODUCT_ID = 14100287;
 const STATCAN_ON_COORD = '7.7.1.1.1.1.0.0.0.0';
@@ -16,34 +20,237 @@ const STATCAN_CA_COORD = '1.7.1.1.1.1.0.0.0.0';
 // smaller LFS sample sizes.
 const STATCAN_TERR_UNEMP_PRODUCT_ID = 14100292;
 
-function postJson(url, body) {
+// ─── Reliable StatCan WDS fetch helper ────────────────────────────────────────
+//
+// Background: in this environment, Node's classic `https` module
+// (`require('https')`) reliably fails with ECONNRESET against
+// www150.statcan.gc.ca — confirmed via instrumented testing to fail on
+// EVERY attempt (18/18 requests, 3 retries each = 54/54 individual https
+// attempts) across CA-AB, CA-QC, CA-SK, CA-MB, CA-NS, CA-NB, CA-NL, CA-PE,
+// and CA-YT's territorial coordinate. Node's built-in global `fetch`
+// (undici-backed — a different HTTP client implementation from the classic
+// `http`/`https` core module) succeeded on the FIRST attempt 100% of the
+// time against the identical URL/payload/coordinate in the same test run,
+// and a plain `curl` subprocess has likewise been reliable every time it
+// was checked directly throughout this project's development. The
+// StatCan API and the coordinates are not the problem — something specific
+// to Node's classic https.Agent/socket/TLS handling on this network path
+// is (most likely a WAF/proxy that is more permissive of undici's and
+// curl's connection/TLS negotiation than of Node core's). See
+// engine/reports/statcan-wds-reliability-test-latest.json (produced by
+// engine/test-statcan-wds-reliability.cjs) for the full per-jurisdiction
+// evidence, including which strategy resolved each call.
+//
+// This helper never fabricates data: every strategy below either returns a
+// real parsed WDS JSON response or throws. It tries https first (retrying
+// with exponential backoff, per the original design intent), then falls
+// back to Node's built-in fetch, then finally to a curl subprocess as a
+// last resort — child_process is already an established fallback pattern
+// elsewhere in this engine (see engine/lib/calaccess-lobbying-extract.cjs,
+// engine/canada-monthly-runner.cjs), so reusing it here (via execFile with
+// an argument array — never a shell string) is consistent with existing
+// conventions.
+
+const STATCAN_WDS_USER_AGENT =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) CivicVoiceApp-DataEngine/1.0 (+https://civicvoice.app; contact: data@civicvoice.app)';
+const STATCAN_WDS_TIMEOUT_MS = 15000;
+const STATCAN_WDS_MAX_RETRIES = 2; // per strategy, i.e. up to 3 attempts each for https and fetch
+const STATCAN_WDS_BASE_BACKOFF_MS = 400;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Strategy 1: raw `https.request`, hardened.
+ * - `agent: false` forces a brand-new socket per attempt, ruling out a bad
+ *   pooled/keep-alive connection as the cause of a reused-socket reset.
+ * - An explicit request timeout so a hung socket fails fast and retries,
+ *   instead of dangling indefinitely.
+ * - A realistic User-Agent + Accept header, since some front-ending
+ *   infrastructure is less permissive of bare Node-default request
+ *   signatures than of curl/browser-shaped ones.
+ */
+function httpsPostJsonAttempt(url, body, timeoutMs) {
   return new Promise((resolve, reject) => {
     const data = JSON.stringify(body);
     const u = new URL(url);
     const req = https.request(
       {
         hostname: u.hostname,
-        path: u.pathname,
+        path: u.pathname + u.search,
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) },
+        agent: false,
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(data),
+          'User-Agent': STATCAN_WDS_USER_AGENT,
+          Accept: 'application/json',
+          Connection: 'close',
+        },
       },
       (res) => {
         let b = '';
-        res.on('data', (c) => (b += c));
+        res.on('data', (c) => {
+          b += c;
+        });
         res.on('end', () => {
           try {
             resolve(JSON.parse(b));
           } catch (e) {
-            reject(new Error(b.slice(0, 200)));
+            reject(new Error(`https: non-JSON response (status ${res.statusCode}): ${b.slice(0, 200)}`));
           }
         });
+        res.on('error', reject);
       },
     );
+    req.setTimeout(timeoutMs, () => {
+      req.destroy(new Error(`https: request timed out after ${timeoutMs}ms`));
+    });
     req.on('error', reject);
     req.write(data);
     req.end();
   });
 }
+
+/**
+ * Strategy 2: Node's built-in global `fetch` (undici-backed) — a different
+ * HTTP client stack from strategy 1's raw `https` module. If the ECONNRESET
+ * is triggered by something specific to Node's classic http/https client
+ * (e.g. its TLS ClientHello shape, or its socket/keep-alive handling),
+ * swapping the underlying client can sidestep it without leaving the process.
+ */
+async function fetchPostJsonAttempt(url, body, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(new Error(`fetch: request timed out after ${timeoutMs}ms`)), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': STATCAN_WDS_USER_AGENT,
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      throw new Error(`fetch: non-JSON response (status ${res.status}): ${text.slice(0, 200)}`);
+    }
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Strategy 3 (last-resort fallback): shell out to `curl`. Empirically 100%
+ * reliable against the Stats Can WDS API in this environment — used here via
+ * `execFile` with an argument array (never a shell string), so there is no
+ * shell-interpolation risk from the JSON payload.
+ */
+async function curlPostJsonAttempt(url, body, timeoutMs) {
+  const data = JSON.stringify(body);
+  const timeoutSec = Math.max(1, Math.round(timeoutMs / 1000));
+  const { stdout } = await execFileAsync(
+    'curl',
+    [
+      '-s',
+      '--max-time', String(timeoutSec),
+      '-X', 'POST',
+      url,
+      '-H', 'Content-Type: application/json',
+      '-H', `User-Agent: ${STATCAN_WDS_USER_AGENT}`,
+      '-d', data,
+    ],
+    { maxBuffer: 10 * 1024 * 1024 },
+  );
+  try {
+    return JSON.parse(stdout);
+  } catch (e) {
+    throw new Error(`curl: non-JSON response: ${trim(stdout).slice(0, 200)}`);
+  }
+}
+
+// Lightweight in-memory telemetry ring so callers/tests can see which
+// strategy actually resolved each request (for diagnosing ECONNRESET),
+// without changing statcanWdsPostJson's return value (still just the parsed
+// WDS JSON body, same as the original postJson()).
+const wdsFetchTelemetry = [];
+const WDS_TELEMETRY_MAX = 200;
+
+function recordWdsTelemetry(entry) {
+  wdsFetchTelemetry.push({ at: new Date().toISOString(), ...entry });
+  if (wdsFetchTelemetry.length > WDS_TELEMETRY_MAX) wdsFetchTelemetry.shift();
+}
+
+/** Returns a copy of the most recent statcanWdsPostJson attempt telemetry (diagnostics only). */
+function getWdsFetchTelemetry() {
+  return wdsFetchTelemetry.slice();
+}
+
+/**
+ * Reliable POST-JSON helper for the Statistics Canada WDS REST API. Tries
+ * strategies in order (https → fetch → curl), retrying each of the first two
+ * with exponential backoff, before finally falling back to a curl subprocess.
+ * Throws only if every strategy fails — never returns fabricated data.
+ *
+ * @param {string} url
+ * @param {any} body
+ * @param {{ timeoutMs?: number, maxRetries?: number }} [opts]
+ */
+async function statcanWdsPostJson(url, body, opts = {}) {
+  const timeoutMs = opts.timeoutMs || STATCAN_WDS_TIMEOUT_MS;
+  const maxRetries = opts.maxRetries ?? STATCAN_WDS_MAX_RETRIES;
+  const attemptsLog = [];
+
+  const strategies = [
+    { name: 'https', fn: httpsPostJsonAttempt },
+    { name: 'fetch', fn: fetchPostJsonAttempt },
+  ];
+
+  for (const strategy of strategies) {
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+      try {
+        const result = await strategy.fn(url, body, timeoutMs);
+        recordWdsTelemetry({
+          url,
+          strategy: strategy.name,
+          attempt: attempt + 1,
+          outcome: 'success',
+          priorFailures: attemptsLog.slice(),
+        });
+        return result;
+      } catch (err) {
+        attemptsLog.push(`${strategy.name}#${attempt + 1}: ${err.message}`);
+        if (attempt < maxRetries) {
+          await sleep(STATCAN_WDS_BASE_BACKOFF_MS * 2 ** attempt);
+        }
+      }
+    }
+  }
+
+  // Last resort: curl subprocess. No retry loop — empirically reliable on the
+  // first try; if this also fails, the API/network is genuinely unreachable.
+  try {
+    const result = await curlPostJsonAttempt(url, body, timeoutMs);
+    recordWdsTelemetry({ url, strategy: 'curl', attempt: 1, outcome: 'success', priorFailures: attemptsLog.slice() });
+    return result;
+  } catch (err) {
+    attemptsLog.push(`curl: ${err.message}`);
+  }
+
+  recordWdsTelemetry({ url, strategy: null, outcome: 'failure', priorFailures: attemptsLog.slice() });
+
+  throw new Error(`StatCan WDS request failed after all strategies — ${attemptsLog.join(' | ')}`);
+}
+
+// Preserved name for the module's one internal call site / any external
+// caller that imported `postJson` directly — same signature, same behavior,
+// now backed by the retrying multi-strategy implementation above.
+const postJson = statcanWdsPostJson;
 
 /** @param {string} refPer e.g. 2026-04-01 */
 function periodYmFromRefPer(refPer) {
@@ -417,6 +624,8 @@ module.exports = {
   STATCAN_ON_COORD,
   STATCAN_CA_COORD,
   STATCAN_TERR_UNEMP_PRODUCT_ID,
+  statcanWdsPostJson,
+  getWdsFetchTelemetry,
   buildUnemploymentFirestoreFields,
   statcanProvincialUnemployment,
   statcanTerritorialUnemployment,

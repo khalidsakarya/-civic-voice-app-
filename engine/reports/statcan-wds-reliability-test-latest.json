@@ -1,0 +1,684 @@
+{
+  "run_type": "DRY_RUN_RELIABILITY_TEST",
+  "run_at": "2026-09-07T22:06:52.265Z",
+  "scope": "Unemployment fetch only (subnational_economic_social_stats). No CRA charities, no grants, no Firestore writes.",
+  "fetch_helper": "statcanWdsPostJson (engine/lib/subnational-unemployment-monthly.cjs) — https retry -> fetch retry -> curl fallback",
+  "results": [
+    {
+      "jurisdiction_id": "CA-AB",
+      "label": "Alberta",
+      "coordinate": "10.7.1.1.1.1.0.0.0.0",
+      "statcan_table": "14-10-0287-01",
+      "required_test": true,
+      "status": "OK",
+      "error": null,
+      "latest_rate": 6.8,
+      "latest_period": "Aug 2026",
+      "sample_points": [
+        {
+          "period": "Jun 2026",
+          "rate": 7
+        },
+        {
+          "period": "Jul 2026",
+          "rate": 7
+        },
+        {
+          "period": "Aug 2026",
+          "rate": 6.8
+        }
+      ],
+      "wds_fetch_telemetry": [
+        {
+          "at": "2026-09-07T22:06:54.195Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        },
+        {
+          "at": "2026-09-07T22:06:54.231Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        }
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-QC",
+      "label": "Quebec",
+      "coordinate": "6.7.1.1.1.1.0.0.0.0",
+      "statcan_table": "14-10-0287-01",
+      "required_test": true,
+      "status": "OK",
+      "error": null,
+      "latest_rate": 5.6,
+      "latest_period": "Aug 2026",
+      "sample_points": [
+        {
+          "period": "Jun 2026",
+          "rate": 5.4
+        },
+        {
+          "period": "Jul 2026",
+          "rate": 5.6
+        },
+        {
+          "period": "Aug 2026",
+          "rate": 5.6
+        }
+      ],
+      "wds_fetch_telemetry": [
+        {
+          "at": "2026-09-07T22:06:55.922Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        },
+        {
+          "at": "2026-09-07T22:06:55.937Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        }
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-SK",
+      "label": "Saskatchewan",
+      "coordinate": "9.7.1.1.1.1.0.0.0.0",
+      "statcan_table": "14-10-0287-01",
+      "required_test": true,
+      "status": "OK",
+      "error": null,
+      "latest_rate": 6,
+      "latest_period": "Aug 2026",
+      "sample_points": [
+        {
+          "period": "Jun 2026",
+          "rate": 6.1
+        },
+        {
+          "period": "Jul 2026",
+          "rate": 6
+        },
+        {
+          "period": "Aug 2026",
+          "rate": 6
+        }
+      ],
+      "wds_fetch_telemetry": [
+        {
+          "at": "2026-09-07T22:06:57.793Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        },
+        {
+          "at": "2026-09-07T22:06:57.797Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        }
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-MB",
+      "label": "Manitoba",
+      "coordinate": "8.7.1.1.1.1.0.0.0.0",
+      "statcan_table": "14-10-0287-01",
+      "required_test": false,
+      "status": "OK",
+      "error": null,
+      "latest_rate": 5,
+      "latest_period": "Aug 2026",
+      "sample_points": [
+        {
+          "period": "Jun 2026",
+          "rate": 5.4
+        },
+        {
+          "period": "Jul 2026",
+          "rate": 5
+        },
+        {
+          "period": "Aug 2026",
+          "rate": 5
+        }
+      ],
+      "wds_fetch_telemetry": [
+        {
+          "at": "2026-09-07T22:06:59.515Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        },
+        {
+          "at": "2026-09-07T22:06:59.541Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        }
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-NS",
+      "label": "Nova Scotia",
+      "coordinate": "4.7.1.1.1.1.0.0.0.0",
+      "statcan_table": "14-10-0287-01",
+      "required_test": false,
+      "status": "OK",
+      "error": null,
+      "latest_rate": 6.1,
+      "latest_period": "Aug 2026",
+      "sample_points": [
+        {
+          "period": "Jun 2026",
+          "rate": 6.5
+        },
+        {
+          "period": "Jul 2026",
+          "rate": 6.2
+        },
+        {
+          "period": "Aug 2026",
+          "rate": 6.1
+        }
+      ],
+      "wds_fetch_telemetry": [
+        {
+          "at": "2026-09-07T22:07:01.223Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        },
+        {
+          "at": "2026-09-07T22:07:01.255Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        }
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-NB",
+      "label": "New Brunswick",
+      "coordinate": "5.7.1.1.1.1.0.0.0.0",
+      "statcan_table": "14-10-0287-01",
+      "required_test": false,
+      "status": "OK",
+      "error": null,
+      "latest_rate": 7.3,
+      "latest_period": "Aug 2026",
+      "sample_points": [
+        {
+          "period": "Jun 2026",
+          "rate": 7.3
+        },
+        {
+          "period": "Jul 2026",
+          "rate": 7
+        },
+        {
+          "period": "Aug 2026",
+          "rate": 7.3
+        }
+      ],
+      "wds_fetch_telemetry": [
+        {
+          "at": "2026-09-07T22:07:02.923Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        },
+        {
+          "at": "2026-09-07T22:07:02.960Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        }
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-NL",
+      "label": "Newfoundland and Labrador",
+      "coordinate": "2.7.1.1.1.1.0.0.0.0",
+      "statcan_table": "14-10-0287-01",
+      "required_test": false,
+      "status": "OK",
+      "error": null,
+      "latest_rate": 8.6,
+      "latest_period": "Aug 2026",
+      "sample_points": [
+        {
+          "period": "Jun 2026",
+          "rate": 8.2
+        },
+        {
+          "period": "Jul 2026",
+          "rate": 9.3
+        },
+        {
+          "period": "Aug 2026",
+          "rate": 8.6
+        }
+      ],
+      "wds_fetch_telemetry": [
+        {
+          "at": "2026-09-07T22:07:04.631Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        },
+        {
+          "at": "2026-09-07T22:07:05.144Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        }
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-PE",
+      "label": "Prince Edward Island",
+      "coordinate": "3.7.1.1.1.1.0.0.0.0",
+      "statcan_table": "14-10-0287-01",
+      "required_test": false,
+      "status": "OK",
+      "error": null,
+      "latest_rate": 7.9,
+      "latest_period": "Aug 2026",
+      "sample_points": [
+        {
+          "period": "Jun 2026",
+          "rate": 7.6
+        },
+        {
+          "period": "Jul 2026",
+          "rate": 6.8
+        },
+        {
+          "period": "Aug 2026",
+          "rate": 7.9
+        }
+      ],
+      "wds_fetch_telemetry": [
+        {
+          "at": "2026-09-07T22:07:06.744Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        },
+        {
+          "at": "2026-09-07T22:07:06.763Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        }
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-YT",
+      "label": "Yukon",
+      "coordinate": "1.8.1.1.1.1.0.0.0.0",
+      "statcan_table": "14-10-0292-01",
+      "required_test": true,
+      "status": "OK",
+      "error": null,
+      "latest_rate": 5.3,
+      "latest_period": "Aug 2026",
+      "sample_points": [
+        {
+          "period": "Jun 2026",
+          "rate": 7.3
+        },
+        {
+          "period": "Jul 2026",
+          "rate": 6.6
+        },
+        {
+          "period": "Aug 2026",
+          "rate": 5.3
+        }
+      ],
+      "wds_fetch_telemetry": [
+        {
+          "at": "2026-09-07T22:07:08.401Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        },
+        {
+          "at": "2026-09-07T22:07:08.439Z",
+          "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+          "strategy": "fetch",
+          "attempt": 1,
+          "outcome": "success",
+          "priorFailures": [
+            "https#1: read ECONNRESET",
+            "https#2: read ECONNRESET",
+            "https#3: read ECONNRESET"
+          ]
+        }
+      ]
+    }
+  ],
+  "total_wds_requests_made": 18,
+  "strategy_breakdown": {
+    "fetch": 18
+  },
+  "requests_where_https_failed_before_success": 18,
+  "summary": {
+    "total": 9,
+    "ok": 9,
+    "blocked": 0,
+    "required_test_coordinates": [
+      {
+        "jurisdiction_id": "CA-AB",
+        "label": "Alberta",
+        "coordinate": "10.7.1.1.1.1.0.0.0.0",
+        "statcan_table": "14-10-0287-01",
+        "required_test": true,
+        "status": "OK",
+        "error": null,
+        "latest_rate": 6.8,
+        "latest_period": "Aug 2026",
+        "sample_points": [
+          {
+            "period": "Jun 2026",
+            "rate": 7
+          },
+          {
+            "period": "Jul 2026",
+            "rate": 7
+          },
+          {
+            "period": "Aug 2026",
+            "rate": 6.8
+          }
+        ],
+        "wds_fetch_telemetry": [
+          {
+            "at": "2026-09-07T22:06:54.195Z",
+            "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+            "strategy": "fetch",
+            "attempt": 1,
+            "outcome": "success",
+            "priorFailures": [
+              "https#1: read ECONNRESET",
+              "https#2: read ECONNRESET",
+              "https#3: read ECONNRESET"
+            ]
+          },
+          {
+            "at": "2026-09-07T22:06:54.231Z",
+            "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+            "strategy": "fetch",
+            "attempt": 1,
+            "outcome": "success",
+            "priorFailures": [
+              "https#1: read ECONNRESET",
+              "https#2: read ECONNRESET",
+              "https#3: read ECONNRESET"
+            ]
+          }
+        ]
+      },
+      {
+        "jurisdiction_id": "CA-QC",
+        "label": "Quebec",
+        "coordinate": "6.7.1.1.1.1.0.0.0.0",
+        "statcan_table": "14-10-0287-01",
+        "required_test": true,
+        "status": "OK",
+        "error": null,
+        "latest_rate": 5.6,
+        "latest_period": "Aug 2026",
+        "sample_points": [
+          {
+            "period": "Jun 2026",
+            "rate": 5.4
+          },
+          {
+            "period": "Jul 2026",
+            "rate": 5.6
+          },
+          {
+            "period": "Aug 2026",
+            "rate": 5.6
+          }
+        ],
+        "wds_fetch_telemetry": [
+          {
+            "at": "2026-09-07T22:06:55.922Z",
+            "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+            "strategy": "fetch",
+            "attempt": 1,
+            "outcome": "success",
+            "priorFailures": [
+              "https#1: read ECONNRESET",
+              "https#2: read ECONNRESET",
+              "https#3: read ECONNRESET"
+            ]
+          },
+          {
+            "at": "2026-09-07T22:06:55.937Z",
+            "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+            "strategy": "fetch",
+            "attempt": 1,
+            "outcome": "success",
+            "priorFailures": [
+              "https#1: read ECONNRESET",
+              "https#2: read ECONNRESET",
+              "https#3: read ECONNRESET"
+            ]
+          }
+        ]
+      },
+      {
+        "jurisdiction_id": "CA-SK",
+        "label": "Saskatchewan",
+        "coordinate": "9.7.1.1.1.1.0.0.0.0",
+        "statcan_table": "14-10-0287-01",
+        "required_test": true,
+        "status": "OK",
+        "error": null,
+        "latest_rate": 6,
+        "latest_period": "Aug 2026",
+        "sample_points": [
+          {
+            "period": "Jun 2026",
+            "rate": 6.1
+          },
+          {
+            "period": "Jul 2026",
+            "rate": 6
+          },
+          {
+            "period": "Aug 2026",
+            "rate": 6
+          }
+        ],
+        "wds_fetch_telemetry": [
+          {
+            "at": "2026-09-07T22:06:57.793Z",
+            "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+            "strategy": "fetch",
+            "attempt": 1,
+            "outcome": "success",
+            "priorFailures": [
+              "https#1: read ECONNRESET",
+              "https#2: read ECONNRESET",
+              "https#3: read ECONNRESET"
+            ]
+          },
+          {
+            "at": "2026-09-07T22:06:57.797Z",
+            "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+            "strategy": "fetch",
+            "attempt": 1,
+            "outcome": "success",
+            "priorFailures": [
+              "https#1: read ECONNRESET",
+              "https#2: read ECONNRESET",
+              "https#3: read ECONNRESET"
+            ]
+          }
+        ]
+      },
+      {
+        "jurisdiction_id": "CA-YT",
+        "label": "Yukon",
+        "coordinate": "1.8.1.1.1.1.0.0.0.0",
+        "statcan_table": "14-10-0292-01",
+        "required_test": true,
+        "status": "OK",
+        "error": null,
+        "latest_rate": 5.3,
+        "latest_period": "Aug 2026",
+        "sample_points": [
+          {
+            "period": "Jun 2026",
+            "rate": 7.3
+          },
+          {
+            "period": "Jul 2026",
+            "rate": 6.6
+          },
+          {
+            "period": "Aug 2026",
+            "rate": 5.3
+          }
+        ],
+        "wds_fetch_telemetry": [
+          {
+            "at": "2026-09-07T22:07:08.401Z",
+            "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+            "strategy": "fetch",
+            "attempt": 1,
+            "outcome": "success",
+            "priorFailures": [
+              "https#1: read ECONNRESET",
+              "https#2: read ECONNRESET",
+              "https#3: read ECONNRESET"
+            ]
+          },
+          {
+            "at": "2026-09-07T22:07:08.439Z",
+            "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromCubePidCoordAndLatestNPeriods",
+            "strategy": "fetch",
+            "attempt": 1,
+            "outcome": "success",
+            "priorFailures": [
+              "https#1: read ECONNRESET",
+              "https#2: read ECONNRESET",
+              "https#3: read ECONNRESET"
+            ]
+          }
+        ]
+      }
+    ],
+    "required_test_all_ok": true
+  }
+}
