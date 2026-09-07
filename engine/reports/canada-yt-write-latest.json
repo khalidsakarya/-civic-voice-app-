@@ -1,0 +1,34 @@
+{
+  "run_type": "FIRESTORE_WRITE",
+  "jurisdiction": "CA-YT",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-YT-002",
+      "dataset_name": "CRA Charities Registry — Yukon org-level extract (MVP: name/type/category)",
+      "verification_id": "CV-REC-001-2026-09-07-CV-DATA-YT-002",
+      "firestore_path": "subnational_tax_exempt_entities/CA-YT",
+      "write_mode": "merge",
+      "write_at": "2026-09-07T21:53:56.446Z",
+      "status": "FAILED",
+      "error": "8 RESOURCE_EXHAUSTED: Quota exceeded.",
+      "reporting_period": null,
+      "records_written": null,
+      "fields_written": [],
+      "sample_written": [],
+      "warnings": [],
+      "ui_renderable": true,
+      "mvp_note": "Name/type/category only. rawValue=0 enforced. No dollar values written."
+    }
+  ],
+  "deliberately_excluded": [
+    "CV-DATA-YT-001 — Unemployment — automated Node fetch pipeline hit a transient ECONNRESET against the Stats Can API; not written. Note: Yukon unemployment uses Statistics Canada Table 14-10-0292-01 (\"Labour force characteristics by territory, three-month moving average, seasonally adjusted and unadjusted\"), NOT the provincial Table 14-10-0287-01 used for ON/BC/AB/QC/SK/MB/NS/NB/NL/PE — Table 14-10-0287-01's geography dimension is Canada + the 10 provinces only and does not cover territories (confirmed via getCubeMetadata). Coordinate 1.8.1.1.1.1.0.0.0.0 in Table 14-10-0292-01 was independently confirmed correct via curl (Yukon unemployment rate series, 3.9%-7.9% across Mar-Aug 2026, current through the Sep 2026 release). Write only after a clean automated fetch succeeds.",
+    "CV-DATA-YT-003 — Grants/Public Payments — not written. No current, machine-readable (CSV/XLSX/JSON), whole-of-government Yukon grants/payments/public-accounts source exists. yukon.ca returns HTTP 403 to automated requests (bot-protected) and was not scraped. Yukon's CKAN open data portal (open.yukon.ca) was searched across 8 financial-related terms; found only narrow single-program grants, an unverified self-reported supplier directory with no payment amounts, and Yukon's own current, comprehensive Public Accounts (fiscal years 2001-02 through 2024-25) — including exactly the needed Schedule 8 (\"Schedule of legislated grants\") and Schedule 9 (\"Schedule of other government transfers\") — but a full organization-wide scan confirmed every one of the 170 Finance-organization datasets on open.yukon.ca is published as PDF only (0% CSV/XLSX/JSON). PDF extraction was not authorized for this task, so Yukon Public Accounts were not used. This is a genuine data-format gap, not a fetch failure — see engine/lib/subnational-transparency-ca-yt.cjs module header and engine/reports/canada-yt-dry-run-latest.json for the full search performed."
+  ],
+  "last_updated": "2026-09-07T21:53:56.446Z",
+  "summary": {
+    "total_attempted": 1,
+    "written": 0,
+    "failed": 1,
+    "warnings_total": 0
+  }
+}
