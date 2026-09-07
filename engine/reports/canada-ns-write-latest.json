@@ -1,0 +1,117 @@
+{
+  "run_type": "FIRESTORE_WRITE",
+  "jurisdiction": "CA-NS",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-NS-002",
+      "dataset_name": "CRA Charities Registry — Nova Scotia org-level extract (MVP: name/type/category)",
+      "verification_id": "CV-REC-001-2026-09-07-CV-DATA-NS-002",
+      "firestore_path": "subnational_tax_exempt_entities/CA-NS",
+      "write_mode": "merge",
+      "write_at": "2026-09-07T20:30:25.902Z",
+      "status": "WRITTEN",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_written": 100,
+      "fields_written": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records",
+        "verification_status",
+        "licence_note",
+        "cv_data_id"
+      ],
+      "sample_written": [
+        {
+          "name": "CANADIAN ASSOCIATION OF GERMAN LANGUAGE SCHOOLS",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "OCEANS INSTITUTE OF CANADA",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "THE BIBLE TREASURY BOOKSTORE INCORPORATED",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "VALLEY CHRISTIAN SERVICE FOUNDATION INCORPORATED",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Private Foundation",
+          "rawValue": 0
+        },
+        {
+          "name": "ACACIAVILLE UNITED BAPTIST CHURCH",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "ACADIA UNIVERSITY",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "WEST HEAD WESLEYAN CHURCH OF WEST HEAD  NOVA SCOTIA",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "ADVOCATE UNITED BAPTIST CHURCH",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "AENON BAPTIST CHURCH",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "MOSAIC MINISTRIES ASSOCIATION",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "mvp_note": "Name/type/category only. rawValue=0 enforced. No dollar values written.",
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5"
+    }
+  ],
+  "deliberately_excluded": [
+    "CV-DATA-NS-001 — Unemployment — automated Node fetch pipeline hit a transient ECONNRESET against the Stats Can API; coordinate independently confirmed correct via curl; write only after a clean automated fetch succeeds.",
+    "CV-DATA-NS-003 — Grants/Public Payments — not written. No comprehensive machine-readable whole-of-government Nova Scotia grants/payments/public-accounts source was found (Nova Scotia runs a Socrata portal, data.novascotia.ca, ~1,277 datasets; a thorough scoped search across 15+ financial/payments/disclosure terms found no comprehensive dataset). The Agriculture Funding Programs Details dataset (jv92-pedy, Dept. of Agriculture, 6,324 rows, real recipients/amounts, Nova Scotia Open Government Licence) was identified and successfully fetched/transformed in the dry-run, but is deliberately DEFERRED, not written — it is single-department/single-sector (agriculture funding only), not a whole-of-government dataset, and would require a precise \"Agriculture Grants\" label rather than the standard province-wide \"Grants\"/\"Transfer Payments\" pattern if published. Awaiting reviewer decision on whether/how to publish it, or combine it with other narrow Nova Scotia datasets, in a future task."
+  ],
+  "last_updated": "2026-09-07T20:30:25.902Z",
+  "summary": {
+    "total_attempted": 1,
+    "written": 1,
+    "failed": 0,
+    "warnings_total": 0
+  }
+}
