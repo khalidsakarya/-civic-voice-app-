@@ -1,0 +1,421 @@
+{
+  "run_type": "DRY_RUN",
+  "run_at": "2026-09-07T20:25:58.142Z",
+  "jurisdiction": "CA-NS",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-NS-001",
+      "dataset_name": "Statistics Canada — Nova Scotia Unemployment (Table 14-10-0287-01)",
+      "statcan_coord_used": "4.7.1.1.1.1.0.0.0.0",
+      "firestore_target": {
+        "collection": "subnational_economic_social_stats",
+        "doc_id": "CA-NS",
+        "path": "subnational_economic_social_stats/CA-NS",
+        "write_mode": "merge"
+      },
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+      "fetched_at": "2026-09-07T20:25:58.142Z",
+      "status": "BLOCKED",
+      "error": "No economic payload returned — coordinate may be wrong or API returned no data",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [
+        "unemployment: read ECONNRESET",
+        "Coord attempted: 4.7.1.1.1.1.0.0.0.0",
+        "Transient Node-level connection reset against the Stats Can API — same class of issue observed for CA-BC/CA-AB/CA-QC/CA-SK/CA-MB unemployment fetches in this environment. Report separately; do not write."
+      ],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false
+    },
+    {
+      "dataset_id": "CV-DATA-NS-002",
+      "dataset_name": "CRA Charities Registry — NS org-level extract",
+      "firestore_target": {
+        "collection": "subnational_tax_exempt_entities",
+        "doc_id": "CA-NS",
+        "path": "subnational_tax_exempt_entities/CA-NS",
+        "write_mode": "merge"
+      },
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
+      "fetched_at": "2026-09-07T20:25:58.142Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_fetched": 3452,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records"
+      ],
+      "sample_records": [
+        {
+          "name": "CANADIAN ASSOCIATION OF GERMAN LANGUAGE SCHOOLS",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "OCEANS INSTITUTE OF CANADA",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "THE BIBLE TREASURY BOOKSTORE INCORPORATED",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "mvp_note": "Name/type/category only — no dollar values per MVP product decision."
+    },
+    {
+      "dataset_id": "CV-DATA-NS-003",
+      "dataset_name": "Nova Scotia Department of Agriculture Funding Programs (PARTIAL — not whole-of-government)",
+      "firestore_target": {
+        "collection": "subnational_grants",
+        "doc_id": "CA-NS",
+        "path": "subnational_grants/CA-NS",
+        "write_mode": "merge"
+      },
+      "source_url": "https://data.novascotia.ca/Business-and-Industry/Agriculture-Funding-Programs-Details/jv92-pedy",
+      "fetched_at": "2026-09-07T20:25:58.142Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Nova Scotia Department of Agriculture — Agriculture Funding Programs Details, multi-year (2018-2019 onward)",
+      "records_fetched": 6324,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "fiscal_year",
+        "reporting_period",
+        "data_source",
+        "data_source_scope_note",
+        "source_url",
+        "resource_url",
+        "licence",
+        "licence_url",
+        "note",
+        "total_rows_in_source",
+        "blank_recipient_rows_excluded",
+        "total_after_filter",
+        "records_stored",
+        "total_raw_top100",
+        "fmt_total_top100",
+        "detected_columns",
+        "all_headers",
+        "raw_first_rows",
+        "warnings"
+      ],
+      "sample_records": [
+        {
+          "recipientName": "Millen Farms Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Local Food Advancer",
+          "dept": "Agriculture",
+          "fmtAmount": "$400.0K",
+          "rawAmount": 400000,
+          "date": "2022-2023"
+        },
+        {
+          "recipientName": "Scott and Stewart Forestry Consultants Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Fiona Agriculture Disaster Assistance",
+          "dept": "Agriculture",
+          "fmtAmount": "$379.5K",
+          "rawAmount": 379549.47,
+          "date": "2022-2023"
+        },
+        {
+          "recipientName": "Millen Farms Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Fiona Agriculture Disaster Assistance",
+          "dept": "Agriculture",
+          "fmtAmount": "$375.2K",
+          "rawAmount": 375205.24,
+          "date": "2022-2023"
+        }
+      ],
+      "warnings": [
+        "SCOPE WARNING: this dataset covers Nova Scotia Department of Agriculture funding programs ONLY — it is not a comprehensive, whole-of-government grants/payments dataset. No comprehensive Nova Scotia source was found (see module header comment for the full search performed). Several other narrow single-program Nova Scotia grant-recipient datasets exist (mineral resources, age-friendly communities, small business COVID grants, university operating grants) but were not combined into this dataset — that would be a product decision requiring reviewer sign-off, not made unilaterally here."
+      ],
+      "ui_renderable": true,
+      "safe_to_write_after_review": false,
+      "discovered_source": {
+        "package_title": "Government of Nova Scotia — Department of Agriculture — Agriculture Funding Programs Details. Nova Scotia Open Government Licence.",
+        "scope_note": "Department of Agriculture funding programs only — not a whole-of-government dataset.",
+        "source_url": "https://data.novascotia.ca/Business-and-Industry/Agriculture-Funding-Programs-Details/jv92-pedy",
+        "resource_url": "https://data.novascotia.ca/resource/jv92-pedy.csv",
+        "licence": "Nova Scotia Open Government Licence",
+        "licence_url": "http://novascotia.ca/opendata/licence.asp"
+      },
+      "detected_columns": {
+        "department": "department",
+        "division": "division",
+        "program": "program_name",
+        "recipient": "client_name",
+        "amount": "payment_amount",
+        "fiscal_year": "fiscal_year"
+      },
+      "all_headers": [
+        "department",
+        "division",
+        "program_name",
+        "client_name",
+        "payment_amount",
+        "fiscal_year"
+      ],
+      "recommended_modal_label": "Grants (scope-limited — Agriculture only, not recommended for publication as-is)",
+      "total_rows_in_source": 6324,
+      "blank_recipient_rows_excluded": 0,
+      "top_20_after_filter": [
+        {
+          "recipientName": "Millen Farms Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Local Food Advancer",
+          "dept": "Agriculture",
+          "fmtAmount": "$400.0K",
+          "rawAmount": 400000,
+          "date": "2022-2023"
+        },
+        {
+          "recipientName": "Scott and Stewart Forestry Consultants Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Fiona Agriculture Disaster Assistance",
+          "dept": "Agriculture",
+          "fmtAmount": "$379.5K",
+          "rawAmount": 379549.47,
+          "date": "2022-2023"
+        },
+        {
+          "recipientName": "Millen Farms Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Fiona Agriculture Disaster Assistance",
+          "dept": "Agriculture",
+          "fmtAmount": "$375.2K",
+          "rawAmount": 375205.24,
+          "date": "2022-2023"
+        },
+        {
+          "recipientName": "Bragg Lumber Company Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Wild Blueberry Harvest Efficiency",
+          "dept": "Agriculture",
+          "fmtAmount": "$360.0K",
+          "rawAmount": 360000,
+          "date": "2019-2020"
+        },
+        {
+          "recipientName": "River View Herbs Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Fiona Agriculture Disaster Assistance",
+          "dept": "Agriculture",
+          "fmtAmount": "$331.6K",
+          "rawAmount": 331560,
+          "date": "2022-2023"
+        },
+        {
+          "recipientName": "Elmridge Farm (2003) Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Local Food Advancer",
+          "dept": "Agriculture",
+          "fmtAmount": "$303.6K",
+          "rawAmount": 303595,
+          "date": "2022-2023"
+        },
+        {
+          "recipientName": "Atlantic Poultry Inc",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Local Food Advancer",
+          "dept": "Agriculture",
+          "fmtAmount": "$300.4K",
+          "rawAmount": 300375,
+          "date": "2022-2023"
+        },
+        {
+          "recipientName": "Floyd Dickie & Sons Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Local Food Advancer",
+          "dept": "Agriculture",
+          "fmtAmount": "$300.4K",
+          "rawAmount": 300375,
+          "date": "2022-2023"
+        },
+        {
+          "recipientName": "denHaan Enterprises Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Advancing Innovative Technologies",
+          "dept": "Agriculture",
+          "fmtAmount": "$300.0K",
+          "rawAmount": 300000,
+          "date": "2019-2020"
+        },
+        {
+          "recipientName": "Forest Glen Greenhouses Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Advancing Innovative Technologies",
+          "dept": "Agriculture",
+          "fmtAmount": "$300.0K",
+          "rawAmount": 300000,
+          "date": "2019-2020"
+        },
+        {
+          "recipientName": "Noggins Corner Farm II Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Advancing Innovative Technologies",
+          "dept": "Agriculture",
+          "fmtAmount": "$300.0K",
+          "rawAmount": 300000,
+          "date": "2020-2021"
+        },
+        {
+          "recipientName": "Vital Berry Farms",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Advancing Innovative Technologies",
+          "dept": "Agriculture",
+          "fmtAmount": "$300.0K",
+          "rawAmount": 300000,
+          "date": "2020-2021"
+        },
+        {
+          "recipientName": "Cox Atlantic Chick Hatchery Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Advancing Clean Technologies",
+          "dept": "Agriculture",
+          "fmtAmount": "$300.0K",
+          "rawAmount": 300000,
+          "date": "2023-2024"
+        },
+        {
+          "recipientName": "Cox Bros Poultry Farm Limited",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Advancing Clean Technologies",
+          "dept": "Agriculture",
+          "fmtAmount": "$300.0K",
+          "rawAmount": 300000,
+          "date": "2023-2024"
+        },
+        {
+          "recipientName": "East Coast Wild Blueberry Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Advancing Clean Technologies",
+          "dept": "Agriculture",
+          "fmtAmount": "$300.0K",
+          "rawAmount": 300000,
+          "date": "2023-2024"
+        },
+        {
+          "recipientName": "Eisses Grains & Ag Services Inc",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Fiona Agriculture Disaster Assistance",
+          "dept": "Agriculture",
+          "fmtAmount": "$295.9K",
+          "rawAmount": 295854.07,
+          "date": "2022-2023"
+        },
+        {
+          "recipientName": "J & B Millen Farms Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Fiona Agriculture Disaster Assistance",
+          "dept": "Agriculture",
+          "fmtAmount": "$231.7K",
+          "rawAmount": 231680.8,
+          "date": "2022-2023"
+        },
+        {
+          "recipientName": "Randsland Farms Inc",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Fiona Agriculture Disaster Assistance",
+          "dept": "Agriculture",
+          "fmtAmount": "$227.9K",
+          "rawAmount": 227860,
+          "date": "2022-2023"
+        },
+        {
+          "recipientName": "G E Collins and Sons Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Wild Blueberry Harvest Efficiency",
+          "dept": "Agriculture",
+          "fmtAmount": "$220.0K",
+          "rawAmount": 220000,
+          "date": "2018-2019"
+        },
+        {
+          "recipientName": "Afton Hills Farm Ltd",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Fiona Agriculture Disaster Assistance",
+          "dept": "Agriculture",
+          "fmtAmount": "$214.3K",
+          "rawAmount": 214250,
+          "date": "2022-2023"
+        }
+      ],
+      "data_shape_warning": "SCOPE WARNING: this dataset covers Nova Scotia Department of Agriculture funding programs ONLY — it is not a comprehensive, whole-of-government grants/payments dataset. No comprehensive Nova Scotia source was found (see module header comment for the full search performed). Several other narrow single-program Nova Scotia grant-recipient datasets exist (mineral resources, age-friendly communities, small business COVID grants, university operating grants) but were not combined into this dataset — that would be a product decision requiring reviewer sign-off, not made unilaterally here.",
+      "other_ns_narrow_datasets_found": [
+        {
+          "name": "Nova Scotia Mineral Resources Development Fund (MRDF) Grant Recipients",
+          "id": "iz26-kkmn",
+          "scope": "Natural Resources — mining sector grants only"
+        },
+        {
+          "name": "Age-Friendly Communities Grant Funding Recipients",
+          "id": "izys-5emb",
+          "scope": "Single grant program"
+        },
+        {
+          "name": "Applicants and Recipients of Small Business Impact Grant / Small Business Reopening and Support Grant",
+          "id": "xaty-cfpq",
+          "scope": "One-time COVID-era programs"
+        },
+        {
+          "name": "Operating Grant Assistance to University and Nova Scotia Community College (NSCC)",
+          "id": "jivi-kv67",
+          "scope": "Post-secondary institutional operating grants only"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "dry_run_ok": 2,
+    "blocked": 1,
+    "warnings_total": 4
+  }
+}
