@@ -1,0 +1,263 @@
+{
+  "run_type": "FIRESTORE_WRITE",
+  "jurisdiction": "CA-NB",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-NB-002",
+      "dataset_name": "CRA Charities Registry — New Brunswick org-level extract (MVP: name/type/category)",
+      "verification_id": "CV-REC-001-2026-09-07-CV-DATA-NB-002",
+      "firestore_path": "subnational_tax_exempt_entities/CA-NB",
+      "write_mode": "merge",
+      "write_at": "2026-09-07T20:58:39.206Z",
+      "status": "WRITTEN",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_written": 100,
+      "fields_written": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records",
+        "verification_status",
+        "licence_note",
+        "cv_data_id"
+      ],
+      "sample_written": [
+        {
+          "name": "SAINT JOHN ARTS CENTRE INC./CENTRE DES ARTS DE SAINT JOHN INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "L'ATELIER R.A.D.O. INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "BETH SHALOM INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "IMPERIAL THEATRE FOUNDATION INC",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Public Foundation",
+          "rawValue": 0
+        },
+        {
+          "name": "IMPERIAL THEATRE INC./THEATRE IMPERIAL INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CANAAN RECREATIONAL COUNCIL INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CARLETON-VICTORIA COMMUNITY VOCATIONAL BOARD INC",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CENTRAL NEW BRUNSWICK WOODMEN'S MUSEUM INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "COMMUNITY INDUSTRIES EMPLOYMENT VOCATIONAL ASSOCIATION INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "COMMUNITY RESIDENTIAL LIVING BOARD WOODSTOCK INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "mvp_note": "Name/type/category only. rawValue=0 enforced. No dollar values written.",
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5"
+    },
+    {
+      "dataset_id": "CV-DATA-NB-003",
+      "dataset_name": "New Brunswick Combined Supplier and Grant Payments (labelled \"Public Payments\")",
+      "verification_id": "CV-REC-001-2026-09-07-CV-DATA-NB-003",
+      "firestore_path": "subnational_grants/CA-NB",
+      "write_mode": "merge",
+      "write_at": "2026-09-07T21:00:19.359Z",
+      "status": "WRITTEN",
+      "error": null,
+      "reporting_period": "Government of New Brunswick — 2025 - Combined Supplier and Grant Payments / Paiements aux fournisseurs et subventions combinés. New Brunswick Open Government Licence.",
+      "records_written": 100,
+      "fields_written": [
+        "jurisdiction_id",
+        "fiscal_year",
+        "reporting_period",
+        "data_source",
+        "source_url",
+        "resource_url",
+        "discovery_note",
+        "licence",
+        "note",
+        "total_rows_in_source",
+        "blank_recipient_rows_excluded",
+        "total_after_filter",
+        "records_stored",
+        "total_raw_top100",
+        "fmt_total_top100",
+        "payment_type_breakdown_in_top",
+        "detected_columns",
+        "all_headers",
+        "raw_first_rows",
+        "warnings",
+        "records",
+        "verification_status",
+        "licence_note",
+        "cv_data_id",
+        "modal_label",
+        "fetched_at_write"
+      ],
+      "sample_written": [
+        {
+          "recipientName": "Horizon Health Network",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$1.74B",
+          "rawAmount": 1741881837,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Réseau de santé Vitalité",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$1.13B",
+          "rawAmount": 1125631071,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Medavie Inc",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$431.70M",
+          "rawAmount": 431695273,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Receiver General for Canada",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$373.04M",
+          "rawAmount": 373036446,
+          "date": "2025"
+        },
+        {
+          "recipientName": "EM/ANB Inc",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$295.76M",
+          "rawAmount": 295756726,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Regional Development Corporation",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$227.50M",
+          "rawAmount": 227500000,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Vestcor Inc-Public Service",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$188.94M",
+          "rawAmount": 188944956,
+          "date": "2025"
+        },
+        {
+          "recipientName": "Vestcor Inc-Teachers",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$168.82M",
+          "rawAmount": 168824329,
+          "date": "2025"
+        },
+        {
+          "recipientName": "University of New Brunswick",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$154.21M",
+          "rawAmount": 154214364,
+          "date": "2025"
+        },
+        {
+          "recipientName": "NB Power Corporation",
+          "typeLabel": "Grant",
+          "typeColor": "bg-green-100 text-green-700",
+          "purpose": "Payments & Grants / Paiements et subventions",
+          "dept": "Government of New Brunswick",
+          "fmtAmount": "$140.75M",
+          "rawAmount": 140745515,
+          "date": "2025"
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "modal_label": "Public Payments",
+      "label_reason": "Source dataset spans supplier payments, grants/contributions, AND purchase-card spending — broader than grants alone, so \"Public Payments\" is the accurate label rather than \"Grants\".",
+      "source_url": "https://gnb.socrata.com/d/edw7-9596"
+    }
+  ],
+  "deliberately_excluded": [
+    "CV-DATA-NB-001 — Unemployment — automated Node fetch pipeline hit a transient ECONNRESET against the Stats Can API; coordinate independently confirmed correct via curl; write only after a clean automated fetch succeeds."
+  ],
+  "last_updated": "2026-09-07T21:00:19.359Z",
+  "summary": {
+    "total_attempted": 2,
+    "written": 2,
+    "failed": 0,
+    "warnings_total": 0
+  }
+}
