@@ -1,0 +1,38 @@
+{
+  "run_type": "FIRESTORE_WRITE_BATCH",
+  "write_at": "2026-09-07T23:13:17.743Z",
+  "scope": "Unemployment only (subnational_economic_social_stats), merge-only, all provinces/territories confirmed working via the StatCan WDS reliability helper",
+  "jurisdictions_attempted": [
+    "CA-YT"
+  ],
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-YT-001",
+      "jurisdiction_id": "CA-YT",
+      "dataset_name": "Statistics Canada — CA-YT Unemployment (Table 14-10-0292-01)",
+      "verification_id": "CV-REC-001-2026-09-07-CV-DATA-YT-001",
+      "firestore_path": "subnational_economic_social_stats/CA-YT",
+      "write_mode": "merge",
+      "write_at": "2026-09-07T23:13:17.743Z",
+      "statcan_table": "14-10-0292-01",
+      "coordinate": "1.8.1.1.1.1.0.0.0.0",
+      "source_url": null,
+      "status": "FAILED",
+      "error": "8 RESOURCE_EXHAUSTED: Quota exceeded.",
+      "reporting_period": null,
+      "records_written": null,
+      "latest_rate": null,
+      "latest_period": null,
+      "fields_written": [],
+      "sample_written": [],
+      "warnings": [],
+      "ui_renderable": true
+    }
+  ],
+  "summary": {
+    "total_attempted": 1,
+    "written": 0,
+    "failed": 1,
+    "warnings_total": 0
+  }
+}
