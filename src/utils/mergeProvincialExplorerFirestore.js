@@ -14,6 +14,32 @@ function trimString(v) {
   return s;
 }
 
+// Matches bot-mitigation / anti-scraping interstitial pages (Radware,
+// Cloudflare, generic CAPTCHA/access-denied walls, etc.) that an automated
+// engine fetch can mistakenly capture as if it were real biography text —
+// e.g. a stored leader_bio of "Radware Page Verifying your browser before
+// proceeding... Incident ID: ...". Firestore documents written before this
+// guard existed may still contain such text; this filters it out at
+// display time without requiring a Firestore write to fix.
+const BOT_CHALLENGE_TEXT_RE =
+  /radware|verifying your browser|incident id\s*:|checking your (?:browser|connection)|cloudflare|attention required|access denied\b|please enable javascript and cookies|ddos protection by|are you a robot|complete the captcha|unusual traffic from your (?:computer|network)/i;
+
+const BIO_WITHHELD_PLACEHOLDER =
+  'Biography not available from a verified source in the current dataset.';
+
+/**
+ * Sanitizes a Firestore-sourced biography string, replacing bot-challenge/
+ * interstitial junk text with a neutral placeholder rather than displaying
+ * it or inventing real content. Never fabricates personal history.
+ * @param {unknown} v
+ */
+function sanitizeBioText(v) {
+  const s = trimString(v);
+  if (!s) return '';
+  if (BOT_CHALLENGE_TEXT_RE.test(s)) return BIO_WITHHELD_PLACEHOLDER;
+  return s;
+}
+
 /** US-only: governor headline fields surfaced on state detail. */
 const US_GOVERNOR_HEADLINE_MANUAL_REVIEW_FS_FIELDS = Object.freeze([
   'leader_name',
@@ -248,7 +274,7 @@ export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
   const flagFs = trimString(fsRow.flagUrl);
   if (flagFs) out.flagUrl = flagFs;
 
-  const bioFs = trimString(fsRow.leader_bio);
+  const bioFs = sanitizeBioText(fsRow.leader_bio);
   if (bioFs) out.bio = bioFs;
 
   const sinceFs = trimString(fsRow.leader_since);
@@ -262,7 +288,7 @@ export function mergeProvincialExplorerRow(hardcoded, fsRow, isUSA) {
   if (dlp) out.ltGovParty = dlp;
   const dls = trimString(fsRow.deputy_leader_since);
   if (dls) out.ltGovSince = dls;
-  const dlb = trimString(fsRow.deputy_leader_bio);
+  const dlb = sanitizeBioText(fsRow.deputy_leader_bio);
   if (dlb) out.ltGovBio = dlb;
 
   const legFs = buildLegislatureFromSubnationalFirestore(fsRow);
@@ -348,12 +374,12 @@ export function buildProvincialExplorerRowFromFirestoreWithHardcodedFallback(
   }
 
   out.since = ts(fsRow.leader_since) || String(hardcoded.since || '');
-  out.bio = ts(fsRow.leader_bio) || String(hardcoded.bio || '');
+  out.bio = sanitizeBioText(fsRow.leader_bio) || String(hardcoded.bio || '');
   out.ltGovTitle = ts(fsRow.deputy_leader_title) || String(hardcoded.ltGovTitle || '');
   out.ltGovernor = ts(fsRow.deputy_leader_name) || String(hardcoded.ltGovernor || '');
   out.ltGovParty = ts(fsRow.deputy_leader_party) || String(hardcoded.ltGovParty || '');
   out.ltGovSince = ts(fsRow.deputy_leader_since) || String(hardcoded.ltGovSince || '');
-  out.ltGovBio = ts(fsRow.deputy_leader_bio) || String(hardcoded.ltGovBio || '');
+  out.ltGovBio = sanitizeBioText(fsRow.deputy_leader_bio) || String(hardcoded.ltGovBio || '');
 
   if (fsRow.id) out.subnationalId = fsRow.id;
   if (fsRow.country) out.subnationalCountry = fsRow.country;
@@ -505,7 +531,7 @@ export function mergeAustralianExplorerRow(hardcoded, fsRow) {
   const flagFs = trimString(fsRow.flagUrl);
   if (flagFs) out.flagUrl = flagFs;
 
-  const bioFs = trimString(fsRow.leader_bio);
+  const bioFs = sanitizeBioText(fsRow.leader_bio);
   if (bioFs) out.bio = bioFs;
 
   const sinceFs = trimString(fsRow.leader_since);
@@ -519,7 +545,7 @@ export function mergeAustralianExplorerRow(hardcoded, fsRow) {
   if (dlp) out.deputyParty = dlp;
   const dls = trimString(fsRow.deputy_leader_since);
   if (dls) out.deputySince = dls;
-  const dlb = trimString(fsRow.deputy_leader_bio);
+  const dlb = sanitizeBioText(fsRow.deputy_leader_bio);
   if (dlb) out.deputyBio = dlb;
 
   const legFs = buildLegislatureFromSubnationalFirestore(fsRow);
@@ -585,12 +611,12 @@ export function buildAustralianExplorerRowFromFirestoreWithHardcodedFallback(
     partyShort:
       ts(fsRow.leader_party_short) || String(hardcoded.partyShort || ''),
     since: ts(fsRow.leader_since) || String(hardcoded.since || ''),
-    bio: ts(fsRow.leader_bio) || String(hardcoded.bio || ''),
+    bio: sanitizeBioText(fsRow.leader_bio) || String(hardcoded.bio || ''),
     deputyTitle: ts(fsRow.deputy_leader_title) || String(hardcoded.deputyTitle || ''),
     deputy: ts(fsRow.deputy_leader_name) || String(hardcoded.deputy || ''),
     deputyParty: ts(fsRow.deputy_leader_party) || String(hardcoded.deputyParty || ''),
     deputySince: ts(fsRow.deputy_leader_since) || String(hardcoded.deputySince || ''),
-    deputyBio: ts(fsRow.deputy_leader_bio) || String(hardcoded.deputyBio || ''),
+    deputyBio: sanitizeBioText(fsRow.deputy_leader_bio) || String(hardcoded.deputyBio || ''),
   };
 
   if (fsRow.id) out.subnationalId = fsRow.id;
@@ -786,7 +812,7 @@ export function buildUkEnglandRegionRowFromFirestoreWithHardcodedFallback(
     out.leaderSince = ts(fsRow.leader_since) || String(hardcoded.leaderSince || '');
   }
 
-  out.leaderBio = ts(fsRow.leader_bio) || String(hardcoded.leaderBio || '');
+  out.leaderBio = sanitizeBioText(fsRow.leader_bio) || String(hardcoded.leaderBio || '');
   out.leaderTitle =
     ts(fsRow.leaderTitle) ||
     String(hardcoded.leaderTitle || '') ||
@@ -952,7 +978,7 @@ export function mergeUkEnglandRegionRow(hardcoded, fsRow) {
       : '';
   if (fsLegName) out.legislatureName = fsLegName;
 
-  const bioFs = trimString(fsRow.leader_bio);
+  const bioFs = sanitizeBioText(fsRow.leader_bio);
   if (bioFs) out.leaderBio = bioFs;
 
   if (mayor) {

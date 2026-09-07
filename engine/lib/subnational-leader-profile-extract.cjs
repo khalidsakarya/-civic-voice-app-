@@ -18,6 +18,30 @@ const INVALID_NAME_FRAGMENT_RE =
 const ROLE_PREFIX_RE =
   /^(governor|premier|mayor|chief minister|first minister|lieutenant governor|honou?rable|the hon\.?|office of the)\b/i;
 
+// Detects a bot-mitigation / anti-scraping interstitial page (Radware,
+// Cloudflare, generic CAPTCHA/access-denied walls, etc.) served in place of
+// real page content to an automated fetch. Confirmed root cause of a real
+// data-quality bug: princeedwardisland.ca served a Radware JS-challenge page
+// (title "Radware Page", body text "Verifying your browser before
+// proceeding... Incident ID: ...") for the PEI Premier bio page, which this
+// extractor's earlier version had no defense against and stored as if it
+// were a real biography. When this matches, the entire page is treated as
+// non-content — no name/bio/party/contact should be extracted from it.
+const BOT_CHALLENGE_PAGE_RE =
+  /radware|verifying your browser|incident id\s*:|checking your (?:browser|connection)|cloudflare|attention required|access denied\b|please enable javascript and cookies|ddos protection by|are you a robot|complete the captcha|unusual traffic from your (?:computer|network)/i;
+
+/** @param {string} html */
+function looksLikeBotChallengePage(html) {
+  const title = firstMatch(html, /<title>([^<]*)<\/title>/i) || '';
+  if (BOT_CHALLENGE_PAGE_RE.test(title)) return true;
+  // Check a bounded prefix of the stripped text rather than the whole page:
+  // challenge pages are typically short, and this avoids false positives
+  // from a real, long page that happens to mention e.g. "Cloudflare" once
+  // deep in unrelated body copy (news article, footer link, etc.).
+  const plain = stripHtml(html).slice(0, 2000);
+  return BOT_CHALLENGE_PAGE_RE.test(plain);
+}
+
 const PARTY_PATTERNS = [
   /\b(Democratic Party|Republican Party|Libertarian Party)\b/i,
   /\b(Australian Labor Party|Labor Party|Liberal National Party of Queensland|Liberal Party|National Party|Country Liberal Party|Greens)\b/i,
@@ -213,14 +237,19 @@ function extractBio(html, verifiedName, sourceUrl) {
   const meta = firstMatch(html, /<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i);
   if (meta && meta.toLowerCase().includes(verifiedName.split(/\s+/)[0].toLowerCase())) {
     const bio = collapseBio(stripHtml(meta));
-    if (bio.length >= 40) return { bio, source: sourceUrl };
+    if (bio.length >= 40 && !BOT_CHALLENGE_PAGE_RE.test(bio)) return { bio, source: sourceUrl };
   }
   const plain = stripHtml(html);
   const idx = plain.toLowerCase().indexOf(verifiedName.toLowerCase());
   if (idx >= 0) {
     const chunk = plain.slice(idx, idx + 900);
     const bio = collapseBio(chunk);
-    if (bio.length >= 60) return { bio, source: sourceUrl };
+    // Defense in depth: even if the page as a whole wasn't flagged by
+    // looksLikeBotChallengePage() (e.g. the real name appears in a <title>
+    // carried over from the originally-requested page while the visible
+    // body was swapped for a JS-challenge widget), never return bio text
+    // that itself contains bot-challenge/interstitial markers.
+    if (bio.length >= 60 && !BOT_CHALLENGE_PAGE_RE.test(bio)) return { bio, source: sourceUrl };
   }
   return { bio: '', source: '' };
 }
@@ -278,6 +307,13 @@ function extractContact(html, sourceUrl) {
 function extractProfileFromHtml(html, sourceUrl, meta) {
   const verified = {};
   const profile = {};
+
+  if (looksLikeBotChallengePage(html)) {
+    // The fetched page is a bot-mitigation interstitial, not real content —
+    // treat it as if the fetch failed rather than extracting a name/bio/
+    // party/contact from a CAPTCHA/JS-challenge wall.
+    return { profile, verified, ok: false };
+  }
 
   const leaderName = pickVerifiedName(html, meta.leaderTitle);
   if (!leaderName) {
