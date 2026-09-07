@@ -1,0 +1,139 @@
+{
+  "run_type": "DRY_RUN",
+  "run_at": "2026-09-07T21:12:35.885Z",
+  "jurisdiction": "CA-NL",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-NL-001",
+      "dataset_name": "Statistics Canada — Newfoundland and Labrador Unemployment (Table 14-10-0287-01)",
+      "statcan_coord_used": "2.7.1.1.1.1.0.0.0.0",
+      "firestore_target": {
+        "collection": "subnational_economic_social_stats",
+        "doc_id": "CA-NL",
+        "path": "subnational_economic_social_stats/CA-NL",
+        "write_mode": "merge"
+      },
+      "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+      "fetched_at": "2026-09-07T21:12:35.885Z",
+      "status": "BLOCKED",
+      "error": "No economic payload returned — coordinate may be wrong or API returned no data",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [
+        "unemployment: read ECONNRESET",
+        "Coord attempted: 2.7.1.1.1.1.0.0.0.0",
+        "Transient Node-level connection reset against the Stats Can API — same class of issue observed for CA-BC/CA-AB/CA-QC/CA-SK/CA-MB/CA-NS/CA-NB unemployment fetches in this environment. Report separately; do not write."
+      ],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false
+    },
+    {
+      "dataset_id": "CV-DATA-NL-002",
+      "dataset_name": "CRA Charities Registry — NL org-level extract",
+      "firestore_target": {
+        "collection": "subnational_tax_exempt_entities",
+        "doc_id": "CA-NL",
+        "path": "subnational_tax_exempt_entities/CA-NL",
+        "write_mode": "merge"
+      },
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
+      "fetched_at": "2026-09-07T21:12:35.885Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_fetched": 1040,
+      "records_transformed": 100,
+      "fields_to_write": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records"
+      ],
+      "sample_records": [
+        {
+          "name": "Canadian Parents for French (Newfoundland/Labrador) Inc.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "LIBRA HOUSE INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "THE AGNES PRATT HOME",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "mvp_note": "Name/type/category only — no dollar values per MVP product decision."
+    },
+    {
+      "dataset_id": "CV-DATA-NL-003",
+      "dataset_name": "Newfoundland and Labrador Grants / Public Payments — NOT FOUND",
+      "firestore_target": {
+        "collection": "subnational_grants",
+        "doc_id": "CA-NL",
+        "path": "subnational_grants/CA-NL",
+        "write_mode": "merge"
+      },
+      "source_url": null,
+      "fetched_at": "2026-09-07T21:12:35.885Z",
+      "status": "NOT_FOUND",
+      "error": "NL Grants: no current, machine-readable, whole-of-government Newfoundland and Labrador grants/payments/public-accounts source exists. The province's open data portal (opendata.gov.nl.ca, 71 tabular datasets, mirrored on open.canada.ca under organization \"nl-tnl\", 76 datasets) contains only stale single-fiscal-year snapshots from 2013-2016 (e.g. \"Grant payments over $250,000 2014-2015\", last modified 2015-09-28 — over a decade stale) — none are current or whole-of-government. NL's own Public Accounts are published as PDF only, not CSV/XLSX. This is a genuine data-availability/currency gap, not a fetch failure — see module header comment for the full search performed.",
+      "reporting_period": null,
+      "records_fetched": null,
+      "records_transformed": null,
+      "fields_to_write": [],
+      "sample_records": [],
+      "warnings": [],
+      "ui_renderable": false,
+      "safe_to_write_after_review": false,
+      "recommended_modal_label": null,
+      "sources_checked": [
+        {
+          "source": "opendata.gov.nl.ca (task candidate portal) — \"Explore Open Data\" tabular datasets listing",
+          "result": "Resolves and is browsable (bespoke .NET portal, not CKAN/Socrata). Fully enumerated: 71 tabular datasets. Financial/grant-adjacent titles found: \"Grant payments over $250,000 2014-2015\" (Dept. of Finance — the only candidate resembling a whole-of-government supplier/grant payments disclosure), \"Municipal Operating Grant Allocations\", \"Value of Annual Operating Grants provided to CYFS' Community Partners\", \"Community Enhancement Employment Program Annual Project List and Funding Provided\"."
+        },
+        {
+          "source": "open.canada.ca federal aggregator, organization=nl-tnl (76 datasets, mirrors the above 1:1)",
+          "result": "Cross-checked via CKAN package_search — same 76 datasets, confirming opendata.gov.nl.ca is fully indexed and no additional NL financial dataset exists on the federal aggregator either."
+        },
+        {
+          "source": "\"Grant payments over $250,000 2014-2015\" — closest candidate to a whole-of-government dataset",
+          "result": "Confirmed stale via its own CKAN/portal metadata: temporal coverage \"April 1, 2014 - March 31, 2015\", released 2015-09-28, modified 2015-09-28 — never updated in over a decade. Not a live/maintained dataset; publishing it as current \"Grants\" data would misrepresent it. Small file (12KB CSV) suggesting a very limited one-time disclosure, not an ongoing program."
+        },
+        {
+          "source": "Other 3 grant-related NL datasets (\"Municipal Operating Grant Allocations\", CYFS operating grants, Community Enhancement Employment Program)",
+          "result": "All single fiscal-year snapshots from 2013-2016, never updated since, and each single-department/single-program in scope — not a whole-of-government payments dataset comparable to AB's grant disclosure, BC's supplier payments, or NB's Combined Supplier and Grant Payments."
+        },
+        {
+          "source": "Newfoundland and Labrador Public Accounts (Dept. of Finance)",
+          "result": "Published as PDF volumes only (gov.nl.ca/fin) — no CSV/XLSX/open-data version found. Per project rules, PDF extraction is not used."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "dry_run_ok": 1,
+    "blocked": 1,
+    "not_found": 1,
+    "warnings_total": 3
+  }
+}
