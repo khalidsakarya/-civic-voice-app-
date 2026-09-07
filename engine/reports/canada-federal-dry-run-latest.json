@@ -1,0 +1,189 @@
+{
+  "run_type": "DRY_RUN",
+  "run_at": "2026-09-07T23:05:00.000Z",
+  "jurisdiction": "CA-FEDERAL",
+  "firestore_interaction": "none — no reads, no writes, no probes (Firestore daily quota exceeded at time of this run)",
+  "method": "Local code/repo inspection (App.js, engine/) plus external research against official StatCan WDS API and open.canada.ca CKAN API only. No Firestore access of any kind.",
+
+  "section_1_federal_profile_overview": {
+    "already_exists_in_app": true,
+    "findings": [
+      "The federal Canada page already exists and renders: 'Canadian Federal Government' hub (src/App.js, headings/buttons around lines 13006-13138, 28820), with an 'Explore Federal' entry point from the Canada country card.",
+      "A federal economic/social stats page already exists via the shared renderGovernmentStatsPage() component (renderAnalytics(), src/App.js:32706), covering economic/safety/health/housing/education/social sections — currently populated with hardcoded demo values (e.g. unemployment '6.3%', period 'Jan-Jun 2024'), each with a firestoreKey (e.g. 'unemploymentRate') that CAN be live-overlaid from Firestore if a matching document exists.",
+      "A federal contracts page already exists and is ALREADY wired to Firestore: renderContracts() (src/App.js:32752) reads liveContracts.CA, populated from the 'government_contracts' collection filtered by jurisdiction=='CA' (src/App.js:6429). Fields expected per contract doc: contractor_name, department, value, purpose, date (used directly in the render code).",
+      "A 'National fiscal snapshot' (revenue/spending/deficit/debt) block already exists, reading the 'government_stats' collection filtered by country=='CA' (fetchMacroGovernmentStats(), src/App.js:18666) — a broader macro-fiscal overlay, separate from the per-stat 'social_stats' overlay described above.",
+      "No engine script in this repo currently writes to 'social_stats', 'government_stats', or 'government_contracts' for country='CA' — confirmed via repo-wide search. These are existing, tested UI read-paths waiting for real data; nothing needs to be built or changed in the UI to make new federal data visible once written."
+    ],
+    "conclusion": "No UI code changes are needed to surface new federal datasets — the app already has working read-paths for federal unemployment/social stats (social_stats), federal fiscal macro data (government_stats), and federal contracts (government_contracts). Writing correctly-shaped documents to these existing collections is sufficient."
+  },
+
+  "section_2_federal_economic_social_data": {
+    "dataset_id": "CV-DATA-CA-FED-001",
+    "dataset_name": "Statistics Canada — Canada (federal) Unemployment, Table 14-10-0287-01",
+    "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+    "statcan_table": "14-10-0287-01",
+    "coordinate": "1.7.1.1.1.1.0.0.0.0 (Canada; Unemployment rate; Total-Gender; 15+; Estimate; Seasonally adjusted) — the same coordinate already used throughout this project as the 'CA Average' national comparator for every province",
+    "licence": "Statistics Canada Open Licence (compatible with reuse; same terms already relied on for all provincial/territorial unemployment datasets)",
+    "reporting_period": "Monthly, seasonally adjusted",
+    "machine_readable": true,
+    "comprehensive_current": true,
+    "dry_run_status": "DRY_RUN_OK",
+    "fetch_method": "statcanProvincialUnemployment(STATCAN_CA_COORD, STATCAN_CA_COORD, 'Canada', 'Canada', N) via the fixed StatCan WDS reliability helper (statcanWdsPostJson) — confirmed working with NO ECONNRESET",
+    "dry_run_result": {
+      "latest_rate": 6.4,
+      "latest_period": "Aug 2026",
+      "sample_series": [
+        { "period": "2026-06", "period_label": "Jun 2026", "rate": 6.5 },
+        { "period": "2026-07", "period_label": "Jul 2026", "rate": 6.4 },
+        { "period": "2026-08", "period_label": "Aug 2026", "rate": 6.4 }
+      ]
+    },
+    "implementation_note": "The existing statcanProvincialUnemployment() signature takes a separate jurisdiction and national-comparator coordinate; for the federal/Canada case these are identical, producing a redundant 'national_average' field equal to the jurisdiction value. A small dedicated buildFederalEconomic() wrapper (not built in this dry-run) would call statcanUnemploymentMonthlyFromProduct() directly and omit the redundant comparator field, but the existing function already works correctly as a stopgap.",
+    "proposed_firestore_targets": [
+      {
+        "option": "A (recommended — matches existing UI with zero UI changes)",
+        "collection": "social_stats",
+        "doc_shape": "one doc per (country, statName) pair, e.g. { country: 'CA', statName: 'unemploymentRate', value: '6.4%', source: 'Statistics Canada Labour Force Survey', sourceUrl: '...', updated: 'Aug 2026', trend: [6.5,6.6,...,6.4], last_updated: <ISO> }",
+        "note": "This is the exact collection/shape already read by renderGovernmentStatsPage()'s liveStats overlay (govStatsData[country][statName]) — writing here makes the existing hardcoded demo value get replaced by live data automatically, no UI change needed."
+      },
+      {
+        "option": "B (consistent with provincial pattern, but NOT currently read by any federal UI)",
+        "collection": "subnational_economic_social_stats",
+        "doc_id": "CA",
+        "note": "Reuses the exact same mergeTransparencyDoc()/buildUnemploymentFirestoreFields() pipeline already used for every province — simplest to implement from the engine side, but would require confirming (or adding) a UI read-path for a country-level doc in this collection, since today's federal page reads social_stats/government_stats instead."
+      }
+    ],
+    "recommended_option": "A — reuses existing UI with zero UI changes, per the 'do not modify UI unless absolutely necessary' rule.",
+    "warnings": [],
+    "safe_to_write_later": "YES — fetch confirmed working via the reliability helper with no ECONNRESET; only blocked by the current Firestore quota exhaustion. A small mapping/write script (fields above) would need to be created before writing."
+  },
+
+  "section_3_federal_payments_grants_spending": [
+    {
+      "dataset_id": "CV-DATA-CA-FED-003A",
+      "dataset_name": "Proactive Publication - Contracts (Government of Canada, all federal entities)",
+      "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
+      "resource_url": "https://open.canada.ca/data/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b/resource/fac950c0-00d5-4ec1-a4d3-9cbebf98a305/download/contracts.csv",
+      "ckan_datastore_resource_id": "fac950c0-00d5-4ec1-a4d3-9cbebf98a305",
+      "publisher": "Treasury Board of Canada Secretariat (consolidates all federal reporting entities)",
+      "licence": "Open Government Licence - Canada",
+      "reporting_period": "Continuous, quarterly reporting cycle; verified records with contract dates and forward-dated contract periods into 2026-2027",
+      "machine_readable": true,
+      "queryable_via_ckan_datastore_api": true,
+      "comprehensive_current": true,
+      "total_records_in_source": 1313551,
+      "dry_run_verification": "Queried live via CKAN datastore_search API (no scraping, no PDF): confirmed 1,313,551 total records; most recent records include contract_date 2026-12-01 and reporting_period '2026-2027-Q1', confirming currency.",
+      "sample_fields": ["reference_number", "vendor_name", "contract_date", "contract_value", "description_en", "owner_org_title", "reporting_period"],
+      "recommended_public_label": "Contracts",
+      "label_reasoning": "The source is officially and narrowly titled 'Contracts' (all federal contracts over $10,000) — not a mix of grants/transfers, so 'Contracts' is accurate without forcing a broader or narrower label.",
+      "proposed_firestore_target": {
+        "collection": "government_contracts",
+        "note": "This collection and its exact doc schema (contractor_name, department, value, purpose, date) ALREADY EXIST and are already read live by the federal Contracts UI (renderContracts(), src/App.js:32752) filtered by jurisdiction=='CA'. No new collection or UI needed."
+      },
+      "warnings": [
+        "1,313,551 total records is far larger than any provincial dataset handled so far (provinces use a MAX_RECORDS=100 top-N pattern). Storing all records is neither necessary nor practical in Firestore. A bounded selection strategy (e.g. top N most recent and/or highest-value contracts, or a rolling most-recent-fiscal-year window) needs a product decision before a write script is built — this dry-run does not propose a specific N.",
+        "Field 'contract_value' can be null/blank for some records (amendments-only rows) — a filter for non-null values would be needed, same pattern as provincial grants modules."
+      ],
+      "safe_to_write_later": "YES, once (a) Firestore quota clears and (b) a reviewer confirms the record-selection scope (how many / which subset of 1.3M+ records to store)."
+    },
+    {
+      "dataset_id": "CV-DATA-CA-FED-003B",
+      "dataset_name": "Proactive Disclosure - Grants and Contributions (Government of Canada, all federal entities subject to the Policy on Transfer Payments)",
+      "source_url": "https://open.canada.ca/data/en/dataset/432527ab-7aac-45b5-81d6-7597107a7013",
+      "ckan_datastore_resource_id": "1d15a62f-5656-49ad-8c88-f40ce689d831",
+      "publisher": "Treasury Board of Canada Secretariat (consolidates all federal institutions subject to the Policy on Transfer Payments)",
+      "licence": "Open Government Licence - Canada",
+      "reporting_period": "Continuous; verified records with agreement start dates into 2027",
+      "machine_readable": true,
+      "queryable_via_ckan_datastore_api": true,
+      "comprehensive_current": true,
+      "total_records_in_source": 1325817,
+      "dry_run_verification": "Queried live via CKAN datastore_search API: confirmed 1,325,817 total records; most recent agreement_start_date values include 2027-01-01 and 2026-12-15, confirming currency. Real named recipients (e.g. Carleton University, The Nature Conservancy of Canada) with real dollar values confirmed in sample.",
+      "sample_fields": ["ref_number", "recipient_legal_name", "recipient_province", "agreement_value", "agreement_start_date", "prog_name_en", "owner_org_title"],
+      "recommended_public_label": "Grants and Contributions",
+      "label_reasoning": "The source is officially and specifically titled 'Grants and Contributions' — a distinct federal disclosure regime from Contracts (different legal authority: Policy on Transfer Payments vs. procurement policy). Using 'Grants and Contributions' rather than a generic 'Grants' or 'Public Payments' matches the source exactly and avoids conflating it with the Contracts dataset above.",
+      "proposed_firestore_target": {
+        "collection": "not yet established for federal — no existing UI reads a federal grants collection today",
+        "options": [
+          "New collection mirroring 'government_contracts' (e.g. 'government_grants_and_contributions', jurisdiction: 'CA') — would need a new UI section built (contrary to 'no UI changes unless necessary'; flagged as a bigger decision)",
+          "Reuse 'subnational_grants' collection with doc_id 'CA' (country-level), matching the provincial pattern used throughout this project — would ALSO need a UI read-path added, since the federal page currently has no 'Grants and Contributions' section at all"
+        ],
+        "note": "Unlike CV-DATA-CA-FED-003A (Contracts), there is no existing federal UI section for grants/contributions today. Writing this dataset would require either new UI work or an explicit reviewer decision to defer the UI and only stage the data. Recommend treating this as a separate, later decision from the Contracts dataset above."
+      },
+      "warnings": [
+        "Same record-count/selection-scope issue as Contracts (1,325,817 total records) — needs the same kind of bounded top-N or windowed selection decision.",
+        "No existing UI section renders federal grants/contributions today, unlike Contracts — writing this data would not be visible anywhere without additional UI work, which this task is scoped to avoid unless the reviewer decides otherwise."
+      ],
+      "safe_to_write_later": "CONDITIONAL — data is confirmed current, comprehensive, and machine-readable, and is safe to write into Firestore once quota clears and a record-selection scope is set, BUT it will not be visible in the app until a UI decision is made (new section, or defer)."
+    },
+    {
+      "dataset_id": "CV-DATA-CA-FED-003C",
+      "dataset_name": "Public Accounts of Canada (Receiver General, 3-volume annual set)",
+      "source_url": "https://open.canada.ca/data/en/dataset/350b4f13-d84a-4e94-b221-1109dc00ab39",
+      "publisher": "Public Services and Procurement Canada / Receiver General for Canada",
+      "licence": "Open Government Licence - Canada",
+      "machine_readable": false,
+      "comprehensive_current": "current (published annually each fall) but not usable in this format",
+      "dry_run_verification": "Confirmed via CKAN package metadata: all resources are PDF (per-year and a PDF archive from 1995 onward) — no CSV/XLSX/machine-readable version.",
+      "recommended_public_label": "N/A — not usable",
+      "warnings": ["PDF-only, same as the pattern seen for every province's Public Accounts. PDF extraction was not authorized for this task."],
+      "safe_to_write_later": "NO — PDF-only, not usable without a separately-authorized PDF-extraction approach."
+    }
+  ],
+
+  "section_4_federal_charities_tax_exempt": {
+    "recommendation": "SKIP a dedicated federal/all-Canada aggregate charities view",
+    "reasoning": [
+      "The CRA Charities Registry is already a federal (national) source, and it is already used — filtered by province — for every province/territory's Tax Exempt/Charities modal (subnational_tax_exempt_entities/CA-XX, 12 of 13 jurisdictions written so far).",
+      "An undifferentiated all-Canada aggregate view would contain roughly 170,000+ organizations (per the source's own scale, consistent with CRA's published total charity count) — far beyond any reasonable top-N display, and would provide no additional insight beyond what users can already get by browsing per-province.",
+      "Building a genuinely useful federal charities view (e.g. searchable/filterable across all provinces) would require new UI/search infrastructure, which this task is scoped to avoid unless absolutely necessary.",
+      "No existing UI section expects or reads a federal-level charities collection today."
+    ],
+    "source_reference": "Same CRA Charities Registry / open.canada.ca CKAN package (51c68b86-33f0-46fe-9b51-0a786d0088f5) already used for every province, confirmed still current (identification resource last modified 2026-01-23).",
+    "safe_to_write_later": "N/A — not recommended for write; no dataset proposed."
+  },
+
+  "candidate_datasets_summary": [
+    {
+      "dataset_id": "CV-DATA-CA-FED-001",
+      "name": "Federal (Canada) Unemployment",
+      "status": "DRY_RUN_OK",
+      "safe_to_write_later": true
+    },
+    {
+      "dataset_id": "CV-DATA-CA-FED-002",
+      "name": "Federal all-Canada CRA Charities aggregate",
+      "status": "NOT_RECOMMENDED (skip — redundant with per-province views)",
+      "safe_to_write_later": false
+    },
+    {
+      "dataset_id": "CV-DATA-CA-FED-003A",
+      "name": "Federal Contracts (Proactive Publication - Contracts)",
+      "status": "DRY_RUN_OK — source confirmed current/comprehensive/machine-readable; scope decision needed",
+      "safe_to_write_later": true
+    },
+    {
+      "dataset_id": "CV-DATA-CA-FED-003B",
+      "name": "Federal Grants and Contributions (Proactive Disclosure)",
+      "status": "DRY_RUN_OK — source confirmed current/comprehensive/machine-readable; scope AND UI decision needed",
+      "safe_to_write_later": "conditional"
+    },
+    {
+      "dataset_id": "CV-DATA-CA-FED-003C",
+      "name": "Public Accounts of Canada",
+      "status": "NOT_FOUND (usable format) — PDF only",
+      "safe_to_write_later": false
+    }
+  ],
+
+  "overall_blockers": [
+    "Firestore daily quota exceeded — blocks any write for all datasets above regardless of readiness.",
+    "Record-selection scope (how many / which subset of 1.3M+ rows) not yet decided for both federal Contracts and Grants and Contributions — needed before a write script can be built.",
+    "No existing UI section for federal Grants and Contributions — a reviewer decision is needed on whether to add UI or defer display while staging the data."
+  ],
+
+  "files_referenced_no_changes_made": [
+    "src/App.js (read-only inspection of existing federal UI/Firestore read-paths)",
+    "engine/lib/subnational-unemployment-monthly.cjs (reused as-is via statcanProvincialUnemployment for the federal dry-run fetch test)"
+  ]
+}
