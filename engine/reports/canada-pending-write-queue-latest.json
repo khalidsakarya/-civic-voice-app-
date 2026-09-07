@@ -1,0 +1,358 @@
+{
+  "report_type": "PENDING_WRITE_QUEUE",
+  "generated_at": "2026-09-07T22:35:00.000Z",
+  "generated_from": "Existing local dry-run/write report files only — no new source fetches, no Firestore reads/writes/probes performed to produce this report.",
+  "sources_consulted": [
+    "engine/reports/canada-ab-dry-run-latest.json",
+    "engine/reports/canada-qc-dry-run-latest.json",
+    "engine/reports/canada-sk-dry-run-latest.json",
+    "engine/reports/canada-mb-dry-run-latest.json",
+    "engine/reports/canada-ns-dry-run-latest.json",
+    "engine/reports/canada-nb-dry-run-latest.json",
+    "engine/reports/canada-nl-dry-run-latest.json",
+    "engine/reports/canada-pe-dry-run-latest.json",
+    "engine/reports/canada-yt-dry-run-latest.json",
+    "engine/reports/canada-nt-dry-run-latest.json",
+    "engine/reports/canada-nu-dry-run-latest.json",
+    "engine/reports/canada-ab-write-latest.json",
+    "engine/reports/canada-bc-write-latest.json",
+    "engine/reports/canada-qc-write-latest.json",
+    "engine/reports/canada-sk-write-latest.json",
+    "engine/reports/canada-mb-write-latest.json",
+    "engine/reports/canada-ns-write-latest.json",
+    "engine/reports/canada-nb-write-latest.json",
+    "engine/reports/canada-nl-write-latest.json",
+    "engine/reports/canada-pe-write-latest.json",
+    "engine/reports/canada-yt-write-latest.json",
+    "engine/reports/statcan-wds-reliability-test-latest.json"
+  ],
+
+  "section_1_ready_to_write_after_quota_clears": [
+    {
+      "dataset_id": "CV-DATA-YT-002",
+      "jurisdiction": "CA-YT",
+      "label": "Yukon — CRA Charities",
+      "firestore_target": "subnational_tax_exempt_entities/CA-YT",
+      "write_script": "engine/canada-yt-write-charities.cjs",
+      "last_attempt_status": "FAILED — RESOURCE_EXHAUSTED (Firestore quota), 2026-09-07T21:53:56.446Z",
+      "fetch_status": "Confirmed working — CRA fetch step succeeds instantly every attempt",
+      "records_ready": 100,
+      "records_in_source": 111,
+      "note": "Write script is complete and tested against real credentials; blocked only by Firestore quota, not by any data or code issue. Re-run as-is once quota clears."
+    },
+    {
+      "dataset_id": "CV-DATA-NT-001",
+      "jurisdiction": "CA-NT",
+      "label": "Northwest Territories — Unemployment",
+      "firestore_target": "subnational_economic_social_stats/CA-NT",
+      "write_script": "not yet created — dry-run only so far",
+      "last_attempt_status": "Never attempted (Firestore quota already exhausted before this dataset was dry-run tested)",
+      "fetch_status": "DRY_RUN_OK — confirmed working via canada-nt-dry-run.cjs, 2026-09-07T22:20:16.783Z",
+      "latest_dry_run_rate": "7.6% (Aug 2026)",
+      "note": "A dedicated write script (e.g. engine/canada-nt-write-unemployment.cjs) needs to be created before this can be written, following the pattern used for other unemployment datasets."
+    },
+    {
+      "dataset_id": "CV-DATA-NT-002",
+      "jurisdiction": "CA-NT",
+      "label": "Northwest Territories — CRA Charities",
+      "firestore_target": "subnational_tax_exempt_entities/CA-NT",
+      "write_script": "not yet created — dry-run only so far",
+      "last_attempt_status": "Never attempted (Firestore quota already exhausted before this dataset was dry-run tested)",
+      "fetch_status": "DRY_RUN_OK — confirmed working via canada-nt-dry-run.cjs, 2026-09-07T22:20:16.783Z",
+      "records_ready": 100,
+      "records_in_source": 122,
+      "note": "A dedicated write script (e.g. engine/canada-nt-write-charities.cjs) needs to be created before this can be written, following the established NL/PE/YT charities-write pattern."
+    },
+    {
+      "dataset_id": "CV-DATA-NU-001",
+      "jurisdiction": "CA-NU",
+      "label": "Nunavut — Unemployment",
+      "firestore_target": "subnational_economic_social_stats/CA-NU",
+      "write_script": "not yet created — dry-run only so far",
+      "last_attempt_status": "Never attempted (Firestore quota already exhausted before this dataset was dry-run tested)",
+      "fetch_status": "DRY_RUN_OK — confirmed working via canada-nu-dry-run.cjs, 2026-09-07T22:25:36.500Z",
+      "latest_dry_run_rate": "11.3% (Aug 2026)",
+      "note": "A dedicated write script needs to be created before this can be written."
+    },
+    {
+      "dataset_id": "CV-DATA-NU-002",
+      "jurisdiction": "CA-NU",
+      "label": "Nunavut — CRA Charities",
+      "firestore_target": "subnational_tax_exempt_entities/CA-NU",
+      "write_script": "not yet created — dry-run only so far",
+      "last_attempt_status": "Never attempted (Firestore quota already exhausted before this dataset was dry-run tested)",
+      "fetch_status": "DRY_RUN_OK — confirmed working via canada-nu-dry-run.cjs, 2026-09-07T22:25:36.500Z",
+      "records_ready": 26,
+      "records_in_source": 26,
+      "note": "A dedicated write script needs to be created before this can be written. Small charity count (26) is plausible given Nunavut's ~40K population."
+    }
+  ],
+
+  "section_2_pending_unemployment_batch_after_quota_clears": [
+    {
+      "dataset_id": "CV-DATA-AB-001",
+      "jurisdiction": "CA-AB",
+      "firestore_target": "subnational_economic_social_stats/CA-AB",
+      "statcan_table": "14-10-0287-01",
+      "coordinate": "10.7.1.1.1.1.0.0.0.0",
+      "latest_confirmed_rate": "6.8%",
+      "latest_confirmed_period": "Aug 2026",
+      "confirmed_via": "statcan-wds-reliability-test-latest.json, run 2026-09-07T22:06:52.265Z (post-fix)",
+      "note_on_own_dry_run_report": "canada-ab-dry-run-latest.json still shows BLOCKED/ECONNRESET — that dry-run predates the StatCan WDS fetch reliability fix. Superseded by the reliability test above.",
+      "write_eligibility": "ELIGIBLE — fetch confirmed working post-fix; blocked only by Firestore quota"
+    },
+    {
+      "dataset_id": "CV-DATA-QC-001",
+      "jurisdiction": "CA-QC",
+      "firestore_target": "subnational_economic_social_stats/CA-QC",
+      "statcan_table": "14-10-0287-01",
+      "coordinate": "6.7.1.1.1.1.0.0.0.0",
+      "latest_confirmed_rate": "5.6%",
+      "latest_confirmed_period": "Aug 2026",
+      "confirmed_via": "statcan-wds-reliability-test-latest.json, run 2026-09-07T22:06:52.265Z (post-fix)",
+      "note_on_own_dry_run_report": "canada-qc-dry-run-latest.json still shows BLOCKED/ECONNRESET — predates the reliability fix. Superseded by the reliability test above.",
+      "write_eligibility": "ELIGIBLE — fetch confirmed working post-fix; blocked only by Firestore quota"
+    },
+    {
+      "dataset_id": "CV-DATA-SK-001",
+      "jurisdiction": "CA-SK",
+      "firestore_target": "subnational_economic_social_stats/CA-SK",
+      "statcan_table": "14-10-0287-01",
+      "coordinate": "9.7.1.1.1.1.0.0.0.0",
+      "latest_confirmed_rate": "6.0%",
+      "latest_confirmed_period": "Aug 2026",
+      "confirmed_via": "statcan-wds-reliability-test-latest.json, run 2026-09-07T22:06:52.265Z (post-fix)",
+      "note_on_own_dry_run_report": "canada-sk-dry-run-latest.json still shows BLOCKED/ECONNRESET — predates the reliability fix. Superseded by the reliability test above.",
+      "write_eligibility": "ELIGIBLE — fetch confirmed working post-fix; blocked only by Firestore quota"
+    },
+    {
+      "dataset_id": "CV-DATA-MB-001",
+      "jurisdiction": "CA-MB",
+      "firestore_target": "subnational_economic_social_stats/CA-MB",
+      "statcan_table": "14-10-0287-01",
+      "coordinate": "8.7.1.1.1.1.0.0.0.0",
+      "latest_confirmed_rate": "5.0%",
+      "latest_confirmed_period": "Aug 2026",
+      "confirmed_via": "statcan-wds-reliability-test-latest.json, run 2026-09-07T22:06:52.265Z (post-fix)",
+      "note_on_own_dry_run_report": "canada-mb-dry-run-latest.json still shows BLOCKED/ECONNRESET — predates the reliability fix. Superseded by the reliability test above.",
+      "write_eligibility": "ELIGIBLE — fetch confirmed working post-fix; blocked only by Firestore quota"
+    },
+    {
+      "dataset_id": "CV-DATA-NS-001",
+      "jurisdiction": "CA-NS",
+      "firestore_target": "subnational_economic_social_stats/CA-NS",
+      "statcan_table": "14-10-0287-01",
+      "coordinate": "4.7.1.1.1.1.0.0.0.0",
+      "latest_confirmed_rate": "6.1%",
+      "latest_confirmed_period": "Aug 2026",
+      "confirmed_via": "statcan-wds-reliability-test-latest.json, run 2026-09-07T22:06:52.265Z (post-fix)",
+      "note_on_own_dry_run_report": "canada-ns-dry-run-latest.json still shows BLOCKED/ECONNRESET — predates the reliability fix. Superseded by the reliability test above.",
+      "write_eligibility": "ELIGIBLE — fetch confirmed working post-fix; blocked only by Firestore quota"
+    },
+    {
+      "dataset_id": "CV-DATA-NB-001",
+      "jurisdiction": "CA-NB",
+      "firestore_target": "subnational_economic_social_stats/CA-NB",
+      "statcan_table": "14-10-0287-01",
+      "coordinate": "5.7.1.1.1.1.0.0.0.0",
+      "latest_confirmed_rate": "7.3%",
+      "latest_confirmed_period": "Aug 2026",
+      "confirmed_via": "statcan-wds-reliability-test-latest.json, run 2026-09-07T22:06:52.265Z (post-fix)",
+      "note_on_own_dry_run_report": "canada-nb-dry-run-latest.json still shows BLOCKED/ECONNRESET — predates the reliability fix. Superseded by the reliability test above.",
+      "write_eligibility": "ELIGIBLE — fetch confirmed working post-fix; blocked only by Firestore quota"
+    },
+    {
+      "dataset_id": "CV-DATA-NL-001",
+      "jurisdiction": "CA-NL",
+      "firestore_target": "subnational_economic_social_stats/CA-NL",
+      "statcan_table": "14-10-0287-01",
+      "coordinate": "2.7.1.1.1.1.0.0.0.0",
+      "latest_confirmed_rate": "8.6%",
+      "latest_confirmed_period": "Aug 2026",
+      "confirmed_via": "statcan-wds-reliability-test-latest.json, run 2026-09-07T22:06:52.265Z (post-fix)",
+      "note_on_own_dry_run_report": "canada-nl-dry-run-latest.json still shows BLOCKED/ECONNRESET — predates the reliability fix. Superseded by the reliability test above.",
+      "write_eligibility": "ELIGIBLE — fetch confirmed working post-fix; blocked only by Firestore quota"
+    },
+    {
+      "dataset_id": "CV-DATA-PE-001",
+      "jurisdiction": "CA-PE",
+      "firestore_target": "subnational_economic_social_stats/CA-PE",
+      "statcan_table": "14-10-0287-01",
+      "coordinate": "3.7.1.1.1.1.0.0.0.0",
+      "latest_confirmed_rate": "7.9%",
+      "latest_confirmed_period": "Aug 2026",
+      "confirmed_via": "statcan-wds-reliability-test-latest.json, run 2026-09-07T22:06:52.265Z (post-fix)",
+      "note_on_own_dry_run_report": "canada-pe-dry-run-latest.json still shows BLOCKED/ECONNRESET — predates the reliability fix. Superseded by the reliability test above.",
+      "write_eligibility": "ELIGIBLE — fetch confirmed working post-fix; blocked only by Firestore quota"
+    },
+    {
+      "dataset_id": "CV-DATA-YT-001",
+      "jurisdiction": "CA-YT",
+      "firestore_target": "subnational_economic_social_stats/CA-YT",
+      "statcan_table": "14-10-0292-01 (territorial)",
+      "coordinate": "1.8.1.1.1.1.0.0.0.0",
+      "latest_confirmed_rate": "5.3%",
+      "latest_confirmed_period": "Aug 2026",
+      "confirmed_via": "statcan-wds-reliability-test-latest.json, run 2026-09-07T22:06:52.265Z (post-fix)",
+      "note_on_own_dry_run_report": "canada-yt-dry-run-latest.json still shows BLOCKED/ECONNRESET — predates the reliability fix. Superseded by the reliability test above.",
+      "write_eligibility": "ELIGIBLE — fetch confirmed working post-fix; blocked only by Firestore quota"
+    },
+    {
+      "dataset_id": "CV-DATA-NT-001",
+      "jurisdiction": "CA-NT",
+      "firestore_target": "subnational_economic_social_stats/CA-NT",
+      "statcan_table": "14-10-0292-01 (territorial)",
+      "coordinate": "2.8.1.1.1.1.0.0.0.0",
+      "latest_confirmed_rate": "7.6%",
+      "latest_confirmed_period": "Aug 2026",
+      "confirmed_via": "canada-nt-dry-run-latest.json, run 2026-09-07T22:20:16.783Z (post-fix, own dry-run already reflects the fix)",
+      "note_on_own_dry_run_report": "Dry-run itself was run after the reliability fix — status DRY_RUN_OK, no ECONNRESET.",
+      "write_eligibility": "ELIGIBLE — fetch confirmed working; blocked only by Firestore quota (also needs a write script — see Section 1)"
+    },
+    {
+      "dataset_id": "CV-DATA-NU-001",
+      "jurisdiction": "CA-NU",
+      "firestore_target": "subnational_economic_social_stats/CA-NU",
+      "statcan_table": "14-10-0292-01 (territorial)",
+      "coordinate": "3.8.1.1.1.1.0.0.0.0",
+      "latest_confirmed_rate": "11.3%",
+      "latest_confirmed_period": "Aug 2026",
+      "confirmed_via": "canada-nu-dry-run-latest.json, run 2026-09-07T22:25:36.500Z (post-fix, own dry-run already reflects the fix)",
+      "note_on_own_dry_run_report": "Dry-run itself was run after the reliability fix — status DRY_RUN_OK, no ECONNRESET.",
+      "write_eligibility": "ELIGIBLE — fetch confirmed working; blocked only by Firestore quota (also needs a write script — see Section 1)"
+    }
+  ],
+
+  "section_3_not_approved_blocked_datasets": [
+    {
+      "dataset_id": "CV-DATA-QC-003",
+      "jurisdiction": "CA-QC",
+      "label": "Québec Comptes publics Volume 2 — Dépenses de transfert par bénéficiaires",
+      "status": "DRY_RUN_OK but NOT APPROVED for write",
+      "reason": "Category-level, not name-level payee data (unlike ON/BC/AB/NB's payee-level grants datasets). Needs a founder/reviewer UI/display decision on whether category-level transfer expense data should be shown at all, and if so under what modal label, before it can be written.",
+      "blocker_type": "product/display decision, not a data-availability issue"
+    },
+    {
+      "dataset_id": "CV-DATA-NS-003",
+      "jurisdiction": "CA-NS",
+      "label": "Nova Scotia Department of Agriculture Funding Programs Details",
+      "status": "DRY_RUN_OK but NOT APPROVED for write",
+      "reason": "Single-sector (Agriculture funding only), not whole-of-government. Would require a precise 'Agriculture Grants' label rather than the standard province-wide pattern if ever published. Deliberately deferred pending a reviewer decision on whether/how to publish it or combine it with other narrow NS datasets.",
+      "blocker_type": "scope/product decision, not a data-availability issue"
+    },
+    {
+      "dataset_id": "CV-DATA-SK-003",
+      "jurisdiction": "CA-SK",
+      "label": "Saskatchewan Grants / Public Payments",
+      "status": "NOT_FOUND",
+      "reason": "No official machine-readable Saskatchewan grants/payments/public-accounts source exists. Saskatchewan has no CKAN open data portal; the federal aggregator's SK-tagged datasets are all geospatial/geological, none financial; Public Accounts Volume 2 is PDF-only.",
+      "blocker_type": "data-availability gap"
+    },
+    {
+      "dataset_id": "CV-DATA-MB-003",
+      "jurisdiction": "CA-MB",
+      "label": "Manitoba Grants / Public Payments",
+      "status": "NOT_FOUND",
+      "reason": "No official machine-readable Manitoba grants/payments/public-accounts source exists. Manitoba has no CKAN open data portal; the real geoportal has no financial data; the Contract Disclosure tool is interactive-only with no bulk export (no-scraping rule applies).",
+      "blocker_type": "data-availability gap"
+    },
+    {
+      "dataset_id": "CV-DATA-NL-003",
+      "jurisdiction": "CA-NL",
+      "label": "Newfoundland and Labrador Grants / Public Payments",
+      "status": "NOT_FOUND",
+      "reason": "No current, comprehensive, machine-readable whole-of-government source. The only comprehensive candidate, 'Grant payments over $250,000 2014-2015', is a decade-stale one-time snapshot never updated since 2015-09-28 — rejected as unsafe to publish as current data.",
+      "blocker_type": "data-availability/currency gap"
+    },
+    {
+      "dataset_id": "CV-DATA-PE-003",
+      "jurisdiction": "CA-PE",
+      "label": "Prince Edward Island Grants / Public Payments",
+      "status": "NOT_FOUND",
+      "reason": "No current, comprehensive, payee-level, machine-readable source. The closest candidate, 'PEI Consolidated Expenses', is category-level only (department totals, no recipient names) AND stale (data stops at fiscal year 2018/19).",
+      "blocker_type": "data-availability/granularity/currency gap"
+    },
+    {
+      "dataset_id": "CV-DATA-YT-003",
+      "jurisdiction": "CA-YT",
+      "label": "Yukon Grants / Public Payments",
+      "status": "NOT_FOUND",
+      "reason": "yukon.ca is bot-blocked (HTTP 403, not scraped). Yukon's CKAN portal has only narrow single-program grants and an unverified vendor directory. Yukon's own current, comprehensive Public Accounts (including Schedule 8 'legislated grants' and Schedule 9 'other government transfers') exist but every one of 170 Finance-org datasets on open.yukon.ca is PDF-only — PDF extraction not authorized.",
+      "blocker_type": "data-format gap (source exists and is current, but PDF-only)"
+    },
+    {
+      "dataset_id": "CV-DATA-NT-003",
+      "jurisdiction": "CA-NT",
+      "label": "Northwest Territories Grants / Public Payments",
+      "status": "NOT_FOUND",
+      "reason": "No current, machine-readable, payee-level source. The GNWT Sole Source Contracts Report is stale (last published FY2017-2018) and narrow (sole-source contracts only). NWT Public Accounts are almost entirely PDF; the one structured (.xlsx) resource found is itself the most recent Public Accounts data published (FY2022-23, ~3 years stale) and is department-level summary tables, not payee-level data.",
+      "blocker_type": "data-availability/currency/granularity gap"
+    },
+    {
+      "dataset_id": "CV-DATA-NU-003",
+      "jurisdiction": "CA-NU",
+      "label": "Nunavut Grants / Public Payments",
+      "status": "NOT_FOUND",
+      "reason": "Nunavut has no open data portal at all; gov.nu.ca is bot-blocked (HTTP 403, not scraped); not mirrored on the federal aggregator; Public Accounts are current but PDF-only.",
+      "blocker_type": "data-availability gap (no portal exists) + data-format gap (Public Accounts PDF-only)"
+    }
+  ],
+
+  "section_4_infrastructure_blockers": [
+    {
+      "blocker": "Firestore RESOURCE_EXHAUSTED quota",
+      "status": "ACTIVE — still exhausted as of the last probe",
+      "affects": "All Firestore reads AND writes on the civic-voice-5ea94 project",
+      "last_probe": "2026 (most recent quota probe) — gRPC code 8, 'RESOURCE_EXHAUSTED: Quota exceeded.' on a single read of subnational_tax_exempt_entities/CA-ON",
+      "resolution": "Wait for quota to clear (likely a daily Spark-plan quota consumed by this session's heavy read/write volume), or investigate the Firebase console billing/usage page. No code fix applies to this — it is an account/plan-level limit.",
+      "recommended_action": "Probe with a single lightweight read before attempting any batch write; do not retry repeatedly."
+    },
+    {
+      "blocker": "StatCan WDS fetch ECONNRESET (RESOLVED)",
+      "status": "RESOLVED",
+      "affected_datasets": "CA-AB, CA-QC, CA-SK, CA-MB, CA-NS, CA-NB, CA-NL, CA-PE, CA-YT unemployment (and by extension CA-NT/CA-NU, tested directly and confirmed working)",
+      "root_cause": "Node's classic https module (require('https')) failed with ECONNRESET on 100% of attempts (54/54 individual attempts across 9 jurisdictions) against www150.statcan.gc.ca in this environment. Node's built-in global fetch (undici-backed) succeeded on the first attempt 100% of the time against the identical URL/payload/coordinate.",
+      "fix_implemented": "engine/lib/subnational-unemployment-monthly.cjs — new statcanWdsPostJson() helper: hardened https retry (agent:false, timeout, User-Agent) -> Node fetch retry -> curl subprocess fallback. Verified via engine/test-statcan-wds-reliability.cjs: 9/9 jurisdictions OK, all resolved via the fetch strategy.",
+      "commit": "0b311f2"
+    }
+  ],
+
+  "section_5_recommended_write_order_after_quota_clears": [
+    {
+      "order": 1,
+      "step": "CA-YT CRA Charities",
+      "action": "Run engine/canada-yt-write-charities.cjs (already exists, tested, ready)",
+      "rationale": "Smallest, lowest-risk write — script is complete and was only blocked by quota, not by any data/code issue. Good first probe that quota has genuinely cleared for writes, not just reads."
+    },
+    {
+      "order": 2,
+      "step": "Unemployment batch (CA-AB, CA-QC, CA-SK, CA-MB, CA-NS, CA-NB, CA-NL, CA-PE, CA-YT, CA-NT, CA-NU)",
+      "action": "Create/run per-jurisdiction unemployment write scripts (e.g. engine/canada-XX-write-unemployment.cjs) for all 11 jurisdictions in Section 2, all now fetch-eligible post-reliability-fix",
+      "rationale": "Largest batch, but each write is independent and low-risk (merge-only, no destructive change). Doing this as one batch after confirming quota is stable avoids re-probing per jurisdiction."
+    },
+    {
+      "order": 3,
+      "step": "CA-NT and CA-NU CRA Charities",
+      "action": "Create engine/canada-nt-write-charities.cjs and engine/canada-nu-write-charities.cjs (following the established NL/PE/YT pattern), then run both",
+      "rationale": "Same low-risk charities pattern as step 1, just needs the write scripts created first since these two jurisdictions were dry-run-tested after Firestore quota was already exhausted."
+    },
+    {
+      "order": 4,
+      "step": "Live UI verification pass",
+      "action": "Once all of the above are written, do a single consolidated live-UI verification pass across all newly-written jurisdictions (Tax Exempt/Charities modals for YT/NT/NU, unemployment display for all 11 jurisdictions in the batch) rather than verifying after each individual write",
+      "rationale": "Consolidating verification into one pass at the end minimizes redundant Firestore reads (each live modal open is itself a read) while quota may still be recovering from the write batch above."
+    }
+  ],
+
+  "summary": {
+    "pending_writes_total": 16,
+    "pending_writes_ready_immediately": 1,
+    "pending_writes_needing_new_write_script": 4,
+    "pending_unemployment_batch_count": 11,
+    "not_approved_blocked_datasets_count": 9,
+    "not_approved_product_decision_count": 2,
+    "not_approved_data_gap_count": 7,
+    "infrastructure_blockers_active": 1,
+    "infrastructure_blockers_resolved": 1
+  }
+}
