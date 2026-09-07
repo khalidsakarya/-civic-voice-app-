@@ -1,0 +1,117 @@
+{
+  "run_type": "FIRESTORE_WRITE",
+  "jurisdiction": "CA-PE",
+  "datasets": [
+    {
+      "dataset_id": "CV-DATA-PE-002",
+      "dataset_name": "CRA Charities Registry — Prince Edward Island org-level extract (MVP: name/type/category)",
+      "verification_id": "CV-REC-001-2026-09-07-CV-DATA-PE-002",
+      "firestore_path": "subnational_tax_exempt_entities/CA-PE",
+      "write_mode": "merge",
+      "write_at": "2026-09-07T21:31:17.647Z",
+      "status": "WRITTEN",
+      "error": null,
+      "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+      "records_written": 100,
+      "fields_written": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records",
+        "verification_status",
+        "licence_note",
+        "cv_data_id"
+      ],
+      "sample_written": [
+        {
+          "name": "COOPER INSTITUTE LTD",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "P.E.I. CITIZEN ADVOCACY INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "PRINCE EDWARD ISLAND ASSOCIATION ON GERONTOLOGY  INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CAMP GENCHEFF INC",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "THE ALBERTON HISTORICAL PRESERVATION FOUNDATION  INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "WESTPOINT PRESBYTERIAN CHURCH",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "ALBERTON BAPTIST CHURCH",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "BOYS' AND GIRLS' CLUB OF SUMMERSIDE INC.",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "KEIR PRESBYTERIAN CENTRE",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        },
+        {
+          "name": "CANADIAN MENTAL HEALTH ASSOCIATION PEI DIVISION",
+          "industry": "Other",
+          "industryColor": "bg-stone-100 text-stone-600",
+          "exemType": "Charitable Organization",
+          "rawValue": 0
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "mvp_note": "Name/type/category only. rawValue=0 enforced. No dollar values written.",
+      "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5"
+    }
+  ],
+  "deliberately_excluded": [
+    "CV-DATA-PE-001 — Unemployment — automated Node fetch pipeline hit a transient ECONNRESET against the Stats Can API; coordinate 3.7.1.1.1.1.0.0.0.0 independently confirmed correct via curl (7.6%, 6.8%, 7.9% for Jun-Aug 2026); write only after a clean automated fetch succeeds.",
+    "CV-DATA-PE-003 — Grants/Public Payments — not written. No current, comprehensive, payee-level, machine-readable whole-of-government Prince Edward Island grants/payments/public-accounts source was found. PEI's ArcGIS Hub open data portal (data.princeedwardisland.ca) was searched across 9 financial-related terms (grants, payments, supplier, expenditure, disclosure, transfer payment, public accounts, vendor, spending). The only candidate resembling a whole-of-government dataset, \"PEI Consolidated Expenses\" (OD0031), was identified but deliberately REJECTED — confirmed via direct FeatureServer schema/query inspection to be CATEGORY-LEVEL only (Area_of_Expenditure / Financial_Year / Value — department totals, no recipient names) AND stale (data stops at fiscal year 2018/19, 7+ years out of date). Publishing aggregate, stale department-level totals as a payee-level \"Grants\" dataset would misrepresent it to users, so it was not written. Two other narrow single-program PEI datasets (\"Expenditure Budget Estimates And Forecasts\", \"Student Loan Grant Assessments and Awards\", \"Seniors Home Repair Program Activity\") were also found and rejected for the same reasons (aggregate statistics with no recipient names, and/or stale to FY2018-19). PEI is not mirrored on the federal open.canada.ca CKAN aggregator (0 datasets under organization \"pe\"/\"pei\"). Prince Edward Island Public Accounts were identified as published by the Department of Finance, but only as PDF volumes (Volume I, Volume III), not CSV/XLSX/open data — PDF extraction was not authorized for this task, so Public Accounts were not used. This is a genuine data-availability/granularity gap, not a fetch failure — see engine/lib/subnational-transparency-ca-pe.cjs module header and engine/reports/canada-pe-dry-run-latest.json for the full search performed."
+  ],
+  "last_updated": "2026-09-07T21:31:17.647Z",
+  "summary": {
+    "total_attempted": 1,
+    "written": 1,
+    "failed": 0,
+    "warnings_total": 0
+  }
+}
