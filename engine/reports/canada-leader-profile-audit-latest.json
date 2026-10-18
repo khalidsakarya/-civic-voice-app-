@@ -1,0 +1,264 @@
+{
+  "report_type": "CANADA_LEADER_PROFILE_AUDIT",
+  "generated_at": "2026-10-18T00:00:00.000Z",
+  "generated_from": "Local source code and local report/data files only. Zero Firestore reads, writes, or probes performed. Zero new external fetches performed. No live UI verification performed.",
+  "method": [
+    "Read engine/lib/subnational-leader-profile-extract.cjs (generic extractor, includes the PEI anti-bot fix).",
+    "Read engine/lib/subnational-leader-profile-pilot.cjs (dedicated pilot fetchers, includes CA-ON's fetchCaOn()).",
+    "Read engine/lib/subnational-leader-profile-fetch.cjs and engine/lib/subnational-leader-profile-registry.cjs (orchestration/routing: which jurisdictions use the generic path vs. the pilot path).",
+    "Read engine/lib/subnational-leader-profile-shared.cjs (buildVerificationReport — confirmed no content validation exists outside the extractor itself).",
+    "Read engine/reports/subnational-leader-profiles-latest.json (last automated run, 2026-05-18 — field-presence only, no bio text content).",
+    "Read engine/data/subnational-phase3b-overlay.json (static seed/fallback leader identity data, no bio text field).",
+    "Searched src/App.js for hardcoded premier/PM bio fallback text — none found for any Canadian jurisdiction.",
+    "Searched src/App.js for the Federal PM (Mark Carney) bio mechanism — found to be an entirely separate system (member_bios Firestore collection via fetchMemberBio), not part of the subnational leader-profile pipeline and not covered by any local validation code found.",
+    "Cross-referenced this session's own prior findings and commits (PEI Radware contamination discovery and fix, commit 1e0fcb7; yukon.ca and gov.nu.ca confirmed bot-protected via direct curl checks in earlier grants-research tasks this session) as documented local evidence (git history / prior conversation), not re-fetched for this task."
+    ],
+
+  "jurisdictions": [
+    {
+      "jurisdiction_id": "CA-FEDERAL",
+      "leader_name_currently_represented_locally": "Mark Carney (hardcoded in src/App.js UI strings, e.g. line ~1636, ~2231)",
+      "office_title": "Prime Minister of Canada",
+      "biography_status": "UNKNOWN_NEEDS_REVERIFY",
+      "local_source_file": "src/App.js (fetchMemberBio, line ~4150) reading Firestore collection 'member_bios' — NOT part of the subnational leader-profile pipeline (engine/lib/subnational-leader-profile-*.cjs) at all.",
+      "original_official_source_url_recorded_locally": "None recorded locally — no engine fetch/config file exists for the federal PM bio.",
+      "last_successful_fetch_date_known_locally": "Unknown — no local report tracks member_bios fetch history.",
+      "problem_found": "The federal PM's biography uses a completely different, separate mechanism (member_bios collection, likely shared with MP/Congress-member bios generically) with no dedicated engine fetch script, no local validation code, and no entry in the subnational-leader-profiles audit registry (which explicitly covers provinces/states/territories only — confirmed 76/76 entries are subnational, zero federal entries for any country). There is no local evidence of what is currently stored, whether it was ever successfully fetched, or whether it has ever been checked for anti-bot contamination.",
+      "recommended_action": "Before any write: determine where/how member_bios is actually populated for 'Mark Carney' (no engine script found — may be fully manual, or populated by an MP-bio pipeline not reviewed here). Apply the same bot-challenge content guard proposed below to whatever mechanism is found. Requires investigation, not immediately actionable from this audit alone."
+    },
+
+    {
+      "jurisdiction_id": "CA-ON",
+      "leader_name_currently_represented_locally": "Doug Ford (HARDCODED literal string in engine/lib/subnational-leader-profile-pilot.cjs:115 — not extracted/verified from fetched content)",
+      "office_title": "Premier of Ontario",
+      "biography_status": "UNKNOWN_NEEDS_REVERIFY",
+      "local_source_file": "engine/lib/subnational-leader-profile-pilot.cjs (fetchCaOn(), lines 102-172) — a dedicated, non-generic pilot fetcher. Confirmed via engine/reports/subnational-leader-profiles-latest.json that this pilot path IS the one invoked for CA-ON (PILOT_IDS includes 'CA-ON').",
+      "original_official_source_url_recorded_locally": "https://www.ontario.ca/page/premier (identity/contact), https://www.ontario.ca/page/doug-ford-premier (bio), https://www.ola.org/en/members/all/doug-ford (party)",
+      "last_successful_fetch_date_known_locally": "2026-05-18 (per subnational-leader-profiles-latest.json — CA-ON listed in 'updated' with leader_name, leader_bio, and 7 other fields written)",
+      "problem_found": "TWO distinct issues, independent of each other: (1) leader_name is HARDCODED to the literal string 'Doug Ford' — never derived from or verified against the fetched HTML, unlike every other jurisdiction's generic-path extraction (pickVerifiedName/scoreNameCandidate). If the Premier of Ontario changes, this code would continue reporting 'Doug Ford' indefinitely with no error, no fetch failure, and no signal that anything is wrong — a silent staleness risk by design. (2) The bio extraction regex is hand-fitted to Doug Ford's specific known official bio text ('A dedicated community leader, successful businessman...public service runs in the family.') — this makes it UNLIKELY to be contaminated by generic Radware/Cloudflare/CAPTCHA boilerplate (that text would not match this narrow pattern), but it also means the bio would silently come back empty if Ontario.ca ever redesigns the page or if the premier changes, rather than failing loudly. This pilot path has ZERO occurrences of the BOT_CHALLENGE_PAGE_RE guard or looksLikeBotChallengePage() function that the generic extractor now has — confirmed via direct grep, zero matches for 'radware', 'verifying your browser', 'BOT_CHALLENGE', or 'looksLikeBotChallenge' in this file.",
+      "recommended_action": "Do not write yet. Recommend refactoring fetchCaOn() to (a) derive and VERIFY leader_name from fetched content using the same pickVerifiedName()/scoreNameCandidate() helpers already built for the generic path, rather than hardcoding it, and (b) apply the same BOT_CHALLENGE_PAGE_RE guard to premierHtml/bioHtml/partyHtml before extracting anything, for defense in depth even though the narrow bio regex makes contamination unlikely. Needs human confirmation of whether Doug Ford is still the current Premier of Ontario before any write — this audit cannot confirm or deny that locally."
+    },
+
+    {
+      "jurisdiction_id": "CA-BC",
+      "leader_name_currently_represented_locally": "David Eby (static seed only — engine/data/subnational-phase3b-overlay.json, sourced 'May 2026'; NOT confirmed via a successful automated bio fetch)",
+      "office_title": "Premier of British Columbia",
+      "biography_status": "FETCH_FAILED",
+      "local_source_file": "engine/lib/subnational-transparency-ca-provinces.cjs / canadian-provincial-leader-transparency-config.cjs (generic path, config entry 'CA-BC')",
+      "original_official_source_url_recorded_locally": "https://www2.gov.bc.ca/gov/content/government/premier and https://www2.gov.bc.ca/gov/content/government/premier/about",
+      "last_successful_fetch_date_known_locally": "None — listed in 'unresolved' as of the 2026-05-18 run.",
+      "problem_found": "Both candidate official URLs returned HTTP 404 at the time of the last recorded automated fetch attempt. No leader_bio (or any other field) was written via this pipeline. No local hardcoded bio fallback text exists anywhere in src/App.js for any Canadian jurisdiction, so if no other process has populated Firestore, the live bio is very likely empty — but this cannot be confirmed without a Firestore read, which is out of scope for this audit.",
+      "recommended_action": "Re-verify the correct current official BC premier bio URL (gov.bc.ca's site structure may have changed since the candidate URLs were set) before attempting another fetch. Do not write until a working source URL is confirmed."
+    },
+
+    {
+      "jurisdiction_id": "CA-AB",
+      "leader_name_currently_represented_locally": "Danielle Smith (static seed only — engine/data/subnational-phase3b-overlay.json, sourced 'May 2026'; NOT confirmed via a successful automated bio fetch)",
+      "office_title": "Premier of Alberta",
+      "biography_status": "FETCH_FAILED",
+      "local_source_file": "engine/lib/canadian-provincial-leader-transparency-config.cjs (generic path, config entry 'CA-AB')",
+      "original_official_source_url_recorded_locally": "https://www.alberta.ca/premier/about and https://www.alberta.ca/premier/premier",
+      "last_successful_fetch_date_known_locally": "None — listed in 'unresolved' as of the 2026-05-18 run.",
+      "problem_found": "Both candidate official URLs returned HTTP 404. No bio fields written via this pipeline.",
+      "recommended_action": "Re-verify the correct current official Alberta premier bio URL before attempting another fetch. Do not write until a working source URL is confirmed."
+    },
+
+    {
+      "jurisdiction_id": "CA-QC",
+      "leader_name_currently_represented_locally": "Christine Fréchette (static seed, engine/data/subnational-phase3b-overlay.json, 'sworn 2026-04-15 per CBC/CTV April 2026 coverage; confirm live at premier-ministre.gouv.qc.ca before write' — the overlay file's own note explicitly flags this as unconfirmed)",
+      "office_title": "Premier of Quebec",
+      "biography_status": "FETCH_FAILED",
+      "local_source_file": "engine/lib/canadian-provincial-leader-transparency-config.cjs (generic path, config entry 'CA-QC')",
+      "original_official_source_url_recorded_locally": "https://www.premier-ministre.gouv.qc.ca/ (per overlay); specific candidate URLs attempted in the 2026-05-18 run not individually recorded beyond the failure reason.",
+      "last_successful_fetch_date_known_locally": "None — listed in 'unresolved' as of the 2026-05-18 run, reason 'name_not_found_on_official_pages'.",
+      "problem_found": "The automated extractor could not verify a matching leader name on the fetched official page(s) (distinct from an HTTP error — the page loaded, but pickVerifiedName() found no qualifying candidate). This is notable because Quebec had a leadership change recorded in the local seed around April 2026 (Christine Fréchette per the overlay's own sourcing note, itself flagged as needing live confirmation) — a leadership transition is a plausible reason the hardcoded extraction patterns temporarily failed to match the new premier's page content.",
+      "recommended_action": "Re-run the fetch now that the seed data suggests the leadership transition has settled; if it still fails, the official page structure or title/h1 pattern may need updating in the generic extractor's candidate-matching patterns for CA-QC specifically. Do not write until name-matching succeeds."
+    },
+
+    {
+      "jurisdiction_id": "CA-SK",
+      "leader_name_currently_represented_locally": "Scott Moe (static seed only — engine/data/subnational-phase3b-overlay.json, sourced 'May 2026')",
+      "office_title": "Premier of Saskatchewan",
+      "biography_status": "FETCH_FAILED",
+      "local_source_file": "engine/lib/canadian-provincial-leader-transparency-config.cjs (generic path, config entry 'CA-SK')",
+      "original_official_source_url_recorded_locally": "https://www.saskatchewan.ca/government/premier and https://www.saskatchewan.ca/government/premier/about",
+      "last_successful_fetch_date_known_locally": "None — listed in 'unresolved' as of the 2026-05-18 run.",
+      "problem_found": "Both candidate official URLs returned HTTP 404. No bio fields written via this pipeline.",
+      "recommended_action": "Re-verify the correct current official Saskatchewan premier bio URL before attempting another fetch."
+    },
+
+    {
+      "jurisdiction_id": "CA-MB",
+      "leader_name_currently_represented_locally": "Wab Kinew (static seed, engine/data/subnational-phase3b-overlay.json; CONSISTENT with the last successful automated fetch, which also derived 'Wab Kinew')",
+      "office_title": "Premier of Manitoba",
+      "biography_status": "UNKNOWN_NEEDS_REVERIFY",
+      "local_source_file": "engine/lib/canadian-provincial-leader-transparency-config.cjs + engine/lib/subnational-leader-profile-extract.cjs (generic path)",
+      "original_official_source_url_recorded_locally": "Not individually recorded in the registry output reviewed; config entry exists at canadian-provincial-leader-transparency-config.cjs.",
+      "last_successful_fetch_date_known_locally": "2026-05-18 (per subnational-leader-profiles-latest.json — leader_name, leader_bio, and 7 other fields successfully written)",
+      "problem_found": "The bio WAS successfully extracted and written on 2026-05-18 — BUT this run occurred BEFORE the anti-bot-challenge guard (BOT_CHALLENGE_PAGE_RE / looksLikeBotChallengePage()) was added to the generic extractor (that fix landed in commit 1e0fcb7, well after this date, triggered by the unrelated discovery of contamination in CA-PE which was extracted by the exact same unguarded code path on the same date). Since the vulnerable code was in active use for CA-MB at the time of this successful write, there is no way to rule out the same class of contamination from local files alone — PE's contamination was only discovered by chance via live UI inspection, not by any automated check. CA-MB's actual current bio content has never been verified against the new guard.",
+      "recommended_action": "Once Firestore is accessible again: read the current stored leader_bio for CA-MB and run it through the new BOT_CHALLENGE_PAGE_RE pattern (or simply re-fetch via the now-guarded extractor and compare). Do not assume clean merely because the write 'succeeded' — succeeding only means a name+bio pair was found and wasn't empty, not that it was free of bot-challenge text, since that check did not exist yet."
+    },
+
+    {
+      "jurisdiction_id": "CA-NS",
+      "leader_name_currently_represented_locally": "Tim Houston (static seed, engine/data/subnational-phase3b-overlay.json; CONSISTENT with the last successful automated fetch)",
+      "office_title": "Premier of Nova Scotia",
+      "biography_status": "UNKNOWN_NEEDS_REVERIFY",
+      "local_source_file": "engine/lib/canadian-provincial-leader-transparency-config.cjs + engine/lib/subnational-leader-profile-extract.cjs (generic path)",
+      "original_official_source_url_recorded_locally": "https://premier.novascotia.ca/ (per overlay)",
+      "last_successful_fetch_date_known_locally": "2026-05-18 (per subnational-leader-profiles-latest.json)",
+      "problem_found": "Same situation as CA-MB: bio successfully written on 2026-05-18, before the anti-bot guard existed. Never re-verified against the new guard.",
+      "recommended_action": "Same as CA-MB — re-verify stored content against the new guard once Firestore access is restored, rather than assuming clean."
+    },
+
+    {
+      "jurisdiction_id": "CA-NB",
+      "leader_name_currently_represented_locally": "Susan Holt (static seed, engine/data/subnational-phase3b-overlay.json, 'sworn Nov 2 2024'; CONSISTENT with the last successful automated fetch and with this session's own live-UI observation of 'In office since 2024-11-02')",
+      "office_title": "Premier of New Brunswick",
+      "biography_status": "UNKNOWN_NEEDS_REVERIFY",
+      "local_source_file": "engine/lib/canadian-provincial-leader-transparency-config.cjs + engine/lib/subnational-leader-profile-extract.cjs (generic path)",
+      "original_official_source_url_recorded_locally": "https://gnb.ca/en/org/office-of-the-premier.html (per overlay)",
+      "last_successful_fetch_date_known_locally": "2026-05-18 (per subnational-leader-profiles-latest.json)",
+      "problem_found": "Same situation as CA-MB/CA-NS: bio successfully written on 2026-05-18, before the anti-bot guard existed. Never re-verified against the new guard. (Name/since fields are independently corroborated as correct by this session's own earlier live-UI observation, but that observation did not include reading the bio text itself.)",
+      "recommended_action": "Same as CA-MB — re-verify stored bio content against the new guard once Firestore access is restored."
+    },
+
+    {
+      "jurisdiction_id": "CA-NL",
+      "leader_name_currently_represented_locally": "Andrew Furey in the static seed file (engine/data/subnational-phase3b-overlay.json, sourced 'May 2026') — BUT this session's own earlier live-UI observation (before Firestore quota exhaustion) showed the CURRENT premier as Tony Wakeham, in office since 2025-10-29. The static seed file is confirmed STALE.",
+      "office_title": "Premier of Newfoundland and Labrador",
+      "biography_status": "FETCH_FAILED",
+      "local_source_file": "engine/lib/canadian-provincial-leader-transparency-config.cjs (generic path, config entry 'CA-NL'); engine/data/subnational-phase3b-overlay.json (stale fallback)",
+      "original_official_source_url_recorded_locally": "https://www.premier.gov.nl.ca/ (per overlay, for the OLD premier)",
+      "last_successful_fetch_date_known_locally": "None via the bio pipeline — listed in 'unresolved' as of the 2026-05-18 run, reason 'name_not_found_on_official_pages'.",
+      "problem_found": "TWO findings: (1) the bio-fetch pipeline never successfully extracted a name/bio for CA-NL (name_not_found_on_official_pages) — plausibly because NL had a leadership change (Andrew Furey to Tony Wakeham, sworn 2025-10-29) that the config's candidate URL patterns were not updated for. (2) The static fallback seed file (subnational-phase3b-overlay.json) is confirmed stale — it still lists 'Andrew Furey' as premier, a name this session independently confirmed (via live UI, in an earlier task before Firestore quota exhausted) is out of date. This is a genuine, locally-verifiable staleness finding in a committed seed file, independent of any Firestore access.",
+      "recommended_action": "Update engine/data/subnational-phase3b-overlay.json's CA-NL entry to 'Tony Wakeham' (do not do this blindly — confirm the exact current official bio URL first, since premier.gov.nl.ca may have changed). Update the leader-profile config's candidate URLs for the new premier. Do not write a bio until a successful, guarded fetch succeeds."
+    },
+
+    {
+      "jurisdiction_id": "CA-PE",
+      "leader_name_currently_represented_locally": "Dennis King in the static seed file (engine/data/subnational-phase3b-overlay.json, sourced 'May 2026') — BUT this session's own earlier live-UI observation showed the CURRENT premier as Rob Lantz, in office since 2026-02-09. The static seed file is confirmed STALE (same pattern as CA-NL).",
+      "office_title": "Premier of Prince Edward Island",
+      "biography_status": "ANTI_BOT_CONTAMINATED",
+      "local_source_file": "engine/lib/subnational-leader-profile-extract.cjs (generic path) — CONFIRMED root cause and fix; engine/data/subnational-phase3b-overlay.json (stale fallback, separate issue)",
+      "original_official_source_url_recorded_locally": "https://www.princeedwardisland.ca/en/premier/premier-rob-lantz (reproduced directly in an earlier task this session)",
+      "last_successful_fetch_date_known_locally": "2026-05-18 per subnational-leader-profiles-latest.json (listed as 'updated' — but this is precisely the contaminated write; 'successful' here only meant the pipeline didn't error, not that the content was clean)",
+      "problem_found": "CONFIRMED, directly observed (in an earlier task this session, via live app UI before Firestore quota exhaustion) and root-caused: the stored leader_bio for CA-PE contained scraped Radware bot-mitigation interstitial text — 'Radware Page Verifying your browser before proceeding... Incident ID: b94a0610-cbnf-4b93-b10d-5d169d19b022' — instead of a real biography. Root cause reproduced directly: princeedwardisland.ca serves a Radware JS-challenge page (title literally 'Radware Page') to non-browser HTTP clients on at least the Premier bio page. Fixed in code via commit 1e0fcb7: (a) the generic extractor now rejects any page matching bot-challenge markers before extracting anything (looksLikeBotChallengePage()), and extractBio() independently rejects bio text containing the same markers as defense in depth; (b) a client-side sanitizer (src/utils/mergeProvincialExplorerFirestore.js, sanitizeBioText()) replaces any ALREADY-STORED bad bio matching these markers with a neutral placeholder ('Biography not available from a verified source in the current dataset.') at render time. HOWEVER: the underlying bad value in the live Firestore document itself was never corrected, because that fix task explicitly prohibited any Firestore write — the client-side guard fixes what is DISPLAYED without needing to touch the stored value. The static seed file is ALSO stale (lists former premier Dennis King, not current Rob Lantz) — a second, independent problem.",
+      "recommended_action": "No further CODE action needed for the display-side fix — it is already live (client-side sanitizer applies on every render, regardless of what's in Firestore). OPTIONAL cleanup once Firestore access is restored: overwrite the stored leader_bio for CA-PE with a real, verified bio (re-fetch now that the extractor is guarded, or leave the placeholder in place — both are safe) to remove the now-cosmetically-hidden-but-still-incorrect raw value. Separately, update engine/data/subnational-phase3b-overlay.json's CA-PE entry to 'Rob Lantz' with a verified current source URL."
+    },
+
+    {
+      "jurisdiction_id": "CA-YT",
+      "leader_name_currently_represented_locally": "Ranj Pillai (static seed only — engine/data/subnational-phase3b-overlay.json, sourced 'May 2026'; NOT confirmed via a successful automated bio fetch, and not independently cross-checked by this session's live-UI observations since the YT province page bio was never opened/verified in this session)",
+      "office_title": "Premier of Yukon",
+      "biography_status": "FETCH_FAILED",
+      "local_source_file": "engine/lib/subnational-transparency-ca-yt.cjs context + canadian-provincial-leader-transparency-config.cjs (generic path, config entry 'CA-YT')",
+      "original_official_source_url_recorded_locally": "https://yukon.ca/en/your-government/yukon-premier and https://yukon.ca/en/your-government/yukon-premier/about",
+      "last_successful_fetch_date_known_locally": "None — listed in 'unresolved' as of the 2026-05-18 run, reasons: HTTP 403 on the first URL, HTTP 404 on the second.",
+      "problem_found": "The HTTP 403 on yukon.ca's premier page is STRONGLY CORROBORATED by this session's own independent finding in an earlier task (CA-YT grants research): yukon.ca was directly confirmed via curl to return HTTP 403 to automated requests (bot-protected), while Yukon's separate open-data CKAN portal (open.yukon.ca) was accessible. This is consistent, cross-task evidence that yukon.ca itself actively blocks automated fetches — not a one-off fluke or a wrong URL guess.",
+      "recommended_action": "Do not attempt to bypass yukon.ca's bot-protection (no scraping/anti-bot-evasion rule). Treat this as a structurally blocked source, not a simple URL-fix candidate, unless a different official page (e.g. a Yukon Legislative Assembly biography page) can be found that is NOT bot-protected."
+    },
+
+    {
+      "jurisdiction_id": "CA-NT",
+      "leader_name_currently_represented_locally": "R.J. Simpson (static seed only — engine/data/subnational-phase3b-overlay.json; CONSISTENT with this session's own live-UI observation of the provincial list page showing 'Northwest Territories, Premier: R.J. Simpson')",
+      "office_title": "Premier of the Northwest Territories",
+      "biography_status": "FETCH_FAILED",
+      "local_source_file": "canadian-provincial-leader-transparency-config.cjs (generic path, config entry 'CA-NT')",
+      "original_official_source_url_recorded_locally": "https://www.gov.nt.ca/about and https://www.gov.nt.ca/contact",
+      "last_successful_fetch_date_known_locally": "None — listed in 'unresolved' as of the 2026-05-18 run, both candidate URLs returned HTTP 404.",
+      "problem_found": "Both candidate URLs returned HTTP 404 — these look like generic/guessed URL patterns (/about, /contact) rather than a specific premier biography page, which may explain the failure independent of any bot-blocking. The leader_name itself IS correctly represented (corroborated by this session's own live observation), but that name appears to come from a different source than this bio pipeline (likely the static overlay seed or a separate name-only mechanism), since the bio-fetch itself never succeeded.",
+      "recommended_action": "Find and record a specific official NWT premier biography URL (not generic /about or /contact pages) in the config before re-attempting. gov.nt.ca itself was NOT found to be bot-blocked in this session's separate NWT grants research (only yukon.ca and gov.nu.ca were confirmed bot-protected) — this looks like a wrong-URL problem, not a bot-protection problem."
+    },
+
+    {
+      "jurisdiction_id": "CA-NU",
+      "leader_name_currently_represented_locally": "John Main (static seed only — engine/data/subnational-phase3b-overlay.json, 'sworn 2025-11-20'; CONSISTENT with this session's own live-UI observation of the provincial list page showing 'Nunavut, Premier: John Main')",
+      "office_title": "Premier of Nunavut",
+      "biography_status": "FETCH_FAILED",
+      "local_source_file": "canadian-provincial-leader-transparency-config.cjs (generic path, config entry 'CA-NU')",
+      "original_official_source_url_recorded_locally": "https://www.premier.gov.nu.ca/premier",
+      "last_successful_fetch_date_known_locally": "None — listed in 'unresolved' as of the 2026-05-18 run, HTTP 404 on the candidate URL.",
+      "problem_found": "The candidate URL returned HTTP 404 as of 2026-05-18 — but this session's SEPARATE, later NWT/Nunavut grants research (a different task) directly confirmed gov.nu.ca itself returns HTTP 403 (bot-protected) on direct curl requests, and that opendata.gov.nu.ca/data.gov.nu.ca do not resolve at all. premier.gov.nu.ca is a different subdomain from gov.nu.ca, so the exact relationship between the 404 recorded here and the 403 found later is not fully confirmed — but both point to the same government web presence being difficult for automated tools to reach reliably. The leader_name itself IS correctly represented (corroborated by live observation), again suggesting it comes from the static seed rather than this bio pipeline.",
+      "recommended_action": "Confirm whether premier.gov.nu.ca is also bot-protected (like gov.nu.ca) or merely has a different URL structure than guessed (like the gov.nt.ca 404s). If bot-protected, treat as structurally blocked (same as CA-YT) rather than a simple URL fix."
+    }
+  ],
+
+  "anti_bot_protection_assessment": {
+    "question": "Does the extractor now reject obvious anti-bot/challenge content generally, or was the PEI fix narrowly scoped to PEI only?",
+    "answer": "PARTIALLY GENERALIZED — the fix is architecturally generic (not hardcoded to PEI, not gated by jurisdiction ID, not keyed to any PEI-specific string), but it only covers ONE of the TWO code paths used to fetch Canadian leader profiles.",
+    "details": [
+      {
+        "path": "Generic path — engine/lib/subnational-leader-profile-extract.cjs, used via fetchGenericOfficialLeaderProfile() for every Canadian jurisdiction NOT in PILOT_IDS.",
+        "covers": ["CA-BC", "CA-AB", "CA-QC", "CA-SK", "CA-MB", "CA-NS", "CA-NB", "CA-NL", "CA-PE", "CA-YT", "CA-NT", "CA-NU"],
+        "protected": true,
+        "evidence": "Confirmed via direct code read: looksLikeBotChallengePage() is called unconditionally at the top of extractProfileFromHtml() (returns ok:false for any jurisdiction's HTML if it matches), and extractBio() independently rejects any candidate bio text matching the same BOT_CHALLENGE_PAGE_RE pattern, again with no jurisdiction-specific gating. Tested directly against the real captured PEI Radware page (returns ok:false) and a synthetic clean profile page (still extracts correctly) in the fix's original task."
+      },
+      {
+        "path": "Pilot path — engine/lib/subnational-leader-profile-pilot.cjs, used for jurisdictions in PILOT_IDS (Canadian member: CA-ON only).",
+        "covers": ["CA-ON"],
+        "protected": false,
+        "evidence": "Confirmed via direct grep: zero occurrences of 'radware', 'verifying your browser', 'BOT_CHALLENGE', or 'looksLikeBotChallenge' anywhere in subnational-leader-profile-pilot.cjs. fetchCaOn() applies no content validation of any kind to premierHtml, bioHtml, or partyHtml before extracting from them. Its risk profile is DIFFERENT from the generic path's pre-fix vulnerability, not absent: leader_name is hardcoded (not derived from content at all, so bot-challenge text couldn't replace it, but a real leadership change also couldn't be detected), and the bio-extraction regex is narrowly fitted to one specific known string, making accidental contamination by generic challenge-page boilerplate unlikely in practice even without an explicit guard — but not impossible, and not defended against."
+      },
+      {
+        "path": "Federal PM path — src/App.js fetchMemberBio() reading the 'member_bios' Firestore collection.",
+        "covers": ["CA-FEDERAL"],
+        "protected": "unknown / not applicable",
+        "evidence": "This is not part of the subnational-leader-profile-*.cjs pipeline at all. No local engine script was found that populates member_bios for 'Mark Carney'. No validation code of any kind was found for this path. Whether it is vulnerable to the same contamination class is unknown — it may not even use an HTML-scraping mechanism at all."
+      }
+    ]
+  },
+
+  "generalized_validation_rule_proposal": {
+    "note": "Proposed only — not implemented, no code changed, no fetch or overwrite performed in this task.",
+    "proposal": [
+      "1. Move BOT_CHALLENGE_PAGE_RE and a looksLikeBotChallengePage(html) helper into the shared module (engine/lib/subnational-leader-profile-shared.cjs) so both the generic extractor and the pilot module can import the same single source of truth, instead of the check living only inside the generic extractor file.",
+      "2. In engine/lib/subnational-leader-profile-pilot.cjs's fetchCaOn() (and, if ever revisited, the other PILOT_IDS fetchers — out of scope here per the US/UK/Australia exclusion), check each fetched HTML (premierHtml, bioHtml, partyHtml) against the shared guard before extracting anything from it, mirroring the generic path's behavior.",
+      "3. Replace fetchCaOn()'s hardcoded `profile.leader_name = 'Doug Ford'` with a verified extraction using the already-built pickVerifiedName()/scoreNameCandidate() helpers from subnational-leader-profile-extract.cjs, so a real leadership change is detected (fetch would then fail loudly, as it already does for every other jurisdiction, rather than silently reporting a possibly-outdated hardcoded name forever).",
+      "4. Add a lightweight, reusable isBioTextSafe(text) export to the shared module so ANY future write path (including ones outside this pipeline entirely, like the federal member_bios mechanism) can validate text against the same pattern before writing, without needing to duplicate the regex.",
+      "5. Consider extending the existing client-side sanitizeBioText() guard in src/utils/mergeProvincialExplorerFirestore.js (already generic/jurisdiction-agnostic, applied at all 9 leader_bio/deputy_leader_bio read sites) to also run against whatever the federal member_bios render path uses, if that path is found to read raw Firestore text without a similar guard today."
+    ]
+  },
+
+  "summary": {
+    "total_jurisdictions_audited": 14,
+    "count_CLEAN": 0,
+    "count_MISSING": 0,
+    "count_STALE": 0,
+    "count_FETCH_FAILED": 8,
+    "count_ANTI_BOT_CONTAMINATED": 1,
+    "count_INVALID_CONTENT": 0,
+    "count_UNKNOWN_NEEDS_REVERIFY": 5,
+    "fetch_failed_jurisdictions": ["CA-BC", "CA-AB", "CA-QC", "CA-SK", "CA-NL", "CA-YT", "CA-NT", "CA-NU"],
+    "anti_bot_contaminated_jurisdictions": ["CA-PE"],
+    "unknown_needs_reverify_jurisdictions": ["CA-FEDERAL", "CA-ON", "CA-MB", "CA-NS", "CA-NB"],
+    "note_on_classification_discipline": "No jurisdiction was marked CLEAN. This audit found zero local evidence — no cached bio text, no content-level verification report — for ANY jurisdiction that would support a CLEAN classification. CA-MB/CA-NS/CA-NB/CA-ON were marked UNKNOWN_NEEDS_REVERIFY rather than CLEAN specifically because their last successful bio extraction (2026-05-18, or N/A for ON's hardcoded path) predates the anti-bot guard fix (commit 1e0fcb7) that was only added AFTER discovering contamination in CA-PE — which had an identical 'successful' write on the same date, via the same then-unguarded code. A 'successful write' before the fix existed is not evidence of clean content.",
+    "additional_findings_outside_the_7-type_classification": [
+      "engine/data/subnational-phase3b-overlay.json (static seed/fallback leader identity data) is confirmed STALE for CA-NL (lists 'Andrew Furey', actual current premier is Tony Wakeham per this session's own live-UI observation) and CA-PE (lists 'Dennis King', actual current premier is Rob Lantz). This is a name-level staleness finding in a committed file, separate from and in addition to each jurisdiction's biography_status above.",
+      "No hardcoded fallback bio TEXT exists anywhere in src/App.js for any Canadian jurisdiction — the 'hardcoded.bio || ...' fallback pattern used throughout mergeProvincialExplorerFirestore.js always resolves to an empty string for every Canadian province/territory if Firestore has nothing, which is a safe (non-misleading) default but means there is no local safety net content to fall back on either."
+    ]
+  },
+
+  "jurisdictions_requiring_corrective_work": {
+    "immediate_code_fix_recommended": [
+      {"jurisdiction": "CA-ON", "fix": "Remove hardcoded leader_name; add bot-challenge guard to fetchCaOn()."}
+    ],
+    "seed_data_correction_recommended": [
+      {"jurisdiction": "CA-NL", "fix": "Update subnational-phase3b-overlay.json premier name from Andrew Furey to Tony Wakeham (verify official source URL first)."},
+      {"jurisdiction": "CA-PE", "fix": "Update subnational-phase3b-overlay.json premier name from Dennis King to Rob Lantz (verify official source URL first)."}
+    ],
+    "re_fetch_required_once_quota_clears_or_sources_fixed": [
+      "CA-BC", "CA-AB", "CA-QC", "CA-SK", "CA-NL", "CA-NT", "CA-NU"
+    ],
+    "structurally_blocked_do_not_attempt_without_separate_authorization": [
+      "CA-YT (yukon.ca confirmed bot-protected, HTTP 403)",
+      "CA-NU (gov.nu.ca confirmed bot-protected, HTTP 403 — premier.gov.nu.ca relationship not fully confirmed)"
+    ],
+    "content_reverification_required_once_firestore_accessible": [
+      "CA-MB", "CA-NS", "CA-NB", "CA-ON", "CA-FEDERAL"
+    ],
+    "already_fixed_cosmetically_optional_cleanup_remaining": [
+      "CA-PE (display-side fix live via client-side sanitizer; raw Firestore value still contains the bad text and could optionally be overwritten once quota clears)"
+    ]
+  }
+}
