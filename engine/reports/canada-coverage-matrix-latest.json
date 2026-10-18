@@ -1,0 +1,493 @@
+{
+  "report_type": "FINAL_CANADA_COVERAGE_MATRIX",
+  "generated_at": "2026-10-18T00:00:00.000Z",
+  "generated_from": "Existing local report files and committed source code only. No Firestore read, write, or probe performed to produce this report. No new source data fetched.",
+  "firestore_quota_status_as_of_last_known_check": "RESOURCE_EXHAUSTED (last probed 2026-09-07; not re-probed for this report per task instructions)",
+  "sources_consulted": [
+    "engine/reports/canada-mvp-write-latest.json",
+    "engine/reports/canada-monthly-runner-2026-08-16T00-29-35.json",
+    "engine/reports/cv-data-013-budget-latest.json",
+    "engine/reports/audit-grants-ca-on.json",
+    "engine/reports/canada-bc-write-latest.json",
+    "engine/reports/canada-ab-write-latest.json",
+    "engine/reports/canada-qc-write-latest.json",
+    "engine/reports/canada-sk-write-latest.json",
+    "engine/reports/canada-mb-write-latest.json",
+    "engine/reports/canada-ns-write-latest.json",
+    "engine/reports/canada-nb-write-latest.json",
+    "engine/reports/canada-nl-write-latest.json",
+    "engine/reports/canada-pe-write-latest.json",
+    "engine/reports/canada-yt-write-latest.json",
+    "engine/reports/canada-unemployment-batch-write-latest.json",
+    "engine/reports/canada-nt-dry-run-latest.json",
+    "engine/reports/canada-nu-dry-run-latest.json",
+    "engine/reports/canada-federal-dry-run-latest.json",
+    "engine/reports/canada-pending-write-queue-latest.json",
+    "engine/reports/statcan-wds-reliability-test-latest.json",
+    "engine/reports/subnational-leader-profiles-latest.json",
+    "engine/lib/canadian-provincial-leader-transparency-config.cjs",
+    "git log (commit 1e0fcb7 — PEI bio fix)"
+  ],
+
+  "jurisdictions": [
+    {
+      "jurisdiction_id": "CA-FEDERAL",
+      "name": "Federal Canada",
+      "unemployment": {
+        "status": "DRY_RUN_OK — fetch confirmed working, no write script exists yet",
+        "write_status": "NOT_ATTEMPTED",
+        "source_quality": "Excellent — StatCan Table 14-10-0287-01, Canada coordinate 1.7.1.1.1.1.0.0.0.0, current (6.4% Aug 2026), fetched cleanly via the reliability helper",
+        "blocker_type": "pending reviewer decision",
+        "detail": "No dedicated write script exists. Two candidate Firestore targets proposed (social_stats — matches existing UI overlay with zero UI changes; or subnational_economic_social_stats/CA — matches the provincial pattern but has no UI read-path today). Needs a target decision before a write script is built."
+      },
+      "charities": {
+        "status": "Not pursued by design — recommended skip",
+        "write_status": "NOT_APPLICABLE",
+        "source_quality": "Same CRA Charities Registry already used for every province — excellent, but an all-Canada aggregate (~170K+ orgs) would be redundant with the 10 per-province views already live.",
+        "blocker_type": "not_pursued_by_design (recommended skip — redundant with per-province views; not one of the 7 standard blocker types)",
+        "detail": "See canada-federal-dry-run-latest.json section_4. No existing UI expects a federal charities collection."
+      },
+      "grants": {
+        "status": "DRY_RUN_OK for two distinct datasets (Contracts; Grants and Contributions) — both confirmed current/comprehensive/machine-readable",
+        "write_status": "NOT_ATTEMPTED",
+        "source_quality": "Excellent — TBS Proactive Publication - Contracts (1,313,551 records, current into 2026-2027) and Proactive Disclosure - Grants and Contributions (1,325,817 records, current into 2027), both queryable live via the CKAN datastore API.",
+        "blocker_type": "pending reviewer decision",
+        "detail": "Contracts: proposed target is the EXISTING 'government_contracts' collection (already read live by the federal Contracts UI) — only needs a record-selection scope decision (how many of 1.3M+ rows). Grants and Contributions: needs BOTH a scope decision AND a UI decision (no federal grants UI section exists today)."
+      },
+      "leader_profile_status": "Not applicable — the subnational leader-profile registry (engine/reports/subnational-leader-profiles-latest.json) covers provinces/states/territories only; no federal-level (PM) entry exists in that pipeline for any country.",
+      "firestore_write_status_summary": "Nothing written. No write script exists for any federal dataset.",
+      "notes": ["No app code changes needed to surface federal data once written — existing UI read-paths (social_stats, government_contracts) are ready and waiting."]
+    },
+
+    {
+      "jurisdiction_id": "CA-ON",
+      "name": "Ontario",
+      "unemployment": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-002, 2026-08-03, 24 monthly points)",
+        "source_quality": "Excellent — StatCan Table 14-10-0287-01",
+        "blocker_type": "written/live",
+        "detail": "subnational_economic_social_stats/CA-ON. A supplementary category-level budget breakdown (CV-DATA-013, Ontario Public Accounts Annual Report, 7 categories, FY2024-25) was also merged into the same document on 2026-08-16."
+      },
+      "charities": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-008, 2026-08-03, 100 records)",
+        "source_quality": "Excellent — CRA Charities Registry / open.canada.ca",
+        "blocker_type": "written/live",
+        "detail": "subnational_tax_exempt_entities/CA-ON. Name/type/category only, rawValue=0."
+      },
+      "grants": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-014, 2026-08-16, 100 records, modal label 'Transfer Payments')",
+        "source_quality": "Excellent — Ontario Public Accounts — Detailed Schedule of Payments, 8,592 total after filter, $20.78B top-100 total",
+        "blocker_type": "written/live",
+        "detail": "subnational_grants/CA-ON. Filtered to approved purpose 'Transfer Payments'. Note: the canada-mvp-write-latest.json file (dated 2026-08-03) still shows this as 'deliberately_excluded pending product/licence decision' — that was superseded by the later successful write on 2026-08-16 (canada-monthly-runner-2026-08-16T00-29-35.json)."
+      },
+      "leader_profile_status": "Successfully updated as of 2026-05-18 (via the PILOT_IDS fast-path, not the generic config). No known issues reported for CA-ON.",
+      "firestore_write_status_summary": "All 3 core datasets written and live.",
+      "notes": []
+    },
+
+    {
+      "jurisdiction_id": "CA-BC",
+      "name": "British Columbia",
+      "unemployment": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-BC-001, 24 monthly points)",
+        "source_quality": "Excellent — StatCan Table 14-10-0287-01",
+        "blocker_type": "written/live",
+        "detail": "subnational_economic_social_stats/CA-BC"
+      },
+      "charities": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-BC-002, 100 records)",
+        "source_quality": "Excellent — CRA Charities Registry",
+        "blocker_type": "written/live",
+        "detail": "subnational_tax_exempt_entities/CA-BC"
+      },
+      "grants": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-BC-003, 100 records, modal label 'Public Payments')",
+        "source_quality": "Excellent — BC supplier payments dataset, broader than grants alone",
+        "blocker_type": "written/live",
+        "detail": "subnational_grants/CA-BC. Labelled 'Public Payments' rather than 'Grants' because the source includes general supplier payments."
+      },
+      "leader_profile_status": "Unresolved as of 2026-05-18 — gov.bc.ca premier page returned HTTP 404 on both candidate URLs. Current live bio status unknown (not re-checked).",
+      "firestore_write_status_summary": "All 3 core datasets written and live.",
+      "notes": []
+    },
+
+    {
+      "jurisdiction_id": "CA-AB",
+      "name": "Alberta",
+      "unemployment": {
+        "status": "Fetch confirmed working post-reliability-fix (6.8% Aug 2026); not yet written",
+        "write_status": "NOT_WRITTEN — originally excluded for ECONNRESET, now superseded; write script ready (canada-unemployment-batch-write.cjs)",
+        "source_quality": "Excellent — StatCan Table 14-10-0287-01, coordinate 10.7.1.1.1.1.0.0.0.0",
+        "blocker_type": "ready after quota clears",
+        "detail": "Never attempted via a write script until the reliability fix landed. The original canada-ab-write-latest.json 'deliberately_excluded' note (ECONNRESET) is superseded by statcan-wds-reliability-test-latest.json, which confirms the fetch now works cleanly."
+      },
+      "charities": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-AB-002, 100 records)",
+        "source_quality": "Excellent — CRA Charities Registry",
+        "blocker_type": "written/live",
+        "detail": "subnational_tax_exempt_entities/CA-AB"
+      },
+      "grants": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-AB-003, 100 records, modal label 'Grants')",
+        "source_quality": "Excellent — Alberta grant disclosure dataset",
+        "blocker_type": "written/live",
+        "detail": "subnational_grants/CA-AB"
+      },
+      "leader_profile_status": "Unresolved as of 2026-05-18 — alberta.ca premier pages returned HTTP 404 on both candidate URLs.",
+      "firestore_write_status_summary": "2 of 3 written (charities, grants). Unemployment ready to write once quota clears.",
+      "notes": []
+    },
+
+    {
+      "jurisdiction_id": "CA-QC",
+      "name": "Quebec",
+      "unemployment": {
+        "status": "Fetch confirmed working post-reliability-fix (5.6% Aug 2026); not yet written",
+        "write_status": "NOT_WRITTEN — originally excluded for ECONNRESET, now superseded; write script ready",
+        "source_quality": "Excellent — StatCan Table 14-10-0287-01, coordinate 6.7.1.1.1.1.0.0.0.0",
+        "blocker_type": "ready after quota clears",
+        "detail": "Same ECONNRESET-superseded situation as CA-AB."
+      },
+      "charities": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-QC-002, 100 records)",
+        "source_quality": "Excellent — CRA Charities Registry",
+        "blocker_type": "written/live",
+        "detail": "subnational_tax_exempt_entities/CA-QC"
+      },
+      "grants": {
+        "status": "DRY_RUN_OK but not written — category-level, not payee-level",
+        "write_status": "NOT_WRITTEN",
+        "source_quality": "Category-level only — Québec Comptes publics Volume 2 reports transfer expenses by category/department, not by individual recipient (unlike ON/BC/AB/NB's payee-level grants datasets).",
+        "blocker_type": "pending reviewer decision",
+        "detail": "CV-DATA-QC-003. Needs a founder/reviewer decision on whether to display category-level data at all, and under what label, before it can be written."
+      },
+      "leader_profile_status": "Unresolved as of 2026-05-18 — reason recorded as 'name_not_found_on_official_pages'.",
+      "firestore_write_status_summary": "1 of 3 written (charities). Unemployment ready to write once quota clears; grants pending a reviewer decision.",
+      "notes": []
+    },
+
+    {
+      "jurisdiction_id": "CA-SK",
+      "name": "Saskatchewan",
+      "unemployment": {
+        "status": "Fetch confirmed working post-reliability-fix (6.0% Aug 2026); not yet written",
+        "write_status": "NOT_WRITTEN — originally excluded for ECONNRESET, now superseded; write script ready",
+        "source_quality": "Excellent — StatCan Table 14-10-0287-01, coordinate 9.7.1.1.1.1.0.0.0.0",
+        "blocker_type": "ready after quota clears",
+        "detail": "Same ECONNRESET-superseded situation as CA-AB."
+      },
+      "charities": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-SK-002, 100 records)",
+        "source_quality": "Excellent — CRA Charities Registry",
+        "blocker_type": "written/live",
+        "detail": "subnational_tax_exempt_entities/CA-SK"
+      },
+      "grants": {
+        "status": "NOT_FOUND",
+        "write_status": "NOT_WRITTEN",
+        "source_quality": "No source — Saskatchewan has no CKAN open data portal (data.saskatchewan.ca does not resolve); federal aggregator's SK-tagged datasets are all geospatial/geological; Public Accounts Volume 2 is PDF-only.",
+        "blocker_type": "unavailable/no source",
+        "detail": "CV-DATA-SK-003. Genuine data-availability gap, not a fetch failure."
+      },
+      "leader_profile_status": "Unresolved as of 2026-05-18 — saskatchewan.ca premier pages returned HTTP 404 on both candidate URLs.",
+      "firestore_write_status_summary": "1 of 3 written (charities). Unemployment ready to write once quota clears; grants unavailable.",
+      "notes": []
+    },
+
+    {
+      "jurisdiction_id": "CA-MB",
+      "name": "Manitoba",
+      "unemployment": {
+        "status": "Fetch confirmed working post-reliability-fix (5.0% Aug 2026); not yet written",
+        "write_status": "NOT_WRITTEN — originally excluded for ECONNRESET, now superseded; write script ready",
+        "source_quality": "Excellent — StatCan Table 14-10-0287-01, coordinate 8.7.1.1.1.1.0.0.0.0",
+        "blocker_type": "ready after quota clears",
+        "detail": "Same ECONNRESET-superseded situation as CA-AB."
+      },
+      "charities": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-MB-002, 100 records)",
+        "source_quality": "Excellent — CRA Charities Registry",
+        "blocker_type": "written/live",
+        "detail": "subnational_tax_exempt_entities/CA-MB"
+      },
+      "grants": {
+        "status": "NOT_FOUND",
+        "write_status": "NOT_WRITTEN",
+        "source_quality": "No source — Manitoba has no CKAN open data portal; the real geoportal (geoportal.gov.mb.ca) has no financial data; the Contract Disclosure tool is interactive-only with no bulk export (no-scraping rule applies).",
+        "blocker_type": "unavailable/no source",
+        "detail": "CV-DATA-MB-003."
+      },
+      "leader_profile_status": "Successfully updated as of 2026-05-18. No known issues reported for CA-MB.",
+      "firestore_write_status_summary": "1 of 3 written (charities). Unemployment ready to write once quota clears; grants unavailable.",
+      "notes": []
+    },
+
+    {
+      "jurisdiction_id": "CA-NS",
+      "name": "Nova Scotia",
+      "unemployment": {
+        "status": "Fetch confirmed working post-reliability-fix (6.1% Aug 2026); not yet written",
+        "write_status": "NOT_WRITTEN — originally excluded for ECONNRESET, now superseded; write script ready",
+        "source_quality": "Excellent — StatCan Table 14-10-0287-01, coordinate 4.7.1.1.1.1.0.0.0.0",
+        "blocker_type": "ready after quota clears",
+        "detail": "Same ECONNRESET-superseded situation as CA-AB."
+      },
+      "charities": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-NS-002, 100 records)",
+        "source_quality": "Excellent — CRA Charities Registry",
+        "blocker_type": "written/live",
+        "detail": "subnational_tax_exempt_entities/CA-NS"
+      },
+      "grants": {
+        "status": "DRY_RUN_OK but deliberately deferred — single-sector, not whole-of-government",
+        "write_status": "NOT_WRITTEN",
+        "source_quality": "A real, current, machine-readable dataset WAS found and successfully fetched/transformed (Nova Scotia Department of Agriculture Funding Programs Details, 6,324 rows, real recipients/amounts) — but it is single-sector (agriculture only), not whole-of-government, and would need a precise 'Agriculture Grants' label if ever published.",
+        "blocker_type": "pending reviewer decision",
+        "detail": "CV-DATA-NS-003. Deferred pending a reviewer decision on whether/how to publish a narrow-scope dataset, or combine it with other narrow NS datasets found."
+      },
+      "leader_profile_status": "Successfully updated as of 2026-05-18. No known issues reported for CA-NS.",
+      "firestore_write_status_summary": "1 of 3 written (charities). Unemployment ready to write once quota clears; grants pending a reviewer decision.",
+      "notes": []
+    },
+
+    {
+      "jurisdiction_id": "CA-NB",
+      "name": "New Brunswick",
+      "unemployment": {
+        "status": "Fetch confirmed working post-reliability-fix (7.3% Aug 2026); not yet written",
+        "write_status": "NOT_WRITTEN — originally excluded for ECONNRESET, now superseded; write script ready",
+        "source_quality": "Excellent — StatCan Table 14-10-0287-01, coordinate 5.7.1.1.1.1.0.0.0.0",
+        "blocker_type": "ready after quota clears",
+        "detail": "Same ECONNRESET-superseded situation as CA-AB."
+      },
+      "charities": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-NB-002, 100 records)",
+        "source_quality": "Excellent — CRA Charities Registry",
+        "blocker_type": "written/live",
+        "detail": "subnational_tax_exempt_entities/CA-NB"
+      },
+      "grants": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-NB-003, 100 records, modal label 'Public Payments')",
+        "source_quality": "Excellent — NB Combined Supplier and Grant Payments (Socrata), broader than grants alone",
+        "blocker_type": "written/live",
+        "detail": "subnational_grants/CA-NB. Labelled 'Public Payments' because the source includes supplier payments and purchase-card spending in addition to grants."
+      },
+      "leader_profile_status": "Successfully updated as of 2026-05-18. No known issues reported for CA-NB.",
+      "firestore_write_status_summary": "All 3 core datasets written and live.",
+      "notes": []
+    },
+
+    {
+      "jurisdiction_id": "CA-NL",
+      "name": "Newfoundland and Labrador",
+      "unemployment": {
+        "status": "Fetch confirmed working post-reliability-fix (8.6% Aug 2026); not yet written",
+        "write_status": "NOT_WRITTEN — originally excluded for ECONNRESET, now superseded; write script ready",
+        "source_quality": "Excellent — StatCan Table 14-10-0287-01, coordinate 2.7.1.1.1.1.0.0.0.0",
+        "blocker_type": "ready after quota clears",
+        "detail": "Same ECONNRESET-superseded situation as CA-AB."
+      },
+      "charities": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-NL-002, 100 records)",
+        "source_quality": "Excellent — CRA Charities Registry",
+        "blocker_type": "written/live",
+        "detail": "subnational_tax_exempt_entities/CA-NL"
+      },
+      "grants": {
+        "status": "NOT_FOUND — only candidate is a decade-stale snapshot",
+        "write_status": "NOT_WRITTEN",
+        "source_quality": "The only comprehensive candidate, 'Grant payments over $250,000 2014-2015', is a one-time snapshot never updated since 2015-09-28 (over a decade stale).",
+        "blocker_type": "stale source rejected",
+        "detail": "CV-DATA-NL-003. Rejected to avoid misrepresenting a decade-old snapshot as current data."
+      },
+      "leader_profile_status": "Unresolved as of 2026-05-18 — reason recorded as 'name_not_found_on_official_pages'.",
+      "firestore_write_status_summary": "1 of 3 written (charities). Unemployment ready to write once quota clears; grants rejected as stale.",
+      "notes": []
+    },
+
+    {
+      "jurisdiction_id": "CA-PE",
+      "name": "Prince Edward Island",
+      "unemployment": {
+        "status": "Fetch confirmed working post-reliability-fix (7.9% Aug 2026); not yet written",
+        "write_status": "NOT_WRITTEN — originally excluded for ECONNRESET, now superseded; write script ready",
+        "source_quality": "Excellent — StatCan Table 14-10-0287-01, coordinate 3.7.1.1.1.1.0.0.0.0",
+        "blocker_type": "ready after quota clears",
+        "detail": "Same ECONNRESET-superseded situation as CA-AB."
+      },
+      "charities": {
+        "status": "WRITTEN",
+        "write_status": "WRITTEN (CV-DATA-PE-002, 100 records)",
+        "source_quality": "Excellent — CRA Charities Registry",
+        "blocker_type": "written/live",
+        "detail": "subnational_tax_exempt_entities/CA-PE"
+      },
+      "grants": {
+        "status": "NOT_FOUND — category-level and stale",
+        "write_status": "NOT_WRITTEN",
+        "source_quality": "The only candidate, 'PEI Consolidated Expenses', is category-level (department totals, no recipient names) and stale (data stops at fiscal year 2018/19).",
+        "blocker_type": "stale source rejected",
+        "detail": "CV-DATA-PE-003. Rejected on both granularity and currency grounds."
+      },
+      "leader_profile_status": "Successfully updated as of 2026-05-18 — BUT a live-app inspection on 2026-09-07 found the stored bio had been corrupted with scraped Radware bot-challenge text ('Radware Page Verifying your browser before proceeding... Incident ID: ...'), root-caused to princeedwardisland.ca serving a bot-mitigation interstitial to the automated fetch. Fixed in code (commit 1e0fcb7): the engine extractor now rejects bot-challenge pages outright, and a client-side sanitizer replaces any already-stored bad bio with a neutral placeholder at render time. The underlying bad value in the live Firestore document itself was NOT corrected, because that fix task explicitly prohibited any Firestore write — the client-side guard fixes what is displayed without needing one.",
+      "firestore_write_status_summary": "1 of 3 written (charities). Unemployment ready to write once quota clears; grants rejected as stale.",
+      "notes": ["Leader bio issue is CODE-FIXED but the stale bad Firestore value has not been overwritten — this is cosmetic-only now (placeholder shows instead of junk text) and does not require another write to resolve, but a future unrelated write to this document could opportunistically also correct the stored value."]
+    },
+
+    {
+      "jurisdiction_id": "CA-YT",
+      "name": "Yukon",
+      "unemployment": {
+        "status": "Fetch confirmed working post-reliability-fix (5.3% Aug 2026); write ATTEMPTED and failed on Firestore quota",
+        "write_status": "FAILED (RESOURCE_EXHAUSTED) — attempted via canada-unemployment-batch-write.cjs --only=CA-YT on 2026-09-07",
+        "source_quality": "Excellent — StatCan Table 14-10-0292-01 (territorial), coordinate 1.8.1.1.1.1.0.0.0.0",
+        "blocker_type": "infrastructure quota blocked",
+        "detail": "The fetch succeeded cleanly (no ECONNRESET); only the Firestore write step failed, with the exact RESOURCE_EXHAUSTED error, confirmed in engine/reports/canada-unemployment-batch-write-latest.json."
+      },
+      "charities": {
+        "status": "Write ATTEMPTED and failed on Firestore quota (fetch itself succeeds every time)",
+        "write_status": "FAILED (RESOURCE_EXHAUSTED) — attempted via canada-yt-write-charities.cjs on 2026-09-07 (3 attempts)",
+        "source_quality": "Excellent — CRA Charities Registry (111 found, 100 ready)",
+        "blocker_type": "infrastructure quota blocked",
+        "detail": "CV-DATA-YT-002. See engine/reports/canada-yt-write-latest.json — status FAILED, records_written null."
+      },
+      "grants": {
+        "status": "NOT_FOUND — source exists and is current, but PDF-only",
+        "write_status": "NOT_WRITTEN",
+        "source_quality": "Yukon's own current, comprehensive Public Accounts (including Schedule 8 'legislated grants' and Schedule 9 'other government transfers') exist and are current — but every one of 170 Finance-org datasets on open.yukon.ca is PDF only (confirmed via a full organization-wide format scan).",
+        "blocker_type": "unavailable/PDF-only",
+        "detail": "CV-DATA-YT-003. yukon.ca itself is also bot-blocked (HTTP 403) and was not scraped."
+      },
+      "leader_profile_status": "Unresolved as of 2026-05-18 — yukon.ca premier pages returned HTTP 403/404, consistent with the bot-protection later confirmed on yukon.ca for other fetches.",
+      "firestore_write_status_summary": "0 of 3 written. Both unemployment and charities are fully ready (fetch confirmed, write scripts exist and tested) and blocked ONLY by Firestore quota — these should be the very first writes attempted once quota clears.",
+      "notes": []
+    },
+
+    {
+      "jurisdiction_id": "CA-NT",
+      "name": "Northwest Territories",
+      "unemployment": {
+        "status": "DRY_RUN_OK (7.6% Aug 2026); write script exists (batch) but never run for CA-NT specifically",
+        "write_status": "NOT_ATTEMPTED",
+        "source_quality": "Excellent — StatCan Table 14-10-0292-01 (territorial), coordinate 2.8.1.1.1.1.0.0.0.0",
+        "blocker_type": "ready after quota clears",
+        "detail": "Dry-run itself was run after the reliability fix landed — confirmed clean, no ECONNRESET."
+      },
+      "charities": {
+        "status": "DRY_RUN_OK (122 found, 100 ready); dedicated write script exists but never run",
+        "write_status": "NOT_ATTEMPTED",
+        "source_quality": "Excellent — CRA Charities Registry",
+        "blocker_type": "ready after quota clears",
+        "detail": "CV-DATA-NT-002. Write script engine/canada-nt-write-charities.cjs prepared 2026-09-07, not yet executed."
+      },
+      "grants": {
+        "status": "NOT_FOUND — closest candidate is stale and narrow; Public Accounts mostly PDF",
+        "write_status": "NOT_WRITTEN",
+        "source_quality": "The GNWT Sole Source Contracts Report is stale (last published FY2017-2018, ~8 years out of date) and narrow (sole-source contracts only). NWT Public Accounts are almost entirely PDF; the one structured (.xlsx) resource found is itself the most recent Public Accounts data published (FY2022-23, ~3 fiscal years stale) and is department-level summary tables, not payee-level data.",
+        "blocker_type": "stale source rejected",
+        "detail": "CV-DATA-NT-003."
+      },
+      "leader_profile_status": "Unresolved as of 2026-05-18 — gov.nt.ca pages returned HTTP 404 on both candidate URLs.",
+      "firestore_write_status_summary": "0 of 3 written. Unemployment and charities are both fully ready (dry-run confirmed, write scripts prepared) and blocked only by Firestore quota.",
+      "notes": []
+    },
+
+    {
+      "jurisdiction_id": "CA-NU",
+      "name": "Nunavut",
+      "unemployment": {
+        "status": "DRY_RUN_OK (11.3% Aug 2026); write script exists (batch) but never run for CA-NU specifically",
+        "write_status": "NOT_ATTEMPTED",
+        "source_quality": "Excellent — StatCan Table 14-10-0292-01 (territorial), coordinate 3.8.1.1.1.1.0.0.0.0",
+        "blocker_type": "ready after quota clears",
+        "detail": "Dry-run itself was run after the reliability fix landed — confirmed clean, no ECONNRESET."
+      },
+      "charities": {
+        "status": "DRY_RUN_OK (26 found, 26 ready); dedicated write script exists but never run",
+        "write_status": "NOT_ATTEMPTED",
+        "source_quality": "Excellent — CRA Charities Registry (small count is plausible given Nunavut's ~40K population)",
+        "blocker_type": "ready after quota clears",
+        "detail": "CV-DATA-NU-002. Write script engine/canada-nu-write-charities.cjs prepared 2026-09-07, not yet executed."
+      },
+      "grants": {
+        "status": "NOT_FOUND — no open data portal exists at all",
+        "write_status": "NOT_WRITTEN",
+        "source_quality": "Nunavut has no open data portal at all (opendata.gov.nu.ca / data.gov.nu.ca do not resolve); gov.nu.ca is bot-blocked (HTTP 403); not mirrored on the federal aggregator. Public Accounts are current but PDF-only.",
+        "blocker_type": "unavailable/no source",
+        "detail": "CV-DATA-NU-003. The cleanest 'not found' case among all jurisdictions — no portal exists to even search."
+      },
+      "leader_profile_status": "Unresolved as of 2026-05-18 — premier.gov.nu.ca returned HTTP 404, consistent with gov.nu.ca being bot-blocked for other fetches later.",
+      "firestore_write_status_summary": "0 of 3 written. Unemployment and charities are both fully ready (dry-run confirmed, write scripts prepared) and blocked only by Firestore quota.",
+      "notes": []
+    }
+  ],
+
+  "summary_counts": {
+    "total_dataset_slots": 42,
+    "total_datasets_written": 16,
+    "total_datasets_ready_after_quota_clears": 12,
+    "total_datasets_infrastructure_quota_blocked": 2,
+    "total_datasets_pending_reviewer_decision": 4,
+    "total_datasets_blocked_unavailable_no_source": 3,
+    "total_datasets_blocked_unavailable_pdf_only": 1,
+    "total_datasets_stale_source_rejected": 3,
+    "total_datasets_not_pursued_by_design": 1,
+    "note": "42 = 14 jurisdictions x 3 dataset categories (unemployment, charities, grants). Leader-profile status is tracked separately per jurisdiction and is not included in these counts.",
+    "breakdown_by_category": {
+      "unemployment": { "written": 2, "ready_after_quota_clears": 10, "infrastructure_quota_blocked": 1, "pending_reviewer_decision": 1, "total": 14 },
+      "charities": { "written": 10, "ready_after_quota_clears": 2, "infrastructure_quota_blocked": 1, "not_pursued_by_design": 1, "total": 14 },
+      "grants": { "written": 4, "pending_reviewer_decision": 3, "unavailable_no_source": 3, "unavailable_pdf_only": 1, "stale_source_rejected": 3, "total": 14 }
+    }
+  },
+
+  "leader_profile_summary": {
+    "last_automated_run": "2026-05-18T01:45:41.400Z (engine/reports/subnational-leader-profiles-latest.json)",
+    "successfully_updated_at_that_time": ["CA-ON", "CA-MB", "CA-NB", "CA-NS", "CA-PE"],
+    "unresolved_at_that_time": ["CA-AB", "CA-BC", "CA-NL", "CA-NT", "CA-NU", "CA-QC", "CA-SK", "CA-YT"],
+    "known_issues_since_then": [
+      "CA-PE: stored bio was later found corrupted with scraped Radware bot-challenge text (discovered 2026-09-07, fixed in code via commit 1e0fcb7 — engine-side prevention + client-side sanitizer/placeholder; the underlying bad Firestore value itself was not overwritten since that fix task prohibited Firestore writes)."
+    ],
+    "not_re_verified": "Current live bio status for all other jurisdictions is unknown — not re-checked since 2026-05-18, and this report does not read Firestore."
+  },
+
+  "infrastructure_blockers": [
+    {
+      "blocker": "Firestore RESOURCE_EXHAUSTED quota",
+      "status": "ACTIVE as of last known probe (2026-09-07) — not re-probed for this report",
+      "affects": "Every 'ready after quota clears' and 'infrastructure quota blocked' dataset above — 14 dataset slots total",
+      "resolution": "Wait for quota to clear (daily Spark-plan quota, likely consumed by this session's write/read volume), or review Firebase console billing/usage."
+    },
+    {
+      "blocker": "StatCan WDS fetch ECONNRESET",
+      "status": "RESOLVED (commit 0b311f2) — statcanWdsPostJson() retry/fallback helper confirmed working for all 11 previously-blocked unemployment datasets",
+      "affects": "No longer blocks anything — superseded",
+      "resolution": "N/A — already fixed"
+    }
+  ],
+
+  "recommended_next_actions_after_quota_clears": [
+    "1. Probe quota with a single lightweight read before any write.",
+    "2. Write CA-YT unemployment and CA-YT charities first (node engine/canada-unemployment-batch-write.cjs --only=CA-YT, then node engine/canada-yt-write-charities.cjs) — these already failed purely on quota, not on data, so a success here confirms quota has genuinely cleared for writes.",
+    "3. Run node engine/canada-nt-write-charities.cjs and node engine/canada-nu-write-charities.cjs.",
+    "4. Run the full unemployment batch: node engine/canada-unemployment-batch-write.cjs (covers AB, QC, SK, MB, NS, NB, NL, PE, NT, NU — CA-YT will already be done from step 2).",
+    "5. Create verification record (.md) files for every dataset that actually gets written in steps 2-4, following the established CV-REC-001 template.",
+    "6. Resolve the 5 'pending reviewer decision' items with the founder/product owner: QC transfer expenses (category-level display decision), NS agriculture grants (narrow-scope publish decision), and federal unemployment target + federal Contracts/Grants-and-Contributions scope-and-UI decisions.",
+    "7. Build dedicated write scripts for federal datasets once the above decisions are made (none exist yet).",
+    "8. Do a single consolidated live-UI verification pass across all newly-written jurisdictions once writes are complete, rather than verifying after each individual write."
+  ]
+}
