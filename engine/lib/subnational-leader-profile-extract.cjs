@@ -7,6 +7,8 @@ const {
   stripHtml,
   firstMatch,
   collapseBio,
+  looksLikeChallengePage,
+  isBioTextSafe,
 } = require('./subnational-leader-profile-shared.cjs');
 
 const INVALID_NAME_RE =
@@ -16,30 +18,19 @@ const INVALID_NAME_FRAGMENT_RE =
   /\b(home\s*page|welcome\s+to|official\s+site|official\s+website|latest\s+news|web\s*site|overview|government|executive\s+office|scottish\s+government|northern\s+ireland|office\s+of\s+the|premier\s+of|governor\s+of|first\s+minister\s+of|state\s+of)\b/i;
 
 const ROLE_PREFIX_RE =
-  /^(governor|premier|mayor|chief minister|first minister|lieutenant governor|honou?rable|the hon\.?|office of the)\b/i;
+  /^(governor|premier|mayor|chief minister|first minister|lieutenant governor|honou?rable|the hon\.?|hon\.?|office of the)\b/i;
 
-// Detects a bot-mitigation / anti-scraping interstitial page (Radware,
-// Cloudflare, generic CAPTCHA/access-denied walls, etc.) served in place of
-// real page content to an automated fetch. Confirmed root cause of a real
-// data-quality bug: princeedwardisland.ca served a Radware JS-challenge page
-// (title "Radware Page", body text "Verifying your browser before
+// Bot-mitigation/anti-scraping interstitial and content-safety checks now
+// live in the shared module (subnational-leader-profile-shared.cjs) as the
+// single source of truth, reused here AND by the pilot fetcher
+// (subnational-leader-profile-pilot.cjs). Originally introduced narrowly to
+// fix a confirmed bug: princeedwardisland.ca served a Radware JS-challenge
+// page (title "Radware Page", body text "Verifying your browser before
 // proceeding... Incident ID: ...") for the PEI Premier bio page, which this
 // extractor's earlier version had no defense against and stored as if it
-// were a real biography. When this matches, the entire page is treated as
-// non-content — no name/bio/party/contact should be extracted from it.
-const BOT_CHALLENGE_PAGE_RE =
-  /radware|verifying your browser|incident id\s*:|checking your (?:browser|connection)|cloudflare|attention required|access denied\b|please enable javascript and cookies|ddos protection by|are you a robot|complete the captcha|unusual traffic from your (?:computer|network)/i;
-
-/** @param {string} html */
+// were a real biography.
 function looksLikeBotChallengePage(html) {
-  const title = firstMatch(html, /<title>([^<]*)<\/title>/i) || '';
-  if (BOT_CHALLENGE_PAGE_RE.test(title)) return true;
-  // Check a bounded prefix of the stripped text rather than the whole page:
-  // challenge pages are typically short, and this avoids false positives
-  // from a real, long page that happens to mention e.g. "Cloudflare" once
-  // deep in unrelated body copy (news article, footer link, etc.).
-  const plain = stripHtml(html).slice(0, 2000);
-  return BOT_CHALLENGE_PAGE_RE.test(plain);
+  return looksLikeChallengePage(html, stripHtml, firstMatch);
 }
 
 const PARTY_PATTERNS = [
@@ -63,11 +54,46 @@ function escapeRe(s) {
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/**
+ * Builds a regex-source fragment matching `s` case-insensitively on a
+ * per-character basis, WITHOUT the regex 'i' flag. Used so the overall
+ * pattern can stay case-SENSITIVE for its [A-Z] name-detection portions
+ * (required — see the case-sensitivity note on the leaderTitle patterns
+ * below) while still matching a title word regardless of its own case —
+ * needed because official titles are not always capitalized mid-sentence
+ * in every language (e.g. French "première ministre Christine Fréchette",
+ * lowercase, vs. English "Premier Danielle Smith", capitalized).
+ * @param {string} s
+ */
+function caseInsensitiveLiteral(s) {
+  return String(s)
+    .split('')
+    .map((ch) => {
+      const esc = escapeRe(ch);
+      const lower = ch.toLowerCase();
+      const upper = ch.toUpperCase();
+      if (lower === upper) return esc;
+      return `[${escapeRe(lower)}${escapeRe(upper)}]`;
+    })
+    .join('');
+}
+
 function normalizePersonName(name) {
   let n = trim(decodeEntities(name))
     .replace(/\s+/g, ' ')
     .replace(/\s*[|–—-]\s*.*$/, '')
+    // Strip a trailing comma-separated role/title clause, e.g.
+    // "Doug Ford, Premier of Ontario" -> "Doug Ford" (confirmed needed
+    // against ontario.ca's real <title>/og:title format during the CA-ON
+    // pilot-fetcher refactor — this format is common across government
+    // sites generally, not Ontario-specific).
+    .replace(/\s*,\s*.*$/, '')
     .replace(/\s+of\s+[^|]+$/i, '')
+    // Strip a trailing sentence-ending period that isn't part of a
+    // single-letter initial (e.g. "Christine Fréchette." -> "Christine
+    // Fréchette", but "J." stays "J."). Confirmed needed against a real
+    // page (quebec.ca).
+    .replace(/(?<![A-Z])\.\s*$/, '')
     .trim();
   if (ROLE_PREFIX_RE.test(n)) {
     n = n.replace(ROLE_PREFIX_RE, '').trim();
@@ -143,11 +169,20 @@ function extractNameCandidates(html, leaderTitle) {
 
   const lt = trim(leaderTitle);
   if (lt) {
-    const ltRe = escapeRe(lt);
+    // The leader-title portion is matched case-insensitively per-character
+    // (caseInsensitiveLiteral) — needed for titles that are not capitalized
+    // mid-sentence in some languages (e.g. French "première ministre"). The
+    // [A-Z] name-detection portions below are deliberately NOT
+    // case-insensitive: no overall 'i' flag is used, because that would
+    // silently defeat the whole capitalization check (confirmed via a real
+    // bug found testing against alberta.ca: "Premier Danielle Smith is the
+    // leader of Alberta..." was captured in full as the "name" because an
+    // 'i' flag let "is", "the", "leader", "of" all satisfy [A-Z] too).
+    const ltRe = caseInsensitiveLiteral(lt);
     const patterns = [
-      new RegExp(`${ltRe}\\s+([A-Z][\\w.'\\u00C0-\\u024F-]+(?:\\s+[A-Z][\\w.'\\u00C0-\\u024F-]+)+)`, 'i'),
-      new RegExp(`([A-Z][\\w.'\\u00C0-\\u024F-]+(?:\\s+[A-Z]\\.?\\s*)?[A-Z][\\w.'\\u00C0-\\u024F-]+),?\\s+${ltRe}`, 'i'),
-      new RegExp(`The Hon\\.?\\s+([A-Z][\\w.'\\u00C0-\\u024F-]+(?:\\s+[A-Z][\\w.'\\u00C0-\\u024F-]+)+)`, 'i'),
+      new RegExp(`${ltRe}\\s+([A-Z][\\w.'\\u00C0-\\u024F-]+(?:\\s+[A-Z][\\w.'\\u00C0-\\u024F-]+)+)`),
+      new RegExp(`([A-Z][\\w.'\\u00C0-\\u024F-]+(?:\\s+[A-Z]\\.?\\s*)?[A-Z][\\w.'\\u00C0-\\u024F-]+),?\\s+${ltRe}`),
+      new RegExp(`The Hon\\.?\\s+([A-Z][\\w.'\\u00C0-\\u024F-]+(?:\\s+[A-Z][\\w.'\\u00C0-\\u024F-]+)+)`),
     ];
     for (const re of patterns) {
       const m = String(html || '').match(re);
@@ -237,7 +272,7 @@ function extractBio(html, verifiedName, sourceUrl) {
   const meta = firstMatch(html, /<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i);
   if (meta && meta.toLowerCase().includes(verifiedName.split(/\s+/)[0].toLowerCase())) {
     const bio = collapseBio(stripHtml(meta));
-    if (bio.length >= 40 && !BOT_CHALLENGE_PAGE_RE.test(bio)) return { bio, source: sourceUrl };
+    if (isBioTextSafe(bio).safe) return { bio, source: sourceUrl };
   }
   const plain = stripHtml(html);
   const idx = plain.toLowerCase().indexOf(verifiedName.toLowerCase());
@@ -248,8 +283,9 @@ function extractBio(html, verifiedName, sourceUrl) {
     // looksLikeBotChallengePage() (e.g. the real name appears in a <title>
     // carried over from the originally-requested page while the visible
     // body was swapped for a JS-challenge widget), never return bio text
-    // that itself contains bot-challenge/interstitial markers.
-    if (bio.length >= 60 && !BOT_CHALLENGE_PAGE_RE.test(bio)) return { bio, source: sourceUrl };
+    // that itself fails the shared content-safety check (challenge-page
+    // markers, implausibly short, or navigation/footer-only).
+    if (isBioTextSafe(bio).safe) return { bio, source: sourceUrl };
   }
   return { bio: '', source: '' };
 }
@@ -264,10 +300,11 @@ function extractContact(html, sourceUrl) {
     const t = trim(m[1].replace(/\s+/g, ' '));
     if (t && !tels.includes(t)) tels.push(t);
   }
-  if (!tels.length) {
-    const phone = html.match(/(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
-    if (phone) tels.push(trim(phone[0]));
-  }
+  // (No no-context digit-pattern fallback here: confirmed via testing against
+  // a real page — quebec.ca — that a loose 10-digit scan over raw HTML with
+  // no anchor like "tel:"/"Tel:" nearby can match cache-busting query-string
+  // numbers or other non-phone digit runs. A tel: href is a reliable signal;
+  // guessing from bare digit sequences elsewhere in the page is not.)
   if (tels.length) {
     profile.leader_office_contact = tels.slice(0, 2).join(' · ');
     verified.leader_office_contact = sourceUrl;
@@ -287,12 +324,19 @@ function extractContact(html, sourceUrl) {
     verified.leader_office_contact = sourceUrl;
   }
 
-  const addr =
+  const addrRaw =
     firstMatch(html, /<address[^>]*>([\s\S]*?)<\/address>/i) ||
     firstMatch(html, /(GPO Box[^.<]{8,120})/i) ||
     firstMatch(html, /(\d+[^.<]{5,80}(?:Street|St\.|Avenue|Ave\.|Road|Rd\.|Boulevard|Blvd\.)[^.<]{5,80}(?:\d{5}|[A-Z]{2,3}\s+\d{4}))/i);
-  if (addr) {
-    profile.leader_office_address = collapseBio(stripHtml(addr), 240);
+  const addr = addrRaw ? collapseBio(stripHtml(addrRaw), 240) : '';
+  // Sanity check: a <address> HTML tag is sometimes misused by a CMS for
+  // non-postal content (confirmed via testing against a real page —
+  // quebec.ca — where it wrapped an asset/script path, not a mailing
+  // address). Require at least one digit and reject anything that looks
+  // like a file path or script reference.
+  const addrLooksReal = addr && /\d/.test(addr) && !/\.(?:js|css|json)\b|WebComponents|\?[\w=&]+$/i.test(addr);
+  if (addrLooksReal) {
+    profile.leader_office_address = addr;
     verified.leader_office_address = sourceUrl;
   }
 
@@ -370,4 +414,9 @@ module.exports = {
   pickVerifiedName,
   nameAppearsInHtml,
   scoreNameCandidate,
+  extractParty,
+  extractSince,
+  extractBio,
+  extractContact,
+  looksLikeBotChallengePage,
 };

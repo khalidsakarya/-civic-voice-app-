@@ -17,6 +17,7 @@ import {
   UK_FIRESTORE_REQUIRED_IDS,
   findUkEnglandRegionFirestoreRow,
   mergeUkEnglandRegionRow,
+  sanitizeBioText,
 } from './utils/mergeProvincialExplorerFirestore';
 import { formatExecutiveOrderDisplayDate } from './utils/executiveOrderDates';
 import {
@@ -4164,7 +4165,20 @@ function App() {
         if (!snap.empty) bioDoc = snap.docs[0].data();
       }
       if (key === 'Mike Johnson') console.log(`[MikeJohnson] member_bios: ${bioDoc ? '1 doc' : '0 docs'}`, bioDoc);
-      setMemberBioData(prev => ({ ...prev, [key]: bioDoc || null }));
+      // Validate before accepting: a bot-challenge/error-page fragment or
+      // implausibly short value scraped into member_bios (same contamination
+      // class confirmed for CA-PE's leader_bio) must never be rendered as a
+      // real biography. Applied once here, at the single shared ingestion
+      // point for every consumer (US Congress, Canadian MPs/Senators/PM, UK
+      // MPs, Australian members) rather than at each render site.
+      const safeBioDoc = bioDoc
+        ? {
+            ...bioDoc,
+            ...(bioDoc.bio != null ? { bio: sanitizeBioText(bioDoc.bio) } : {}),
+            ...(bioDoc.biography != null ? { biography: sanitizeBioText(bioDoc.biography) } : {}),
+          }
+        : bioDoc;
+      setMemberBioData(prev => ({ ...prev, [key]: safeBioDoc || null }));
     } catch (err) {
       console.warn('[LiveData] member_bios fetch failed:', err.message);
       setMemberBioData(prev => ({ ...prev, [key]: null }));

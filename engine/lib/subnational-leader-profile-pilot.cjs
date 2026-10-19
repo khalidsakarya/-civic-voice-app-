@@ -11,6 +11,13 @@ const {
   fetchText,
   buildVerificationReport,
 } = require('./subnational-leader-profile-shared.cjs');
+const {
+  pickVerifiedName,
+  extractParty,
+  extractBio,
+  extractContact,
+  looksLikeBotChallengePage,
+} = require('./subnational-leader-profile-extract.cjs');
 
 const PILOT_IDS = Object.freeze([
   'US-CA',
@@ -99,6 +106,28 @@ async function fetchUsCa() {
   };
 }
 
+/**
+ * CA-ON pilot fetcher — refactored to stop hardcoding the leader's identity
+ * and to reuse the generic extractor's name verification, content-safety
+ * validation, and field-extraction helpers instead of duplicating them.
+ *
+ * Previously: `profile.leader_name = 'Doug Ford'` was a literal hardcoded
+ * string, never derived from or checked against fetched content — a change
+ * of premier would have gone undetected forever, with no error and no
+ * signal anything was wrong. There was also no bot-challenge/content-safety
+ * check of any kind on premierHtml/bioHtml/partyHtml before extracting from
+ * them.
+ *
+ * Now: the leader name is extracted and scored from the premier page's own
+ * content (same pickVerifiedName/scoreNameCandidate logic the generic path
+ * uses for every other jurisdiction), each fetched page is checked against
+ * the shared bot-challenge/error-page guard before anything is extracted
+ * from it, and the bio/party/contact fields reuse the generic extractor's
+ * own extractBio/extractParty/extractContact rather than ON-specific regexes
+ * tied to one named individual. If the name cannot be verified, this throws
+ * — matching the generic path's failure contract — rather than silently
+ * reporting a possibly-stale hardcoded name.
+ */
 async function fetchCaOn() {
   const premierUrl = 'https://www.ontario.ca/page/premier';
   const bioUrl = 'https://www.ontario.ca/page/doug-ford-premier';
@@ -112,52 +141,75 @@ async function fetchCaOn() {
     fetchText(partyUrl),
   ]);
 
-  profile.leader_name = 'Doug Ford';
-  verified.leader_name = premierUrl;
+  // Reject each fetched page individually if it looks like a bot-challenge
+  // or generic error/JS-required wall rather than real content — confirmed
+  // necessary in practice: ontario.ca's bio page was found during this
+  // refactor to require JavaScript to render its real content, so a plain
+  // HTTP fetch returns a nav/JS-required shell that must not be mistaken
+  // for a biography.
+  const premierOk = premierHtml && !looksLikeBotChallengePage(premierHtml);
+  const bioOk = bioHtml && !looksLikeBotChallengePage(bioHtml);
+  const partyOk = partyHtml && !looksLikeBotChallengePage(partyHtml);
+
+  // Verify the leader's name from real content — try the premier page
+  // first, then the legislature member page — instead of hardcoding it.
+  const leaderName =
+    (premierOk && pickVerifiedName(premierHtml, 'Premier')) ||
+    (partyOk && pickVerifiedName(partyHtml, 'Premier')) ||
+    '';
+  if (!leaderName) {
+    throw new Error(
+      'CA-ON: could not verify a leader name from any fetched official page ' +
+      '(premier page and/or legislature member page were unavailable, bot-' +
+      'challenge/JS-required pages, or contained no matching name candidate). ' +
+      'Refusing to report a hardcoded or guessed identity.',
+    );
+  }
+  profile.leader_name = leaderName;
+  verified.leader_name = premierOk ? premierUrl : partyUrl;
 
   profile.leader_title = 'Premier of Ontario';
   verified.leader_title = premierUrl;
 
-  const published = firstMatch(premierHtml, /"firstPublishedDate":"(\d{4}-\d{2}-\d{2})"/);
-  if (published) {
-    profile.leader_since = published;
-    verified.leader_since = premierUrl;
+  if (premierOk) {
+    const published = firstMatch(premierHtml, /"firstPublishedDate":"(\d{4}-\d{2}-\d{2})"/);
+    if (published) {
+      profile.leader_since = published;
+      verified.leader_since = premierUrl;
+    }
   }
 
-  if (/Progressive Conservative Party of Ontario/i.test(partyHtml)) {
-    profile.leader_party = 'Progressive Conservative Party of Ontario';
-    verified.leader_party = partyUrl;
+  if (partyOk) {
+    const party = extractParty(partyHtml, leaderName);
+    if (party) {
+      profile.leader_party = party;
+      verified.leader_party = partyUrl;
+    }
   }
 
-  const bio = collapseBio(
-    firstMatch(bioHtml, /<p>Doug Ford is the Premier of Ontario\.([^<]+)/i) ||
-      stripHtml(
-        firstMatch(
-          bioHtml,
-          /A dedicated community leader, successful businessman[\s\S]*?public service runs in the family\./i,
-        ),
-      ),
-  );
-  if (bio) {
-    profile.leader_bio = bio.startsWith('Doug Ford') ? bio : `Doug Ford is the Premier of Ontario. ${bio}`;
-    verified.leader_bio = bioUrl;
+  // Bio: try the dedicated bio page first (if it passed the challenge-page
+  // check), then fall back to the legislature member page. extractBio()
+  // already enforces the shared isBioTextSafe() content-safety check
+  // (empty/too-short/challenge-page-markers/navigation-only) — no
+  // ON-specific bio regex, no hardcoded "Doug Ford is the Premier..." text.
+  let bioResult = bioOk ? extractBio(bioHtml, leaderName, bioUrl) : { bio: '', source: '' };
+  if (!bioResult.bio && partyOk) {
+    bioResult = extractBio(partyHtml, leaderName, partyUrl);
+  }
+  if (bioResult.bio) {
+    profile.leader_bio = bioResult.bio;
+    verified.leader_bio = bioResult.source;
   }
 
   profile.officialWebsite = 'https://www.ontario.ca';
   verified.officialWebsite = premierUrl;
 
-  const tel =
-    firstMatch(premierHtml, /Tel<\/abbr>:\s*([\d-]+)/i) ||
-    ( /416-325-1941/.test(premierHtml) ? '416-325-1941' : '' );
-  const email =
-    firstMatch(premierHtml, /Email:\s*([A-Za-z0-9._%+-]+@ontario\.ca)/i) ||
-    ( /Premier@ontario\.ca/i.test(premierHtml) ? 'Premier@ontario.ca' : '' );
-  const contactParts = [];
-  if (tel) contactParts.push(`Tel: ${tel}`);
-  if (email) contactParts.push(`Email: ${email}`);
-  if (contactParts.length) {
-    profile.leader_office_contact = contactParts.join(' · ');
-    verified.leader_office_contact = premierUrl;
+  // Contact: reuse the generic extractor's tel:/mailto: href extraction
+  // instead of ON-specific regexes hardcoded to one phone number.
+  if (premierOk) {
+    const contact = extractContact(premierHtml, premierUrl);
+    Object.assign(profile, contact.profile);
+    Object.assign(verified, contact.verified);
   }
 
   profile.leader_profile_source_url = premierUrl;

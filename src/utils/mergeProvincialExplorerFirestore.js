@@ -15,28 +15,40 @@ function trimString(v) {
 }
 
 // Matches bot-mitigation / anti-scraping interstitial pages (Radware,
-// Cloudflare, generic CAPTCHA/access-denied walls, etc.) that an automated
-// engine fetch can mistakenly capture as if it were real biography text —
-// e.g. a stored leader_bio of "Radware Page Verifying your browser before
-// proceeding... Incident ID: ...". Firestore documents written before this
-// guard existed may still contain such text; this filters it out at
-// display time without requiring a Firestore write to fix.
+// Cloudflare, generic CAPTCHA/access-denied walls, generic HTTP error
+// pages, etc.) that an automated engine fetch can mistakenly capture as if
+// it were real biography text — e.g. a stored leader_bio of "Radware Page
+// Verifying your browser before proceeding... Incident ID: ...". Firestore
+// documents written before this guard existed may still contain such text;
+// this filters it out at display time without requiring a Firestore write
+// to fix. Kept in sync (conceptually — this is a separate browser-side
+// module from the Node engine's CHALLENGE_PAGE_RE in
+// engine/lib/subnational-leader-profile-shared.cjs, which cannot be
+// directly imported into this bundle) with the broader set of markers
+// used there.
 const BOT_CHALLENGE_TEXT_RE =
-  /radware|verifying your browser|incident id\s*:|checking your (?:browser|connection)|cloudflare|attention required|access denied\b|please enable javascript and cookies|ddos protection by|are you a robot|complete the captcha|unusual traffic from your (?:computer|network)/i;
+  /radware|cloudflare|captcha|access denied\b|verifying your browser|checking your (?:browser|connection)|javascript (?:is )?required|needs javascript\b|javascript to function|enable javascript\b|please enable javascript(?: and cookies)?\b|page not found\b|404[\s:-]*(?:not found|error)?\b|403[\s:-]*(?:forbidden|error)?\b|request unsuccessful\b|incident id\s*:|ddos protection by|are you a robot\b|complete the captcha\b|unusual traffic from your (?:computer|network)|bot (?:protection|detection|management|challenge)\b|security check\b|attention required\b|this process is automatic\b|ray id\s*:/i;
 
-const BIO_WITHHELD_PLACEHOLDER =
+/** Minimum plausible length for real biography text — anything shorter is treated the same as contaminated content. */
+const MIN_BIO_LENGTH = 40;
+
+export const BIO_WITHHELD_PLACEHOLDER =
   'Biography not available from a verified source in the current dataset.';
 
 /**
  * Sanitizes a Firestore-sourced biography string, replacing bot-challenge/
- * interstitial junk text with a neutral placeholder rather than displaying
- * it or inventing real content. Never fabricates personal history.
+ * interstitial junk text, generic error-page text, or implausibly short
+ * content with a neutral placeholder rather than displaying it or inventing
+ * real content. Never fabricates personal history. A genuinely empty value
+ * still returns '' (not the placeholder) so callers' hardcoded-fallback
+ * logic can still apply.
  * @param {unknown} v
  */
-function sanitizeBioText(v) {
+export function sanitizeBioText(v) {
   const s = trimString(v);
   if (!s) return '';
   if (BOT_CHALLENGE_TEXT_RE.test(s)) return BIO_WITHHELD_PLACEHOLDER;
+  if (s.length < MIN_BIO_LENGTH) return BIO_WITHHELD_PLACEHOLDER;
   return s;
 }
 
