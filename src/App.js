@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import app, { db } from './firebase';
 import { EXECUTIVE_ACTIONS_COLLECTION } from './constants/firestoreCollections';
 import { fetchSubnationalJurisdictions } from './firestore/fetchSubnationalJurisdictions';
@@ -22302,7 +22302,6 @@ function App() {
     };
 
     const SubMayorsCard = ({ mayors }) => {
-      const ncfg = { solid: ukNavy, light: 'rgba(1,33,105,0.1)' };
       return (
         <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 flex flex-col" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
           <div className="h-1.5 flex-shrink-0" style={{ background: ukNavy }} />
@@ -22677,7 +22676,6 @@ function App() {
     const unempKeys = [ukRegionLabel, 'UK Average'];
 
     // Chart 5: GVA Growth
-    const gvaBase = rngf(1.2, 4.8, 80);
     const gvaData = Array.from({ length: 10 }, (_, i) => {
       const yr = 2015 + i;
       let growth;
@@ -23117,7 +23115,7 @@ function App() {
     if (!selectedUkRegion || !showUkGrantsModal) return null;
     const r = selectedUkRegion;
     const ukRegionLabel = r.displayName || r.name;
-    const ukRed = '#C8102E', ukNavy = '#012169';
+    const ukNavy = '#012169';
 
     let h = 5381;
     for (let i = 0; i < r.name.length; i++) h = (Math.imul(h, 33) ^ r.name.charCodeAt(i)) | 0;
@@ -23479,15 +23477,6 @@ function App() {
             { id: 'ghg-reduction',       program: 'Greenhouse Gas Emissions Reduction',   goal: '40% below 2005 levels by 2030',              result: '9% reduction achieved as of 2024',         achievedPct: 23,  status: 'delayed'   },
           ],
         };
-    const eff = data.efficiencyScore;
-    const isGreen  = eff >= 70;
-    const isYellow = eff >= 50 && eff < 70;
-    const scoreNum    = isGreen ? 'text-green-600'   : isYellow ? 'text-yellow-600'   : 'text-red-600';
-    const scoreBar    = isGreen ? 'bg-green-500'     : isYellow ? 'bg-yellow-500'     : 'bg-red-500';
-    const scoreBg     = isGreen ? 'bg-green-100'     : isYellow ? 'bg-yellow-100'     : 'bg-red-100';
-    const scoreBorder = isGreen ? 'border-green-500' : isYellow ? 'border-yellow-500' : 'border-red-500';
-    const scoreLabel  = isGreen ? '✅ Good — Above 70%' : isYellow ? '⚠️ Fair — 50 to 70%' : '🚨 Poor — Below 50%';
-
     // Live Firestore data for Overview tab
     const budgetCC = isUSA ? 'US' : isAustralia ? 'AU' : isUK ? 'UK' : 'CA';
     const fsDocs = budgetFirestoreData[budgetCC] || [];
@@ -24747,12 +24736,6 @@ function App() {
   };
 
   const renderAustralianParliament = () => {
-    const auHash = (str) => {
-      let h = 5381;
-      for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) & 0x7fffffff;
-      return h;
-    };
-
     const voteAuMember = (name, vote) => {
       logEvent('vote_politician', { country: 'AU', itemId: name });
       const auPrev = auMemberVotes[name] || null;
@@ -24971,9 +24954,6 @@ function App() {
     const userVote = auMemberVotes[member.name] || null;
     const displayTotal = support + oppose;
     const approvalPct = displayTotal > 0 ? Math.round((support / displayTotal) * 100) : null;
-    const lobbyingList = member.lobbying?.organizations || [];
-    const electedYear = member.financialDisclosure?.electedYear;
-    const formatAUD = (n) => new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 }).format(n);
     const getAuVoteColor = (v) => v === 'Yea' ? 'bg-green-50 border-green-200' : v === 'Nay' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200';
     const getAuVoteIcon = (v) => v === 'Yea' ? <CheckCircle className="w-5 h-5 text-green-600" /> : v === 'Nay' ? <XCircle className="w-5 h-5 text-red-600" /> : <MinusCircle className="w-5 h-5 text-gray-600" />;
     const voteAu = (vote) => {
@@ -25344,7 +25324,7 @@ function App() {
     );
   };
 
-  const getAustralianStateData = () => {
+  const getAustralianStateData = useCallback(() => {
     const W = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
     const flagFiles = {
       'New South Wales':                'Flag_of_New_South_Wales.svg',
@@ -25404,7 +25384,7 @@ function App() {
         return mergeAustralianExplorerRow(s, fsRow);
       })
       .map(applyAuFlagFallback);
-  };
+  }, [auExplorerFirestoreByAbbr]);
 
   useEffect(() => {
     if (!auExplorerFirestoreByAbbr) return;
@@ -25413,7 +25393,7 @@ function App() {
     if (view !== 'au-state-detail' || !selectedAuState?.name) return;
     const fresh = getAustralianStateData().find((x) => x.name === selectedAuState.name);
     if (fresh) setSelectedAuState(fresh);
-  }, [auExplorerFirestoreByAbbr]);
+  }, [auExplorerFirestoreByAbbr, getAustralianStateData, selectedAuState?.name, view]);
 
   const renderAustralianStates = () => {
     const states = getAustralianStateData();
@@ -26878,7 +26858,7 @@ function App() {
       `Build ${rng(5,25,50)}k new homes over next four years`,
       'Reduce cost of living through targeted rebates',
       'Expand public transport network statewide',
-      'Attract $${rng(2,15,51)}B in new investment',
+      `Attract $${rng(2,15,51)}B in new investment`,
       'Achieve 50% renewable energy by 2030',
       'Improve public hospital waiting times by 20%',
       'Reform TAFE and skills training system',
