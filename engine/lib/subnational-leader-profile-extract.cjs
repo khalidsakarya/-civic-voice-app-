@@ -9,7 +9,16 @@ const {
   collapseBio,
   looksLikeChallengePage,
   isBioTextSafe,
+  nameFollowedByProse,
+  trimLeadingHeadingMaterial,
+  endAtSentenceBoundary,
+  MIN_BIO_LENGTH,
 } = require('./subnational-leader-profile-shared.cjs');
+
+/** Size of the excerpt window taken from the page text after the name. */
+const BIO_WINDOW_CHARS = 900;
+/** How many mentions of the name to try before giving up. */
+const MAX_BIO_ANCHOR_ATTEMPTS = 12;
 
 const INVALID_NAME_RE =
   /^(home|about|contact|welcome|official|government|news|menu|search|skip|read more|latest)$/i;
@@ -270,15 +279,40 @@ function extractSince(html, verifiedName) {
 function extractBio(html, verifiedName, sourceUrl) {
   if (!verifiedName) return { bio: '', source: '' };
   const meta = firstMatch(html, /<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i);
+  // A <meta name="description"> is the cleanest source when it is a complete
+  // thought, but sites often truncate it mid-sentence (confirmed on
+  // gov.nt.ca: "...a long-term vision ... that focuses on"). If it does not
+  // end like a sentence, prefer the fuller page text below and only fall
+  // back to the meta text — cut back to its last full sentence — if the
+  // page text yields nothing safe.
+  let metaFallback = '';
   if (meta && meta.toLowerCase().includes(verifiedName.split(/\s+/)[0].toLowerCase())) {
     const bio = collapseBio(stripHtml(meta));
-    if (isBioTextSafe(bio).safe) return { bio, source: sourceUrl };
+    if (isBioTextSafe(bio).safe) {
+      if (/[.!?…"'”’)]$/.test(bio)) return { bio, source: sourceUrl };
+      const trimmed = endAtSentenceBoundary(bio, MIN_BIO_LENGTH);
+      if (trimmed !== bio && isBioTextSafe(trimmed).safe) metaFallback = trimmed;
+    }
   }
   const plain = stripHtml(html);
-  const idx = plain.toLowerCase().indexOf(verifiedName.toLowerCase());
-  if (idx >= 0) {
-    const chunk = plain.slice(idx, idx + 900);
-    const bio = collapseBio(chunk);
+  const lowerPlain = plain.toLowerCase();
+  const needle = verifiedName.toLowerCase();
+  // Try successive mentions of the name. The FIRST mention is very often a
+  // <title>, breadcrumb or caption, so its window can be nav/JS-notice
+  // material even when a real biography follows later on the page (confirmed
+  // against ontario.ca's premier bio page). Later mentions are only eligible
+  // when the name is followed by prose ("Doug Ford is the Premier…"), so a
+  // hub/index page's bare name mentions can never be promoted to a "bio".
+  let from = 0;
+  for (let attempt = 0; attempt < MAX_BIO_ANCHOR_ATTEMPTS; attempt += 1) {
+    const idx = lowerPlain.indexOf(needle, from);
+    if (idx < 0) break;
+    from = idx + needle.length;
+    if (attempt > 0 && !nameFollowedByProse(plain, idx + needle.length)) continue;
+    const fromName = trimLeadingHeadingMaterial(plain.slice(idx), verifiedName);
+    const windowed = fromName.slice(0, BIO_WINDOW_CHARS);
+    const text = fromName.length > BIO_WINDOW_CHARS ? endAtSentenceBoundary(windowed) : windowed;
+    const bio = collapseBio(text);
     // Defense in depth: even if the page as a whole wasn't flagged by
     // looksLikeBotChallengePage() (e.g. the real name appears in a <title>
     // carried over from the originally-requested page while the visible
@@ -287,7 +321,7 @@ function extractBio(html, verifiedName, sourceUrl) {
     // markers, implausibly short, or navigation/footer-only).
     if (isBioTextSafe(bio).safe) return { bio, source: sourceUrl };
   }
-  return { bio: '', source: '' };
+  return metaFallback ? { bio: metaFallback, source: sourceUrl } : { bio: '', source: '' };
 }
 
 function extractContact(html, sourceUrl) {

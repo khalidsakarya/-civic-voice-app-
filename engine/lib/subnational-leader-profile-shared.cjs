@@ -136,6 +136,8 @@ const NAV_FRAGMENT_WORDS = [
   'menu principal',
 ];
 
+const TITLE_OR_BREADCRUMB_SEPARATOR_RE = /\s[|»›]\s/;
+
 /**
  * Short link-label phrases that legitimate index/teaser/hub pages commonly
  * repeat after every section (e.g. "Voir plus" / "Read more" / "Learn
@@ -226,8 +228,103 @@ function isBioTextSafe(text) {
   if (CHALLENGE_PAGE_RE.test(s)) return { safe: false, reason: 'challenge_page_markers' };
   if (JS_REQUIRED_RE.test(s)) return { safe: false, reason: 'javascript_required_notice' };
   if (looksLikeNavigationOnly(s)) return { safe: false, reason: 'navigation_only' };
+  // " | " / " » " / " › " are <title> and breadcrumb separators ("R.J. Simpson
+  // | Government of Northwest Territories ... You are here » Premier + Cabinet
+  // »"). They don't occur in biography prose, and unlike the nav-word check
+  // above they can't be defeated by an incidental period such as "R.J.".
+  if (TITLE_OR_BREADCRUMB_SEPARATOR_RE.test(s)) return { safe: false, reason: 'title_or_breadcrumb_text' };
   if (hasRepeatedBoilerplateLinkText(s)) return { safe: false, reason: 'repeated_boilerplate_link_text' };
   return { safe: true, reason: null };
+}
+
+// ─── Biography window normalization ──────────────────────────────────────────
+//
+// General-purpose helpers for choosing WHERE a biography excerpt starts and
+// ends within extracted page text. Introduced after local re-fetches showed
+// two jurisdiction-independent failure modes: (1) the leader's name appears
+// first in a page heading/breadcrumb/photo caption, so the excerpt began with
+// repeated header material ("David Eby Premier David Eby Read Bio Contact
+// Email: ... Premier David Eby David Eby is a determined problem-solver…");
+// (2) a fixed-size window cut mid-word.
+
+/** How far past a heading-style name mention we look for the real prose. */
+const HEADING_LOOKAHEAD_CHARS = 400;
+/** A heading-only prefix longer than this (in words) is never discarded. */
+const HEADING_MAX_WORDS = 40;
+
+/** Honorifics that belong to the sentence they directly precede. */
+const HONORIFIC_BEFORE_NAME_RE = /(?:^|\s)((?:the\s+)?(?:right\s+)?hon(?:ourable|orable|\.)?\s+)$/i;
+
+/**
+ * True when `name`, ending at `end` in `text`, is followed by prose — a
+ * lowercase word, optionally after a comma ("David Eby is…", "Tony Wakeham,
+ * was…") — as opposed to a capitalised label ("David Eby Premier…",
+ * "Tony Wakeham The Honourable…") that marks a heading or caption.
+ */
+function nameFollowedByProse(text, end) {
+  return /^,?\s+[a-zà-ÿ]/.test(String(text).slice(end, end + 12));
+}
+
+/**
+ * Drops obvious repeated page-heading material from the START of a
+ * biography excerpt. Deliberately conservative:
+ *   - only acts when the excerpt begins with the leader's name and that first
+ *     mention is NOT itself followed by prose (so a bio that already starts
+ *     "Scott Moe was sworn in…" is returned untouched);
+ *   - only re-anchors on a later mention of the same name that IS followed by
+ *     prose, within HEADING_LOOKAHEAD_CHARS;
+ *   - only discards a prefix that contains no sentence-ending punctuation and
+ *     is short, so a real sentence or paragraph is never removed;
+ *   - keeps an honorific directly before the new anchor ("The Honourable …").
+ * @param {string} text excerpt starting at (or near) the leader's name
+ * @param {string} name verified leader name
+ */
+function trimLeadingHeadingMaterial(text, name) {
+  const t = trim(text);
+  const n = trim(name);
+  if (!t || !n) return t;
+  const lower = t.toLowerCase();
+  const needle = n.toLowerCase();
+  const first = lower.indexOf(needle);
+  if (first === -1 || nameFollowedByProse(t, first + needle.length)) return t;
+
+  const horizon = Math.min(t.length, first + HEADING_LOOKAHEAD_CHARS);
+  let from = first + needle.length;
+  for (;;) {
+    const o = lower.indexOf(needle, from);
+    if (o === -1 || o >= horizon) return t;
+    from = o + needle.length;
+    if (!nameFollowedByProse(t, o + needle.length)) continue;
+    const prefix = t.slice(first, o);
+    if (/[.!?](?:\s|$)/.test(prefix)) return t;
+    if (prefix.split(/\s+/).length > HEADING_MAX_WORDS) return t;
+    const hon = t.slice(0, o).match(HONORIFIC_BEFORE_NAME_RE);
+    const start = hon ? o - hon[1].length : o;
+    return t.slice(0, first) + t.slice(start);
+  }
+}
+
+const NON_TERMINAL_ABBREV_RE = /(?:^|[\s(])(?:(?:[A-Z]\.)*[A-Z]|Dr|Mr|Mrs|Ms|Mme|Hon|St|Ste|Prof|Rev|Gen|Sen|Rep|No)$/;
+
+/**
+ * When an excerpt was cut by a fixed-size window, back up to the last full
+ * sentence so it doesn't end mid-word. Skips initials/abbreviations
+ * ("R.J.", "B.C.", "Dr.") that are not sentence ends. Returns the text
+ * unchanged if no sentence end exists past `minKeep` characters, so a long
+ * single sentence is never gutted.
+ * @param {string} text
+ * @param {number} [minKeep]
+ */
+function endAtSentenceBoundary(text, minKeep = 300) {
+  const t = trim(text);
+  const re = /[.!?](?=\s+[A-Z“"'‘]|\s*$)/g;
+  let cut = -1;
+  let m;
+  while ((m = re.exec(t))) {
+    if (NON_TERMINAL_ABBREV_RE.test(t.slice(0, m.index))) continue;
+    cut = m.index + 1;
+  }
+  return cut >= minKeep ? t.slice(0, cut) : t;
 }
 
 /**
@@ -293,4 +390,7 @@ module.exports = {
   hasRepeatedBoilerplateLinkText,
   looksLikeChallengePage,
   isBioTextSafe,
+  nameFollowedByProse,
+  trimLeadingHeadingMaterial,
+  endAtSentenceBoundary,
 };

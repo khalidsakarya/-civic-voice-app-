@@ -26,9 +26,11 @@ const {
   hasRepeatedBoilerplateLinkText,
   stripHtml,
   firstMatch,
+  trimLeadingHeadingMaterial,
+  endAtSentenceBoundary,
 } = require('./lib/subnational-leader-profile-shared.cjs');
 
-const { looksLikeBotChallengePage, extractProfileFromHtml } = require('./lib/subnational-leader-profile-extract.cjs');
+const { looksLikeBotChallengePage, extractProfileFromHtml, extractBio } = require('./lib/subnational-leader-profile-extract.cjs');
 
 let passed = 0;
 let failed = 0;
@@ -221,6 +223,86 @@ test('extractProfileFromHtml accepts a clean synthetic official page end-to-end'
   assert.strictEqual(result.ok, true);
   assert.ok(result.profile.leader_bio && result.profile.leader_bio.length >= 40);
   assert.ok(!/radware|cloudflare|captcha/i.test(result.profile.leader_bio));
+});
+
+// ─── 10. Biography window normalization (heading trim / sentence end) ───────
+
+const BIO_TAIL =
+  'is a determined problem-solver who has spent a lifetime serving the public. ' +
+  'As Premier of B.C., Alex is taking action on the biggest challenges facing the province. ' +
+  'Under Alex\'s leadership the economy has added thousands of good jobs.';
+
+test('trimLeadingHeadingMaterial drops repeated heading/caption material before the prose', () => {
+  const text = `Alex Rivera Premier Alex Rivera Read Bio Contact Email: Premier@gov.example.ca Premier Alex Rivera Alex Rivera ${BIO_TAIL}`;
+  const out = trimLeadingHeadingMaterial(text, 'Alex Rivera');
+  assert.ok(out.startsWith('Alex Rivera is a determined problem-solver'), out.slice(0, 60));
+  assert.ok(!/Read Bio|Contact Email/.test(out));
+});
+
+test('trimLeadingHeadingMaterial keeps an honorific directly before the prose mention', () => {
+  const text = 'Pat Quinn The Honourable Pat Quinn, was sworn in as Premier on October 29, 2025. He is also Leader of the party.';
+  const out = trimLeadingHeadingMaterial(text, 'Pat Quinn');
+  assert.ok(out.startsWith('The Honourable Pat Quinn, was sworn in'), out.slice(0, 50));
+});
+
+test('trimLeadingHeadingMaterial leaves a bio that already starts with prose untouched', () => {
+  const text = 'Sam Lee was sworn in as Premier on February 2, 2018. Learn more about the province.';
+  assert.strictEqual(trimLeadingHeadingMaterial(text, 'Sam Lee'), text);
+});
+
+test('trimLeadingHeadingMaterial never discards a real sentence that precedes the prose mention', () => {
+  const text = 'Alex Rivera Premier. Alex Rivera has served the province for many years. Alex Rivera is the Premier of the province.';
+  assert.strictEqual(trimLeadingHeadingMaterial(text, 'Alex Rivera'), text);
+});
+
+test('endAtSentenceBoundary cuts at the last full sentence and ignores initials/abbreviations', () => {
+  const body = 'R.J. Rivera is the Premier of the territory and has served in many roles over a long career in public life. '.repeat(3);
+  // "B.C. Then" looks like a sentence end (period, space, capital) but is an
+  // abbreviation; the cut must fall back to the real sentence end before it.
+  const cut = endAtSentenceBoundary(`${body}He later became a minister in B.C. Then he moved to a third role that continued on into`, 100);
+  assert.ok(cut.endsWith('public life.'), cut.slice(-40));
+  assert.ok(!cut.includes('B.C.'), cut.slice(-60));
+  // a single long sentence below minKeep is never gutted
+  assert.strictEqual(endAtSentenceBoundary('One short sentence. And a trailing fragment', 300), 'One short sentence. And a trailing fragment');
+});
+
+test('title/breadcrumb text is rejected even when it contains an initial like "R.J."', () => {
+  const text = 'R.J. Rivera | Government of Exampleland Jump to navigation Departments Contact Premier + Cabinet You are here » Premier + Cabinet » Premier R.J. Rivera';
+  const r = isBioTextSafe(text);
+  assert.strictEqual(r.safe, false);
+  assert.strictEqual(r.reason, 'title_or_breadcrumb_text');
+});
+
+// ─── 11. extractBio anchoring behaviour ─────────────────────────────────────
+
+const NAV_SHELL = 'Skip to main content Example.ca needs JavaScript to function properly. Log in to continue. ' +
+  'Topics Menu Sign in Benefits Business Courts Driving Education Environment Family Government Health Home Jobs Recreation';
+
+test('extractBio skips a <title>/nav window and finds the real biography later on the page', () => {
+  const html = `<html><head><title>Alex Rivera | example.ca</title></head><body>${NAV_SHELL}
+    <nav>Home Government Office of the Premier Alex Rivera Premier of Exampleland</nav>
+    <p>Alex Rivera is the Premier of Exampleland. She was elected to the legislature in 2018. Before that she served on city council for eight years and ran a small business.</p>
+    <footer>About Accessibility Privacy Terms of use</footer></body></html>`;
+  const { bio } = extractBio(html, 'Alex Rivera', 'https://example.ca/bio');
+  assert.ok(bio.startsWith('Alex Rivera is the Premier of Exampleland.'), bio.slice(0, 80));
+  assert.ok(!/needs JavaScript|Skip to main content/.test(bio));
+});
+
+test('extractBio does NOT promote a hub/teaser page (bare name mentions, repeated "Voir plus") to a biography', () => {
+  const html = `<html><head><title>Première ministre | Gouvernement</title></head><body>
+    <div>Découvrez la formation de la première ministre Alex Rivera. Voir plus</div>
+    <div>Les priorités de la première ministre Alex Rivera. Voir plus</div>
+    <div>Nouvelles de la première ministre Alex Rivera. Voir plus</div></body></html>`;
+  assert.strictEqual(extractBio(html, 'Alex Rivera', 'https://example.ca/hub').bio, '');
+});
+
+test('extractBio prefers fuller page text over a meta description truncated mid-sentence', () => {
+  const html = `<html><head><title>Premier Alex Rivera</title>
+    <meta name="description" content="Alex Rivera is the Premier of Exampleland and has a long-term vision that focuses on">
+    </head><body><p>Alex Rivera is the Premier of Exampleland and has a long-term vision that focuses on strengthening communities and growing the economy. She was first elected in 2015.</p></body></html>`;
+  const { bio } = extractBio(html, 'Alex Rivera', 'https://example.ca/p');
+  assert.ok(/strengthening communities/.test(bio), bio);
+  assert.ok(/[.!?]$/.test(bio), bio);
 });
 
 // ─── Summary ────────────────────────────────────────────────────────────────
