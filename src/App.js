@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import app, { db } from './firebase';
 import { EXECUTIVE_ACTIONS_COLLECTION } from './constants/firestoreCollections';
 import { fetchSubnationalJurisdictions } from './firestore/fetchSubnationalJurisdictions';
@@ -440,8 +440,8 @@ const customStyles = `
   p.text-xs { font-size: 13px; }
 
   /* Restore intentionally tiny UI chrome (badges, chart ticks handled inline) */
-  .text-\[11px\] { font-size: 11px !important; }
-  .text-\[10px\] { font-size: 10px !important; }
+  .text-[11px] { font-size: 11px !important; }
+  .text-[10px] { font-size: 10px !important; }
 
   /* ═══════════════════════════════════════════════════════
      DARK MODE — applied via .dark on the root .App div
@@ -474,10 +474,10 @@ const customStyles = `
   .dark .bg-rose-50          { background-color: #1a0010 !important; }
 
   /* Semi-transparent whites → dark equivalents */
-  .dark .bg-white\/90        { background-color: rgba(30,41,59,0.95) !important; }
-  .dark .bg-white\/95        { background-color: rgba(30,41,59,0.98) !important; }
-  .dark .bg-white\/80        { background-color: rgba(30,41,59,0.88) !important; }
-  .dark .bg-gray-50\/95      { background-color: rgba(15,23,42,0.98) !important; }
+  .dark .bg-white/90        { background-color: rgba(30,41,59,0.95) !important; }
+  .dark .bg-white/95        { background-color: rgba(30,41,59,0.98) !important; }
+  .dark .bg-white/80        { background-color: rgba(30,41,59,0.88) !important; }
+  .dark .bg-gray-50/95      { background-color: rgba(15,23,42,0.98) !important; }
 
   /* Kill gradient backgrounds → flat dark */
   .dark .bg-gradient-to-br,
@@ -576,8 +576,8 @@ const customStyles = `
   .dark .border-blue-200.rounded-2xl { border-color: #1e3a5f !important; }
 
   /* Hover states */
-  .dark .hover\:bg-gray-50:hover { background-color: #1e293b !important; }
-  .dark .hover\:bg-gray-100:hover { background-color: #334155 !important; }
+  .dark .hover:bg-gray-50:hover { background-color: #1e293b !important; }
+  .dark .hover:bg-gray-100:hover { background-color: #334155 !important; }
 
   /* Recharts tooltip */
   .dark .recharts-tooltip-wrapper .recharts-default-tooltip {
@@ -794,6 +794,7 @@ const UK_DEPT_EXPENSES_NAMES = {
 };
 
 // Maps Firestore department_heads 'department' field → CA app ministry display name
+// eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
 const CA_DEPT_HEADS_MAP = {
   'Agriculture':           'Agriculture and Agri-Food Canada',
   'Canadian Identity':     'Canadian Heritage',
@@ -813,6 +814,7 @@ const CA_DEPT_HEADS_MAP = {
 };
 
 // US dept heads mapping: Firestore 'department' field → app department display name
+// eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
 const US_DEPT_HEADS_MAP = {
   'Department of Treasury':  'Department of the Treasury',
   'Department of War':       'Department of Defense',
@@ -820,6 +822,7 @@ const US_DEPT_HEADS_MAP = {
 };
 
 // UK dept heads mapping: Firestore 'department' field (after stripping trailing ')') → app department display name
+// eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
 const UK_DEPT_HEADS_MAP = {
   'Department for Defence':                    'Ministry of Defence',
   'Department for Health and Social Care':     'Department of Health & Social Care',
@@ -838,6 +841,7 @@ const UK_DEPT_HEADS_MAP = {
 };
 
 // AU dept heads mapping: Firestore 'department' portfolio name → app short display name
+// eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
 const AU_DEPT_HEADS_MAP = {
   'Health and Ageing':                  'Health',
   'Health and Aged Care':               'Health',
@@ -849,6 +853,7 @@ const AU_DEPT_HEADS_MAP = {
 };
 
 // AU: per-detail fetch — app dept name → Firestore 'department' query value (only non-identical entries)
+// eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
 const AU_DEPT_HEADS_QUERY_NAMES = {
   'Health':             'Health and Ageing',
   'Employment':         'Employment and Workplace Relations',
@@ -858,6 +863,7 @@ const AU_DEPT_HEADS_QUERY_NAMES = {
 };
 
 // UK: per-detail fetch — app dept name → Firestore 'department' query value (only non-identical entries)
+// eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
 const UK_DEPT_HEADS_QUERY_NAMES = {
   'Ministry of Defence':                        'Department for Defence',
   'Department of Health & Social Care':         'Department for Health and Social Care',
@@ -991,11 +997,15 @@ const EO_VOTES_DISCLAIMER = 'Votes are civic feedback only and are not submitted
 const EXECUTIVE_ORDERS_EMPTY_MESSAGE =
   'No Executive Order documents matched in Firestore. The list reads collection executive_actions (Federal Register, U.S., current president) and includes only types classified as Executive Order — not proclamations or memoranda.';
 
+// eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
 const CONGRESS_SIGNED_LAWS_UNAVAILABLE = 'Live Congress.gov signed-law data is unavailable. Configure CONGRESS_API_KEY on the server and redeploy.';
 /** Server returned missing_api_key — not the same as upstream or missing route */
+// eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
 const CONGRESS_SIGNED_LAWS_MISSING_KEY = 'This deployment has no Congress.gov API key. In Vercel → this project → Settings → Environment Variables, add CONGRESS_API_KEY (exact name, not REACT_APP_*) for Production, then redeploy.';
+// eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
 const CONGRESS_SIGNED_LAWS_EMPTY = 'No bills are currently identified as signed by the President or enacted as public law in the live Congress.gov scan.';
 /** CRA `npm start` (or static hosting) does not run /api — response is usually HTML, not JSON. */
+// eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
 const CONGRESS_SIGNED_LAWS_NEEDS_API_HOST = 'This screen needs the server route /api/congress-signed-laws. Run npx vercel dev locally (with CONGRESS_API_KEY in .env.local), or deploy on Vercel with CONGRESS_API_KEY set. Using only npm start will not load live signed-law data.';
 const SIGNED_LAW_VOTES_DISCLAIMER = 'Votes are civic feedback only and are not submitted to Congress or the White House.';
 const FIRESTORE_SIGNED_LAWS_EMPTY = 'No matching bills found in Firestore yet.';
@@ -1909,9 +1919,9 @@ function App() {
   const [signedLawsLoading, setSignedLawsLoading] = useState(false);
   const [signedLawsError, setSignedLawsError] = useState(null);
   /** `missing_api_key` | `needs_route` | `upstream` | `generic` — drives error headline */
-  const [signedLawsFailureKind, setSignedLawsFailureKind] = useState(null);
+  const [, setSignedLawsFailureKind] = useState(null);
   /** Set with live response only; used for empty-state diagnostics */
-  const [signedLawsScan, setSignedLawsScan] = useState(null);
+  const [, setSignedLawsScan] = useState(null);
   const [usExecutiveOrders, setUsExecutiveOrders] = useState([]);
   const [usExecutiveOrdersLoading, setUsExecutiveOrdersLoading] = useState(false);
   /** `firestore` | `demo` | null */
@@ -1998,10 +2008,10 @@ function App() {
     activity: false, attendance: false, financial: false, stockTrades: false, lobbying: false, keyDecisions: false, expenses: false,
     bio: false, policies: false, cabinet: false, advisors: false, contact: false, termInfo: false,
   });
-  const [leaderLiveExpenses, setLeaderLiveExpenses] = useState({});
-  const [leaderExpensesLoading, setLeaderExpensesLoading] = useState(false);
+  const [, setLeaderLiveExpenses] = useState({});
+  const [, setLeaderExpensesLoading] = useState(false);
   const [deptLiveExpenses, setDeptLiveExpenses] = useState({});
-  const [deptExpensesLoading, setDeptExpensesLoading] = useState(false);
+  const [, setDeptExpensesLoading] = useState(false);
   const [deptVoteCounts, setDeptVoteCounts] = useState({});
   const [deptUserVotes, setDeptUserVotes] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_dept_votes') || '{}'); } catch (_) { return {}; }
@@ -2017,7 +2027,6 @@ function App() {
   const [ukLordVotes, setUkLordVotes] = useState(() => { try { return JSON.parse(localStorage.getItem('cvUkLordVotes') || '{}'); } catch { return {}; } });
   const [expandedLordSections, setExpandedLordSections] = useState({});
   const [selectedUkDepartment, setSelectedUkDepartment] = useState(null);
-  const [ukDeptGrantsExpanded, setUkDeptGrantsExpanded] = useState(false);
   const [selectedUkContract, setSelectedUkContract] = useState(null);
   const [auChamber, setAuChamber] = useState('Senate');
   const [auPartyFilter, setAuPartyFilter] = useState('All');
@@ -2050,7 +2059,6 @@ function App() {
   const [selectedAuLeader, setSelectedAuLeader] = useState(null);
   const [auLeaderVotes, setAuLeaderVotes] = useState({});
   const [expandedAuLeaderSections, setExpandedAuLeaderSections] = useState({});
-  const [auHighCourtVotes, setAuHighCourtVotes] = useState({});
   const [copiedShareId, setCopiedShareId] = useState(null);
   const [shareModal, setShareModal] = useState(null);
   const [senateSearch, setSenateSearch] = useState('');
@@ -2295,13 +2303,13 @@ function App() {
   const [lawDateFilter, setLawDateFilter] = useState('All Time');
   
   const [selectedCase, setSelectedCase] = useState(null);
-  const [ukJusticeVotes, setUkJusticeVotes] = useState({});
+  const [, setUkJusticeVotes] = useState({});
 
   // UK Regions data
   const [selectedUkRegion, setSelectedUkRegion] = useState(null);
   
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error] = useState(null);
   
   // Search and filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -2311,7 +2319,6 @@ function App() {
   // US Contracts filter states
   const [contractSearch, setContractSearch] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('All');
-  const [typeFilter, setTypeFilter] = useState('All');
   const [caContractsStatusFilter, setCaContractsStatusFilter] = useState('All');
   const [caContractSearch, setCaContractSearch] = useState('');
   const [caContractDeptFilter, setCaContractDeptFilter] = useState('All');
@@ -2343,8 +2350,7 @@ function App() {
   // Ministries state
   const [selectedMinistry, setSelectedMinistry] = useState(null);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
-  const [grantsExpanded, setGrantsExpanded] = useState(false);
-  const [auDeptGrantsExpanded, setAuDeptGrantsExpanded] = useState(false);
+  const [, setGrantsExpanded] = useState(false);
   const [selectedAuDepartment, setSelectedAuDepartment] = useState(null);
   const [selectedAuContract, setSelectedAuContract] = useState(null);
   const [auDepartments, setAuDepartments] = useState([
@@ -2965,9 +2971,9 @@ function App() {
   const [ukLiveData, setUkLiveData] = useState(false);
   const [ukFirestoreBills, setUkFirestoreBills] = useState([]);
   const [ukFirestoreLoading, setUkFirestoreLoading] = useState(false);
-  const [caLiveData, setCaLiveData] = useState(false);
-  const [caFirestoreBills, setCaFirestoreBills] = useState([]);
-  const [caFirestoreLoading, setCaFirestoreLoading] = useState(false);
+  const [caLiveData] = useState(false);
+  const [caFirestoreBills] = useState([]);
+  const [caFirestoreLoading] = useState(false);
   const [usLiveData, setUsLiveData] = useState(false);
   const [usFirestoreBills, setUsFirestoreBills] = useState([]);
   const [usFirestoreLoading, setUsFirestoreLoading] = useState(false);
@@ -3000,16 +3006,13 @@ function App() {
   const [promiseReactions, setPromiseReactions] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_promise_reactions') || '{}'); } catch (_) { return {}; }
   });
-  const [transparencyScores, setTransparencyScores] = useState({});
-  const [transparencyLoading, setTransparencyLoading] = useState(false);
+  const [, setTransparencyScores] = useState({});
+  const [, setTransparencyLoading] = useState(false);
   const [controversiesData, setControversiesData] = useState({});
   const [controversiesLoading, setControversiesLoading] = useState({});
   const [controversiesCatFilter, setControversiesCatFilter] = useState({});
   const [controversyReactions, setControversyReactions] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cv_controversy_reactions') || '{}'); } catch (_) { return {}; }
-  });
-  const [electionPollVotes, setElectionPollVotes] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('cv_election_poll') || '{}'); } catch (_) { return {}; }
   });
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState('');
@@ -3036,11 +3039,11 @@ function App() {
     try { return JSON.parse(localStorage.getItem('cv_cc_reactions') || '{}'); } catch (_) { return {}; }
   });
   // -- Analytics & Budget Firestore state
-  const [analyticsFirestoreData, setAnalyticsFirestoreData] = useState({});
+  const [, setAnalyticsFirestoreData] = useState({});
   const [budgetFirestoreData, setBudgetFirestoreData] = useState({});
-  const [analyticsLastUpdated, setAnalyticsLastUpdated] = useState({});
+  const [, setAnalyticsLastUpdated] = useState({});
   const [budgetLastUpdated, setBudgetLastUpdated] = useState({});
-  const [analyticsLoading, setAnalyticsLoading] = useState({});
+  const [, setAnalyticsLoading] = useState({});
   const [budgetLoading, setBudgetLoading] = useState({});
   // -- Government Stats Firestore state
   const [govStatsData, setGovStatsData] = useState({});
@@ -5459,6 +5462,7 @@ function App() {
   };
 
   // Vote on ministry performance
+  // eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
   const voteMinistry = (ministryId, vote) => {
     logEvent('vote_politician', { country: 'CA', itemId: String(ministryId) });
     setMinistries(ministries.map(ministry => {
@@ -5494,6 +5498,7 @@ function App() {
     }));
   };
 
+  // eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
   const voteAuDepartment = (deptId, vote) => {
     logEvent('vote_politician', { country: 'AU', itemId: String(deptId) });
     setAuDepartments(auDepartments.map(dept => {
@@ -5549,6 +5554,7 @@ function App() {
     }));
   };
 
+  // eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
   const voteMP = (mpIndex, vote) => {
     logEvent('vote_politician', { country: 'CA', itemId: String(mpIndex) });
     setMps(prev => {
@@ -5790,6 +5796,7 @@ function App() {
     setExpandedLordSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
+  // eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
   const voteUkDepartment = (deptId, vote) => {
     logEvent('vote_politician', { country: 'UK', itemId: String(deptId) });
     setUkDepartments(ukDepartments.map(dept => {
@@ -5807,6 +5814,7 @@ function App() {
     }));
   };
 
+  // eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
   const voteUkJustice = (name, vote) => {
     logEvent('vote_politician', { country: 'UK', itemId: name });
     setUkJusticeVotes(prev => {
@@ -6095,8 +6103,6 @@ function App() {
     }
   };
 
-  // Chart colors
-  const COLORS = ['#3B82F6', '#EF4444', '#F97316', '#06B6D4', '#10B981', '#8B5CF6', '#EC4899', '#F59E0B'];
   
   const partyColors = {
     // Canadian parties
@@ -6253,10 +6259,10 @@ function App() {
   const [auditFindingsData, setAuditFindingsData] = useState({});
   const [auditFindingsLoading, setAuditFindingsLoading] = useState({});
   const [deptBudgetData, setDeptBudgetData] = useState({});
-  const [deptBudgetLoading, setDeptBudgetLoading] = useState({});
+  const [deptBudgetLoading] = useState({});
   const [budgetValidationData, setBudgetValidationData] = useState({});
   const [deptHeadsData, setDeptHeadsData] = useState({});
-  const [federalDepts, setFederalDepts] = useState({});
+  const [, setFederalDepts] = useState({});
   const [federalDeptsFetched, setFederalDeptsFetched] = useState({});
   const [electionsData, setElectionsData] = useState({});
   const [electionsLoading, setElectionsLoading] = useState({});
@@ -6721,11 +6727,6 @@ function App() {
   };
 
   const deptInfoBar = (lastUpdated) => {
-    const fmtDate = (d) => {
-      if (!d) return null;
-      try { const dt = d?.toDate ? d.toDate() : new Date(d); return isNaN(dt.getTime()) ? null : dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }); } catch { return null; }
-    };
-    const ds = fmtDate(lastUpdated);
     return (
       <div className="flex items-center gap-2 flex-wrap text-xs bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-5">
         <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
@@ -6766,7 +6767,6 @@ function App() {
   const budgetValidBadge = (validDoc) => {
     if (!validDoc) return null;
     const s = validDoc.status;
-    const isMismatch = s === 'mismatch';
     const isSelfReported = s === 'self-reported';
     const isVerified = s === 'verified';
     const pillCls = isVerified ? 'cov-full' : isSelfReported ? 'cov-partial' : 'cov-limited';
@@ -6907,12 +6907,14 @@ function App() {
     </div>
   );
 
+  // eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
   const categories = [
     { id: 1, name: 'Federal Parliament', icon: <Globe className="w-6 h-6" />, count: canadaMembersHub, type: 'parliament' },
     { id: 2, name: 'Latest Laws & Regulations', icon: <FileText className="w-6 h-6" />, count: laws.length || 12, type: 'laws' },
     { id: 3, name: 'Government Contracts', icon: <DollarSign className="w-6 h-6" />, count: caContractsCardCount, type: 'contracts' }
   ];
 
+  // eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
   const getAnalyticsData = () => {
     const topExpenses = [...mps]
       .filter(mp => mp.expenses)
@@ -7099,6 +7101,7 @@ function App() {
   const renderDepartmentDetail = () => {
     if (!selectedDepartment) return null;
 
+    // eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
     const voteDepartment = (deptId, vote) => {
       logEvent('vote_politician', { country: 'US', itemId: String(deptId) });
       const updatedDepts = usDepartments.map(dept => {
@@ -7980,7 +7983,6 @@ function App() {
 
     const isDecided = selectedCase.status === 'Decided';
     const isUpcoming = selectedCase.status === 'Upcoming';
-    const isInProcess = selectedCase.status === 'In Process';
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -9728,6 +9730,9 @@ function App() {
       logEvent('tax_calculator_used', { country: 'UK', itemId: ukTaxRegion });
     };
 
+    const ukRed  = '#C8102E';
+    const ukNavy = '#012169';
+
     const GOV_LEVELS = [
       {
         label: 'Central Government', flag: '🇬🇧', pct: 75,
@@ -9760,9 +9765,6 @@ function App() {
     ];
 
     const confBadge = { High: 'text-green-700 bg-green-50', Medium: 'text-amber-700 bg-amber-50', Low: 'text-red-600 bg-red-50' };
-
-    const ukRed  = '#C8102E';
-    const ukNavy = '#012169';
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-blue-50 animate-fade-in">
@@ -10684,6 +10686,7 @@ function App() {
 
   // ── Waste Tracker ────────────────────────────────────────────────────────────
 
+  // eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
   const renderWasteTracker = () => {
     const isUSA = selectedCountry?.type === 'usa';
     const isAU  = selectedCountry?.type === 'australia';
@@ -12519,7 +12522,7 @@ function App() {
               UK: [
                 { id: 'uk-cc1', cardholder: 'Rachel Reeves', title: 'Chancellor of the Exchequer', department: 'HM Treasury', merchant: 'Claridge\'s Hotel Restaurant', amount: 3840, date: '2025-02-19', category: 'Restaurants', flag_reason: 'Dinner for 5 at Claridge\'s restaurant — £768/person. Filed as "financial sector engagement." Restaurant booking records show no confirmed banker or official guests.' },
                 { id: 'uk-cc2', cardholder: 'David Lammy', title: 'Secretary of State for Foreign Affairs', department: 'FCDO', merchant: 'Fortnum & Mason', amount: 4200, date: '2025-03-03', category: 'Gifts', flag_reason: '£4,200 in Fortnum & Mason hampers charged to FCDO hospitality budget. Protocol allows £150/head for official gifts. 6 hampers at £700 average violates policy by 4.6×.' },
-                { id: 'uk-cc3', cardholder: 'Angela Rayner', title: 'Deputy Prime Minister', department: "Deputy PM\'s Office", merchant: 'Boisdale of Belgravia', amount: 2960, date: '2025-01-22', category: 'Alcohol', flag_reason: 'Bar and whisky tab at Boisdale — a private members\' whisky bar — expensed as "departmental team morale event." Staff present: 4. Spend: £740/person on whisky.' },
+                { id: 'uk-cc3', cardholder: 'Angela Rayner', title: 'Deputy Prime Minister', department: "Deputy PM's Office", merchant: 'Boisdale of Belgravia', amount: 2960, date: '2025-01-22', category: 'Alcohol', flag_reason: 'Bar and whisky tab at Boisdale — a private members\' whisky bar — expensed as "departmental team morale event." Staff present: 4. Spend: £740/person on whisky.' },
                 { id: 'uk-cc4', cardholder: 'John Healey', title: 'Secretary of State for Defence', department: 'MoD', merchant: 'Royal Box, Wimbledon', amount: 8400, date: '2024-07-08', category: 'Entertainment', flag_reason: 'Royal Box tickets at Wimbledon for 6 guests — £1,400/person — charged to MoD hospitality. Guest list included 2 defence contractors currently bidding on MoD contracts.' },
                 { id: 'uk-cc5', cardholder: 'Wes Streeting', title: 'Secretary of State for Health', department: 'DHSC', merchant: 'Sexy Fish Restaurant, Mayfair', amount: 2200, date: '2025-02-10', category: 'Restaurants', flag_reason: 'Lunch for 4 at Sexy Fish (avg main: £85) expensed as "NHS stakeholder consultation." No NHS officials listed as attendees in departmental diary.' },
                 { id: 'uk-cc6', cardholder: 'Yvette Cooper', title: 'Secretary of State for Home Affairs', department: 'Home Office', merchant: 'Harrods Food Hall', amount: 1840, date: '2025-03-07', category: 'Gifts', flag_reason: 'Harrods purchases categorised as "official hospitality supplies." Itemised receipt shows wine, chocolates, and a cashmere throw — none consistent with official gift policy.' },
@@ -12527,7 +12530,7 @@ function App() {
                 { id: 'uk-cc8', cardholder: 'Ed Miliband', title: 'Secretary of State for Energy', department: 'DESNZ', merchant: 'Green Man Festival — Hospitality Tent', amount: 1620, date: '2024-08-16', category: 'Entertainment', flag_reason: 'VIP festival hospitality at Green Man Music Festival. Filed as "clean energy community engagement." No energy companies, policy officials, or community groups listed as attendees.' },
               ],
               AU: [
-                { id: 'au-cc1', cardholder: 'Anthony Albanese', title: 'Prime Minister', department: "Prime Minister\'s Office", merchant: 'Quay Restaurant, Sydney', amount: 7200, date: '2025-03-02', category: 'Restaurants', flag_reason: 'Dinner for 6 at Quay — AU$1,200/person at one of Australia\'s most expensive restaurants. Filed as "domestic policy engagement." No guest names recorded in Cabinet diary.' },
+                { id: 'au-cc1', cardholder: 'Anthony Albanese', title: 'Prime Minister', department: "Prime Minister's Office", merchant: 'Quay Restaurant, Sydney', amount: 7200, date: '2025-03-02', category: 'Restaurants', flag_reason: 'Dinner for 6 at Quay — AU$1,200/person at one of Australia\'s most expensive restaurants. Filed as "domestic policy engagement." No guest names recorded in Cabinet diary.' },
                 { id: 'au-cc2', cardholder: 'Penny Wong', title: 'Minister for Foreign Affairs', department: 'DFAT', merchant: 'David Jones — Market Street, Sydney', amount: 5800, date: '2025-02-14', category: 'Gifts', flag_reason: 'AU$5,800 in DJs purchases charged to DFAT hospitality card. Filed as "protocol gifts." DFAT gift register shows no corresponding entries. Receipts include personal-use items.' },
                 { id: 'au-cc3', cardholder: 'Jim Chalmers', title: 'Treasurer', department: 'Treasury', merchant: 'Rockpool Bar & Grill, Brisbane', amount: 4400, date: '2025-02-28', category: 'Restaurants', flag_reason: 'Rockpool dinner for 5 (AU$880/person) charged to Departmental hospitality. Filed as "economic forecasting roundtable." No economists, RBA officials, or published outcome on file.' },
                 { id: 'au-cc4', cardholder: 'Pat Conroy', title: 'Minister for Defence Industry', department: 'Defence', merchant: 'Dan Murphy\'s — Bulk Wine Order', amount: 2640, date: '2025-03-10', category: 'Alcohol', flag_reason: 'AU$2,640 bulk wine purchase from Dan Murphy\'s on departmental card. Filed as "base commander farewell." Defence hospitality policy requires DFAT-bonded supplier and event pre-approval.' },
@@ -13244,7 +13247,7 @@ function App() {
   };
 
   // ── Shared province/state data (used by both list + detail views) ──────────
-  const getProvincialData = () => {
+  const getProvincialData = useCallback(() => {
     // Wikipedia Commons — reliable source for every state & provincial flag
     const W = 'https://commons.wikimedia.org/wiki/Special:FilePath/';
     const flagFiles = {
@@ -13569,7 +13572,7 @@ function App() {
       : usStates.map((s) => overlayRow(s, 'us')).map(applyProvincialFlagFallback);
 
     return { canadaProvinces: cp, usStates: us };
-  };
+  }, [provincialExplorerFirestoreByAbbr]);
 
   useEffect(() => {
     if (!provincialExplorerFirestoreByAbbr) return;
@@ -13580,7 +13583,7 @@ function App() {
     const { canadaProvinces, usStates } = getProvincialData();
     const fresh = (isUSA ? usStates : canadaProvinces).find((x) => x.name === selectedProvince.name);
     if (fresh) setSelectedProvince(fresh);
-  }, [provincialExplorerFirestoreByAbbr]);
+  }, [provincialExplorerFirestoreByAbbr, getProvincialData, selectedCountry?.type, selectedProvince?.name, view]);
 
   useEffect(() => {
     if (!selectedProvince) {
@@ -13645,7 +13648,6 @@ function App() {
 
   useEffect(() => {
     if (!showTaxExemptModal || !selectedProvince) return;
-    const isUSA = selectedCountry?.type === 'usa';
     const merged = provinceTransparencyFields
       ? { ...selectedProvince, ...provinceTransparencyFields }
       : selectedProvince;
@@ -13655,7 +13657,6 @@ function App() {
 
   useEffect(() => {
     if (!showGrantsModal || !selectedProvince) return;
-    const isUSA = selectedCountry?.type === 'usa';
     const merged = provinceTransparencyFields
       ? { ...selectedProvince, ...provinceTransparencyFields }
       : selectedProvince;
@@ -14258,7 +14259,6 @@ function App() {
                   if (news.length > 0) {
                     const s = news[0];
                     callAiSummary('news', `In 1-2 sentences, explain what this official announcement is about in plain language: ${s.title || ''}.`);
-                    const ids = news.map(n => newsItemId(n));
                     try {
                       const vcSnap = await getDocs(query(collection(db, 'news_vote_counts'), where('country', '==', jId)));
                       const counts = {};
@@ -16609,8 +16609,6 @@ function App() {
   const renderCarneyDetail = () => {
     const partyColor = '#EF4444'; // Liberal red
 
-    const carneyBio = memberBioData['Mark Carney'];
-    const carneyBioLoading = !!memberBioLoading['Mark Carney'];
     const cpd = leaderProfileData['Mark Carney'] ?? {};
     const ti = cpd.term_information ?? {};
     // Read profile constants from Firestore leader_profile_data; fall back to known values
@@ -18412,6 +18410,7 @@ function App() {
     return Math.abs(h);
   };
 
+  // eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
   const genDeptExpenses = (ministerName, deptName, currencySymbol) => {
     const seed = djb2Hash(ministerName + deptName);
     const pick = (arr, off = 0) => arr[(seed + off) % arr.length];
@@ -18567,6 +18566,7 @@ function App() {
     }
   };
 
+  // eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
   const fetchLeaderExpenses = async (country) => {
     setLeaderExpensesLoading(true);
     try {
@@ -18641,6 +18641,7 @@ function App() {
     }
   };
 
+  // eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
   const fetchTransparencyScores = async (country) => {
     setTransparencyLoading(true);
     try {
@@ -18738,6 +18739,7 @@ function App() {
     }
   };
 
+  // eslint-disable-next-line no-unused-vars -- retained on purpose: no current call site, kept so existing feature code is not lost
   const fetchForeignAid = async (country) => {
     setForeignAidLoading(prev => ({ ...prev, [country]: true }));
     try {
@@ -20377,7 +20379,6 @@ function App() {
       }
     }
 
-    const baseSalary = 0; // Lords receive daily allowance not salary
     const dailyAllowance = 332;
     const daysAttended = m.attendance.sessionsAttended;
     const annualAllowance = dailyAllowance * daysAttended;
@@ -20418,7 +20419,6 @@ function App() {
     const typeColors = { 'Life Peer': '#2563EB', 'Hereditary Peer': '#B45309', Bishop: '#7C3AED' };
     const getAffilColor = (a) => lordAffilColors[a] || '#374151';
     const affiliations = ['All', 'Labour', 'Conservative', 'Liberal Democrats', 'Crossbench', 'Bishops', 'Non-Affiliated'];
-    const otherAffils = ['Non-Affiliated'];
     const filtered = ukLords.filter(l => {
       const matchAffil = ukLordFilter === 'All' ? true : l.affiliation === ukLordFilter;
       const matchSearch = !ukLordSearch || l.title.toLowerCase().includes(ukLordSearch.toLowerCase()) || l.name.toLowerCase().includes(ukLordSearch.toLowerCase());
@@ -20583,7 +20583,6 @@ function App() {
     const votes = ukLordVotes[lord.name] || { support: lord.supportVotes, oppose: lord.opposeVotes, userVote: null };
     const totalVotes = (votes.support || 0) + (votes.oppose || 0);
     const supportPct = totalVotes > 0 ? Math.round((votes.support / totalVotes) * 100) : null;
-    const formatGBP = (n) => n >= 1000000 ? `£${(n / 1000000).toFixed(2)}M` : n >= 1000 ? `£${(n / 1000).toFixed(0)}k` : `£${n}`;
     const appointedYear = parseInt((lord.appointed || '2000-01-01').split('-')[0]);
     const yearsInService = new Date().getFullYear() - appointedYear;
 
@@ -21687,7 +21686,7 @@ function App() {
     );
   };
 
-  const englandRegions = [
+  const englandRegions = useMemo(() => [
     {
       id: 'north-east',
       name: 'North East England',
@@ -22040,9 +22039,9 @@ function App() {
         { name: 'Swindon Borough Council', type: 'Unitary', population: '221K', leader: 'Jim Robbins', party: 'Labour' },
       ],
     },
-  ];
+  ], []);
 
-  const getEnglandRegionsExplorerRows = () => {
+  const getEnglandRegionsExplorerRows = useCallback(() => {
     const rows = ukExplorerFirestoreRows;
     if (!rows || !Array.isArray(rows) || rows.length !== 13) {
       return englandRegions.map((r) => mergeUkEnglandRegionRow(r, null));
@@ -22073,7 +22072,7 @@ function App() {
       const fsRow = findUkEnglandRegionFirestoreRow(region, byId, rows);
       return mergeUkEnglandRegionRow(region, fsRow);
     });
-  };
+  }, [englandRegions, ukExplorerFirestoreRows]);
 
   useEffect(() => {
     if (!ukExplorerFirestoreRows) return;
@@ -22082,7 +22081,7 @@ function App() {
     if (view !== 'uk-region-detail' || !selectedUkRegion?.id) return;
     const fresh = getEnglandRegionsExplorerRows().find((x) => x.id === selectedUkRegion.id);
     if (fresh) setSelectedUkRegion(fresh);
-  }, [ukExplorerFirestoreRows]);
+  }, [ukExplorerFirestoreRows, getEnglandRegionsExplorerRows, selectedUkRegion?.id, view]);
 
   const renderUKRegions = () => {
     const regions = getEnglandRegionsExplorerRows();
