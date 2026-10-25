@@ -4,7 +4,7 @@
   "document": "social_stats/CA_unemploymentRate",
   "decision": "Statistics Canada table 14-10-0287-01 (monthly, seasonally adjusted) is the authoritative source for Canada's federal unemployment rate. The civic-voice-engine remains the ongoing scheduled owner of the document.",
   "firestore_interaction": {
-    "this_task": "NONE. No reads, writes, deletions or probes. All tests use stubbed databases and stubbed network.",
+    "this_task": "ONE live dry-run (2026-10-25): an official StatCan fetch and a single read of social_stats/CA_unemploymentRate, via `--ca-unemployment --dry-run`. No write, no audit-log write, no deletion, no scheduler activation. All automated tests use stubbed databases/network or an in-memory fake firebase-admin.",
     "earlier_in_the_session": "Two read-only queries on 2026-10-25 (availability probe; country/statName duplicate check) found the existing document described below. Nothing was written.",
     "still_not_overwritten": true
   },
@@ -228,45 +228,70 @@
     "scheduler_activated": false
   },
   "first_live_update_preparation": {
-    "status": "PREPARED, NOT RUN. No Firestore read, write or deletion has been performed for this.",
-    "command": {
-      "working_directory": "C:\\Users\\jem91\\Civic APP all\\civic-voice-engine-ca-unemployment   (the clean worktree on branch ca-unemployment-ownership)",
-      "powershell": [
+    "status": "DRY RUN PERFORMED 2026-10-25 (one official StatCan fetch + one read of social_stats/CA_unemploymentRate). THE REAL WRITE HAS NOT BEEN RUN. Nothing is pushed or deployed.",
+    "engine": {
+      "worktree": "C:\\Users\\jem91\\Civic APP all\\civic-voice-engine-ca-unemployment",
+      "branch": "ca-unemployment-ownership",
+      "commits": {
+        "5818690": "--dry-run, pre-write local backup, project guard (local, unpushed)",
+        "fd6f3ef": "ownership: correct series, single owner, change-gated mid-month check (pushed)",
+        "40d876d43e6339815c4b50fec9315d2ce3ba0c42": "backup transaction-retry hardening (local, unpushed)"
+      }
+    },
+    "commands": {
+      "working_directory": "C:\\Users\\jem91\\Civic APP all\\civic-voice-engine-ca-unemployment",
+      "dry_run_powershell": [
+        "$env:DOTENV_CONFIG_PATH = \"..\\civic-voice-engine\\.env\"",
+        "node -r dotenv/config src/scheduler.js --ca-unemployment --dry-run"
+      ],
+      "dry_run_npm_script": "npm run scheduler:ca-unemployment:dry-run   (credentials must already be in the environment)",
+      "real_write_powershell_NOT_RUN": [
         "$env:DOTENV_CONFIG_PATH = \"..\\civic-voice-engine\\.env\"",
         "node -r dotenv/config src/scheduler.js --ca-unemployment"
       ],
-      "equivalent_npm_script": "npm run scheduler:ca-unemployment  (runs the same `node src/scheduler.js --ca-unemployment`; credentials must already be in the environment, e.g. via NODE_OPTIONS=\"-r dotenv/config\" plus DOTENV_CONFIG_PATH)",
-      "why_the_preload": "The clean worktree has no .env (it is untracked by design) and the engine reads Firebase credentials only from environment variables. The preload loads the main checkout's .env into this one process only; nothing is copied. The credential in use is a service account for project civic-voice-5ea94 (the live app's project), referenced by an absolute path, so it resolves from the worktree. Without it the command stops safely with \"Firebase credentials not configured\".",
-      "note_on_scope_of_env": "That .env also contains unrelated API keys; they are loaded into the process but nothing in this code path uses them. Setting only GOOGLE_APPLICATION_CREDENTIALS would also be enough (an import rehearsal showed no module needs another variable at load time)."
+      "optional_backup_directory": "Set $env:CIVIC_VOICE_BACKUP_DIR to choose where the pre-write backup goes (default ~/civic-voice-backups/firestore). A directory inside any git repository is refused.",
+      "why_the_preload": "The clean worktree has no .env and the engine reads credentials only from environment variables; the preload loads the main checkout's .env into this one process. Nothing is copied."
     },
-    "safe_to_run_from_the_worktree_without_deploying_the_scheduler": {
-      "verdict": "YES",
-      "reasons": [
-        "One-shot process: the --ca-unemployment branch (scheduler.js line 1114) runs the check and calls process.exit; every cron.schedule() call (lines 1142-1152) sits after the final else and is never reached.",
-        "Import rehearsal, with Firestore SDKs, all network and all file writes blocked and recorded: the modules scheduler.js imports at load (45 of 46 parsed, the 46th being a lazy require inside the cycle functions) made zero Firestore, network or file-write attempts.",
-        "It needs only: the node_modules already junctioned into the worktree (a fresh clone would need `npm ci`), outbound access to StatCan, and the credential variable."
-      ]
+    "implementation": {
+      "dry_run": "Fetch + verify StatCan, read ONLY social_stats/CA_unemploymentRate, print existing vs proposed month/value and WRITE/SKIP. Performs no Firestore write, no audit-log write and creates no backup. A dry run never creates a failure audit entry. `--dry-run` is accepted ONLY as exactly `--ca-unemployment --dry-run`; in any other command form the scheduler refuses to start, so the flag can never be silently ignored while a real job runs. The cron registration always runs the real check and is unchanged.",
+      "project_guard": "Before the first Firestore read the credential must be bound to civic-voice-5ea94 and no GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT hint may differ (status PROJECT_MISMATCH: no read, write, backup or audit entry). The project id comes from the local credential object; no network is used to learn it.",
+      "pre_write_backup": "When a write would REPLACE an existing document, its complete original contents are saved as JSON (document id/path, backup timestamp, firebase project, transaction attempt, type-tagged values) in a directory outside any git repository, inside the same transaction and BEFORE tx.set. Files are created exclusively (never overwritten), mode 0600, read back and verified, and refused if they contain service-account / private-key material. If the backup cannot be written and verified the transaction is abandoned and nothing is written (status BACKUP_FAILED). A first-ever write (no document) has nothing to preserve; skips and dry runs create no backup. Backups are not committed (outside the repository).",
+      "transaction_retry_review": {
+        "question": "Does the backup used for recovery represent the exact document version ultimately overwritten when Firestore retries the transaction?",
+        "answer": "YES for the committing attempt, with one reporting flaw that was fixed. Every retry re-runs the callback, re-reads the document and re-takes the backup; a commit succeeds only if the document is unchanged since that attempt's read, so the backup from the attempt that commits is the exact version that was replaced. The flaw: backups written by EARLIER attempts (versions that were never overwritten) stayed on disk indistinguishable from the real one and were not reported.",
+        "fix": "Each backup records transaction_attempt; the result reports attempts, the single recovery `backup`, and supersededBackups (after a write) or unusedBackups (skip / failed commit); the log names the one recovery point and warns not to restore the others. Nothing is deleted. A retry that finds the document gone reports no recovery point (stale reference cleared); a retry that finds a newer month skips and writes nothing.",
+        "tests": "6 focused tests in test/ca-unemployment-dryrun-backup.test.js (retry sees a different version; several retries; retry finds a newer month; retry finds the document gone; commit fails after a backup; no-retry baseline) and 3 mutations proven caught."
+      },
+      "audit_log": "Unchanged. A successful update writes social_stats/CA_unemploymentRate (merge) plus ONE data_audit_log entry (scheduler_tier \"ca_unemployment\"); a failure writes one failure entry; skips and dry runs write none; PROJECT_MISMATCH writes none (it would go to the wrong project)."
     },
-    "what_it_reads_and_writes": {
-      "reads": "One transactional read of social_stats/CA_unemploymentRate (after a successful, series-verified StatCan fetch). If StatCan fails, no Firestore handle is requested.",
-      "writes": [
-        "social_stats/CA_unemploymentRate, merge, ONLY when the transaction finds StatCan's reporting month newer than the stored month (or the stored document is from another series / has no readable month).",
-        "DEVIATION FROM \"only that document\": the shared audit logger adds ONE document to data_audit_log (scheduler_tier \"ca_unemployment\") after a write or a failure. Never for a skip."
-      ],
-      "never": "It never deletes, never touches another social_stats document, and never writes on an unchanged or older month."
+    "live_dry_run_result_2026_10_25": {
+      "authorised_scope": "Official StatCan fetch + one targeted read of social_stats/CA_unemploymentRate. No write, no audit-log write, no deletion, no scheduler activation.",
+      "engine_commit": "40d876d43e6339815c4b50fec9315d2ce3ba0c42",
+      "firebase_project_confirmed": "civic-voice-5ea94",
+      "document": "social_stats/CA_unemploymentRate",
+      "existing": {
+        "reporting_month": "2026-02",
+        "value": 6.9,
+        "updated": "2026-02",
+        "table": "not recorded (old engine document, unadjusted table 14-10-0017-01)"
+      },
+      "proposed": {
+        "reporting_month": "2026-09",
+        "value": "6.5%",
+        "updated": "Sep 2026",
+        "table": "14-10-0287-01"
+      },
+      "decision": "WRITE (NEWER_PERIOD)",
+      "reported_by_command": "Firestore writes: 0 · audit-log writes: 0 · backup files: 0 (dry run); exit code 0",
+      "next_step_requires_separate_approval": "The real write (it would back up the old document first, then replace it and add one audit entry). Not run. Pushing the two local engine commits also needs approval."
     },
-    "transaction_semantics": "src/ingestion/caUnemploymentCheck.js lines 74-84 (decision) and 119-124 (transaction): newer -> write; same month already from the verified series -> skip; older -> skip; unreadable/none -> write; same month from another series -> one corrective write. Covered by 24 tests, including repeated runs, late and missing releases and a transaction retry, and by 22 mutation checks.",
-    "expected_result_given_what_was_observed_on_2026_10_25": "The stored document was {value 6.9 (number), updated \"2026-02\", table 14-10-0017-01, last_updated 2026-03-23T23:49:58.644Z}. The check would find StatCan's September 2026 (6.5%) newer than February 2026 and write once: value \"6.5%\", updated \"Sep 2026\", a 12-month trend, source/table/coordinate/verified_series, latest_period \"2026-09\". The state is re-read at run time, so a different outcome is possible if the document has changed.",
-    "how_to_tell_it_worked": [
-      "Console: \"[ca-unemployment] ✓ wrote social_stats/CA_unemploymentRate: 6.5% for Sep 2026 (NEWER_PERIOD; previously 2026-02)\" and exit code 0.",
-      "A second run prints \"[ca-unemployment] no change — UNCHANGED_PERIOD\" and writes nothing."
-    ],
-    "risks": [
-      "The write replaces the engine's old unadjusted document. Only the fields observed on 2026-10-25 are recorded (above); there is no full backup of the previous document, so a rollback would be a manual re-set of those fields.",
-      "A successful run also creates one data_audit_log document (see deviation). If strictly one document is required, a --no-audit or --dry-run option would need a small code change on the branch.",
-      "There is no read-only preview: the check always opens Firestore after a successful StatCan fetch.",
-      "The browser-side card then shows \"6.5%\" instead of \"6.9\" for Canada; the card has not been viewed, as it needs live Firestore.",
-      "Until a host runs `npm run scheduler`, later months are refreshed only by running this command again."
-    ]
-  }
+    "tests_at_commit_40d876d": {
+      "engine_ca_unemployment_ownership": "21 passed",
+      "engine_ca_unemployment_schedule": "24 passed",
+      "engine_ca_unemployment_safety": "43 passed (dry-run safety, backup, retry, project guard, real command-line rehearsal against an in-memory fake with network and child processes blocked)",
+      "app_canada_federal_mvp": "45 passed",
+      "app_leader_profile_content_safety": "28 passed"
+    }
+  },
+  "revision_note_dry_run_backup_guard": "Updated 2026-10-25 for the --dry-run, pre-write backup (with transaction-retry hardening) and project guard implementation and the live dry-run result."
 }
