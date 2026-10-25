@@ -79,6 +79,33 @@ describe('resolveTrendPeriodLabel', () => {
   });
 });
 
+describe('Median Home Price (Canada)', () => {
+  // The live document is a single value (engine liveFetch: New Housing Price Index) with no trend or trend_periods.
+  const medianHome = { periodMode: 'dynamic', label: '🏠 Median Home Price', firestoreKey: 'medianHomeValue' };
+
+  test('a live document without trend metadata shows the neutral label, never "Dec 23 – May 24"', () => {
+    const live = { country: 'CA', statName: 'medianHomeValue', value: '121.9', updated: '2026-02' };
+    expect(resolveTrendPeriodLabel(medianHome, live)).toBe(NEUTRAL_TREND_LABEL);
+    expect(resolveTrendPeriodLabel(medianHome, undefined)).toBe(NEUTRAL_TREND_LABEL);
+  });
+  test('malformed metadata also falls back to the neutral label', () => {
+    expect(resolveTrendPeriodLabel(medianHome, { trend: [1, 2, 3], trend_periods: ['Dec 23', 'May 24'] })).toBe(NEUTRAL_TREND_LABEL);
+    expect(resolveTrendPeriodLabel(medianHome, { trend: [1, 2, 3], trend_periods: ['2026-01', '2026-02'] })).toBe(NEUTRAL_TREND_LABEL);
+  });
+  test('if the engine later supplies valid, matching trend_periods the range is derived', () => {
+    expect(resolveTrendPeriodLabel(medianHome, { trend: [120.1, 121.0, 121.9], trend_periods: ['2025-12', '2026-01', '2026-02'] })).toBe('Dec 2025 – Feb 2026');
+  });
+  test('the card definition keeps its value, trend array and source; only the hardcoded period was removed', () => {
+    const app = fs.readFileSync(path.join(__dirname, '..', 'App.js'), 'utf8').replace(/\r\n/g, '\n');
+    const line = app.split('\n').find((l) => l.includes("firestoreKey: 'medianHomeValue',       value: 'C$716,000'"));
+    expect(line).toBeDefined();
+    expect(line).toContain('trend: [695000,699000,705000,708000,712000,716000]');
+    expect(line).toContain("source: 'Canadian Real Estate Association (CREA)'");
+    expect(line).toContain("periodMode: 'dynamic'");
+    expect(line).not.toMatch(/\bperiod: '/);
+  });
+});
+
 describe('src/App.js wiring', () => {
   const app = fs.readFileSync(path.join(__dirname, '..', 'App.js'), 'utf8').replace(/\r\n/g, '\n');
   const cardLine = (key, cc) => {
@@ -89,12 +116,12 @@ describe('src/App.js wiring', () => {
   };
   const caRender = app.slice(app.indexOf("cc: 'CA',\n    backView: 'categories'"));
 
-  test('exactly three cards opt in, all on the Canada page: Unemployment, Inflation (CPI), Bank Rate', () => {
+  test('exactly four cards opt in, all on the Canada page: Unemployment, Inflation (CPI), Median Home Price, Bank Rate', () => {
     const count = (app.match(/periodMode: 'dynamic'/g) || []).length;
-    expect(count).toBe(3);
+    expect(count).toBe(4);
     const caSection = caRender.slice(0, caRender.indexOf('safety: ['));
-    expect((caSection.match(/periodMode: 'dynamic'/g) || []).length).toBe(3);
-    ['unemploymentRate', 'cpiInflation', 'bankRate'].forEach((k) => {
+    expect((caSection.match(/periodMode: 'dynamic'/g) || []).length).toBe(4);
+    ['unemploymentRate', 'cpiInflation', 'medianHomeValue', 'bankRate'].forEach((k) => {
       const line = caSection.split('\n').find((l) => l.includes(`firestoreKey: '${k}'`));
       expect(line).toContain("periodMode: 'dynamic'");
       expect(line).not.toMatch(/\bperiod: '/);
@@ -116,6 +143,7 @@ describe('src/App.js wiring', () => {
   test('the Canada unemployment card no longer hardcodes a reporting period', () => {
     const caSection = caRender.slice(0, caRender.indexOf('safety: ['));
     expect(caSection).not.toContain('Jan – Jun 2024');
+    expect(caSection).not.toContain('Dec 23 – May 24'); // Inflation and Median Home Price: no hardcoded range remains
     expect(caSection).not.toContain("period: '2020 – 2026'");
     // unrelated Canada cards are untouched (they keep their own static period)
     expect(caSection).toContain("period: '2022 – 2025'");
