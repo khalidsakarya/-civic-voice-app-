@@ -1,6 +1,6 @@
 {
   "report_type": "CANADA_FEDERAL_MVP",
-  "generated_at": "2026-10-25T18:18:53.609Z",
+  "generated_at": "2026-10-25T18:57:03.157Z",
   "supersedes_claims_in": "canada-federal-dry-run-latest.json (its \"no UI changes are needed\" conclusion was wrong for Contracts: the page labelled whatever was stored as \"Total Contracts / Total Value\")",
   "firestore_interaction": {
     "this_task": "NONE. No reads, writes or probes were made in the final-checks pass or while building/testing this work. Both ingestion scripts are dry-run by default and create no Firestore client without --write; tests prove the contracts script never loads firebase-admin in dry-run, and drive the unemployment write step with a stub database only.",
@@ -204,7 +204,12 @@
     "scripts": {
       "dry_run": "node engine/canada-federal-unemployment-write.cjs",
       "write": "node engine/canada-federal-unemployment-write.cjs --write   (NOT RUN; requires separate approval)",
-      "write_precheck": "In --write mode it FIRST reads for any other social_stats document with the same country and statName. If one exists it writes NOTHING and exits non-zero naming the document(s); --allow-duplicate-stat is an explicit opt-in. It never deletes. The order (read, then write) and the refusal are tested with a recording stub database, with every mutation of that logic caught."
+      "write_precheck": "In --write mode the script reads first, never deletes, and: (1) refuses with NO override if another document has the same country+statName; (2) refuses if the target document already exists unless --approve-overwrite=<fingerprint> matches that document's current state (not a boolean flag; stale approvals fail); (3) otherwise merge-writes only the target. --allow-duplicate-stat was removed."
+    },
+    "ownership": {
+      "finding": "social_stats/CA_unemploymentRate ALREADY EXISTS in Firestore (value 6.9, updated 2026-02, table 14-10-0017-01), written by the sibling engine's manual canonical upload. See canada-unemployment-ownership-latest.json.",
+      "decision": "Table 14-10-0287-01 is authoritative; the engine stays the scheduled owner and now writes the identical document.",
+      "write_status": "NOT WRITTEN. The Firestore document was not overwritten."
     }
   },
   "federal_grants": {
@@ -225,7 +230,7 @@
     "engine/test-canada-federal-mvp.cjs (39 tests)"
   ],
   "verification": {
-    "engine_tests": "node engine/test-canada-federal-mvp.cjs: 39 passed, 0 failed (zero Firestore, zero network). Selection logic, the jurisdiction guard, the duplicate check and the App.js guardrails were each mutation-tested; every mutant was caught. The runner awaits async tests (an un-awaited rejection would otherwise pass silently).",
+    "engine_tests": "node engine/test-canada-federal-mvp.cjs: 45 passed, 0 failed (zero Firestore, zero network).",
     "leader_profile_tests": "node engine/test-leader-profile-content-safety.cjs: 28 passed (unchanged).",
     "ui_util_tests": "react-scripts test src/utils/caFederalContracts.test.js: 20 passed, 0 failed (pure functions; the stock App.test.js that renders the whole app was deliberately not run).",
     "eslint": "Direct ESLint on src/App.js, the new util and its test, and service-worker.js: 0 problems.",
@@ -234,8 +239,8 @@
   },
   "remaining_blockers": [
     {
-      "blocker": "Firestore write approval",
-      "detail": "Neither script has been run with --write. Suggested order: unemployment (1 document, with the duplicate pre-check) first as the write check, then contracts (100 documents)."
+      "blocker": "Unemployment: first write of social_stats/CA_unemploymentRate",
+      "detail": "The document exists (engine-owned, old unadjusted series). Either the engine's next monthly run replaces it after review/deploy, or the app script is run with --approve-overwrite after a fresh read. Not done."
     },
     {
       "blocker": "Decision: the sibling engine keeps writing legacy \"CA\" contracts",
@@ -260,6 +265,10 @@
     {
       "blocker": "Stock App.test.js",
       "detail": "Pre-existing Create React App boilerplate that renders the whole app; untouched."
+    },
+    {
+      "blocker": "Federal contracts write approval",
+      "detail": "Not run. Selection documents use jurisdiction CA-FED-SELECTION to avoid the sibling engine's stale-document cleanup."
     }
   ]
 }

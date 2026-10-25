@@ -1,0 +1,126 @@
+{
+  "report_type": "CANADA_UNEMPLOYMENT_OWNERSHIP",
+  "generated_at": "2026-10-25T18:57:03.153Z",
+  "document": "social_stats/CA_unemploymentRate",
+  "decision": "Statistics Canada table 14-10-0287-01 (monthly, seasonally adjusted) is the authoritative source for Canada's federal unemployment rate. The civic-voice-engine remains the ongoing scheduled owner of the document.",
+  "firestore_interaction": {
+    "this_task": "NONE. No reads, writes, deletions or probes. All tests use stubbed databases and stubbed network.",
+    "earlier_in_the_session": "Two read-only queries on 2026-10-25 (availability probe; country/statName duplicate check) found the existing document described below. Nothing was written.",
+    "still_not_overwritten": true
+  },
+  "existing_document_observed_2026_10_25": {
+    "id": "CA_unemploymentRate",
+    "value": 6.9,
+    "value_type": "number (no % sign)",
+    "updated": "2026-02",
+    "source": "Statistics Canada — Labour Force Survey, table 14-10-0017-01",
+    "last_updated": "2026-03-23T23:49:58.644Z",
+    "shape": "the engine's canonical shape: { country, statName, value, source, sourceUrl, updated, last_updated }"
+  },
+  "engine_investigation": {
+    "repository": "civic-voice-engine",
+    "writers_of_social_stats": [
+      {
+        "writer": "uploadTargetedStats (src/firebase/uploader.js)",
+        "how_run": "SCHEDULED — monthly cycle, step 5 runTargetedFetch() then step 6 uploadTargetedStats(); also `node src/scheduler.js --targeted-stats`",
+        "write_mode": "set() — replaces the whole document",
+        "document_for_canada_unemployment_before": "CA_unemployment (stat name \"unemployment\") — NOT the document the card reads"
+      },
+      {
+        "writer": "uploadSocialStatsCanonical (npm run upload:social-stats / pipeline:live-stats)",
+        "how_run": "MANUAL only — not referenced by the scheduler",
+        "write_mode": "WIPES the entire social_stats collection first, then set() of 40 documents (10 stats x 4 countries; its comment says 32)",
+        "document_for_canada_unemployment_before": "CA_unemploymentRate (from live:fetch, table 14-10-0017-01)"
+      },
+      {
+        "writer": "uploadLiveStats (npm run upload:live-stats)",
+        "how_run": "MANUAL only",
+        "write_mode": "merge (batchWrite)",
+        "document_for_canada_unemployment_before": "CA_unemploymentRate (from live:fetch, table 14-10-0017-01)"
+      },
+      {
+        "writer": "uploadSocialStats (legacy)",
+        "how_run": "part of uploadAll (manual)",
+        "write_mode": "merge",
+        "document_for_canada_unemployment_before": "CA_unemployment (stat \"unemployment\")"
+      }
+    ],
+    "schedule": {
+      "scheduled_job": "node-cron inside src/scheduler.js; MONTHLY_SCHEDULE = CRON_MONTHLY || \"0 5 1 * *\" (05:00 on the 1st of each month)",
+      "startup_guard": "A bare `node src/scheduler.js` only registers cron schedules; nothing runs until its time unless --run-on-start is given.",
+      "hosting": "Not defined in the repository: the scheduler is a long-lived Node process (its host is not in this repo), and the Cloud Functions in functions/ only aggregate summary_stats. Whether the process is running is NOT knowable from the code.",
+      "cloud_functions_writing_social_stats": "none"
+    },
+    "why_the_stored_value_is_stale": [
+      "1. The card's document, CA_unemploymentRate, is written ONLY by manual pipelines (canonical / live). Nothing schedules them. The stored document dates from a manual run on 2026-03-23.",
+      "2. The scheduled monthly job did fetch Canada unemployment, but under the stat name \"unemployment\", so it wrote CA_unemployment — a different document that the card never reads. Even a perfectly healthy monthly schedule could never refresh the card's document. (US and UK use \"unemploymentRate\" and are refreshed; Australia uses \"unemployment\" like Canada did.)"
+    ],
+    "why_the_stored_value_is_also_wrong": "Table 14-10-0017-01 is \"Labour force characteristics by gender and detailed age group, monthly, UNADJUSTED for seasonality\" (confirmed from StatCan's cube metadata). For Canada / Unemployment rate / Total - Gender / 15 years and over, February 2026 it reports exactly 6.9 — the stored value. The engine labelled it \"3-month moving average, seasonally adjusted\". The unadjusted series is noisy (2026: Jun 6.1, Jul 6.7, Aug 7.3, Sep 6.2) whereas the verified seasonally adjusted series (14-10-0287-01) reads Feb 6.7 ... Sep 6.5.",
+    "replace_or_merge": "Targeted and canonical writers REPLACE the document (set without merge); canonical additionally wipes the whole collection first; the live and legacy writers merge. The app's one-off script merges.",
+    "other_findings_not_changed": [
+      "Australia's scheduled job also uses the stat name \"unemployment\" (the same card-key mismatch). Out of scope (Australia untouched).",
+      "The canonical comment says 8 stats x 4 countries = 32 documents; the code defines 10 x 4 = 40.",
+      "The canonical upload's collection wipe is a standing hazard for ALL social_stats documents; unchanged (pre-flight added only for Canada unemployment)."
+    ]
+  },
+  "ownership_solution": {
+    "principle": "One module defines the series, the verification, the document shape and the stat/document name, and every engine path that can write the card's document uses it.",
+    "engine": [
+      "NEW src/ingestion/caUnemploymentMonthly.js: table 14-10-0287-01, coordinate 1.7.1.1.1.1.0.0.0.0, WDS API (axios -> fetch -> curl fallbacks), series identity verified against StatCan cube metadata BEFORE any value is trusted; pure document builder identical to the app's.",
+      "Scheduled targeted job fetchCA_Unemployment now returns stat \"unemploymentRate\" via that module, so the 1st-of-month schedule refreshes CA_unemploymentRate (the document the card reads). It no longer writes CA_unemployment.",
+      "live:fetch (fetchCALFS) uses the same module; canonical / live / targeted uploaders write the identical document for records carrying docOverride. Every record without docOverride is built exactly as before.",
+      "Canonical definition for Canada unemployment now carries the 14-10-0287-01 source and URL; the other 39 definitions are unchanged.",
+      "Pre-flight (before any wipe): a stale saved live_fetch file that still holds the old unadjusted value is refused so it can never be stored under the new label."
+    ],
+    "app": [
+      "Overwrite guard: the script refuses to touch an existing document unless --approve-overwrite=<fingerprint> is supplied. The fingerprint identifies that exact stored state, is printed by the refusal, and stops matching if the document changes. It is NOT a boolean flag.",
+      "The target is read directly as well as queried, so an existing document that lacks the matching fields is still found.",
+      "A duplicate country/statName document under another id is refused with NO override; --allow-duplicate-stat was removed and now fails loudly.",
+      "merge:true preserves fields the script does not define; the script never deletes."
+    ],
+    "consistency": "Both repos' tests compare the two implementations when the sibling repo is present: identical constants, series members, and byte-identical documents from the same data. A live run against StatCan produced identical documents (6.5%, Sep 2026)."
+  },
+  "files_changed": {
+    "civic-voice-engine (commit 40e0f9a, local, not pushed)": [
+      "src/ingestion/caUnemploymentMonthly.js (new)",
+      "src/ingestion/targetedFetch.js",
+      "src/ingestion/liveFetch.js",
+      "src/firebase/uploader.js",
+      "package.json (test:ca-unemployment script)",
+      "docs/government-data-audit.md (source row)",
+      "test/ca-unemployment-ownership.test.js (new)",
+      "test/fixtures/golden-canonical-stat-defs.json (new)",
+      "test/fixtures/golden-targeted-fetchers.txt (new)"
+    ],
+    "civic-voice-app (local commit, not pushed)": [
+      "engine/canada-federal-unemployment-write.cjs (guard)",
+      "engine/test-canada-federal-mvp.cjs (45 tests)",
+      "engine/reports/canada-unemployment-ownership-latest.json (this report)",
+      "engine/reports/canada-federal-mvp-latest.json (updated)"
+    ],
+    "untouched_pre_existing_engine_changes": "src/ingestion/senateDataFetcher.js (modified before this work) and many untracked seeders were not touched or committed."
+  },
+  "tests": {
+    "engine_repo": "npm run test:ca-unemployment: 21 passed, 0 failed. Covers: correct series and rejection of unadjusted/trend/wrong-geography; reporting period; percentage; one document id and no CA_unemployment writer; no old-table references; one scheduled job and no manual writer in the scheduler; the three writers store the identical document; the other 39 canonical definitions and all other scheduled jobs identical to HEAD (golden snapshots); non-override records built exactly as before; stale-file pre-flight placed before the wipe; engine vs app identical. 14 + 3 mutations of these protections were each caught.",
+    "app_repo": "node engine/test-canada-federal-mvp.cjs: 45 passed, 0 failed. The new guard tests (existing document, stale/wrong approval, duplicate with no override, direct target read, merge, fingerprint, argument parsing, removed flag) were mutation-checked: 9 mutants, all caught.",
+    "live_check": "Both implementations run against the live StatCan API produced identical documents: 6.5%, Sep 2026, series identity verified.",
+    "app_src_unchanged": "No file under src/ changed in this task, so no ESLint/production-build run was needed."
+  },
+  "engine_ready_for_future_monthly_updates": {
+    "verdict": "READY IN CODE, NOT ACTIVATED.",
+    "detail": "Once reviewed and deployed, the existing monthly cycle (1st of each month, 05:00) will fetch the verified seasonally adjusted series and write CA_unemploymentRate in the same shape the app script produces. Nothing has been deployed, pushed or activated, and the Firestore document has not been changed.",
+    "caveats": [
+      "The first scheduled write will REPLACE the existing document (the targeted uploader uses set()). That is the intended handover, but it is a write to a document currently holding the engine's old unadjusted figure.",
+      "Whether the scheduler process is running anywhere is not knowable from the repository.",
+      "StatCan publishes the Labour Force Survey partway through the month (September 2026 data was released on 2026-10-09), but the cron fires on the 1st, so the card shows the PREVIOUS month until the following cycle. A later-in-month schedule would shorten that lag; not changed.",
+      "The old CA_unemployment document (if it exists) is orphaned and stale; not deleted."
+    ]
+  },
+  "remaining_blockers": [
+    "Review of the ownership solution before the engine commit is pushed or the scheduler restarted/deployed.",
+    "Decision on the first write of CA_unemploymentRate: let the engine's next monthly run replace it, OR run the app script with --approve-overwrite=<fingerprint of the then-current document> after a fresh read. Neither has been done.",
+    "Australia's card-key mismatch (stat \"unemployment\") is unchanged and out of scope.",
+    "Optional cleanup of the orphaned CA_unemployment document and of the canonical upload's collection-wipe design.",
+    "Federal contracts write remains un-started and requires its own approval."
+  ]
+}

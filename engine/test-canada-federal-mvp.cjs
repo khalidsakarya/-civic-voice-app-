@@ -417,19 +417,22 @@ test('the Canada hub no longer prefetches or counts contracts', () => {
   ['liveContracts.US', 'liveContracts.UK', 'liveContracts.AU'].forEach((s) => assert.ok(APP_SRC.includes(`governmentContractsHubSubtitle(${s}`), s));
 });
 
-// ─── unemployment write: duplicate detection (stubbed db, no Firestore) ─────
-function stubDb(existing = []) {
+// ─── unemployment write: ownership guard (stubbed db, no Firestore) ─────────
+// The sibling engine is the ongoing scheduled owner of social_stats/CA_unemploymentRate, so this
+// one-off script must never overwrite an existing document without an approval that is tied to
+// that document's exact current state. These tests drive the real write function with a stub.
+function stubDb({ queryDocs = [], target = null } = {}) {
   const calls = [];
   const db = {
     calls,
     collection(name) {
       calls.push(['collection', name]);
-      const filters = [];
       const q = {
-        where(f, op, v) { filters.push([f, op, v]); calls.push(['where', f, op, v]); return q; },
-        async get() { calls.push(['get']); return { docs: existing.map((id) => ({ id })) }; },
+        where(f, op, v) { calls.push(['where', f, op, v]); return q; },
+        async get() { calls.push(['query.get']); return { docs: queryDocs.map((id) => ({ id })) }; },
         doc(id) {
           return {
+            async get() { calls.push(['doc.get', id]); return { exists: !!target && id === 'CA_unemploymentRate', data: () => target }; },
             async set(data, opts) { calls.push(['set', id, data, opts]); },
             async delete() { throw new Error('delete must never be called'); },
           };
@@ -442,44 +445,128 @@ function stubDb(existing = []) {
 }
 const builtUnemp = () => U.buildSocialStatDoc([{ period: '2026-09', value: 6.5 }]);
 const US = require('./canada-federal-unemployment-write.cjs');
+// The document actually observed in production on 2026-10-25 (written by the engine's manual canonical upload).
+const OBSERVED_ENGINE_DOC = {
+  country: 'CA', statName: 'unemploymentRate', value: 6.9, updated: '2026-02',
+  source: 'Statistics Canada — Labour Force Survey, table 14-10-0017-01',
+  sourceUrl: 'https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410001701',
+  last_updated: '2026-03-23T23:49:58.644Z',
+};
+const kinds = (db) => db.calls.map((c) => c[0]);
 
-test('unemployment write: reads for duplicates BEFORE writing, filtered on country and statName', async () => {
-  const db = stubDb([]);
+test('guard: with nothing existing, it reads the duplicates and the target BEFORE writing, then merge-writes only the target', async () => {
+  const db = stubDb();
   const r = await US.writeFederalUnemployment(db, builtUnemp());
   assert.strictEqual(r.status, 'WRITTEN');
-  const kinds = db.calls.map((c) => c[0]);
-  assert.ok(kinds.indexOf('get') >= 0 && kinds.indexOf('set') > kinds.indexOf('get'), `order was ${kinds.join(' > ')}`);
+  assert.strictEqual(r.overwroteApprovedDocument, false);
+  const k = kinds(db);
+  assert.ok(k.indexOf('query.get') >= 0 && k.indexOf('doc.get') > k.indexOf('query.get') && k.indexOf('set') > k.indexOf('doc.get'), `order was ${k.join(' > ')}`);
   assert.deepStrictEqual(db.calls.filter((c) => c[0] === 'where').map((c) => c.slice(1)), [['country', '==', 'CA'], ['statName', '==', 'unemploymentRate']]);
-  const set = db.calls.find((c) => c[0] === 'set');
-  assert.strictEqual(set[1], 'CA_unemploymentRate');
-  assert.deepStrictEqual(set[3], { merge: true });
+  const sets = db.calls.filter((c) => c[0] === 'set');
+  assert.strictEqual(sets.length, 1, 'exactly one document may be written');
+  assert.strictEqual(sets[0][1], 'CA_unemploymentRate');
+  assert.deepStrictEqual(sets[0][3], { merge: true }, 'merge preserves fields this script does not define');
 });
 
-test('unemployment write: a duplicate country/statName document blocks the write entirely', async () => {
-  const db = stubDb(['legacy_ca_unemployment']);
+test('guard: a duplicate country/statName document under another id blocks the write, with NO override', async () => {
+  const db = stubDb({ queryDocs: ['legacy_ca_unemployment'] });
   const r = await US.writeFederalUnemployment(db, builtUnemp());
   assert.strictEqual(r.status, 'REFUSED_DUPLICATE');
   assert.deepStrictEqual(r.otherDocuments, ['legacy_ca_unemployment']);
-  assert.match(r.reason, /legacy_ca_unemployment/);
-  assert.ok(!db.calls.some((c) => c[0] === 'set'), 'nothing may be written when a duplicate exists');
+  assert.ok(!kinds(db).includes('set'));
+  // even a perfectly valid-looking approval token cannot bypass it
+  const db2 = stubDb({ queryDocs: ['legacy_ca_unemployment'], target: OBSERVED_ENGINE_DOC });
+  const fp = US.fingerprintExistingDocument('CA_unemploymentRate', OBSERVED_ENGINE_DOC);
+  const r2 = await US.writeFederalUnemployment(db2, builtUnemp(), { approveOverwrite: fp });
+  assert.strictEqual(r2.status, 'REFUSED_DUPLICATE');
+  assert.ok(!kinds(db2).includes('set'));
 });
 
-test('unemployment write: our own document id is not a duplicate of itself', async () => {
-  const db = stubDb(['CA_unemploymentRate']);
-  assert.strictEqual((await US.writeFederalUnemployment(db, builtUnemp())).status, 'WRITTEN');
+test('guard: an EXISTING target document (e.g. the engine\'s) is refused without approval, and the refusal says how to approve THIS state', async () => {
+  const db = stubDb({ queryDocs: ['CA_unemploymentRate'], target: OBSERVED_ENGINE_DOC });
+  const r = await US.writeFederalUnemployment(db, builtUnemp());
+  assert.strictEqual(r.status, 'REFUSED_EXISTING');
+  assert.ok(!kinds(db).includes('set'), 'nothing may be written');
+  assert.match(r.fingerprint, /^[0-9a-f]{16}$/);
+  assert.strictEqual(r.existing.value, 6.9);
+  assert.strictEqual(r.existing.updated, '2026-02');
+  assert.ok(r.reason.includes(`--approve-overwrite=${r.fingerprint}`));
+  assert.ok(r.reason.includes('No approval was supplied'));
 });
 
-test('unemployment write: --allow-duplicate-stat is an explicit opt-in, and nothing is ever deleted', async () => {
-  const db = stubDb(['legacy_ca_unemployment']);
-  const origWarn = console.warn;
-  console.warn = () => {};
-  try {
-    const r = await US.writeFederalUnemployment(db, builtUnemp(), { allowDuplicateStat: true });
-    assert.strictEqual(r.status, 'WRITTEN');
-    assert.deepStrictEqual(r.otherDocuments, ['legacy_ca_unemployment']);
-  } finally { console.warn = origWarn; }
-  assert.strictEqual(US.parseArgs([]).allowDuplicateStat, false);
-  assert.strictEqual(US.parseArgs(['--allow-duplicate-stat']).allowDuplicateStat, true);
+test('guard: an approval for a DIFFERENT or stale state of the document is refused', async () => {
+  const db = stubDb({ queryDocs: ['CA_unemploymentRate'], target: OBSERVED_ENGINE_DOC });
+  const stale = US.fingerprintExistingDocument('CA_unemploymentRate', { ...OBSERVED_ENGINE_DOC, value: 6.7 });
+  const r = await US.writeFederalUnemployment(db, builtUnemp(), { approveOverwrite: stale });
+  assert.strictEqual(r.status, 'REFUSED_EXISTING');
+  assert.ok(!kinds(db).includes('set'));
+  assert.match(r.reason, /does not match its current state/);
+  assert.strictEqual((await US.writeFederalUnemployment(stubDb({ target: OBSERVED_ENGINE_DOC }), builtUnemp(), { approveOverwrite: 'not-a-token' })).status, 'REFUSED_EXISTING');
+});
+
+test('guard: an existing document that lacks the country/statName fields is still found (direct read of the target)', async () => {
+  // The query returns nothing (the document has no matching fields) but the target exists.
+  const db = stubDb({ queryDocs: [], target: { value: 6.9, source: 'x' } });
+  const r = await US.writeFederalUnemployment(db, builtUnemp());
+  assert.strictEqual(r.status, 'REFUSED_EXISTING');
+  assert.ok(!kinds(db).includes('set'));
+});
+
+test('guard: the exact fingerprint of the reviewed document approves the write; fields not defined by the script are preserved (merge)', async () => {
+  const fp = US.fingerprintExistingDocument('CA_unemploymentRate', OBSERVED_ENGINE_DOC);
+  const db = stubDb({ queryDocs: ['CA_unemploymentRate'], target: OBSERVED_ENGINE_DOC });
+  const r = await US.writeFederalUnemployment(db, builtUnemp(), { approveOverwrite: fp });
+  assert.strictEqual(r.status, 'WRITTEN');
+  assert.strictEqual(r.overwroteApprovedDocument, true);
+  const set = db.calls.find((c) => c[0] === 'set');
+  assert.deepStrictEqual(set[3], { merge: true });
+  // the write only carries this script's own fields; it never nulls or deletes anything else
+  Object.values(set[2]).forEach((v) => assert.notStrictEqual(v, undefined));
+  assert.ok(!Object.keys(set[2]).some((k) => !['country', 'statName', 'value', 'updated', 'trend', 'trend_periods', 'sub', 'source', 'sourceUrl', 'table', 'coordinate', 'verified_series', 'latest_period', 'last_updated', 'statcan_release_time'].includes(k)));
+  assert.ok(!kinds(db).includes('delete'));
+});
+
+test('fingerprint: stable for the same state, different when anything identifying changes, tolerant of Firestore timestamps', () => {
+  const f = (d) => US.fingerprintExistingDocument('CA_unemploymentRate', d);
+  assert.strictEqual(f(OBSERVED_ENGINE_DOC), f({ ...OBSERVED_ENGINE_DOC }));
+  ['value', 'updated', 'source', 'sourceUrl', 'last_updated'].forEach((k) => assert.notStrictEqual(f({ ...OBSERVED_ENGINE_DOC, [k]: 'changed' }), f(OBSERVED_ENGINE_DOC), k));
+  assert.notStrictEqual(US.fingerprintExistingDocument('OTHER', OBSERVED_ENGINE_DOC), f(OBSERVED_ENGINE_DOC));
+  const ts = { toDate: () => new Date('2026-03-23T23:49:58.644Z') };
+  assert.strictEqual(f({ ...OBSERVED_ENGINE_DOC, last_updated: ts }), f(OBSERVED_ENGINE_DOC));
+  // a numeric 6.9 and the string "6.9" are different stored states
+  assert.notStrictEqual(f({ ...OBSERVED_ENGINE_DOC, value: '6.9' }), f(OBSERVED_ENGINE_DOC));
+});
+
+test('arguments: approval is a 16-hex fingerprint, never a boolean flag; the old duplicate flag is gone', () => {
+  assert.strictEqual(US.parseArgs([]).approveOverwrite, null);
+  assert.strictEqual(US.parseArgs(['--write']).approveOverwrite, null);
+  assert.strictEqual(US.parseArgs(['--write', '--approve-overwrite']).approveOverwrite, null);
+  assert.strictEqual(US.parseArgs(['--write', '--approve-overwrite=true']).approveOverwrite, null);
+  assert.strictEqual(US.parseArgs(['--write', '--approve-overwrite=1234']).approveOverwrite, null);
+  assert.strictEqual(US.parseArgs(['--write', '--approve-overwrite=0123456789ABCDEF']).approveOverwrite, '0123456789abcdef');
+  assert.strictEqual(US.parseArgs(['--allow-duplicate-stat']).removedDuplicateFlag, true);
+  assert.ok(!('allowDuplicateStat' in US.parseArgs([])));
+});
+
+test('script: the removed --allow-duplicate-stat flag fails loudly before any network or Firestore access', () => {
+  const r = spawnSync(process.execPath, [path.join(__dirname, 'canada-federal-unemployment-write.cjs'), '--allow-duplicate-stat'], { encoding: 'utf8' });
+  assert.notStrictEqual(r.status, 0);
+  assert.match(r.stderr + r.stdout, /--allow-duplicate-stat was removed/);
+});
+
+// ─── consistency with the sibling engine's implementation ───────────────────
+test('(if the sibling engine repo is present) app and engine build the identical Canada unemployment document', () => {
+  const engineLib = path.join(__dirname, '..', '..', 'civic-voice-engine', 'src', 'ingestion', 'caUnemploymentMonthly.js');
+  if (!fs.existsSync(engineLib)) { console.log('    (skipped: civic-voice-engine not found)'); return; }
+  const E = require(engineLib);
+  ['PRODUCT_ID', 'TABLE_ID', 'COORDINATE', 'SOURCE_URL', 'SOURCE_LABEL', 'STAT_NAME', 'COUNTRY', 'DOC_ID', 'TREND_POINTS'].forEach((k) => assert.strictEqual(E[k], U[k], `constant ${k} differs`));
+  assert.deepStrictEqual(E.EXPECTED_MEMBERS, U.EXPECTED_MEMBERS);
+  const pts = [];
+  for (let i = 0; i < 24; i += 1) pts.push({ period: `${2024 + Math.floor((9 + i) / 12)}-${String(((9 + i) % 12) + 1).padStart(2, '0')}`, value: 6 + (i % 7) / 10 });
+  const a = U.buildSocialStatDoc(pts, { nowIso: '2026-10-25T12:00:00.000Z', releaseTime: '2026-10-09T08:30' });
+  const e = E.buildSocialStatDoc(pts, { nowIso: '2026-10-25T12:00:00.000Z', releaseTime: '2026-10-09T08:30' });
+  assert.strictEqual(a.id, e.id);
+  assert.deepStrictEqual(a.data, e.data);
 });
 
 // ─── dry-run safety (behavioural) ───────────────────────────────────────────
