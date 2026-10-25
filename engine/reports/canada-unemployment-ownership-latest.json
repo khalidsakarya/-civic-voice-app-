@@ -4,9 +4,11 @@
   "document": "social_stats/CA_unemploymentRate",
   "decision": "Statistics Canada table 14-10-0287-01 (monthly, seasonally adjusted) is the authoritative source for Canada's federal unemployment rate. The civic-voice-engine remains the ongoing scheduled owner of the document.",
   "firestore_interaction": {
-    "this_task": "ONE live dry-run (2026-10-25): an official StatCan fetch and a single read of social_stats/CA_unemploymentRate, via `--ca-unemployment --dry-run`. No write, no audit-log write, no deletion, no scheduler activation. All automated tests use stubbed databases/network or an in-memory fake firebase-admin.",
+    "this_task": "Closing the report only: no Firestore access.",
+    "live_activity_2026_10_25": "Two read-only queries (availability probe, duplicate check) and one live dry-run (one targeted document read) earlier in the day; then the single authorised write of social_stats/CA_unemploymentRate plus one data_audit_log entry, followed by one targeted verification read.",
     "earlier_in_the_session": "Two read-only queries on 2026-10-25 (availability probe; country/statName duplicate check) found the existing document described below. Nothing was written.",
-    "still_not_overwritten": true
+    "still_not_overwritten": false,
+    "overwritten_on": "2026-10-25 (original preserved in the local backup, see live_write_2026_10_25.backup)"
   },
   "existing_document_observed_2026_10_25": {
     "id": "CA_unemploymentRate",
@@ -109,21 +111,18 @@
     "app_src_unchanged": "No file under src/ changed in this task, so no ESLint/production-build run was needed."
   },
   "engine_ready_for_future_monthly_updates": {
-    "verdict": "READY IN CODE, NOT ACTIVATED, HOST UNKNOWN.",
-    "detail": "Once the branch is reviewed and published, the check updates the card within a day of StatCan's release whenever the scheduler (or the on-demand command) runs, and rewrites nothing otherwise. The first run replaces the old unadjusted document (written once, merge) because StatCan's September 2026 month is newer than the stored February 2026.",
+    "verdict": "LIVE DATA CORRECT; SCHEDULER NOT ACTIVATED, HOST UNKNOWN.",
+    "detail": "The document now holds the seasonally adjusted September 2026 figure from table 14-10-0287-01. Future runs of the check write only when StatCan's reporting month is newer than the stored month, back up the previous document locally first, and verify the Firebase project; same-month and older-month data are skipped.",
     "caveats": [
-      "Nothing has been pushed or deployed, and the Firestore document has not been changed.",
-      "The scheduler's host is unknown (see scheduler_host_findings); the cron entry only fires if a long-running scheduler process exists.",
-      "The old CA_unemployment document (if present) is orphaned and stale; not deleted.",
-      "Australia's card-key mismatch (stat \"unemployment\") is unchanged and out of scope."
+      "The scheduler's host is unknown (see scheduler_host_findings); the cron entry only fires when the engine's scheduler process runs somewhere, and nothing has been activated.",
+      "The engine commits are on the pushed branch ca-unemployment-ownership, not on engine main."
     ]
   },
   "remaining_blockers": [
-    "Decision on the first live update: run the command above (which also adds one data_audit_log document), or first add a --no-audit / --dry-run option to the branch.",
-    "Optionally take a full backup of social_stats/CA_unemploymentRate (one read) before the first write.",
-    "Decide and document where the scheduler runs; a scheduled GitHub Actions workflow is one option with a precedent in the app repo.",
-    "The engine branch is pushed but not merged; merging to main is a separate step. Local engine main still carries 40e0f9a and 1f9f067 (not pushed) and the unrelated senateDataFetcher.js edit.",
-    "Optional cleanup: the orphaned CA_unemployment document; Australia's card-key mismatch; remove the extra worktree when finished.",
+    "DONE 2026-10-25: first live update written and verified; the audit entry was reported successful but not read back.",
+    "Decide and document where the scheduler runs. Nothing is activated; until it is, the card updates only when `node src/scheduler.js --ca-unemployment` is run (a scheduled GitHub Actions workflow is one option, with a precedent in the app repo). StatCan publishes monthly, so the next change is expected after the October 2026 release (about mid-November).",
+    "The engine branch ca-unemployment-ownership holds the reviewed unemployment commits and is NOT merged into engine main; merging is a separate step. Local engine main still carries 40e0f9a and 1f9f067 (not pushed) and the unrelated senateDataFetcher.js edit.",
+    "Optional cleanup, not authorised here: the orphaned CA_unemployment document; Australia's card-key mismatch; remove the extra engine worktree when finished.",
     "Federal contracts write remains un-started and requires its own approval."
   ],
   "revision_note": "Revised after the scheduler-safety, deployment-isolation and scheduler-host review. The earlier design (Canada unemployment as a scheduled job inside the monthly targeted fetch) is SUPERSEDED by a dedicated, change-gated mid-month check.",
@@ -228,7 +227,7 @@
     "scheduler_activated": false
   },
   "first_live_update_preparation": {
-    "status": "DRY RUN PERFORMED 2026-10-25 (one official StatCan fetch + one read of social_stats/CA_unemploymentRate). THE REAL WRITE HAS NOT BEEN RUN. Nothing is pushed or deployed.",
+    "status": "COMPLETED: dry-run on 2026-10-25, then the real write on 2026-10-25 (see live_write_2026_10_25).",
     "engine": {
       "worktree": "C:\\Users\\jem91\\Civic APP all\\civic-voice-engine-ca-unemployment",
       "branch": "ca-unemployment-ownership",
@@ -283,7 +282,7 @@
       },
       "decision": "WRITE (NEWER_PERIOD)",
       "reported_by_command": "Firestore writes: 0 · audit-log writes: 0 · backup files: 0 (dry run); exit code 0",
-      "next_step_requires_separate_approval": "The real write (it would back up the old document first, then replace it and add one audit entry). Not run. Pushing the two local engine commits also needs approval."
+      "next_step_requires_separate_approval": "DONE: the real write was subsequently approved and executed; see live_write_2026_10_25."
     },
     "tests_at_commit_40d876d": {
       "engine_ca_unemployment_ownership": "21 passed",
@@ -293,5 +292,87 @@
       "app_leader_profile_content_safety": "28 passed"
     }
   },
-  "revision_note_dry_run_backup_guard": "Updated 2026-10-25 for the --dry-run, pre-write backup (with transaction-retry hardening) and project guard implementation and the live dry-run result."
+  "revision_note_dry_run_backup_guard": "Updated 2026-10-25 for the --dry-run, pre-write backup (with transaction-retry hardening) and project guard implementation, the live dry-run, and the closed-out live write.",
+  "live_write_2026_10_25": {
+    "status": "COMPLETED AND VERIFIED. The first controlled live update of Canada federal unemployment was written on 2026-10-25.",
+    "document": "social_stats/CA_unemploymentRate",
+    "firebase_project": "civic-voice-5ea94 (validated by the project guard before the first read)",
+    "engine": {
+      "commit_run_from": "40d876d43e6339815c4b50fec9315d2ce3ba0c42",
+      "branch": "ca-unemployment-ownership",
+      "command": "node -r dotenv/config src/scheduler.js --ca-unemployment   (DOTENV_CONFIG_PATH=..\\civic-voice-engine\\.env), run once from the clean worktree",
+      "exit_code": 0
+    },
+    "result": "WRITTEN (NEWER_PERIOD); transaction ran in 1 attempt, no retry",
+    "previous": {
+      "value": "6.9 (number)",
+      "reporting_month": "2026-02",
+      "series": "unadjusted, Statistics Canada table 14-10-0017-01 (old engine value)",
+      "last_updated": "2026-03-23T23:49:58.644Z"
+    },
+    "new": {
+      "value": "6.5%",
+      "reporting_month": "2026-09",
+      "updated_label": "Sep 2026",
+      "series": "seasonally adjusted",
+      "source": "Statistics Canada, Labour Force Survey (Table 14-10-0287-01)",
+      "sourceUrl": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+      "coordinate": "1.7.1.1.1.1.0.0.0.0",
+      "verified_series": "Canada · Unemployment rate · Total - Gender · 15 years and over · Estimate · Seasonally adjusted",
+      "statcan_release_time": "2026-10-09T08:30",
+      "trend_periods": "2025-10 .. 2026-09 (12 points)",
+      "trend": [
+        6.9,
+        6.6,
+        6.8,
+        6.5,
+        6.7,
+        6.7,
+        6.9,
+        6.6,
+        6.5,
+        6.4,
+        6.4,
+        6.5
+      ]
+    },
+    "verification": {
+      "method": "ONE targeted read of social_stats/CA_unemploymentRate after the write. No collection scan, no query.",
+      "confirmed": [
+        "value 6.5%",
+        "latest_period 2026-09",
+        "updated \"Sep 2026\"",
+        "table 14-10-0287-01 and matching source/sourceUrl",
+        "verified_series and coordinate present",
+        "12-point trend ending 2026-09 at 6.5",
+        "engine provenance check: verified (a re-run for the same month would SKIP with UNCHANGED_PERIOD)"
+      ]
+    },
+    "backup": {
+      "created_and_verified": true,
+      "path": "C:\\Users\\jem91\\civic-voice-backups\\firestore\\social_stats__CA_unemploymentRate__2026-10-25T22-05-43-104Z.json",
+      "contents": "the complete original document (7 fields: country, statName, value 6.9, source, sourceUrl, updated \"2026-02\", last_updated), document id/path, backup timestamp, firebase_project, transaction_attempt 1",
+      "checks": "created exclusively, read back and compared by the writer; no credential material; stored outside every git repository and not committed",
+      "transaction_retry_files": "none (single attempt); the backup folder holds exactly this one file",
+      "restore": "To undo, restore the `data` block of this file over the document."
+    },
+    "audit_log": {
+      "result": "REPORTED SUCCESSFUL, NOT READ BACK. The shared audit logger prints a warning if its data_audit_log write fails and none appeared. The entry itself was not read back because that would require a collection query, which was not authorised.",
+      "expected_entry": {
+        "collection_name": "social_stats",
+        "jurisdiction": "CA",
+        "import_status": "success",
+        "scheduler_tier": "ca_unemployment",
+        "record_count": 1
+      }
+    },
+    "scope_confirmations": {
+      "scheduler_activated": false,
+      "other_documents_written": false,
+      "documents_deleted": false,
+      "contracts_ingestion_run": false,
+      "engine_merged_to_main": false,
+      "firestore_writes_total": "social_stats/CA_unemploymentRate (1 document, merge) + 1 data_audit_log entry"
+    }
+  }
 }
