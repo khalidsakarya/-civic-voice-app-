@@ -30,6 +30,7 @@ import {
   caFederalContractsAllLoaded,
   caFederalFiscalYearShort,
 } from './utils/caFederalContracts';
+import { resolveTrendPeriodLabel } from './utils/trendPeriodLabel';
 import {
   economicSocialFromExplorerItem,
   taxExemptFromExplorerItem,
@@ -7738,6 +7739,7 @@ function App() {
                           const displayUpdated = live?.updated ?? live?.date ?? stat.updated;
                           const displayTrend   = (live?.trend && Array.isArray(live.trend)) ? live.trend : stat.trend;
                           const sourceUrl      = live?.sourceUrl ?? null;
+                          const trendPeriodLabel = resolveTrendPeriodLabel(stat, live);
                           return (
                             <div key={i} className={`${c.card} border rounded-lg p-3`}>
                               <div className="flex items-start justify-between mb-1">
@@ -7752,7 +7754,7 @@ function App() {
                               {displayTrend && (
                                 <div className="mt-2">
                                   {sparkline(displayTrend, c.stroke)}
-                                  {stat.period && <p className="text-xs text-gray-400 mt-0.5">{stat.period}</p>}
+                                  {trendPeriodLabel && <p className="text-xs text-gray-400 mt-0.5">{trendPeriodLabel}</p>}
                                 </div>
                               )}
                               {displaySource && (
@@ -32761,10 +32763,10 @@ function App() {
     backLabel: 'Government Levels',
     subtitle: '🇨🇦 Canadian Federal Government · FY 2024–25',
     economic: [
-      { label: '📉 Unemployment',      firestoreKey: 'unemploymentRate',       value: '6.3%',           sub: 'Seasonally adjusted · ages 15 and over',                                  trend: [5.8,5.8,5.9,6.1,6.2,6.3],          period: 'Jan – Jun 2024',    source: 'Statistics Canada Labour Force Survey',            updated: 'Jun 2024' },
-      { label: '🛒 Inflation (CPI)',   firestoreKey: 'cpiInflation',          value: '2.7%',           sub: 'A $100 grocery cart now costs $102.30 more than a year ago',                          trend: [3.4,3.1,2.9,2.8,2.9,2.7],          period: 'Dec 23 – May 24',   source: 'Statistics Canada CPI Report',                     updated: 'May 2024' },
+      { label: '📉 Unemployment',      firestoreKey: 'unemploymentRate',       value: '6.3%',           sub: 'Seasonally adjusted · ages 15 and over',                                  trend: [5.8,5.8,5.9,6.1,6.2,6.3],          periodMode: 'dynamic',    source: 'Statistics Canada Labour Force Survey',            updated: 'Jun 2024' },
+      { label: '🛒 Inflation (CPI)',   firestoreKey: 'cpiInflation',          value: '2.7%',           sub: 'A $100 grocery cart now costs $102.30 more than a year ago',                          trend: [3.4,3.1,2.9,2.8,2.9,2.7],          periodMode: 'dynamic',   source: 'Statistics Canada CPI Report',                     updated: 'May 2024' },
       { label: '🏠 Median Home Price', firestoreKey: 'medianHomeValue',       value: 'C$716,000',      sub: 'A worker earning median wage needs 14+ years of full salary to buy',                  trend: [695000,699000,705000,708000,712000,716000], period: 'Dec 23 – May 24', source: 'Canadian Real Estate Association (CREA)',         updated: 'May 2024' },
-      { label: '🏦 Bank Rate',         firestoreKey: 'bankRate',              value: '2.5%',           sub: 'Bank of Canada policy rate · Down from a 5% peak in 2023',                           trend: [0.25,4.25,5.0,4.25,3.25,2.5],       period: '2020 – 2026',       source: 'Bank of Canada',                                   updated: '2026'     },
+      { label: '🏦 Bank Rate',         firestoreKey: 'bankRate',              value: '2.5%',           sub: 'Bank of Canada policy rate · Down from a 5% peak in 2023',                           trend: [0.25,4.25,5.0,4.25,3.25,2.5],       periodMode: 'dynamic',       source: 'Bank of Canada',                                   updated: '2026'     },
       { label: '💼 Min Wage',          firestoreKey: 'minWageGap',            value: 'C$17.75/hr',     sub: 'Federal floor as of Apr 2025 · Some provinces pay up to $19/hr',                     trend: [15.55,16.65,17.30,17.75],            period: '2022 – 2025',       source: 'Employment and Social Development Canada',        updated: '2025'     },
       { label: '⚖️ Gini Coefficient',  firestoreKey: 'giniCoefficient',       value: '0.30',           sub: 'More equal than the US (0.49) · But inequality has slowly crept up since 2000',      trend: [0.307,0.308,0.310],                 period: '2022 – 2024',       source: 'Statistics Canada',                               updated: '2023'     },
     ],
