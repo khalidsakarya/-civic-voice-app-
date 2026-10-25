@@ -1,6 +1,6 @@
 {
   "report_type": "CANADA_UNEMPLOYMENT_OWNERSHIP",
-  "generated_at": "2026-10-25T18:57:03.153Z",
+  "generated_at": "2026-10-25T19:14:45.680Z",
   "document": "social_stats/CA_unemploymentRate",
   "decision": "Statistics Canada table 14-10-0287-01 (monthly, seasonally adjusted) is the authoritative source for Canada's federal unemployment rate. The civic-voice-engine remains the ongoing scheduled owner of the document.",
   "firestore_interaction": {
@@ -67,8 +67,9 @@
     "principle": "One module defines the series, the verification, the document shape and the stat/document name, and every engine path that can write the card's document uses it.",
     "engine": [
       "NEW src/ingestion/caUnemploymentMonthly.js: table 14-10-0287-01, coordinate 1.7.1.1.1.1.0.0.0.0, WDS API (axios -> fetch -> curl fallbacks), series identity verified against StatCan cube metadata BEFORE any value is trusted; pure document builder identical to the app's.",
-      "Scheduled targeted job fetchCA_Unemployment now returns stat \"unemploymentRate\" via that module, so the 1st-of-month schedule refreshes CA_unemploymentRate (the document the card reads). It no longer writes CA_unemployment.",
-      "live:fetch (fetchCALFS) uses the same module; canonical / live / targeted uploaders write the identical document for records carrying docOverride. Every record without docOverride is built exactly as before.",
+      "NEW src/ingestion/caUnemploymentCheck.js: the ONLY scheduled writer of social_stats/CA_unemploymentRate. Change-gated (see scheduler_strategy).",
+      "Canada unemployment REMOVED from the monthly targeted fetch (job, function and import deleted), so the 1st-of-month run can no longer restate last month with a fresh timestamp or write CA_unemployment.",
+      "live:fetch (fetchCALFS) uses the same module; the manual canonical / live uploaders write the identical document for records carrying docOverride. Every record without docOverride is built exactly as before.",
       "Canonical definition for Canada unemployment now carries the 14-10-0287-01 source and URL; the other 39 definitions are unchanged.",
       "Pre-flight (before any wipe): a stale saved live_fetch file that still holds the old unadjusted value is refused so it can never be stored under the new label."
     ],
@@ -81,46 +82,118 @@
     "consistency": "Both repos' tests compare the two implementations when the sibling repo is present: identical constants, series members, and byte-identical documents from the same data. A live run against StatCan produced identical documents (6.5%, Sep 2026)."
   },
   "files_changed": {
-    "civic-voice-engine (commit 40e0f9a, local, not pushed)": [
+    "civic-voice-engine branch ca-unemployment-ownership (commit fd6f3ef, local, NOT pushed; supersedes local main commit 40e0f9a)": [
+      "src/ingestion/caUnemploymentCheck.js (new)",
       "src/ingestion/caUnemploymentMonthly.js (new)",
+      "src/scheduler.js",
       "src/ingestion/targetedFetch.js",
       "src/ingestion/liveFetch.js",
       "src/firebase/uploader.js",
-      "package.json (test:ca-unemployment script)",
-      "docs/government-data-audit.md (source row)",
+      "package.json",
+      "docs/government-data-audit.md",
       "test/ca-unemployment-ownership.test.js (new)",
+      "test/ca-unemployment-schedule.test.js (new)",
       "test/fixtures/golden-canonical-stat-defs.json (new)",
+      "test/fixtures/golden-scheduler.json (new)",
       "test/fixtures/golden-targeted-fetchers.txt (new)"
     ],
-    "civic-voice-app (local commit, not pushed)": [
-      "engine/canada-federal-unemployment-write.cjs (guard)",
-      "engine/test-canada-federal-mvp.cjs (45 tests)",
-      "engine/reports/canada-unemployment-ownership-latest.json (this report)",
-      "engine/reports/canada-federal-mvp-latest.json (updated)"
+    "civic-voice-app (local commit, NOT pushed)": [
+      "engine/reports/canada-unemployment-ownership-latest.json (this report)"
     ],
-    "untouched_pre_existing_engine_changes": "src/ingestion/senateDataFetcher.js (modified before this work) and many untracked seeders were not touched or committed."
+    "untouched_pre_existing_engine_changes": "src/ingestion/senateDataFetcher.js (modified before this work), unpushed commit 1f9f067, ~26 untracked seeders and an unrelated agent worktree were not touched or included."
   },
   "tests": {
-    "engine_repo": "npm run test:ca-unemployment: 21 passed, 0 failed. Covers: correct series and rejection of unadjusted/trend/wrong-geography; reporting period; percentage; one document id and no CA_unemployment writer; no old-table references; one scheduled job and no manual writer in the scheduler; the three writers store the identical document; the other 39 canonical definitions and all other scheduled jobs identical to HEAD (golden snapshots); non-override records built exactly as before; stale-file pre-flight placed before the wipe; engine vs app identical. 14 + 3 mutations of these protections were each caught.",
-    "app_repo": "node engine/test-canada-federal-mvp.cjs: 45 passed, 0 failed. The new guard tests (existing document, stale/wrong approval, duplicate with no override, direct target read, merge, fingerprint, argument parsing, removed flag) were mutation-checked: 9 mutants, all caught.",
+    "engine_repo": "Clean worktree (branch ca-unemployment-ownership): npm run test:ca-unemployment 21 passed; npm run test:ca-unemployment-schedule 24 passed (no network, no Firestore). The schedule suite covers: new reporting month, unchanged month (repeated runs never write), missing publication (not yet released / StatCan down / empty data / wrong series), older month, atomic transaction retry, handover from the old document, series correction, document id, stored-period parsing, a month-by-month simulation (normal, late and never-arriving releases), and golden checks that all 10 other cron entries, the monthly cycle body, every run flag and all 101 original npm scripts are unchanged. 22 scheduling/decision mutants plus the earlier ownership set were each caught.",
+    "app_repo": "node engine/test-canada-federal-mvp.cjs: 45 passed; node engine/test-leader-profile-content-safety.cjs: 28 passed.",
     "live_check": "Both implementations run against the live StatCan API produced identical documents: 6.5%, Sep 2026, series identity verified.",
     "app_src_unchanged": "No file under src/ changed in this task, so no ESLint/production-build run was needed."
   },
   "engine_ready_for_future_monthly_updates": {
-    "verdict": "READY IN CODE, NOT ACTIVATED.",
-    "detail": "Once reviewed and deployed, the existing monthly cycle (1st of each month, 05:00) will fetch the verified seasonally adjusted series and write CA_unemploymentRate in the same shape the app script produces. Nothing has been deployed, pushed or activated, and the Firestore document has not been changed.",
+    "verdict": "READY IN CODE, NOT ACTIVATED, HOST UNKNOWN.",
+    "detail": "Once the branch is reviewed and published, the check updates the card within a day of StatCan's release whenever the scheduler (or the on-demand command) runs, and rewrites nothing otherwise. The first run replaces the old unadjusted document (written once, merge) because StatCan's September 2026 month is newer than the stored February 2026.",
     "caveats": [
-      "The first scheduled write will REPLACE the existing document (the targeted uploader uses set()). That is the intended handover, but it is a write to a document currently holding the engine's old unadjusted figure.",
-      "Whether the scheduler process is running anywhere is not knowable from the repository.",
-      "StatCan publishes the Labour Force Survey partway through the month (September 2026 data was released on 2026-10-09), but the cron fires on the 1st, so the card shows the PREVIOUS month until the following cycle. A later-in-month schedule would shorten that lag; not changed.",
-      "The old CA_unemployment document (if it exists) is orphaned and stale; not deleted."
+      "Nothing has been pushed or deployed, and the Firestore document has not been changed.",
+      "The scheduler's host is unknown (see scheduler_host_findings); the cron entry only fires if a long-running scheduler process exists.",
+      "The old CA_unemployment document (if present) is orphaned and stale; not deleted.",
+      "Australia's card-key mismatch (stat \"unemployment\") is unchanged and out of scope."
     ]
   },
   "remaining_blockers": [
-    "Review of the ownership solution before the engine commit is pushed or the scheduler restarted/deployed.",
-    "Decision on the first write of CA_unemploymentRate: let the engine's next monthly run replace it, OR run the app script with --approve-overwrite=<fingerprint of the then-current document> after a fresh read. Neither has been done.",
-    "Australia's card-key mismatch (stat \"unemployment\") is unchanged and out of scope.",
-    "Optional cleanup of the orphaned CA_unemployment document and of the canonical upload's collection-wipe design.",
+    "Review of branch ca-unemployment-ownership (fd6f3ef) before it is pushed; it is a new-branch push, no force needed.",
+    "Establish and document where the scheduler runs (see scheduler_host_findings). A read of Firestore scheduler_status/monthly.completedAt would settle whether the monthly tier has run recently; not performed.",
+    "First write of CA_unemploymentRate: the check's first run (or the app script with --approve-overwrite after a fresh read). Neither has been done.",
+    "Optional: realign local main to origin/main (owner's decision), remove the extra worktree when finished, and clean up the orphaned CA_unemployment document.",
     "Federal contracts write remains un-started and requires its own approval."
-  ]
+  ],
+  "revision_note": "Revised after the scheduler-safety, deployment-isolation and scheduler-host review. The earlier design (Canada unemployment as a scheduled job inside the monthly targeted fetch) is SUPERSEDED by a dedicated, change-gated mid-month check.",
+  "scheduler_strategy": {
+    "problem": "StatCan publishes the Labour Force Survey partway through the month (September 2026 data: 2026-10-09). The monthly cycle fires on the 1st, before the new month exists, so it could only restate the previous month under a fresh last_updated.",
+    "schedule": {
+      "job": "npm run scheduler:ca-unemployment  ==  node src/scheduler.js --ca-unemployment  (on demand), and a cron entry inside the long-running scheduler",
+      "cron_default": "0 6 15,22 * *  (06:00 on the 15th and 22nd), overridable with CRON_CA_UNEMPLOYMENT",
+      "why_two_passes": "The 15th follows the usual release; the 22nd catches a late release. Extra runs are free because the check is idempotent.",
+      "monthly_cycle": "UNCHANGED (runMonthlyCycle text, the 1st-of-month schedule and all 10 other cron entries are byte-identical to origin/main, checked by golden snapshot). Not part of --now or --run-on-start."
+    },
+    "decision_rules_in_one_firestore_transaction": [
+      "No document yet -> write.",
+      "StatCan reporting month NEWER than the stored month -> write (merge).",
+      "Same month, document already from the verified series -> NO write and NO audit-log entry (also not rewritten on repeat runs).",
+      "OLDER month than stored -> NO write: a missing or rolled-back release never overwrites a newer value.",
+      "Same month but stored from another series (the old unadjusted 14-10-0017-01 value) -> one corrective write, then stable.",
+      "Stored month unreadable -> write (repairs a malformed document).",
+      "StatCan unreachable, empty data, or the series identity check fails -> NO write; the stat document is never read or written and the Firestore handle is not even requested; one failure entry in data_audit_log."
+    ],
+    "stored_month_is_read_from": "latest_period (our documents), the engine's older \"YYYY-MM\" updated field, or a display label such as \"Sep 2026\".",
+    "deliberate_limits": [
+      "A revision of the already-published latest month (same month, different value) is NOT rewritten; it is picked up with the next month's release, which refreshes the whole 12-month trend. This is the stated rule (only newer reporting periods update).",
+      "The manual canonical / live uploads are operator actions and do not apply the \"only newer\" gate (canonical also wipes the collection by design). They are protected only against stale saved files.",
+      "Operators who run the monthly tier by hand will no longer refresh Canada unemployment; they must run `npm run scheduler:ca-unemployment` after StatCan's release."
+    ],
+    "other_scheduled_work_untouched": "The budget-analytics tier (06:00 on the 1st) also mentions unemployment but writes analytics_data/budget_data, not social_stats; left alone."
+  },
+  "deployment_isolation": {
+    "situation": {
+      "remote": "origin = github.com/khalidsakarya/civic-voice-engine; the only remote branch is origin/main (2e66e80 after a fresh fetch; the remote has not moved).",
+      "local_main": "main is 2 commits ahead of origin/main: 40e0f9a (this unemployment work, first version) and the older 1f9f067 \"Add leader controversies + financial disclosures seeder\" (one new file, unrelated).",
+      "uncommitted": "src/ingestion/senateDataFetcher.js is modified in the working tree (pre-existing, unrelated) plus ~26 untracked seeders and an unrelated agent worktree.",
+      "risk": "Pushing local main would publish 1f9f067 along with the fix; staging by file would still leave the senate edit and seeders mixed into the working directory."
+    },
+    "solution": {
+      "branch": "ca-unemployment-ownership",
+      "worktree": "C:\\Users\\jem91\\Civic APP all\\civic-voice-engine-ca-unemployment  (sibling directory of the main checkout; node_modules is a junction to the main checkout's, which Git ignores)",
+      "commit": "fd6f3ef  (a single commit)",
+      "base": "origin/main (2e66e80): 1 commit ahead, 0 behind",
+      "contents": "13 files, all unemployment-related: caUnemploymentCheck.js and caUnemploymentMonthly.js (new), scheduler.js, targetedFetch.js, liveFetch.js, uploader.js, package.json, one docs row, and 3 test files + 3 golden fixtures.",
+      "verified_excluded": [
+        "1f9f067 is not an ancestor of the branch",
+        "senateDataFetcher.js is not touched",
+        "leaderControversiesSeeder.js is not touched",
+        "no untracked seeders are included"
+      ],
+      "method": "git fetch (read-only), git worktree add -b from origin/main, cherry-pick of the unemployment commit, then the scheduler work built ON that branch and squashed into one accurate commit. Nothing on local main was altered; no stash, no reset of shared work, no force-push.",
+      "a_bug_this_isolation_found": "The first run in the clean checkout failed one test: git autocrlf checks the golden text fixture out with CRLF on Windows and the test split on \"\\n\" only. Fixed (the test now normalises line endings). It would have failed on any fresh Windows clone."
+    },
+    "to_publish_later_after_review": [
+      "git push origin ca-unemployment-ownership      (a NEW branch: a plain push, nothing to force)",
+      "then review/merge it into main on GitHub. Merging is a fast-forward-able change because the branch is 0 behind origin/main."
+    ],
+    "not_done": "Nothing has been pushed, merged or deployed. Local main still carries 40e0f9a (superseded by the branch) and 1f9f067; neither was altered. When convenient, local main can be realigned to origin/main by its owner; that is deliberately left to them.",
+    "cleanup_when_finished": "git worktree remove \"C:\\Users\\jem91\\Civic APP all\\civic-voice-engine-ca-unemployment\"  (removes the extra checkout; the branch remains)"
+  },
+  "scheduler_host_findings": {
+    "conclusion": "NOT ESTABLISHED. The repository does not say where (or whether) the scheduler runs, and there is no evidence that a cron-driven instance is running anywhere. Pushing to GitHub does NOT activate it.",
+    "evidence": [
+      "Configuration: no Dockerfile, Procfile, PM2/ecosystem file, CI workflow (.github absent), Render/Railway/Fly/Vercel/Heroku config, or deployment documentation in civic-voice-engine. firebase.json deploys only Cloud Functions from functions/ (weekly/daily aggregators), none of which writes social_stats.",
+      "What the scheduler is: `npm run scheduler` = `node src/scheduler.js`, a long-lived Node process using node-cron. It needs a machine that stays on; a bare start only registers schedules and runs nothing until their time (run-on-start is opt-in).",
+      "How it has actually been operated: civic-voice-app/docs/ENGINE_SCHEDULER_AUDIT.md §12 records an operator running tiers BY HAND (`npm run scheduler:budget-analytics`, `:weekly`, `:monthly`, `:bimonthly`, `:targeted-stats`) and checking local terminal output and Firestore scheduler_status.",
+      "This PC, artefacts: the stored CA_unemploymentRate document's last_updated (2026-03-23T23:49:58Z) matches the live_fetch file written here at 19:49 local that day (a manual run). The newest scheduler outputs are targeted_*.json files from four runs within ~20 minutes on the evening of 2026-05-10 (not the 1st, not 05:00) and nothing after; government_contracts files are also from 2026-05-10; the newest output of any kind is 2026-06-07. A working monthly cron on this machine would have produced files on the 1st of each month since.",
+      "This PC, live state: no node process running scheduler.js and no Windows scheduled task referencing the scheduler.",
+      "The sibling civic-voice-backend repo and the app repo contain no scheduler hosting or deployment configuration either."
+    ],
+    "what_this_means": [
+      "Unless someone starts and keeps `npm run scheduler` running somewhere, none of the cron entries (including the new 15th/22nd check) will fire; the dependable way to refresh is the on-demand command.",
+      "The authoritative record of when the monthly tier last actually ran is Firestore scheduler_status/monthly.completedAt (and data_audit_log). That needs a read, which was out of scope; it is the one-step way to settle the question."
+    ],
+    "recommendation": "Decide and document the host (an always-on machine or service running `npm run scheduler`, or an external scheduler that calls `npm run scheduler:ca-unemployment` on the 15th/22nd). Until then treat the new job as on-demand."
+  }
 }
