@@ -611,6 +611,246 @@ test('--write must be explicit: default arguments never enable writing; importin
   assert.ok(!Object.keys(require.cache).some((k) => /firebase-admin-init/.test(k)), 'importing the scripts must not load firebase-admin-init');
 });
 
+// ─── contracts: vendor-name-variant dedupe (stage 3) ────────────────────────
+// The verified case: CBSA procurement 4706465038 was disclosed for years as "Deloitte Inc" and, in
+// 2025-26 Q4, as "Deloitte LLP". Each cumulative value is the previous one plus the amendment.
+const deloitte = (o) => row({
+  procurement_id: '4706465038',
+  owner_org: 'cbsa-asfc',
+  owner_org_title: 'Canada Border Services Agency | Agence des services frontaliers du Canada',
+  original_value: '23476702.59',
+  contract_date: '2018-02-07',
+  ...o,
+});
+
+test('stage 3: the same contract re-reported under a legal-form variant of the vendor name is counted once (latest disclosure kept)', () => {
+  const rows = [
+    deloitte({ vendor_name: 'Deloitte Inc', reporting_period: '2025-2026-Q1', contract_value: '402355778.47', delivery_date: '2026-02-06' }),
+    deloitte({ vendor_name: 'Deloitte LLP', reporting_period: '2025-2026-Q4', contract_value: '454815463.47', delivery_date: '2027-02-06' }),
+  ];
+  const { selected, stats } = C.selectLargestContracts(rows);
+  assert.strictEqual(selected.length, 1);
+  assert.strictEqual(selected[0].vendor_name, 'Deloitte LLP');
+  assert.strictEqual(selected[0]._value, 454815463.47);
+  assert.strictEqual(stats.vendor_name_variant_duplicates_removed, 1);
+  assert.strictEqual(stats.selected_total_value, 454815463.47);
+});
+
+test('stage 3: the order the rows arrive in never changes which disclosure is kept', () => {
+  const rows = [
+    deloitte({ vendor_name: 'Deloitte Inc', reporting_period: '2025-2026-Q1', contract_value: '402355778.47' }),
+    deloitte({ vendor_name: 'Deloitte LLP', reporting_period: '2025-2026-Q4', contract_value: '454815463.47' }),
+  ];
+  const a = C.selectLargestContracts(rows).selected.map((r) => r.vendor_name);
+  const b = C.selectLargestContracts([...rows].reverse()).selected.map((r) => r.vendor_name);
+  assert.deepStrictEqual(a, ['Deloitte LLP']);
+  assert.deepStrictEqual(b, a);
+});
+
+test('stage 3 is narrow: DIFFERENT companies under one procurement id (multi-vendor award) are never merged', () => {
+  const rows = [
+    deloitte({ vendor_name: 'Deloitte LLP', reporting_period: '2025-2026-Q1', contract_value: '400' }),
+    deloitte({ vendor_name: 'Accenture Inc', reporting_period: '2025-2026-Q4', contract_value: '300' }),
+    deloitte({ vendor_name: 'IBM Canada Ltd', reporting_period: '2025-2026-Q3', contract_value: '200' }),
+  ];
+  assert.strictEqual(C.selectLargestContracts(rows).selected.length, 3);
+});
+
+test('stage 3 is narrow: two rows in the SAME reporting period are simultaneous disclosures and are kept', () => {
+  const rows = [
+    deloitte({ vendor_name: 'Deloitte Inc', reporting_period: '2025-2026-Q4', contract_value: '400' }),
+    deloitte({ vendor_name: 'Deloitte LLP', reporting_period: '2025-2026-Q4', contract_value: '500' }),
+  ];
+  assert.strictEqual(C.selectLargestContracts(rows).selected.length, 2);
+});
+
+test('stage 3 is narrow: a different department, original value, award date or procurement id is never merged', () => {
+  const mk = (over) => [
+    deloitte({ vendor_name: 'Deloitte Inc', reporting_period: '2025-2026-Q1', contract_value: '400' }),
+    deloitte({ vendor_name: 'Deloitte LLP', reporting_period: '2025-2026-Q4', contract_value: '500', ...over }),
+  ];
+  assert.strictEqual(C.selectLargestContracts(mk({ owner_org: 'dnd-mdn', owner_org_title: 'National Defence | Défense nationale' })).selected.length, 2);
+  assert.strictEqual(C.selectLargestContracts(mk({ original_value: '23476702.60' })).selected.length, 2);
+  assert.strictEqual(C.selectLargestContracts(mk({ contract_date: '2018-02-08' })).selected.length, 2);
+  assert.strictEqual(C.selectLargestContracts(mk({ procurement_id: '4706465039' })).selected.length, 2);
+});
+
+test('stage 3 is narrow: a vendor name with no distinguishing words ("Canada Inc") never merges anything', () => {
+  assert.strictEqual(C.vendorCore('Canada Inc'), '');
+  assert.strictEqual(C.vendorCore('Deloitte LLP'), 'deloitte');
+  assert.strictEqual(C.vendorCore('DELOITTE Inc.'), 'deloitte');
+  const rows = [
+    deloitte({ vendor_name: 'Canada Inc', reporting_period: '2025-2026-Q1', contract_value: '400' }),
+    deloitte({ vendor_name: 'Canada Ltd', reporting_period: '2025-2026-Q4', contract_value: '500' }),
+  ];
+  assert.strictEqual(C.selectLargestContracts(rows).selected.length, 2);
+});
+
+test('stage 3 is narrow: rows without an original value or award date are never merged', () => {
+  const rows = [
+    deloitte({ vendor_name: 'Deloitte Inc', reporting_period: '2025-2026-Q1', contract_value: '400', original_value: null }),
+    deloitte({ vendor_name: 'Deloitte LLP', reporting_period: '2025-2026-Q4', contract_value: '500', original_value: null }),
+  ];
+  assert.strictEqual(C.selectLargestContracts(rows).selected.length, 2);
+});
+
+test('stage 3 leaves the selection of 100 distinct contracts, and the other stages\' results, unchanged', () => {
+  const rows = Array.from({ length: 160 }, (_, i) => row({ procurement_id: `S3-${i}`, vendor_name: `Vendor ${i}`, original_value: String(1000 + i), contract_value: String(2_000_000 + i * 5000) }));
+  const { selected, stats } = C.selectLargestContracts(rows);
+  assert.strictEqual(selected.length, 100);
+  assert.strictEqual(stats.vendor_name_variant_duplicates_removed, 0);
+  assert.strictEqual(new Set(selected.map((r) => r.procurement_id)).size, 100);
+});
+
+// ─── contracts: the --write path (stub database; zero Firestore) ─────────────
+const W = require('./canada-federal-contracts-write.cjs');
+const GUARD = require('./lib/firestore-project-guard.cjs');
+
+function approvedDocs() {
+  const rows = Array.from({ length: 120 }, (_, i) => row({ procurement_id: `W-${i}`, vendor_name: `Vendor ${i}`, original_value: String(500 + i), contract_value: String(3_000_000 + i * 7000) }));
+  const { selected } = C.selectLargestContracts(rows);
+  const meta = C.buildSelectionMeta(selected, '2025-2026', '2026-10-25T00:00:00.000Z');
+  return selected.map((r) => C.buildContractDoc(r, meta));
+}
+
+/** Records every operation. `existing` maps document id -> stored data. */
+function recordingDb(existing = {}) {
+  const ops = [];
+  const refFor = (name, id) => ({ id, path: `${name}/${id}` });
+  const db = {
+    ops,
+    collection: (name) => ({
+      doc: (id) => refFor(name, id),
+      where: () => { ops.push(['QUERY where']); throw new Error('collection queries are forbidden'); },
+      get: () => { ops.push(['QUERY get']); throw new Error('collection queries are forbidden'); },
+      count: () => { ops.push(['QUERY count']); throw new Error('collection queries are forbidden'); },
+      add: () => { ops.push(['add']); throw new Error('add is forbidden'); },
+    }),
+    getAll: async (...refs) => {
+      ops.push(['getAll', refs.map((r) => r.path)]);
+      return refs.map((r) => ({ id: r.id, exists: r.id in existing, data: () => existing[r.id] }));
+    },
+    batch: () => {
+      const staged = [];
+      return {
+        set: (ref, data, opts) => { ops.push(['set', ref.path, opts]); staged.push([ref, data]); },
+        update: () => { ops.push(['update']); throw new Error('update is forbidden'); },
+        delete: () => { ops.push(['delete']); throw new Error('delete is forbidden'); },
+        commit: async () => { ops.push(['commit', staged.length]); },
+      };
+    },
+    delete: () => { ops.push(['delete']); throw new Error('delete is forbidden'); },
+  };
+  return db;
+}
+const okProject = async () => 'civic-voice-5ea94';
+
+test('write: exactly 100 set() calls, one per approved id, in one committed batch', async () => {
+  const docs = approvedDocs();
+  const db = recordingDb();
+  const r = await W.writeContracts(db, docs, { verifyProject: okProject });
+  const sets = db.ops.filter((o) => o[0] === 'set');
+  assert.strictEqual(sets.length, 100);
+  assert.deepStrictEqual(sets.map((o) => o[1]), W.APPROVED_IDS.map((id) => `government_contracts/${id}`));
+  assert.strictEqual(W.APPROVED_IDS[0], 'ca-fed-contract-001');
+  assert.strictEqual(W.APPROVED_IDS[99], 'ca-fed-contract-100');
+  assert.deepStrictEqual(db.ops.filter((o) => o[0] === 'commit'), [['commit', 100]]);
+  assert.strictEqual(r.documents, 100);
+  assert.strictEqual(r.newly_created, 100);
+  assert.strictEqual(r.projectId, 'civic-voice-5ea94');
+});
+
+test('write: zero collection queries, zero deletes, zero updates, zero adds; one batched get of exactly the 100 approved ids', async () => {
+  const db = recordingDb();
+  await W.writeContracts(db, approvedDocs(), { verifyProject: okProject });
+  const kinds = db.ops.map((o) => o[0]);
+  assert.ok(!kinds.some((k) => /QUERY|delete|update|add/.test(k)), kinds.join(','));
+  const gets = db.ops.filter((o) => o[0] === 'getAll');
+  assert.strictEqual(gets.length, 1);
+  assert.deepStrictEqual(gets[0][1], W.APPROVED_IDS.map((id) => `government_contracts/${id}`));
+  assert.deepStrictEqual([...new Set(kinds)].sort(), ['commit', 'getAll', 'set']);
+});
+
+test('write: it replaces whole documents (no merge) and touches nothing but government_contracts/ca-fed-contract-NNN', async () => {
+  const db = recordingDb();
+  await W.writeContracts(db, approvedDocs(), { verifyProject: okProject });
+  db.ops.filter((o) => o[0] === 'set').forEach((o) => {
+    assert.match(o[1], /^government_contracts\/ca-fed-contract-\d{3}$/);
+    assert.strictEqual(o[2], undefined, 'no merge option: a rerun replaces the same 100 documents');
+  });
+});
+
+test('write: rerunning is safe — existing selection documents are replaced, never duplicated', async () => {
+  const docs = approvedDocs();
+  const existing = Object.fromEntries(docs.map((d) => [d.id, { jurisdiction: 'CA-FED-SELECTION', value: 1 }]));
+  const db = recordingDb(existing);
+  const r = await W.writeContracts(db, docs, { verifyProject: okProject });
+  assert.strictEqual(r.existing_selection_documents_replaced, 100);
+  assert.strictEqual(r.newly_created, 0);
+  assert.strictEqual(db.ops.filter((o) => o[0] === 'set').length, 100);
+});
+
+test('write: an UNRELATED document already occupying an approved id aborts the run before ANY write', async () => {
+  const docs = approvedDocs();
+  for (const stray of [{ jurisdiction: 'CA', contractor_name: 'legacy' }, { contractor_name: 'no jurisdiction' }, { jurisdiction: 'US' }]) {
+    const db = recordingDb({ 'ca-fed-contract-007': stray });
+    await assert.rejects(() => W.writeContracts(db, docs, { verifyProject: okProject }), /Refusing to overwrite 1 existing document\(s\) that are not federal-selection documents \(ca-fed-contract-007\)/);
+    assert.ok(!db.ops.some((o) => o[0] === 'set' || o[0] === 'commit'), 'nothing may be written');
+  }
+});
+
+test('write: a wrong or unknown Firebase project aborts before any read or write', async () => {
+  const db = recordingDb();
+  await assert.rejects(() => W.writeContracts(db, approvedDocs(), { verifyProject: async () => { throw new Error('credential is bound to "other"'); } }), /credential is bound/);
+  await assert.rejects(() => W.writeContracts(db, approvedDocs(), {}), /no project verifier/);
+  assert.deepStrictEqual(db.ops, [], 'no Firestore operation of any kind');
+});
+
+test('write: anything other than the approved 100 documents aborts before any I/O', async () => {
+  const good = approvedDocs();
+  const bad = [
+    good.slice(0, 99),
+    [...good, { ...good[0], id: 'ca-fed-contract-101' }],
+    good.map((d, i) => (i === 5 ? { ...d, id: 'ca-fed-contract-006x' } : d)),
+    [good[1], good[0], ...good.slice(2)],
+    good.map((d, i) => (i === 3 ? { ...d, data: { ...d.data, jurisdiction: 'CA' } } : d)),
+    good.map((d, i) => (i === 3 ? { ...d, data: { ...d.data, country: 'US' } } : d)),
+    good.map((d, i) => (i === 3 ? { id: 'CA-C-2025-2026-Q1-00001', data: d.data } : d)),
+    null,
+  ];
+  for (const docs of bad) {
+    const db = recordingDb();
+    await assert.rejects(() => W.writeContracts(db, docs, { verifyProject: okProject }), /Refusing to write/);
+    assert.deepStrictEqual(db.ops, []);
+  }
+});
+
+test('write: the legacy Canadian contracts are never queried, counted or listed (static check of the write script)', () => {
+  const src = fs.readFileSync(path.join(__dirname, 'canada-federal-contracts-write.cjs'), 'utf8');
+  const code = src.split('\n').filter((l) => !/^\s*(\*|\/\/|\/\*)/.test(l)).join('\n');
+  assert.ok(!/\.where\(|\.count\(|\.orderBy\(|\.limit\(|\.listDocuments\(|\.delete\(|\.update\(|\.add\(|runTransaction|collectionGroup/.test(code), 'no query, count, delete, update or add anywhere in the write script');
+  assert.ok(!/'CA'\)/.test(code.replace(/country[^\n]*'CA'/g, '')), 'the script never refers to the legacy jurisdiction value CA in a query');
+  assert.ok(!/legacy/i.test(code.replace(/\/\/.*$/gm, '')), 'no legacy-count code remains');
+});
+
+test('project guard: only civic-voice-5ea94 passes; every conflicting hint is refused', () => {
+  const ok = { credential: 'civic-voice-5ea94', appOptions: 'civic-voice-5ea94', env: {} };
+  assert.strictEqual(GUARD.assertExpectedProjectIds(ok), 'civic-voice-5ea94');
+  assert.throws(() => GUARD.assertExpectedProjectIds({ ...ok, credential: 'other' }), /expected project "civic-voice-5ea94"/);
+  assert.throws(() => GUARD.assertExpectedProjectIds({ ...ok, credential: null }), /could not determine/);
+  assert.throws(() => GUARD.assertExpectedProjectIds({ ...ok, appOptions: 'other' }), /app options/);
+  assert.throws(() => GUARD.assertExpectedProjectIds({ ...ok, env: { GOOGLE_CLOUD_PROJECT: 'other' } }), /GOOGLE_CLOUD_PROJECT/);
+  assert.throws(() => GUARD.assertExpectedProjectIds({ ...ok, env: { GCLOUD_PROJECT: 'other' } }), /GCLOUD_PROJECT/);
+});
+
+test('project guard: reads the credential locally and honours environment hints', async () => {
+  const admin = { app: () => ({ options: { credential: { getProjectId: async () => 'civic-voice-5ea94' }, projectId: 'civic-voice-5ea94' } }) };
+  assert.strictEqual(await GUARD.verifyFirestoreProject({ admin, env: {} }), 'civic-voice-5ea94');
+  await assert.rejects(() => GUARD.verifyFirestoreProject({ admin, env: { GCLOUD_PROJECT: 'x' } }), /GCLOUD_PROJECT/);
+  const wrong = { app: () => ({ options: { credential: { getProjectId: async () => 'other-project' }, projectId: 'civic-voice-5ea94' } }) };
+  await assert.rejects(() => GUARD.verifyFirestoreProject({ admin: wrong, env: {} }), /credential is bound to "other-project"/);
+});
+
 runQueue().then(() => {
   console.log(`\n${passed} passed, ${failed} failed (zero Firestore, zero network)`);
   if (failed > 0) process.exitCode = 1;

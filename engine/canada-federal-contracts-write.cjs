@@ -29,10 +29,19 @@
  * `jurisdiction`; using 'CA' here would get these 100 deleted as "stale" and
  * blend them into the engine's legacy Canadian totals.
  *
- * NOT done by this script: it does not delete any pre-existing
- * `jurisdiction == 'CA'` documents (those are written by the sibling engine and
- * the Contracts page no longer reads them). In --write mode it only COUNTS them
- * (one aggregate read) and reports the number so a human can decide.
+ * NOT done by this script: it never touches any pre-existing `jurisdiction == 'CA'`
+ * document (those are written by the sibling engine and the Contracts page no longer
+ * reads them). It does not query, count, list or delete anything.
+ *
+ * WRITE SAFETY (--write), enforced in writeContracts() and covered by tests:
+ *   1. the 100 documents must be exactly ca-fed-contract-001 ... -100, each with
+ *      jurisdiction CA-FED-SELECTION and country CA — anything else aborts before any I/O;
+ *   2. the Admin SDK must be bound to civic-voice-5ea94 (engine/lib/firestore-project-guard.cjs);
+ *   3. ONE batched get of exactly those 100 ids: if any already exists and is not a
+ *      CA-FED-SELECTION document, the run aborts and nothing is written (no unrelated document
+ *      can be overwritten); existing selection documents are simply replaced, so a rerun
+ *      never duplicates anything;
+ *   4. one batch of 100 set() calls on those ids. No collection query, no delete.
  *
  * Importing this file never runs anything (main() is guarded).
  */
@@ -51,11 +60,56 @@ const {
   selectLargestContracts,
   buildSelectionMeta,
   buildContractDoc,
+  docIdForRank,
+  FED_SELECTION_JURISDICTION,
 } = require('./lib/canada-federal-contracts.cjs');
 
 // CV_REPORTS_DIR lets tests write their report somewhere else than engine/reports.
 const REPORTS_DIR = process.env.CV_REPORTS_DIR || path.join(__dirname, 'reports');
 const COLLECTION = 'government_contracts';
+
+/** The only document ids this script may ever write: ca-fed-contract-001 ... -100. */
+const APPROVED_IDS = Array.from({ length: SELECTION_SIZE }, (_, i) => docIdForRank(i + 1));
+
+/** Throws unless `docs` is exactly the approved 100 selection documents, in rank order. Does no I/O. */
+function assertApprovedDocs(docs) {
+  if (!Array.isArray(docs) || docs.length !== SELECTION_SIZE) {
+    throw new Error(`Refusing to write: expected exactly ${SELECTION_SIZE} documents, got ${Array.isArray(docs) ? docs.length : 'none'}.`);
+  }
+  docs.forEach((d, i) => {
+    if (!d || d.id !== APPROVED_IDS[i]) throw new Error(`Refusing to write: document #${i + 1} has id "${d && d.id}", expected "${APPROVED_IDS[i]}".`);
+    const data = d.data || {};
+    if (data.jurisdiction !== FED_SELECTION_JURISDICTION) throw new Error(`Refusing to write ${d.id}: jurisdiction is "${data.jurisdiction}", expected "${FED_SELECTION_JURISDICTION}".`);
+    if (data.country !== 'CA') throw new Error(`Refusing to write ${d.id}: country is "${data.country}", expected "CA".`);
+  });
+  if (new Set(docs.map((d) => d.id)).size !== docs.length) throw new Error('Refusing to write: duplicate document ids.');
+}
+
+/**
+ * The whole write path, with the database and the project check injected so it is testable without
+ * Firestore. One batched get of the 100 approved ids (never a collection query), then one batch of
+ * 100 set() calls. Aborts, writing nothing, if the project is wrong or an unrelated document already
+ * occupies one of the 100 ids.
+ * @param {{ collection: Function, getAll: Function, batch: Function }} db
+ * @param {Array<{ id: string, data: object }>} docs
+ * @param {{ verifyProject: () => Promise<string> }} deps
+ */
+async function writeContracts(db, docs, { verifyProject }) {
+  assertApprovedDocs(docs);
+  if (typeof verifyProject !== 'function') throw new Error('Refusing to write: no project verifier was supplied.');
+  const projectId = await verifyProject();
+  const refs = docs.map((d) => db.collection(COLLECTION).doc(d.id));
+  const snaps = await db.getAll(...refs);
+  const occupied = snaps.filter((s) => s && s.exists);
+  const foreign = occupied.filter((s) => (s.data() || {}).jurisdiction !== FED_SELECTION_JURISDICTION).map((s) => s.id);
+  if (foreign.length) {
+    throw new Error(`Refusing to overwrite ${foreign.length} existing document(s) that are not federal-selection documents (${foreign.slice(0, 5).join(', ')}). Nothing was written.`);
+  }
+  const batch = db.batch();
+  docs.forEach((d, i) => batch.set(refs[i], d.data));
+  await batch.commit();
+  return { projectId, documents: docs.length, existing_selection_documents_replaced: occupied.length, newly_created: docs.length - occupied.length };
+}
 
 function parseArgs(argv) {
   const get = (name) => {
@@ -140,20 +194,11 @@ async function main() {
   const { tryGetFirestore } = require('./firebase-admin-init.cjs');
   const db = tryGetFirestore();
   if (!db) throw new Error('No Firestore credentials available; nothing written.');
+  const { verifyFirestoreProject } = require('./lib/firestore-project-guard.cjs');
   try {
-    let legacy = null;
-    try {
-      const agg = await db.collection(COLLECTION).where('jurisdiction', '==', 'CA').count().get();
-      legacy = agg.data().count;
-    } catch (e) {
-      legacy = `count failed: ${String(e.message || e).slice(0, 120)}`;
-    }
-    console.log(`Existing engine-written documents with jurisdiction == 'CA' (legacy, ignored by the page): ${legacy} (not deleted by this script)`);
-    const batch = db.batch();
-    docs.forEach((d) => batch.set(db.collection(COLLECTION).doc(d.id), d.data));
-    await batch.commit();
-    report.write_result = { status: 'WRITTEN', documents: docs.length, existing_ca_documents_before_write: legacy };
-    console.log(`\nWRITTEN: ${docs.length} documents to ${COLLECTION}`);
+    const result = await writeContracts(db, docs, { verifyProject: () => verifyFirestoreProject() });
+    report.write_result = { status: 'WRITTEN', ...result };
+    console.log(`\nWRITTEN: ${result.documents} documents to ${COLLECTION} in project ${result.projectId} (${result.newly_created} new, ${result.existing_selection_documents_replaced} existing selection documents replaced)`);
   } catch (err) {
     report.write_result = { status: 'FAILED', code: err.code, message: String(err.message || err).slice(0, 300) };
     console.error('\nWRITE FAILED:', report.write_result.message);
@@ -170,4 +215,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { parseArgs };
+module.exports = { parseArgs, writeContracts, assertApprovedDocs, APPROVED_IDS, COLLECTION };

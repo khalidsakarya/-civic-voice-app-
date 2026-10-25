@@ -16,6 +16,9 @@
  *     is `procurement_id` (never blank), combined with vendor and department
  *     because 322 procurement_ids span several vendors and 381 span several
  *     departments.
+ *   - the same contract can also be re-reported under a spelling / legal-form variant of the
+ *     vendor name ("Deloitte Inc" then "Deloitte LLP"); a deliberately narrow third stage
+ *     collapses those (see collapseVendorNameVariants for the exact, conservative conditions).
  *   - `contract_value` is the CUMULATIVE disclosed value (original +
  *     amendments) and is not monotonic across successive amendments, so the
  *     MOST RECENT disclosure per contract is used, not the maximum.
@@ -117,7 +120,55 @@ function dedupeLatestDisclosure(rows) {
     // department. Two departments with parallel, identically-priced contracts stay separate.
     return `${normalizeVendor(r.vendor_name)}|${r.owner_org || englishPart(r.owner_org_title)}|${ov}|${r.contract_date}|${r.delivery_date}`;
   });
-  return { rows: stage2, stage1Count: stage1.length, stage2Count: stage2.length };
+  const stage3 = collapseVendorNameVariants(stage2);
+  return { rows: stage3, stage1Count: stage1.length, stage2Count: stage2.length, stage3Count: stage3.length };
+}
+
+/** Legal-form and filler words that differ between spellings of the same company name. */
+const VENDOR_NAME_FILLER = new Set(['inc', 'incorporated', 'llp', 'lp', 'ltd', 'limited', 'corp', 'corporation', 'co', 'company', 'canada', 'canadian', 'the', 'and', 'ulc', 'sa', 'plc', 'llc']);
+
+/**
+ * The distinguishing part of a vendor name: lower-case words without legal-form or filler words
+ * ("Deloitte Inc" and "Deloitte LLP" -> "deloitte"). Empty when nothing distinguishing is left,
+ * in which case the name is never used to merge anything.
+ */
+function vendorCore(s) {
+  return String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(' ').filter((t) => t && !VENDOR_NAME_FILLER.has(t)).join(' ');
+}
+
+/**
+ * Stage 3 — the same contract re-reported under a spelling / legal-form variant of the vendor name
+ * (verified example: procurement_id 4706465038, Canada Border Services Agency, awarded 2018-02-07,
+ * original value 23,476,702.59, disclosed for years as "Deloitte Inc" and in 2025-26 Q4 as
+ * "Deloitte LLP"; each cumulative value equals the previous one plus the amendment).
+ *
+ * DELIBERATELY NARROW. Two rows are collapsed only when ALL of these hold:
+ *   - the same non-blank procurement_id AND the same owner department
+ *   - the same positive original value AND the same award date
+ *   - the same non-empty vendor CORE (see vendorCore) — distinct companies are never merged,
+ *     so legitimate multi-vendor awards under one procurement id are kept
+ *   - every row in the group was disclosed in a DIFFERENT reporting period (two rows in the same
+ *     quarter are two simultaneous disclosures, not a re-report, and are left alone)
+ * The most recent disclosure is kept.
+ */
+function collapseVendorNameVariants(rows) {
+  const groups = new Map();
+  const out = [];
+  for (const r of rows) {
+    const pid = String(r.procurement_id || '').trim();
+    const ov = parseMoney(r.original_value);
+    const core = vendorCore(r.vendor_name);
+    if (!pid || !ov || ov <= 0 || !r.contract_date || !core) { out.push(r); continue; }
+    const k = `${pid}|${r.owner_org || englishPart(r.owner_org_title)}|${ov}|${r.contract_date}|${core}`;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(r);
+  }
+  for (const g of groups.values()) {
+    const distinctPeriods = new Set(g.map((r) => r.reporting_period)).size === g.length;
+    if (g.length === 1 || !distinctPeriods) { out.push(...g); continue; }
+    out.push(g.reduce((best, r) => (compareDisclosure(best, r) < 0 ? r : best)));
+  }
+  return out;
 }
 
 /**
@@ -144,7 +195,9 @@ function selectLargestContracts(rows, opts = {}) {
       rows_with_positive_value: parsed.length,
       distinct_contracts_after_procurement_id_dedupe: deduped.stage1Count,
       distinct_contracts_after_secondary_dedupe: deduped.stage2Count,
-      duplicate_disclosure_rows_removed: parsed.length - deduped.stage2Count,
+      vendor_name_variant_duplicates_removed: deduped.stage2Count - deduped.stage3Count,
+      distinct_contracts_after_vendor_name_variant_dedupe: deduped.stage3Count,
+      duplicate_disclosure_rows_removed: parsed.length - deduped.stage3Count,
       selected: selected.length,
       smallest_selected_value: selected.length ? selected[selected.length - 1]._value : null,
       selected_total_value: selected.reduce((s, r) => s + r._value, 0),
@@ -263,6 +316,7 @@ module.exports = {
   parseMoney,
   englishPart,
   normalizeVendor,
+  vendorCore,
   compareDisclosure,
   dedupeLatestDisclosure,
   selectLargestContracts,

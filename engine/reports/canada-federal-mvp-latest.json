@@ -8,7 +8,7 @@
     "writes_performed": 0
   },
   "federal_contracts": {
-    "status": "BUILT_AND_DRY_RUN_VERIFIED — NOT WRITTEN",
+    "status": "BUILT_AND_DRY_RUN_VERIFIED (re-verified 2026-10-25 after the pre-upload review) — NOT WRITTEN",
     "selection_criteria": {
       "dataset": {
         "name": "Proactive Publication - Contracts",
@@ -19,7 +19,7 @@
       },
       "reporting_period": "Federal fiscal year 2025–26 (April 1, 2025 – March 31, 2026): the four disclosure quarters 2025-2026-Q1 … Q4. Complete: 90,759 source rows, matching the source's own quarterly totals exactly.",
       "value_ranked": "contract_value = the disclosed TOTAL value of the contract (original plus amendments). It is a text column, so values are parsed to numbers and ranked locally (a server-side sort would be lexicographic). Rows with blank, zero or negative value are excluded (801 rows).",
-      "what_counts_as_one_contract": "procurement_id + normalized vendor name + owner department. reference_number is NOT used: it is unique per disclosure row (it embeds the quarter), so a contract re-reported for each amendment has many of them. A second pass collapses the same contract re-keyed within a department (vendor + department + original value + award date + delivery date).",
+      "what_counts_as_one_contract": "procurement_id + normalized vendor name + owner department. reference_number is NOT used: it is unique per disclosure row (it embeds the quarter), so a contract re-reported for each amendment has many of them. A second pass collapses the same contract re-keyed within a department (vendor + department + original value + award date + delivery date). A third, deliberately narrow pass (added 2026-10-25) collapses the same contract re-reported under a spelling / legal-form variant of the vendor name: same procurement_id, department, original value and award date, the same non-empty vendor core (legal-form words such as Inc/LLP/Ltd removed), and every row disclosed in a DIFFERENT quarter; the latest disclosure is kept.",
       "which_disclosure_is_used": "The MOST RECENT disclosure of each contract (latest reporting period, then latest source row id). Not the maximum: cumulative values are not monotonic across amendments (e.g. one IBM contract: 804.0M, 798.8M, 797.8M, 796.2M in sequence).",
       "department_handling": "A procurement disclosed by two departments is kept as two entries, because each department reports its own portion with its own original/amended values (verified on the Vancouver Shipyards contracts: 162.8M vs 13.7M original).",
       "size": 100,
@@ -33,14 +33,16 @@
         "rows_with_positive_value": 89958,
         "distinct_contracts_after_procurement_id_dedupe": 80608,
         "distinct_contracts_after_secondary_dedupe": 79541,
-        "duplicate_disclosure_rows_removed": 10417,
+        "vendor_name_variant_duplicates_removed": 25,
+        "distinct_contracts_after_vendor_name_variant_dedupe": 79516,
+        "duplicate_disclosure_rows_removed": 10442,
         "selected": 100,
-        "smallest_selected_value": 109064540.54,
-        "selected_total_value": 96051357629.77
+        "smallest_selected_value": 108514256.55,
+        "selected_total_value": 95757516107.85
       },
       "selected": 100,
-      "selected_total_value_cad": 96051357629.77,
-      "smallest_selected_value_cad": 109064540.54,
+      "selected_total_value_cad": 95757516107.85,
+      "smallest_selected_value_cad": 108514256.55,
       "label_shown_to_users": "100 largest federal contracts disclosed in fiscal year 2025–26",
       "data_quality_note": "Naive top-100 (sorted by value, no de-duplication) would have contained repeated entries for the same contract: in the top 30 alone, Parsons Inc. held 5 slots and Cascade Aerospace 3. After de-duplication each contract appears once."
     },
@@ -118,6 +120,42 @@
         "A selected subset: the 100 largest by that value, not every federal contract.",
         "Not federal spending: the combined value adds up reported contract values; it is not what the government spent during FY 2025–26. The combined-value tile carries the same caption."
       ]
+    },
+    "pre_upload_review_2026_10_25": {
+      "outcome": "One confirmed duplicate removed; selection recalculated; write path hardened. NOT uploaded.",
+      "deloitte_pair": {
+        "finding": "ca-fed-contract-041 (Deloitte LLP, 2025-26 Q4, 454,815,463.47) and ca-fed-contract-046 (Deloitte Inc, 2025-26 Q1, 402,355,778.47) were the SAME contract counted twice.",
+        "evidence": [
+          "procurement_id 4706465038, Canada Border Services Agency, awarded 2018-02-07, original value 23,476,702.59 on every disclosure.",
+          "The official dataset holds 24 disclosures of this procurement from 2017-18 Q3 to 2025-26 Q4. Every one is the same department, award date and original value; the vendor is \"Deloitte Inc\" (spelled Deloitte Inc / DELOITTE Inc / Deloitte Inc.) until the final disclosure, which reads \"Deloitte LLP\".",
+          "The cumulative contract_value rises in a single chain, each step equal to the previous total plus the reported amendment (e.g. 350,375,778.47 + 25,990,000 = 376,365,778.47; + 25,990,000 = 402,355,778.47). The 2025-26 Q4 row adds a further amendment and extends the delivery date from 2026-02-06 to 2027-02-06.",
+          "The same row never appears twice in one quarter; only the vendor-name spelling changed in the latest disclosure."
+        ],
+        "decision": "Same underlying contract. Keep the most recent authoritative disclosure (2025-26 Q4, Deloitte LLP, 454,815,463.47); drop the superseded Q1 row."
+      },
+      "other_whole_year_matches": {
+        "searched": "Every pair in FY 2025-26 (after the existing dedupe) sharing procurement_id + department + original value + award date but with different vendor spellings: 100 groups.",
+        "result": "25 groups have the same vendor core (spelling / legal-form / truncation variants, always disclosed in different quarters): all 25 were reviewed and are re-reports of one contract. The other 75 have different name cores; 12 of them were inspected individually (truncated names, joint-venture renames, other variants; none looked like a distinct multi-vendor award) and the remaining 63 were NOT individually reviewed. They are deliberately not merged by the code, and none touches the top 100 (only the Deloitte pair does), so they cannot change this selection.",
+        "rule_adopted": "Narrow stage-3 rule only (see what_counts_as_one_contract). It does not merge different companies, different departments, different original values or award dates, rows disclosed in the same quarter, or names with no distinguishing words. The 75 different-core groups are NOT merged (conservative).",
+        "kept_separate_on_purpose": "Vancouver Shipyards procurement 4500043789 and 4500045305 appear twice each (National Defence and Fisheries and Oceans Canada): different departments with different original values (e.g. 13.7M vs 162.8M), so they are separate awards.",
+        "source_data_quirk": "reference_number C-2025-2026-Q1-00001 is shared by two unrelated contracts (#034 MDA/Canadian Space Agency and #049 DXC/PSPC). reference_number is not used as a document id or identity, so this has no effect."
+      },
+      "result_after_correction": {
+        "selected": 100,
+        "selected_total_value_cad": 95757516107.85,
+        "smallest_selected_value_cad": 108514256.55,
+        "largest_value_cad": 11219370646,
+        "vendor_name_variant_duplicates_removed_whole_year": 25,
+        "change_vs_previous_selection": "Removed old #046 Deloitte Inc (402,355,778.47). Added Greystone Infrastructure Inc, National Defence, 108,514,256.55 as the new #100. Ranks 1-45 unchanged; old ranks 47-100 each move up one. Total 96,051,357,629.77 -> 95,757,516,107.85 (-293,841,521.92). The app shows CA$95.8B (one decimal; previously CA$96.1B), labelled as combined reported contract value, not federal spending."
+      },
+      "write_path_changes": [
+        "Removed the aggregate count of legacy jurisdiction == CA documents from --write: the script now performs no collection query, count, list, update, add or delete of any kind.",
+        "Project guard: the Admin SDK must be bound to civic-voice-5ea94 (credential project and app options) and no GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT hint may differ, checked before any read or write (engine/lib/firestore-project-guard.cjs).",
+        "Overwrite protection: the document list must be exactly ca-fed-contract-001..100 with jurisdiction CA-FED-SELECTION and country CA; ONE batched get of those 100 ids aborts the run, writing nothing, if any id is already occupied by a document that is not a CA-FED-SELECTION document. Existing selection documents are replaced (set without merge), so a rerun never duplicates anything.",
+        "Then one batch of 100 set() calls on those ids. Legacy documents (ids \"CA-<reference>\", jurisdiction CA) are never read or written.",
+        "Tests: engine/test-canada-federal-mvp.cjs now has 63 tests (was 45), including a stub-database test asserting exactly 100 set calls to the approved ids and zero queries, deletes, updates or adds, and 11 mutation checks proving each protection is enforced."
+      ],
+      "upload_command_NOT_RUN": "node engine/canada-federal-contracts-write.cjs --write   (from the civic-voice-app directory; credentials are found automatically via the sibling civic-voice-engine/.env). Dry-run: node engine/canada-federal-contracts-write.cjs"
     }
   },
   "federal_unemployment": {
