@@ -1,6 +1,6 @@
 {
   "report_type": "CANADA_UNEMPLOYMENT_OWNERSHIP",
-  "generated_at": "2026-10-25T19:14:45.680Z",
+  "generated_at": "2026-10-25T19:26:59.654Z",
   "document": "social_stats/CA_unemploymentRate",
   "decision": "Statistics Canada table 14-10-0287-01 (monthly, seasonally adjusted) is the authoritative source for Canada's federal unemployment rate. The civic-voice-engine remains the ongoing scheduled owner of the document.",
   "firestore_interaction": {
@@ -119,10 +119,11 @@
     ]
   },
   "remaining_blockers": [
-    "Review of branch ca-unemployment-ownership (fd6f3ef) before it is pushed; it is a new-branch push, no force needed.",
-    "Establish and document where the scheduler runs (see scheduler_host_findings). A read of Firestore scheduler_status/monthly.completedAt would settle whether the monthly tier has run recently; not performed.",
-    "First write of CA_unemploymentRate: the check's first run (or the app script with --approve-overwrite after a fresh read). Neither has been done.",
-    "Optional: realign local main to origin/main (owner's decision), remove the extra worktree when finished, and clean up the orphaned CA_unemployment document.",
+    "Decision on the first live update: run the command above (which also adds one data_audit_log document), or first add a --no-audit / --dry-run option to the branch.",
+    "Optionally take a full backup of social_stats/CA_unemploymentRate (one read) before the first write.",
+    "Decide and document where the scheduler runs; a scheduled GitHub Actions workflow is one option with a precedent in the app repo.",
+    "The engine branch is pushed but not merged; merging to main is a separate step. Local engine main still carries 40e0f9a and 1f9f067 (not pushed) and the unrelated senateDataFetcher.js edit.",
+    "Optional cleanup: the orphaned CA_unemployment document; Australia's card-key mismatch; remove the extra worktree when finished.",
     "Federal contracts write remains un-started and requires its own approval."
   ],
   "revision_note": "Revised after the scheduler-safety, deployment-isolation and scheduler-host review. The earlier design (Canada unemployment as a scheduled job inside the monthly targeted fetch) is SUPERSEDED by a dedicated, change-gated mid-month check.",
@@ -188,12 +189,84 @@
       "How it has actually been operated: civic-voice-app/docs/ENGINE_SCHEDULER_AUDIT.md §12 records an operator running tiers BY HAND (`npm run scheduler:budget-analytics`, `:weekly`, `:monthly`, `:bimonthly`, `:targeted-stats`) and checking local terminal output and Firestore scheduler_status.",
       "This PC, artefacts: the stored CA_unemploymentRate document's last_updated (2026-03-23T23:49:58Z) matches the live_fetch file written here at 19:49 local that day (a manual run). The newest scheduler outputs are targeted_*.json files from four runs within ~20 minutes on the evening of 2026-05-10 (not the 1st, not 05:00) and nothing after; government_contracts files are also from 2026-05-10; the newest output of any kind is 2026-06-07. A working monthly cron on this machine would have produced files on the 1st of each month since.",
       "This PC, live state: no node process running scheduler.js and no Windows scheduled task referencing the scheduler.",
-      "The sibling civic-voice-backend repo and the app repo contain no scheduler hosting or deployment configuration either."
+      "The sibling civic-voice-backend repo contains no scheduler or hosting configuration. CORRECTION: the app repo does contain one scheduled GitHub Actions workflow, \"Sync US executive orders\" (.github/workflows/sync-us-executive-orders.yml; cron 15 6 1 * *, plus manual dispatch, no push trigger), which runs the APP repo's own `sync:us-executive-orders` script using a FIREBASE_SERVICE_ACCOUNT_JSON secret. It is unrelated to the engine scheduler and to Canada unemployment, but it is a working precedent for hosting a scheduled Firestore job on GitHub Actions. The engine repo defines no workflows at all (confirmed against the GitHub API)."
     ],
     "what_this_means": [
       "Unless someone starts and keeps `npm run scheduler` running somewhere, none of the cron entries (including the new 15th/22nd check) will fire; the dependable way to refresh is the on-demand command.",
       "The authoritative record of when the monthly tier last actually ran is Firestore scheduler_status/monthly.completedAt (and data_audit_log). That needs a read, which was out of scope; it is the one-step way to settle the question."
     ],
-    "recommendation": "Decide and document the host (an always-on machine or service running `npm run scheduler`, or an external scheduler that calls `npm run scheduler:ca-unemployment` on the 15th/22nd). Until then treat the new job as on-demand."
+    "recommendation": "Decide and document the host (an always-on machine or service running `npm run scheduler`, or an external scheduler that calls `npm run scheduler:ca-unemployment` on the 15th/22nd). Until then treat the new job as on-demand.",
+    "hosting_option_to_consider": "A scheduled workflow in the engine repo that runs `node src/scheduler.js --ca-unemployment` on the 15th/22nd, with a Firebase service-account secret, would host this job the same way the US executive-order sync is hosted. Not created; a decision for the owner."
+  },
+  "publication": {
+    "recorded_at": "2026-10-25T19:26:59.655Z",
+    "engine": {
+      "remote": "github.com/khalidsakarya/civic-voice-engine",
+      "branch": "ca-unemployment-ownership (NEW remote branch)",
+      "commit": "fd6f3ef990bf6e956cbdd83e4128da69c4bc718a",
+      "remote_main_after_push": "2e66e80e99452262cf9497f340b627e5e8f3d9c3 (unchanged; not merged)",
+      "pushed_with": "git push -u origin refs/heads/ca-unemployment-ownership:refs/heads/ca-unemployment-ownership (explicit refspec; no force). The branch previously tracked origin/main, so a bare `git push` was deliberately avoided; its upstream is now origin/ca-unemployment-ownership.",
+      "not_pushed": [
+        "local main (40e0f9a, 1f9f067)",
+        "src/ingestion/senateDataFetcher.js changes",
+        "untracked seeders"
+      ],
+      "ci_and_deployment_on_github": "None. Fresh API check after the push: 0 statuses, 0 check runs, 0 deployments, 0 workflows defined, 0 workflow runs for fd6f3ef. The engine repo has no CI or deployment integration, so pushing activated nothing."
+    },
+    "app": {
+      "remote": "github.com/khalidsakarya/-civic-voice-app-",
+      "branch": "main (fast-forward, upstream origin/main)",
+      "commits": [
+        "cb06cb5 (write guard, tests, MVP report update, first version of this report)",
+        "1eb7b6d (this report, revised)"
+      ],
+      "remote_main_after_push": "1eb7b6d623fc7bbffb3cc969d0b2a0d912a6ca1c",
+      "why_two_commits": "1eb7b6d cannot be pushed alone: the report file is created in its parent cb06cb5, which is the other half of the same reviewed ownership solution (the app's overwrite guard and its tests). Neither touches src/.",
+      "deployment_triggered": "YES, as always for a push to the app's main: Vercel built and deployed Production for 1eb7b6d (projects civic-voice-app and civic-voice-app-mb4y, both \"Deployment has completed\"). No file under src/ changed, so the deployed application code is identical to the previous deployment.",
+      "other_automation": "The only GitHub Actions workflow (Sync US executive orders) has no push trigger and did not run."
+    },
+    "scheduler_activated": false
+  },
+  "first_live_update_preparation": {
+    "status": "PREPARED, NOT RUN. No Firestore read, write or deletion has been performed for this.",
+    "command": {
+      "working_directory": "C:\\Users\\jem91\\Civic APP all\\civic-voice-engine-ca-unemployment   (the clean worktree on branch ca-unemployment-ownership)",
+      "powershell": [
+        "$env:DOTENV_CONFIG_PATH = \"..\\civic-voice-engine\\.env\"",
+        "node -r dotenv/config src/scheduler.js --ca-unemployment"
+      ],
+      "equivalent_npm_script": "npm run scheduler:ca-unemployment  (runs the same `node src/scheduler.js --ca-unemployment`; credentials must already be in the environment, e.g. via NODE_OPTIONS=\"-r dotenv/config\" plus DOTENV_CONFIG_PATH)",
+      "why_the_preload": "The clean worktree has no .env (it is untracked by design) and the engine reads Firebase credentials only from environment variables. The preload loads the main checkout's .env into this one process only; nothing is copied. The credential in use is a service account for project civic-voice-5ea94 (the live app's project), referenced by an absolute path, so it resolves from the worktree. Without it the command stops safely with \"Firebase credentials not configured\".",
+      "note_on_scope_of_env": "That .env also contains unrelated API keys; they are loaded into the process but nothing in this code path uses them. Setting only GOOGLE_APPLICATION_CREDENTIALS would also be enough (an import rehearsal showed no module needs another variable at load time)."
+    },
+    "safe_to_run_from_the_worktree_without_deploying_the_scheduler": {
+      "verdict": "YES",
+      "reasons": [
+        "One-shot process: the --ca-unemployment branch (scheduler.js line 1114) runs the check and calls process.exit; every cron.schedule() call (lines 1142-1152) sits after the final else and is never reached.",
+        "Import rehearsal, with Firestore SDKs, all network and all file writes blocked and recorded: the modules scheduler.js imports at load (45 of 46 parsed, the 46th being a lazy require inside the cycle functions) made zero Firestore, network or file-write attempts.",
+        "It needs only: the node_modules already junctioned into the worktree (a fresh clone would need `npm ci`), outbound access to StatCan, and the credential variable."
+      ]
+    },
+    "what_it_reads_and_writes": {
+      "reads": "One transactional read of social_stats/CA_unemploymentRate (after a successful, series-verified StatCan fetch). If StatCan fails, no Firestore handle is requested.",
+      "writes": [
+        "social_stats/CA_unemploymentRate, merge, ONLY when the transaction finds StatCan's reporting month newer than the stored month (or the stored document is from another series / has no readable month).",
+        "DEVIATION FROM \"only that document\": the shared audit logger adds ONE document to data_audit_log (scheduler_tier \"ca_unemployment\") after a write or a failure. Never for a skip."
+      ],
+      "never": "It never deletes, never touches another social_stats document, and never writes on an unchanged or older month."
+    },
+    "transaction_semantics": "src/ingestion/caUnemploymentCheck.js lines 74-84 (decision) and 119-124 (transaction): newer -> write; same month already from the verified series -> skip; older -> skip; unreadable/none -> write; same month from another series -> one corrective write. Covered by 24 tests, including repeated runs, late and missing releases and a transaction retry, and by 22 mutation checks.",
+    "expected_result_given_what_was_observed_on_2026_10_25": "The stored document was {value 6.9 (number), updated \"2026-02\", table 14-10-0017-01, last_updated 2026-03-23T23:49:58.644Z}. The check would find StatCan's September 2026 (6.5%) newer than February 2026 and write once: value \"6.5%\", updated \"Sep 2026\", a 12-month trend, source/table/coordinate/verified_series, latest_period \"2026-09\". The state is re-read at run time, so a different outcome is possible if the document has changed.",
+    "how_to_tell_it_worked": [
+      "Console: \"[ca-unemployment] ✓ wrote social_stats/CA_unemploymentRate: 6.5% for Sep 2026 (NEWER_PERIOD; previously 2026-02)\" and exit code 0.",
+      "A second run prints \"[ca-unemployment] no change — UNCHANGED_PERIOD\" and writes nothing."
+    ],
+    "risks": [
+      "The write replaces the engine's old unadjusted document. Only the fields observed on 2026-10-25 are recorded (above); there is no full backup of the previous document, so a rollback would be a manual re-set of those fields.",
+      "A successful run also creates one data_audit_log document (see deviation). If strictly one document is required, a --no-audit or --dry-run option would need a small code change on the branch.",
+      "There is no read-only preview: the check always opens Firestore after a successful StatCan fetch.",
+      "The browser-side card then shows \"6.5%\" instead of \"6.9\" for Canada; the card has not been viewed, as it needs live Firestore.",
+      "Until a host runs `npm run scheduler`, later months are refreshed only by running this command again."
+    ]
   }
 }
