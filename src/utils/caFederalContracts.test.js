@@ -6,6 +6,7 @@ import {
   caFederalContractsScope,
   caFederalContractsAllLoaded,
   formatCadCompact,
+  caFederalFiscalYearShort,
 } from './caFederalContracts';
 
 // Pure-function tests only: no Firebase, no network, no component rendering.
@@ -117,5 +118,16 @@ describe('formatCadCompact', () => {
     expect(formatCadCompact(null)).toBeNull();
     expect(formatCadCompact(0)).toBeNull();
     expect(formatCadCompact('abc')).toBeNull();
+  });
+});
+
+describe('caFederalFiscalYearShort', () => {
+  test('formats a fiscal-year range with an en dash', () => {
+    expect(caFederalFiscalYearShort('2025-2026')).toBe('2025–26');
+    expect(caFederalFiscalYearShort('2026-2027')).toBe('2026–27');
+  });
+  test('passes through anything else unchanged and tolerates empty input', () => {
+    expect(caFederalFiscalYearShort('FY25')).toBe('FY25');
+    expect(caFederalFiscalYearShort(null)).toBe('');
   });
 });

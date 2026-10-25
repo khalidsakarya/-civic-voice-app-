@@ -35,7 +35,39 @@ const REPORTS_DIR = process.env.CV_REPORTS_DIR || path.join(__dirname, 'reports'
 const COLLECTION = 'social_stats';
 
 function parseArgs(argv) {
-  return { write: argv.includes('--write') };
+  return {
+    write: argv.includes('--write'),
+    allowDuplicateStat: argv.includes('--allow-duplicate-stat'),
+  };
+}
+
+/**
+ * The write step, with the database passed in so tests can drive it with a stub
+ * (no Firestore). The Government Stats card keys live values by `statName`, so a
+ * second Canadian document with the same statName under a different id would
+ * collide with this one and the UI would show whichever it iterates last.
+ * Therefore: FIRST read for other documents with the same country + statName;
+ * if any exist, write NOTHING (unless allowDuplicateStat) and say which. Never deletes.
+ * @returns {Promise<{ status: 'WRITTEN'|'REFUSED_DUPLICATE', otherDocuments: string[], reason?: string }>}
+ */
+async function writeFederalUnemployment(db, built, { allowDuplicateStat = false } = {}) {
+  const sameStat = await db.collection(COLLECTION)
+    .where('country', '==', built.data.country)
+    .where('statName', '==', built.data.statName)
+    .get();
+  const otherDocuments = sameStat.docs.map((d) => d.id).filter((id) => id !== built.id);
+  if (otherDocuments.length && !allowDuplicateStat) {
+    return {
+      status: 'REFUSED_DUPLICATE',
+      otherDocuments,
+      reason: `${COLLECTION} already has other document(s) with country=${built.data.country}, statName=${built.data.statName}: ${otherDocuments.join(', ')}. The UI keeps only one value per statName, so writing a second could be overridden or override it. Nothing was written or deleted; review those documents, or re-run with --allow-duplicate-stat.`,
+    };
+  }
+  if (otherDocuments.length) {
+    console.warn(`WARNING (--allow-duplicate-stat): other documents share statName ${built.data.statName}: ${otherDocuments.join(', ')}`);
+  }
+  await db.collection(COLLECTION).doc(built.id).set(built.data, { merge: true });
+  return { status: 'WRITTEN', otherDocuments };
 }
 
 function saveReport(name, report) {
@@ -46,7 +78,7 @@ function saveReport(name, report) {
 }
 
 async function main() {
-  const { write } = parseArgs(process.argv.slice(2));
+  const { write, allowDuplicateStat } = parseArgs(process.argv.slice(2));
   const startedAt = new Date().toISOString();
 
   console.log(write
@@ -80,20 +112,17 @@ async function main() {
   const db = tryGetFirestore();
   if (!db) throw new Error('No Firestore credentials available; nothing written.');
   try {
-    // The Government Stats card keys live values by `statName`, so another CA document with the
-    // same statName under a different id would collide with this one. Report-only: never deleted here.
-    const sameStat = await db.collection(COLLECTION)
-      .where('country', '==', built.data.country)
-      .where('statName', '==', built.data.statName)
-      .get();
-    const others = sameStat.docs.map((d) => d.id).filter((id) => id !== built.id);
-    report.other_documents_with_same_statName = others;
-    if (others.length) {
-      console.warn(`WARNING: other ${COLLECTION} documents already carry country=CA, statName=${built.data.statName}: ${others.join(', ')}. The UI keeps only one per statName; review before relying on this value.`);
+    const result = await writeFederalUnemployment(db, built, { allowDuplicateStat });
+    report.other_documents_with_same_statName = result.otherDocuments;
+    report.write_result = result.status === 'WRITTEN'
+      ? { status: 'WRITTEN', doc: `${COLLECTION}/${built.id}` }
+      : { status: result.status, reason: result.reason };
+    if (result.status === 'WRITTEN') {
+      console.log('\nWRITTEN:', report.write_result.doc);
+    } else {
+      console.error('\nNOT WRITTEN:', result.reason);
+      process.exitCode = 1;
     }
-    await db.collection(COLLECTION).doc(built.id).set(built.data, { merge: true });
-    report.write_result = { status: 'WRITTEN', doc: `${COLLECTION}/${built.id}` };
-    console.log('\nWRITTEN:', report.write_result.doc);
   } catch (err) {
     report.write_result = { status: 'FAILED', code: err.code, message: String(err.message || err).slice(0, 300) };
     console.error('\nWRITE FAILED:', report.write_result.message);
@@ -110,4 +139,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { parseArgs };
+module.exports = { parseArgs, writeFederalUnemployment };

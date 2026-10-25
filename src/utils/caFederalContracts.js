@@ -93,3 +93,9 @@ export function formatCadCompact(val) {
   if (v >= 1e6) return `CA$${(v / 1e6).toFixed(1)}M`;
   return `CA$${v.toLocaleString()}`;
 }
+
+/** "2025-2026" -> "2025–26" (en dash); falls back to the input if it isn't a YYYY-YYYY range. */
+export function caFederalFiscalYearShort(fiscalYear) {
+  const m = String(fiscalYear || '').match(/^(\d{4})-(\d{4})$/);
+  return m ? `${m[1]}–${m[2].slice(2)}` : String(fiscalYear || '');
+}

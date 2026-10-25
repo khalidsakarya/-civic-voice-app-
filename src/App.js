@@ -28,6 +28,7 @@ import {
   caFederalContractStatus,
   caFederalContractsScope,
   caFederalContractsAllLoaded,
+  caFederalFiscalYearShort,
 } from './utils/caFederalContracts';
 import {
   economicSocialFromExplorerItem,
@@ -32841,8 +32842,13 @@ function App() {
             {scope && (
               <div className="bg-white/70 border border-green-200 rounded-lg p-3 mb-4 text-sm text-gray-700">
                 <p className="font-semibold">{scope.label}</p>
-                {scope.period && <p className="text-xs text-gray-500 mt-0.5">Reporting period: {scope.period}</p>}
-                <p className="text-xs text-gray-500 mt-0.5">This is a selection of the largest contracts, not every federal contract. Amounts are each contract's total disclosed value (original plus amendments), which can span many years.</p>
+                <ul className="mt-1.5 space-y-1 text-xs text-gray-600 list-disc pl-4">
+                  <li><span className="font-semibold">Disclosed in FY {caFederalFiscalYearShort(scope.fiscalYear)}:</span> these contracts appear in the government's contract disclosures for {scope.period || 'that fiscal year'}. Many were awarded earlier.</li>
+                  <li><span className="font-semibold">Values can cover multiple years:</span> each amount is the contract's total reported value over its whole term, not one year's payments.</li>
+                  <li><span className="font-semibold">Values include reported amendments:</span> original value plus any amendments reported to date.</li>
+                  <li><span className="font-semibold">A selected subset:</span> {scope.size != null ? `the ${scope.size} largest by that value` : 'the largest by that value'}, not every federal contract.</li>
+                  <li><span className="font-semibold">Not federal spending:</span> the combined value below adds up these reported contract values. It is not what the government spent during FY {caFederalFiscalYearShort(scope.fiscalYear)}.</li>
+                </ul>
               </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -32853,6 +32859,9 @@ function App() {
               <div className="bg-white rounded-lg p-4 border-2 border-emerald-300">
                 <p className="text-sm text-gray-600">Combined value of these {scope && scope.size != null ? scope.size : ''} contracts</p>
                 <p className="text-3xl font-bold text-emerald-600">{scope && scope.totalValue > 0 ? fmtVal(scope.totalValue) : '—'}</p>
+                {scope && scope.totalValue > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">Combined reported contract value, not federal spending in FY {caFederalFiscalYearShort(scope.fiscalYear)}</p>
+                )}
               </div>
               <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
                 <p className="text-sm text-gray-600">{filterActive ? 'Matching loaded contracts' : 'Contracts shown'}</p>

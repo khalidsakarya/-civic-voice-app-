@@ -24,14 +24,22 @@ const U = require('./lib/canada-federal-unemployment.cjs');
 
 let passed = 0;
 let failed = 0;
+// Tests are queued and run sequentially at the end so that async tests are really awaited
+// (a rejected promise from an un-awaited async test would otherwise be silently "passed").
+const queue = [];
 function test(name, fn) {
-  try {
-    fn();
-    passed += 1;
-    console.log(`  ok - ${name}`);
-  } catch (err) {
-    failed += 1;
-    console.log(`  FAIL - ${name}\n    ${err.message}`);
+  queue.push({ name, fn });
+}
+async function runQueue() {
+  for (const { name, fn } of queue) {
+    try {
+      await fn();
+      passed += 1;
+      console.log(`  ok - ${name}`);
+    } catch (err) {
+      failed += 1;
+      console.log(`  FAIL - ${name}\n    ${err.message}`);
+    }
   }
 }
 
@@ -237,7 +245,8 @@ test('every document carries the selection scope, consistent with the documents 
 test('documents contain the fields the existing Contracts UI reads', () => {
   const { docs } = sampleDocs(3);
   const d = docs[0].data;
-  assert.strictEqual(d.jurisdiction, 'CA');
+  assert.strictEqual(d.jurisdiction, 'CA-FED-SELECTION', "must not be 'CA' — the sibling engine deletes 'CA' documents it did not upload");
+  assert.strictEqual(d.country, 'CA');
   ['contractor_name', 'department', 'value', 'purpose', 'date', 'date_awarded', 'start_date', 'end_date', 'currency', 'contract_value_type', 'source_url', 'last_updated', 'rank'].forEach((k) => assert.ok(k in d, `missing ${k}`));
   assert.strictEqual(d.contract_value_type, 'total');
   assert.strictEqual(d.currency, 'CAD');
@@ -314,6 +323,165 @@ test('buildSocialStatDoc ignores malformed points and refuses to build from noth
   assert.throws(() => U.buildSocialStatDoc([{ period: '2026-09', value: NaN }]));
 });
 
+// ─── interaction with the sibling civic-voice-engine contracts pipeline ─────
+//
+// That engine's monthly uploader writes its own Canadian contracts
+// (jurisdiction 'CA', ids "CA-<reference_number>") and DELETES every document
+// whose jurisdiction matches one it uploads but is not in its new upload set.
+// Our documents must therefore never carry one of its jurisdictions.
+const ENGINE_CONTRACT_JURISDICTIONS = ['CA', 'US', 'UK', 'AU'];
+
+test('selection documents never use a jurisdiction the sibling engine cleans up', () => {
+  const { docs } = sampleDocs(100);
+  assert.strictEqual(C.FED_SELECTION_JURISDICTION, 'CA-FED-SELECTION');
+  assert.ok(!ENGINE_CONTRACT_JURISDICTIONS.includes(C.FED_SELECTION_JURISDICTION));
+  docs.forEach((d) => {
+    assert.ok(!ENGINE_CONTRACT_JURISDICTIONS.includes(d.data.jurisdiction), `jurisdiction ${d.data.jurisdiction} would be deleted by the engine`);
+    assert.strictEqual(d.data.country, 'CA');
+  });
+});
+
+test('engine-written Canadian document ids can never fall inside the UI page range', () => {
+  // sanitizeId keeps case; engine ids are "CA-" + reference_number (e.g. C-2025-2026-Q1-01234).
+  ['CA-C-2025-2026-Q1-01234', 'CA-C-2025-2026-Q4-00001', 'ca-c-2025-2026-q1-01234'].forEach((id) => {
+    assert.ok(!(id >= 'ca-fed-contract-001' && id <= 'ca-fed-contract-999'), id);
+  });
+});
+
+test('(if the sibling engine repo is present) its contracts cleanup is still keyed on the jurisdiction field', () => {
+  const uploader = path.join(__dirname, '..', '..', 'civic-voice-engine', 'src', 'firebase', 'uploader.js');
+  if (!fs.existsSync(uploader)) { console.log('    (skipped: sibling civic-voice-engine repo not found)'); return; }
+  const src = fs.readFileSync(uploader, 'utf8');
+  const i = src.indexOf('async function uploadGovernmentContracts');
+  assert.ok(i >= 0, 'uploadGovernmentContracts not found — re-check the isolation reasoning');
+  const body = src.slice(i, src.indexOf('async function uploadDepartmentExpenses', i));
+  assert.match(body, /where\('jurisdiction', '==', jur\)/, 'cleanup is no longer keyed on jurisdiction — re-verify our documents are safe');
+});
+
+// ─── static guardrails on src/App.js (the Contracts page + its reads) ───────
+const APP_SRC = fs.readFileSync(path.join(__dirname, '..', 'src', 'App.js'), 'utf8').replace(/\r\n/g, '\n');
+const CONTRACTS_PAGE = (() => {
+  const a = APP_SRC.indexOf('  const renderContracts = () => {');
+  const b = APP_SRC.indexOf('  const renderContractDetail = () => {');
+  assert.ok(a > 0 && b > a, 'renderContracts not found');
+  return APP_SRC.slice(a, b);
+})();
+
+test('the Contracts page states what the figures are and are not', () => {
+  [
+    'Disclosed in FY',                       // contracts were disclosed in the fiscal year
+    'Many were awarded earlier',
+    'Values can cover multiple years',       // multi-year values
+    'whole term, not one year',
+    'Values include reported amendments',    // amendments included
+    'A selected subset',                     // 100 are a subset
+    'not every federal contract',
+    'Not federal spending',                  // $96.05B is not spending
+    'not what the government spent during FY',
+    'Combined reported contract value, not federal spending in FY',
+  ].forEach((s) => assert.ok(CONTRACTS_PAGE.includes(s), `page is missing: "${s}"`));
+});
+
+test('the Contracts page no longer presents a stored subset as a national total', () => {
+  assert.ok(!CONTRACTS_PAGE.includes('Total Contracts'));
+  assert.ok(!CONTRACTS_PAGE.includes('>Total Value<'));
+  assert.ok(!CONTRACTS_PAGE.includes('liveContracts.CA'));
+});
+
+test('the only Canada contract read is the bounded, paginated one', () => {
+  // Every getDocs() over government_contracts in App.js:
+  const reads = [...APP_SRC.matchAll(/getDocs\(query\(collection\(db, ([^)]*)\)[^\n]*/g)]
+    .filter((m) => /government_contracts|CA_FED_CONTRACTS_COLLECTION/.test(m[1]));
+  assert.strictEqual(reads.length, 2, 'expected exactly the paginated CA read and the US/UK/AU read');
+  const ca = reads.find((m) => /CA_FED_CONTRACTS_COLLECTION/.test(m[1]));
+  const generic = reads.find((m) => /'government_contracts'/.test(m[1]));
+  assert.ok(ca && generic);
+  // CA read: built from constraints that include a limit of the page size and a document-id range.
+  const loader = APP_SRC.slice(APP_SRC.indexOf('const loadCaFederalContracts = useCallback'), APP_SRC.indexOf('const loadCaFederalContracts = useCallback') + 1800);
+  assert.match(loader, /where\(documentId\(\), '>=', CA_FED_CONTRACT_ID_FIRST\)/);
+  assert.match(loader, /where\(documentId\(\), '<=', CA_FED_CONTRACT_ID_LAST\)/);
+  assert.match(loader, /limit\(CA_FED_CONTRACTS_PAGE_SIZE\)/);
+  assert.match(loader, /startAfter\(/);
+  // The generic (US/UK/AU) read has no limit, so it must be unreachable for Canada: it returns early first.
+  const gi = APP_SRC.indexOf("where('jurisdiction', '==', jurisdiction)");
+  const effect = APP_SRC.slice(APP_SRC.lastIndexOf('useEffect(() => {', gi), gi);
+  const earlyReturn = effect.indexOf("if (jurisdiction === 'CA') return;");
+  assert.ok(earlyReturn > 0, 'the generic contracts effect must return early for CA');
+  assert.ok(earlyReturn < effect.indexOf('setContractsFetchedJurisdictions'), 'the CA early-return must come before any fetch bookkeeping');
+});
+
+test('the Canada hub no longer prefetches or counts contracts', () => {
+  assert.ok(!APP_SRC.includes('governmentContractsHubSubtitle(liveContracts.CA'));
+  assert.ok(APP_SRC.includes('meta="Largest federal contracts"'));
+  // US/UK/AU hub subtitles are untouched
+  ['liveContracts.US', 'liveContracts.UK', 'liveContracts.AU'].forEach((s) => assert.ok(APP_SRC.includes(`governmentContractsHubSubtitle(${s}`), s));
+});
+
+// ─── unemployment write: duplicate detection (stubbed db, no Firestore) ─────
+function stubDb(existing = []) {
+  const calls = [];
+  const db = {
+    calls,
+    collection(name) {
+      calls.push(['collection', name]);
+      const filters = [];
+      const q = {
+        where(f, op, v) { filters.push([f, op, v]); calls.push(['where', f, op, v]); return q; },
+        async get() { calls.push(['get']); return { docs: existing.map((id) => ({ id })) }; },
+        doc(id) {
+          return {
+            async set(data, opts) { calls.push(['set', id, data, opts]); },
+            async delete() { throw new Error('delete must never be called'); },
+          };
+        },
+      };
+      return q;
+    },
+  };
+  return db;
+}
+const builtUnemp = () => U.buildSocialStatDoc([{ period: '2026-09', value: 6.5 }]);
+const US = require('./canada-federal-unemployment-write.cjs');
+
+test('unemployment write: reads for duplicates BEFORE writing, filtered on country and statName', async () => {
+  const db = stubDb([]);
+  const r = await US.writeFederalUnemployment(db, builtUnemp());
+  assert.strictEqual(r.status, 'WRITTEN');
+  const kinds = db.calls.map((c) => c[0]);
+  assert.ok(kinds.indexOf('get') >= 0 && kinds.indexOf('set') > kinds.indexOf('get'), `order was ${kinds.join(' > ')}`);
+  assert.deepStrictEqual(db.calls.filter((c) => c[0] === 'where').map((c) => c.slice(1)), [['country', '==', 'CA'], ['statName', '==', 'unemploymentRate']]);
+  const set = db.calls.find((c) => c[0] === 'set');
+  assert.strictEqual(set[1], 'CA_unemploymentRate');
+  assert.deepStrictEqual(set[3], { merge: true });
+});
+
+test('unemployment write: a duplicate country/statName document blocks the write entirely', async () => {
+  const db = stubDb(['legacy_ca_unemployment']);
+  const r = await US.writeFederalUnemployment(db, builtUnemp());
+  assert.strictEqual(r.status, 'REFUSED_DUPLICATE');
+  assert.deepStrictEqual(r.otherDocuments, ['legacy_ca_unemployment']);
+  assert.match(r.reason, /legacy_ca_unemployment/);
+  assert.ok(!db.calls.some((c) => c[0] === 'set'), 'nothing may be written when a duplicate exists');
+});
+
+test('unemployment write: our own document id is not a duplicate of itself', async () => {
+  const db = stubDb(['CA_unemploymentRate']);
+  assert.strictEqual((await US.writeFederalUnemployment(db, builtUnemp())).status, 'WRITTEN');
+});
+
+test('unemployment write: --allow-duplicate-stat is an explicit opt-in, and nothing is ever deleted', async () => {
+  const db = stubDb(['legacy_ca_unemployment']);
+  const origWarn = console.warn;
+  console.warn = () => {};
+  try {
+    const r = await US.writeFederalUnemployment(db, builtUnemp(), { allowDuplicateStat: true });
+    assert.strictEqual(r.status, 'WRITTEN');
+    assert.deepStrictEqual(r.otherDocuments, ['legacy_ca_unemployment']);
+  } finally { console.warn = origWarn; }
+  assert.strictEqual(US.parseArgs([]).allowDuplicateStat, false);
+  assert.strictEqual(US.parseArgs(['--allow-duplicate-stat']).allowDuplicateStat, true);
+});
+
 // ─── dry-run safety (behavioural) ───────────────────────────────────────────
 test('the contracts script in default mode never loads firebase-admin or the admin-init module', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cv-fed-'));
@@ -356,5 +524,7 @@ test('--write must be explicit: default arguments never enable writing; importin
   assert.ok(!Object.keys(require.cache).some((k) => /firebase-admin-init/.test(k)), 'importing the scripts must not load firebase-admin-init');
 });
 
-console.log(`\n${passed} passed, ${failed} failed (zero Firestore, zero network)`);
-if (failed > 0) process.exitCode = 1;
+runQueue().then(() => {
+  console.log(`\n${passed} passed, ${failed} failed (zero Firestore, zero network)`);
+  if (failed > 0) process.exitCode = 1;
+});

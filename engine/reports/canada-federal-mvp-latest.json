@@ -1,9 +1,9 @@
 {
   "report_type": "CANADA_FEDERAL_MVP",
-  "generated_at": "2026-10-25T18:09:19.056Z",
+  "generated_at": "2026-10-25T18:18:53.609Z",
   "supersedes_claims_in": "canada-federal-dry-run-latest.json (its \"no UI changes are needed\" conclusion was wrong for Contracts: the page labelled whatever was stored as \"Total Contracts / Total Value\")",
   "firestore_interaction": {
-    "this_task": "NONE. No reads, writes or probes were made while building or testing this work. Both ingestion scripts are dry-run by default and create no Firestore client without --write; a test proves the contracts script never loads firebase-admin in dry-run.",
+    "this_task": "NONE. No reads, writes or probes were made in the final-checks pass or while building/testing this work. Both ingestion scripts are dry-run by default and create no Firestore client without --write; tests prove the contracts script never loads firebase-admin in dry-run, and drive the unemployment write step with a stub database only.",
     "availability_probe": "One read-only probe earlier on 2026-10-25 succeeded (no RESOURCE_EXHAUSTED). Writes were not tested.",
     "writes_performed": 0
   },
@@ -65,6 +65,59 @@
       "dry_run": "node engine/canada-federal-contracts-write.cjs   (or --rows-file=<saved download>)",
       "write": "node engine/canada-federal-contracts-write.cjs --write   (NOT RUN; requires separate approval)",
       "write_behaviour": "Batch-sets exactly the 100 documents. Does NOT delete any pre-existing jurisdiction=='CA' documents; it only counts them (one aggregate read) and reports the number."
+    },
+    "documents": {
+      "collection": "government_contracts",
+      "ids": "ca-fed-contract-001 … ca-fed-contract-100",
+      "jurisdiction_field": "CA-FED-SELECTION (and country: CA) — deliberately NOT \"CA\"; see sibling_engine_interaction"
+    },
+    "sibling_engine_interaction": {
+      "finding": "The sibling civic-voice-engine repo already writes Canadian contracts into government_contracts, and its uploader deletes any document whose jurisdiction it uploads but which is not in its new upload set.",
+      "evidence": [
+        "civic-voice-engine/src/ingestion/governmentContractsFetcher.js: fetchCanadaContracts() takes the top 500 by value from 10 recent periods, de-duplicated by reference_number, ids \"CA-<reference_number>\", jurisdiction \"CA\", status computed at fetch time. (Same reference_number flaw this MVP fixes: that key is unique per disclosure row, not per contract.)",
+        "civic-voice-engine/src/firebase/uploader.js uploadGovernmentContracts(): for each jurisdiction present in the upload it queries where('jurisdiction','==',jur) and DELETES every document whose id is not in the new upload. Run by the monthly scheduler (steps 11-12).",
+        "civic-voice-engine/functions/index.js aggregateContractStats (weekly): reads the WHOLE government_contracts collection and buckets totals into summary_stats/contract_stats by the `jurisdiction` field."
+      ],
+      "risk_if_unaddressed": "With jurisdiction \"CA\" the 100 selection documents would have been deleted as \"stale\" by the next monthly engine run (the page would silently go empty) and blended into the legacy Canadian totals.",
+      "fix_applied": "Selection documents use jurisdiction \"CA-FED-SELECTION\". The Contracts page pages by document id and never filters on jurisdiction, so the UI is unaffected. A test asserts the value is not one of the engine's CA/US/UK/AU, and (when the sibling repo is present) that its cleanup is still keyed on the jurisdiction field.",
+      "id_collision": "None possible: engine ids are \"CA-C-…\" (uppercase, sanitised); ours are lowercase \"ca-fed-contract-NNN\" and the page range is ca-fed-contract-001..999.",
+      "decision_needed": "The engine will keep writing its ~500 legacy \"CA\" documents every month. The Contracts page no longer reads them. Whether to retire the engine's Canada contracts fetch (a change in the OTHER repo) is a separate decision; nothing in either repo was changed or deleted."
+    },
+    "read_path_audit": {
+      "method": "Code search of src/ and of the sibling engine; no Firestore access.",
+      "src_government_contracts_reads": [
+        "src/App.js loadCaFederalContracts(): documentId range ca-fed-contract-001..999 + orderBy(documentId()) + limit(20) [+ startAfter]. The ONLY Canada read. Runs only when view === 'contracts'.",
+        "src/App.js generic contracts effect: unbounded where('jurisdiction','==',X), now returns early for 'CA' before any fetch, so it can only ever query US, UK or AU. Behaviour for those is unchanged."
+      ],
+      "other_src_references": "fetchSummaryStatsDashboard reads the single summary_stats/contract_stats document (not government_contracts).",
+      "guardrail_tests": "engine/test-canada-federal-mvp.cjs asserts: exactly two getDocs over government_contracts in App.js; the CA one has the id-range, limit(page size) and startAfter; the generic one is preceded by the CA early return; the Canada hub subtitle no longer uses liveContracts.CA while the US/UK/AU ones are untouched. Each assertion was mutation-checked."
+    },
+    "existing_canadian_contract_documents_impact": {
+      "screens_in_this_app": [
+        "Contracts page: none. It reads only ca-fed-contract-*; legacy \"CA\" documents are ignored.",
+        "Canada hub tile: none. It no longer shows a count (it previously read every CA document to show one).",
+        "Hub category list: the legacy summary count (summary_stats/contract_stats -> contractsCA) feeds only the `categories` array, which is dead code (unused, kept under a lint-disable) and renders nowhere.",
+        "Contract detail page: none. It renders only the contract that was clicked.",
+        "US/UK/AU contract pages: none. Their queries filter on their own jurisdiction.",
+        "Contract votes: stored in the browser (localStorage), not Firestore, so old and new ids cannot interfere."
+      ],
+      "outside_this_app": [
+        "Engine monthly uploader: handled (see sibling_engine_interaction). It would have deleted the selection documents with jurisdiction \"CA\".",
+        "Weekly aggregateContractStats: reads the whole collection every week. Adds 100 reads/week and creates a separate \"CA-FED-SELECTION\" bucket in summary_stats/contract_stats; the CA bucket is unchanged. No UI reads that bucket.",
+        "engine/audit-firestore-inventory.cjs: read-only inventory, harmless."
+      ],
+      "not_known_without_a_firestore_read": "How many legacy \"CA\" documents currently exist (up to 500 expected). The contracts --write mode counts them with one aggregate read and reports the number; it never deletes them.",
+      "nothing_deleted_or_modified": true
+    },
+    "page_explanations": {
+      "status": "Implemented and guarded by tests.",
+      "statements_on_the_page": [
+        "Disclosed in FY 2025–26: the contracts appear in the government's contract disclosures for April 1, 2025 – March 31, 2026; many were awarded earlier.",
+        "Values can cover multiple years: each amount is the contract's total reported value over its whole term, not one year's payments.",
+        "Values include reported amendments: original value plus any amendments reported to date.",
+        "A selected subset: the 100 largest by that value, not every federal contract.",
+        "Not federal spending: the combined value adds up reported contract values; it is not what the government spent during FY 2025–26. The combined-value tile carries the same caption."
+      ]
     }
   },
   "federal_unemployment": {
@@ -151,7 +204,7 @@
     "scripts": {
       "dry_run": "node engine/canada-federal-unemployment-write.cjs",
       "write": "node engine/canada-federal-unemployment-write.cjs --write   (NOT RUN; requires separate approval)",
-      "write_precheck": "In --write mode it first lists any other social_stats document with country CA and the same statName (report-only; the UI keeps one per statName)."
+      "write_precheck": "In --write mode it FIRST reads for any other social_stats document with the same country and statName. If one exists it writes NOTHING and exits non-zero naming the document(s); --allow-duplicate-stat is an explicit opt-in. It never deletes. The order (read, then write) and the refusal are tested with a recording stub database, with every mutation of that logic caught."
     }
   },
   "federal_grants": {
@@ -168,43 +221,45 @@
     "src/App.js (Contracts page, hub tile, CA contracts loader, unemployment card text)",
     "engine/reports/canada-federal-contracts-dry-run-latest.json (new)",
     "engine/reports/canada-federal-unemployment-dry-run-latest.json (new)",
-    "engine/reports/canada-federal-mvp-latest.json (this report)"
+    "engine/reports/canada-federal-mvp-latest.json (this report)",
+    "engine/test-canada-federal-mvp.cjs (39 tests)"
   ],
   "verification": {
-    "engine_tests": "node engine/test-canada-federal-mvp.cjs: 28 passed, 0 failed (zero Firestore, zero network). 7 mutations of the selection logic were each caught.",
-    "ui_util_tests": "react-scripts test src/utils/caFederalContracts.test.js: 18 passed, 0 failed (pure functions; the stock App.test.js, which renders the whole app, was deliberately not run).",
-    "eslint": "Clean on src/App.js and the new files.",
-    "production_build": "CI=true react-scripts build with DISABLE_ESLINT_PLUGIN=false (overriding the local .env that disables ESLint): Compiled successfully, 0 warnings (main.js +2.07 kB gzip).",
+    "engine_tests": "node engine/test-canada-federal-mvp.cjs: 39 passed, 0 failed (zero Firestore, zero network). Selection logic, the jurisdiction guard, the duplicate check and the App.js guardrails were each mutation-tested; every mutant was caught. The runner awaits async tests (an un-awaited rejection would otherwise pass silently).",
+    "leader_profile_tests": "node engine/test-leader-profile-content-safety.cjs: 28 passed (unchanged).",
+    "ui_util_tests": "react-scripts test src/utils/caFederalContracts.test.js: 20 passed, 0 failed (pure functions; the stock App.test.js that renders the whole app was deliberately not run).",
+    "eslint": "Direct ESLint on src/App.js, the new util and its test, and service-worker.js: 0 problems.",
+    "production_build": "CI=true react-scripts build with DISABLE_ESLINT_PLUGIN=false (overriding the local .env, which disables ESLint): Compiled successfully, 0 warnings (main.js +332 B gzip vs the previous commit).",
     "not_verified": "The Contracts page has NOT been viewed in a browser with real data: the data is not written, and opening the app would read live Firestore. Visual verification needs the write first."
   },
   "remaining_blockers": [
     {
       "blocker": "Firestore write approval",
-      "detail": "Neither script has been run with --write. Suggested order: unemployment (1 document) first as the write check, then contracts (100 documents)."
+      "detail": "Neither script has been run with --write. Suggested order: unemployment (1 document, with the duplicate pre-check) first as the write check, then contracts (100 documents)."
     },
     {
-      "blocker": "Pre-existing CA documents in government_contracts are unknown",
-      "detail": "Reading Firestore was out of scope. The new page ignores them (it reads only ca-fed-contract-*), but they would still exist and could feed summary counts. The write script counts them and reports; deleting them is a separate decision."
+      "blocker": "Decision: the sibling engine keeps writing legacy \"CA\" contracts",
+      "detail": "About 500 documents a month that no screen reads, with the same reference_number duplication flaw. Retiring or repointing the engine fetch is a change in the other repo and has not been made. The selection documents are protected from its cleanup regardless."
     },
     {
-      "blocker": "Possible duplicate social_stats entry",
-      "detail": "The unemployment write checks for another CA document with statName unemploymentRate and reports it."
+      "blocker": "Legacy CA document count is unknown",
+      "detail": "Needs a Firestore read; the contracts --write mode reports it. They are not deleted."
     },
     {
       "blocker": "Visual verification after write",
-      "detail": "Check: 20 cards on first open, Load more adds 20 (5 pages total), banner/tiles state the scope, Active/Completed badges, Government Stats card shows the live rate with a LIVE badge."
+      "detail": "Check: 20 cards on first open, Load more adds 20 (5 pages), banner and tiles state the scope, Active/Completed badges, Government Stats card shows the live rate with a LIVE badge."
     },
     {
       "blocker": "Federal Grants and Contributions",
       "detail": "Deferred by decision: needs a UI decision and a dataset-scope decision."
     },
     {
-      "blocker": "Periodic refresh",
-      "detail": "Ranks and the fiscal year are a snapshot. Re-running the contracts script (e.g. with --fiscal-year=2026-2027 once complete) overwrites the same 100 ids. No scheduler has been added."
+      "blocker": "Refresh",
+      "detail": "The selection is a snapshot of FY 2025–26. Re-running the contracts script (e.g. --fiscal-year=2026-2027 once complete) overwrites the same 100 ids. No scheduler added."
     },
     {
       "blocker": "Stock App.test.js",
-      "detail": "Pre-existing Create React App boilerplate that renders the whole app and cannot pass; untouched."
+      "detail": "Pre-existing Create React App boilerplate that renders the whole app; untouched."
     }
   ]
 }

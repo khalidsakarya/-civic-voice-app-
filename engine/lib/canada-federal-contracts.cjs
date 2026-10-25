@@ -39,6 +39,8 @@ const SELECTION_SIZE = 100;
 /** Document ids are rank-ordered so the UI can page by document id (no composite index needed). */
 const DOC_ID_PREFIX = 'ca-fed-contract-';
 const DEFAULT_FISCAL_YEAR = '2025-2026';
+/** Value of `jurisdiction` on the selection documents. Must never equal CA/US/UK/AU (see buildContractDoc). */
+const FED_SELECTION_JURISDICTION = 'CA-FED-SELECTION';
 
 const FETCH_FIELDS = [
   '_id', 'reference_number', 'procurement_id', 'vendor_name', 'contract_date', 'contract_period_start', 'delivery_date',
@@ -169,7 +171,15 @@ function buildContractDoc(row, meta) {
   return {
     id: docIdForRank(row.rank),
     data: {
-      jurisdiction: 'CA',
+      // NOT 'CA' — deliberately. The sibling civic-voice-engine's monthly uploader
+      // (uploadGovernmentContracts) DELETES every government_contracts document with
+      // jurisdiction == 'CA' that is not in its own upload, and its weekly
+      // aggregateContractStats function buckets totals by `jurisdiction`. With 'CA' these
+      // 100 documents would be deleted as "stale" on the next engine run and would be
+      // blended into the legacy Canadian totals. The Contracts page pages by document id
+      // and never filters on this field, so a distinct value costs the UI nothing.
+      jurisdiction: FED_SELECTION_JURISDICTION,
+      country: 'CA',
       contractor_name: String(row.vendor_name || '').trim(),
       department: englishPart(row.owner_org_title),
       value: row._value,
@@ -246,6 +256,7 @@ module.exports = {
   SELECTION_SIZE,
   DOC_ID_PREFIX,
   DEFAULT_FISCAL_YEAR,
+  FED_SELECTION_JURISDICTION,
   docIdForRank,
   fiscalYearPeriods,
   fiscalYearLabels,

@@ -22,8 +22,16 @@
  * and reads each document's `selection_*` fields, so the "100 largest" scope is
  * stated by the data itself.
  *
+ * Documents carry jurisdiction 'CA-FED-SELECTION' (and country 'CA'), NOT 'CA'.
+ * The sibling civic-voice-engine monthly uploader (uploadGovernmentContracts)
+ * deletes every government_contracts document with jurisdiction == 'CA' that is
+ * not in its own upload, and its weekly aggregateContractStats buckets totals by
+ * `jurisdiction`; using 'CA' here would get these 100 deleted as "stale" and
+ * blend them into the engine's legacy Canadian totals.
+ *
  * NOT done by this script: it does not delete any pre-existing
- * `jurisdiction == 'CA'` documents. In --write mode it only COUNTS them
+ * `jurisdiction == 'CA'` documents (those are written by the sibling engine and
+ * the Contracts page no longer reads them). In --write mode it only COUNTS them
  * (one aggregate read) and reports the number so a human can decide.
  *
  * Importing this file never runs anything (main() is guarded).
@@ -140,7 +148,7 @@ async function main() {
     } catch (e) {
       legacy = `count failed: ${String(e.message || e).slice(0, 120)}`;
     }
-    console.log(`Existing documents with jurisdiction == 'CA' before this write: ${legacy} (not deleted by this script)`);
+    console.log(`Existing engine-written documents with jurisdiction == 'CA' (legacy, ignored by the page): ${legacy} (not deleted by this script)`);
     const batch = db.batch();
     docs.forEach((d) => batch.set(db.collection(COLLECTION).doc(d.id), d.data));
     await batch.commit();

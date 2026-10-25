@@ -1,6 +1,6 @@
 {
   "run_type": "DRY_RUN",
-  "run_at": "2026-10-25T17:51:20.295Z",
+  "run_at": "2026-10-25T18:17:19.762Z",
   "target": "social_stats/CA_unemploymentRate",
   "firestore_interaction": "none — dry-run, no Firestore client created",
   "series_identity_verified": {
@@ -57,7 +57,7 @@
     "coordinate": "1.7.1.1.1.1.0.0.0.0",
     "verified_series": "Canada · Unemployment rate · Total - Gender · 15 years and over · Estimate · Seasonally adjusted",
     "latest_period": "2026-09",
-    "last_updated": "2026-10-25T17:51:20.295Z",
+    "last_updated": "2026-10-25T18:17:19.762Z",
     "statcan_release_time": "2026-10-09T08:30"
   }
 }

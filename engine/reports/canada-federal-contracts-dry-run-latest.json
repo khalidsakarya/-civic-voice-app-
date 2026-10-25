@@ -1,6 +1,6 @@
 {
   "run_type": "DRY_RUN",
-  "run_at": "2026-10-25T18:01:52.556Z",
+  "run_at": "2026-10-25T18:17:18.914Z",
   "firestore_interaction": "none — dry-run, no Firestore client created",
   "dataset": {
     "name": "Proactive Publication - Contracts",
@@ -42,7 +42,7 @@
     "selection_size": 100,
     "selection_total_value": 96051357629.77,
     "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-    "selection_generated_at": "2026-10-25T18:01:52.556Z"
+    "selection_generated_at": "2026-10-25T18:17:18.914Z"
   },
   "target_collection": "government_contracts",
   "document_ids": [
@@ -53,7 +53,8 @@
   "documents": [
     {
       "id": "ca-fed-contract-001",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "SkyAlyne Canada Limited Partnership",
       "department": "National Defence",
       "value": 11219370646,
@@ -76,15 +77,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-002",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Irving Shipbuilding Inc.",
       "department": "National Defence",
       "value": 10753506708.84,
@@ -107,15 +109,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-003",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "BGIS GLOBAL INTEGRATED SOLUTIONS CA",
       "department": "Public Services and Procurement Canada",
       "value": 7070000000,
@@ -138,15 +141,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-004",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Lockheed Martin Canada Inc.",
       "department": "National Defence",
       "value": 6382883842.61,
@@ -169,15 +173,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-005",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Irving Shipbuilding Inc",
       "department": "National Defence",
       "value": 6126432059.9,
@@ -200,15 +205,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-006",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "ESAP PROJECT CO LIMITED PARTNERSHIP",
       "department": "Public Services and Procurement Canada",
       "value": 4407205648.66,
@@ -231,15 +237,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-007",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "I.M.P Group Limited",
       "department": "National Defence",
       "value": 4022589252,
@@ -262,15 +269,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-008",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "L-3 Communications MAS (Canada) Inc.",
       "department": "National Defence",
       "value": 2646123121.5,
@@ -293,15 +301,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-009",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "General Dynamics",
       "department": "National Defence",
       "value": 2264162781.46,
@@ -324,15 +333,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-010",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "PARSONS INC",
       "department": "Public Services and Procurement Canada",
       "value": 1959064931.86,
@@ -355,15 +365,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-011",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "General Dynamics",
       "department": "National Defence",
       "value": 1788732845,
@@ -386,15 +397,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-012",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Calian",
       "department": "National Defence",
       "value": 1762332523,
@@ -417,15 +429,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-013",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "MACDONALD, DETTWILER AND ASSOCIATES CORPORATION",
       "department": "Canadian Space Agency",
       "value": 1570190525.09,
@@ -448,15 +461,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-014",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Thales Canada Inc.",
       "department": "National Defence",
       "value": 1409245993.81,
@@ -479,15 +493,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-015",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Irving Shipbuilding Incorporated",
       "department": "National Defence",
       "value": 1318000000,
@@ -510,15 +525,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-016",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Cascade Aerospace Inc.",
       "department": "National Defence",
       "value": 1245163550,
@@ -541,15 +557,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-017",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Victoria Shipyards Ltd",
       "department": "National Defence",
       "value": 1207500000,
@@ -572,15 +589,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-018",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "VANCOUVER SHIPYARDS CO LTD",
       "department": "Fisheries and Oceans Canada",
       "value": 1070117019.62,
@@ -603,15 +621,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-019",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "L-3 Technologies MAS Inc",
       "department": "National Defence",
       "value": 966676679.85,
@@ -634,15 +653,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-020",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "VANCOUVER SHIPYARDS CO LTD",
       "department": "Fisheries and Oceans Canada",
       "value": 801031620.14,
@@ -665,15 +685,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-021",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "IBM CANADA LTD.",
       "department": "Shared Services Canada",
       "value": 796203638.17,
@@ -696,15 +717,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-022",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "IBM CANADA LTD.",
       "department": "Shared Services Canada",
       "value": 762819994.95,
@@ -727,15 +749,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-023",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Serco Facilities Management Inc",
       "department": "National Defence",
       "value": 742076697.39,
@@ -758,15 +781,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-024",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "L3Harris MAS Inc.",
       "department": "National Defence",
       "value": 735338903.65,
@@ -789,15 +813,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-025",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "CAE Inc.",
       "department": "National Defence",
       "value": 714647908.85,
@@ -820,15 +845,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-026",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Bombardier Inc.",
       "department": "National Defence",
       "value": 709734831.55,
@@ -851,15 +877,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-027",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Babcock Canada Inc.",
       "department": "National Defence",
       "value": 702000335.43,
@@ -882,15 +909,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-028",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "VANCOUVER SHIPYARDS CO LTD",
       "department": "National Defence",
       "value": 628908542.35,
@@ -913,15 +941,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-029",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "ELLISDON CORPORATION",
       "department": "Public Services and Procurement Canada",
       "value": 626939562.85,
@@ -944,15 +973,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-030",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "VANCOUVER SHIPYARDS CO LTD",
       "department": "Fisheries and Oceans Canada",
       "value": 601332130.14,
@@ -975,15 +1005,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-031",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Lockheed Martin Canada Inc.",
       "department": "National Defence",
       "value": 600758697.7,
@@ -1006,15 +1037,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-032",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "IBM CANADA LTD.",
       "department": "Public Services and Procurement Canada",
       "value": 585684672.6,
@@ -1037,15 +1069,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-033",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Fleetway Inc",
       "department": "National Defence",
       "value": 580141395,
@@ -1068,15 +1101,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-034",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "MACDONALD, DETTWILER & ASSOCIATES LTD.",
       "department": "Canadian Space Agency",
       "value": 568336784.13,
@@ -1099,15 +1133,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-035",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Corporation du Fort Saint-Jean",
       "department": "National Defence",
       "value": 566845548.51,
@@ -1130,15 +1165,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-036",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Raytheon Canada Limited",
       "department": "National Defence",
       "value": 553511878.5,
@@ -1161,15 +1197,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-037",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "PARSONS INC",
       "department": "Public Services and Procurement Canada",
       "value": 549363304.76,
@@ -1192,15 +1229,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-038",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "VANCOUVER SHIPYARDS CO LTD",
       "department": "National Defence",
       "value": 500729608.27,
@@ -1223,15 +1261,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-039",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "EBC INC",
       "department": "Public Services and Procurement Canada",
       "value": 487790173.6,
@@ -1254,15 +1293,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-040",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "NELNET DIVERSIFIED SERVICES CANADA",
       "department": "Employment and Social Development Canada",
       "value": 480250000,
@@ -1285,15 +1325,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-041",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Deloitte LLP",
       "department": "Canada Border Services Agency",
       "value": 454815463.47,
@@ -1316,15 +1357,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-042",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "POMERLEAU INC.",
       "department": "Public Services and Procurement Canada",
       "value": 434278372.91,
@@ -1347,15 +1389,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-043",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "TELUS COMMUNICATIONS COMPANY",
       "department": "Shared Services Canada",
       "value": 416686880.02,
@@ -1378,15 +1421,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-044",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "General Dynamics",
       "department": "National Defence",
       "value": 416491787.42,
@@ -1409,15 +1453,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-045",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "PCL CONSTRUCTORS EASTERN INC -",
       "department": "Public Services and Procurement Canada",
       "value": 410642519.13,
@@ -1440,15 +1485,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-046",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Deloitte Inc",
       "department": "Canada Border Services Agency",
       "value": 402355778.47,
@@ -1471,15 +1517,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-047",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "MEDAVIE INC.",
       "department": "Veterans Affairs Canada",
       "value": 399205803.46,
@@ -1502,15 +1549,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-048",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Airbus Defence and Space SA",
       "department": "National Defence",
       "value": 399127300,
@@ -1533,15 +1581,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-049",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "DXC TECHNOLOGY CANADA CO.",
       "department": "Public Services and Procurement Canada",
       "value": 378696928.35,
@@ -1564,15 +1613,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-050",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "D+H CORPORATION",
       "department": "Employment and Social Development Canada",
       "value": 367590720.38,
@@ -1595,15 +1645,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-051",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "L3Harris MAS Inc.",
       "department": "National Defence",
       "value": 364916949.34,
@@ -1626,15 +1677,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-052",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Santé Montfort",
       "department": "National Defence",
       "value": 364741806,
@@ -1657,15 +1709,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-053",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "DELOITTE INC",
       "department": "Employment and Social Development Canada",
       "value": 362491536.84,
@@ -1688,15 +1741,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-054",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "VANCOUVER SHIPYARDS CO LTD",
       "department": "Fisheries and Oceans Canada",
       "value": 317690200.14,
@@ -1719,15 +1773,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-055",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "MICROSOFT CANADA INC.",
       "department": "Shared Services Canada",
       "value": 308328044.95,
@@ -1750,15 +1805,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-056",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Colt Canada",
       "department": "National Defence",
       "value": 307534472,
@@ -1781,15 +1837,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-057",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "VANCOUVER SHIPYARDS CO LTD",
       "department": "Fisheries and Oceans Canada",
       "value": 291791583.26,
@@ -1812,15 +1869,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-058",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Lockheed Martin Canada Inc.",
       "department": "National Defence",
       "value": 287500000,
@@ -1843,15 +1901,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-059",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "CA,INC.",
       "department": "Shared Services Canada",
       "value": 253062950,
@@ -1874,15 +1933,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-060",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "THE BELL TELEPHONE COMPANY OF",
       "department": "Shared Services Canada",
       "value": 244900076.86,
@@ -1905,15 +1965,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-061",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "ACCENTURE INC.",
       "department": "Employment and Social Development Canada",
       "value": 238487274.68,
@@ -1936,15 +1997,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-062",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Textron",
       "department": "National Defence",
       "value": 237198858.6,
@@ -1967,15 +2029,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-063",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "ROGERS COMMUNICATIONS PARTNERSHIP",
       "department": "Shared Services Canada",
       "value": 218495463.95,
@@ -1998,15 +2061,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-064",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "The Canada Life Assurance Company",
       "department": "Treasury Board of Canada Secretariat",
       "value": 218491798.46,
@@ -2029,15 +2093,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-065",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "MCW Custom Energy Solutions",
       "department": "National Defence",
       "value": 216024281.15,
@@ -2060,15 +2125,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-066",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "EXPRESS SCRIPTS CANADA",
       "department": "Indigenous Services Canada",
       "value": 205039437.56,
@@ -2091,15 +2157,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-067",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "VANCOUVER SHIPYARDS CO LTD",
       "department": "National Defence",
       "value": 204256740.07,
@@ -2122,15 +2189,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-068",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "INFOSYS PUBLIC SERVICES, INC.",
       "department": "Public Services and Procurement Canada",
       "value": 200512380.69,
@@ -2153,15 +2221,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-069",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "ROGERS CABLE COMMUNICATIONS INC.",
       "department": "Shared Services Canada",
       "value": 198953691.05,
@@ -2184,15 +2253,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-070",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "2KEYS CORPORATION",
       "department": "Employment and Social Development Canada",
       "value": 197768079,
@@ -2215,15 +2285,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-071",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "SAAB Technologies Canada, Inc.",
       "department": "National Defence",
       "value": 193721704.17,
@@ -2246,15 +2317,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-072",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "BMT Canada LTD.",
       "department": "National Defence",
       "value": 189697795.5,
@@ -2277,15 +2349,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-073",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "PricewaterhouseCoopers LLP, Si Systems ULC and Accenture Inc. in joint venture",
       "department": "National Defence",
       "value": 180800000,
@@ -2308,15 +2381,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-074",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "United Van Lines (Canada) Ltd.",
       "department": "National Defence",
       "value": 173758602.94,
@@ -2339,15 +2413,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-075",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "KYNDRYL CANADA LTEE",
       "department": "Elections Canada",
       "value": 162613639.67,
@@ -2370,15 +2445,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-076",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "BMC SOFTWARE CANADA INC",
       "department": "Shared Services Canada",
       "value": 162001578.62,
@@ -2401,15 +2477,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-077",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "AMD MEDICOM INC.",
       "department": "Public Health Agency of Canada",
       "value": 161244769.33,
@@ -2432,15 +2509,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-078",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Canadian Base Operators",
       "department": "National Defence",
       "value": 158372978.74,
@@ -2463,15 +2541,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-079",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Gami Ingeniería E Instalaciones",
       "department": "Global Affairs Canada",
       "value": 158010244.54,
@@ -2494,15 +2573,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-080",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "CAE Inc.",
       "department": "National Defence",
       "value": 156312900,
@@ -2525,15 +2605,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-081",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "SAP Canada Inc.",
       "department": "Treasury Board of Canada Secretariat",
       "value": 153333149.51,
@@ -2556,15 +2637,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-082",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "IBM CANADA LTD.",
       "department": "Shared Services Canada",
       "value": 150254489.8,
@@ -2587,15 +2669,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-083",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "POMERLEAU INC.",
       "department": "Public Services and Procurement Canada",
       "value": 149314598.69,
@@ -2618,15 +2701,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-084",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "PCL CONSTRUCTORS CANADA INC.",
       "department": "Public Services and Procurement Canada",
       "value": 145078030.67,
@@ -2649,15 +2733,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-085",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "ONTARIO SHIPYARDS O/A",
       "department": "Fisheries and Oceans Canada",
       "value": 144382049.8,
@@ -2680,15 +2765,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-086",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "POMERLEAU INC.",
       "department": "Public Services and Procurement Canada",
       "value": 141917487.38,
@@ -2711,15 +2797,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-087",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "BMC SOFTWARE CANADA INC",
       "department": "Shared Services Canada",
       "value": 136813369.32,
@@ -2742,15 +2829,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-088",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Safran Trusted 4D Canada Inc.",
       "department": "National Defence",
       "value": 135764204.63,
@@ -2773,15 +2861,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-089",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Lockheed Martin Canada Inc.",
       "department": "National Defence",
       "value": 132805932.23,
@@ -2804,15 +2893,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-090",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Soutwest Research Institute",
       "department": "National Defence",
       "value": 127709399.25,
@@ -2835,15 +2925,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-091",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "ZAYO CANADA INC.",
       "department": "Shared Services Canada",
       "value": 122194814.41,
@@ -2866,15 +2957,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-092",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Cubic Defense Applications Ltd.",
       "department": "National Defence",
       "value": 120445054.45,
@@ -2897,15 +2989,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-093",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "General Electric Canada",
       "department": "National Defence",
       "value": 115000000,
@@ -2928,15 +3021,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-094",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "MICROSOFT CANADA INC.",
       "department": "Statistics Canada",
       "value": 114835584.43,
@@ -2959,15 +3053,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-095",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Garda Canada Security Corporation",
       "department": "Canada Border Services Agency",
       "value": 113345644.66,
@@ -2990,15 +3085,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-096",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Nasittuq Corporation",
       "department": "National Defence",
       "value": 113174478.65,
@@ -3021,15 +3117,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-097",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "ATLANTIC TOWING LIMITED",
       "department": "National Defence",
       "value": 109332723.68,
@@ -3052,15 +3149,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-098",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Lockheed Martin Canada Inc.",
       "department": "National Defence",
       "value": 109167905.98,
@@ -3083,15 +3181,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-099",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "TELUS COMMUNICATIONS COMPANY",
       "department": "Shared Services Canada",
       "value": 109068422.23,
@@ -3114,15 +3213,16 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     },
     {
       "id": "ca-fed-contract-100",
-      "jurisdiction": "CA",
+      "jurisdiction": "CA-FED-SELECTION",
+      "country": "CA",
       "contractor_name": "Atlas Van Lines (Canada) Ltd",
       "department": "National Defence",
       "value": 109064540.54,
@@ -3145,11 +3245,11 @@
       "selection_size": 100,
       "selection_total_value": 96051357629.77,
       "selection_basis": "Total disclosed contract value (original plus amendments); the most recent disclosure of each contract is used.",
-      "selection_generated_at": "2026-10-25T18:01:52.556Z",
+      "selection_generated_at": "2026-10-25T18:17:18.914Z",
       "source": "Treasury Board of Canada Secretariat — Proactive Publication - Contracts",
       "source_url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
       "licence": "Open Government Licence - Canada",
-      "last_updated": "2026-10-25T18:01:52.556Z"
+      "last_updated": "2026-10-25T18:17:18.914Z"
     }
   ]
 }
