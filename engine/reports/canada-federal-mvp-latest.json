@@ -1,0 +1,210 @@
+{
+  "report_type": "CANADA_FEDERAL_MVP",
+  "generated_at": "2026-10-25T18:09:19.056Z",
+  "supersedes_claims_in": "canada-federal-dry-run-latest.json (its \"no UI changes are needed\" conclusion was wrong for Contracts: the page labelled whatever was stored as \"Total Contracts / Total Value\")",
+  "firestore_interaction": {
+    "this_task": "NONE. No reads, writes or probes were made while building or testing this work. Both ingestion scripts are dry-run by default and create no Firestore client without --write; a test proves the contracts script never loads firebase-admin in dry-run.",
+    "availability_probe": "One read-only probe earlier on 2026-10-25 succeeded (no RESOURCE_EXHAUSTED). Writes were not tested.",
+    "writes_performed": 0
+  },
+  "federal_contracts": {
+    "status": "BUILT_AND_DRY_RUN_VERIFIED — NOT WRITTEN",
+    "selection_criteria": {
+      "dataset": {
+        "name": "Proactive Publication - Contracts",
+        "publisher": "Treasury Board of Canada Secretariat",
+        "url": "https://open.canada.ca/data/en/dataset/d8f85d91-7dec-4fd1-8055-483b77225d8b",
+        "licence": "Open Government Licence - Canada",
+        "resourceId": "fac950c0-00d5-4ec1-a4d3-9cbebf98a305"
+      },
+      "reporting_period": "Federal fiscal year 2025–26 (April 1, 2025 – March 31, 2026): the four disclosure quarters 2025-2026-Q1 … Q4. Complete: 90,759 source rows, matching the source's own quarterly totals exactly.",
+      "value_ranked": "contract_value = the disclosed TOTAL value of the contract (original plus amendments). It is a text column, so values are parsed to numbers and ranked locally (a server-side sort would be lexicographic). Rows with blank, zero or negative value are excluded (801 rows).",
+      "what_counts_as_one_contract": "procurement_id + normalized vendor name + owner department. reference_number is NOT used: it is unique per disclosure row (it embeds the quarter), so a contract re-reported for each amendment has many of them. A second pass collapses the same contract re-keyed within a department (vendor + department + original value + award date + delivery date).",
+      "which_disclosure_is_used": "The MOST RECENT disclosure of each contract (latest reporting period, then latest source row id). Not the maximum: cumulative values are not monotonic across amendments (e.g. one IBM contract: 804.0M, 798.8M, 797.8M, 796.2M in sequence).",
+      "department_handling": "A procurement disclosed by two departments is kept as two entries, because each department reports its own portion with its own original/amended values (verified on the Vancouver Shipyards contracts: 162.8M vs 13.7M original).",
+      "size": 100,
+      "tie_break": "larger value first, then more recent disclosure",
+      "not_represented_as": "all Canadian federal contracts, or contracts awarded in the fiscal year. Amounts are total multi-year values and many contracts were awarded years earlier (award dates in the selection range from 1999 to 2026); they are in the selection because they were disclosed in this fiscal year."
+    },
+    "result": {
+      "statistics": {
+        "rows_read": 90759,
+        "excluded_non_positive_or_blank_value": 801,
+        "rows_with_positive_value": 89958,
+        "distinct_contracts_after_procurement_id_dedupe": 80608,
+        "distinct_contracts_after_secondary_dedupe": 79541,
+        "duplicate_disclosure_rows_removed": 10417,
+        "selected": 100,
+        "smallest_selected_value": 109064540.54,
+        "selected_total_value": 96051357629.77
+      },
+      "selected": 100,
+      "selected_total_value_cad": 96051357629.77,
+      "smallest_selected_value_cad": 109064540.54,
+      "label_shown_to_users": "100 largest federal contracts disclosed in fiscal year 2025–26",
+      "data_quality_note": "Naive top-100 (sorted by value, no de-duplication) would have contained repeated entries for the same contract: in the top 30 alone, Parsons Inc. held 5 slots and Cascade Aerospace 3. After de-duplication each contract appears once."
+    },
+    "firestore_read_strategy": {
+      "collection": "government_contracts",
+      "document_ids": "ca-fed-contract-001 … ca-fed-contract-100 (zero-padded rank, so id order = rank order). Fixed ids: a refresh overwrites the same 100 documents and cannot leave a stale tail.",
+      "query": "where(documentId() >= 'ca-fed-contract-001') + where(documentId() <= 'ca-fed-contract-999') + orderBy(documentId()) + limit(20) [+ startAfter(last snapshot) for later pages]",
+      "index_and_rules": "Uses Firestore's built-in __name__ index: NO composite index and NO rules change (government_contracts is already `allow read: if true`). The query shape was constructed with the real SDK offline to confirm it is valid.",
+      "reads_per_visit": "Opening the Contracts page: 20 document reads. Each \"Load 20 more\": 20 reads. Full list: 5 pages = 100 reads, and only if the visitor asks for them; the last page does not trigger an extra empty read.",
+      "hub_screen": "The Canada hub no longer prefetches contracts at all (it used to read every CA document just to show a count). The tile now reads \"Largest federal contracts\" with no count claim. US/UK/AU prefetch behaviour is unchanged.",
+      "aggregates": "The combined value, selection size, fiscal year and basis are denormalized onto every document as selection_* fields, so the first page already carries them and no extra read is needed. They are the sum of exactly the 100 stored documents (checked by test).",
+      "active_completed": "Derived at view time from end_date (the source delivery date), never stored, so it cannot go stale.",
+      "search_and_filters": "Apply only to contracts loaded so far; the UI says so, and offers Load more."
+    },
+    "ui_changes": [
+      "Header tiles replaced: \"Total Contracts\"/\"Total Value\" -> \"Largest contracts in this list\", \"Combined value of these N contracts\", \"Contracts shown (x of N)\".",
+      "Scope banner: selection label, reporting period, and an explicit statement that this is a selection, not every federal contract and that amounts are total multi-year values.",
+      "First 20 shown; \"Load 20 more (x of N loaded)\"; end-of-list message; error state with Try again.",
+      "Rank badge on each card; amount labelled \"total contract value\"; source, licence and basis line with a link to the open-data portal."
+    ],
+    "scripts": {
+      "dry_run": "node engine/canada-federal-contracts-write.cjs   (or --rows-file=<saved download>)",
+      "write": "node engine/canada-federal-contracts-write.cjs --write   (NOT RUN; requires separate approval)",
+      "write_behaviour": "Batch-sets exactly the 100 documents. Does NOT delete any pre-existing jurisdiction=='CA' documents; it only counts them (one aggregate read) and reports the number."
+    }
+  },
+  "federal_unemployment": {
+    "status": "BUILT_AND_DRY_RUN_VERIFIED — NOT WRITTEN",
+    "source": "Statistics Canada, Labour Force Survey, Table 14-10-0287-01, via the WDS API",
+    "verification": {
+      "method": "Before trusting the coordinate, the script resolves every dimension of coordinate 1.7.1.1.1.1.0.0.0.0 against StatCan's own getCubeMetadata and refuses to run on any mismatch.",
+      "verified_series": [
+        "Canada",
+        "Unemployment rate",
+        "Total - Gender",
+        "15 years and over",
+        "Estimate",
+        "Seasonally adjusted"
+      ],
+      "cube_latest_period": "2026-09-01",
+      "statcan_release_time": "2026-10-09T08:30"
+    },
+    "latest": {
+      "value": "6.5%",
+      "period": "2026-09"
+    },
+    "document_mapping": {
+      "target": "social_stats/CA_unemploymentRate  (one document, merge)",
+      "read_by": "renderGovernmentStatsPage -> fetchGovStatsData(): query social_stats where country == 'CA', keyed by statName; the \"Unemployment\" card (firestoreKey: unemploymentRate) overlays value, source, sourceUrl, updated, trend and shows a LIVE badge from last_updated.",
+      "fields": {
+        "country": "'CA'",
+        "statName": "'unemploymentRate'",
+        "value": "latest rate as text, one decimal, e.g. '6.5%'",
+        "updated": "latest period label, e.g. 'Sep 2026'",
+        "trend": "last 12 monthly values, oldest first (sparkline)",
+        "trend_periods": "matching 'YYYY-MM' labels",
+        "sub": "'Seasonally adjusted · ages 15 and over'",
+        "source": "'Statistics Canada, Labour Force Survey (Table 14-10-0287-01)'",
+        "sourceUrl": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+        "table_coordinate_verified_series_latest_period_statcan_release_time": "provenance fields",
+        "last_updated": "ISO timestamp of the run"
+      },
+      "dry_run_document": {
+        "country": "CA",
+        "statName": "unemploymentRate",
+        "value": "6.5%",
+        "updated": "Sep 2026",
+        "trend": [
+          6.9,
+          6.6,
+          6.8,
+          6.5,
+          6.7,
+          6.7,
+          6.9,
+          6.6,
+          6.5,
+          6.4,
+          6.4,
+          6.5
+        ],
+        "trend_periods": [
+          "2025-10",
+          "2025-11",
+          "2025-12",
+          "2026-01",
+          "2026-02",
+          "2026-03",
+          "2026-04",
+          "2026-05",
+          "2026-06",
+          "2026-07",
+          "2026-08",
+          "2026-09"
+        ],
+        "sub": "Seasonally adjusted · ages 15 and over",
+        "source": "Statistics Canada, Labour Force Survey (Table 14-10-0287-01)",
+        "sourceUrl": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+        "table": "14-10-0287-01",
+        "coordinate": "1.7.1.1.1.1.0.0.0.0",
+        "verified_series": "Canada · Unemployment rate · Total - Gender · 15 years and over · Estimate · Seasonally adjusted",
+        "latest_period": "2026-09",
+        "last_updated": "2026-10-25T17:51:20.295Z",
+        "statcan_release_time": "2026-10-09T08:30"
+      }
+    },
+    "hardcoded_text_fix": "The Canadian card's hardcoded \"~1.5 million Canadians actively looking for work\" (a 2024 headcount shown beside a live rate) is replaced with \"Seasonally adjusted · ages 15 and over\". The fallback value still shows 6.3% with its own \"Jun 2024\" date when no live document exists.",
+    "scripts": {
+      "dry_run": "node engine/canada-federal-unemployment-write.cjs",
+      "write": "node engine/canada-federal-unemployment-write.cjs --write   (NOT RUN; requires separate approval)",
+      "write_precheck": "In --write mode it first lists any other social_stats document with country CA and the same statName (report-only; the UI keeps one per statName)."
+    }
+  },
+  "federal_grants": {
+    "status": "NOT IMPLEMENTED, by decision. UI and dataset scope to be decided separately."
+  },
+  "files_added_or_changed": [
+    "engine/lib/canada-federal-contracts.cjs (new)",
+    "engine/lib/canada-federal-unemployment.cjs (new)",
+    "engine/canada-federal-contracts-write.cjs (new)",
+    "engine/canada-federal-unemployment-write.cjs (new)",
+    "engine/test-canada-federal-mvp.cjs (new)",
+    "src/utils/caFederalContracts.js (new)",
+    "src/utils/caFederalContracts.test.js (new)",
+    "src/App.js (Contracts page, hub tile, CA contracts loader, unemployment card text)",
+    "engine/reports/canada-federal-contracts-dry-run-latest.json (new)",
+    "engine/reports/canada-federal-unemployment-dry-run-latest.json (new)",
+    "engine/reports/canada-federal-mvp-latest.json (this report)"
+  ],
+  "verification": {
+    "engine_tests": "node engine/test-canada-federal-mvp.cjs: 28 passed, 0 failed (zero Firestore, zero network). 7 mutations of the selection logic were each caught.",
+    "ui_util_tests": "react-scripts test src/utils/caFederalContracts.test.js: 18 passed, 0 failed (pure functions; the stock App.test.js, which renders the whole app, was deliberately not run).",
+    "eslint": "Clean on src/App.js and the new files.",
+    "production_build": "CI=true react-scripts build with DISABLE_ESLINT_PLUGIN=false (overriding the local .env that disables ESLint): Compiled successfully, 0 warnings (main.js +2.07 kB gzip).",
+    "not_verified": "The Contracts page has NOT been viewed in a browser with real data: the data is not written, and opening the app would read live Firestore. Visual verification needs the write first."
+  },
+  "remaining_blockers": [
+    {
+      "blocker": "Firestore write approval",
+      "detail": "Neither script has been run with --write. Suggested order: unemployment (1 document) first as the write check, then contracts (100 documents)."
+    },
+    {
+      "blocker": "Pre-existing CA documents in government_contracts are unknown",
+      "detail": "Reading Firestore was out of scope. The new page ignores them (it reads only ca-fed-contract-*), but they would still exist and could feed summary counts. The write script counts them and reports; deleting them is a separate decision."
+    },
+    {
+      "blocker": "Possible duplicate social_stats entry",
+      "detail": "The unemployment write checks for another CA document with statName unemploymentRate and reports it."
+    },
+    {
+      "blocker": "Visual verification after write",
+      "detail": "Check: 20 cards on first open, Load more adds 20 (5 pages total), banner/tiles state the scope, Active/Completed badges, Government Stats card shows the live rate with a LIVE badge."
+    },
+    {
+      "blocker": "Federal Grants and Contributions",
+      "detail": "Deferred by decision: needs a UI decision and a dataset-scope decision."
+    },
+    {
+      "blocker": "Periodic refresh",
+      "detail": "Ranks and the fiscal year are a snapshot. Re-running the contracts script (e.g. with --fiscal-year=2026-2027 once complete) overwrites the same 100 ids. No scheduler has been added."
+    },
+    {
+      "blocker": "Stock App.test.js",
+      "detail": "Pre-existing Create React App boilerplate that renders the whole app and cannot pass; untouched."
+    }
+  ]
+}

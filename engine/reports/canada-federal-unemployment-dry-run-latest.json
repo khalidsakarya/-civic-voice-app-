@@ -1,0 +1,63 @@
+{
+  "run_type": "DRY_RUN",
+  "run_at": "2026-10-25T17:51:20.295Z",
+  "target": "social_stats/CA_unemploymentRate",
+  "firestore_interaction": "none — dry-run, no Firestore client created",
+  "series_identity_verified": {
+    "ok": true,
+    "members": [
+      "Canada",
+      "Unemployment rate",
+      "Total - Gender",
+      "15 years and over",
+      "Estimate",
+      "Seasonally adjusted"
+    ],
+    "mismatches": []
+  },
+  "cube_title": "Labour force characteristics, monthly, seasonally adjusted and trend-cycle",
+  "cube_latest_period": "2026-09-01",
+  "document": {
+    "country": "CA",
+    "statName": "unemploymentRate",
+    "value": "6.5%",
+    "updated": "Sep 2026",
+    "trend": [
+      6.9,
+      6.6,
+      6.8,
+      6.5,
+      6.7,
+      6.7,
+      6.9,
+      6.6,
+      6.5,
+      6.4,
+      6.4,
+      6.5
+    ],
+    "trend_periods": [
+      "2025-10",
+      "2025-11",
+      "2025-12",
+      "2026-01",
+      "2026-02",
+      "2026-03",
+      "2026-04",
+      "2026-05",
+      "2026-06",
+      "2026-07",
+      "2026-08",
+      "2026-09"
+    ],
+    "sub": "Seasonally adjusted · ages 15 and over",
+    "source": "Statistics Canada, Labour Force Survey (Table 14-10-0287-01)",
+    "sourceUrl": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410028701",
+    "table": "14-10-0287-01",
+    "coordinate": "1.7.1.1.1.1.0.0.0.0",
+    "verified_series": "Canada · Unemployment rate · Total - Gender · 15 years and over · Estimate · Seasonally adjusted",
+    "latest_period": "2026-09",
+    "last_updated": "2026-10-25T17:51:20.295Z",
+    "statcan_release_time": "2026-10-09T08:30"
+  }
+}

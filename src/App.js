@@ -21,6 +21,15 @@ import {
 } from './utils/mergeProvincialExplorerFirestore';
 import { formatExecutiveOrderDisplayDate } from './utils/executiveOrderDates';
 import {
+  CA_FED_CONTRACTS_COLLECTION,
+  CA_FED_CONTRACT_ID_FIRST,
+  CA_FED_CONTRACT_ID_LAST,
+  CA_FED_CONTRACTS_PAGE_SIZE,
+  caFederalContractStatus,
+  caFederalContractsScope,
+  caFederalContractsAllLoaded,
+} from './utils/caFederalContracts';
+import {
   economicSocialFromExplorerItem,
   taxExemptFromExplorerItem,
   isCraCharitiesDataset,
@@ -64,7 +73,7 @@ import {
   isExecutiveOrderDoc,
   matchesUsExecutiveOrdersPresident,
 } from './constants/executiveOrderDocumentTypes';
-import { collection, getDocs, getDoc, query, where, orderBy, limit, addDoc, setDoc, doc, increment, serverTimestamp, getCountFromServer } from 'firebase/firestore';
+import { collection, getDocs, getDoc, query, where, orderBy, limit, startAfter, documentId, addDoc, setDoc, doc, increment, serverTimestamp, getCountFromServer } from 'firebase/firestore';
 import { logEvent } from './analytics';
 import { ChevronRight, ChevronDown, Globe, Users, FileText, AlertCircle, MapPin, Calendar, Award, CheckCircle, XCircle, MinusCircle, DollarSign, TrendingUp, Briefcase, Building2, Search, X, Filter, BarChart3, PieChart, ThumbsUp, ThumbsDown, Clock, Crown, Star, Scale, Share2, Info, Bell, Loader2, Copy, MessageSquare } from 'lucide-react';
 import { BarChart, Bar, AreaChart, Area, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -2288,6 +2297,13 @@ function App() {
   const [usBills, setUsBills] = useState([]);
   const [usDepartments, setUsDepartments] = useState([]);
   const [liveContracts, setLiveContracts] = useState({});
+  // Canadian FEDERAL contracts are a bounded selection (the largest disclosed
+  // contracts for one fiscal year) read one page at a time by document id —
+  // never "all CA documents". status: 'idle' | 'loading' | 'ready' | 'error'.
+  const [caFedContracts, setCaFedContracts] = useState({ items: [], status: 'idle', done: false });
+  const caFedContractsCursorRef = useRef(null);
+  const caFedContractsBusyRef = useRef(false);
+  const caFedContractsDoneRef = useRef(false);
   /** Pre-aggregated `summary_stats` docs (`department_summary`, `member_stats`, `contract_stats`) for hub cards; detailed collection reads remain fallbacks. */
   const [summaryStatsDashboard, setSummaryStatsDashboard] = useState(null);
   const [contractsFetchedJurisdictions, setContractsFetchedJurisdictions] = useState({});
@@ -6430,7 +6446,45 @@ function App() {
     })();
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch government_contracts when contracts views open, or prefetch on CA/US/UK/AU hub screens (read-only; same query as contracts lists).
+  // Canada federal contracts: read the NEXT page of CA_FED_CONTRACTS_PAGE_SIZE documents.
+  // Paged by document id (ca-fed-contract-001 … -100 are stored in rank order), which uses
+  // Firestore's built-in index — no composite index and no rules change. Opening the page
+  // reads 20 documents; each "Load more" reads 20 more; nothing reads the whole selection up front.
+  const loadCaFederalContracts = useCallback(async () => {
+    if (caFedContractsBusyRef.current || caFedContractsDoneRef.current) return;
+    caFedContractsBusyRef.current = true;
+    setCaFedContracts(prev => ({ ...prev, status: 'loading' }));
+    try {
+      const constraints = [
+        where(documentId(), '>=', CA_FED_CONTRACT_ID_FIRST),
+        where(documentId(), '<=', CA_FED_CONTRACT_ID_LAST),
+        orderBy(documentId()),
+      ];
+      if (caFedContractsCursorRef.current) constraints.push(startAfter(caFedContractsCursorRef.current));
+      constraints.push(limit(CA_FED_CONTRACTS_PAGE_SIZE));
+      const snap = await getDocs(query(collection(db, CA_FED_CONTRACTS_COLLECTION), ...constraints));
+      if (snap.docs.length > 0) caFedContractsCursorRef.current = snap.docs[snap.docs.length - 1];
+      const rows = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => r.contractor_name);
+      setCaFedContracts(prev => {
+        const items = [...prev.items, ...rows];
+        const scope = caFederalContractsScope(items);
+        const done = caFederalContractsAllLoaded(items.length, snap.docs.length, scope ? scope.size : null);
+        caFedContractsDoneRef.current = done;
+        return { items, status: 'ready', done };
+      });
+    } catch (err) {
+      console.warn('[LiveData] Canada federal contracts fetch failed:', err.message);
+      setCaFedContracts(prev => ({ ...prev, status: 'error' }));
+    } finally {
+      caFedContractsBusyRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (view === 'contracts') loadCaFederalContracts();
+  }, [view, loadCaFederalContracts]);
+
+  // Fetch government_contracts when contracts views open, or prefetch on US/UK/AU hub screens (read-only; same query as contracts lists).
   useEffect(() => {
     const contractViews = { contracts: 'CA', 'us-contracts': 'US', 'uk-contracts': 'UK', 'au-contracts': 'AU' };
     let jurisdiction = contractViews[view] || null;
@@ -6442,6 +6496,10 @@ function App() {
       jurisdiction = 'AU';
     }
     if (!jurisdiction) return;
+    // Canada's federal contracts are a bounded selection read page by page
+    // (loadCaFederalContracts below). Never prefetch "all CA documents" here,
+    // not even for the hub-card count.
+    if (jurisdiction === 'CA') return;
     if (contractsFetchedJurisdictions[jurisdiction]) return;
     setContractsFetchedJurisdictions(prev => ({ ...prev, [jurisdiction]: true }));
     (async () => {
@@ -28889,7 +28947,7 @@ function App() {
                 icon={<DollarSign className="w-6 h-6" />}
                 title="Government Contracts"
                 subtitle="Taxpayer money & spending"
-                meta={governmentContractsHubSubtitle(liveContracts.CA, sumDash?.contractsCA)}
+                meta="Largest federal contracts"
                 accent="#dc2626"
                 onClick={() => { clearCaFollowNotif('contracts'); setView('contracts'); }}
               />
@@ -32702,7 +32760,7 @@ function App() {
     backLabel: 'Government Levels',
     subtitle: '🇨🇦 Canadian Federal Government · FY 2024–25',
     economic: [
-      { label: '📉 Unemployment',      firestoreKey: 'unemploymentRate',       value: '6.3%',           sub: '~1.5 million Canadians actively looking for work',                                    trend: [5.8,5.8,5.9,6.1,6.2,6.3],          period: 'Jan – Jun 2024',    source: 'Statistics Canada Labour Force Survey',            updated: 'Jun 2024' },
+      { label: '📉 Unemployment',      firestoreKey: 'unemploymentRate',       value: '6.3%',           sub: 'Seasonally adjusted · ages 15 and over',                                  trend: [5.8,5.8,5.9,6.1,6.2,6.3],          period: 'Jan – Jun 2024',    source: 'Statistics Canada Labour Force Survey',            updated: 'Jun 2024' },
       { label: '🛒 Inflation (CPI)',   firestoreKey: 'cpiInflation',          value: '2.7%',           sub: 'A $100 grocery cart now costs $102.30 more than a year ago',                          trend: [3.4,3.1,2.9,2.8,2.9,2.7],          period: 'Dec 23 – May 24',   source: 'Statistics Canada CPI Report',                     updated: 'May 2024' },
       { label: '🏠 Median Home Price', firestoreKey: 'medianHomeValue',       value: 'C$716,000',      sub: 'A worker earning median wage needs 14+ years of full salary to buy',                  trend: [695000,699000,705000,708000,712000,716000], period: 'Dec 23 – May 24', source: 'Canadian Real Estate Association (CREA)',         updated: 'May 2024' },
       { label: '🏦 Bank Rate',         firestoreKey: 'bankRate',              value: '2.5%',           sub: 'Bank of Canada policy rate · Down from a 5% peak in 2023',                           trend: [0.25,4.25,5.0,4.25,3.25,2.5],       period: '2020 – 2026',       source: 'Bank of Canada',                                   updated: '2026'     },
@@ -32743,15 +32801,24 @@ function App() {
   });
 
   const renderContracts = () => {
-    const data = liveContracts.CA;
+    // Federal contracts are a bounded selection (the largest disclosed contracts for one
+    // fiscal year), loaded a page at a time — see loadCaFederalContracts. `data` is undefined
+    // while the first page is loading; every aggregate below is scoped to the selection.
+    const data = (caFedContracts.status === 'idle' || (caFedContracts.status === 'loading' && caFedContracts.items.length === 0))
+      ? undefined
+      : caFedContracts.items;
+    const loadError = caFedContracts.status === 'error' && caFedContracts.items.length === 0;
+    const scope = caFederalContractsScope(caFedContracts.items);
+    const loadedCount = caFedContracts.items.length;
+    const filterActive = !!caContractSearch || caContractDeptFilter !== 'All' || caContractsStatusFilter !== 'All';
     const fmtVal = (val) => { if (val == null) return null; const v = Number(val); if (isNaN(v) || v === 0) return null; if (v >= 1e9) return `CA$${(v/1e9).toFixed(1)}B`; if (v >= 1e6) return `CA$${(v/1e6).toFixed(1)}M`; if (v >= 1e3) return `CA$${(v/1e3).toFixed(0)}K`; return `CA$${v.toLocaleString()}`; };
     const fmtDate = (d) => { if (!d) return null; try { const dt = new Date(d); if (isNaN(dt.getTime())) return null; return dt.toLocaleDateString('en-CA', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return null; } };
-    const totalValue = data ? data.reduce((s, c) => s + (Number(c.value) || 0), 0) : 0;
     const departments = data ? ['All', ...new Set(data.map(c => c.department).filter(Boolean))] : ['All'];
     let filtered = (data || []).filter(c => {
       const matchSearch = !caContractSearch || c.contractor_name?.toLowerCase().includes(caContractSearch.toLowerCase()) || c.purpose?.toLowerCase().includes(caContractSearch.toLowerCase());
       const matchDept = caContractDeptFilter === 'All' || c.department === caContractDeptFilter;
-      const matchStatus = caContractsStatusFilter === 'All' || c.status?.toLowerCase() === caContractsStatusFilter.toLowerCase();
+      // Active/Completed is derived from the contract's end date at view time, so it never goes stale.
+      const matchStatus = caContractsStatusFilter === 'All' || caFederalContractStatus(c) === caContractsStatusFilter.toLowerCase();
       return matchSearch && matchDept && matchStatus;
     });
     filtered = [...filtered].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
@@ -32771,18 +32838,25 @@ function App() {
               {data && data.length > 0 && liveBadge(null, 'Monthly')}
             </div>
             <p className="text-gray-600 mb-4">See which companies receive taxpayer money</p>
+            {scope && (
+              <div className="bg-white/70 border border-green-200 rounded-lg p-3 mb-4 text-sm text-gray-700">
+                <p className="font-semibold">{scope.label}</p>
+                {scope.period && <p className="text-xs text-gray-500 mt-0.5">Reporting period: {scope.period}</p>}
+                <p className="text-xs text-gray-500 mt-0.5">This is a selection of the largest contracts, not every federal contract. Amounts are each contract's total disclosed value (original plus amendments), which can span many years.</p>
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white rounded-lg p-4 border-2 border-green-300">
-                <p className="text-sm text-gray-600">Total Contracts</p>
-                <p className="text-3xl font-bold text-green-600">{data ? data.length : '—'}</p>
+                <p className="text-sm text-gray-600">Largest contracts in this list</p>
+                <p className="text-3xl font-bold text-green-600">{scope && scope.size != null ? scope.size : '—'}</p>
               </div>
               <div className="bg-white rounded-lg p-4 border-2 border-emerald-300">
-                <p className="text-sm text-gray-600">Total Value</p>
-                <p className="text-3xl font-bold text-emerald-600">{totalValue > 0 ? fmtVal(totalValue) : '—'}</p>
+                <p className="text-sm text-gray-600">Combined value of these {scope && scope.size != null ? scope.size : ''} contracts</p>
+                <p className="text-3xl font-bold text-emerald-600">{scope && scope.totalValue > 0 ? fmtVal(scope.totalValue) : '—'}</p>
               </div>
               <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
-                <p className="text-sm text-gray-600">Showing Results</p>
-                <p className="text-3xl font-bold text-blue-600">{filtered.length}</p>
+                <p className="text-sm text-gray-600">{filterActive ? 'Matching loaded contracts' : 'Contracts shown'}</p>
+                <p className="text-3xl font-bold text-blue-600">{filtered.length}{!filterActive && scope && scope.size != null ? <span className="text-lg font-semibold text-blue-400"> of {scope.size}</span> : null}</p>
               </div>
             </div>
           </div>
@@ -32818,7 +32892,12 @@ function App() {
             </div>
           )}
 
-          {data === undefined ? (
+          {loadError ? (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
+              <p className="text-red-700 text-lg mb-3">Couldn't load the contracts list.</p>
+              <button onClick={loadCaFederalContracts} className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700">Try again</button>
+            </div>
+          ) : data === undefined ? (
             <div className="text-center py-12 text-gray-400 text-lg">Loading contracts…</div>
           ) : data.length === 0 ? (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
@@ -32827,6 +32906,9 @@ function App() {
           ) : filtered.length === 0 ? (
             <div className="bg-white rounded-lg shadow-md p-8 text-center">
               <p className="text-gray-600 text-lg">No contracts found matching your criteria.</p>
+              {!caFedContracts.done && (
+                <p className="text-gray-500 text-sm mt-2">Only the {loadedCount} contracts loaded so far were searched. Load more below to include the rest.</p>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
@@ -32835,8 +32917,9 @@ function App() {
                 const valTypeNote = c.contract_value_type === 'ceiling' ? 'ceiling value' : c.contract_value_type === 'total' ? 'total contract value' : null;
                 const startDate = fmtDate(c.start_date || c.date_awarded);
                 const endDate = fmtDate(c.end_date);
-                const isActive = c.status?.toLowerCase() === 'active';
-                const isCompleted = c.status?.toLowerCase() === 'completed';
+                const contractStatus = caFederalContractStatus(c);
+                const isActive = contractStatus === 'active';
+                const isCompleted = contractStatus === 'completed';
                 const contractKey = c.id || `${c.contractor_name}-${c.value}`;
                 const userContractVote = contractVotes[contractKey] || null;
                 const voteContract = (e, vote) => {
@@ -32860,6 +32943,7 @@ function App() {
                         <div className="flex flex-wrap gap-2 mb-2">
                           {isActive && <span className="text-xs font-bold bg-green-100 text-green-700 border border-green-300 px-2.5 py-0.5 rounded-full">Active</span>}
                           {isCompleted && <span className="text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">Completed</span>}
+                          {c.rank != null && <span className="text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-full">Rank #{c.rank}</span>}
                           {c.contract_type && <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-medium">{c.contract_type}</span>}
                           {c.department && <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c.department}</span>}
                           {liveBadge(c.last_updated, 'Monthly', 'self-center')}
@@ -32911,6 +32995,42 @@ function App() {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {data && data.length > 0 && (
+            <div className="mt-8 text-center">
+              {caFedContracts.done ? (
+                <p className="text-sm text-gray-500">
+                  {scope && scope.size != null ? `All ${loadedCount} of the ${scope.size} contracts in this selection are loaded.` : `All ${loadedCount} contracts in this selection are loaded.`}
+                </p>
+              ) : (
+                <div>
+                  {filterActive && (
+                    <p className="text-xs text-gray-500 mb-2">Search and filters apply only to the {loadedCount} contracts loaded so far.</p>
+                  )}
+                  <button
+                    onClick={loadCaFederalContracts}
+                    disabled={caFedContracts.status === 'loading'}
+                    className="px-6 py-3 rounded-lg font-semibold border-2 border-green-500 text-green-700 bg-white hover:bg-green-50 disabled:opacity-60"
+                  >
+                    {caFedContracts.status === 'loading'
+                      ? 'Loading…'
+                      : `Load ${CA_FED_CONTRACTS_PAGE_SIZE} more (${loadedCount}${scope && scope.size != null ? ` of ${scope.size}` : ''} loaded)`}
+                  </button>
+                  {caFedContracts.status === 'error' && (
+                    <p className="text-sm text-red-600 mt-2">Couldn't load more contracts. Please try again.</p>
+                  )}
+                </div>
+              )}
+              {scope && (
+                <p className="text-xs text-gray-400 mt-6 max-w-3xl mx-auto">
+                  Source: {scope.source || 'Treasury Board of Canada Secretariat — Proactive Publication - Contracts'}
+                  {scope.licence ? ` · ${scope.licence}` : ''}
+                  {scope.basis ? ` · ${scope.basis}` : ''}
+                  {scope.sourceUrl && (<> · <a href={scope.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">Open data portal</a></>)}
+                </p>
+              )}
             </div>
           )}
 
