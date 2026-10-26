@@ -21,7 +21,16 @@
  *   CV-REC-001-2026-09-07-CV-DATA-YT-002 (YT CRA Charities)
  *
  * Usage:
- *   node engine/canada-yt-write-charities.cjs
+ *   node engine/canada-yt-write-charities.cjs --dry-run   # fetch + validate + read ONLY the one target
+ *                                                          # document; writes nothing, writes no report files
+ *   node engine/canada-yt-write-charities.cjs             # the real merge-write (one document)
+ *
+ * Safeguards (engine/lib/subnational-write-safeguards.cjs, engine/lib/firestore-project-guard.cjs):
+ *   - any argument other than --dry-run is rejected before anything runs (no silent typos);
+ *   - the Admin SDK must be bound to Firebase project civic-voice-5ea94 before the first read or write;
+ *   - the target is validated (approved collection, id CA-YT, built document declares CA-YT);
+ *   - the write is merge-only on that one document and aborts if the existing document belongs to
+ *     another jurisdiction. Nothing is ever deleted or replaced wholesale.
  */
 
 'use strict';
@@ -32,6 +41,8 @@ const path = require('path');
 const { tryGetFirestore, describeCredentialSource } = require('./firebase-admin-init.cjs');
 const caYt = require('./lib/subnational-transparency-ca-yt.cjs');
 const { mergeTransparencyDoc, hasTaxPayload } = require('./lib/subnational-transparency-shared.cjs');
+const { parseStrictArgs, assertTarget, refuseUnrelatedRecord } = require('./lib/subnational-write-safeguards.cjs');
+const { verifyFirestoreProject } = require('./lib/firestore-project-guard.cjs');
 
 const REPORTS_DIR = path.join(__dirname, 'reports');
 const WRITE_AT = new Date().toISOString();
@@ -40,8 +51,19 @@ const COLLECTION = 'subnational_tax_exempt_entities';
 const JURISDICTION_ID = 'CA-YT';
 const VERIFICATION_ID = 'CV-REC-001-2026-09-07-CV-DATA-YT-002';
 
-async function writeYtCharities(db) {
+/** Only `--dry-run` is supported; anything else throws (and nothing runs). */
+function parseArgs(argv) {
+  const { flags } = parseStrictArgs(argv, { flags: ['--dry-run'] });
+  return { dryRun: flags.has('--dry-run') };
+}
+
+/**
+ * @param {any} db Firestore handle (may be null only in a dry run, which then skips the target read)
+ * @param {{ dryRun?: boolean, build?: Function }} [opts] `build` is injectable for tests
+ */
+async function writeYtCharities(db, { dryRun = false, build = caYt.buildTax, verifyProject = verifyFirestoreProject } = {}) {
   const result = {
+    dry_run: dryRun,
     dataset_id: 'CV-DATA-YT-002',
     dataset_name: 'CRA Charities Registry — Yukon org-level extract (MVP: name/type/category)',
     verification_id: VERIFICATION_ID,
@@ -60,8 +82,13 @@ async function writeYtCharities(db) {
   };
 
   try {
+    // The Admin SDK must be bound to civic-voice-5ea94 before anything is fetched, read or written.
+    if (db) {
+      result.firebase_project = await verifyProject();
+      console.log(`[canada-yt-write-charities] Firebase project verified: ${result.firebase_project}`);
+    }
     console.log('[canada-yt-write-charities] CV-DATA-YT-002: fetching…');
-    const doc = await caYt.buildTax();
+    const doc = await build();
 
     if (!hasTaxPayload(doc)) {
       throw new Error('No tax payload (records array empty) — refusing to write');
@@ -78,18 +105,34 @@ async function writeYtCharities(db) {
     doc.licence_note = 'Open Government Licence — Canada (OGL-Canada). Attribution: "Contains information licensed under the Open Government Licence — Canada. Source: Canada Revenue Agency Charities Directorate."';
     doc.cv_data_id = 'CV-DATA-YT-002';
 
-    console.log('[canada-yt-write-charities] CV-DATA-YT-002: writing to Firestore (merge)…');
-    const wr = await mergeTransparencyDoc(db, COLLECTION, JURISDICTION_ID, doc, 'tax');
-    if (!wr.written) throw new Error(`mergeTransparencyDoc returned written=false: ${wr.reason}`);
+    assertTarget({ collection: COLLECTION, jurisdictionId: JURISDICTION_ID, doc });
 
-    result.status = 'WRITTEN';
+    if (dryRun && !db) {
+      result.status = 'DRY_RUN';
+      result.existing_document = 'not checked (no Firestore credentials available in this dry run)';
+    } else {
+      console.log(`[canada-yt-write-charities] CV-DATA-YT-002: ${dryRun ? 'DRY RUN — reading the target document only (no write)' : 'writing to Firestore (merge)…'}`);
+      const wr = await mergeTransparencyDoc(db, COLLECTION, JURISDICTION_ID, doc, 'tax', { dryRun, beforeWrite: refuseUnrelatedRecord(JURISDICTION_ID) });
+      if (dryRun) {
+        result.status = 'DRY_RUN';
+        const { written, dryRun: _d, ...existing } = wr; // eslint-disable-line no-unused-vars
+        result.existing_document = existing;
+      } else {
+        if (!wr.written) throw new Error(`mergeTransparencyDoc returned written=false: ${wr.reason}`);
+        result.status = 'WRITTEN';
+      }
+    }
     result.reporting_period = doc.data_source || 'CRA Charities Registry latest extract';
     result.source_url = doc.source_url || caYt.SOURCES.charities;
-    result.records_written = doc.records_stored || doc.records.length;
+    const recordCount = doc.records_stored || doc.records.length;
+    result.records_written = dryRun ? 0 : recordCount;
+    if (dryRun) result.records_that_would_be_written = recordCount;
     result.sample_written = doc.records.slice(0, 10);
     result.fields_written = Object.keys(doc).filter((k) => doc[k] != null);
 
-    console.log(`[canada-yt-write-charities] CV-DATA-YT-002 written (${result.records_written} records).`);
+    console.log(dryRun
+      ? `[canada-yt-write-charities] CV-DATA-YT-002 DRY RUN complete: ${recordCount} records would be merge-written; nothing was written.`
+      : `[canada-yt-write-charities] CV-DATA-YT-002 written (${result.records_written} records).`);
   } catch (err) {
     result.status = 'FAILED';
     result.error = err.message || String(err);
@@ -99,23 +142,41 @@ async function writeYtCharities(db) {
 }
 
 async function main() {
+  let dryRun;
+  try {
+    ({ dryRun } = parseArgs(process.argv.slice(2)));
+  } catch (err) {
+    console.error(`[canada-yt-write-charities] ${err.message}`);
+    process.exit(1);
+  }
   console.log('[canada-yt-write-charities] ============================================');
-  console.log('[canada-yt-write-charities] CA-YT — CV-DATA-YT-002 CRA Charities Firestore write');
+  console.log(`[canada-yt-write-charities] CA-YT — CV-DATA-YT-002 CRA Charities ${dryRun ? 'DRY RUN (no writes)' : 'Firestore write'}`);
   console.log('[canada-yt-write-charities] CV-DATA-YT-001 (unemployment) and CV-DATA-YT-003 (grants) are NOT touched by this script');
   console.log(`[canada-yt-write-charities] Started: ${WRITE_AT}`);
   console.log('[canada-yt-write-charities] ============================================');
 
   const db = tryGetFirestore();
-  if (!db) {
+  if (!db && !dryRun) {
     console.error('[canada-yt-write-charities] FATAL: Firebase credentials not found.');
     console.error('[canada-yt-write-charities] Credential source:', describeCredentialSource());
     process.exit(1);
   }
-  console.log(`[canada-yt-write-charities] Firebase connected (${describeCredentialSource()})`);
+  if (db) {
+    console.log(`[canada-yt-write-charities] Firebase connected (${describeCredentialSource()})`);
+  } else {
+    console.warn('[canada-yt-write-charities] Dry run without Firebase credentials: the target document will NOT be read.');
+  }
 
-  const result = await writeYtCharities(db);
+  const result = await writeYtCharities(db, { dryRun });
 
-  await db.terminate();
+  if (db) await db.terminate();
+
+  if (dryRun) {
+    // A dry run leaves no files behind and never touches the shared write reports.
+    console.log(`\n[canada-yt-write-charities] DRY RUN RESULT:\n${JSON.stringify({ ...result, sample_written: result.sample_written && result.sample_written.slice(0, 3) }, null, 2)}`);
+    console.log('\n[canada-yt-write-charities] done. Firestore writes: 0.');
+    process.exit(result.status === 'DRY_RUN' ? 0 : 1);
+  }
 
   if (!fs.existsSync(REPORTS_DIR)) fs.mkdirSync(REPORTS_DIR, { recursive: true });
   const ts = WRITE_AT.replace(/[:.]/g, '-').replace('T', '_').slice(0, 19);
@@ -161,7 +222,12 @@ async function main() {
   if (result.status !== 'WRITTEN') process.exit(1);
 }
 
-main().catch((err) => {
-  console.error('[canada-yt-write-charities] fatal:', err);
-  process.exit(1);
-});
+// Only executes when run directly; require()-ing this file (tests) never touches Firestore.
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('[canada-yt-write-charities] fatal:', err);
+    process.exit(1);
+  });
+}
+
+module.exports = { parseArgs, writeYtCharities, COLLECTION, JURISDICTION_ID };

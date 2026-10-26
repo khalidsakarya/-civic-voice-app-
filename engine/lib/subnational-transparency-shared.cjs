@@ -251,7 +251,15 @@ function stripUndefinedDeep(value) {
   return out;
 }
 
-async function mergeTransparencyDoc(db, collection, jurisdictionId, payload, kind) {
+/**
+ * Merge-write one transparency document: ONE get of the target, then set(..., { merge: true }).
+ * Never deletes and never replaces the document.
+ * @param {{ dryRun?: boolean, beforeWrite?: (existing: any) => void }} [opts]
+ *   beforeWrite(existingSnapshot) may throw to abort before anything is written.
+ *   dryRun: after the get and beforeWrite, return what WOULD happen and perform NO write.
+ *   Both default to the original behaviour, so existing callers are unaffected.
+ */
+async function mergeTransparencyDoc(db, collection, jurisdictionId, payload, kind, opts = {}) {
   const ok =
     kind === 'economic'
       ? hasEconomicPayload(payload)
@@ -263,11 +271,25 @@ async function mergeTransparencyDoc(db, collection, jurisdictionId, payload, kin
   }
   const ref = db.collection(collection).doc(jurisdictionId);
   const existing = await ref.get();
+  if (typeof opts.beforeWrite === 'function') opts.beforeWrite(existing);
   const merged = stripUndefinedDeep({
     ...payload,
     jurisdiction_id: jurisdictionId,
     fetched_at: new Date().toISOString(),
   });
+  if (opts.dryRun) {
+    const existingKeys = existing.exists ? Object.keys(existing.data() || {}) : [];
+    return {
+      written: false,
+      dryRun: true,
+      existed: existing.exists,
+      existingKeys,
+      keysThatWouldBeReplaced: existingKeys.filter((k) => k in merged),
+      keysThatWouldBePreserved: existingKeys.filter((k) => !(k in merged)),
+      newKeys: Object.keys(merged).filter((k) => !existingKeys.includes(k)),
+      recordCount: kind === 'economic' ? null : (merged.records && merged.records.length) || 0,
+    };
+  }
   await ref.set(merged, { merge: true });
   return {
     written: true,

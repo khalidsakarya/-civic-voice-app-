@@ -39,6 +39,17 @@
  * confirming quota with a single write:
  *   node engine/canada-unemployment-batch-write.cjs --only=CA-YT
  *   node engine/canada-unemployment-batch-write.cjs --only=CA-AB,CA-QC,CA-SK
+ *
+ * Rehearsal (fetch + validate + read ONLY each target document; writes nothing and leaves no report files):
+ *   node engine/canada-unemployment-batch-write.cjs --dry-run --only=CA-YT
+ *
+ * Safeguards (engine/lib/subnational-write-safeguards.cjs, engine/lib/firestore-project-guard.cjs):
+ *   - arguments other than --dry-run and --only=<ids> are rejected before anything runs, and so is any
+ *     --only id that is not one of the 11 jurisdictions below (no silent typos);
+ *   - the Admin SDK must be bound to Firebase project civic-voice-5ea94 before the first read or write;
+ *   - each target is validated (approved collection, id CA-XX, built document declares that same CA-XX);
+ *   - writes are merge-only and abort for a jurisdiction whose existing document belongs to another
+ *     jurisdiction; nothing is ever deleted or replaced wholesale.
  */
 
 'use strict';
@@ -48,6 +59,8 @@ const path = require('path');
 
 const { tryGetFirestore, describeCredentialSource } = require('./firebase-admin-init.cjs');
 const { mergeTransparencyDoc, hasEconomicPayload } = require('./lib/subnational-transparency-shared.cjs');
+const { parseStrictArgs, assertTarget, refuseUnrelatedRecord } = require('./lib/subnational-write-safeguards.cjs');
+const { verifyFirestoreProject } = require('./lib/firestore-project-guard.cjs');
 
 const REPORTS_DIR = path.join(__dirname, 'reports');
 const COLLECTION = 'subnational_economic_social_stats';
@@ -73,11 +86,24 @@ const JURISDICTIONS = [
   { id: 'CA-NU', code: 'NU', modPath: './lib/subnational-transparency-ca-nu.cjs', datasetId: 'CV-DATA-NU-001', table: '14-10-0292-01' },
 ];
 
-function parseOnlyFilter(argv) {
-  const arg = argv.find((a) => a.startsWith('--only='));
-  if (!arg) return null;
-  const ids = arg.slice('--only='.length).split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
-  return ids.length ? new Set(ids) : null;
+/**
+ * Strict: only `--dry-run` and `--only=CA-XX[,CA-YY…]` are accepted. Unknown arguments, repeated flags, an
+ * empty list and ids that are not in JURISDICTIONS all throw, so nothing runs on a typo.
+ * @returns {{ dryRun: boolean, only: Set<string>|null }}
+ */
+function parseArgs(argv) {
+  const { flags, values } = parseStrictArgs(argv, { flags: ['--dry-run'], values: ['--only'] });
+  let only = null;
+  if ('--only' in values) {
+    const ids = values['--only'].split(',').map((s) => s.trim().toUpperCase());
+    const known = new Set(JURISDICTIONS.map((j) => j.id));
+    const bad = ids.filter((id) => !known.has(id));
+    if (bad.length || ids.some((id) => !id)) {
+      throw new Error(`--only contains ${bad.length ? `unknown jurisdiction(s) ${bad.map((b) => `"${b}"`).join(', ')}` : 'an empty entry'}. Valid: ${[...known].join(', ')}. Nothing was run.`);
+    }
+    only = new Set(ids);
+  }
+  return { dryRun: flags.has('--dry-run'), only };
 }
 
 /**
@@ -85,8 +111,9 @@ function parseOnlyFilter(argv) {
  * always returns a result object with status WRITTEN or FAILED, so the
  * caller's batch loop never needs its own try/catch.
  */
-async function runOne(db, entry, writeAt) {
+async function runOne(db, entry, writeAt, { dryRun = false, loadModule = (p) => require(p) } = {}) {
   const result = {
+    dry_run: dryRun,
     dataset_id: entry.datasetId,
     jurisdiction_id: entry.id,
     dataset_name: `Statistics Canada — ${entry.id} Unemployment (Table ${entry.table})`,
@@ -110,8 +137,7 @@ async function runOne(db, entry, writeAt) {
   };
 
   try {
-    // eslint-disable-next-line global-require, import/no-dynamic-require
-    const mod = require(entry.modPath);
+    const mod = loadModule(entry.modPath);
     const coordKey = `STATCAN_${entry.code}_COORD`;
     result.coordinate = mod[coordKey] || null;
 
@@ -129,22 +155,35 @@ async function runOne(db, entry, writeAt) {
     doc.licence_note = `Statistics Canada Open Licence. Attribution: "Statistics Canada. Table ${entry.table}."`;
     doc.cv_data_id = entry.datasetId;
 
-    console.log(`[canada-unemployment-batch-write] ${entry.id} (${entry.datasetId}): writing to Firestore (merge)…`);
-    const wr = await mergeTransparencyDoc(db, COLLECTION, entry.id, doc, 'economic');
-    if (!wr.written) throw new Error(`mergeTransparencyDoc returned written=false: ${wr.reason}`);
+    assertTarget({ collection: COLLECTION, jurisdictionId: entry.id, doc });
 
-    result.status = 'WRITTEN';
+    if (dryRun && !db) {
+      result.status = 'DRY_RUN';
+      result.existing_document = 'not checked (no Firestore credentials available in this dry run)';
+    } else {
+      console.log(`[canada-unemployment-batch-write] ${entry.id} (${entry.datasetId}): ${dryRun ? 'DRY RUN — reading the target document only (no write)' : 'writing to Firestore (merge)…'}`);
+      const wr = await mergeTransparencyDoc(db, COLLECTION, entry.id, doc, 'economic', { dryRun, beforeWrite: refuseUnrelatedRecord(entry.id) });
+      if (dryRun) {
+        result.status = 'DRY_RUN';
+        const { written, dryRun: _d, ...existing } = wr; // eslint-disable-line no-unused-vars
+        result.existing_document = existing;
+      } else {
+        if (!wr.written) throw new Error(`mergeTransparencyDoc returned written=false: ${wr.reason}`);
+        result.status = 'WRITTEN';
+      }
+    }
     result.reporting_period = doc.unemployment_reporting_period || doc.reporting_period || null;
     result.source_url = doc.unemployment_source_url || mod.SOURCES?.unemployment || null;
     result.latest_rate = doc.unemployment_latest_rate ?? null;
     result.latest_period = doc.unemployment_latest_period ?? null;
 
     const series = doc.unemployment_series_monthly || doc.unemployment_series_rolling_3_month || [];
-    result.records_written = series.length;
+    result.records_written = dryRun ? 0 : series.length;
+    if (dryRun) result.records_that_would_be_written = series.length;
     result.sample_written = series.slice(-3);
     result.fields_written = Object.keys(doc).filter((k) => doc[k] != null);
 
-    console.log(`[canada-unemployment-batch-write] ${entry.id} WRITTEN — ${result.latest_rate}% (${result.latest_period}), ${series.length} monthly points.`);
+    console.log(`[canada-unemployment-batch-write] ${entry.id} ${dryRun ? 'DRY RUN (nothing written)' : 'WRITTEN'} — ${result.latest_rate}% (${result.latest_period}), ${series.length} monthly points.`);
   } catch (err) {
     result.status = 'FAILED';
     result.error = err.message || String(err);
@@ -154,23 +193,36 @@ async function runOne(db, entry, writeAt) {
   return result;
 }
 
-async function runBatch(only) {
+/**
+ * @param {Set<string>|null} only
+ * @param {{ dryRun?: boolean, getDb?: Function, verifyProject?: Function, loadModule?: Function }} [opts]  injectable for tests
+ */
+async function runBatch(only, { dryRun = false, getDb = tryGetFirestore, verifyProject = verifyFirestoreProject, loadModule } = {}) {
   const writeAt = new Date().toISOString();
   const targets = only ? JURISDICTIONS.filter((j) => only.has(j.id)) : JURISDICTIONS;
 
   console.log('[canada-unemployment-batch-write] ============================================');
-  console.log('[canada-unemployment-batch-write] ⚠️  THIS RUN WILL WRITE TO FIRESTORE  ⚠️');
+  console.log(dryRun
+    ? '[canada-unemployment-batch-write] DRY RUN — no Firestore writes, no report files'
+    : '[canada-unemployment-batch-write] ⚠️  THIS RUN WILL WRITE TO FIRESTORE  ⚠️');
   console.log(`[canada-unemployment-batch-write] Jurisdictions in this run: ${targets.map((t) => t.id).join(', ')}`);
   console.log(`[canada-unemployment-batch-write] Started: ${writeAt}`);
   console.log('[canada-unemployment-batch-write] ============================================');
 
-  const db = tryGetFirestore();
-  if (!db) {
+  const db = getDb();
+  if (!db && !dryRun) {
     console.error('[canada-unemployment-batch-write] FATAL: Firebase credentials not found.');
     console.error('[canada-unemployment-batch-write] Credential source:', describeCredentialSource());
     process.exit(1);
   }
-  console.log(`[canada-unemployment-batch-write] Firebase connected (${describeCredentialSource()})`);
+  if (db) {
+    console.log(`[canada-unemployment-batch-write] Firebase connected (${describeCredentialSource()})`);
+    // Refuses (throws) unless the SDK is bound to civic-voice-5ea94; runs before the first read or write.
+    const projectId = await verifyProject();
+    console.log(`[canada-unemployment-batch-write] Firebase project verified: ${projectId}`);
+  } else {
+    console.warn('[canada-unemployment-batch-write] Dry run without Firebase credentials: target documents will NOT be read.');
+  }
 
   const results = [];
   for (const entry of targets) {
@@ -178,13 +230,13 @@ async function runBatch(only) {
     // per-jurisdiction console output readable; a slow/failed jurisdiction
     // never blocks the others since runOne() never throws.
     // eslint-disable-next-line no-await-in-loop
-    results.push(await runOne(db, entry, writeAt));
+    results.push(await runOne(db, entry, writeAt, { dryRun, loadModule }));
   }
 
-  await db.terminate();
+  if (db) await db.terminate();
 
   const report = {
-    run_type: 'FIRESTORE_WRITE_BATCH',
+    run_type: dryRun ? 'DRY_RUN' : 'FIRESTORE_WRITE_BATCH',
     write_at: writeAt,
     scope: 'Unemployment only (subnational_economic_social_stats), merge-only, all provinces/territories confirmed working via the StatCan WDS reliability helper',
     jurisdictions_attempted: targets.map((t) => t.id),
@@ -192,10 +244,23 @@ async function runBatch(only) {
     summary: {
       total_attempted: results.length,
       written: results.filter((r) => r.status === 'WRITTEN').length,
+      dry_run_ok: results.filter((r) => r.status === 'DRY_RUN').length,
       failed: results.filter((r) => r.status === 'FAILED').length,
       warnings_total: results.reduce((s, r) => s + (r.warnings?.length || 0), 0),
     },
   };
+
+  if (dryRun) {
+    // A dry run leaves no files behind and never touches the committed write reports.
+    console.log('\n[canada-unemployment-batch-write] ============ DRY RUN SUMMARY ============');
+    for (const r of results) {
+      console.log(`  ${r.status === 'DRY_RUN' ? '✓' : '✗'} ${r.jurisdiction_id.padEnd(6)} ${r.dataset_id}  ${r.status}${r.latest_rate != null ? `  ${r.latest_rate}% (${r.latest_period})` : ''}${r.error ? `  — ${r.error.slice(0, 100)}` : ''}`);
+    }
+    console.log(`\n  OK: ${report.summary.dry_run_ok}/${report.summary.total_attempted} · Firestore writes: 0`);
+    console.log(`\n${JSON.stringify(report, null, 2)}`);
+    if (report.summary.failed) process.exitCode = 1;
+    return report;
+  }
 
   if (!fs.existsSync(REPORTS_DIR)) fs.mkdirSync(REPORTS_DIR, { recursive: true });
   const ts = writeAt.replace(/[:.]/g, '-').replace('T', '_').slice(0, 19);
@@ -213,6 +278,7 @@ async function runBatch(only) {
   console.log(`  Report: ${reportPath}`);
   console.log(`  Latest: ${latestPath}`);
   console.log('\n[canada-unemployment-batch-write] done.');
+  if (report.summary.failed) process.exitCode = 1;
 
   return report;
 }
@@ -220,11 +286,17 @@ async function runBatch(only) {
 // Only executes when run directly (`node engine/canada-unemployment-batch-write.cjs`).
 // require()-ing this module elsewhere never triggers a Firestore write.
 if (require.main === module) {
-  const only = parseOnlyFilter(process.argv.slice(2));
-  runBatch(only).catch((err) => {
+  let args;
+  try {
+    args = parseArgs(process.argv.slice(2));
+  } catch (err) {
+    console.error(`[canada-unemployment-batch-write] ${err.message}`);
+    process.exit(1);
+  }
+  runBatch(args.only, { dryRun: args.dryRun }).catch((err) => {
     console.error('[canada-unemployment-batch-write] fatal:', err);
     process.exit(1);
   });
 }
 
-module.exports = { runBatch, JURISDICTIONS };
+module.exports = { runBatch, runOne, parseArgs, JURISDICTIONS, COLLECTION };
