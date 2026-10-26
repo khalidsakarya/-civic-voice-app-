@@ -1,0 +1,22 @@
+{
+  "run_type": "FIRESTORE_WRITE",
+  "write_at": "2026-09-07T21:51:38.247Z",
+  "jurisdiction": "CA-YT",
+  "dataset": {
+    "dataset_id": "CV-DATA-YT-002",
+    "dataset_name": "CRA Charities Registry — Yukon org-level extract (MVP: name/type/category)",
+    "verification_id": "CV-REC-001-2026-09-07-CV-DATA-YT-002",
+    "firestore_path": "subnational_tax_exempt_entities/CA-YT",
+    "write_mode": "merge",
+    "write_at": "2026-09-07T21:51:38.247Z",
+    "status": "FAILED",
+    "error": "8 RESOURCE_EXHAUSTED: Quota exceeded.",
+    "reporting_period": null,
+    "records_written": null,
+    "fields_written": [],
+    "sample_written": [],
+    "warnings": [],
+    "ui_renderable": true,
+    "mvp_note": "Name/type/category only. rawValue=0 enforced. No dollar values written."
+  }
+}

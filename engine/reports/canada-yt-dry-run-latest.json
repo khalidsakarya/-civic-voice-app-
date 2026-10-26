@@ -1,6 +1,6 @@
 {
   "run_type": "DRY_RUN",
-  "run_at": "2026-09-07T21:44:57.298Z",
+  "run_at": "2026-10-26T00:31:44.709Z",
   "jurisdiction": "CA-YT",
   "datasets": [
     {
@@ -15,21 +15,56 @@
         "write_mode": "merge"
       },
       "source_url": "https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1410029201",
-      "fetched_at": "2026-09-07T21:44:57.298Z",
-      "status": "BLOCKED",
-      "error": "No economic payload returned — coordinate may be wrong or API returned no data",
-      "reporting_period": null,
-      "records_fetched": null,
-      "records_transformed": null,
-      "fields_to_write": [],
-      "sample_records": [],
-      "warnings": [
-        "unemployment: read ECONNRESET",
-        "Coord attempted: 1.8.1.1.1.1.0.0.0.0 (Table 14-10-0292-01)",
-        "Transient Node-level connection reset against the Stats Can API — same class of issue observed for every province processed so far in this environment (confirmed independently working via direct curl for this exact coordinate). Report separately; do not write."
+      "fetched_at": "2026-10-26T00:31:44.709Z",
+      "status": "DRY_RUN_OK",
+      "error": null,
+      "reporting_period": "Monthly territorial unemployment rate (3-month moving average, seasonally adjusted)",
+      "records_fetched": 24,
+      "records_transformed": 24,
+      "fields_to_write": [
+        "unemployment_latest_rate",
+        "unemployment_latest_period",
+        "unemployment_frequency",
+        "unemployment_series_rolling_3_month",
+        "unemployment_source_url",
+        "unemployment_source",
+        "unemployment_url",
+        "unemployment_reporting_period",
+        "unemployment_rate",
+        "reporting_period",
+        "data_status"
       ],
-      "ui_renderable": false,
-      "safe_to_write_after_review": false
+      "sample_records": [
+        {
+          "period": "2024-10",
+          "period_label": "Oct 2024",
+          "jurisdiction": 5.6,
+          "national_average": 6.6,
+          "Yukon": 5.6,
+          "CA Average": 6.6
+        },
+        {
+          "period": "2024-11",
+          "period_label": "Nov 2024",
+          "jurisdiction": 5.6,
+          "national_average": 7,
+          "Yukon": 5.6,
+          "CA Average": 7
+        },
+        {
+          "period": "2024-12",
+          "period_label": "Dec 2024",
+          "jurisdiction": 4.6,
+          "national_average": 6.7,
+          "Yukon": 4.6,
+          "CA Average": 6.7
+        }
+      ],
+      "warnings": [],
+      "ui_renderable": true,
+      "safe_to_write_after_review": true,
+      "unemployment_latest_rate": 4.6,
+      "unemployment_latest_period": "Sep 2026"
     },
     {
       "dataset_id": "CV-DATA-YT-002",
@@ -41,7 +76,7 @@
         "write_mode": "merge"
       },
       "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5",
-      "fetched_at": "2026-09-07T21:44:57.298Z",
+      "fetched_at": "2026-10-26T00:31:44.709Z",
       "status": "DRY_RUN_OK",
       "error": null,
       "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
@@ -94,7 +129,7 @@
         "write_mode": "merge"
       },
       "source_url": null,
-      "fetched_at": "2026-09-07T21:44:57.298Z",
+      "fetched_at": "2026-10-26T00:31:44.709Z",
       "status": "NOT_FOUND",
       "error": "YT Grants: no current, machine-readable (CSV/XLSX/JSON), whole-of-government Yukon grants/payments/public-accounts source exists. yukon.ca returns HTTP 403 to automated requests (bot-protection) and was not scraped. Yukon's CKAN open data portal (open.yukon.ca) was searched across 8 financial-related terms; the only candidates found are either narrow single-program grants (Pioneer Utility Grant, Spark Tourism Micro Grant), an unverified self-reported vendor directory with no payment amounts, or the genuinely comprehensive and current Public Accounts (fiscal years 2001-02 through 2024-25, including \"Schedule 8 - Schedule of legislated grants\" and \"Schedule 9 - Schedule of other government transfers\") — but every one of the 170 Finance-organization datasets on open.yukon.ca is published as PDF only (confirmed via a full organization-wide format scan: 100% PDF, zero CSV/XLSX/JSON). PDF extraction was not authorized for this task. This is a genuine data-format gap, not a fetch failure — see module header comment for the full search performed.",
       "reporting_period": null,
@@ -132,9 +167,9 @@
   ],
   "summary": {
     "total": 3,
-    "dry_run_ok": 1,
-    "blocked": 1,
+    "dry_run_ok": 2,
+    "blocked": 0,
     "not_found": 1,
-    "warnings_total": 3
+    "warnings_total": 0
   }
 }

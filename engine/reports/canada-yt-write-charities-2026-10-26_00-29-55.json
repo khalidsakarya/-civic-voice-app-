@@ -1,0 +1,164 @@
+{
+  "run_type": "FIRESTORE_WRITE",
+  "write_at": "2026-10-26T00:29:55.027Z",
+  "jurisdiction": "CA-YT",
+  "dataset": {
+    "dry_run": false,
+    "dataset_id": "CV-DATA-YT-002",
+    "dataset_name": "CRA Charities Registry — Yukon org-level extract (MVP: name/type/category)",
+    "verification_id": "CV-REC-001-2026-09-07-CV-DATA-YT-002",
+    "firestore_path": "subnational_tax_exempt_entities/CA-YT",
+    "write_mode": "merge",
+    "write_at": "2026-10-26T00:29:55.027Z",
+    "status": "WRITTEN",
+    "error": null,
+    "reporting_period": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+    "records_written": 100,
+    "fields_written": [
+      "jurisdiction_id",
+      "data_source",
+      "source_url",
+      "note",
+      "total_in_source",
+      "records_stored",
+      "records",
+      "verification_status",
+      "licence_note",
+      "cv_data_id"
+    ],
+    "sample_written": [
+      {
+        "name": "CHALLENGE-DISABILITY RESOURCE GROUP",
+        "industry": "Other",
+        "industryColor": "bg-stone-100 text-stone-600",
+        "exemType": "Charitable Organization",
+        "rawValue": 0
+      },
+      {
+        "name": "CHILD DEVELOPMENT CENTRE",
+        "industry": "Other",
+        "industryColor": "bg-stone-100 text-stone-600",
+        "exemType": "Charitable Organization",
+        "rawValue": 0
+      },
+      {
+        "name": "DAWSON COMMUNITY CHAPEL",
+        "industry": "Other",
+        "industryColor": "bg-stone-100 text-stone-600",
+        "exemType": "Charitable Organization",
+        "rawValue": 0
+      },
+      {
+        "name": "DAWSON SOCIETY FOR CHILDREN AND FAMILIES (DSCP)",
+        "industry": "Other",
+        "industryColor": "bg-stone-100 text-stone-600",
+        "exemType": "Charitable Organization",
+        "rawValue": 0
+      },
+      {
+        "name": "FIRST PENTECOSTAL CHURCH",
+        "industry": "Other",
+        "industryColor": "bg-stone-100 text-stone-600",
+        "exemType": "Charitable Organization",
+        "rawValue": 0
+      },
+      {
+        "name": "GRACE COMMUNITY CHURCH",
+        "industry": "Other",
+        "industryColor": "bg-stone-100 text-stone-600",
+        "exemType": "Charitable Organization",
+        "rawValue": 0
+      },
+      {
+        "name": "WATSON LAKE COMMUNITY GOSPEL CHAPEL",
+        "industry": "Other",
+        "industryColor": "bg-stone-100 text-stone-600",
+        "exemType": "Charitable Organization",
+        "rawValue": 0
+      },
+      {
+        "name": "TRINITY EVANGELICAL LUTHERAN CHURCH",
+        "industry": "Other",
+        "industryColor": "bg-stone-100 text-stone-600",
+        "exemType": "Charitable Organization",
+        "rawValue": 0
+      },
+      {
+        "name": "WHITEHORSE BAPTIST CHURCH",
+        "industry": "Other",
+        "industryColor": "bg-stone-100 text-stone-600",
+        "exemType": "Charitable Organization",
+        "rawValue": 0
+      },
+      {
+        "name": "WHITEHORSE UNITED CHURCH",
+        "industry": "Other",
+        "industryColor": "bg-stone-100 text-stone-600",
+        "exemType": "Charitable Organization",
+        "rawValue": 0
+      }
+    ],
+    "warnings": [],
+    "ui_renderable": true,
+    "mvp_note": "Name/type/category only. rawValue=0 enforced. No dollar values written.",
+    "firebase_project": "civic-voice-5ea94",
+    "source_url": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5"
+  },
+  "incident_2026_10_26": {
+    "id": "INCIDENT-2026-10-26-YT-CHARITIES-UNINTENDED-WRITE",
+    "summary": "An unauthorised live Firestore write of the Yukon CRA charities dataset was triggered by the assistant's own mutation test while it was testing new safeguards. This file (and its per-run companion) is the record of that write; it is NOT the result of a planned upload.",
+    "when": "2026-10-26T00:29:55Z (2026-10-25 20:29-20:30 EDT)",
+    "what_happened": "The real script engine/canada-yt-write-charities.cjs ran in write mode and merge-wrote subnational_tax_exempt_entities/CA-YT. Status WRITTEN, 100 records, exit normal.",
+    "affected_firestore_document": {
+      "path": "subnational_tax_exempt_entities/CA-YT",
+      "operation": "one get + one set(..., { merge: true }); nothing deleted, nothing replaced wholesale",
+      "firebase_project": "civic-voice-5ea94 (verified by the project guard in that run; recorded in the per-run report)",
+      "records_written": 100,
+      "records_in_source": 111,
+      "fields": [
+        "jurisdiction_id",
+        "data_source",
+        "source_url",
+        "note",
+        "total_in_source",
+        "records_stored",
+        "records",
+        "verification_status",
+        "licence_note",
+        "cv_data_id",
+        "fetched_at"
+      ],
+      "record_shape": "name, industry, industryColor, exemType, rawValue (all 100 rawValue = 0, a placeholder, not a financial figure)"
+    },
+    "why_it_happened": [
+      "While proving the new --dry-run / strict-argument safeguards (task: add focused tests), the assistant ran a mutation check that deliberately DISABLED the strict-argument rejection in engine/lib/subnational-write-safeguards.cjs to confirm a test would catch it.",
+      "One of those tests started the REAL script with a mistyped flag (`--dryrun`) as a child process. It removed two credential variables from the child's environment, but the script loads credentials itself (firebase-admin-init.cjs -> dotenv -> the sibling civic-voice-engine/.env), so the child still had real credentials.",
+      "With the mutation active the typo was ignored and the script ran as an ordinary write. The test then failed (it expected exit 1), which aborted the test loop; the later cases (the unemployment batch script) never ran.",
+      "The task instruction at the time was \"no live Firestore writes\". The test design, not the production scripts, was at fault."
+    ],
+    "approval_status": "Not authorised when it happened. The owner subsequently directed (2026-10-26) that the uploaded Yukon charities be kept and marked \"UPLOADED - UI VERIFICATION PENDING\" and not be re-run. The incident is documented, not concealed.",
+    "unrelated_data_affected": {
+      "answer": "No evidence of any.",
+      "evidence": [
+        "Exactly one document path was written, by a merge-only helper; the script has no delete, update, batch or collection-scan code.",
+        "The project guard verified civic-voice-5ea94 in that run.",
+        "The unemployment batch script and the NT/NU scripts did not run: no batch, NT or NU report exists, and the shared batch report is unchanged.",
+        "A read-only dry-run immediately afterwards showed the document's existing keys are exactly the 11 keys the script writes (no other fields), so no other data lives in that document.",
+        "A targeted read compared the stored records with a fresh rebuild from the CRA source: identical (100 records, same order, same values)."
+      ],
+      "not_recorded": "Whether the document existed before this write is not recorded by the script. It is believed to have been absent: every earlier Yukon charities attempt (2026-09-07, four reports) failed with RESOURCE_EXHAUSTED, and the post-write key set contains nothing but this script's fields."
+    },
+    "safeguards_implemented_afterwards": [
+      "The CLI tests now run the real scripts under a preload (test helper in engine/test-subnational-write-safeguards.cjs) that replaces firebase-admin with a tripwire and blocks the network, fetch and child processes, so no test can reach Firestore even if a safeguard is broken. A self-check proves a valid argument is stopped by the tripwire.",
+      "All 17 safeguard mutations were re-run under the hermetic harness: all caught, and no new report or write occurred.",
+      "Commit e311408: strict argument rejection, explicit --dry-run, project guard, target validation and an unrelated-record refusal for engine/canada-yt-write-charities.cjs and engine/canada-unemployment-batch-write.cjs."
+    ],
+    "remaining_corrective_actions": [
+      "Yukon charities: UPLOADED - UI VERIFICATION PENDING (open the Yukon Tax Exempt / Charities modal once).",
+      "DATA-CURRENCY FINDING (separate from the incident, discovered while assessing this document): the charities builders read CRA dataset 51c68b86-33f0-46fe-9b51-0a786d0088f5, titled \"1998 List of charities\" (coverage 1998-01-01 to 1998-12-31, frequency \"not planned\"); the app labels it the latest registry listing. All 13 provincial and territorial charity builders use this same dataset, so the 10 previously written provincial charity documents are affected as well. Recommended correction is in canada-coverage-matrix-latest.json (data_currency_finding_2026_10_26). No change has been made to the data or the UI.",
+      "Yukon charities zero values: rawValue 0 is a placeholder meaning \"no financial data stored\", not zero revenue, assets or donations; the data layer would render it as \"$0\" unless the existing CRA-dataset detection hides it. Recommended correction is in the same matrix section.",
+      "The compliance verification record (CV-REC-001 template) for CV-DATA-YT-002 has not been created yet.",
+      "Eight other province charity write scripts (AB, MB, NB, NL, NS, PE, QC, SK) still call main() on import, so requiring them in a test would run them for real. Not changed here; do not require them from tests."
+    ]
+  }
+}
