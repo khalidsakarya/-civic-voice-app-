@@ -359,6 +359,7 @@
     "ready_count": 14,
     "ready": "Unemployment for AB, QC, SK, MB, NS, NB, NL, PE, YT, NT, NU (11 documents) and charities for YT, NT, NU (3 documents). Current values were previewed read-only on 2026-10-26 (see coverage_review_2026_10_26 in canada-coverage-matrix-latest.json).",
     "recommended_order": "Batch 1 Yukon charities + unemployment; Batch 2 NT + NU (charities and unemployment); Batch 3 the eight provinces' unemployment. Details and commands: canada-coverage-matrix-latest.json, coverage_review_2026_10_26.recommended_next_batch.",
-    "sections_3_unchanged": "Nine blocked or not-approved datasets are unchanged (2 product/display decisions, 7 data gaps)."
+    "sections_3_unchanged": "Nine blocked or not-approved datasets are unchanged (2 product/display decisions, 7 data gaps).",
+    "yukon": "Yukon unemployment WRITTEN and verified 2026-10-26; Yukon charities UPLOADED — UI VERIFICATION PENDING (written 2026-10-26T00:29:55Z by an unintended test run, kept). NT and NU charities ON HOLD pending the CRA data-currency decision (see canada-coverage-matrix-latest.json, data_currency_finding_2026_10_26)."
   }
 }

@@ -352,11 +352,11 @@
       "jurisdiction_id": "CA-YT",
       "name": "Yukon",
       "unemployment": {
-        "status": "Fetch confirmed working post-reliability-fix (5.3% Aug 2026); write ATTEMPTED and failed on Firestore quota",
-        "write_status": "FAILED (RESOURCE_EXHAUSTED) — attempted via canada-unemployment-batch-write.cjs --only=CA-YT on 2026-09-07",
-        "source_quality": "Excellent — StatCan Table 14-10-0292-01 (territorial), coordinate 1.8.1.1.1.1.0.0.0.0",
-        "blocker_type": "infrastructure quota blocked",
-        "detail": "The fetch succeeded cleanly (no ECONNRESET); only the Firestore write step failed, with the exact RESOURCE_EXHAUSTED error, confirmed in engine/reports/canada-unemployment-batch-write-latest.json."
+        "status": "WRITTEN AND VERIFIED (targeted read)",
+        "write_status": "WRITTEN 2026-10-26T00:49:16Z via `node engine/canada-unemployment-batch-write.cjs --only=CA-YT` (one document, subnational_economic_social_stats/CA-YT, merge-only, created: it did not exist; 1 read + 1 write)",
+        "source_quality": "Excellent — Statistics Canada Table 14-10-0292-01 (territorial LFS, 3-month moving average, seasonally adjusted), coordinate 1.8.1.1.1.1.0.0.0.0",
+        "blocker_type": "written/live",
+        "detail": "Stored and re-read: jurisdiction CA-YT, latest 4.6% (Sep 2026) against a national 6.5%, 24 ascending monthly points Oct 2024 - Sep 2026, source and licence note present. Live-UI check not yet done. See engine/reports/canada-unemployment-batch-write-latest.json."
       },
       "charities": {
         "status": "UPLOADED — UI VERIFICATION PENDING",
@@ -435,9 +435,9 @@
   ],
   "summary_counts": {
     "total_dataset_slots": 42,
-    "total_datasets_written": 18,
+    "total_datasets_written": 19,
     "total_datasets_ready_after_quota_clears": 12,
-    "total_datasets_infrastructure_quota_blocked": 1,
+    "total_datasets_infrastructure_quota_blocked": 0,
     "total_datasets_pending_reviewer_decision": 3,
     "total_datasets_blocked_unavailable_no_source": 3,
     "total_datasets_blocked_unavailable_pdf_only": 1,
@@ -446,9 +446,9 @@
     "note": "42 = 14 jurisdictions x 3 dataset categories (unemployment, charities, grants). Leader-profile status is tracked separately per jurisdiction and is not included in these counts.",
     "breakdown_by_category": {
       "unemployment": {
-        "written": 3,
+        "written": 4,
         "ready_after_quota_clears": 10,
-        "infrastructure_quota_blocked": 1,
+        "infrastructure_quota_blocked": 0,
         "pending_reviewer_decision": 0,
         "total": 14
       },
@@ -468,7 +468,7 @@
         "total": 14
       }
     },
-    "as_of": "2026-10-26 (federal unemployment moved from pending decision to written; the federal grants slot stays pending only for Grants and Contributions, because federal Contracts, which shared that slot, is written). Quota-related counts are carried over from 2026-10-18 and re-assessed in coverage_review_2026_10_26. Updated again 2026-10-26: Yukon charities moved to written (unintended write, kept by the owner)."
+    "as_of": "2026-10-26 (federal unemployment moved from pending decision to written; the federal grants slot stays pending only for Grants and Contributions, because federal Contracts, which shared that slot, is written). Quota-related counts are carried over from 2026-10-18 and re-assessed in coverage_review_2026_10_26. Updated again 2026-10-26: Yukon charities moved to written (unintended write, kept by the owner). Yukon unemployment written 2026-10-26 (19 datasets written; none quota-blocked)."
   },
   "leader_profile_summary": {
     "last_automated_run": "2026-05-18T01:45:41.400Z (engine/reports/subnational-leader-profiles-latest.json)",
@@ -521,7 +521,7 @@
   "coverage_review_2026_10_26": {
     "generated_from": "Existing reports and scripts only. The only network access was a read-only preview of the public StatCan and CRA data through the existing builders (no firebase-admin loaded). No Firestore read, write, probe or scan.",
     "ready_to_upload": {
-      "note": "14 documents. Scripts exist and are tracked; the builders were exercised read-only on 2026-10-26 and all returned data (unemployment current to Sep 2026, 24 points each). The write scripts always write (no --dry-run flag, no project guard, no backup).",
+      "note": "12 documents remain (10 unemployment: AB, QC, SK, MB, NS, NB, NL, PE, NT, NU; charities NT and NU are ON HOLD). Yukon is done. Scripts now have a project guard, --dry-run and strict arguments.",
       "unemployment": [
         {
           "jurisdiction": "CA-AB",
@@ -562,11 +562,6 @@
           "jurisdiction": "CA-PE",
           "rate": "7.3% (Sep 2026)",
           "table": "14-10-0287-01"
-        },
-        {
-          "jurisdiction": "CA-YT",
-          "rate": "4.6% (Sep 2026)",
-          "table": "14-10-0292-01 (3-month moving average)"
         },
         {
           "jurisdiction": "CA-NT",
@@ -638,9 +633,10 @@
       "then": [
         "Batch 2 (NT + NU, 4 documents): canada-nt-write-charities.cjs, canada-nu-write-charities.cjs, canada-unemployment-batch-write.cjs --only=CA-NT,CA-NU",
         "Batch 3 (8 provinces, 8 documents): canada-unemployment-batch-write.cjs --only=CA-AB,CA-QC,CA-SK,CA-MB,CA-NS,CA-NB,CA-NL,CA-PE"
-      ]
+      ],
+      "status": "DONE for Yukon (charities unintended-write kept; unemployment written 2026-10-26). Next candidate: NT + NU unemployment only (2 documents), then the eight provinces; charities on hold."
     },
-    "yukon_update_2026_10_26": "Yukon charities are UPLOADED — UI VERIFICATION PENDING (unintended write, kept). Yukon unemployment remains the only pending Yukon document. Northwest Territories and Nunavut charities are ON HOLD until the data-currency finding below is decided."
+    "yukon_update_2026_10_26": "Yukon is complete for the datasets that exist: charities UPLOADED — UI VERIFICATION PENDING (unintended write, kept) and unemployment WRITTEN and verified 2026-10-26. Yukon grants remain unavailable (PDF-only). Northwest Territories and Nunavut charities stay ON HOLD (data_currency_finding_2026_10_26)."
   },
   "data_currency_finding_2026_10_26": {
     "summary": "Every provincial and territorial CRA charities builder reads the CRA dataset 51c68b86-33f0-46fe-9b51-0a786d0088f5, which is \"1998 List of charities\", not the current registry. The app presents these documents as the latest official registry listing.",
