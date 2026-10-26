@@ -26,7 +26,6 @@
     "engine/reports/canada-yt-write-latest.json",
     "engine/reports/statcan-wds-reliability-test-latest.json"
   ],
-
   "section_1_ready_to_write_after_quota_clears": [
     {
       "dataset_id": "CV-DATA-YT-002",
@@ -87,7 +86,6 @@
       "note": "A dedicated write script needs to be created before this can be written. Small charity count (26) is plausible given Nunavut's ~40K population."
     }
   ],
-
   "section_2_pending_unemployment_batch_after_quota_clears": [
     {
       "dataset_id": "CV-DATA-AB-001",
@@ -222,7 +220,6 @@
       "write_eligibility": "ELIGIBLE — fetch confirmed working; blocked only by Firestore quota (also needs a write script — see Section 1)"
     }
   ],
-
   "section_3_not_approved_blocked_datasets": [
     {
       "dataset_id": "CV-DATA-QC-003",
@@ -297,7 +294,6 @@
       "blocker_type": "data-availability gap (no portal exists) + data-format gap (Public Accounts PDF-only)"
     }
   ],
-
   "section_4_infrastructure_blockers": [
     {
       "blocker": "Firestore RESOURCE_EXHAUSTED quota",
@@ -316,7 +312,6 @@
       "commit": "0b311f2"
     }
   ],
-
   "section_5_recommended_write_order_after_quota_clears": [
     {
       "order": 1,
@@ -343,7 +338,6 @@
       "rationale": "Consolidating verification into one pass at the end minimizes redundant Firestore reads (each live modal open is itself a read) while quota may still be recovering from the write batch above."
     }
   ],
-
   "summary": {
     "pending_writes_total": 16,
     "pending_writes_ready_immediately": 1,
@@ -354,5 +348,17 @@
     "not_approved_data_gap_count": 7,
     "infrastructure_blockers_active": 1,
     "infrastructure_blockers_resolved": 1
+  },
+  "status_update_2026_10_26": {
+    "federal_completed_not_in_this_queue": [
+      "Federal unemployment: WRITTEN 2026-10-25 (social_stats/CA_unemploymentRate)",
+      "Federal contracts: WRITTEN 2026-10-26 (government_contracts/ca-fed-contract-001..100)"
+    ],
+    "scripts_now_exist": "The write scripts that sections 1 and 5 describe as \"not yet created\" now exist and are tracked (commit 2205cc6): engine/canada-nt-write-charities.cjs, engine/canada-nu-write-charities.cjs and engine/canada-unemployment-batch-write.cjs (11 jurisdictions, --only= filter). Section 2's \"create per-jurisdiction scripts\" is superseded by the batch script.",
+    "quota": "Section 4 is out of date: production writes to civic-voice-5ea94 succeeded on 2026-10-25/26. The quota blocker is unconfirmed, not known-active; the first write of the next batch is the confirmation.",
+    "ready_count": 14,
+    "ready": "Unemployment for AB, QC, SK, MB, NS, NB, NL, PE, YT, NT, NU (11 documents) and charities for YT, NT, NU (3 documents). Current values were previewed read-only on 2026-10-26 (see coverage_review_2026_10_26 in canada-coverage-matrix-latest.json).",
+    "recommended_order": "Batch 1 Yukon charities + unemployment; Batch 2 NT + NU (charities and unemployment); Batch 3 the eight provinces' unemployment. Details and commands: canada-coverage-matrix-latest.json, coverage_review_2026_10_26.recommended_next_batch.",
+    "sections_3_unchanged": "Nine blocked or not-approved datasets are unchanged (2 product/display decisions, 7 data gaps)."
   }
 }
