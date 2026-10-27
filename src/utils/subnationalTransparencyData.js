@@ -1078,6 +1078,7 @@ export function buildTransparencyFieldsFromModalDocs(docs, jurisdictionName, isU
       out.subnationalTaxHeadlineMeta = {
         recordsStored: numOrNull(taxDoc.records_stored),
         totalInSource: numOrNull(taxDoc.total_in_source),
+        selectionBasis: trimStr(taxDoc.selection_basis) || null,
         cvDataId: trimStr(taxDoc.cv_data_id) || null,
         dataSource: trimStr(taxDoc.data_source) || null,
         sourceUrl: trimStr(taxDoc.source_url) || null,
@@ -1503,14 +1504,16 @@ export function buildTaxTransparencyHeadlines(tax, meta) {
   const metrics = [];
   const stored = meta?.recordsStored ?? companies.length;
   const inSource = meta?.totalInSource;
+  const noun = isCraCharitiesDataset(meta, companies) ? 'charities' : 'organizations';
+  const basis = trimStr(meta?.selectionBasis);
 
   metrics.push({
     label: 'Registry Snapshot',
     value: `${stored.toLocaleString()} organizations`,
     sub:
       inSource != null && inSource > stored
-        ? `Top listing from ${inSource.toLocaleString()} in official source`
-        : 'Latest official tax-exempt registry listing',
+        ? `Showing ${stored.toLocaleString()} of ${inSource.toLocaleString()} ${noun}${basis ? ` (${basis})` : ''}`
+        : 'Official tax-exempt registry listing',
   });
 
   let topValue = 0;

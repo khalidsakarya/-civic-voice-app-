@@ -14920,7 +14920,7 @@ function App() {
       return (
         <div className="sn-trans-snapshot bg-white border border-gray-200 rounded-xl p-4 mb-4 shadow-sm">
           <p className="sn-trans-snapshot-label text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
-            Latest official snapshot
+            Official snapshot
           </p>
           <p className="text-sm text-gray-500 flex items-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
@@ -14933,7 +14933,7 @@ function App() {
       return (
         <div className="sn-trans-snapshot bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
           <p className="sn-trans-snapshot-label text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
-            Latest official snapshot
+            Official snapshot
           </p>
           <p className="text-sm text-gray-600">{TRANSPARENCY_HEADLINE_NOT_LOADED}</p>
         </div>
@@ -14942,7 +14942,7 @@ function App() {
     return (
       <div className="sn-trans-snapshot bg-white border border-indigo-100 rounded-xl p-4 mb-4 shadow-sm">
         <p className="sn-trans-snapshot-label text-xs font-semibold uppercase tracking-wide text-indigo-600 mb-3">
-          Latest official snapshot
+          Official snapshot
         </p>
         <dl className="space-y-0">
           {headlines.metrics.map((m) => (
