@@ -156,7 +156,10 @@ async function main() {
   if (result.status !== 'WRITTEN') process.exit(1);
 }
 
-main().catch((err) => {
-  console.error('[canada-qc-write-charities] fatal:', err);
-  process.exit(1);
-});
+// Runs only when executed directly; require()-ing this file (tests, other scripts) never starts a Firestore write.
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('[canada-qc-write-charities] fatal:', err);
+    process.exit(1);
+  });
+}

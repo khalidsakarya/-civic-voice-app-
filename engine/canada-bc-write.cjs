@@ -224,7 +224,10 @@ async function main() {
   console.log('\n[canada-bc-write] done.');
 }
 
-main().catch((err) => {
-  console.error('[canada-bc-write] fatal:', err);
-  process.exit(1);
-});
+// Runs only when executed directly; require()-ing this file (tests, other scripts) never starts a Firestore write.
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('[canada-bc-write] fatal:', err);
+    process.exit(1);
+  });
+}

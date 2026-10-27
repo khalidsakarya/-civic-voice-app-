@@ -126,7 +126,10 @@ async function main() {
   console.log('[cv-data-008-refresh] done.');
 }
 
-main().catch((err) => {
-  console.error('[cv-data-008-refresh] fatal:', err);
-  process.exit(1);
-});
+// Runs only when executed directly; require()-ing this file (tests, other scripts) never starts a Firestore write.
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('[cv-data-008-refresh] fatal:', err);
+    process.exit(1);
+  });
+}

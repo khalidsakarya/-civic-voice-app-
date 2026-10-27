@@ -1,0 +1,617 @@
+{
+  "report_type": "CANADA_CHARITIES_2024_PREPARED_DATASETS",
+  "generated_at": "2026-10-27T00:22:20.429Z",
+  "firestore_interaction": "NONE for this report. Built offline from public CRA open data via engine/lib/cra-list-of-charities-2024.cjs; nothing written.",
+  "source": {
+    "id": "80c00cdb-1358-415c-bb8b-0de7f12675b8",
+    "title": "2024 List of charities",
+    "publisher": "Canada Revenue Agency — Charities Directorate",
+    "published": "2026-04-30",
+    "metadata_modified": "2026-10-04",
+    "coverage_start": "2024-01-01",
+    "coverage_end": "2024-12-31",
+    "frequency": "P1Y",
+    "licence": "Open Government Licence - Canada",
+    "resources": {
+      "identification": {
+        "id": "694fdc72-eae4-4ee0-83eb-832ab7b230e3",
+        "url": "https://open.canada.ca/data/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8/resource/694fdc72-eae4-4ee0-83eb-832ab7b230e3/download/ident_2024_updated.csv"
+      },
+      "financial": {
+        "id": "e545170c-3689-4833-b2a8-e9e83100ab59",
+        "url": "https://open.canada.ca/data/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8/resource/e545170c-3689-4833-b2a8-e9e83100ab59/download/financial_d_and_schedule_6_2024_updated.csv"
+      }
+    }
+  },
+  "selection_rule": "Highest reported total revenue (T3010 line 4700) first, up to 100 per jurisdiction; charities with no reported revenue follow alphabetically; a reported 0 is kept as 0; missing values are omitted, never zero.",
+  "data_contract": {
+    "document_fields_replaced_or_added": [
+      "jurisdiction_id",
+      "data_source",
+      "source_url",
+      "note",
+      "total_in_source",
+      "records_stored",
+      "records",
+      "verification_status",
+      "licence_note",
+      "cv_data_id",
+      "fetched_at",
+      "source_year",
+      "reporting_period",
+      "selection_basis",
+      "financials_reported_count",
+      "source_dataset"
+    ],
+    "record_fields": [
+      "name",
+      "industry",
+      "industryColor",
+      "exemType",
+      "bn",
+      "revenue_cad (4700, optional)",
+      "expenditures_cad (5100, optional)",
+      "assets_cad (4200, optional)",
+      "fiscal_period_end (FPE, optional)"
+    ],
+    "removed_from_records": [
+      "rawValue (placeholder 0)"
+    ],
+    "industry_mapping": "Official CRA category code (Codes Lists section 2.1) -> app industry badge; unmapped/other codes -> Other",
+    "ui": "Financial values stay hidden. Wording: \"Official snapshot\" and \"Showing N of M charities (largest by revenue)\"."
+  },
+  "jurisdictions": [
+    {
+      "jurisdiction_id": "CA-ON",
+      "firestore_path": "subnational_tax_exempt_entities/CA-ON",
+      "cv_data_id": "CV-DATA-008",
+      "state_in_firestore": "exists (1998-source version, to be replaced)",
+      "charities_in_2024_source": 30570,
+      "selected_for_display": 100,
+      "showing_wording": "Showing 100 of 30570 charities (largest by revenue)",
+      "revenue_max_cad": 13372391723,
+      "revenue_min_selected_cad": 313970528,
+      "charities_in_source_without_reported_revenue": 1582,
+      "selected_without_revenue": 0,
+      "selected_missing_expenditures": 2,
+      "selected_missing_assets": 0,
+      "selected_missing_fiscal_period_end": 0,
+      "selected_with_reported_zero_revenue": 0,
+      "industries_selected": {
+        "Human Services": 4,
+        "Education": 49,
+        "Health": 37,
+        "Other": 5,
+        "Arts/Culture": 3,
+        "Religion": 2
+      },
+      "designations_selected": {
+        "Public Foundation": 5,
+        "Charitable Organization": 94,
+        "Private Foundation": 1
+      },
+      "has_rawValue_field": false,
+      "top3": [
+        "Mastercard Foundation (13372391723)",
+        "THE GOVERNING COUNCIL OF THE UNIVERSITY OF TORONTO (4924847000)",
+        "TORONTO DISTRICT SCHOOL BOARD (4194384514)"
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-BC",
+      "firestore_path": "subnational_tax_exempt_entities/CA-BC",
+      "cv_data_id": "CV-DATA-BC-002",
+      "state_in_firestore": "exists (1998-source version, to be replaced)",
+      "charities_in_2024_source": 12040,
+      "selected_for_display": 100,
+      "showing_wording": "Showing 100 of 12040 charities (largest by revenue)",
+      "revenue_max_cad": 6380997000,
+      "revenue_min_selected_cad": 54053810,
+      "charities_in_source_without_reported_revenue": 546,
+      "selected_without_revenue": 0,
+      "selected_missing_expenditures": 3,
+      "selected_missing_assets": 0,
+      "selected_missing_fiscal_period_end": 0,
+      "selected_with_reported_zero_revenue": 0,
+      "industries_selected": {
+        "Health": 8,
+        "Education": 56,
+        "Other": 17,
+        "Human Services": 19
+      },
+      "designations_selected": {
+        "Charitable Organization": 87,
+        "Public Foundation": 10,
+        "Private Foundation": 3
+      },
+      "has_rawValue_field": false,
+      "top3": [
+        "FRASER HEALTH AUTHORITY (6380997000)",
+        "VANCOUVER COASTAL HEALTH AUTHORITY (6164843000)",
+        "PROVINCIAL HEALTH SERVICES AUTHORITY (5771222554)"
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-AB",
+      "firestore_path": "subnational_tax_exempt_entities/CA-AB",
+      "cv_data_id": "CV-DATA-AB-002",
+      "state_in_firestore": "exists (1998-source version, to be replaced)",
+      "charities_in_2024_source": 9181,
+      "selected_for_display": 100,
+      "showing_wording": "Showing 100 of 9181 charities (largest by revenue)",
+      "revenue_max_cad": 18798503000,
+      "revenue_min_selected_cad": 52894215,
+      "charities_in_source_without_reported_revenue": 395,
+      "selected_without_revenue": 0,
+      "selected_missing_expenditures": 1,
+      "selected_missing_assets": 1,
+      "selected_missing_fiscal_period_end": 0,
+      "selected_with_reported_zero_revenue": 0,
+      "industries_selected": {
+        "Health": 8,
+        "Education": 63,
+        "Other": 14,
+        "Religion": 5,
+        "Human Services": 8,
+        "Arts/Culture": 2
+      },
+      "designations_selected": {
+        "Charitable Organization": 90,
+        "Private Foundation": 1,
+        "Public Foundation": 9
+      },
+      "has_rawValue_field": false,
+      "top3": [
+        "GOVERNMENT OF THE PROVINCE OF ALBERTA (18798503000)",
+        "THE GOVERNORS OF THE UNIVERSITY OF ALBERTA (1960630000)",
+        "THE GOVERNORS OF THE UNIVERSITY OF CALGARY (1674633628)"
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-QC",
+      "firestore_path": "subnational_tax_exempt_entities/CA-QC",
+      "cv_data_id": "CV-DATA-QC-002",
+      "state_in_firestore": "exists (1998-source version, to be replaced)",
+      "charities_in_2024_source": 15472,
+      "selected_for_display": 100,
+      "showing_wording": "Showing 100 of 15472 charities (largest by revenue)",
+      "revenue_max_cad": 2311570960,
+      "revenue_min_selected_cad": 95712529,
+      "charities_in_source_without_reported_revenue": 852,
+      "selected_without_revenue": 0,
+      "selected_missing_expenditures": 0,
+      "selected_missing_assets": 1,
+      "selected_missing_fiscal_period_end": 0,
+      "selected_with_reported_zero_revenue": 0,
+      "industries_selected": {
+        "Health": 34,
+        "Education": 55,
+        "Other": 7,
+        "Human Services": 4
+      },
+      "designations_selected": {
+        "Charitable Organization": 93,
+        "Public Foundation": 2,
+        "Private Foundation": 5
+      },
+      "has_rawValue_field": false,
+      "top3": [
+        "HOPITAL JEFFERY HALE (2311570960)",
+        "Centre Intégré de Santé et de Services Sociaux des Laurentides (2098239861)",
+        "L'INSTITUTION ROYALE POUR L'AVANCEMENT DES SCIENCES / ROYAL INSTITUTION FOR THE ADVANCEMENT OF LEARNING (1806519523)"
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-SK",
+      "firestore_path": "subnational_tax_exempt_entities/CA-SK",
+      "cv_data_id": "CV-DATA-SK-002",
+      "state_in_firestore": "exists (1998-source version, to be replaced)",
+      "charities_in_2024_source": 3952,
+      "selected_for_display": 100,
+      "showing_wording": "Showing 100 of 3952 charities (largest by revenue)",
+      "revenue_max_cad": 5503409302,
+      "revenue_min_selected_cad": 7596147,
+      "charities_in_source_without_reported_revenue": 157,
+      "selected_without_revenue": 0,
+      "selected_missing_expenditures": 3,
+      "selected_missing_assets": 0,
+      "selected_missing_fiscal_period_end": 0,
+      "selected_with_reported_zero_revenue": 0,
+      "industries_selected": {
+        "Health": 16,
+        "Education": 37,
+        "Human Services": 25,
+        "Other": 13,
+        "Religion": 8,
+        "Arts/Culture": 1
+      },
+      "designations_selected": {
+        "Charitable Organization": 89,
+        "Public Foundation": 8,
+        "Private Foundation": 3
+      },
+      "has_rawValue_field": false,
+      "top3": [
+        "SASKATCHEWAN HEALTH AUTHORITY (5503409302)",
+        "UNIVERSITY OF SASKATCHEWAN (1312557972)",
+        "ST. PAUL'S HOSPITAL (GREY NUNS) OF SASKATOON (387882575)"
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-MB",
+      "firestore_path": "subnational_tax_exempt_entities/CA-MB",
+      "cv_data_id": "CV-DATA-MB-002",
+      "state_in_firestore": "exists (1998-source version, to be replaced)",
+      "charities_in_2024_source": 4574,
+      "selected_for_display": 100,
+      "showing_wording": "Showing 100 of 4574 charities (largest by revenue)",
+      "revenue_max_cad": 2514204701,
+      "revenue_min_selected_cad": 15439787,
+      "charities_in_source_without_reported_revenue": 162,
+      "selected_without_revenue": 0,
+      "selected_missing_expenditures": 1,
+      "selected_missing_assets": 0,
+      "selected_missing_fiscal_period_end": 0,
+      "selected_with_reported_zero_revenue": 0,
+      "industries_selected": {
+        "Health": 20,
+        "Education": 34,
+        "Other": 13,
+        "Religion": 3,
+        "Human Services": 27,
+        "Environment": 2,
+        "Arts/Culture": 1
+      },
+      "designations_selected": {
+        "Charitable Organization": 89,
+        "Public Foundation": 8,
+        "Private Foundation": 3
+      },
+      "has_rawValue_field": false,
+      "top3": [
+        "Winnipeg Regional Health Authority (2514204701)",
+        "SHARED HEALTH (1941585020)",
+        "THE UNIVERSITY OF MANITOBA (1125644000)"
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-NS",
+      "firestore_path": "subnational_tax_exempt_entities/CA-NS",
+      "cv_data_id": "CV-DATA-NS-002",
+      "state_in_firestore": "exists (1998-source version, to be replaced)",
+      "charities_in_2024_source": 3501,
+      "selected_for_display": 100,
+      "showing_wording": "Showing 100 of 3501 charities (largest by revenue)",
+      "revenue_max_cad": 3769249000,
+      "revenue_min_selected_cad": 7178391,
+      "charities_in_source_without_reported_revenue": 170,
+      "selected_without_revenue": 0,
+      "selected_missing_expenditures": 1,
+      "selected_missing_assets": 0,
+      "selected_missing_fiscal_period_end": 0,
+      "selected_with_reported_zero_revenue": 0,
+      "industries_selected": {
+        "Health": 21,
+        "Education": 25,
+        "Human Services": 34,
+        "Other": 12,
+        "Religion": 6,
+        "Environment": 1,
+        "Arts/Culture": 1
+      },
+      "designations_selected": {
+        "Charitable Organization": 89,
+        "Public Foundation": 7,
+        "Private Foundation": 4
+      },
+      "has_rawValue_field": false,
+      "top3": [
+        "NOVA SCOTIA HEALTH AUTHORITY (NSHA) (3769249000)",
+        "DALHOUSIE UNIVERSITY (949013000)",
+        "Halifax Regional Centre for Education (773548427)"
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-NB",
+      "firestore_path": "subnational_tax_exempt_entities/CA-NB",
+      "cv_data_id": "CV-DATA-NB-002",
+      "state_in_firestore": "exists (1998-source version, to be replaced)",
+      "charities_in_2024_source": 2469,
+      "selected_for_display": 100,
+      "showing_wording": "Showing 100 of 2469 charities (largest by revenue)",
+      "revenue_max_cad": 1697560839,
+      "revenue_min_selected_cad": 4717057,
+      "charities_in_source_without_reported_revenue": 99,
+      "selected_without_revenue": 0,
+      "selected_missing_expenditures": 3,
+      "selected_missing_assets": 1,
+      "selected_missing_fiscal_period_end": 0,
+      "selected_with_reported_zero_revenue": 0,
+      "industries_selected": {
+        "Health": 17,
+        "Education": 10,
+        "Human Services": 43,
+        "Religion": 9,
+        "Other": 17,
+        "Environment": 1,
+        "Arts/Culture": 3
+      },
+      "designations_selected": {
+        "Charitable Organization": 85,
+        "Public Foundation": 8,
+        "Private Foundation": 7
+      },
+      "has_rawValue_field": false,
+      "top3": [
+        "Regional Health Authority B/Régie régionale de la santé B (1697560839)",
+        "Régie régionale de la santé A/Regional Health Authority A (975278171)",
+        "THE CANADIAN RED CROSS SOCIETY / LA SOCIETE CANADIENNE DE LA CROIX-ROUGE (442356566)"
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-NL",
+      "firestore_path": "subnational_tax_exempt_entities/CA-NL",
+      "cv_data_id": "CV-DATA-NL-002",
+      "state_in_firestore": "exists (1998-source version, to be replaced)",
+      "charities_in_2024_source": 1131,
+      "selected_for_display": 100,
+      "showing_wording": "Showing 100 of 1131 charities (largest by revenue)",
+      "revenue_max_cad": 671146644,
+      "revenue_min_selected_cad": 1146692,
+      "charities_in_source_without_reported_revenue": 85,
+      "selected_without_revenue": 0,
+      "selected_missing_expenditures": 3,
+      "selected_missing_assets": 0,
+      "selected_missing_fiscal_period_end": 0,
+      "selected_with_reported_zero_revenue": 0,
+      "industries_selected": {
+        "Education": 12,
+        "Human Services": 35,
+        "Religion": 19,
+        "Other": 16,
+        "Health": 14,
+        "Arts/Culture": 4
+      },
+      "designations_selected": {
+        "Charitable Organization": 92,
+        "Public Foundation": 8
+      },
+      "has_rawValue_field": false,
+      "top3": [
+        "MEMORIAL UNIVERSITY OF NEWFOUNDLAND (671146644)",
+        "COLLEGE OF THE NORTH ATLANTIC (141408550)",
+        "ASSOCIATION FOR NEW CANADIANS (55652868)"
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-PE",
+      "firestore_path": "subnational_tax_exempt_entities/CA-PE",
+      "cv_data_id": "CV-DATA-PE-002",
+      "state_in_firestore": "exists (1998-source version, to be replaced)",
+      "charities_in_2024_source": 569,
+      "selected_for_display": 100,
+      "showing_wording": "Showing 100 of 569 charities (largest by revenue)",
+      "revenue_max_cad": 210219759,
+      "revenue_min_selected_cad": 521791,
+      "charities_in_source_without_reported_revenue": 23,
+      "selected_without_revenue": 0,
+      "selected_missing_expenditures": 1,
+      "selected_missing_assets": 0,
+      "selected_missing_fiscal_period_end": 0,
+      "selected_with_reported_zero_revenue": 0,
+      "industries_selected": {
+        "Education": 11,
+        "Religion": 23,
+        "Arts/Culture": 4,
+        "Human Services": 39,
+        "Other": 19,
+        "Health": 4
+      },
+      "designations_selected": {
+        "Charitable Organization": 88,
+        "Public Foundation": 8,
+        "Private Foundation": 4
+      },
+      "has_rawValue_field": false,
+      "top3": [
+        "UNIVERSITY OF PRINCE EDWARD ISLAND (210219759)",
+        "HOLLAND COLLEGE (89808941)",
+        "GREAT ENLIGHTENMENT BUDDHIST INSTITUTE SOCIETY (28707064)"
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-YT",
+      "firestore_path": "subnational_tax_exempt_entities/CA-YT",
+      "cv_data_id": "CV-DATA-YT-002",
+      "state_in_firestore": "exists (1998-source version, to be replaced)",
+      "charities_in_2024_source": 132,
+      "selected_for_display": 100,
+      "showing_wording": "Showing 100 of 132 charities (largest by revenue)",
+      "revenue_max_cad": 144396000,
+      "revenue_min_selected_cad": 36440,
+      "charities_in_source_without_reported_revenue": 5,
+      "selected_without_revenue": 0,
+      "selected_missing_expenditures": 5,
+      "selected_missing_assets": 0,
+      "selected_missing_fiscal_period_end": 0,
+      "selected_with_reported_zero_revenue": 0,
+      "industries_selected": {
+        "Health": 8,
+        "Education": 12,
+        "Human Services": 21,
+        "Environment": 3,
+        "Arts/Culture": 6,
+        "Other": 16,
+        "Religion": 34
+      },
+      "designations_selected": {
+        "Charitable Organization": 93,
+        "Public Foundation": 5,
+        "Private Foundation": 2
+      },
+      "has_rawValue_field": false,
+      "top3": [
+        "YUKON HOSPITAL CORPORATION (144396000)",
+        "Yukon University (62052384)",
+        "LIARD ABORIGINAL WOMEN'S SOCIETY (8872356)"
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-NT",
+      "firestore_path": "subnational_tax_exempt_entities/CA-NT",
+      "cv_data_id": "CV-DATA-NT-002",
+      "state_in_firestore": "does not exist yet (would need --allow-create)",
+      "charities_in_2024_source": 101,
+      "selected_for_display": 100,
+      "showing_wording": "Showing 100 of 101 charities (largest by revenue)",
+      "revenue_max_cad": 63791647,
+      "revenue_min_selected_cad": 20,
+      "charities_in_source_without_reported_revenue": 2,
+      "selected_without_revenue": 1,
+      "selected_missing_expenditures": 7,
+      "selected_missing_assets": 4,
+      "selected_missing_fiscal_period_end": 0,
+      "selected_with_reported_zero_revenue": 0,
+      "industries_selected": {
+        "Education": 20,
+        "Health": 7,
+        "Human Services": 23,
+        "Religion": 37,
+        "Other": 11,
+        "Environment": 1,
+        "Arts/Culture": 1
+      },
+      "designations_selected": {
+        "Charitable Organization": 93,
+        "Public Foundation": 4,
+        "Private Foundation": 3
+      },
+      "has_rawValue_field": false,
+      "top3": [
+        "AURORA COLLEGE (63791647)",
+        "YELLOWKNIFE EDUCATION DISTRICT # 1 (47884374)",
+        "BEAUFORT DELTA DIVISIONAL EDUCATION COUNCIL (46797454)"
+      ]
+    },
+    {
+      "jurisdiction_id": "CA-NU",
+      "firestore_path": "subnational_tax_exempt_entities/CA-NU",
+      "cv_data_id": "CV-DATA-NU-002",
+      "state_in_firestore": "does not exist yet (would need --allow-create)",
+      "charities_in_2024_source": 35,
+      "selected_for_display": 35,
+      "showing_wording": "Showing 35 of 35 charities (largest by revenue)",
+      "revenue_max_cad": 61033000,
+      "revenue_min_selected_cad": 6279,
+      "charities_in_source_without_reported_revenue": 0,
+      "selected_without_revenue": 0,
+      "selected_missing_expenditures": 3,
+      "selected_missing_assets": 4,
+      "selected_missing_fiscal_period_end": 0,
+      "selected_with_reported_zero_revenue": 0,
+      "industries_selected": {
+        "Education": 8,
+        "Human Services": 12,
+        "Other": 6,
+        "Arts/Culture": 1,
+        "Religion": 8
+      },
+      "designations_selected": {
+        "Charitable Organization": 35
+      },
+      "has_rawValue_field": false,
+      "top3": [
+        "NUNAVUT ARCTIC COLLEGE (61033000)",
+        "ILITAQSINIQ (14882558)",
+        "ILISAQSIVIK SOCIETY (7226291)"
+      ]
+    }
+  ],
+  "yukon_pilot_detail": {
+    "total_in_source": 132,
+    "selected": 100,
+    "without_revenue_in_source": 5,
+    "revenue_max": 144396000,
+    "revenue_min": 36440,
+    "top5": [
+      "YUKON HOSPITAL CORPORATION: 144396000 (Health)",
+      "Yukon University: 62052384 (Education)",
+      "LIARD ABORIGINAL WOMEN'S SOCIETY: 8872356 (Human Services)",
+      "CHILD DEVELOPMENT CENTRE: 6222901 (Health)",
+      "RAVEN RECYCLING SOCIETY: 5049729 (Environment)"
+    ],
+    "bottom3": [
+      "BRAEBURN LAKE CHRISTIAN CAMP ASSOCIATION: 45028",
+      "CATHOLIC EPISCOPAL CORPORATION OF WHITEHORSE: 38443",
+      "SONRISE CHRISTIAN CENTRE: 36440"
+    ],
+    "fiscal_period_ends": {
+      "2024-03-31": 43,
+      "2024-12-31": 36,
+      "2024-06-30": 8,
+      "2024-10-31": 2,
+      "2024-09-30": 4,
+      "2024-04-30": 3,
+      "2024-08-31": 2,
+      "2024-07-31": 1,
+      "2024-03-20": 1
+    },
+    "approx_document_bytes": 28239,
+    "designations": {
+      "Charitable Organization": 93,
+      "Public Foundation": 5,
+      "Private Foundation": 2
+    },
+    "industries": {
+      "Health": 8,
+      "Education": 12,
+      "Human Services": 21,
+      "Environment": 3,
+      "Arts/Culture": 6,
+      "Other": 16,
+      "Religion": 34
+    },
+    "omitted_names": null,
+    "omitted": [
+      "DENA DADENGAK KOA (revenue 36143)",
+      "EVENING LIGHT TABERNACLE (revenue 35960)",
+      "Yukon Muslim Society Inc. (revenue 34637)",
+      "FRIENDS OF THE DEMPSTER COUNTRY SOCIETY (revenue 33685)",
+      "SYNOD OF THE DIOCESE OF YUKON (revenue 28793)",
+      "MARYHOUSE (revenue 27810)",
+      "DAWSON CHRISTIAN FELLOWSHIP (revenue 26205)",
+      "MOUNT LORNE VOLUNTEER FIRE DEPARTMENT (revenue 23507)",
+      "JERUSALEM EVANGELICAL MINISTRIES (revenue 22529)",
+      "CATHOLIC EPISCOPAL CORPORATION OF WHITEHORSE (revenue 19573)",
+      "CATHOLIC EPISCOPAL CORPORATION OF WHITEHORSE (revenue 18000)",
+      "DAWSON CITY APOSTOLIC MISSION (revenue 16663)",
+      "PADDLERS ABREAST SOCIETY (revenue 13464)",
+      "CATHOLIC EPISCOPAL CORPORATION OF WHITEHORSE (revenue 13364)",
+      "CATHOLIC EPISCOPAL CORPORATION OF WHITEHORSE (revenue 12213)",
+      "SYNOD OF THE DIOCESE OF YUKON (revenue 10712)",
+      "SYNOD OF THE DIOCESE OF YUKON (revenue 9818)",
+      "THE YUKON LUNG ASSOCIATION /YUKON TYBERCULOSIS & HEALTH (revenue 9639)",
+      "FARO BIBLE CHAPEL (revenue 8885)",
+      "THE KESHO SOCIETY (revenue 8816)",
+      "CATHOLIC EPISCOPAL CORPORATION OF WHITEHORSE (revenue 8295)",
+      "FRIENDS OF THE WHITEHORSE PUBLIC LIBRARY (revenue 6212)",
+      "YUKON BIRD CLUB (revenue 6149)",
+      "VAJRA NORTH - RIGDROL DECHEN LING SOCIETY (revenue 4378)",
+      "FAIR AID SOCIETY SUPPORTING CONGOLESE HEALTH CATE (revenue 875)",
+      "FONDATION BOREALE (revenue 50)",
+      "YUKON MINES LEGACY FOUNDATION (revenue 0)",
+      "CALVARY BAPTIST CHURCH OF WHITEHORSE (no reported revenue)",
+      "Fish4Kenya Foundation (no reported revenue)",
+      "TEEGATHA OH ZHEH (no reported revenue)",
+      "THE NORTHERN COLLECTIVE WHITEHORSE CHURCH (no reported revenue)",
+      "WHITEHORSE CONCERTS (no reported revenue)"
+    ]
+  },
+  "totals": {
+    "jurisdictions": 13,
+    "documents_to_replace": 11,
+    "documents_not_yet_existing": 2,
+    "records_prepared": 1235
+  },
+  "status": "PREPARED, NOT WRITTEN. Waiting for approval of the Yukon pilot."
+}

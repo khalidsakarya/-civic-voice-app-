@@ -647,7 +647,10 @@ async function main() {
   console.log('');
 }
 
-main().catch((err) => {
-  console.error('[runner] FATAL:', err);
-  process.exit(1);
-});
+// Runs only when executed directly; require()-ing this file (tests, other scripts) never starts a Firestore write.
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('[runner] FATAL:', err);
+    process.exit(1);
+  });
+}

@@ -82,94 +82,14 @@ function industryFromCraCat(category) {
   return { label: 'Other', color: INDUSTRY_BADGE.Other };
 }
 
-async function buildTax() {
-  // 1. Discover CSV resource URL via CKAN package_show
-  // Package has multiple CSVs; target the "Identification" resource (ident_updated.csv)
-  // which contains: BN, Category, Designation, Legal Name, Account Name, ..., Province, ...
-  const pkg = await fetchJson(SOURCES.charitiesCkanPkg);
-  const resources = pkg?.result?.resources || [];
-  const csvRes =
-    resources.find((r) => /ident/i.test(trim(r.name)) && trim(r.format).toUpperCase() === 'CSV') ||
-    resources.find((r) => /ident/i.test(trim(r.url).toLowerCase())) ||
-    resources.find((r) => trim(r.format).toUpperCase() === 'CSV');
-  if (!csvRes || !trim(csvRes.url)) {
-    throw new Error(
-      `CRA Charities: no CSV resource found. Resources in package: ${resources.map((r) => `${r.name || r.id} (${r.format})`).join(', ')}`,
-    );
-  }
-
-  // 2. Download identification CSV (all-Canada list — filter to Ontario in-flight)
-  const csvUrl = trim(csvRes.url);
-  const csvText = await fetchText(csvUrl, 50 * 1024 * 1024);
-  const { headers, rows } = parseCsv(csvText);
-
-  // 3. Detect column names (ident_updated.csv: Legal Name, Province, Category, Designation)
-  const provCol = headers.find((h) => /^province$/i.test(trim(h))) ||
-    headers.find((h) => /province/i.test(h));
-  // Prefer "Legal Name" over "Account Name" or "Public Contact Name"
-  const nameCol = headers.find((h) => /legal.name/i.test(trim(h))) ||
-    headers.find((h) => /^name$/i.test(trim(h))) ||
-    headers.find((h) => /name|nom/i.test(h) && !/province|contact|account/i.test(h));
-  const catCol = headers.find((h) => /categ/i.test(h));
-  // "Designation" column = Charitable Organization | Public Foundation | Private Foundation
-  const desigCol = headers.find((h) => /designat/i.test(h));
-
-  if (!provCol || !nameCol) {
-    throw new Error(
-      `CRA Charities CSV: required columns not found. Detected headers: ${headers.slice(0, 20).join(', ')}`,
-    );
-  }
-
-  // 4. Filter to Ontario only (ident_updated.csv contains all provinces, including revoked)
-  const candidates = [];
-  for (let i = 0; i < rows.length; i += 1) {
-    const row = rows[i];
-    const prov = trim(row[provCol]).toUpperCase();
-    if (prov !== 'ON' && prov !== 'ONTARIO') continue;
-    candidates.push(row);
-  }
-
-  // CRA Designation codes — source: codes_en.pdf (CRA Charities IT system, last revised 2025-11-28)
-  // A=Public Foundation, B=Private Foundation, C=Charitable Organization
-  // PF/PBF/QD appear in some resource variants; mapped for completeness.
-  const CRA_DESIG = {
-    A: 'Public Foundation',
-    B: 'Private Foundation',
-    C: 'Charitable Organization',
-    PF: 'Private Foundation',
-    PBF: 'Public Foundation',
-    QD: 'Qualified Donee',
-  };
-
-  // 5. Take first MAX_RECORDS (alphabetical order in source)
-  const picked = candidates.slice(0, MAX_RECORDS);
-  const records = picked.map((row) => {
-    const cat = catCol ? trim(row[catCol]) : '';
-    const ind = industryFromCraCat(cat);
-    const desigCode = desigCol ? trim(row[desigCol]).toUpperCase() : '';
-    const desigLabel = CRA_DESIG[desigCode] || (desigCode ? `CRA Type: ${desigCode}` : 'Registered Charity');
-    const rec = {
-      name: trim(row[nameCol]) || 'Registered charity',
-      industry: ind.label,
-      industryColor: ind.color,
-      // MVP decision: name/type/status only — no dollar values
-      exemType: desigLabel,
-      rawValue: 0,
-    };
-    return rec;
-  });
-
-  return {
-    jurisdiction_id: JURISDICTION_ID,
-    data_source:
-      'Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.',
-    source_url: SOURCES.charities,
-    note:
-      'Ontario registered charities only. Name, type, and category displayed (MVP). No dollar values in this version. OGL-Canada.',
-    total_in_source: candidates.length,
-    records_stored: records.length,
-    records,
-  };
+/**
+ * SUPERSEDED (2026-10-26). The original builder read CRA package 51c68b86-… ("1998 List of charities"), kept the
+ * first 100 rows in file order and stored rawValue 0 as a placeholder. It now delegates to the shared CRA 2024
+ * module (engine/lib/cra-list-of-charities-2024.cjs), so no script that calls it can restore the obsolete data.
+ */
+async function buildTax(opts = {}) {
+  // eslint-disable-next-line global-require
+  return require('./cra-list-of-charities-2024.cjs').buildCharitiesDoc({ jurisdictionId: 'CA-ON', ...opts });
 }
 
 // ─── Grants (CV-DATA-014 — Ontario Transfer Payments) ────────────────────────
