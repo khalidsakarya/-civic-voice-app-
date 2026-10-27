@@ -613,5 +613,582 @@
     "documents_not_yet_existing": 2,
     "records_prepared": 1235
   },
-  "status": "PREPARED, NOT WRITTEN. Waiting for approval of the Yukon pilot."
+  "status": "YUKON REPLACED AND VERIFIED (2026-10-27). Other 12 prepared by dry-run; NOT WRITTEN. Waiting for approval.",
+  "firestore_dry_run_2026_10_27": {
+    "generated_at": "2026-10-27T01:09:05.020Z",
+    "command": "node engine/canada-charities-replace.cjs --only=CA-ON,CA-BC,CA-AB,CA-QC,CA-SK,CA-MB,CA-NS,CA-NB,CA-NL,CA-PE,CA-NT,CA-NU   (dry run: 12 targeted reads, 0 writes)",
+    "firebase_project": "civic-voice-5ea94",
+    "source_confirmed": "2024 List of charities, coverage 2024-01-01..2024-12-31, published 2026-04-30",
+    "yukon": "already replaced and verified 2026-10-27 (CV-REC-001-2026-10-27-CV-DATA-YT-002-CRA2024)",
+    "jurisdictions": [
+      {
+        "jurisdiction_id": "CA-ON",
+        "source_2024": {
+          "charities": 30570,
+          "selected": 100,
+          "revenue_max_cad": 13372391723,
+          "revenue_min_selected_cad": 313970528
+        },
+        "missing_financial_fields": {
+          "selected_without_revenue": 0,
+          "selected_missing_expenditures": 2,
+          "selected_missing_assets": 0,
+          "charities_in_source_without_revenue": 1582
+        },
+        "firestore_document": "exists (100 records, all rawValue 0, no BN; claims 25822 charities in source — 1998 list)",
+        "dry_run_status": "ABORTED_CONFLICT",
+        "expected_changes": {
+          "fields_replaced": 11,
+          "fields_added": [
+            "source_year",
+            "reporting_period",
+            "selection_basis",
+            "financials_reported_count",
+            "source_dataset"
+          ],
+          "fields_removed": [],
+          "records": "100 old records replaced by 100 corrected records (BN on all, revenue on 100, no rawValue)",
+          "old_record_names_not_in_new": 100
+        },
+        "unrelated_fields": {
+          "status": "BLOCKED — fields this process does not own",
+          "fields": [
+            "resource_id",
+            "cra_search_url",
+            "designation_refresh_reason"
+          ]
+        },
+        "replacement_safe": "NO — pipeline refuses until the field decision is made (see on_decision)",
+        "backup": "required: full-document backup (about 17-25 KB) saved and verified before the write; write aborts if it fails",
+        "estimated_operations": {
+          "dry_run": "1 read (done)",
+          "write_run": "2 reads (backup/guard read + verification read) + 1 write",
+          "local_backup_files": 1
+        }
+      },
+      {
+        "jurisdiction_id": "CA-BC",
+        "source_2024": {
+          "charities": 12040,
+          "selected": 100,
+          "revenue_max_cad": 6380997000,
+          "revenue_min_selected_cad": 54053810
+        },
+        "missing_financial_fields": {
+          "selected_without_revenue": 0,
+          "selected_missing_expenditures": 3,
+          "selected_missing_assets": 0,
+          "charities_in_source_without_revenue": 546
+        },
+        "firestore_document": "exists (100 records, all rawValue 0, no BN; claims 9537 charities in source — 1998 list)",
+        "dry_run_status": "DRY_RUN",
+        "expected_changes": {
+          "fields_replaced": 11,
+          "fields_added": [
+            "source_year",
+            "reporting_period",
+            "selection_basis",
+            "financials_reported_count",
+            "source_dataset"
+          ],
+          "fields_removed": [],
+          "records": "100 old records replaced by 100 corrected records (BN on all, revenue on 100, no rawValue)",
+          "old_record_names_not_in_new": 82
+        },
+        "unrelated_fields": "none present; mergeFields leaves any other field untouched",
+        "replacement_safe": "YES",
+        "backup": "required: full-document backup (about 17-25 KB) saved and verified before the write; write aborts if it fails",
+        "estimated_operations": {
+          "dry_run": "1 read (done)",
+          "write_run": "2 reads (backup/guard read + verification read) + 1 write",
+          "local_backup_files": 1
+        }
+      },
+      {
+        "jurisdiction_id": "CA-AB",
+        "source_2024": {
+          "charities": 9181,
+          "selected": 100,
+          "revenue_max_cad": 18798503000,
+          "revenue_min_selected_cad": 52894215
+        },
+        "missing_financial_fields": {
+          "selected_without_revenue": 0,
+          "selected_missing_expenditures": 1,
+          "selected_missing_assets": 1,
+          "charities_in_source_without_revenue": 395
+        },
+        "firestore_document": "exists (100 records, all rawValue 0, no BN; claims 7731 charities in source — 1998 list)",
+        "dry_run_status": "DRY_RUN",
+        "expected_changes": {
+          "fields_replaced": 11,
+          "fields_added": [
+            "source_year",
+            "reporting_period",
+            "selection_basis",
+            "financials_reported_count",
+            "source_dataset"
+          ],
+          "fields_removed": [],
+          "records": "100 old records replaced by 100 corrected records (BN on all, revenue on 100, no rawValue)",
+          "old_record_names_not_in_new": 70
+        },
+        "unrelated_fields": "none present; mergeFields leaves any other field untouched",
+        "replacement_safe": "YES",
+        "backup": "required: full-document backup (about 17-25 KB) saved and verified before the write; write aborts if it fails",
+        "estimated_operations": {
+          "dry_run": "1 read (done)",
+          "write_run": "2 reads (backup/guard read + verification read) + 1 write",
+          "local_backup_files": 1
+        }
+      },
+      {
+        "jurisdiction_id": "CA-QC",
+        "source_2024": {
+          "charities": 15472,
+          "selected": 100,
+          "revenue_max_cad": 2311570960,
+          "revenue_min_selected_cad": 95712529
+        },
+        "missing_financial_fields": {
+          "selected_without_revenue": 0,
+          "selected_missing_expenditures": 0,
+          "selected_missing_assets": 1,
+          "charities_in_source_without_revenue": 852
+        },
+        "firestore_document": "exists (100 records, all rawValue 0, no BN; claims 13719 charities in source — 1998 list)",
+        "dry_run_status": "DRY_RUN",
+        "expected_changes": {
+          "fields_replaced": 11,
+          "fields_added": [
+            "source_year",
+            "reporting_period",
+            "selection_basis",
+            "financials_reported_count",
+            "source_dataset"
+          ],
+          "fields_removed": [],
+          "records": "100 old records replaced by 100 corrected records (BN on all, revenue on 100, no rawValue)",
+          "old_record_names_not_in_new": 99
+        },
+        "unrelated_fields": "none present; mergeFields leaves any other field untouched",
+        "replacement_safe": "YES",
+        "backup": "required: full-document backup (about 17-25 KB) saved and verified before the write; write aborts if it fails",
+        "estimated_operations": {
+          "dry_run": "1 read (done)",
+          "write_run": "2 reads (backup/guard read + verification read) + 1 write",
+          "local_backup_files": 1
+        }
+      },
+      {
+        "jurisdiction_id": "CA-SK",
+        "source_2024": {
+          "charities": 3952,
+          "selected": 100,
+          "revenue_max_cad": 5503409302,
+          "revenue_min_selected_cad": 7596147
+        },
+        "missing_financial_fields": {
+          "selected_without_revenue": 0,
+          "selected_missing_expenditures": 3,
+          "selected_missing_assets": 0,
+          "charities_in_source_without_revenue": 157
+        },
+        "firestore_document": "exists (100 records, all rawValue 0, no BN; claims 4407 charities in source — 1998 list)",
+        "dry_run_status": "DRY_RUN",
+        "expected_changes": {
+          "fields_replaced": 11,
+          "fields_added": [
+            "source_year",
+            "reporting_period",
+            "selection_basis",
+            "financials_reported_count",
+            "source_dataset"
+          ],
+          "fields_removed": [],
+          "records": "100 old records replaced by 100 corrected records (BN on all, revenue on 100, no rawValue)",
+          "old_record_names_not_in_new": 95
+        },
+        "unrelated_fields": "none present; mergeFields leaves any other field untouched",
+        "replacement_safe": "YES",
+        "backup": "required: full-document backup (about 17-25 KB) saved and verified before the write; write aborts if it fails",
+        "estimated_operations": {
+          "dry_run": "1 read (done)",
+          "write_run": "2 reads (backup/guard read + verification read) + 1 write",
+          "local_backup_files": 1
+        }
+      },
+      {
+        "jurisdiction_id": "CA-MB",
+        "source_2024": {
+          "charities": 4574,
+          "selected": 100,
+          "revenue_max_cad": 2514204701,
+          "revenue_min_selected_cad": 15439787
+        },
+        "missing_financial_fields": {
+          "selected_without_revenue": 0,
+          "selected_missing_expenditures": 1,
+          "selected_missing_assets": 0,
+          "charities_in_source_without_revenue": 162
+        },
+        "firestore_document": "exists (100 records, all rawValue 0, no BN; claims 4064 charities in source — 1998 list)",
+        "dry_run_status": "DRY_RUN",
+        "expected_changes": {
+          "fields_replaced": 11,
+          "fields_added": [
+            "source_year",
+            "reporting_period",
+            "selection_basis",
+            "financials_reported_count",
+            "source_dataset"
+          ],
+          "fields_removed": [],
+          "records": "100 old records replaced by 100 corrected records (BN on all, revenue on 100, no rawValue)",
+          "old_record_names_not_in_new": 99
+        },
+        "unrelated_fields": "none present; mergeFields leaves any other field untouched",
+        "replacement_safe": "YES",
+        "backup": "required: full-document backup (about 17-25 KB) saved and verified before the write; write aborts if it fails",
+        "estimated_operations": {
+          "dry_run": "1 read (done)",
+          "write_run": "2 reads (backup/guard read + verification read) + 1 write",
+          "local_backup_files": 1
+        }
+      },
+      {
+        "jurisdiction_id": "CA-NS",
+        "source_2024": {
+          "charities": 3501,
+          "selected": 100,
+          "revenue_max_cad": 3769249000,
+          "revenue_min_selected_cad": 7178391
+        },
+        "missing_financial_fields": {
+          "selected_without_revenue": 0,
+          "selected_missing_expenditures": 1,
+          "selected_missing_assets": 0,
+          "charities_in_source_without_revenue": 170
+        },
+        "firestore_document": "exists (100 records, all rawValue 0, no BN; claims 3452 charities in source — 1998 list)",
+        "dry_run_status": "DRY_RUN",
+        "expected_changes": {
+          "fields_replaced": 11,
+          "fields_added": [
+            "source_year",
+            "reporting_period",
+            "selection_basis",
+            "financials_reported_count",
+            "source_dataset"
+          ],
+          "fields_removed": [],
+          "records": "100 old records replaced by 100 corrected records (BN on all, revenue on 100, no rawValue)",
+          "old_record_names_not_in_new": 64
+        },
+        "unrelated_fields": "none present; mergeFields leaves any other field untouched",
+        "replacement_safe": "YES",
+        "backup": "required: full-document backup (about 17-25 KB) saved and verified before the write; write aborts if it fails",
+        "estimated_operations": {
+          "dry_run": "1 read (done)",
+          "write_run": "2 reads (backup/guard read + verification read) + 1 write",
+          "local_backup_files": 1
+        }
+      },
+      {
+        "jurisdiction_id": "CA-NB",
+        "source_2024": {
+          "charities": 2469,
+          "selected": 100,
+          "revenue_max_cad": 1697560839,
+          "revenue_min_selected_cad": 4717057
+        },
+        "missing_financial_fields": {
+          "selected_without_revenue": 0,
+          "selected_missing_expenditures": 3,
+          "selected_missing_assets": 1,
+          "charities_in_source_without_revenue": 99
+        },
+        "firestore_document": "exists (100 records, all rawValue 0, no BN; claims 2480 charities in source — 1998 list)",
+        "dry_run_status": "DRY_RUN",
+        "expected_changes": {
+          "fields_replaced": 11,
+          "fields_added": [
+            "source_year",
+            "reporting_period",
+            "selection_basis",
+            "financials_reported_count",
+            "source_dataset"
+          ],
+          "fields_removed": [],
+          "records": "100 old records replaced by 100 corrected records (BN on all, revenue on 100, no rawValue)",
+          "old_record_names_not_in_new": 95
+        },
+        "unrelated_fields": "none present; mergeFields leaves any other field untouched",
+        "replacement_safe": "YES",
+        "backup": "required: full-document backup (about 17-25 KB) saved and verified before the write; write aborts if it fails",
+        "estimated_operations": {
+          "dry_run": "1 read (done)",
+          "write_run": "2 reads (backup/guard read + verification read) + 1 write",
+          "local_backup_files": 1
+        }
+      },
+      {
+        "jurisdiction_id": "CA-NL",
+        "source_2024": {
+          "charities": 1131,
+          "selected": 100,
+          "revenue_max_cad": 671146644,
+          "revenue_min_selected_cad": 1146692
+        },
+        "missing_financial_fields": {
+          "selected_without_revenue": 0,
+          "selected_missing_expenditures": 3,
+          "selected_missing_assets": 0,
+          "charities_in_source_without_revenue": 85
+        },
+        "firestore_document": "exists (100 records, all rawValue 0, no BN; claims 1040 charities in source — 1998 list)",
+        "dry_run_status": "DRY_RUN",
+        "expected_changes": {
+          "fields_replaced": 11,
+          "fields_added": [
+            "source_year",
+            "reporting_period",
+            "selection_basis",
+            "financials_reported_count",
+            "source_dataset"
+          ],
+          "fields_removed": [],
+          "records": "100 old records replaced by 100 corrected records (BN on all, revenue on 100, no rawValue)",
+          "old_record_names_not_in_new": 34
+        },
+        "unrelated_fields": "none present; mergeFields leaves any other field untouched",
+        "replacement_safe": "YES",
+        "backup": "required: full-document backup (about 17-25 KB) saved and verified before the write; write aborts if it fails",
+        "estimated_operations": {
+          "dry_run": "1 read (done)",
+          "write_run": "2 reads (backup/guard read + verification read) + 1 write",
+          "local_backup_files": 1
+        }
+      },
+      {
+        "jurisdiction_id": "CA-PE",
+        "source_2024": {
+          "charities": 569,
+          "selected": 100,
+          "revenue_max_cad": 210219759,
+          "revenue_min_selected_cad": 521791
+        },
+        "missing_financial_fields": {
+          "selected_without_revenue": 0,
+          "selected_missing_expenditures": 1,
+          "selected_missing_assets": 0,
+          "charities_in_source_without_revenue": 23
+        },
+        "firestore_document": "exists (100 records, all rawValue 0, no BN; claims 514 charities in source — 1998 list)",
+        "dry_run_status": "DRY_RUN",
+        "expected_changes": {
+          "fields_replaced": 11,
+          "fields_added": [
+            "source_year",
+            "reporting_period",
+            "selection_basis",
+            "financials_reported_count",
+            "source_dataset"
+          ],
+          "fields_removed": [],
+          "records": "100 old records replaced by 100 corrected records (BN on all, revenue on 100, no rawValue)",
+          "old_record_names_not_in_new": 75
+        },
+        "unrelated_fields": "none present; mergeFields leaves any other field untouched",
+        "replacement_safe": "YES",
+        "backup": "required: full-document backup (about 17-25 KB) saved and verified before the write; write aborts if it fails",
+        "estimated_operations": {
+          "dry_run": "1 read (done)",
+          "write_run": "2 reads (backup/guard read + verification read) + 1 write",
+          "local_backup_files": 1
+        }
+      },
+      {
+        "jurisdiction_id": "CA-NT",
+        "source_2024": {
+          "charities": 101,
+          "selected": 100,
+          "revenue_max_cad": 63791647,
+          "revenue_min_selected_cad": 20
+        },
+        "missing_financial_fields": {
+          "selected_without_revenue": 1,
+          "selected_missing_expenditures": 7,
+          "selected_missing_assets": 4,
+          "charities_in_source_without_revenue": 2
+        },
+        "firestore_document": "does not exist",
+        "dry_run_status": "DRY_RUN",
+        "expected_changes": {
+          "document_created": true,
+          "fields": [
+            "jurisdiction_id",
+            "data_source",
+            "source_url",
+            "source_year",
+            "reporting_period",
+            "note",
+            "selection_basis",
+            "total_in_source",
+            "records_stored",
+            "financials_reported_count",
+            "source_dataset",
+            "records",
+            "cv_data_id",
+            "verification_status",
+            "licence_note",
+            "fetched_at"
+          ],
+          "records": "100 records (BN on all, revenue on 99, no rawValue)"
+        },
+        "unrelated_fields": "n/a (new document)",
+        "replacement_safe": "creation safe (see new_documents)",
+        "backup": "none (nothing to back up)",
+        "estimated_operations": {
+          "dry_run": "1 read (done)",
+          "write_run": "2 reads (existence check + verification read) + 1 write (needs --allow-create)",
+          "local_backup_files": 0
+        }
+      },
+      {
+        "jurisdiction_id": "CA-NU",
+        "source_2024": {
+          "charities": 35,
+          "selected": 35,
+          "revenue_max_cad": 61033000,
+          "revenue_min_selected_cad": 6279
+        },
+        "missing_financial_fields": {
+          "selected_without_revenue": 0,
+          "selected_missing_expenditures": 3,
+          "selected_missing_assets": 4,
+          "charities_in_source_without_revenue": 0
+        },
+        "firestore_document": "does not exist",
+        "dry_run_status": "DRY_RUN",
+        "expected_changes": {
+          "document_created": true,
+          "fields": [
+            "jurisdiction_id",
+            "data_source",
+            "source_url",
+            "source_year",
+            "reporting_period",
+            "note",
+            "selection_basis",
+            "total_in_source",
+            "records_stored",
+            "financials_reported_count",
+            "source_dataset",
+            "records",
+            "cv_data_id",
+            "verification_status",
+            "licence_note",
+            "fetched_at"
+          ],
+          "records": "35 records (BN on all, revenue on 35, no rawValue)"
+        },
+        "unrelated_fields": "n/a (new document)",
+        "replacement_safe": "creation safe (see new_documents)",
+        "backup": "none (nothing to back up)",
+        "estimated_operations": {
+          "dry_run": "1 read (done)",
+          "write_run": "2 reads (existence check + verification read) + 1 write (needs --allow-create)",
+          "local_backup_files": 0
+        }
+      }
+    ],
+    "on_decision": {
+      "jurisdiction": "CA-ON",
+      "finding": "The existing CA-ON document holds 3 fields written by earlier Ontario-specific work that the replacement process does not own, so the pipeline REFUSES it (ABORTED_CONFLICT) instead of guessing. All other fields are the standard 11.",
+      "fields": {
+        "resource_id": "\"5e4f64a2-b751-4f14-bd3a-e4f109c64fcd\" — the CKAN resource id of the OBSOLETE 1998 Identification CSV (stale, misleading once the data is 2024).",
+        "cra_search_url": "\"https://apps.cra-arc.gc.ca/ebci/hacc/srch/pub/dsplyBscSrch?request_locale=en\" — CRA's official live charity-search page; still valid; the app reads it as a fallback source link (subnationalTransparencyData.js).",
+        "designation_refresh_reason": "\"A=Public Foundation, B=Private Foundation per CRA codes_en.pdf §2.4 (2025-11-28)\" — a note on the designation mapping, which the 2024 module also applies; harmless."
+      },
+      "options": [
+        "A (recommended): preserve cra_search_url and designation_refresh_reason, and remove ONLY the obsolete resource_id (FieldValue.delete inside the same guarded write; the backup covers restore). Needs a small, tested pipeline change: a per-jurisdiction allow-list of preserved fields and an explicit remove-list.",
+        "B: preserve all three (stale resource_id stays); same small pipeline change without the remove-list.",
+        "C: leave Ontario on the 1998 data for now."
+      ],
+      "other_notes": "CA-ON existing document is about 17,380 bytes; verification_status was \"CV-REC-2026-08-05-CV-DATA-008\" (will be replaced by the standard value)."
+    },
+    "new_documents": {
+      "jurisdictions": [
+        "CA-NT",
+        "CA-NU"
+      ],
+      "creation_safe": "Yes for the data: the paths do not exist today (confirmed by the dry-run reads), the write touches only that one path, and the script refuses to create unless --allow-create is given. No unrelated data can be affected.",
+      "limitation": "The pipeline has NO delete capability by design, and the restore command needs a backup of an existing document — so a newly created document cannot be undone by this tooling. Rolling one back would need a separate, explicitly approved deletion.",
+      "notes": "CA-NT: 100 of 101 charities shown, 99 of the 100 have revenue (one selected charity reports none and sorts last). CA-NU: all 35 shown, all report revenue."
+    },
+    "recommended_rollout": [
+      {
+        "batch": 1,
+        "documents": [
+          "CA-PE"
+        ],
+        "note": "The true minimum: one small, clean, reversible replacement.",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-PE --write"
+      },
+      {
+        "batch": "1 (practical alternative)",
+        "documents": [
+          "CA-PE",
+          "CA-NL",
+          "CA-NB"
+        ],
+        "note": "Three small Atlantic provinces; each is backed up, written and verified independently.",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-PE,CA-NL,CA-NB --write"
+      },
+      {
+        "batch": 2,
+        "documents": [
+          "CA-SK",
+          "CA-MB",
+          "CA-NS"
+        ],
+        "command": "node engine/canada-charities-replace.cjs --only=CA-SK,CA-MB,CA-NS --write"
+      },
+      {
+        "batch": 3,
+        "documents": [
+          "CA-AB",
+          "CA-QC",
+          "CA-BC"
+        ],
+        "command": "node engine/canada-charities-replace.cjs --only=CA-AB,CA-QC,CA-BC --write"
+      },
+      {
+        "batch": 4,
+        "documents": [
+          "CA-ON"
+        ],
+        "note": "Only after the field decision above and the small pipeline change.",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-ON --write"
+      },
+      {
+        "batch": 5,
+        "documents": [
+          "CA-NT",
+          "CA-NU"
+        ],
+        "note": "Only after approving the no-undo limitation of new documents.",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-NT,CA-NU --write --allow-create"
+      }
+    ],
+    "risks": [
+      "Service worker: the app uses the standard create-react-app service worker. A returning visitor keeps the cached app (old labels \"Latest official snapshot\" / \"Top listing from N\") until the new worker activates, typically after the browser's tabs are closed or on the next visit. The charity DATA is read live from Firestore, so it is correct immediately; only the labels can lag.",
+      "Until a province is replaced it still shows 1998 data with the new generic wording (\"Showing 100 of N charities\") — accurate, but still the old list and its old \"Latest registry extract\" period label.",
+      "mergeFields replacement was proven live on Yukon (read-back identical to a fresh rebuild).",
+      "Repeated names (distinct BNs) look identical because BNs are not displayed; industry mapping sends Agriculture, Animal Welfare, Public Amenities and generic Foundations to \"Other\".",
+      "Each write touches the live page for that province immediately."
+    ]
+  },
+  "yukon_pilot_result": "PASSED — see compliance/records/CV-REC-001-2026-10-27-CV-DATA-YT-002-CRA2024 YT CRA Charities Verification.md"
 }

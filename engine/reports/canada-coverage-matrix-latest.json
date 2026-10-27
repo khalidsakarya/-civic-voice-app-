@@ -359,11 +359,11 @@
         "detail": "Stored and re-read: jurisdiction CA-YT, latest 4.6% (Sep 2026) against a national 6.5%, 24 ascending monthly points Oct 2024 - Sep 2026, source and licence note present. Live-UI check not yet done. See engine/reports/canada-unemployment-batch-write-latest.json."
       },
       "charities": {
-        "status": "UPLOADED — UI VERIFICATION PENDING",
-        "write_status": "WRITTEN 2026-10-26T00:29:55Z (100 of 111 records, subnational_tax_exempt_entities/CA-YT, merge-only). The write was UNINTENDED (triggered by the assistant's own mutation test); the owner directed that it be kept and not re-run. See engine/reports/canada-yt-write-latest.json, incident_2026_10_26.",
-        "source_quality": "CAUTION — the CRA dataset used is \"1998 List of charities\" (see data_currency_finding_2026_10_26). Records match the CRA source exactly; the source is a 1998 snapshot, not the current registry.",
-        "blocker_type": "written/live (UI verification pending; data-currency finding open)",
-        "detail": "Stored records were verified identical to a fresh rebuild from the CRA source. rawValue 0 on all records is a placeholder for \"no financial data stored\", not a financial figure."
+        "status": "CRA 2024 — LIVE AND VERIFIED",
+        "write_status": "REPLACED 2026-10-27T01:01:44Z via `node engine/canada-charities-replace.cjs --only=CA-YT --write` (verified full-document backup first; 100 corrected records; replacement by mergeFields). Replaced the 1998-source document that an unintended test run had written on 2026-10-26.",
+        "source_quality": "Excellent — CRA \"2024 List of charities\" (published 2026-04-30, coverage 2024, yearly), 132 Yukon charities, 100 shown ranked by reported total revenue; optional bn / revenue_cad / expenditures_cad / assets_cad / fiscal_period_end; no placeholder zeros.",
+        "blocker_type": "written/live",
+        "detail": "Verified by one targeted read (10/10 checks) and the live Yukon modal (\"Official snapshot\", \"Showing 100 of 132 charities (largest by revenue)\", no $0, no console errors). Compliance record: compliance/records/CV-REC-001-2026-10-27-CV-DATA-YT-002-CRA2024 YT CRA Charities Verification.md. Backup of the replaced document: ~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-YT__2026-10-27T01-01-44-286Z.json (restore: node engine/canada-charities-restore.cjs --file=<backup> [--write])."
       },
       "grants": {
         "status": "NOT_FOUND — source exists and is current, but PDF-only",
@@ -664,6 +664,15 @@
       "3. Selection and wording: \"first 100 in file order\" is not a \"top\" list. Either rank by a real measure once financials exist, or sort alphabetically, and change the wording to \"Showing N of M registered charities\".",
       "4. Rewrite plan: re-write the 11 existing charity documents through a guarded, backed-up script (merge replaces the records array); hold the NT and NU charities writes until the source decision is made."
     ],
-    "status": "OPEN — no change made to the data or the UI. Needs an owner decision."
+    "status": "IN PROGRESS — Yukon corrected and verified (2026-10-27). The other 12 jurisdictions are prepared by dry-run (engine/reports/canada-charities-2024-prepared-latest.json, firestore_dry_run_2026_10_27) and await approval; CA-ON needs a decision on three extra fields. No other document or the UI data has changed.",
+    "yukon_pilot": {
+      "result": "PASSED",
+      "date": "2026-10-27",
+      "commits": [
+        "1610dbc",
+        "ca4592e"
+      ],
+      "record": "CV-REC-001-2026-10-27-CV-DATA-YT-002-CRA2024"
+    }
   }
 }
