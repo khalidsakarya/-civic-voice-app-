@@ -613,7 +613,7 @@
     "documents_not_yet_existing": 2,
     "records_prepared": 1235
   },
-  "status": "REPLACED AND VERIFIED: YT (2026-10-27); BC, AB, SK, QC, MB, NS (2026-10-31). Ontario prepared (dry-run clean) — NOT written. Not written: ON, NB, NL, PE, NT, NU. Waiting for approval.",
+  "status": "REPLACED AND VERIFIED: YT (2026-10-27); BC, AB, SK, QC, MB, NS, ON (2026-10-31). Not written: NB, NL, PE, NT, NU. Waiting for approval.",
   "firestore_dry_run_2026_10_27": {
     "generated_at": "2026-10-27T01:09:05.020Z",
     "command": "node engine/canada-charities-replace.cjs --only=CA-ON,CA-BC,CA-AB,CA-QC,CA-SK,CA-MB,CA-NS,CA-NB,CA-NL,CA-PE,CA-NT,CA-NU   (dry run: 12 targeted reads, 0 writes)",
@@ -1495,5 +1495,57 @@
       "last_selected_revenue_cad": 313970528
     },
     "waiting_for": "Your explicit approval to write CA-ON (one province, backup first)."
+  },
+  "ontario_write_2026_10_31": {
+    "approved": "One controlled write to CA-ON using the tested Ontario exception",
+    "pushed_before_write": "3add02a (and 14d5d0b); both Vercel projects succeeded; 49 engine tests, 12 UI util tests and a CI production build passed",
+    "pre_write": "17 of 17 safety checks passed on the final targeted dry-run (project, target, 2024 source, resource_id matches the verified source, 100 revenue-ranked records, unique valid BNs, no rawValue, only the approved fields change, both extra fields remain, backup probe).",
+    "command": "node engine/canada-charities-replace.cjs --only=CA-ON --write",
+    "status": "WRITTEN",
+    "run_report": "engine/reports/canada-charities-replace-2026-10-31_18-48-07.json",
+    "backup": {
+      "file": "~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-ON__2026-10-31T18-48-26-224Z.json",
+      "bytes": 24214,
+      "original_fields": 14
+    },
+    "targeted_read": "11/11 checks passed: 100 records equal a fresh rebuild; total_in_source 30,570; Mastercard Foundation first; descending revenue; no obsolete 1998 record (100 old-only names, none present); no rawValue; cra_search_url and designation_refresh_reason byte-identical to the backup; resource_id 5e4f64a2-… -> 694fdc72-…; all 14 original fields present, 5 added, 0 unexpected.",
+    "live_modal": {
+      "heading": "Official snapshot",
+      "line": "Showing 100 of 30,570 charities (largest by revenue)",
+      "rows": 100,
+      "ranks_in_order": true,
+      "first": "Mastercard Foundation",
+      "last": "QUEENSWAY-CARLETON HOSPITAL",
+      "dollar_amounts": 0,
+      "console_errors": 0,
+      "source_line": "\"2024 List of charities\""
+    },
+    "compliance_record": "CV-REC-001-2026-10-31-CV-DATA-008-CRA2024"
+  },
+  "legal_vs_account_name_investigation_2026_10_31": {
+    "scope": "Read-only analysis of the CRA 2024 Identification file (public data). No source record, ranking, financial value, Firestore document or UI was changed.",
+    "whole_source_83761_registrants": {
+      "same_after_normalising_case_accents_punctuation_spacing": 72063,
+      "one_name_contains_the_other": 3573,
+      "similar_wording": 2382,
+      "materially_different": 5743
+    },
+    "selected_records_in_prepared_documents_1235": {
+      "same_after_normalising": 1049,
+      "one_contains_the_other": 62,
+      "similar_wording": 40,
+      "materially_different": 84
+    },
+    "what_the_difference_is": "Legal Name is the registrant (the legal entity that holds the charity registration). Account Name is the name of the specific charity account / program under that registrant (CRA keeps one BN per account: the RR0001 suffix is the main account, RR0002… are program accounts). 377 legal names are shared by several BNs with different account names.",
+    "findings": [
+      "Where the two differ materially, the cause is almost always a registrant that runs several accounts: the Government of Alberta (BN …RR0010 \"Alberta Health Services\" and …RR0015 \"Carewest\"), the Gouvernement du Québec (\"Bibliothèque et Archives nationales du Québec\"), the City of Saskatoon (\"Saskatoon Public Library\"), The Governing Council of The Salvation Army in Canada (one registrant, dozens of local centres), Pentecostal Assemblies of Newfoundland and Labrador, the Catholic Episcopal Corporation of Whitehorse and the Synod of the Diocese of Yukon (parishes). For these the Legal Name alone is accurate but uninformative, and it makes different charities look identical.",
+      "41 of the 1,235 selected records sit in 8 groups that show an identical name to another record in the same province (CA-YT 13, CA-NT 15 prepared only, CA-NL 9, CA-AB 2, CA-PE 2). Account Name would distinguish 36 of the 41; 5 would stay ambiguous (two NL records are both just \"PENTECOSTAL ASSEMBLY\").",
+      "Alberta Health Services (CA-AB #1): Legal Name \"GOVERNMENT OF THE PROVINCE OF ALBERTA\", Account Name \"Alberta Health Services\" — Account Name is clearly the better, accurate label and resolves the \"government listed as a charity\" impression. The row is still a real CRA registration; the ranking and the $18.8B revenue are unaffected.",
+      "Hôpital Jeffery Hale (CA-QC #1): Account Name is \"JEFFERY HALE'S HOSPITAL\", only a spelling variant of the legal name, so Account Name does NOT explain the surprising $2.31B revenue. The anomaly is in the source row itself (an old hospital registration filing at the scale of a regional health authority); it is not a naming issue and cannot be fixed by a display change. It was left exactly as the source states it.",
+      "Most other \"differences\" are cosmetic: spelling or case (\"UNIVERSITY OF BRITISH COLUMBIA\" / \"THE UNIVERSITY OF BRITISH COLUMBIA\"), a missing \"The\", number formats (\"#74\" / \"NO. 74\"), bilingual names with one language only, or the registrant's own longer official title (school boards, cégeps: \"CEGEP DU VIEUX MONTREAL\" / \"COLLEGE D'ENSEIGNEMENT GENERAL ET PROFESSIONNEL DU VIEUX MONTREAL\").",
+      "Account Name is not uniformly better: it has typos and glitches of its own (\"SASASKATCHEWAN\", \"Hospitatlier\", \"Sociauxdu\", \"ORGANIZATI ON\"), 3,798 values contain double spaces, and 55,122 of 83,761 are all upper case. Showing it AS the primary name would trade one kind of roughness for another and would change what the registrant is called."
+    ],
+    "recommendation": "Yes — showing Account Name as SECONDARY text would improve clarity, but only when it materially differs from the Legal Name (not for the ~85% that match after normalising, where it would just be noise). Suggested rule: add an optional record field `account_name` (store only when it differs by more than case/spacing/punctuation/a leading \"The\"); show it as a smaller line under the name in the table; keep the Legal Name as the primary, ranked and cited name. Expected effect on the 1,235 selected records: roughly 150–200 rows would gain a second line (84 material + part of 62 + 40), and 36 of the 41 identical-name rows become distinguishable. It needs: a data-contract change in the selection module (one optional field), a re-write of the affected province documents (each guarded, one at a time), and a small table change in App.js. NOT started — approval needed.",
+    "ui_changes_made": "none"
   }
 }

@@ -77,11 +77,11 @@
         "detail": "subnational_economic_social_stats/CA-ON. A supplementary category-level budget breakdown (CV-DATA-013, Ontario Public Accounts Annual Report, 7 categories, FY2024-25) was also merged into the same document on 2026-08-16."
       },
       "charities": {
-        "status": "WRITTEN",
-        "write_status": "WRITTEN (CV-DATA-008, 2026-08-03, 100 records)",
-        "source_quality": "Excellent — CRA Charities Registry / open.canada.ca",
+        "status": "CRA 2024 — LIVE AND VERIFIED",
+        "write_status": "REPLACED 2026-10-31 via `node engine/canada-charities-replace.cjs --only=CA-ON --write` (verified full-document backup first; 100 corrected records ranked by revenue; replacement by mergeFields with the approved CA-ON field exception: cra_search_url and designation_refresh_reason preserved, resource_id updated to the 2024 Identification CSV). Replaced the 1998-source document.",
+        "source_quality": "Excellent — CRA \"2024 List of charities\" (published 2026-04-30, yearly), 30,570 Ontario charities, 100 shown ranked by reported total revenue; optional bn / revenue_cad / expenditures_cad / assets_cad / fiscal_period_end; no placeholder zeros.",
         "blocker_type": "written/live",
-        "detail": "subnational_tax_exempt_entities/CA-ON. Name/type/category only, rawValue=0."
+        "detail": "Verified by one targeted read (11/11 checks) and the live modal (\"Official snapshot\", \"Showing 100 of 30,570 charities (largest by revenue)\", no $0, no console errors). Compliance record: compliance/records/CV-REC-001-2026-10-31-CV-DATA-008-CRA2024 ON CRA Charities Verification.md. Backup: ~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-ON__2026-10-31T18-48-26-224Z.json."
       },
       "grants": {
         "status": "WRITTEN",
@@ -664,7 +664,7 @@
       "3. Selection and wording: \"first 100 in file order\" is not a \"top\" list. Either rank by a real measure once financials exist, or sort alphabetically, and change the wording to \"Showing N of M registered charities\".",
       "4. Rewrite plan: re-write the 11 existing charity documents through a guarded, backed-up script (merge replaces the records array); hold the NT and NU charities writes until the source decision is made."
     ],
-    "status": "IN PROGRESS — corrected and verified: YT (2026-10-27); BC, AB, SK, QC, MB, NS (2026-10-31). Remaining on the 1998 list: NB, NL, PE; ON (replacement prepared and dry-run clean, awaiting approval); NT and NU not created. Details: engine/reports/canada-charities-2024-prepared-latest.json.",
+    "status": "IN PROGRESS — corrected and verified: YT (2026-10-27); BC, AB, SK, QC, MB, NS, ON (2026-10-31). Remaining on the 1998 list: NB, NL, PE; NT and NU not created. Details: engine/reports/canada-charities-2024-prepared-latest.json.",
     "yukon_pilot": {
       "result": "PASSED",
       "date": "2026-10-27",
@@ -691,6 +691,11 @@
         "CA-NS"
       ],
       "result": "PASSED — each written once, verified (9/9) and checked live; no errors"
+    },
+    "ontario_pilot": {
+      "date": "2026-10-31",
+      "jurisdiction": "CA-ON",
+      "result": "PASSED — written once, verified (11/11) and checked live; no errors"
     }
   }
 }

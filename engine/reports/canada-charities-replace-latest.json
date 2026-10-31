@@ -1,6 +1,6 @@
 {
   "run_type": "FIRESTORE_REPLACE",
-  "run_at": "2026-10-31T18:17:09.706Z",
+  "run_at": "2026-10-31T18:48:07.824Z",
   "firebase_project": "civic-voice-5ea94",
   "source": {
     "id": "80c00cdb-1358-415c-bb8b-0de7f12675b8",
@@ -25,32 +25,43 @@
   },
   "results": [
     {
-      "jurisdiction_id": "CA-NS",
-      "path": "subnational_tax_exempt_entities/CA-NS",
+      "jurisdiction_id": "CA-ON",
+      "path": "subnational_tax_exempt_entities/CA-ON",
       "mode": "WRITE",
       "status": "WRITTEN",
       "error": null,
       "plan": {
         "exists": true,
         "existingKeys": [
+          "jurisdiction_id",
+          "resource_id",
+          "records_stored",
+          "cra_search_url",
+          "source_url",
+          "total_in_source",
           "note",
           "cv_data_id",
-          "fetched_at",
-          "records",
-          "jurisdiction_id",
           "licence_note",
-          "records_stored",
-          "verification_status",
           "data_source",
-          "source_url",
-          "total_in_source"
+          "records",
+          "designation_refresh_reason",
+          "fetched_at",
+          "verification_status"
         ],
         "unknownKeys": [],
+        "preserved_fields": [
+          "cra_search_url",
+          "designation_refresh_reason"
+        ],
+        "resource_id_change": {
+          "from": "5e4f64a2-b751-4f14-bd3a-e4f109c64fcd",
+          "to": "694fdc72-eae4-4ee0-83eb-832ab7b230e3"
+        },
         "conflict": null,
         "before": {
           "source": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
           "reporting_period": null,
-          "total_in_source": 3452,
+          "total_in_source": 25822,
           "count": 100,
           "with_rawValue_field": 100,
           "with_rawValue_zero": 100,
@@ -60,7 +71,7 @@
         "after": {
           "source": "Canada Revenue Agency — Charities Directorate, \"2024 List of charities\". Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
           "reporting_period": "CRA List of charities — 2024 filing year (fiscal periods ending in 2024), published 2026-04-30",
-          "total_in_source": 3501,
+          "total_in_source": 30570,
           "count": 100,
           "with_rawValue_field": 0,
           "with_rawValue_zero": 0,
@@ -78,7 +89,8 @@
           "cv_data_id",
           "verification_status",
           "licence_note",
-          "fetched_at"
+          "fetched_at",
+          "resource_id"
         ],
         "fields_added": [
           "source_year",
@@ -88,26 +100,26 @@
           "source_dataset"
         ],
         "fields_removed": [],
-        "old_record_names_not_in_new": 64
+        "old_record_names_not_in_new": 100
       },
       "backup": {
-        "path": "C:\\Users\\jem91\\civic-voice-backups\\firestore\\subnational_tax_exempt_entities__CA-NS__2026-10-31T18-17-35-785Z.json",
-        "bytes": 24358,
-        "sha256": "0230b8e2ba16a5877cca38687f8d490a01684faf878c4e4aad2c29272d4e5897"
+        "path": "C:\\Users\\jem91\\civic-voice-backups\\firestore\\subnational_tax_exempt_entities__CA-ON__2026-10-31T18-48-26-224Z.json",
+        "bytes": 24214,
+        "sha256": "589f65956fc91e25dc0f2ea2af7f13127953159121da66c125e3de0219914ec8"
       },
       "verification": {
         "ok": true,
         "problems": []
       },
       "summary": {
-        "jurisdiction_id": "CA-NS",
-        "total_in_source": 3501,
+        "jurisdiction_id": "CA-ON",
+        "total_in_source": 30570,
         "selected": 100,
         "with_revenue_selected": 100,
         "without_revenue_selected": 0,
-        "charities_without_revenue_in_source": 170,
-        "revenue_max_cad": 3769249000,
-        "revenue_min_cad": 7178391,
+        "charities_without_revenue_in_source": 1582,
+        "revenue_max_cad": 13372391723,
+        "revenue_min_cad": 313970528,
         "zero_revenue_reported_selected": 0,
         "has_rawValue_field": false
       }
