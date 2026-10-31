@@ -1,0 +1,116 @@
+{
+  "run_type": "FIRESTORE_REPLACE",
+  "run_at": "2026-10-31T17:49:52.155Z",
+  "firebase_project": "civic-voice-5ea94",
+  "source": {
+    "id": "80c00cdb-1358-415c-bb8b-0de7f12675b8",
+    "title": "2024 List of charities",
+    "publisher": "Canada Revenue Agency — Charities Directorate",
+    "published": "2026-04-30",
+    "metadata_modified": "2026-10-04",
+    "coverage_start": "2024-01-01",
+    "coverage_end": "2024-12-31",
+    "frequency": "P1Y",
+    "licence": "Open Government Licence - Canada",
+    "resources": {
+      "identification": {
+        "id": "694fdc72-eae4-4ee0-83eb-832ab7b230e3",
+        "url": "https://open.canada.ca/data/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8/resource/694fdc72-eae4-4ee0-83eb-832ab7b230e3/download/ident_2024_updated.csv"
+      },
+      "financial": {
+        "id": "e545170c-3689-4833-b2a8-e9e83100ab59",
+        "url": "https://open.canada.ca/data/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8/resource/e545170c-3689-4833-b2a8-e9e83100ab59/download/financial_d_and_schedule_6_2024_updated.csv"
+      }
+    }
+  },
+  "results": [
+    {
+      "jurisdiction_id": "CA-SK",
+      "path": "subnational_tax_exempt_entities/CA-SK",
+      "mode": "WRITE",
+      "status": "WRITTEN",
+      "error": null,
+      "plan": {
+        "exists": true,
+        "existingKeys": [
+          "note",
+          "cv_data_id",
+          "fetched_at",
+          "records",
+          "jurisdiction_id",
+          "licence_note",
+          "records_stored",
+          "verification_status",
+          "data_source",
+          "source_url",
+          "total_in_source"
+        ],
+        "unknownKeys": [],
+        "conflict": null,
+        "before": {
+          "source": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+          "reporting_period": null,
+          "total_in_source": 4407,
+          "count": 100,
+          "with_rawValue_field": 100,
+          "with_rawValue_zero": 100,
+          "with_bn": 0,
+          "with_revenue": 0
+        },
+        "after": {
+          "source": "Canada Revenue Agency — Charities Directorate, \"2024 List of charities\". Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+          "reporting_period": "CRA List of charities — 2024 filing year (fiscal periods ending in 2024), published 2026-04-30",
+          "total_in_source": 3952,
+          "count": 100,
+          "with_rawValue_field": 0,
+          "with_rawValue_zero": 0,
+          "with_bn": 100,
+          "with_revenue": 100
+        },
+        "fields_replaced": [
+          "jurisdiction_id",
+          "data_source",
+          "source_url",
+          "note",
+          "total_in_source",
+          "records_stored",
+          "records",
+          "cv_data_id",
+          "verification_status",
+          "licence_note",
+          "fetched_at"
+        ],
+        "fields_added": [
+          "source_year",
+          "reporting_period",
+          "selection_basis",
+          "financials_reported_count",
+          "source_dataset"
+        ],
+        "fields_removed": [],
+        "old_record_names_not_in_new": 95
+      },
+      "backup": {
+        "path": "C:\\Users\\jem91\\civic-voice-backups\\firestore\\subnational_tax_exempt_entities__CA-SK__2026-10-31T17-50-16-524Z.json",
+        "bytes": 23596,
+        "sha256": "0faf1db2908cc6a8c4cb64686fa8ab11f0d5bd61fc755065db0458810015038b"
+      },
+      "verification": {
+        "ok": true,
+        "problems": []
+      },
+      "summary": {
+        "jurisdiction_id": "CA-SK",
+        "total_in_source": 3952,
+        "selected": 100,
+        "with_revenue_selected": 100,
+        "without_revenue_selected": 0,
+        "charities_without_revenue_in_source": 157,
+        "revenue_max_cad": 5503409302,
+        "revenue_min_cad": 7596147,
+        "zero_revenue_reported_selected": 0,
+        "has_rawValue_field": false
+      }
+    }
+  ]
+}

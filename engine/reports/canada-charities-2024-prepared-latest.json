@@ -613,7 +613,7 @@
     "documents_not_yet_existing": 2,
     "records_prepared": 1235
   },
-  "status": "YUKON REPLACED AND VERIFIED (2026-10-27). Other 12 prepared by dry-run; NOT WRITTEN. Waiting for approval.",
+  "status": "REPLACED AND VERIFIED: YT (2026-10-27), BC, AB, SK (2026-10-31). Not written: ON (decision pending), QC, MB, NS, NB, NL, PE, NT, NU. Waiting for approval.",
   "firestore_dry_run_2026_10_27": {
     "generated_at": "2026-10-27T01:09:05.020Z",
     "command": "node engine/canada-charities-replace.cjs --only=CA-ON,CA-BC,CA-AB,CA-QC,CA-SK,CA-MB,CA-NS,CA-NB,CA-NL,CA-PE,CA-NT,CA-NU   (dry run: 12 targeted reads, 0 writes)",
@@ -1116,7 +1116,100 @@
         "B: preserve all three (stale resource_id stays); same small pipeline change without the remove-list.",
         "C: leave Ontario on the 1998 data for now."
       ],
-      "other_notes": "CA-ON existing document is about 17,380 bytes; verification_status was \"CV-REC-2026-08-05-CV-DATA-008\" (will be replaced by the standard value)."
+      "other_notes": "CA-ON existing document is about 17,380 bytes; verification_status was \"CV-REC-2026-08-05-CV-DATA-008\" (will be replaced by the standard value).",
+      "field_by_field": [
+        {
+          "field": "jurisdiction_id",
+          "existing": "\"CA-ON\"",
+          "after": "\"CA-ON\"",
+          "action": "replaced (same value)"
+        },
+        {
+          "field": "records",
+          "existing": "100 records, rawValue 0 on all, no BN; none of the 100 names is in the new list",
+          "after": "100 corrected records ranked by revenue, BN on all, no rawValue",
+          "action": "replaced wholesale"
+        },
+        {
+          "field": "records_stored",
+          "existing": "100",
+          "after": "100",
+          "action": "replaced (same value)"
+        },
+        {
+          "field": "total_in_source",
+          "existing": "25,822 (1998 list)",
+          "after": "30,570 (2024 list)",
+          "action": "replaced"
+        },
+        {
+          "field": "source_url",
+          "existing": "https://open.canada.ca/data/en/dataset/51c68b86-33f0-46fe-9b51-0a786d0088f5 (1998 List of charities)",
+          "after": "https://open.canada.ca/data/en/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8",
+          "action": "replaced"
+        },
+        {
+          "field": "data_source",
+          "existing": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+          "after": "... Charities Directorate, \"2024 List of charities\". Source: open.canada.ca. Licensed under ...",
+          "action": "replaced"
+        },
+        {
+          "field": "note",
+          "existing": "Ontario registered charities only. Name, type, and category displayed (MVP). No dollar values in this version. OGL-Canada.",
+          "after": "Charities that filed a T3010 return for fiscal periods ending in 2024, ranked by total revenue. Financial amounts are stored but not displayed in this version.",
+          "action": "replaced (the old wording is wrong for the new data)"
+        },
+        {
+          "field": "cv_data_id",
+          "existing": "\"CV-DATA-008\"",
+          "after": "\"CV-DATA-008\"",
+          "action": "replaced (same value)"
+        },
+        {
+          "field": "verification_status",
+          "existing": "\"CV-REC-2026-08-05-CV-DATA-008\"",
+          "after": "\"CV-REC-001-<date>-CV-DATA-008-CRA2024\"",
+          "action": "replaced"
+        },
+        {
+          "field": "licence_note",
+          "existing": "OGL-Canada attribution (earlier wording)",
+          "after": "standard OGL-Canada attribution",
+          "action": "replaced"
+        },
+        {
+          "field": "fetched_at",
+          "existing": "\"2026-08-05T00:03:42.693Z\"",
+          "after": "time of the replacement",
+          "action": "replaced"
+        },
+        {
+          "field": "source_year, reporting_period, selection_basis, financials_reported_count, source_dataset",
+          "existing": "(absent)",
+          "after": "2024; period text; \"largest by revenue\"; count; source metadata",
+          "action": "added (5 new fields)"
+        },
+        {
+          "field": "cra_search_url",
+          "existing": "\"https://apps.cra-arc.gc.ca/ebci/hacc/srch/pub/dsplyBscSrch?request_locale=en\" (CRA live charity search)",
+          "after": "(not in the payload)",
+          "action": "PRESERVED untouched — still valid and used by the app as a fallback link"
+        },
+        {
+          "field": "designation_refresh_reason",
+          "existing": "\"A=Public Foundation, B=Private Foundation per CRA codes_en.pdf §2.4 (2025-11-28)\"",
+          "after": "(not in the payload)",
+          "action": "PRESERVED untouched — the same A/B designation mapping is applied by the 2024 module; harmless note"
+        },
+        {
+          "field": "resource_id",
+          "existing": "\"5e4f64a2-b751-4f14-bd3a-e4f109c64fcd\" = the Identification CSV of the OBSOLETE 1998 package",
+          "after": "proposed: \"694fdc72-eae4-4ee0-83eb-832ab7b230e3\" = the Identification CSV of the 2024 package",
+          "action": "PROPOSED UPDATE (not a removal): the stale value would mislabel the new data's source, so replace it with the 2024 resource id; nothing is deleted"
+        }
+      ],
+      "proposed_pipeline_change": "A per-jurisdiction setting in engine/lib/charities-replacement.cjs: CA-ON preserves cra_search_url and designation_refresh_reason (known, left untouched) and writes resource_id with the 2024 Identification resource id. No field is deleted. Needs a tested code change and your approval before Ontario is touched."
     },
     "new_documents": {
       "jurisdictions": [
@@ -1190,5 +1283,80 @@
       "Each write touches the live page for that province immediately."
     ]
   },
-  "yukon_pilot_result": "PASSED — see compliance/records/CV-REC-001-2026-10-27-CV-DATA-YT-002-CRA2024 YT CRA Charities Verification.md"
+  "yukon_pilot_result": "PASSED — see compliance/records/CV-REC-001-2026-10-27-CV-DATA-YT-002-CRA2024 YT CRA Charities Verification.md",
+  "rollout_batch_1_2026_10_31": {
+    "approved": "CA-BC, CA-AB, CA-SK (Ontario excluded); executed one province at a time, each verified before the next",
+    "pre_write": "Targeted dry-run of the three (3 reads): 29 of 29 safety checks passed (project, targets, 2024 source and metadata, revenue ranking, selected count, no rawValue, valid unique BNs, source metadata, backup probe, no unknown fields).",
+    "pushed_before_writes": "69b0607 (reports and one compliance record only; both Vercel projects succeeded)",
+    "results": [
+      {
+        "jurisdiction_id": "CA-BC",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-BC --write",
+        "status": "WRITTEN",
+        "run_report": "engine/reports/canada-charities-replace-2026-10-31_17-46-24.json",
+        "backup": {
+          "file": "~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-BC__2026-10-31T17-46-42-386Z.json",
+          "bytes": 24072
+        },
+        "targeted_read": "9/9 checks passed",
+        "live_modal": {
+          "heading": "Official snapshot",
+          "line": "Showing 100 of 12,040 charities (largest by revenue)",
+          "rows": 100,
+          "ranks_in_order": true,
+          "first": "FRASER HEALTH AUTHORITY",
+          "last": "ST. MICHAEL'S UNIVERSITY SCHOOL SOCIETY",
+          "dollar_amounts": 0,
+          "console_errors": 0
+        },
+        "compliance_record": "CV-REC-001-2026-10-31-CV-DATA-BC-002-CRA2024"
+      },
+      {
+        "jurisdiction_id": "CA-AB",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-AB --write",
+        "status": "WRITTEN",
+        "run_report": "engine/reports/canada-charities-replace-2026-10-31_17-48-26.json",
+        "backup": {
+          "file": "~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-AB__2026-10-31T17-48-44-436Z.json",
+          "bytes": 24359
+        },
+        "targeted_read": "9/9 checks passed",
+        "live_modal": {
+          "heading": "Official snapshot",
+          "line": "Showing 100 of 9,181 charities (largest by revenue)",
+          "rows": 100,
+          "ranks_in_order": true,
+          "first": "GOVERNMENT OF THE PROVINCE OF ALBERTA",
+          "last": "STOLLERY CHILDREN'S HOSPITAL FOUNDATION",
+          "dollar_amounts": 0,
+          "console_errors": 0
+        },
+        "compliance_record": "CV-REC-001-2026-10-31-CV-DATA-AB-002-CRA2024"
+      },
+      {
+        "jurisdiction_id": "CA-SK",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-SK --write",
+        "status": "WRITTEN",
+        "run_report": "engine/reports/canada-charities-replace-2026-10-31_17-49-52.json",
+        "backup": {
+          "file": "~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-SK__2026-10-31T17-50-16-524Z.json",
+          "bytes": 23596
+        },
+        "targeted_read": "9/9 checks passed",
+        "live_modal": {
+          "heading": "Official snapshot",
+          "line": "Showing 100 of 3,952 charities (largest by revenue)",
+          "rows": 100,
+          "ranks_in_order": true,
+          "first": "SASKATCHEWAN HEALTH AUTHORITY",
+          "last": "PHOENIX RESIDENTIAL SOCIETY",
+          "dollar_amounts": 0,
+          "console_errors": 0
+        },
+        "compliance_record": "CV-REC-001-2026-10-31-CV-DATA-SK-002-CRA2024"
+      }
+    ],
+    "operations_total": "3 dry-run reads + 6 write-run reads + 3 writes + 3 verification reads, 3 backup files; the live modal checks add the app's own page reads",
+    "live_ui_note_for_still_1998_documents": "Before replacement the BC modal showed: \"Official snapshot\", \"Showing 100 of 9,537 charities\" (no ranking claim), source line without a year, and a \"#\" column numbered 1-100 over rows that are in file order, not ranked. So 1998-list provinces do not claim \"latest\", \"2024\" or revenue ranking, but they show no source year and their \"#\" column looks like a ranking. They keep this until replaced."
+  }
 }

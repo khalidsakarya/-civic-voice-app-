@@ -105,11 +105,11 @@
         "detail": "subnational_economic_social_stats/CA-BC"
       },
       "charities": {
-        "status": "WRITTEN",
-        "write_status": "WRITTEN (CV-DATA-BC-002, 100 records)",
-        "source_quality": "Excellent — CRA Charities Registry",
+        "status": "CRA 2024 — LIVE AND VERIFIED",
+        "write_status": "REPLACED 2026-10-31 via `node engine/canada-charities-replace.cjs --only=CA-BC --write` (verified full-document backup first; 100 corrected records ranked by revenue; replacement by mergeFields). Replaced the 1998-source document.",
+        "source_quality": "Excellent — CRA \"2024 List of charities\" (published 2026-04-30, yearly), 12,040 British Columbia charities, 100 shown ranked by reported total revenue; optional bn / revenue_cad / expenditures_cad / assets_cad / fiscal_period_end; no placeholder zeros.",
         "blocker_type": "written/live",
-        "detail": "subnational_tax_exempt_entities/CA-BC"
+        "detail": "Verified by one targeted read (9/9 checks) and the live modal (\"Official snapshot\", \"Showing 100 of 12,040 charities (largest by revenue)\", no $0, no console errors). Compliance record: compliance/records/CV-REC-001-2026-10-31-CV-DATA-BC-002-CRA2024 BC CRA Charities Verification.md. Backup: ~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-BC__2026-10-31T17-46-42-386Z.json."
       },
       "grants": {
         "status": "WRITTEN",
@@ -133,11 +133,11 @@
         "detail": "Never attempted via a write script until the reliability fix landed. The original canada-ab-write-latest.json 'deliberately_excluded' note (ECONNRESET) is superseded by statcan-wds-reliability-test-latest.json, which confirms the fetch now works cleanly."
       },
       "charities": {
-        "status": "WRITTEN",
-        "write_status": "WRITTEN (CV-DATA-AB-002, 100 records)",
-        "source_quality": "Excellent — CRA Charities Registry",
+        "status": "CRA 2024 — LIVE AND VERIFIED",
+        "write_status": "REPLACED 2026-10-31 via `node engine/canada-charities-replace.cjs --only=CA-AB --write` (verified full-document backup first; 100 corrected records ranked by revenue; replacement by mergeFields). Replaced the 1998-source document.",
+        "source_quality": "Excellent — CRA \"2024 List of charities\" (published 2026-04-30, yearly), 9,181 Alberta charities, 100 shown ranked by reported total revenue; optional bn / revenue_cad / expenditures_cad / assets_cad / fiscal_period_end; no placeholder zeros.",
         "blocker_type": "written/live",
-        "detail": "subnational_tax_exempt_entities/CA-AB"
+        "detail": "Verified by one targeted read (9/9 checks) and the live modal (\"Official snapshot\", \"Showing 100 of 9,181 charities (largest by revenue)\", no $0, no console errors). Compliance record: compliance/records/CV-REC-001-2026-10-31-CV-DATA-AB-002-CRA2024 AB CRA Charities Verification.md. Backup: ~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-AB__2026-10-31T17-48-44-436Z.json."
       },
       "grants": {
         "status": "WRITTEN",
@@ -189,11 +189,11 @@
         "detail": "Same ECONNRESET-superseded situation as CA-AB."
       },
       "charities": {
-        "status": "WRITTEN",
-        "write_status": "WRITTEN (CV-DATA-SK-002, 100 records)",
-        "source_quality": "Excellent — CRA Charities Registry",
+        "status": "CRA 2024 — LIVE AND VERIFIED",
+        "write_status": "REPLACED 2026-10-31 via `node engine/canada-charities-replace.cjs --only=CA-SK --write` (verified full-document backup first; 100 corrected records ranked by revenue; replacement by mergeFields). Replaced the 1998-source document.",
+        "source_quality": "Excellent — CRA \"2024 List of charities\" (published 2026-04-30, yearly), 3,952 Saskatchewan charities, 100 shown ranked by reported total revenue; optional bn / revenue_cad / expenditures_cad / assets_cad / fiscal_period_end; no placeholder zeros.",
         "blocker_type": "written/live",
-        "detail": "subnational_tax_exempt_entities/CA-SK"
+        "detail": "Verified by one targeted read (9/9 checks) and the live modal (\"Official snapshot\", \"Showing 100 of 3,952 charities (largest by revenue)\", no $0, no console errors). Compliance record: compliance/records/CV-REC-001-2026-10-31-CV-DATA-SK-002-CRA2024 SK CRA Charities Verification.md. Backup: ~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-SK__2026-10-31T17-50-16-524Z.json."
       },
       "grants": {
         "status": "NOT_FOUND",
@@ -664,7 +664,7 @@
       "3. Selection and wording: \"first 100 in file order\" is not a \"top\" list. Either rank by a real measure once financials exist, or sort alphabetically, and change the wording to \"Showing N of M registered charities\".",
       "4. Rewrite plan: re-write the 11 existing charity documents through a guarded, backed-up script (merge replaces the records array); hold the NT and NU charities writes until the source decision is made."
     ],
-    "status": "IN PROGRESS — Yukon corrected and verified (2026-10-27). The other 12 jurisdictions are prepared by dry-run (engine/reports/canada-charities-2024-prepared-latest.json, firestore_dry_run_2026_10_27) and await approval; CA-ON needs a decision on three extra fields. No other document or the UI data has changed.",
+    "status": "IN PROGRESS — corrected and verified: YT (2026-10-27), BC, AB, SK (2026-10-31). Remaining on the 1998 list: ON (field decision pending), QC, MB, NS, NB, NL, PE; NT and NU not created. Details: engine/reports/canada-charities-2024-prepared-latest.json.",
     "yukon_pilot": {
       "result": "PASSED",
       "date": "2026-10-27",
@@ -673,6 +673,15 @@
         "ca4592e"
       ],
       "record": "CV-REC-001-2026-10-27-CV-DATA-YT-002-CRA2024"
+    },
+    "rollout_batch_1": {
+      "date": "2026-10-31",
+      "jurisdictions": [
+        "CA-BC",
+        "CA-AB",
+        "CA-SK"
+      ],
+      "result": "PASSED — each written once, verified (9/9) and checked live; no errors"
     }
   }
 }
