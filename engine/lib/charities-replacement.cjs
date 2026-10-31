@@ -42,6 +42,31 @@ const LEGACY_FIELDS = Object.freeze(['jurisdiction_id', 'data_source', 'source_u
 const NEW_FIELDS = Object.freeze(['source_year', 'reporting_period', 'selection_basis', 'financials_reported_count', 'source_dataset']);
 const OWNED_FIELDS = new Set([...LEGACY_FIELDS, ...NEW_FIELDS]);
 
+/**
+ * NARROW, NAMED EXCEPTIONS. The general rule stays: a document holding any field this process does not own is
+ * REFUSED. The existing CA-ON document holds three extra fields written by earlier Ontario-specific work; the
+ * decision for each is recorded here and applies to CA-ON ONLY (no other id has an entry):
+ *   cra_search_url, designation_refresh_reason  PRESERVED — never written, never deleted, verified unchanged.
+ *   resource_id  UPDATED (not removed) from the obsolete 1998 Identification CSV id to the 2024 one. Any other
+ *                existing value (or a different 2024 resource id in the source) is refused.
+ * Nothing is ever deleted by the replacement.
+ */
+const OLD_1998_IDENTIFICATION_RESOURCE_ID = '5e4f64a2-b751-4f14-bd3a-e4f109c64fcd';
+const IDENTIFICATION_RESOURCE_ID_2024 = '694fdc72-eae4-4ee0-83eb-832ab7b230e3';
+const EXCEPTIONS = Object.freeze({
+  'CA-ON': Object.freeze({
+    preserve: Object.freeze(['cra_search_url', 'designation_refresh_reason']),
+    update: Object.freeze(['resource_id']),
+    resourceIdFrom: Object.freeze([OLD_1998_IDENTIFICATION_RESOURCE_ID, IDENTIFICATION_RESOURCE_ID_2024]),
+    resourceIdTo: IDENTIFICATION_RESOURCE_ID_2024,
+  }),
+});
+const exceptionFor = (id) => (Object.prototype.hasOwnProperty.call(EXCEPTIONS, id) ? EXCEPTIONS[id] : null);
+/** Fields this process WRITES for one document. */
+const ownedFieldsFor = (id) => { const x = exceptionFor(id); return new Set([...OWNED_FIELDS, ...(x ? x.update : [])]); };
+/** Fields that may exist in the document without being a conflict (written, or deliberately preserved). */
+const toleratedFieldsFor = (id) => { const x = exceptionFor(id); return new Set([...ownedFieldsFor(id), ...(x ? x.preserve : [])]); };
+
 const LICENCE_NOTE = 'Open Government Licence — Canada (OGL-Canada). Attribution: "Contains information licensed under the Open Government Licence — Canada. Source: Canada Revenue Agency Charities Directorate."';
 
 const flagError = (msg) => new Error(`${msg}. Nothing was run.`);
@@ -81,7 +106,7 @@ function parseArgs(argv) {
 }
 
 /** The complete payload to store for one jurisdiction (corrected doc + bookkeeping). */
-function buildPayload(doc, jurisdiction, { now = new Date() } = {}) {
+function buildPayload(doc, jurisdiction, { now = new Date(), identificationResourceId = null } = {}) {
   if (!jurisdiction || doc.jurisdiction_id !== jurisdiction.id) throw new Error(`Refusing to build: the document declares "${doc && doc.jurisdiction_id}", expected "${jurisdiction && jurisdiction.id}"`);
   if (!Array.isArray(doc.records) || !doc.records.length) throw new Error(`Refusing to build ${jurisdiction.id}: no records`);
   if (doc.records.some((r) => r && 'rawValue' in r)) throw new Error(`Refusing to build ${jurisdiction.id}: a record carries rawValue (placeholder values are not allowed)`);
@@ -93,9 +118,15 @@ function buildPayload(doc, jurisdiction, { now = new Date() } = {}) {
     licence_note: LICENCE_NOTE,
     fetched_at: now.toISOString(),
   };
-  const missing = [...OWNED_FIELDS].filter((f) => !(f in payload));
+  const exception = exceptionFor(jurisdiction.id);
+  if (exception) {
+    if (identificationResourceId !== exception.resourceIdTo) throw new Error(`Refusing to build ${jurisdiction.id}: the source's Identification resource id is "${identificationResourceId}", expected "${exception.resourceIdTo}"`);
+    payload.resource_id = exception.resourceIdTo;
+  }
+  const owned = ownedFieldsFor(jurisdiction.id);
+  const missing = [...owned].filter((f) => !(f in payload));
   if (missing.length) throw new Error(`Refusing to build ${jurisdiction.id}: payload lacks [${missing.join(', ')}]`);
-  const extra = Object.keys(payload).filter((f) => !OWNED_FIELDS.has(f));
+  const extra = Object.keys(payload).filter((f) => !owned.has(f));
   if (extra.length) throw new Error(`Refusing to build ${jurisdiction.id}: payload has unexpected fields [${extra.join(', ')}]`);
   return payload;
 }
@@ -118,17 +149,24 @@ function assessExisting(snap, payload, jurisdictionId) {
   const exists = !!(snap && snap.exists);
   const data = exists ? (snap.data() || {}) : {};
   const existingKeys = Object.keys(data);
-  const unknownKeys = existingKeys.filter((k) => !OWNED_FIELDS.has(k));
+  const exception = exceptionFor(jurisdictionId);
+  const tolerated = toleratedFieldsFor(jurisdictionId);
+  const unknownKeys = existingKeys.filter((k) => !tolerated.has(k));
+  const preserved = exception ? exception.preserve.filter((k) => existingKeys.includes(k)) : [];
+  const resourceIdBefore = exception && 'resource_id' in data ? data.resource_id : undefined;
   let conflict = null;
   if (exists && data.jurisdiction_id != null && data.jurisdiction_id !== jurisdictionId) conflict = `the existing document declares jurisdiction "${data.jurisdiction_id}" (unrelated record)`;
   else if (exists && data.country != null && data.country !== 'CA') conflict = `the existing document declares country "${data.country}" (unrelated record)`;
   else if (unknownKeys.length) conflict = `the existing document has fields this process does not own: [${unknownKeys.join(', ')}]`;
+  else if (exception && resourceIdBefore !== undefined && !exception.resourceIdFrom.includes(resourceIdBefore)) conflict = `the existing resource_id is "${resourceIdBefore}", neither the obsolete 1998 Identification resource nor the 2024 one`;
   const oldNames = new Set((Array.isArray(data.records) ? data.records : []).map((r) => r && r.name));
   const newNames = new Set(payload.records.map((r) => r.name));
   return {
     exists,
     existingKeys,
     unknownKeys,
+    preserved_fields: preserved,
+    resource_id_change: exception ? { from: resourceIdBefore === undefined ? null : resourceIdBefore, to: payload.resource_id } : null,
     conflict,
     before: exists ? { source: data.data_source || null, reporting_period: data.reporting_period || null, total_in_source: data.total_in_source ?? null, ...describeRecords(data.records) } : null,
     after: { source: payload.data_source, reporting_period: payload.reporting_period, total_in_source: payload.total_in_source, ...describeRecords(payload.records) },
@@ -140,7 +178,7 @@ function assessExisting(snap, payload, jurisdictionId) {
 }
 
 /** Post-write verification of the stored document. Returns a list of problems (empty = verified). */
-function verifyStored(data, payload) {
+function verifyStored(data, payload, before = null) {
   const problems = [];
   if (!data) return ['document is missing after the write'];
   if (data.jurisdiction_id !== payload.jurisdiction_id) problems.push(`jurisdiction_id is "${data.jurisdiction_id}"`);
@@ -154,7 +192,20 @@ function verifyStored(data, payload) {
   if (recs.map((r) => r.bn).join('|') !== want) problems.push('stored BNs / order differ from the prepared dataset (obsolete entries may remain)');
   const revs = recs.map((r) => r.revenue_cad).filter((v) => typeof v === 'number');
   if (revs.some((v, i) => i > 0 && revs[i - 1] < v)) problems.push('stored records are not ranked by revenue');
-  if (Object.keys(data).some((k) => !OWNED_FIELDS.has(k))) problems.push('the stored document has unexpected fields');
+  const tolerated = toleratedFieldsFor(payload.jurisdiction_id);
+  if (Object.keys(data).some((k) => !tolerated.has(k))) problems.push('the stored document has unexpected fields');
+  const exception = exceptionFor(payload.jurisdiction_id);
+  if (exception) {
+    if (data.resource_id !== payload.resource_id) problems.push(`resource_id is "${data.resource_id}", expected "${payload.resource_id}"`);
+    if (before) {
+      for (const k of exception.preserve) {
+        const changed = k in before ? !(k in data) || JSON.stringify(data[k]) !== JSON.stringify(before[k]) : k in data;
+        if (changed) problems.push(`the preserved field "${k}" was changed`);
+      }
+      const lost = Object.keys(before).filter((k) => !(k in data));
+      if (lost.length) problems.push(`fields were lost: [${lost.join(', ')}]`);
+    }
+  }
   return problems;
 }
 
@@ -198,7 +249,7 @@ async function replaceOne({ db, jurisdiction, payload, write, allowCreate = fals
     }
     await ref.set(payload, { mergeFields: Object.keys(payload) });
     const after = await ref.get();
-    const problems = verifyStored(after.exists ? after.data() : null, payload);
+    const problems = verifyStored(after.exists ? after.data() : null, payload, snap.exists ? snap.data() : null);
     result.verification = { ok: problems.length === 0, problems };
     result.status = problems.length ? 'WRITTEN_VERIFICATION_FAILED' : 'WRITTEN';
     if (problems.length) result.error = `written, but verification found problems: ${problems.join('; ')}`;
@@ -227,21 +278,25 @@ async function restoreOne({ db, backup, write, writeBackup, deleteField, project
     const data = backup.data;
     if (!data || typeof data !== 'object') throw new Error('backup has no data');
     if (JSON.stringify(data).includes('"__type"')) throw new Error('backup contains type-tagged Firestore values (timestamps/references); restore those by hand');
-    const unknown = Object.keys(data).filter((k) => !OWNED_FIELDS.has(k));
+    const tolerated = toleratedFieldsFor(doc.id);
+    const unknown = Object.keys(data).filter((k) => !tolerated.has(k));
     if (unknown.length) throw new Error(`backup has fields this process does not own: [${unknown.join(', ')}]`);
     if (data.jurisdiction_id != null && data.jurisdiction_id !== doc.id) throw new Error(`backup data declares jurisdiction "${data.jurisdiction_id}"`);
     if (!db) throw new Error('restore needs Firestore access (no --offline)');
     const ref = db.collection(COLLECTION).doc(doc.id);
     const snap = await ref.get();
     const current = snap.exists ? snap.data() : {};
-    const currentUnknown = Object.keys(current).filter((k) => !OWNED_FIELDS.has(k));
+    const currentUnknown = Object.keys(current).filter((k) => !tolerated.has(k));
     if (currentUnknown.length) throw new Error(`the current document has fields this process does not own: [${currentUnknown.join(', ')}]`);
-    const toDelete = Object.keys(current).filter((k) => OWNED_FIELDS.has(k) && !(k in data));
-    result.plan = { restores_fields: Object.keys(data), deletes_fields: toDelete, current_records: describeRecords(current.records), restored_records: describeRecords(data.records) };
+    const owned = ownedFieldsFor(doc.id);
+    const preserve = exceptionFor(doc.id) ? exceptionFor(doc.id).preserve : [];
+    const toDelete = Object.keys(current).filter((k) => owned.has(k) && !(k in data));
+    result.plan = { restores_fields: Object.keys(data).filter((k) => !preserve.includes(k)), deletes_fields: toDelete, current_records: describeRecords(current.records), restored_records: describeRecords(data.records) };
     if (!write) { result.status = 'DRY_RUN'; return result; }
     if (typeof writeBackup !== 'function' || typeof deleteField !== 'function') throw new Error('restore needs a backup writer and a FieldValue.delete provider');
     if (snap.exists) result.safety_backup = await writeBackup({ collection: COLLECTION, docId: doc.id, data: current, projectId });
     const body = { ...data };
+    preserve.forEach((k) => { delete body[k]; }); // preserved fields were never changed; a restore does not touch them either
     toDelete.forEach((k) => { body[k] = deleteField(); });
     await ref.set(body, { mergeFields: Object.keys(body) });
     const after = (await ref.get()).data() || {};
@@ -262,6 +317,11 @@ module.exports = {
   LEGACY_FIELDS,
   NEW_FIELDS,
   OWNED_FIELDS,
+  EXCEPTIONS,
+  OLD_1998_IDENTIFICATION_RESOURCE_ID,
+  IDENTIFICATION_RESOURCE_ID_2024,
+  ownedFieldsFor,
+  toleratedFieldsFor,
   parseArgs,
   buildPayload,
   describeRecords,

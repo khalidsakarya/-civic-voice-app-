@@ -73,7 +73,7 @@ async function run({
   // Build EVERY payload before any write, so a problem in one jurisdiction cannot surface after others were written.
   const prepared = targets.map((jurisdiction) => {
     const doc = CRA.buildDocFromDataset(dataset, jurisdiction.id);
-    return { jurisdiction, doc, payload: buildPayload(doc, jurisdiction, { now }), summary: CRA.summarizeDoc(doc) };
+    return { jurisdiction, doc, payload: buildPayload(doc, jurisdiction, { now, identificationResourceId: dataset.meta.resources.identification.id }), summary: CRA.summarizeDoc(doc) };
   });
 
   const results = [];

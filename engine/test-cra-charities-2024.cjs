@@ -46,7 +46,7 @@ const validPackage = () => ({
   license_title: 'Open Government Licence - Canada',
   organization: { name: 'cra-arc', title: 'Canada Revenue Agency' },
   resources: [
-    { id: 'ident-id', name: 'Identification', format: 'CSV', url: 'https://example/ident.csv' },
+    { id: '694fdc72-eae4-4ee0-83eb-832ab7b230e3', name: 'Identification', format: 'CSV', url: 'https://example/ident.csv' },
     { id: 'fin-id', name: 'Financial data', format: 'CSV', url: 'https://example/fin.csv' },
     { id: 'pdf', name: 'Codes Lists', format: 'PDF', url: 'https://example/codes.pdf' },
   ],
@@ -556,6 +556,176 @@ test('run(): a real replacement writes only the named document, backs it up firs
   assert.strictEqual(report.run_type, 'FIRESTORE_REPLACE');
   assert.strictEqual(report.firebase_project, 'civic-voice-5ea94');
   assert.strictEqual(report.source.title, '2024 List of charities');
+});
+
+// ─── 8b. the narrow CA-ON exception ─────────────────────────────────────────
+const on = R.JURISDICTIONS.find((j) => j.id === 'CA-ON');
+const ON_PATH = 'subnational_tax_exempt_entities/CA-ON';
+const ON_RESOURCE_2024 = '694fdc72-eae4-4ee0-83eb-832ab7b230e3';
+const ON_RESOURCE_1998 = '5e4f64a2-b751-4f14-bd3a-e4f109c64fcd';
+const ON_EXTRAS = {
+  resource_id: ON_RESOURCE_1998,
+  cra_search_url: 'https://apps.cra-arc.gc.ca/ebci/hacc/srch/pub/dsplyBscSrch?request_locale=en',
+  designation_refresh_reason: 'A=Public Foundation, B=Private Foundation per CRA codes_en.pdf §2.4 (2025-11-28)',
+};
+const onLegacy = (extra = {}) => legacyDoc('CA-ON', { ...ON_EXTRAS, ...extra });
+const onPayload = () => R.buildPayload(CRA.buildDocFromDataset(dataset(), 'CA-ON'), on, { now: NOW, identificationResourceId: ON_RESOURCE_2024 });
+
+test('CA-ON exception: only CA-ON has one, and it lists exactly the three decided fields', () => {
+  assert.deepStrictEqual(Object.keys(R.EXCEPTIONS), ['CA-ON']);
+  assert.deepStrictEqual([...R.EXCEPTIONS['CA-ON'].preserve].sort(), ['cra_search_url', 'designation_refresh_reason']);
+  assert.deepStrictEqual([...R.EXCEPTIONS['CA-ON'].update], ['resource_id']);
+  assert.strictEqual(R.OLD_1998_IDENTIFICATION_RESOURCE_ID, ON_RESOURCE_1998);
+  assert.strictEqual(R.IDENTIFICATION_RESOURCE_ID_2024, ON_RESOURCE_2024);
+  // the shared owned-field set is unchanged: the exception adds nothing for anyone else
+  assert.strictEqual(R.OWNED_FIELDS.size, 16);
+  assert.ok(!R.OWNED_FIELDS.has('resource_id'));
+  for (const j of R.JURISDICTIONS.filter((x) => x.id !== 'CA-ON')) assert.deepStrictEqual([...R.toleratedFieldsFor(j.id)].sort(), [...R.OWNED_FIELDS].sort(), j.id);
+});
+
+test('CA-ON payload: standard 16 fields + resource_id (2024 Identification CSV); preserved fields are NOT in the payload; a changed source resource id is refused', () => {
+  const p = onPayload();
+  assert.deepStrictEqual(Object.keys(p).sort(), [...R.OWNED_FIELDS, 'resource_id'].sort());
+  assert.strictEqual(p.resource_id, ON_RESOURCE_2024);
+  assert.ok(!('cra_search_url' in p) && !('designation_refresh_reason' in p));
+  const doc = CRA.buildDocFromDataset(dataset(), 'CA-ON');
+  for (const bad of [null, undefined, 'ident-id', ON_RESOURCE_1998]) assert.throws(() => R.buildPayload(doc, on, { now: NOW, identificationResourceId: bad }), /Identification resource id/);
+  // every other jurisdiction ignores the resource id completely
+  const other = R.buildPayload(CRA.buildDocFromDataset(dataset(), 'CA-YT'), yt, { now: NOW, identificationResourceId: ON_RESOURCE_2024 });
+  assert.ok(!('resource_id' in other));
+  assert.deepStrictEqual(Object.keys(other).sort(), [...R.OWNED_FIELDS].sort());
+});
+
+test('CA-ON dry run: no conflict, nothing unknown, the three extras are planned (2 preserved, 1 updated), nothing removed, zero writes', async () => {
+  const before = onLegacy();
+  const db = recordingDb({ [ON_PATH]: before });
+  const r = await R.replaceOne({ db, jurisdiction: on, payload: onPayload(), write: false });
+  assert.strictEqual(r.status, 'DRY_RUN', r.error);
+  assert.strictEqual(r.plan.conflict, null);
+  assert.deepStrictEqual(r.plan.unknownKeys, []);
+  assert.deepStrictEqual(r.plan.preserved_fields.sort(), ['cra_search_url', 'designation_refresh_reason']);
+  assert.deepStrictEqual(r.plan.resource_id_change, { from: ON_RESOURCE_1998, to: ON_RESOURCE_2024 });
+  assert.deepStrictEqual(r.plan.fields_removed, []);
+  assert.ok(r.plan.fields_replaced.includes('resource_id') && r.plan.fields_replaced.length === 12, 'the 11 standard fields + resource_id');
+  assert.deepStrictEqual(r.plan.fields_added.sort(), ['financials_reported_count', 'reporting_period', 'selection_basis', 'source_dataset', 'source_year']);
+  assert.deepStrictEqual(db.ops, [['get', ON_PATH]]);
+  assert.deepStrictEqual(db.store[ON_PATH], before);
+});
+
+test('CA-ON write: 11 standard fields replaced, 5 added, resource_id updated, the two other Ontario fields byte-identical, NOTHING lost; the backup holds the whole original', async () => {
+  const before = onLegacy();
+  const db = recordingDb({ [ON_PATH]: before });
+  const backup = memBackup();
+  const r = await R.replaceOne({ db, jurisdiction: on, payload: onPayload(), write: true, writeBackup: backup, projectId: 'civic-voice-5ea94' });
+  assert.strictEqual(r.status, 'WRITTEN', r.error);
+  assert.deepStrictEqual(r.verification, { ok: true, problems: [] });
+  const stored = db.store[ON_PATH];
+  assert.strictEqual(JSON.stringify(stored.cra_search_url), JSON.stringify(before.cra_search_url));
+  assert.strictEqual(JSON.stringify(stored.designation_refresh_reason), JSON.stringify(before.designation_refresh_reason));
+  assert.strictEqual(stored.resource_id, ON_RESOURCE_2024);
+  assert.ok(Object.keys(before).every((k) => k in stored), 'no pre-existing field was removed');
+  assert.deepStrictEqual(Object.keys(stored).sort(), [...Object.keys(onPayload()), 'cra_search_url', 'designation_refresh_reason'].sort());
+  assert.ok(!stored.records.some((x) => x.name.startsWith('1998')) && stored.records.every((x) => !('rawValue' in x)));
+  assert.strictEqual(stored.source_year, 2024);
+  assert.deepStrictEqual(kinds(db), ['get', 'set', 'get']);
+  const setOp = db.ops.find((o) => o[0] === 'set');
+  assert.deepStrictEqual([...setOp[2].mergeFields].sort(), [...R.OWNED_FIELDS, 'resource_id'].sort());
+  assert.ok(!setOp[2].mergeFields.includes('cra_search_url') && !setOp[2].mergeFields.includes('designation_refresh_reason'), 'the preserved fields are not even named in the write');
+  assert.deepStrictEqual(backup.saved[0].data, before, 'the backup is the COMPLETE original, including the three Ontario fields');
+});
+
+test('CA-ON is still refused for anything else: an additional unknown field, or an unexpected resource_id value (nothing written, nothing backed up)', async () => {
+  for (const [extra, re] of [[{ stray_field: 1 }, /does not own: \[stray_field\]/], [{ resource_id: 'some-other-resource' }, /existing resource_id is "some-other-resource"/]]) {
+    for (const write of [false, true]) {
+      const db = recordingDb({ [ON_PATH]: onLegacy(extra) });
+      const backup = memBackup();
+      const r = await R.replaceOne({ db, jurisdiction: on, payload: onPayload(), write, writeBackup: backup });
+      assert.strictEqual(r.status, 'ABORTED_CONFLICT');
+      assert.match(r.error, re);
+      assert.ok(!kinds(db).includes('set'));
+      assert.strictEqual(backup.saved.length, 0);
+      assert.deepStrictEqual(db.store[ON_PATH], onLegacy(extra));
+    }
+  }
+  // an Ontario document with ONLY the standard fields (no extras) is fine too, and gets resource_id added
+  const plain = recordingDb({ [ON_PATH]: legacyDoc('CA-ON') });
+  const r = await R.replaceOne({ db: plain, jurisdiction: on, payload: onPayload(), write: true, writeBackup: memBackup() });
+  assert.strictEqual(r.status, 'WRITTEN', r.error);
+  assert.strictEqual(plain.store[ON_PATH].resource_id, ON_RESOURCE_2024);
+  assert.ok(!('cra_search_url' in plain.store[ON_PATH]), 'a preserved field is never invented');
+  // re-running on an already-replaced Ontario document (resource_id already 2024) is accepted
+  const again = await R.replaceOne({ db: plain, jurisdiction: on, payload: onPayload(), write: false });
+  assert.strictEqual(again.status, 'DRY_RUN', again.error);
+});
+
+test('every OTHER jurisdiction stays fully protected: the Ontario fields are refused on all 12 of them, and an Ontario-shaped payload is refused too', async () => {
+  for (const j of R.JURISDICTIONS.filter((x) => x.id !== 'CA-ON')) {
+    for (const field of ['resource_id', 'cra_search_url', 'designation_refresh_reason']) {
+      const path = 'subnational_tax_exempt_entities/' + j.id;
+      const db = recordingDb({ [path]: { ...legacyDoc(j.id), [field]: ON_EXTRAS[field] } });
+      const payload = { ...R.buildPayload({ ...CRA.buildDocFromDataset(dataset(), 'CA-YT'), jurisdiction_id: j.id }, j, { now: NOW, identificationResourceId: ON_RESOURCE_2024 }) };
+      const backup = memBackup();
+      const r = await R.replaceOne({ db, jurisdiction: j, payload, write: true, writeBackup: backup });
+      assert.strictEqual(r.status, 'ABORTED_CONFLICT', j.id + ' ' + field);
+      assert.match(r.error, new RegExp('does not own: \\[' + field + '\\]'));
+      assert.ok(!kinds(db).includes('set') && backup.saved.length === 0);
+    }
+  }
+  assert.throws(() => R.buildPayload({ ...CRA.buildDocFromDataset(dataset(), 'CA-YT'), resource_id: ON_RESOURCE_2024 }, yt, { now: NOW }), /unexpected fields \[resource_id\]/);
+});
+
+test('verifyStored (CA-ON) flags: a changed or removed preserved field, a wrong resource_id, any lost field, any unexpected field', () => {
+  const before = onLegacy();
+  const good = { ...before, ...onPayload() };
+  assert.deepStrictEqual(R.verifyStored(good, onPayload(), before), []);
+  assert.match(R.verifyStored({ ...good, cra_search_url: 'https://elsewhere' }, onPayload(), before).join(), /preserved field "cra_search_url" was changed/);
+  const removed = { ...good }; delete removed.designation_refresh_reason;
+  assert.match(R.verifyStored(removed, onPayload(), before).join(), /preserved field "designation_refresh_reason" was changed/);
+  assert.match(R.verifyStored({ ...good, resource_id: ON_RESOURCE_1998 }, onPayload(), before).join(), /resource_id is/);
+  const lost = { ...good }; delete lost.licence_note;
+  assert.match(R.verifyStored(lost, onPayload(), before).join(), /fields were lost: \[licence_note\]/);
+  assert.match(R.verifyStored({ ...good, stray: 1 }, onPayload(), before).join(), /unexpected fields/);
+  // the same extras on another jurisdiction are "unexpected"
+  assert.match(R.verifyStored({ ...ytPayload(), cra_search_url: 'x' }, ytPayload()).join(), /unexpected fields/);
+});
+
+test('CA-ON restore: the backup (with its extras) is accepted, the old resource_id returns, the corrected-only fields go, preserved fields are not touched; the same backup shape is refused for any other id', async () => {
+  const before = onLegacy();
+  const db = recordingDb({ [ON_PATH]: before });
+  const backup = memBackup();
+  await R.replaceOne({ db, jurisdiction: on, payload: onPayload(), write: true, writeBackup: backup });
+  const file = { backup_format: 1, document: { collection: 'subnational_tax_exempt_entities', id: 'CA-ON', path: ON_PATH }, firebase_project: 'civic-voice-5ea94', data: backup.saved[0].data };
+  const dry = await R.restoreOne({ db, backup: file, write: false, writeBackup: backup, deleteField: () => DELETE });
+  assert.strictEqual(dry.status, 'DRY_RUN', dry.error);
+  assert.ok(dry.plan.deletes_fields.includes('source_year'));
+  assert.ok(!dry.plan.restores_fields.includes('cra_search_url') && !dry.plan.restores_fields.includes('designation_refresh_reason'));
+  db.store[ON_PATH].cra_search_url = 'https://later-edit.example/'; // someone edits a preserved field after the replacement: a restore must leave it alone
+  const res = await R.restoreOne({ db, backup: file, write: true, writeBackup: backup, deleteField: () => DELETE });
+  assert.strictEqual(res.status, 'RESTORED', res.error);
+  assert.strictEqual(db.store[ON_PATH].cra_search_url, 'https://later-edit.example/', 'the restore did not touch the preserved field');
+  assert.deepStrictEqual({ ...db.store[ON_PATH], cra_search_url: before.cra_search_url }, before);
+  const other = { ...file, document: { collection: 'subnational_tax_exempt_entities', id: 'CA-YT', path: 'subnational_tax_exempt_entities/CA-YT' } };
+  const ytDb = recordingDb({ 'subnational_tax_exempt_entities/CA-YT': legacyDoc() });
+  const refused = await R.restoreOne({ db: ytDb, backup: other, write: true, writeBackup: memBackup(), deleteField: () => DELETE });
+  assert.strictEqual(refused.status, 'FAILED');
+  assert.match(refused.error, /does not own/);
+  assert.ok(!kinds(ytDb).includes('set'));
+});
+
+test('CA-ON: the kept designation note is accurate for the 2024 source (A / B mapping equals the 2024 module), and the run() path passes the source resource id through', async () => {
+  assert.match(ON_EXTRAS.designation_refresh_reason, /A=Public Foundation, B=Private Foundation/);
+  assert.strictEqual(CRA.DESIGNATIONS.A, 'Public Foundation');
+  assert.strictEqual(CRA.DESIGNATIONS.B, 'Private Foundation');
+  const db = recordingDb({ [ON_PATH]: onLegacy() });
+  const r = await quietRun({ argv: ['--only=CA-ON'], getDb: () => db });
+  assert.strictEqual(r.results[0].status, 'DRY_RUN', r.results[0].error);
+  assert.strictEqual(r.exitCode, 0);
+  assert.deepStrictEqual(r.results[0].plan.resource_id_change, { from: ON_RESOURCE_1998, to: ON_RESOURCE_2024 });
+  assert.deepStrictEqual(db.ops, [['get', ON_PATH], ['terminate']]);
+  // a CKAN package that points at a different Identification resource is refused before anything is read
+  const drift = dataset(); drift.meta.resources.identification.id = 'a-different-resource';
+  const db2 = recordingDb({ [ON_PATH]: onLegacy() });
+  await assert.rejects(() => quietRun({ argv: ['--only=CA-ON'], getDb: () => db2, loadDataset: async () => drift }), /Identification resource id/);
 });
 
 // ─── 9. legacy scripts ──────────────────────────────────────────────────────
