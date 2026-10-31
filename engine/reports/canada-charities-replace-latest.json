@@ -1,6 +1,6 @@
 {
   "run_type": "FIRESTORE_REPLACE",
-  "run_at": "2026-10-31T17:49:52.155Z",
+  "run_at": "2026-10-31T18:17:09.706Z",
   "firebase_project": "civic-voice-5ea94",
   "source": {
     "id": "80c00cdb-1358-415c-bb8b-0de7f12675b8",
@@ -25,8 +25,8 @@
   },
   "results": [
     {
-      "jurisdiction_id": "CA-SK",
-      "path": "subnational_tax_exempt_entities/CA-SK",
+      "jurisdiction_id": "CA-NS",
+      "path": "subnational_tax_exempt_entities/CA-NS",
       "mode": "WRITE",
       "status": "WRITTEN",
       "error": null,
@@ -50,7 +50,7 @@
         "before": {
           "source": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
           "reporting_period": null,
-          "total_in_source": 4407,
+          "total_in_source": 3452,
           "count": 100,
           "with_rawValue_field": 100,
           "with_rawValue_zero": 100,
@@ -60,7 +60,7 @@
         "after": {
           "source": "Canada Revenue Agency — Charities Directorate, \"2024 List of charities\". Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
           "reporting_period": "CRA List of charities — 2024 filing year (fiscal periods ending in 2024), published 2026-04-30",
-          "total_in_source": 3952,
+          "total_in_source": 3501,
           "count": 100,
           "with_rawValue_field": 0,
           "with_rawValue_zero": 0,
@@ -88,26 +88,26 @@
           "source_dataset"
         ],
         "fields_removed": [],
-        "old_record_names_not_in_new": 95
+        "old_record_names_not_in_new": 64
       },
       "backup": {
-        "path": "C:\\Users\\jem91\\civic-voice-backups\\firestore\\subnational_tax_exempt_entities__CA-SK__2026-10-31T17-50-16-524Z.json",
-        "bytes": 23596,
-        "sha256": "0faf1db2908cc6a8c4cb64686fa8ab11f0d5bd61fc755065db0458810015038b"
+        "path": "C:\\Users\\jem91\\civic-voice-backups\\firestore\\subnational_tax_exempt_entities__CA-NS__2026-10-31T18-17-35-785Z.json",
+        "bytes": 24358,
+        "sha256": "0230b8e2ba16a5877cca38687f8d490a01684faf878c4e4aad2c29272d4e5897"
       },
       "verification": {
         "ok": true,
         "problems": []
       },
       "summary": {
-        "jurisdiction_id": "CA-SK",
-        "total_in_source": 3952,
+        "jurisdiction_id": "CA-NS",
+        "total_in_source": 3501,
         "selected": 100,
         "with_revenue_selected": 100,
         "without_revenue_selected": 0,
-        "charities_without_revenue_in_source": 157,
-        "revenue_max_cad": 5503409302,
-        "revenue_min_cad": 7596147,
+        "charities_without_revenue_in_source": 170,
+        "revenue_max_cad": 3769249000,
+        "revenue_min_cad": 7178391,
         "zero_revenue_reported_selected": 0,
         "has_rawValue_field": false
       }

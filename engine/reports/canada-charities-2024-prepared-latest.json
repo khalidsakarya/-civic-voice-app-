@@ -613,7 +613,7 @@
     "documents_not_yet_existing": 2,
     "records_prepared": 1235
   },
-  "status": "REPLACED AND VERIFIED: YT (2026-10-27), BC, AB, SK (2026-10-31). Not written: ON (decision pending), QC, MB, NS, NB, NL, PE, NT, NU. Waiting for approval.",
+  "status": "REPLACED AND VERIFIED: YT (2026-10-27); BC, AB, SK, QC, MB, NS (2026-10-31). Ontario prepared (dry-run clean) — NOT written. Not written: ON, NB, NL, PE, NT, NU. Waiting for approval.",
   "firestore_dry_run_2026_10_27": {
     "generated_at": "2026-10-27T01:09:05.020Z",
     "command": "node engine/canada-charities-replace.cjs --only=CA-ON,CA-BC,CA-AB,CA-QC,CA-SK,CA-MB,CA-NS,CA-NB,CA-NL,CA-PE,CA-NT,CA-NU   (dry run: 12 targeted reads, 0 writes)",
@@ -1358,5 +1358,142 @@
     ],
     "operations_total": "3 dry-run reads + 6 write-run reads + 3 writes + 3 verification reads, 3 backup files; the live modal checks add the app's own page reads",
     "live_ui_note_for_still_1998_documents": "Before replacement the BC modal showed: \"Official snapshot\", \"Showing 100 of 9,537 charities\" (no ranking claim), source line without a year, and a \"#\" column numbered 1-100 over rows that are in file order, not ranked. So 1998-list provinces do not claim \"latest\", \"2024\" or revenue ranking, but they show no source year and their \"#\" column looks like a ranking. They keep this until replaced."
+  },
+  "rollout_batch_2_2026_10_31": {
+    "approved": "CA-QC, CA-MB, CA-NS; executed one province at a time, each verified before the next",
+    "pushed_before_writes": "48e3fef (batch 1 evidence; both Vercel projects succeeded)",
+    "pre_write": "Targeted dry-run of the three (3 reads): all safety checks passed (project, targets, 2024 source and metadata, revenue ranking, selected count, no rawValue, valid unique BNs, source metadata, backup probe, no unknown fields).",
+    "results": [
+      {
+        "jurisdiction_id": "CA-QC",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-QC --write",
+        "status": "WRITTEN",
+        "run_report": "engine/reports/canada-charities-replace-2026-10-31_18-09-52.json",
+        "backup": {
+          "file": "~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-QC__2026-10-31T18-10-10-268Z.json",
+          "bytes": 24572
+        },
+        "targeted_read": "9/9 checks passed",
+        "live_modal": {
+          "heading": "Official snapshot",
+          "line": "Showing 100 of 15,472 charities (largest by revenue)",
+          "rows": 100,
+          "ranks_in_order": true,
+          "first": "HOPITAL JEFFERY HALE",
+          "last": "COLLÈGE D'ENSEIGNEMENT GÉNÉRAL ET PROFESSIONNEL FRANÇOIS-XAVIER GARNEAU",
+          "dollar_amounts": 0,
+          "console_errors": 0
+        },
+        "compliance_record": "CV-REC-001-2026-10-31-CV-DATA-QC-002-CRA2024"
+      },
+      {
+        "jurisdiction_id": "CA-MB",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-MB --write",
+        "status": "WRITTEN",
+        "run_report": "engine/reports/canada-charities-replace-2026-10-31_18-12-04.json",
+        "backup": {
+          "file": "~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-MB__2026-10-31T18-15-17-123Z.json",
+          "bytes": 23657
+        },
+        "targeted_read": "9/9 checks passed",
+        "live_modal": {
+          "heading": "Official snapshot",
+          "line": "Showing 100 of 4,574 charities (largest by revenue)",
+          "rows": 100,
+          "ranks_in_order": true,
+          "first": "Winnipeg Regional Health Authority",
+          "last": "REST HAVEN CARE HOME INC.",
+          "dollar_amounts": 0,
+          "console_errors": 0
+        },
+        "compliance_record": "CV-REC-001-2026-10-31-CV-DATA-MB-002-CRA2024"
+      },
+      {
+        "jurisdiction_id": "CA-NS",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-NS --write",
+        "status": "WRITTEN",
+        "run_report": "engine/reports/canada-charities-replace-2026-10-31_18-17-09.json",
+        "backup": {
+          "file": "~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-NS__2026-10-31T18-17-35-785Z.json",
+          "bytes": 24358
+        },
+        "targeted_read": "9/9 checks passed",
+        "live_modal": {
+          "heading": "Official snapshot",
+          "line": "Showing 100 of 3,501 charities (largest by revenue)",
+          "rows": 100,
+          "ranks_in_order": true,
+          "first": "NOVA SCOTIA HEALTH AUTHORITY (NSHA)",
+          "last": "WILLOW LODGE ASSOCIATION",
+          "dollar_amounts": 0,
+          "console_errors": 0
+        },
+        "compliance_record": "CV-REC-001-2026-10-31-CV-DATA-NS-002-CRA2024"
+      }
+    ],
+    "source_data_flags": [
+      "CA-QC #1 \"HOPITAL JEFFERY HALE\" (BN 118973544RR0001, Account Name \"JEFFERY HALE'S HOSPITAL\", address 2915 Avenue Bourg-Royal, Quebec, category 0100) reports revenue 2,311,570,960 — about the size of a regional integrated health authority (CIUSSS), not a single small hospital. The values are exactly what the registrant filed with CRA and are shown as the source states; the name looks surprising. No change was made. Recommend a display-only review (see account_name_note)."
+    ]
+  },
+  "alberta_top_record_validation_2026_10_31": {
+    "record": "GOVERNMENT OF THE PROVINCE OF ALBERTA — CA-AB #1",
+    "bn": "124072513RR0010 (valid format; the only charity in the source with this BN; a second, different BN of the same legal name, 124072513RR0015, is \"CAREWEST\" and ranks elsewhere)",
+    "identification_row": {
+      "legal_name": "GOVERNMENT OF THE PROVINCE OF ALBERTA",
+      "account_name": "Alberta Health Services",
+      "category": "0110 (Supportive Health Care → Health)",
+      "sub_category": "0008",
+      "designation": "C (Charitable Organization)",
+      "address": "10101 SOUTHPORT ROAD SW, CALGARY AB T2W3N2",
+      "province": "AB"
+    },
+    "financial_row": {
+      "fiscal_period_end": "2024-03-31",
+      "line_4700_total_revenue_cad": 18798503000,
+      "line_5100_total_expenditures_cad": 18704565500,
+      "line_4200_total_assets_cad": 13360222000,
+      "form_id": 27,
+      "section_used": 6
+    },
+    "reported_revenue_field": "Line 4700 \"Total revenue\" of the T3010 financial data (the field used for every ranking). Not a ranking error: the same file gives 4950 (total revenue before adjustments) 18,704,547,000 and 4700 18,798,503,000; the values are internally consistent with expenditures of 18.70 billion.",
+    "record_status": "The CRA \"List of charities\" contains only organizations on the register for that filing year; this BN is in the 2024 file with a filed return (FPE 2024-03-31). The dataset has no separate status column, so \"registered/in good standing\" is inferred from inclusion, not independently confirmed from CRA's live search (which cannot be queried programmatically from here). A CanadaHelps listing independently shows the same BN under the registered name \"Alberta Health Services\".",
+    "conclusion": "NOT an error. The record is a CRA program/account of the Government of Alberta whose Account Name is Alberta Health Services (Calgary head-office address, health category, fiscal year ending 31 March, revenue of the size of AHS). The app displays the registered Legal Name, which is accurate but reads as \"the government is a charity\". No record was altered or removed.",
+    "account_name_note": "In these six provinces 120 of 600 selected records have an Account Name that differs from the Legal Name (mostly spelling or case; the substantive ones are CA-AB #1, CA-QC #1 and CA-MB \"Shared Health\" / \"Shared Health Inc.\"). Displaying the Account Name where it differs materially (or adding it as a second line) is a possible small UI/data-contract improvement; it needs approval and has NOT been made."
+  },
+  "ontario_exception_implemented_2026_10_31": {
+    "status": "IMPLEMENTED AND TESTED; dry-run clean; ONTARIO NOT WRITTEN",
+    "approved_treatment": {
+      "cra_search_url": "preserve",
+      "designation_refresh_reason": "preserve (note is accurate: A=Public Foundation, B=Private Foundation matches the 2024 module)",
+      "resource_id": "update 5e4f64a2-b751-4f14-bd3a-e4f109c64fcd (obsolete 1998 Identification CSV) -> 694fdc72-eae4-4ee0-83eb-832ab7b230e3 (2024 Identification CSV)",
+      "standard_11_fields": "replace",
+      "new_5_fields": "add"
+    },
+    "code": "engine/lib/charities-replacement.cjs: EXCEPTIONS keyed to CA-ON only; ownedFieldsFor / toleratedFieldsFor; buildPayload pins the source Identification resource id; assessExisting refuses any other unknown field or an unexpected resource_id value; verifyStored proves the preserved fields unchanged and nothing lost; restore leaves preserved fields untouched. engine/canada-charities-replace.cjs passes the source resource id.",
+    "tests": "49 tests (9 new), 0 failed; 8 mutation checks all caught (exception for every jurisdiction, no exception, preserved field written, resource_id unchecked, preserved change undetected, lost fields undetected, resource id unpinned, restore touching preserved fields).",
+    "dry_run": {
+      "command": "node engine/canada-charities-replace.cjs --only=CA-ON",
+      "reads": 1,
+      "writes": 0,
+      "status": "DRY_RUN",
+      "conflict": null,
+      "unknown_fields": [],
+      "preserved": [
+        "cra_search_url",
+        "designation_refresh_reason"
+      ],
+      "resource_id_change": {
+        "from": "5e4f64a2-b751-4f14-bd3a-e4f109c64fcd",
+        "to": "694fdc72-eae4-4ee0-83eb-832ab7b230e3"
+      },
+      "fields_replaced": 12,
+      "fields_added": 5,
+      "fields_removed": 0,
+      "records": "100 old records (rawValue 0 on all, no BN; 100 old-only names) -> 100 corrected, ranked records (BN on all, revenue on all)",
+      "total_in_source": "25,822 -> 30,570",
+      "first_record_revenue_cad": 13372391723,
+      "last_selected_revenue_cad": 313970528
+    },
+    "waiting_for": "Your explicit approval to write CA-ON (one province, backup first)."
   }
 }
