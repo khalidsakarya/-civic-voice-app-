@@ -273,11 +273,11 @@
         "detail": "Same ECONNRESET-superseded situation as CA-AB."
       },
       "charities": {
-        "status": "WRITTEN",
-        "write_status": "WRITTEN (CV-DATA-NB-002, 100 records)",
-        "source_quality": "Excellent — CRA Charities Registry",
+        "status": "CRA 2024 — LIVE AND VERIFIED",
+        "write_status": "REPLACED 2026-10-31 via `node engine/canada-charities-replace.cjs --only=CA-NB --write` (verified full-document backup first; 100 corrected records ranked by revenue; replacement by mergeFields). Replaced the 1998-source document.",
+        "source_quality": "Excellent — CRA \"2024 List of charities\" (published 2026-04-30, yearly), 2,469 New Brunswick charities, 100 shown ranked by reported total revenue; optional bn / revenue_cad / expenditures_cad / assets_cad / fiscal_period_end; no placeholder zeros.",
         "blocker_type": "written/live",
-        "detail": "subnational_tax_exempt_entities/CA-NB"
+        "detail": "Verified by one targeted read (9/9 checks) and the live modal (\"Official snapshot\", \"Showing 100 of 2,469 charities (largest by revenue)\", no $0, no console errors). Compliance record: compliance/records/CV-REC-001-2026-10-31-CV-DATA-NB-002-CRA2024 NB CRA Charities Verification.md. Backup: ~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-NB__2026-10-31T18-57-06-263Z.json."
       },
       "grants": {
         "status": "WRITTEN",
@@ -301,11 +301,11 @@
         "detail": "Same ECONNRESET-superseded situation as CA-AB."
       },
       "charities": {
-        "status": "WRITTEN",
-        "write_status": "WRITTEN (CV-DATA-NL-002, 100 records)",
-        "source_quality": "Excellent — CRA Charities Registry",
+        "status": "CRA 2024 — LIVE AND VERIFIED",
+        "write_status": "REPLACED 2026-10-31 via `node engine/canada-charities-replace.cjs --only=CA-NL --write` (verified full-document backup first; 100 corrected records ranked by revenue; replacement by mergeFields). Replaced the 1998-source document.",
+        "source_quality": "Excellent — CRA \"2024 List of charities\" (published 2026-04-30, yearly), 1,131 Newfoundland and Labrador charities, 100 shown ranked by reported total revenue; optional bn / revenue_cad / expenditures_cad / assets_cad / fiscal_period_end; no placeholder zeros.",
         "blocker_type": "written/live",
-        "detail": "subnational_tax_exempt_entities/CA-NL"
+        "detail": "Verified by one targeted read (9/9 checks) and the live modal (\"Official snapshot\", \"Showing 100 of 1,131 charities (largest by revenue)\", no $0, no console errors). Compliance record: compliance/records/CV-REC-001-2026-10-31-CV-DATA-NL-002-CRA2024 NL CRA Charities Verification.md. Backup: ~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-NL__2026-10-31T18-59-40-270Z.json."
       },
       "grants": {
         "status": "NOT_FOUND — only candidate is a decade-stale snapshot",
@@ -329,11 +329,11 @@
         "detail": "Same ECONNRESET-superseded situation as CA-AB."
       },
       "charities": {
-        "status": "WRITTEN",
-        "write_status": "WRITTEN (CV-DATA-PE-002, 100 records)",
-        "source_quality": "Excellent — CRA Charities Registry",
+        "status": "CRA 2024 — LIVE AND VERIFIED",
+        "write_status": "REPLACED 2026-11-02 via `node engine/canada-charities-replace.cjs --only=CA-PE --write` (verified full-document backup first; 100 corrected records ranked by revenue; replacement by mergeFields). Replaced the 1998-source document.",
+        "source_quality": "Excellent — CRA \"2024 List of charities\" (published 2026-04-30, yearly), 569 Prince Edward Island charities, 100 shown ranked by reported total revenue; optional bn / revenue_cad / expenditures_cad / assets_cad / fiscal_period_end; no placeholder zeros.",
         "blocker_type": "written/live",
-        "detail": "subnational_tax_exempt_entities/CA-PE"
+        "detail": "Verified by one targeted read (9/9 checks) and the live modal (\"Official snapshot\", \"Showing 100 of 569 charities (largest by revenue)\", no $0, no console errors). Compliance record: compliance/records/CV-REC-001-2026-11-02-CV-DATA-PE-002-CRA2024 PE CRA Charities Verification.md. Backup: ~/civic-voice-backups/firestore/subnational_tax_exempt_entities__CA-PE__2026-11-02T23-00-50-139Z.json."
       },
       "grants": {
         "status": "NOT_FOUND — category-level and stale",
@@ -664,7 +664,7 @@
       "3. Selection and wording: \"first 100 in file order\" is not a \"top\" list. Either rank by a real measure once financials exist, or sort alphabetically, and change the wording to \"Showing N of M registered charities\".",
       "4. Rewrite plan: re-write the 11 existing charity documents through a guarded, backed-up script (merge replaces the records array); hold the NT and NU charities writes until the source decision is made."
     ],
-    "status": "IN PROGRESS — corrected and verified: YT (2026-10-27); BC, AB, SK, QC, MB, NS, ON (2026-10-31). Remaining on the 1998 list: NB, NL, PE; NT and NU not created. Details: engine/reports/canada-charities-2024-prepared-latest.json.",
+    "status": "RESOLVED for all 11 jurisdictions that have a charities document — corrected and verified on the CRA 2024 list: YT (2026-10-27); BC, AB, SK, QC, MB, NS, ON, NB, NL (2026-10-31); PE (2026-11-02). CA-NT and CA-NU have no charities document yet (creation not approved; cannot be undone with the current tooling). Details: engine/reports/canada-charities-2024-prepared-latest.json.",
     "yukon_pilot": {
       "result": "PASSED",
       "date": "2026-10-27",
@@ -696,6 +696,15 @@
       "date": "2026-10-31",
       "jurisdiction": "CA-ON",
       "result": "PASSED — written once, verified (11/11) and checked live; no errors"
+    },
+    "rollout_batch_3": {
+      "date": "2026-10-31 (NB, NL) and 2026-11-02 (PE)",
+      "jurisdictions": [
+        "CA-NB",
+        "CA-NL",
+        "CA-PE"
+      ],
+      "result": "PASSED — each written once, verified (9/9) and checked live; no errors"
     }
   }
 }
