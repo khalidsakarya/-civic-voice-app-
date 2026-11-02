@@ -1,0 +1,49 @@
+{
+  "receipt_format": 1,
+  "kind": "charity-document-creation-receipt",
+  "document": {
+    "collection": "subnational_tax_exempt_entities",
+    "id": "CA-NU",
+    "path": "subnational_tax_exempt_entities/CA-NU"
+  },
+  "firebase_project": "civic-voice-5ea94",
+  "receipt_written_at": "2026-11-02T23:43:47.129Z",
+  "created_by": "civic-voice-app engine/canada-charities-replace.cjs --allow-create",
+  "firestore": {
+    "create_time": {
+      "seconds": 1793663028,
+      "nanoseconds": 500671000
+    },
+    "update_time": {
+      "seconds": 1793663028,
+      "nanoseconds": 500671000
+    }
+  },
+  "stored": {
+    "verification_status": "CV-REC-001-2026-11-02-CV-DATA-NU-002-CRA2024",
+    "fetched_at": "2026-11-02T23:43:28.059Z",
+    "cv_data_id": "CV-DATA-NU-002",
+    "source_year": 2024,
+    "total_in_source": 35,
+    "record_count": 35,
+    "field_names": [
+      "cv_data_id",
+      "data_source",
+      "fetched_at",
+      "financials_reported_count",
+      "jurisdiction_id",
+      "licence_note",
+      "note",
+      "records",
+      "records_stored",
+      "reporting_period",
+      "selection_basis",
+      "source_dataset",
+      "source_url",
+      "source_year",
+      "total_in_source",
+      "verification_status"
+    ]
+  },
+  "data_sha256": "87628dddd1a00c5017c95af67cab8edb4ec67036603439034d0e7dbcd57fe0b9"
+}

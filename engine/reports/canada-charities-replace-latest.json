@@ -1,6 +1,6 @@
 {
   "run_type": "FIRESTORE_REPLACE",
-  "run_at": "2026-11-02T23:00:18.629Z",
+  "run_at": "2026-11-02T23:45:50.463Z",
   "firebase_project": "civic-voice-5ea94",
   "source": {
     "id": "80c00cdb-1358-415c-bb8b-0de7f12675b8",
@@ -25,91 +25,71 @@
   },
   "results": [
     {
-      "jurisdiction_id": "CA-PE",
-      "path": "subnational_tax_exempt_entities/CA-PE",
-      "mode": "WRITE",
-      "status": "WRITTEN",
+      "jurisdiction_id": "CA-NT",
+      "path": "subnational_tax_exempt_entities/CA-NT",
+      "mode": "CREATE",
+      "status": "CREATED",
       "error": null,
       "plan": {
-        "exists": true,
-        "existingKeys": [
-          "note",
-          "cv_data_id",
-          "fetched_at",
-          "records",
-          "jurisdiction_id",
-          "licence_note",
-          "records_stored",
-          "verification_status",
-          "data_source",
-          "source_url",
-          "total_in_source"
-        ],
+        "exists": false,
+        "existingKeys": [],
         "unknownKeys": [],
         "preserved_fields": [],
         "resource_id_change": null,
         "conflict": null,
-        "before": {
-          "source": "Canada Revenue Agency — Charities Directorate. Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
-          "reporting_period": null,
-          "total_in_source": 514,
-          "count": 100,
-          "with_rawValue_field": 100,
-          "with_rawValue_zero": 100,
-          "with_bn": 0,
-          "with_revenue": 0
-        },
+        "before": null,
         "after": {
           "source": "Canada Revenue Agency — Charities Directorate, \"2024 List of charities\". Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
           "reporting_period": "CRA List of charities — 2024 filing year (fiscal periods ending in 2024), published 2026-04-30",
-          "total_in_source": 569,
+          "total_in_source": 101,
           "count": 100,
           "with_rawValue_field": 0,
           "with_rawValue_zero": 0,
           "with_bn": 100,
-          "with_revenue": 100
+          "with_revenue": 99
         },
-        "fields_replaced": [
+        "fields_replaced": [],
+        "fields_added": [
           "jurisdiction_id",
           "data_source",
           "source_url",
+          "source_year",
+          "reporting_period",
           "note",
+          "selection_basis",
           "total_in_source",
           "records_stored",
+          "financials_reported_count",
+          "source_dataset",
           "records",
           "cv_data_id",
           "verification_status",
           "licence_note",
           "fetched_at"
         ],
-        "fields_added": [
-          "source_year",
-          "reporting_period",
-          "selection_basis",
-          "financials_reported_count",
-          "source_dataset"
-        ],
         "fields_removed": [],
-        "old_record_names_not_in_new": 75
+        "old_record_names_not_in_new": 0
       },
-      "backup": {
-        "path": "C:\\Users\\jem91\\civic-voice-backups\\firestore\\subnational_tax_exempt_entities__CA-PE__2026-11-02T23-00-50-139Z.json",
-        "bytes": 23836,
-        "sha256": "4e183d2e9ecd87131de8174a5f925275e886ddaf90a8fca8acc1cbd862eb48b9"
-      },
+      "backup": null,
       "verification": {
         "ok": true,
         "problems": []
       },
+      "receipt": {
+        "path": "C:\\Users\\jem91\\civic-voice-backups\\firestore\\created__CA-NT__2026-11-02T23-46-05-927Z.receipt.json",
+        "bytes": 1329,
+        "sha256": "cfd318d991b7da5e073ffdb316d7c291abb65edc81719e78041deabc2971c154",
+        "confirmation_token": "CA-NT:53c87b2499c9"
+      },
       "summary": {
-        "jurisdiction_id": "CA-PE",
-        "total_in_source": 569,
+        "jurisdiction_id": "CA-NT",
+        "total_in_source": 101,
         "selected": 100,
-        "with_revenue_selected": 100,
-        "without_revenue_selected": 0,
-        "charities_without_revenue_in_source": 23,
-        "revenue_max_cad": 210219759,
-        "revenue_min_cad": 521791,
+        "with_revenue_selected": 99,
+        "without_revenue_selected": 1,
+        "charities_without_revenue_in_source": 2,
+        "revenue_max_cad": 63791647,
+        "revenue_min_cad": 20,
         "zero_revenue_reported_selected": 0,
         "has_rawValue_field": false
       }

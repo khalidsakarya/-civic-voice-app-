@@ -1,0 +1,105 @@
+# CV-REC-001 — Data Verification Record: CV-DATA-NT-002 CRA Charities Registry (Northwest Territories) — CRA 2024 List of Charities
+
+| Field | Value |
+|---|---|
+| **Record ID** | CV-REC-001-2026-11-02-CV-DATA-NT-002-CRA2024 |
+| **Status** | Verified — Created in Firestore (live and verified) |
+| **Owner** | Founder / Data Lead |
+| **Related SOP** | CV-SOP-001 Data Verification SOP |
+| **Related Policy** | CV-POL-002 Data Sources and Attribution Policy |
+| **Date Created** | 2026-11-02 |
+| **Prepared By** | Automated dry-runs, guarded create-only write, targeted read-back, receipt cross-check and live UI check + founder/reviewer approval (final charities rollout: NU, then NT) |
+| **Approval / Closure Status** | Approved |
+| **Supersedes** | Nothing: no charities document existed for Northwest Territories. The earlier 1998-based preparation (dedicated writer script, never executed) is obsolete and that script was retired on 2026-11-02 (commit 0aada56). |
+| **Pilot reference** | CV-REC-001-2026-10-27-CV-DATA-YT-002-CRA2024 (Yukon pilot, same pipeline) |
+
+---
+
+## 1. Dataset Identification
+
+| Field | Value |
+|---|---|
+| **Dataset name** | CRA List of Charities — 2024 (Identification + Financial data), Northwest Territories extract |
+| **Dataset ID** | CV-DATA-NT-002 |
+| **Jurisdiction** | Northwest Territories (CA-NT) — filtered from the all-Canada extract (`Province = NT`) |
+| **Source URL** | https://open.canada.ca/data/en/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8 |
+| **CKAN package ID** | `80c00cdb-1358-415c-bb8b-0de7f12675b8` — "2024 List of charities" |
+| **Resource files** | Identification CSV (`694fdc72-eae4-4ee0-83eb-832ab7b230e3`) and Financial data CSV (`e545170c-3689-4833-b2a8-e9e83100ab59`) |
+| **Source owner / publisher** | Canada Revenue Agency — Charities Directorate (CKAN organization `cra-arc`) |
+| **Licence** | Open Government Licence — Canada (OGL-Canada) — Approved |
+| **Reporting period** | 2024 filing year — T3010 returns for fiscal periods ending in 2024 (coverage 2024-01-01 to 2024-12-31); published 2026-04-30; refreshed 2026-10-04; yearly |
+| **Fetched / created** | 2026-11-02 (creation run 2026-11-02_23-45-50 UTC); Firestore createTime 2026-11-02T23:46:07.262Z |
+| **Firestore target** | `subnational_tax_exempt_entities/CA-NT` |
+| **Write mode** | **Create-only**: Firestore `create()` (fails if the document exists), via `node engine/canada-charities-replace.cjs --only=CA-NT --write --allow-create`. No merge, overwrite or replacement. |
+| **Scope note** | Financial fields are stored (optional) but not displayed; the UI keeps "Financial value not displayed in MVP". Missing financial information is omitted — never stored as 0. |
+
+---
+
+## 2. Verification Checklist
+
+| Check ID | Check Description | Result | Evidence / Notes |
+|---|---|---|---|
+| V-01 | Source URL accessible | Pass | CKAN `package_show` and both CSVs downloaded on 2026-11-02 |
+| V-02 | Official source | Pass | open.canada.ca — CRA Charities Directorate |
+| V-03 | Reporting period confirmed | Pass | Metadata validated at run time before building (id, title, coverage 2024, frequency P1Y, publication date after coverage end, publisher, licence, resources) |
+| V-04 | Schema as expected | Pass | Identification and Financial headers checked at run time; line meanings (4700 total revenue, 5100 total expenditures, 4200 total assets, CAD) confirmed in the CRA data dictionary v2.0 |
+| V-05 | Record count in range | Pass | 101 Northwest Territories charities in the 2024 source; 100 selected and stored |
+| V-06 | Spot-check | Pass | #1 AURORA COLLEGE ($63,791,647); #99 GIRLS NEED CAMPS ($20); #100 Canada-Ghana Education Project (no reported revenue) — real Northwest Territories organizations |
+| V-07 | No duplicates | Pass | 100 distinct BNs, all matching `^\d{9}RR\d{4}$` |
+| V-08 | No invalid values | Pass | No `rawValue`; no null/empty values; 99 of 100 report revenue, 93 expenditures, 96 assets |
+| V-09 | Licence confirmed | Pass | OGL-Canada |
+| V-10 | Attribution current | Pass | "Contains information licensed under the Open Government Licence — Canada. Source: Canada Revenue Agency Charities Directorate." |
+| V-11 | Ranking | Pass | Total revenue (line 4700), highest first: $63,791,647 down to $20; the charity without reported revenue ranks last; ties by name then BN |
+| V-12 | Category / designation mapping | Pass | Official CRA category codes mapped to the app's industry badges; A/B/C = Public Foundation / Private Foundation / Charitable Organization |
+| V-13 | Pre-write backup | Not applicable | No document existed (create-only); nothing to back up. The creation receipt (V-17) is the audit record. |
+| V-14 | Targeted read-back after creation | Pass | One read of `CA-NT` (12 of 12 checks): 100 records deep-equal a fresh rebuild from the official source; 2024 source metadata correct; revenue descending; no `rawValue`; valid unique BNs; exactly the 16 owned fields, none unexpected; createTime = updateTime (never modified) |
+| V-15 | Live UI | Pass | Northwest Territories "Tax Exempt / Charities" modal: "Official snapshot"; "100 organizations"; Showing 100 of 101 charities (largest by revenue); 100 rows numbered 1–100 in order, #1 AURORA COLLEGE, #100 Canada-Ghana Education Project; every row "Financial value not displayed in MVP"; no dollar text; source line names "2024 List of charities"; no "Not loaded yet" state; no console errors |
+| V-16 | No obsolete data | Pass | The document did not exist before; no 1998 data was ever stored (no reference to the 1998 package) |
+| V-17 | Creation receipt | Pass | `C:\Users\jem91\civic-voice-backups\firestore\created__CA-NT__2026-11-02T23-46-05-927Z.receipt.json` (1329 bytes; outside any git repository; copy preserved in `compliance/receipts/created__CA-NT__2026-11-02T23-46-05-927Z.receipt.json`). Records Firestore createTime/updateTime, SHA-256 of the stored data (`53c87b2499c92f5a0e91624ac708cfcecf0b0fe2aa26800f7338d4e98e3b057f`), verification_status and fetched_at; all matched the live document. Rollback token (not used): `CA-NT:53c87b2499c9` |
+| V-18 | Legacy writer retired | Pass | `engine/canada-nt-write-charities.cjs` fails closed on direct execution (commit 0aada56) before this creation |
+
+---
+
+## 3. Transformation Notes
+
+- Source: Identification and Financial data CSVs of package `80c00cdb-1358-415c-bb8b-0de7f12675b8`; Province filter `NT`; one financial row per BN (latest fiscal period end).
+- Record fields: `name`, `industry`/`industryColor`, `exemType`, `bn`, and only when reported `revenue_cad` (4700), `expenditures_cad` (5100), `assets_cad` (4200), `fiscal_period_end`. **No `rawValue`.**
+- Selection: up to 100, ranked by total revenue, highest first (100 of 101).
+- Document fields: `source_year` 2024; `reporting_period`; `selection_basis` "largest by revenue"; `total_in_source` 101; `records_stored` 100; `financials_reported_count` 99; `source_dataset`.
+
+---
+
+## 4. Firestore Write Fields
+
+Created at `subnational_tax_exempt_entities/CA-NT` with `create(payload)` — exactly 16 fields:
+
+- `jurisdiction_id`, `data_source`, `source_url`, `note`, `total_in_source`, `records_stored`, `records`, `cv_data_id`, `verification_status` (`CV-REC-001-2026-11-02-CV-DATA-NT-002-CRA2024`), `licence_note`, `fetched_at`
+- `source_year`, `reporting_period`, `selection_basis`, `financials_reported_count`, `source_dataset`
+- Removed / replaced: none (new document). No other document was written.
+- Operations: 4 dry-run reads before creation (0 writes); creation run: 2 reads (existence check, read-back) + 1 create; 1 verification read; 1 receipt file; the live modal reads 3 small documents each time it opens. No delete, no query, no rollback executed.
+- Run report: `engine/reports/canada-charities-replace-2026-11-02_23-45-50.json`.
+- Rollback (NOT executed; separately authorized only): `node engine/canada-charities-created-rollback.cjs --receipt=<receipt>` (dry run prints the token), then `--write --confirm=CA-NT:53c87b2499c9`.
+
+---
+
+## 5. Related Notes and Open Items
+
+- The 100th selected charity (Canada-Ghana Education Project) reports no revenue and ranks last, with no invented value; one more charity in the source has no financial row and is the excluded 101st.
+- The lowest reported revenue, $20 (Girls Need Camps), is exactly as the source states.
+- Eleven rows are named "THE BISHOP OF THE ARCTIC" and four "THE ROMAN CATHOLIC EPISCOPAL CORPORATION OF MACKENZIE…" (the Legal Name of registrants with many parish accounts; distinct BNs). They are all shown; the Account Name enhancement that would distinguish them is in the backlog and was not implemented.
+- With this document, all 13 provincial and territorial charity documents are on the CRA 2024 list.
+- Service worker: a browser holding the previous app bundle may show old labels until its service worker updates; the data is read live and is correct immediately.
+- Display caveat: the name shown is the registered Legal Name, which for some registrants differs from the CRA "Account Name" (see `engine/reports/canada-charities-2024-prepared-latest.json`; showing Account Name as secondary text is a backlog item, not implemented).
+
+---
+
+## 6. Final Decision
+
+| Field | Value |
+|---|---|
+| **Decision** | APPROVED — created in Firestore; live and verified |
+| **Reason** | Official CRA source, confirmed publication metadata and licence, ranked by reported revenue, no placeholder values, create-only semantics, receipt matched the live document, read-back and live UI checks passed |
+| **Conditions** | None |
+| **UI renders without further code changes** | Yes |
+| **Safe to write** | Yes (done) |
+| **Creation confirmed** | 2026-11-02 — `node engine/canada-charities-replace.cjs --only=CA-NT --write --allow-create`, 100 records |

@@ -1,0 +1,98 @@
+{
+  "run_type": "FIRESTORE_REPLACE",
+  "run_at": "2026-11-02T23:43:28.059Z",
+  "firebase_project": "civic-voice-5ea94",
+  "source": {
+    "id": "80c00cdb-1358-415c-bb8b-0de7f12675b8",
+    "title": "2024 List of charities",
+    "publisher": "Canada Revenue Agency — Charities Directorate",
+    "published": "2026-04-30",
+    "metadata_modified": "2026-10-04",
+    "coverage_start": "2024-01-01",
+    "coverage_end": "2024-12-31",
+    "frequency": "P1Y",
+    "licence": "Open Government Licence - Canada",
+    "resources": {
+      "identification": {
+        "id": "694fdc72-eae4-4ee0-83eb-832ab7b230e3",
+        "url": "https://open.canada.ca/data/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8/resource/694fdc72-eae4-4ee0-83eb-832ab7b230e3/download/ident_2024_updated.csv"
+      },
+      "financial": {
+        "id": "e545170c-3689-4833-b2a8-e9e83100ab59",
+        "url": "https://open.canada.ca/data/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8/resource/e545170c-3689-4833-b2a8-e9e83100ab59/download/financial_d_and_schedule_6_2024_updated.csv"
+      }
+    }
+  },
+  "results": [
+    {
+      "jurisdiction_id": "CA-NU",
+      "path": "subnational_tax_exempt_entities/CA-NU",
+      "mode": "CREATE",
+      "status": "CREATED",
+      "error": null,
+      "plan": {
+        "exists": false,
+        "existingKeys": [],
+        "unknownKeys": [],
+        "preserved_fields": [],
+        "resource_id_change": null,
+        "conflict": null,
+        "before": null,
+        "after": {
+          "source": "Canada Revenue Agency — Charities Directorate, \"2024 List of charities\". Source: open.canada.ca. Licensed under Open Government Licence — Canada.",
+          "reporting_period": "CRA List of charities — 2024 filing year (fiscal periods ending in 2024), published 2026-04-30",
+          "total_in_source": 35,
+          "count": 35,
+          "with_rawValue_field": 0,
+          "with_rawValue_zero": 0,
+          "with_bn": 35,
+          "with_revenue": 35
+        },
+        "fields_replaced": [],
+        "fields_added": [
+          "jurisdiction_id",
+          "data_source",
+          "source_url",
+          "source_year",
+          "reporting_period",
+          "note",
+          "selection_basis",
+          "total_in_source",
+          "records_stored",
+          "financials_reported_count",
+          "source_dataset",
+          "records",
+          "cv_data_id",
+          "verification_status",
+          "licence_note",
+          "fetched_at"
+        ],
+        "fields_removed": [],
+        "old_record_names_not_in_new": 0
+      },
+      "backup": null,
+      "verification": {
+        "ok": true,
+        "problems": []
+      },
+      "receipt": {
+        "path": "C:\\Users\\jem91\\civic-voice-backups\\firestore\\created__CA-NU__2026-11-02T23-43-47-130Z.receipt.json",
+        "bytes": 1327,
+        "sha256": "a0bc01d95895a8e35217b26c14ff2666a0384629afb8a317f33417e3ffbe861d",
+        "confirmation_token": "CA-NU:87628dddd1a0"
+      },
+      "summary": {
+        "jurisdiction_id": "CA-NU",
+        "total_in_source": 35,
+        "selected": 35,
+        "with_revenue_selected": 35,
+        "without_revenue_selected": 0,
+        "charities_without_revenue_in_source": 0,
+        "revenue_max_cad": 61033000,
+        "revenue_min_cad": 6279,
+        "zero_revenue_reported_selected": 0,
+        "has_rawValue_field": false
+      }
+    }
+  ]
+}

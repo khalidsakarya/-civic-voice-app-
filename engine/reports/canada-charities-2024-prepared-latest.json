@@ -613,7 +613,7 @@
     "documents_not_yet_existing": 2,
     "records_prepared": 1235
   },
-  "status": "REPLACED AND VERIFIED on the 2024 list: YT, BC, AB, SK, QC, MB, NS, ON, NB, NL, PE. CA-NT and CA-NU: PREPARED (dry-run clean, safe creation + rollback tooling tested) — NOT CREATED. Waiting for approval.",
+  "status": "COMPLETE: all 13 provincial/territorial charity documents are on the CRA 2024 list and verified (YT 2026-10-27; BC, AB, SK, QC, MB, NS, ON, NB, NL 2026-10-31; PE, NU, NT 2026-11-02). Backlog: Legal Name vs Account Name secondary text. No rollback executed.",
   "firestore_dry_run_2026_10_27": {
     "generated_at": "2026-10-27T01:09:05.020Z",
     "command": "node engine/canada-charities-replace.cjs --only=CA-ON,CA-BC,CA-AB,CA-QC,CA-SK,CA-MB,CA-NS,CA-NB,CA-NL,CA-PE,CA-NT,CA-NU   (dry run: 12 targeted reads, 0 writes)",
@@ -1784,5 +1784,92 @@
       "Returning visitors may see old labels until the service worker updates (data is read live)."
     ],
     "waiting_for": "Your explicit approval to create CA-NU, then CA-NT (one at a time)."
+  },
+  "final_rollout_nt_nu_2026_11_02": {
+    "approved": "Conditional approval: push, retire legacy NT/NU writers, final checks, then one create-only creation each: CA-NU first, CA-NT only after NU passed",
+    "pushed": [
+      "5db796f",
+      "9c769fa (both Vercel projects succeeded)",
+      "0aada56 retirement of the legacy NT/NU writers (both Vercel projects succeeded)"
+    ],
+    "legacy_writers_retired": "engine/canada-nt-write-charities.cjs and engine/canada-nu-write-charities.cjs: direct execution exits 1 before any require; exported functions refuse; tests (hermetic child process, programmatic, static) + 5 mutation checks. Scripts kept for history.",
+    "pre_creation_checks": "Fresh targeted dry-runs for each, 17 of 17 checks passed (project, source metadata, jurisdiction and document id, totals and selection, unique valid BNs, revenue ranking, no rawValue, no unexpected fields, document absent, create-only command, create() semantics, durable receipt location). Rollback refusal and separate-authorization behaviour covered by the engine suite (68 tests passing, 17 creation/rollback mutation checks).",
+    "results": [
+      {
+        "jurisdiction_id": "CA-NU",
+        "written": "2026-11-02",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-NU --write --allow-create",
+        "status": "CREATED",
+        "run_report": "engine/reports/canada-charities-replace-2026-11-02_23-43-28.json",
+        "receipt": {
+          "file": "compliance/receipts/created__CA-NU__2026-11-02T23-43-47-130Z.receipt.json",
+          "original": "~/civic-voice-backups/firestore/created__CA-NU__2026-11-02T23-43-47-130Z.receipt.json",
+          "bytes": 1327,
+          "data_sha256": "87628dddd1a00c5017c95af67cab8edb4ec67036603439034d0e7dbcd57fe0b9",
+          "firestore_create_time": "2026-11-02T23:43:48.501Z",
+          "rollback_token_not_used": "CA-NU:87628dddd1a0"
+        },
+        "targeted_read": "12/12 checks passed: records deep-equal a fresh rebuild; metadata; revenue ranking; count; no rawValue; unique valid BNs; exactly 16 owned fields; createTime = updateTime; receipt matches the live document (create/update times, data hash, verification_status, fetched_at)",
+        "live_modal": {
+          "heading": "Official snapshot",
+          "snapshot": "35 organizations",
+          "line": "Official tax-exempt registry listing (all 35 charities are shown, so no \"Showing N of M\" line is expected)",
+          "rows": 35,
+          "ranks_in_order": true,
+          "first": "NUNAVUT ARCTIC COLLEGE",
+          "last": "THE IQALUIT COMMUNITY GREENHOUSE SOCIETY",
+          "dollar_amounts": 0,
+          "financial_values": "Financial value not displayed in MVP on every row",
+          "not_loaded_state": false,
+          "console_errors": 0
+        },
+        "compliance_record": "CV-REC-001-2026-11-02-CV-DATA-NU-002-CRA2024",
+        "operations": {
+          "dry_run_reads": 3,
+          "creation_run": "2 reads + 1 create",
+          "verification_reads": 1,
+          "deletes": 0,
+          "rollbacks_executed": 0
+        }
+      },
+      {
+        "jurisdiction_id": "CA-NT",
+        "written": "2026-11-02",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-NT --write --allow-create",
+        "status": "CREATED",
+        "run_report": "engine/reports/canada-charities-replace-2026-11-02_23-45-50.json",
+        "receipt": {
+          "file": "compliance/receipts/created__CA-NT__2026-11-02T23-46-05-927Z.receipt.json",
+          "original": "~/civic-voice-backups/firestore/created__CA-NT__2026-11-02T23-46-05-927Z.receipt.json",
+          "bytes": 1329,
+          "data_sha256": "53c87b2499c92f5a0e91624ac708cfcecf0b0fe2aa26800f7338d4e98e3b057f",
+          "firestore_create_time": "2026-11-02T23:46:07.262Z",
+          "rollback_token_not_used": "CA-NT:53c87b2499c9"
+        },
+        "targeted_read": "12/12 checks passed: records deep-equal a fresh rebuild; metadata; revenue ranking; count; no rawValue; unique valid BNs; exactly 16 owned fields; createTime = updateTime; receipt matches the live document (create/update times, data hash, verification_status, fetched_at)",
+        "live_modal": {
+          "heading": "Official snapshot",
+          "snapshot": "100 organizations",
+          "line": "Showing 100 of 101 charities (largest by revenue)",
+          "rows": 100,
+          "ranks_in_order": true,
+          "first": "AURORA COLLEGE",
+          "last": "Canada-Ghana Education Project",
+          "dollar_amounts": 0,
+          "financial_values": "Financial value not displayed in MVP on every row",
+          "not_loaded_state": false,
+          "console_errors": 0
+        },
+        "compliance_record": "CV-REC-001-2026-11-02-CV-DATA-NT-002-CRA2024",
+        "operations": {
+          "dry_run_reads": 4,
+          "creation_run": "2 reads + 1 create",
+          "verification_reads": 1,
+          "deletes": 0,
+          "rollbacks_executed": 0
+        }
+      }
+    ],
+    "exact_operations_total": "NU: 3 dry-run reads + 2 reads + 1 create + 1 verification read; NT: 4 dry-run reads + 2 reads + 1 create + 1 verification read; 2 receipt files; plus 3 app reads per live modal open (economic, tax, grants). No deletes, no rollback, no other document touched, no scheduler activated."
   }
 }
