@@ -613,7 +613,7 @@
     "documents_not_yet_existing": 2,
     "records_prepared": 1235
   },
-  "status": "REPLACED AND VERIFIED: YT (2026-10-27); BC, AB, SK, QC, MB, NS, ON, NB, NL (2026-10-31); PE (2026-11-02). Not created: NT, NU (creation not approved). Backlog: Legal Name vs Account Name secondary text (no change to verified data). Waiting for approval.",
+  "status": "REPLACED AND VERIFIED on the 2024 list: YT, BC, AB, SK, QC, MB, NS, ON, NB, NL, PE. CA-NT and CA-NU: PREPARED (dry-run clean, safe creation + rollback tooling tested) — NOT CREATED. Waiting for approval.",
   "firestore_dry_run_2026_10_27": {
     "generated_at": "2026-10-27T01:09:05.020Z",
     "command": "node engine/canada-charities-replace.cjs --only=CA-ON,CA-BC,CA-AB,CA-QC,CA-SK,CA-MB,CA-NS,CA-NB,CA-NL,CA-PE,CA-NT,CA-NU   (dry run: 12 targeted reads, 0 writes)",
@@ -1634,5 +1634,155 @@
       "decision": "Kept in the backlog (2026-11-02). Do not rewrite already-verified charity data for display improvements at this stage.",
       "analysis": "legal_vs_account_name_investigation_2026_10_31"
     }
-  ]
+  ],
+  "nt_nu_creation_preparation_2026_11_02": {
+    "status": "PREPARED — dry-runs clean; safe-creation and rollback tooling implemented and tested; NOTHING CREATED",
+    "dry_run": {
+      "command": "node engine/canada-charities-replace.cjs --only=CA-NT,CA-NU",
+      "run_at": "2026-11-02T23:07:03Z (and again after the code change)",
+      "reads": "2 per run",
+      "writes": 0,
+      "firebase_project": "civic-voice-5ea94",
+      "results": "both DRY_RUN, existing_document_found false, no conflict, 16 fields to add, 0 replaced, 0 removed"
+    },
+    "source": {
+      "id": "80c00cdb-1358-415c-bb8b-0de7f12675b8",
+      "title": "2024 List of charities",
+      "publisher": "Canada Revenue Agency — Charities Directorate",
+      "published": "2026-04-30",
+      "metadata_modified": "2026-10-04",
+      "coverage": "2024-01-01..2024-12-31",
+      "frequency": "P1Y",
+      "licence": "Open Government Licence - Canada",
+      "identification_resource": "694fdc72-eae4-4ee0-83eb-832ab7b230e3",
+      "financial_resource": "e545170c-3689-4833-b2a8-e9e83100ab59"
+    },
+    "datasets": {
+      "CA-NT": {
+        "target_document": "subnational_tax_exempt_entities/CA-NT",
+        "cv_data_id": "CV-DATA-NT-002",
+        "records_in_source": 101,
+        "unique_bns": 101,
+        "selected": 100,
+        "highest_selected_revenue_cad": 63791647,
+        "highest_name": "AURORA COLLEGE",
+        "lowest_selected_revenue_cad": 20,
+        "lowest_selected_revenue_name": "GIRLS NEED CAMPS",
+        "last_selected_record": "Canada-Ghana Education Project (no reported revenue; ranks last)",
+        "financials_reported_count": 99,
+        "missing": {
+          "selected_without_revenue": 1,
+          "selected_missing_expenditures": 7,
+          "selected_missing_assets": 4,
+          "selected_missing_fiscal_period_end": 0,
+          "source_charities_without_any_financial_row": 1
+        },
+        "document_json_bytes": 28635,
+        "percent_of_1MiB_limit": 2.73,
+        "identical_displayed_names": [
+          "11x THE BISHOP OF THE ARCTIC",
+          "4x THE ROMAN CATHOLIC EPISCOPAL CORPORATION OF MACKENZIE…"
+        ]
+      },
+      "CA-NU": {
+        "target_document": "subnational_tax_exempt_entities/CA-NU",
+        "cv_data_id": "CV-DATA-NU-002",
+        "records_in_source": 35,
+        "unique_bns": 35,
+        "selected": 35,
+        "highest_selected_revenue_cad": 61033000,
+        "highest_name": "NUNAVUT ARCTIC COLLEGE",
+        "lowest_selected_revenue_cad": 6279,
+        "lowest_selected_revenue_name": "THE IQALUIT COMMUNITY GREENHOUSE SOCIETY",
+        "financials_reported_count": 35,
+        "missing": {
+          "selected_without_revenue": 0,
+          "selected_missing_expenditures": 3,
+          "selected_missing_assets": 4,
+          "selected_missing_fiscal_period_end": 0,
+          "source_charities_without_any_financial_row": 0
+        },
+        "document_json_bytes": 10784,
+        "percent_of_1MiB_limit": 1.03,
+        "identical_displayed_names": []
+      },
+      "note": "The earlier 1998-based preparation (122 / 26 charities, written by dedicated scripts) is obsolete."
+    },
+    "existing_mechanism_review": {
+      "gaps_found_in_the_previous_--allow-create": [
+        "It was accepted for any of the 13 jurisdictions, including the 11 live documents.",
+        "With --allow-create, an EXISTING document was not refused: it went down the normal replacement path (backup + set mergeFields), i.e. it could be overwritten.",
+        "It used get() then set(): a document appearing between the two would have been merged into, not refused.",
+        "It left no record proving what was created, and nothing in the project could undo a creation (by design the pipeline had no delete)."
+      ],
+      "fixes_implemented": [
+        "--allow-create is limited to CA-NT and CA-NU at argument parsing AND again inside replaceOne (a non-creatable id is refused before any Firestore read).",
+        "Create-only: an existing document is refused (ABORTED_ALREADY_EXISTS); the write is Firestore create(), which itself fails if the document exists, so there is no check-then-write race.",
+        "The write is the full 16-field payload; no mergeFields/merge, no other document, no collection query, no delete in the creation path.",
+        "Writes still need an explicit --write AND --only; nothing runs on import; project guard runs before the first read.",
+        "A receipt writer is proven usable (written, read back, deleted) BEFORE the first Firestore operation; the run stops if it is not. After creation the document is read back, verified and a creation receipt (createTime, updateTime, SHA-256 of the stored data, verification_status, fetched_at) is saved outside the repository and printed with a rollback token.",
+        "If the receipt cannot be saved after the document was created, the run reports CREATED_RECEIPT_FAILED (exit code 1) and keeps the full receipt in its output so it can be saved by hand."
+      ]
+    },
+    "rollback": {
+      "scripts": [
+        "engine/canada-charities-created-rollback.cjs",
+        "engine/lib/charities-creation-rollback.cjs",
+        "engine/lib/charities-creation-receipt.cjs"
+      ],
+      "applies_only_to": "subnational_tax_exempt_entities/CA-NT and /CA-NU",
+      "refuses_unless_all_true": [
+        "a valid creation receipt names the document (format, kind, collection, id in {CA-NT, CA-NU}, project civic-voice-5ea94)",
+        "the live Firebase project equals the receipt project (guard verified)",
+        "the document exists and its createTime AND updateTime equal the receipt (same instance, never re-created, never modified)",
+        "SHA-256 of its current data equals the receipt; verification_status and fetched_at match",
+        "it holds no field the process does not own",
+        "--write and --confirm=<token> (id + first 12 hex of the data hash, printed by the dry run) were both given",
+        "a full-document backup was saved and verified first (restorable with engine/canada-charities-restore.cjs)"
+      ],
+      "delete_is_atomic": "ref.delete({ lastUpdateTime }) — Firestore refuses it server-side if the document changed between the check and the delete; the document is re-read to confirm it is gone.",
+      "never": "It cannot delete any other document: the only reference built is COLLECTION + the validated receipt id; no query, no scan; this is the only file in the project containing a Firestore delete (static test).",
+      "dry_run_default": true
+    },
+    "tests": "64 engine tests, 0 failed (zero Firestore, zero network). 17 mutation checks on the creation and rollback code (existing document overwritable, set instead of create, any id creatable in replaceOne and in the argument parser, receipt not required, preflight skipped, receipt for any id, createTime / updateTime / data hash / foreign fields / token / backup / project not checked, delete without precondition, dry run deleting): all caught. The UI compatibility suite adds 18 tests on the real NT/NU documents (30 util tests in total pass).",
+    "ui_compatibility": {
+      "today": "Both modals show the honest empty state (\"Official snapshot — Not loaded yet … This screen does not show placeholder or generated rows.\"), no rows, no dollar text, no console errors (checked live on 2026-11-02).",
+      "after_creation_by_test": "With the exact documents that would be stored: all 100 / 35 records reach the table in ranked order; source line names \"2024 List of charities\" with the 2024 reporting period; NT reads \"Showing 100 of 101 charities (largest by revenue)\"; NU (all 35 shown) reads \"Official tax-exempt registry listing\"; no rawValue, no dollar text, \"Financial value not displayed in MVP\" logic applies (CRA dataset detected); the NT charity with no revenue is kept without an invented value; identical names are all shown (rows are keyed by index).",
+      "live_check_after_creation": "Still required as part of the creation runbook (cannot be done before the documents exist)."
+    },
+    "proposed_commands": [
+      {
+        "step": 1,
+        "purpose": "create CA-NU first (smaller, all rows report revenue, no repeated names)",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-NU --write --allow-create",
+        "then": "targeted read verification (1 read) + live Nunavut modal; stop on any failure"
+      },
+      {
+        "step": 2,
+        "purpose": "create CA-NT only after step 1 is verified",
+        "command": "node engine/canada-charities-replace.cjs --only=CA-NT --write --allow-create",
+        "then": "targeted read verification (1 read) + live Northwest Territories modal; stop on any failure"
+      },
+      {
+        "step": "rollback (only if ever needed and separately authorized)",
+        "command": "node engine/canada-charities-created-rollback.cjs --receipt=<created__CA-XX__<timestamp>.receipt.json>   (dry run, prints the token)  then  --write --confirm=<token>",
+        "note": "never run automatically"
+      }
+    ],
+    "estimated_firestore_operations": {
+      "creation_per_document": "engine: 2 reads (existence check, read-back) + 1 create; 1 verification read afterwards; 1 receipt file (local); live modal check: the app reads 3 small documents when a modal opens",
+      "creation_both": "4 reads + 2 creates (+2 verification reads); no deletes; no backups (nothing exists to back up)",
+      "rollback_per_document": "dry run 1 read; delete run: 2 reads + 1 delete (+1 local backup file)",
+      "document_sizes": "NT 28.6 KB, NU 10.8 KB (limit 1 MiB)"
+    },
+    "unresolved_risks": [
+      "Creating a document is a production write that this tooling can only undo by DELETING it (the new rollback); that deletion needs its own explicit authorization (--write plus the token).",
+      "The old dedicated writers engine/canada-nt-write-charities.cjs and engine/canada-nu-write-charities.cjs can still be run directly (they delegate to the 2024 builder but merge-write without a receipt, backup or the new guards). Recommend disabling or deleting them before creation; not changed in this step.",
+      "NT shows 11 rows named \"THE BISHOP OF THE ARCTIC\" and 4 \"THE ROMAN CATHOLIC EPISCOPAL CORPORATION OF MACKENZIE…\" (Legal Name of a registrant with many parish accounts). Account Name would disambiguate them; that enhancement is in the backlog and was not applied.",
+      "NT #100 (Canada-Ghana Education Project) reports no revenue, and #100/#1 spread includes a charity reporting $20 revenue (GIRLS NEED CAMPS): both are exactly as the source states.",
+      "A CRA data republication would change totals; the dry-run/creation validate the package metadata (id, title, coverage, frequency, publication date, licence, resource id) and refuse on drift.",
+      "Returning visitors may see old labels until the service worker updates (data is read live)."
+    ],
+    "waiting_for": "Your explicit approval to create CA-NU, then CA-NT (one at a time)."
+  }
 }

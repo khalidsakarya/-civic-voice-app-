@@ -387,11 +387,11 @@
         "detail": "Dry-run itself was run after the reliability fix landed — confirmed clean, no ECONNRESET."
       },
       "charities": {
-        "status": "DRY_RUN_OK (122 found, 100 ready); dedicated write script exists but never run",
-        "write_status": "NOT_ATTEMPTED",
-        "source_quality": "Excellent — CRA Charities Registry",
-        "blocker_type": "ready after quota clears",
-        "detail": "CV-DATA-NT-002. Write script engine/canada-nt-write-charities.cjs prepared 2026-09-07, not yet executed."
+        "status": "CRA 2024 — PREPARED (dry-run clean); NOT CREATED — awaiting approval",
+        "write_status": "NOT_ATTEMPTED (no document exists). Create-only creation and a narrowly scoped rollback are implemented and tested; see nt_nu_creation_preparation_2026_11_02 in engine/reports/canada-charities-2024-prepared-latest.json.",
+        "source_quality": "Excellent — CRA \"2024 List of charities\" (published 2026-04-30, yearly): 101 Northwest Territories charities, 100 selected (one selected charity reports no revenue and ranks last; one charity in the source has no financial row and is the 101st); ranked by reported total revenue; no placeholder zeros.",
+        "blocker_type": "awaiting approval",
+        "detail": "CV-DATA-NT-002. Replaces the stale 1998-based entry (122 / 26 found) that earlier described this jurisdiction. The old dedicated writer script is superseded by the guarded pipeline and is NOT to be used."
       },
       "grants": {
         "status": "NOT_FOUND — closest candidate is stale and narrow; Public Accounts mostly PDF",
@@ -415,11 +415,11 @@
         "detail": "Dry-run itself was run after the reliability fix landed — confirmed clean, no ECONNRESET."
       },
       "charities": {
-        "status": "DRY_RUN_OK (26 found, 26 ready); dedicated write script exists but never run",
-        "write_status": "NOT_ATTEMPTED",
-        "source_quality": "Excellent — CRA Charities Registry (small count is plausible given Nunavut's ~40K population)",
-        "blocker_type": "ready after quota clears",
-        "detail": "CV-DATA-NU-002. Write script engine/canada-nu-write-charities.cjs prepared 2026-09-07, not yet executed."
+        "status": "CRA 2024 — PREPARED (dry-run clean); NOT CREATED — awaiting approval",
+        "write_status": "NOT_ATTEMPTED (no document exists). Create-only creation and a narrowly scoped rollback are implemented and tested; see nt_nu_creation_preparation_2026_11_02 in engine/reports/canada-charities-2024-prepared-latest.json.",
+        "source_quality": "Excellent — CRA \"2024 List of charities\" (published 2026-04-30, yearly): 35 Nunavut charities, all 35 selected, all report revenue; ranked by reported total revenue; no placeholder zeros.",
+        "blocker_type": "awaiting approval",
+        "detail": "CV-DATA-NU-002. Replaces the stale 1998-based entry (122 / 26 found) that earlier described this jurisdiction. The old dedicated writer script is superseded by the guarded pipeline and is NOT to be used."
       },
       "grants": {
         "status": "NOT_FOUND — no open data portal exists at all",
