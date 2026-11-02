@@ -4,7 +4,7 @@
  *   node engine/canada-charities-replace.cjs --only=CA-YT              # DRY RUN: reads only the target document(s)
  *   node engine/canada-charities-replace.cjs --offline                 # DRY RUN, all 13, NO Firestore access at all
  *   node engine/canada-charities-replace.cjs --only=CA-YT --write      # the guarded replacement (one document)
- *   node engine/canada-charities-replace.cjs --only=CA-NT --write --allow-create   # create a document that does not exist
+ *   node engine/canada-charities-replace.cjs --only=CA-NT --write --allow-create   # CREATE-ONLY (CA-NT / CA-NU): never overwrites; saves a creation receipt
  *
  * DRY RUN IS THE DEFAULT. A write needs an explicit --write AND an explicit --only (there is no implicit "all").
  * Arguments are validated strictly: anything unsupported stops the run before anything happens.
@@ -28,6 +28,7 @@ const path = require('path');
 const { parseArgs, buildPayload, replaceOne, JURISDICTIONS, COLLECTION } = require('./lib/charities-replacement.cjs');
 const CRA = require('./lib/cra-list-of-charities-2024.cjs');
 const { createLocalBackupWriter } = require('./lib/firestore-doc-backup.cjs');
+const { createLocalReceiptWriter } = require('./lib/charities-creation-receipt.cjs');
 
 const REPORTS_DIR = path.join(__dirname, 'reports');
 
@@ -41,6 +42,7 @@ async function run({
   verifyProject = () => require('./lib/firestore-project-guard.cjs').verifyFirestoreProject(),
   loadDataset = () => CRA.loadDataset(),
   writeBackup = createLocalBackupWriter(),
+  writeReceipt = createLocalReceiptWriter(),
   now = new Date(),
   log = console.log,
   warn = console.warn,
@@ -50,7 +52,7 @@ async function run({
   const targets = args.only ? JURISDICTIONS.filter((j) => args.only.has(j.id)) : JURISDICTIONS;
 
   log('============================================');
-  log(args.write ? '!!! WRITE MODE: matching charity documents will be replaced (after a verified backup) !!!' : `DRY RUN — no Firestore writes${args.offline ? ', no Firestore access at all (offline)' : ''}`);
+  log(args.write ? (args.allowCreate ? '!!! CREATE MODE: new charity documents will be created (create-only: an existing document is never overwritten) !!!' : '!!! WRITE MODE: matching charity documents will be replaced (after a verified backup) !!!') : `DRY RUN — no Firestore writes${args.offline ? ', no Firestore access at all (offline)' : ''}`);
   log(`Targets: ${targets.map((t) => t.id).join(', ')}`);
   log('============================================');
 
@@ -62,6 +64,12 @@ async function run({
     if (db) {
       projectId = await verifyProject(); // refuses unless the SDK is bound to civic-voice-5ea94; before the first read
       log(`Firebase project verified: ${projectId}`);
+      if (args.allowCreate) {
+        // prove, before the first read or create, that a creation receipt can be saved outside the repository and read back
+        if (typeof writeReceipt.preflight !== 'function') throw new Error('creation needs a receipt writer with a preflight check; nothing was created.');
+        const pf = await writeReceipt.preflight();
+        log(`Creation receipts will be saved to: ${pf.dir}`);
+      }
     } else {
       warn('No Firebase credentials: continuing as an OFFLINE dry run (target documents will not be read).');
     }
@@ -79,16 +87,16 @@ async function run({
   const results = [];
   for (const p of prepared) {
     // eslint-disable-next-line no-await-in-loop
-    const r = await replaceOne({ db, jurisdiction: p.jurisdiction, payload: p.payload, write: args.write, allowCreate: args.allowCreate, writeBackup, projectId });
+    const r = await replaceOne({ db, jurisdiction: p.jurisdiction, payload: p.payload, write: args.write, allowCreate: args.allowCreate, writeBackup, writeReceipt, projectId });
     r.summary = p.summary;
     results.push(r);
     const s = p.summary;
-    log(`  ${r.status.padEnd(26)} ${p.jurisdiction.id}  ${s.selected} of ${s.total_in_source} charities, revenue ${s.revenue_min_cad} .. ${s.revenue_max_cad}${r.backup ? `  backup: ${r.backup.path}` : ''}${r.error ? `  — ${r.error}` : ''}`);
+    log(`  ${r.status.padEnd(26)} ${p.jurisdiction.id}  ${s.selected} of ${s.total_in_source} charities, revenue ${s.revenue_min_cad} .. ${s.revenue_max_cad}${r.backup ? `  backup: ${r.backup.path}` : ''}${r.receipt ? `  receipt: ${r.receipt.path}  rollback token: ${r.receipt.confirmation_token}` : ''}${r.error ? `  — ${r.error}` : ''}`);
   }
 
   if (db && typeof db.terminate === 'function') await db.terminate();
 
-  const failed = results.filter((r) => /^(FAILED|ABORTED|WRITTEN_VERIFICATION_FAILED)/.test(r.status)).length;
+  const failed = results.filter((r) => /^(FAILED|ABORTED|WRITTEN_VERIFICATION_FAILED|CREATED_VERIFICATION_FAILED|CREATED_RECEIPT_FAILED)/.test(r.status)).length;
   const report = {
     run_type: args.write ? 'FIRESTORE_REPLACE' : 'DRY_RUN',
     run_at: now.toISOString(),
@@ -97,7 +105,7 @@ async function run({
     results,
   };
   if (args.write && saveReport) saveReport(report); // a dry run leaves no files behind
-  log(`\nDone. ${args.write ? 'Replaced' : 'Dry-ran'} ${results.length} document(s); problems: ${failed}.${args.write ? '' : ' Firestore writes: 0.'}`);
+  log(`\nDone. ${args.write ? (args.allowCreate ? 'Created' : 'Replaced') : 'Dry-ran'} ${results.length} document(s); problems: ${failed}.${args.write ? '' : ' Firestore writes: 0.'}`);
   return { results, summaries: prepared.map((p) => p.summary), report, exitCode: failed ? 1 : 0 };
 }
 

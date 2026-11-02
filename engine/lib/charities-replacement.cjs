@@ -12,10 +12,17 @@
  *   existing field the writers never wrote is treated as an UNKNOWN field and the run ABORTS for that
  *   document instead of guessing. Every replacement is verified by re-reading the document.
  *
+ * CREATION (--allow-create) is a separate, create-only mode limited to CA-NT and CA-NU: it never overwrites an
+ * existing document, uses Firestore create() (which itself fails if the document exists, so there is no
+ * check-then-write race), and saves a creation receipt so a later rollback can prove the document was created
+ * by this rollout and has not changed (see charities-creation-receipt.cjs / charities-creation-rollback.cjs).
+ *
  * Nothing here deletes a document, queries a collection, or runs on import.
  */
 
 'use strict';
+
+const { CREATABLE_IDS, buildReceipt, confirmationToken } = require('./charities-creation-receipt.cjs');
 
 const COLLECTION = 'subnational_tax_exempt_entities';
 
@@ -102,6 +109,10 @@ function parseArgs(argv) {
   if (write && offline) throw flagError('--write cannot be combined with --offline');
   if (write && !only) throw flagError('--write requires an explicit --only=<jurisdiction ids> (there is no implicit "all")');
   if (allowCreate && !write) throw flagError('--allow-create only makes sense with --write');
+  if (allowCreate) {
+    const notCreatable = [...only].filter((id) => !CREATABLE_IDS.includes(id));
+    if (notCreatable.length) throw flagError(`--allow-create is limited to ${CREATABLE_IDS.join(' and ')}; not for ${notCreatable.join(', ')}`);
+  }
   return { write, offline, allowCreate, only };
 }
 
@@ -220,10 +231,11 @@ function verifyStored(data, payload, before = null) {
  * @param {Function} [p.writeBackup] required for a write
  * @param {string} [p.projectId]
  */
-async function replaceOne({ db, jurisdiction, payload, write, allowCreate = false, writeBackup, projectId = null }) {
+async function replaceOne({ db, jurisdiction, payload, write, allowCreate = false, writeBackup, writeReceipt, projectId = null }) {
   const id = jurisdiction.id;
-  const result = { jurisdiction_id: id, path: `${COLLECTION}/${id}`, mode: write ? 'WRITE' : 'DRY_RUN', status: null, error: null, plan: null, backup: null, verification: null };
+  const result = { jurisdiction_id: id, path: `${COLLECTION}/${id}`, mode: write ? (allowCreate ? 'CREATE' : 'WRITE') : 'DRY_RUN', status: null, error: null, plan: null, backup: null, verification: null };
   try {
+    if (allowCreate && !CREATABLE_IDS.includes(id)) { result.status = 'ABORTED_NOT_CREATABLE'; result.error = `--allow-create is limited to ${CREATABLE_IDS.join(' and ')}; ${id} was not touched`; return result; }
     if (!db) {
       result.status = 'DRY_RUN_OFFLINE';
       result.plan = { existing_document: 'not checked (offline dry run: no Firestore access)', after: assessExisting(null, payload, id).after };
@@ -233,10 +245,38 @@ async function replaceOne({ db, jurisdiction, payload, write, allowCreate = fals
     const snap = await ref.get();
     const plan = assessExisting(snap, payload, id);
     result.plan = plan;
+    if (allowCreate && plan.exists) { result.status = 'ABORTED_ALREADY_EXISTS'; result.error = `${result.path} already exists; --allow-create never overwrites an existing document (nothing was changed)`; return result; }
     if (plan.conflict) { result.status = 'ABORTED_CONFLICT'; result.error = `Refusing to touch ${id}: ${plan.conflict}`; return result; }
     if (!write) { result.status = 'DRY_RUN'; return result; }
 
     if (!plan.exists && !allowCreate) { result.status = 'ABORTED_MISSING_DOCUMENT'; result.error = `${result.path} does not exist and --allow-create was not given; nothing was written`; return result; }
+    if (allowCreate) {
+      // create-only: the document does not exist (just read), and create() itself fails if it appears in the meantime
+      if (typeof writeReceipt !== 'function') { result.status = 'ABORTED_NO_RECEIPT'; result.error = 'no receipt writer configured; nothing was created'; return result; }
+      try {
+        await ref.create(payload);
+      } catch (e) {
+        if (e && (e.code === 6 || /ALREADY_EXISTS/.test(String(e.message)))) { result.status = 'ABORTED_ALREADY_EXISTS'; result.error = `${result.path} appeared just before the create; nothing was changed`; return result; }
+        throw e;
+      }
+      const created = await ref.get();
+      const stored = created.exists ? created.data() : null;
+      const problems = verifyStored(stored, payload, null);
+      result.verification = { ok: problems.length === 0, problems };
+      let receiptProblem = null;
+      let receipt = null;
+      if (!stored) receiptProblem = 'the new document could not be read back, so no receipt exists';
+      else {
+        try {
+          receipt = buildReceipt({ id, projectId, data: stored, createTime: created.createTime, updateTime: created.updateTime });
+          result.receipt = { ...(await writeReceipt({ receipt })), confirmation_token: confirmationToken(receipt) };
+        } catch (e) { receiptProblem = String(e.message || e).slice(0, 300); if (receipt) result.receipt_content = receipt; }
+      }
+      result.status = receiptProblem ? 'CREATED_RECEIPT_FAILED' : (problems.length ? 'CREATED_VERIFICATION_FAILED' : 'CREATED');
+      if (receiptProblem) result.error = `created, but the creation receipt failed: ${receiptProblem}`;
+      else if (problems.length) result.error = `created, but verification found problems: ${problems.join('; ')}`;
+      return result;
+    }
     if (plan.exists) {
       if (typeof writeBackup !== 'function') { result.status = 'ABORTED_NO_BACKUP'; result.error = 'no backup writer configured; nothing was written'; return result; }
       try {
@@ -313,6 +353,7 @@ async function restoreOne({ db, backup, write, writeBackup, deleteField, project
 
 module.exports = {
   COLLECTION,
+  CREATABLE_IDS,
   JURISDICTIONS,
   LEGACY_FIELDS,
   NEW_FIELDS,

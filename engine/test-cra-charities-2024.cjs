@@ -86,9 +86,14 @@ const quiet = () => {}; // log/warn sink
 
 /** Faithful-enough Firestore stand-in: set() with no options replaces, {merge:true} merges (arrays replaced), {mergeFields} replaces exactly those fields. */
 const DELETE = Symbol('FieldValue.delete');
-function recordingDb(existing = {}) {
+function recordingDb(existing = {}, opts = {}) {
   const ops = [];
   const store = JSON.parse(JSON.stringify(existing));
+  let tick = 0;
+  const stamp = () => { tick += 1; return { seconds: 1793600000, nanoseconds: tick * 1000 }; };
+  const times = {};
+  Object.keys(store).forEach((k) => { const t = stamp(); times[k] = { create: t, update: t }; });
+  const sameTs = (a, b) => !!a && !!b && a.seconds === b.seconds && a.nanoseconds === b.nanoseconds;
   const clone = (x) => JSON.parse(JSON.stringify(x));
   const tripwire = (what) => () => { ops.push([`FORBIDDEN ${what}`]); throw new Error(`${what} is forbidden`); };
   const deepMerge = (a, b) => {
@@ -103,10 +108,17 @@ function recordingDb(existing = {}) {
         const p = `${name}/${id}`;
         return {
           path: p,
-          get: async () => { ops.push(['get', p]); return { exists: p in store, data: () => (p in store ? clone(store[p]) : undefined) }; },
+          get: async () => { ops.push(['get', p]); const snapData = p in store ? clone(store[p]) : undefined; const t = times[p]; return { exists: p in store, data: () => (snapData === undefined ? undefined : clone(snapData)), createTime: t && t.create, updateTime: t && t.update }; }, // an immutable snapshot, like Firestore's
+          create: async (data) => {
+            ops.push(['create', p]);
+            if (opts.appearBeforeCreate && !(p in store)) { store[p] = clone(opts.appearBeforeCreate); const t = stamp(); times[p] = { create: t, update: t }; }
+            if (p in store) throw Object.assign(new Error('6 ALREADY_EXISTS: Document already exists: ' + p), { code: 6 });
+            store[p] = clone(data); const t = stamp(); times[p] = { create: t, update: t };
+          },
           set: async (data, opts) => {
             ops.push(['set', p, opts && (opts.mergeFields ? { mergeFields: [...opts.mergeFields] } : opts)]);
             const cur = store[p];
+            if (cur) times[p] = { create: times[p].create, update: stamp() }; else { const t = stamp(); times[p] = { create: t, update: t }; }
             if (opts && opts.mergeFields) {
               const next = cur ? clone(cur) : {};
               for (const f of opts.mergeFields) { if (data[f] === DELETE) delete next[f]; else next[f] = clone(data[f]); }
@@ -114,7 +126,14 @@ function recordingDb(existing = {}) {
             } else if (opts && opts.merge) store[p] = deepMerge(cur || {}, clone(data));
             else store[p] = clone(data);
           },
-          update: tripwire('update'), delete: tripwire('delete'),
+          update: tripwire('update'),
+          delete: opts.allowDelete ? async (pre) => {
+            ops.push(['delete', p, pre && pre.lastUpdateTime]);
+            if (!(p in store)) throw Object.assign(new Error('5 NOT_FOUND'), { code: 5 });
+            if (!pre || !pre.lastUpdateTime) throw new Error('a delete without a lastUpdateTime precondition is forbidden in this suite');
+            if (!sameTs(pre.lastUpdateTime, times[p].update)) throw Object.assign(new Error('9 FAILED_PRECONDITION: the document was modified'), { code: 9 });
+            delete store[p]; delete times[p];
+          } : tripwire('delete'),
         };
       },
       add: tripwire('add'), where: tripwire('where'), get: tripwire('collection get'), listDocuments: tripwire('listDocuments'),
@@ -385,16 +404,17 @@ test('BACKUP FAILURE aborts the replacement: nothing is written and the document
   assert.strictEqual(none.status, 'ABORTED_NO_BACKUP');
 });
 
-test('a missing document is NOT created unless --allow-create is given (and then needs no backup)', async () => {
+test('a missing document is NOT created unless --allow-create is given; creation is create-only, limited to CA-NT / CA-NU (see section 8c)', async () => {
   const p = 'subnational_tax_exempt_entities/CA-YT';
   const db = recordingDb();
   const r = await R.replaceOne({ db, jurisdiction: yt, payload: ytPayload(), write: true, writeBackup: memBackup() });
   assert.strictEqual(r.status, 'ABORTED_MISSING_DOCUMENT');
   assert.ok(!(p in db.store));
-  const created = await R.replaceOne({ db, jurisdiction: yt, payload: ytPayload(), write: true, allowCreate: true, writeBackup: memBackup() });
-  assert.strictEqual(created.status, 'WRITTEN');
-  assert.strictEqual(created.backup, null);
-  assert.ok(p in db.store);
+  // --allow-create is refused outright for any jurisdiction other than CA-NT / CA-NU (no read, no write)
+  const refused = await R.replaceOne({ db, jurisdiction: yt, payload: ytPayload(), write: true, allowCreate: true, writeBackup: memBackup(), writeReceipt: async () => ({}) });
+  assert.strictEqual(refused.status, 'ABORTED_NOT_CREATABLE');
+  assert.deepStrictEqual(db.ops, [['get', p]], 'only the first (non-create) attempt read anything');
+  assert.ok(!(p in db.store));
 });
 
 test('a write that does not stick is caught by the verification read', async () => {
@@ -427,7 +447,7 @@ test('no collection query, delete, update, add or batch is ever used, in dry run
   await R.replaceOne({ db, jurisdiction: yt, payload: ytPayload(), write: true, writeBackup: memBackup() });
   assert.ok(!kinds(db).some((k) => /FORBIDDEN/.test(k)));
   assert.deepStrictEqual([...new Set(kinds(db))].sort(), ['get', 'set']);
-  const src = ['canada-charities-replace.cjs', 'canada-charities-restore.cjs', 'lib/charities-replacement.cjs', 'lib/cra-list-of-charities-2024.cjs', 'lib/firestore-doc-backup.cjs'].map((f) => fs.readFileSync(path.join(__dirname, f), 'utf8').split('\n').filter((l) => !/^\s*(\*|\/\/|\/\*)/.test(l)).join('\n')).join('\n');
+  const src = ['canada-charities-replace.cjs', 'canada-charities-restore.cjs', 'lib/charities-replacement.cjs', 'lib/cra-list-of-charities-2024.cjs', 'lib/firestore-doc-backup.cjs', 'lib/charities-creation-receipt.cjs', 'canada-charities-created-rollback.cjs'].map((f) => fs.readFileSync(path.join(__dirname, f), 'utf8').split('\n').filter((l) => !/^\s*(\*|\/\/|\/\*)/.test(l)).join('\n')).join('\n');
   // Firestore receivers only (Set.add and crypto .update are unrelated and allowed)
   const firestoreCall = /\b(ref|db|snap)\.(delete|update|add|where|listDocuments|batch)\(|\.(doc|collection)\([^)]*\)\.(delete|update|add|where|listDocuments)\(|\bdb\.batch\(|runTransaction|collectionGroup|recursiveDelete/;
   assert.ok(!firestoreCall.test(src), 'no destructive or scanning Firestore call anywhere');
@@ -502,8 +522,10 @@ test('arguments are strict: only --only, --write, --offline, --allow-create; --w
   assert.deepStrictEqual([...R.parseArgs(['--only=ca-yt,CA-NT']).only], ['CA-YT', 'CA-NT']);
   assert.strictEqual(R.parseArgs(['--only=CA-YT', '--write']).write, true);
   assert.strictEqual(R.parseArgs(['--offline']).offline, true);
-  const bad = [['--dryrun'], ['--write'], ['--only=CA-YT', '--only=CA-NT'], ['--only='], ['--only=CA-XX'], ['--only=CA-YT,'], ['--only=CA-YT', '--write', '--offline'], ['--allow-create'], ['--only=CA-YT', '--allow-create'], ['CA-YT'], ['--write', '--write', '--only=CA-YT'], ['--only=CA-YT', '--force'], ['--no-backup']];
+  const bad = [['--dryrun'], ['--write'], ['--only=CA-YT', '--only=CA-NT'], ['--only='], ['--only=CA-XX'], ['--only=CA-YT,'], ['--only=CA-YT', '--write', '--offline'], ['--allow-create'], ['--only=CA-YT', '--allow-create'], ['--only=CA-YT', '--write', '--allow-create'], ['--only=CA-NT,CA-ON', '--write', '--allow-create'], ['--only=CA-ON', '--write', '--allow-create'], ['CA-YT'], ['--write', '--write', '--only=CA-YT'], ['--only=CA-YT', '--force'], ['--no-backup']];
   bad.forEach((a) => assert.throws(() => R.parseArgs(a), /Nothing was run/, JSON.stringify(a)));
+  assert.deepStrictEqual(R.parseArgs(['--only=CA-NT,CA-NU', '--write', '--allow-create']), { write: true, offline: false, allowCreate: true, only: new Set(['CA-NT', 'CA-NU']) });
+  assert.throws(() => R.parseArgs(['--only=CA-YT', '--write', '--allow-create']), /limited to CA-NT and CA-NU/);
 });
 
 const quietRun = (over = {}) => REPLACE.run({ log: quiet, warn: quiet, now: NOW, getDb: () => null, verifyProject: okProject, loadDataset: async () => dataset(), writeBackup: memBackup(), ...over });
@@ -728,9 +750,313 @@ test('CA-ON: the kept designation note is accurate for the 2024 source (A / B ma
   await assert.rejects(() => quietRun({ argv: ['--only=CA-ON'], getDb: () => db2, loadDataset: async () => drift }), /Identification resource id/);
 });
 
+// ─── 8c. safe creation (CA-NT / CA-NU) and rollback of a created document ───────
+const RB = require('./lib/charities-creation-rollback.cjs');
+const RCPT = require('./lib/charities-creation-receipt.cjs');
+const ROLLBACK = require('./canada-charities-created-rollback.cjs');
+const nt = R.JURISDICTIONS.find((j) => j.id === 'CA-NT');
+const nu = R.JURISDICTIONS.find((j) => j.id === 'CA-NU');
+const NT_PATH = 'subnational_tax_exempt_entities/CA-NT';
+const ntPayload = () => R.buildPayload({ ...CRA.buildDocFromDataset(dataset(), 'CA-YT'), jurisdiction_id: 'CA-NT' }, nt, { now: NOW });
+const toTs = (p) => ({ seconds: p.seconds, nanoseconds: p.nanoseconds });
+/** An in-memory receipt writer with the same contract as the real one (and a failing variant). */
+const memReceipt = () => { const saved = []; const w = async ({ receipt }) => { const problems = RCPT.validateReceipt(receipt); if (problems.length) throw new Error('receipt refused: ' + problems.join('; ')); saved.push(JSON.parse(JSON.stringify(receipt))); return { path: '/receipts/created__CA-NT.receipt.json', bytes: 1, sha256: 'x' }; }; w.saved = saved; return w; };
+async function createNt(db = recordingDb({}, { allowDelete: true }), writeReceipt = memReceipt()) {
+  const r = await R.replaceOne({ db, jurisdiction: nt, payload: ntPayload(), write: true, allowCreate: true, writeBackup: memBackup(), writeReceipt, projectId: 'civic-voice-5ea94' });
+  return { db, r, writeReceipt };
+}
+
+test('CREATE (CA-NT): create-only — exactly get -> create -> get, the full payload, no set/merge, a receipt saved, status CREATED', async () => {
+  const { db, r, writeReceipt } = await createNt();
+  assert.strictEqual(r.status, 'CREATED', r.error);
+  assert.strictEqual(r.mode, 'CREATE');
+  assert.deepStrictEqual(kinds(db), ['get', 'create', 'get']);
+  assert.deepStrictEqual(db.store[NT_PATH], ntPayload());
+  assert.deepStrictEqual(r.verification, { ok: true, problems: [] });
+  assert.strictEqual(writeReceipt.saved.length, 1);
+  const rc = writeReceipt.saved[0];
+  assert.strictEqual(rc.document.path, NT_PATH);
+  assert.strictEqual(rc.firebase_project, 'civic-voice-5ea94');
+  assert.strictEqual(rc.data_sha256, RCPT.dataSha256(db.store[NT_PATH]));
+  assert.strictEqual(rc.stored.verification_status, ntPayload().verification_status);
+  assert.match(r.receipt.confirmation_token, /^CA-NT:[0-9a-f]{12}$/);
+  assert.strictEqual(r.backup, null, 'nothing existed to back up');
+});
+
+test('CREATE never overwrites: an existing document (or one that appears just before create) is refused and left untouched; non-creatable ids are refused before any read', async () => {
+  const existing = { ...legacyDoc('CA-NT'), note: 'someone else wrote this' };
+  const db = recordingDb({ [NT_PATH]: existing });
+  const r = await R.replaceOne({ db, jurisdiction: nt, payload: ntPayload(), write: true, allowCreate: true, writeBackup: memBackup(), writeReceipt: memReceipt() });
+  assert.strictEqual(r.status, 'ABORTED_ALREADY_EXISTS');
+  assert.deepStrictEqual(kinds(db), ['get']);
+  assert.deepStrictEqual(db.store[NT_PATH], existing);
+  // the race: get() says missing, then the document appears; Firestore create() itself refuses
+  const racing = recordingDb({}, { appearBeforeCreate: existing });
+  const w = memReceipt();
+  const r2 = await R.replaceOne({ db: racing, jurisdiction: nt, payload: ntPayload(), write: true, allowCreate: true, writeBackup: memBackup(), writeReceipt: w });
+  assert.strictEqual(r2.status, 'ABORTED_ALREADY_EXISTS');
+  assert.deepStrictEqual(racing.store[NT_PATH], existing, 'the appearing document was not overwritten');
+  assert.strictEqual(w.saved.length, 0);
+  assert.ok(!kinds(racing).includes('set'));
+  // every non-creatable id, including the 11 live documents
+  for (const j of R.JURISDICTIONS.filter((x) => x.id !== 'CA-NT' && x.id !== 'CA-NU')) {
+    const d = recordingDb({ ['subnational_tax_exempt_entities/' + j.id]: legacyDoc(j.id) });
+    const x = await R.replaceOne({ db: d, jurisdiction: j, payload: { ...ytPayload(), jurisdiction_id: j.id }, write: true, allowCreate: true, writeBackup: memBackup(), writeReceipt: memReceipt() });
+    assert.strictEqual(x.status, 'ABORTED_NOT_CREATABLE', j.id);
+    assert.deepStrictEqual(d.ops, [], j.id + ': nothing was even read');
+  }
+});
+
+test('CREATE needs a receipt writer, never writes during a dry run, and reports a failed receipt loudly (the document then exists and the receipt content is kept in the result)', async () => {
+  const noReceipt = recordingDb();
+  const a = await R.replaceOne({ db: noReceipt, jurisdiction: nt, payload: ntPayload(), write: true, allowCreate: true, writeBackup: memBackup() });
+  assert.strictEqual(a.status, 'ABORTED_NO_RECEIPT');
+  assert.ok(!(NT_PATH in noReceipt.store) && !kinds(noReceipt).includes('create'));
+  const dry = recordingDb();
+  const b = await R.replaceOne({ db: dry, jurisdiction: nt, payload: ntPayload(), write: false });
+  assert.strictEqual(b.status, 'DRY_RUN');
+  assert.deepStrictEqual(dry.ops, [['get', NT_PATH]]);
+  const failing = async () => { throw new Error('ENOSPC'); };
+  const { r, db } = await createNt(recordingDb({}, { allowDelete: true }), failing);
+  assert.strictEqual(r.status, 'CREATED_RECEIPT_FAILED');
+  assert.match(r.error, /ENOSPC/);
+  assert.ok(NT_PATH in db.store);
+  assert.strictEqual(r.receipt_content.document.id, 'CA-NT', 'the full receipt is in the result so it can be saved by hand');
+});
+
+test('run(): --allow-create creates only the named NT/NU document, preflights the receipt writer BEFORE any create, stops on a failed preflight, and flags a failed receipt as a problem', async () => {
+  const db = recordingDb({ 'subnational_tax_exempt_entities/CA-ON': legacyDoc('CA-ON') });
+  const order = [];
+  const writeReceipt = memReceipt();
+  writeReceipt.preflight = async () => { order.push('preflight:' + db.ops.length); return { dir: '/receipts' }; };
+  let report = null;
+  const dsWithNt = () => { const d = dataset(); const rows = d.identRows.filter((x) => x.Province === 'YT').map((x) => ({ ...x, Province: 'NT', BN: x.BN.replace('1000', '2000') })); return { ...d, identRows: d.identRows.concat(rows), financialByBn: new Map([...d.financialByBn, ...[...d.financialByBn].filter(([bn]) => d.identRows.some((x) => x.BN === bn && x.Province === 'YT')).map(([bn, v]) => [bn.replace('1000', '2000'), { ...v, BN: v.BN.replace('1000', '2000') }])]) }; };
+  const r = await quietRun({ argv: ['--only=CA-NT', '--write', '--allow-create'], getDb: () => db, loadDataset: async () => dsWithNt(), writeReceipt, saveReport: (x) => { report = x; } });
+  assert.strictEqual(r.results[0].status, 'CREATED', r.results[0].error);
+  assert.strictEqual(r.exitCode, 0);
+  assert.deepStrictEqual(order, ['preflight:0'], 'the receipt location was proven before the first Firestore operation');
+  assert.deepStrictEqual(db.ops.filter((o) => o[0] === 'create').map((o) => o[1]), [NT_PATH]);
+  assert.ok(!kinds(db).includes('set') && !kinds(db).includes('FORBIDDEN delete'));
+  assert.deepStrictEqual(db.store['subnational_tax_exempt_entities/CA-ON'], legacyDoc('CA-ON'), 'the other document is untouched');
+  assert.strictEqual(report.results[0].receipt.confirmation_token.startsWith('CA-NT:'), true);
+  const bad = recordingDb();
+  const badWriter = memReceipt(); badWriter.preflight = async () => { throw new Error('receipt refused: inside the git repository'); };
+  await assert.rejects(() => quietRun({ argv: ['--only=CA-NT', '--write', '--allow-create'], getDb: () => bad, loadDataset: async () => dsWithNt(), writeReceipt: badWriter }), /inside the git repository/);
+  assert.deepStrictEqual(bad.ops, [], 'nothing was read or written when the receipt location is unusable');
+  const failingReceipt = async () => { throw new Error('ENOSPC'); };
+  failingReceipt.preflight = async () => ({ dir: '/receipts' });
+  const noPreflight = async () => ({});
+  await assert.rejects(() => quietRun({ argv: ['--only=CA-NT', '--write', '--allow-create'], getDb: () => recordingDb(), loadDataset: async () => dsWithNt(), writeReceipt: noPreflight }), /receipt writer with a preflight check/);
+  const worse = await quietRun({ argv: ['--only=CA-NT', '--write', '--allow-create'], getDb: () => recordingDb(), loadDataset: async () => dsWithNt(), writeReceipt: failingReceipt });
+  assert.strictEqual(worse.results[0].status, 'CREATED_RECEIPT_FAILED');
+  assert.strictEqual(worse.exitCode, 1);
+});
+
+test('receipt writer: saved outside any repository, never overwrites, verified by read-back, no credentials, only NT/NU receipts, preflight probe leaves nothing behind', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cv-receipt-'));
+  try {
+    const { db } = await createNt();
+    const snap = await db.collection('subnational_tax_exempt_entities').doc('CA-NT').get();
+    const receipt = RCPT.buildReceipt({ id: 'CA-NT', projectId: 'civic-voice-5ea94', data: snap.data(), createTime: snap.createTime, updateTime: snap.updateTime, now: NOW });
+    const write = RCPT.createLocalReceiptWriter({ dir, now: () => NOW });
+    await write.preflight();
+    assert.deepStrictEqual(fs.readdirSync(dir), [], 'the preflight probe was deleted again');
+    const a = await write({ receipt });
+    const b = await write({ receipt });
+    assert.notStrictEqual(a.path, b.path, 'a second receipt never overwrites the first');
+    assert.deepStrictEqual(JSON.parse(fs.readFileSync(a.path, 'utf8')), receipt);
+    assert.match(path.basename(a.path), /^created__CA-NT__.*\.receipt\.json$/);
+    for (const id of ['CA-ON', 'CA-YT', 'CA-BC']) assert.throws(() => RCPT.buildReceipt({ id, projectId: 'civic-voice-5ea94', data: snap.data(), createTime: snap.createTime, updateTime: snap.updateTime }), /only CA-NT and CA-NU/);
+    await assert.rejects(() => write({ receipt: { ...receipt, document: { ...receipt.document, id: 'CA-ON', path: 'subnational_tax_exempt_entities/CA-ON' } } }), /not one of CA-NT, CA-NU/);
+    await assert.rejects(() => write({ receipt: { ...receipt, stored: { ...receipt.stored, verification_status: '-----BEGIN ' + 'PRIVATE KEY----- x' } } }), /credential-like material/);
+    const inRepo = RCPT.createLocalReceiptWriter({ dir: path.join(__dirname, '..', 'receipts-should-never-exist') });
+    await assert.rejects(() => inRepo({ receipt }), /inside the git repository/);
+    await assert.rejects(() => inRepo.preflight(), /inside the git repository/);
+    assert.ok(!fs.existsSync(path.join(__dirname, '..', 'receipts-should-never-exist')));
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+const rollbackFixture = async () => {
+  const { db, writeReceipt } = await createNt();
+  const receipt = writeReceipt.saved[0];
+  return { db, receipt, token: RCPT.confirmationToken(receipt) };
+};
+const rollbackWith = (over) => RB.rollbackCreated({ toTimestamp: toTs, projectId: 'civic-voice-5ea94', writeBackup: memBackup(), ...over });
+
+test('ROLLBACK dry run: verifies the document is the untouched one this rollout created, prints the token, deletes nothing', async () => {
+  const { db, receipt, token } = await rollbackFixture();
+  db.ops.length = 0;
+  const r = await rollbackWith({ db, receipt, write: false });
+  assert.strictEqual(r.status, 'DRY_RUN', r.error);
+  assert.strictEqual(r.confirmation_token, token);
+  assert.deepStrictEqual(db.ops, [['get', NT_PATH]], 'one read of one document, no delete');
+  assert.ok(NT_PATH in db.store);
+});
+
+test('ROLLBACK delete: needs the exact token, saves a full backup first, deletes only CA-NT with a lastUpdateTime precondition, verifies it is gone, and touches no other document', async () => {
+  const { db, receipt, token } = await rollbackFixture();
+  const other = 'subnational_tax_exempt_entities/CA-YT';
+  db.store[other] = legacyDoc('CA-YT'); // an unrelated live-like document in the same stub
+  const before = JSON.parse(JSON.stringify(db.store[other]));
+  for (const confirm of [null, '', 'CA-NT:000000000000', 'CA-NU:' + token.slice(6), token.toLowerCase().replace('ca-nt', 'CA-nt')]) {
+    const bk = memBackup();
+    const refused = await rollbackWith({ db, receipt, write: true, confirm, writeBackup: bk });
+    assert.strictEqual(refused.status, 'REFUSED_NOT_AUTHORIZED', String(confirm));
+    assert.ok(NT_PATH in db.store && bk.saved.length === 0);
+  }
+  db.ops.length = 0;
+  const bk = memBackup();
+  const r = await rollbackWith({ db, receipt, write: true, confirm: token, writeBackup: bk });
+  assert.strictEqual(r.status, 'DELETED', r.error);
+  assert.deepStrictEqual(r.verification, { document_gone: true });
+  assert.ok(!(NT_PATH in db.store));
+  assert.strictEqual(bk.saved.length, 1);
+  assert.strictEqual(bk.saved[0].docId, 'CA-NT');
+  assert.strictEqual(RCPT.dataSha256(bk.saved[0].data), receipt.data_sha256, 'the backup is the complete created document');
+  const del = db.ops.filter((o) => o[0] === 'delete');
+  assert.deepStrictEqual(del, [['delete', NT_PATH, toTs(receipt.firestore.update_time)]], 'exactly one delete, of CA-NT, with the receipt updateTime as precondition');
+  assert.deepStrictEqual(db.ops.map((o) => o[1]).filter((p) => p !== NT_PATH), [], 'no other document was read or written');
+  assert.deepStrictEqual(db.store[other], before, 'the unrelated document is untouched');
+});
+
+test('ROLLBACK refuses (deletes nothing) when the document was modified, re-created, has foreign fields, or is missing', async () => {
+  const cases = {
+    'modified after creation': async (db) => { await db.collection('subnational_tax_exempt_entities').doc('CA-NT').set({ note: 'edited later' }, { mergeFields: ['note'] }); },
+    'edited back to identical data (updateTime still differs)': async (db) => { const cur = db.store[NT_PATH]; await db.collection('subnational_tax_exempt_entities').doc('CA-NT').set({ note: cur.note }, { mergeFields: ['note'] }); },
+    'foreign field added': async (db) => { await db.collection('subnational_tax_exempt_entities').doc('CA-NT').set({ stray: 1 }, { mergeFields: ['stray'] }); },
+    're-created with identical data (createTime differs)': async (db) => { const copy = JSON.parse(JSON.stringify(db.store[NT_PATH])); delete db.store[NT_PATH]; await db.collection('subnational_tax_exempt_entities').doc('CA-NT').create(copy); },
+  };
+  for (const [name, mutate] of Object.entries(cases)) {
+    const { db, receipt, token } = await rollbackFixture();
+    await mutate(db);
+    const snapshot = JSON.stringify(db.store[NT_PATH]);
+    db.ops.length = 0;
+    const bk = memBackup();
+    for (const write of [false, true]) {
+      const r = await rollbackWith({ db, receipt, write, confirm: write ? token : null, writeBackup: bk });
+      assert.strictEqual(r.status, 'REFUSED_CHANGED', name);
+      assert.ok(r.problems.length >= 1, name);
+    }
+    assert.ok(!kinds(db).includes('delete'), name);
+    assert.strictEqual(JSON.stringify(db.store[NT_PATH]), snapshot, name + ': the document is unchanged');
+    assert.strictEqual(bk.saved.length, 0);
+  }
+  const { db, receipt, token } = await rollbackFixture();
+  delete db.store[NT_PATH];
+  const gone = await rollbackWith({ db, receipt, write: true, confirm: token });
+  assert.strictEqual(gone.status, 'REFUSED_MISSING');
+});
+
+test('ROLLBACK is atomic against a late change: the delete precondition makes Firestore refuse it, the document stays', async () => {
+  const { db, receipt, token } = await rollbackFixture();
+  // simulate a write landing between the check (get) and the delete by wrapping the first get
+  const real = db.collection('subnational_tax_exempt_entities').doc('CA-NT');
+  const col = db.collection.bind(db);
+  let tampered = false;
+  db.collection = (name) => { const c = col(name); const doc = c.doc.bind(c); return { ...c, doc: (id) => { const d = doc(id); return { ...d, get: async () => { const out = await d.get(); if (!tampered) { tampered = true; await real.set({ note: 'late edit' }, { mergeFields: ['note'] }); } return out; } }; } }; };
+  const r = await rollbackWith({ db, receipt, write: true, confirm: token });
+  assert.strictEqual(r.status, 'FAILED');
+  assert.match(r.error, /FAILED_PRECONDITION/);
+  assert.ok(NT_PATH in db.store);
+  assert.strictEqual(db.store[NT_PATH].note, 'late edit');
+});
+
+test('ROLLBACK refuses bad receipts: other documents (CA-ON, CA-YT, any live id), other collection, other project, tampered path, wrong live project, no backup writer, failing backup', async () => {
+  const { db, receipt, token } = await rollbackFixture();
+  const bads = [
+    { ...receipt, document: { collection: 'subnational_tax_exempt_entities', id: 'CA-ON', path: 'subnational_tax_exempt_entities/CA-ON' } },
+    { ...receipt, document: { collection: 'subnational_tax_exempt_entities', id: 'CA-YT', path: 'subnational_tax_exempt_entities/CA-YT' } },
+    { ...receipt, document: { collection: 'social_stats', id: 'CA-NT', path: 'social_stats/CA-NT' } },
+    { ...receipt, document: { ...receipt.document, path: 'subnational_tax_exempt_entities/CA-NU' } },
+    { ...receipt, firebase_project: 'other-project' },
+    { ...receipt, data_sha256: 'zz' },
+    { ...receipt, firestore: { create_time: null, update_time: null } },
+    { receipt_format: 2 }, null,
+  ];
+  for (const bad of bads) {
+    db.ops.length = 0;
+    const r = await rollbackWith({ db, receipt: bad, write: true, confirm: token });
+    assert.strictEqual(r.status, 'REFUSED_BAD_RECEIPT', JSON.stringify(bad).slice(0, 80));
+    assert.deepStrictEqual(db.ops, [], 'a bad receipt causes no Firestore access at all');
+  }
+  const wrong = await rollbackWith({ db, receipt, write: true, confirm: token, projectId: 'other-project' });
+  assert.strictEqual(wrong.status, 'REFUSED_WRONG_PROJECT');
+  const none = await rollbackWith({ db, receipt, write: true, confirm: token, writeBackup: undefined });
+  assert.strictEqual(none.status, 'ABORTED_NO_BACKUP');
+  const failing = await rollbackWith({ db, receipt, write: true, confirm: token, writeBackup: async () => { throw new Error('ENOSPC'); } });
+  assert.strictEqual(failing.status, 'ABORTED_BACKUP_FAILED');
+  assert.ok(NT_PATH in db.store && !kinds(db).includes('delete'));
+  // a CA-NU receipt is just as valid for NU, and cannot be pointed at NT
+  assert.deepStrictEqual(RCPT.CREATABLE_IDS, ['CA-NT', 'CA-NU']);
+});
+
+test('ROLLBACK arguments are strict, and a delete is impossible without --write AND --confirm', () => {
+  assert.deepStrictEqual(RB.parseRollbackArgs(['--receipt=r.json']), { receipt: 'r.json', write: false, confirm: null });
+  assert.deepStrictEqual(RB.parseRollbackArgs(['--receipt=r.json', '--write', '--confirm=CA-NT:abc']), { receipt: 'r.json', write: true, confirm: 'CA-NT:abc' });
+  for (const bad of [[], ['--write'], ['--receipt=r.json', '--write'], ['--receipt=r.json', '--confirm=x'], ['--receipt=a', '--receipt=b'], ['--receipt=r.json', '--write', '--write', '--confirm=x'], ['--receipt=r.json', '--force'], ['--only=CA-NT'], ['r.json']]) {
+    assert.throws(() => RB.parseRollbackArgs(bad), /Nothing was run/, JSON.stringify(bad));
+  }
+});
+
+test('rollback run(): project guard first, then one read; delete only with token; unrelated documents and the live-like ones are never touched', async () => {
+  const { db, receipt, token } = await rollbackFixture();
+  const readFile = () => JSON.stringify(receipt);
+  const guarded = await assert.rejects(() => ROLLBACK.run({ argv: ['--receipt=r.json'], readFile, getDb: () => db, verifyProject: badProject, writeBackup: memBackup(), toTimestamp: toTs, log: quiet }), /expected project/);
+  void guarded;
+  db.ops.length = 0;
+  const dry = await ROLLBACK.run({ argv: ['--receipt=r.json'], readFile, getDb: () => db, verifyProject: okProject, writeBackup: memBackup(), toTimestamp: toTs, log: quiet });
+  assert.strictEqual(dry.status, 'DRY_RUN');
+  assert.deepStrictEqual(db.ops, [['get', NT_PATH], ['terminate']]);
+  const done = await ROLLBACK.run({ argv: ['--receipt=r.json', '--write', '--confirm=' + token], readFile, getDb: () => db, verifyProject: okProject, writeBackup: memBackup(), toTimestamp: toTs, log: quiet });
+  assert.strictEqual(done.status, 'DELETED');
+  assert.ok(!(NT_PATH in db.store));
+  await assert.rejects(() => ROLLBACK.run({ argv: ['--receipt=r.json'], readFile, getDb: () => null, verifyProject: okProject, log: quiet }), /credentials not found/);
+});
+
+test('assessCreated: every check refuses ON ITS OWN (createTime, updateTime, data hash, foreign field, missing), and the untouched document passes', async () => {
+  const { db, receipt } = await rollbackFixture();
+  const snap = await db.collection('subnational_tax_exempt_entities').doc('CA-NT').get();
+  assert.deepStrictEqual(RB.assessCreated(receipt, snap), [], 'the untouched document passes');
+  const mk = (over) => ({ exists: true, data: () => over.data || snap.data(), createTime: over.createTime || snap.createTime, updateTime: over.updateTime || snap.updateTime });
+  const only = (problems, re, label) => { assert.strictEqual(problems.length, 1, label + ': ' + JSON.stringify(problems)); assert.match(problems[0], re, label); };
+  only(RB.assessCreated(receipt, mk({ createTime: { seconds: 1, nanoseconds: 1 } })), /createTime differs/, 'createTime only');
+  only(RB.assessCreated(receipt, mk({ updateTime: { seconds: 1, nanoseconds: 1 } })), /updateTime differs/, 'updateTime only');
+  only(RB.assessCreated(receipt, mk({ data: { ...snap.data(), note: 'changed' } })), /data differs from the data hash/, 'data only');
+  const strayData = { ...snap.data(), stray: 1 };
+  const strayReceipt = RCPT.buildReceipt({ id: 'CA-NT', projectId: 'civic-voice-5ea94', data: strayData, createTime: snap.createTime, updateTime: snap.updateTime });
+  only(RB.assessCreated(strayReceipt, mk({ data: strayData })), /does not own: \[stray\]/, 'foreign field only');
+  assert.deepStrictEqual(RB.assessCreated(receipt, { exists: false }), ['the document does not exist (nothing to roll back)']);
+});
+
+test('after a rollback, the pre-delete backup restores the document exactly (the documented way back)', async () => {
+  const { db, receipt, token } = await rollbackFixture();
+  const original = JSON.parse(JSON.stringify(db.store[NT_PATH]));
+  const bk = memBackup();
+  const r = await rollbackWith({ db, receipt, write: true, confirm: token, writeBackup: bk });
+  assert.strictEqual(r.status, 'DELETED', r.error);
+  assert.ok(!(NT_PATH in db.store));
+  const file = { backup_format: 1, document: { collection: 'subnational_tax_exempt_entities', id: 'CA-NT', path: NT_PATH }, firebase_project: 'civic-voice-5ea94', data: bk.saved[0].data };
+  const res = await R.restoreOne({ db, backup: file, write: true, writeBackup: memBackup(), deleteField: () => DELETE });
+  assert.strictEqual(res.status, 'RESTORED', res.error);
+  assert.deepStrictEqual(db.store[NT_PATH], original);
+});
+
+test('static: a Firestore delete exists in exactly ONE place (the rollback library), carries a lastUpdateTime precondition, and is reachable only through the receipt-checked path', () => {
+  const strip = (f) => fs.readFileSync(path.join(__dirname, f), 'utf8').split('\n').filter((l) => !/^\s*(\*|\/\/|\/\*)/.test(l)).join('\n');
+  const files = fs.readdirSync(__dirname).filter((f) => f.endsWith('.cjs')).map((f) => f).concat(fs.readdirSync(path.join(__dirname, 'lib')).filter((f) => f.endsWith('.cjs')).map((f) => 'lib/' + f));
+  const deleters = files.filter((f) => /\bref\.delete\(|\.doc\([^)]*\)\.delete\(|\bdb\.recursiveDelete|\.listDocuments\(|\.deleteDocument/.test(strip(f)) && !/^test-/.test(f));
+  assert.deepStrictEqual(deleters.filter((f) => !/^lib\/charities-creation-rollback\.cjs$/.test(f)).filter((f) => !/legacy|^canada-(monthly|unemployment)/.test(f)).filter((f) => /charit|firestore-doc-backup|cra-list/.test(f)), [], 'no charity pipeline file other than the rollback library deletes anything');
+  const src = strip('lib/charities-creation-rollback.cjs');
+  assert.strictEqual((src.match(/\bref\.delete\(/g) || []).length, 1, 'exactly one delete call');
+  assert.match(src, /ref\.delete\(\{ lastUpdateTime: /);
+  assert.ok(!/\.where\(|collectionGroup|recursiveDelete|listDocuments|\.get\(\)\s*\.then/.test(src), 'no query or scan');
+  assert.match(src, /db\.collection\(COLLECTION\)\.doc\(id\)/, 'the only reference built is COLLECTION + the validated receipt id');
+});
+
+
 // ─── 9. legacy scripts ──────────────────────────────────────────────────────
 const LEGACY_SCRIPTS = ['canada-mvp-write.cjs', 'canada-bc-write.cjs', 'canada-ab-write-charities.cjs', 'canada-qc-write-charities.cjs', 'canada-sk-write-charities.cjs', 'canada-mb-write-charities.cjs', 'canada-ns-write-charities.cjs', 'canada-nb-write-charities.cjs', 'canada-nl-write-charities.cjs', 'canada-pe-write-charities.cjs', 'canada-yt-write-charities.cjs', 'canada-nt-write-charities.cjs', 'canada-nu-write-charities.cjs', 'canada-cvdata008-refresh.cjs', 'canada-monthly-runner.cjs', 'canada-unemployment-batch-write.cjs'];
-const NEW_SCRIPTS = ['canada-charities-replace.cjs', 'canada-charities-restore.cjs'];
+const NEW_SCRIPTS = ['canada-charities-replace.cjs', 'canada-charities-restore.cjs', 'canada-charities-created-rollback.cjs'];
 const LIB_CODES = ['ab', 'bc', 'mb', 'nb', 'nl', 'ns', 'nt', 'nu', 'on', 'pe', 'qc', 'sk', 'yt'];
 
 test('static: every legacy writer starts itself ONLY when executed directly (no unguarded top-level main())', () => {
@@ -809,7 +1135,7 @@ test('NO IMPORT-TIME EXECUTION: requiring every legacy writer, both new scripts 
 test('the replace and restore commands stop on an unsupported argument before connecting to anything (hermetic child process)', () => {
   const { file, dir } = hermeticPreload();
   try {
-    for (const [script, args] of [['canada-charities-replace.cjs', ['--dryrun']], ['canada-charities-replace.cjs', ['--write']], ['canada-charities-replace.cjs', ['--only=CA-XX']], ['canada-charities-restore.cjs', ['--write']], ['canada-charities-restore.cjs', ['--fil=x']]]) {
+    for (const [script, args] of [['canada-charities-replace.cjs', ['--dryrun']], ['canada-charities-replace.cjs', ['--write']], ['canada-charities-replace.cjs', ['--only=CA-XX']], ['canada-charities-restore.cjs', ['--write']], ['canada-charities-restore.cjs', ['--fil=x']], ['canada-charities-replace.cjs', ['--only=CA-YT', '--write', '--allow-create']], ['canada-charities-created-rollback.cjs', []], ['canada-charities-created-rollback.cjs', ['--receipt=x', '--write']], ['canada-charities-created-rollback.cjs', ['--receipt=x', '--confirm=y']], ['canada-charities-created-rollback.cjs', ['--receipt=x', '--force']]]) {
       const r = spawnSync(process.execPath, ['--require', file, path.join(__dirname, script), ...args], { encoding: 'utf8', cwd: dir, timeout: 60000 });
       const out = `${r.stdout}\n${r.stderr}`;
       assert.strictEqual(r.status, 1, `${script} ${args.join(' ')}\n${out}`);
