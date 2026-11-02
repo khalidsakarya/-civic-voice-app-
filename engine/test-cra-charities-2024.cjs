@@ -1156,6 +1156,76 @@ test('the replace command with a VALID dry-run argument is stopped by the hermet
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
+// ─── 10. the retired CA-NT / CA-NU legacy writers fail closed ────────────────────
+const RETIRED = [['canada-nt-write-charities.cjs', 'writeNtCharities', 'CA-NT'], ['canada-nu-write-charities.cjs', 'writeNuCharities', 'CA-NU']];
+
+test('RETIRED writers (NT, NU): running them directly exits 1 with a clear message BEFORE any other code runs — nothing is required, no Firestore, network, child process or report file (hermetic child process)', () => {
+  const { file: tripwire, dir } = hermeticPreload();
+  // second preload: records every module a retired script tries to load (anything other than the preloads themselves)
+  const recorder = path.join(dir, 'record-loads.cjs');
+  fs.writeFileSync(recorder, `
+    'use strict';
+    const Module = require('module');
+    const orig = Module._load;
+    const loaded = [];
+    Module._load = function (request, parent, ...rest) {
+      if (parent && /canada-n[tu]-write-charities\.cjs$/.test(parent.filename || '')) loaded.push(request);
+      return orig.call(this, request, parent, ...rest);
+    };
+    process.on('exit', () => process.stderr.write('\\nLOADED:' + JSON.stringify(loaded) + '\\n'));
+  `);
+  const reportsDir = path.join(__dirname, 'reports');
+  const listing = () => fs.readdirSync(reportsDir).sort().join('|');
+  const before = listing();
+  try {
+    for (const [script] of RETIRED) {
+      for (const args of [[], ['--write'], ['--only=CA-NT', '--write', '--allow-create'], ['anything']]) {
+        const r = spawnSync(process.execPath, ['--require', tripwire, '--require', recorder, path.join(__dirname, script), ...args], { encoding: 'utf8', cwd: dir, timeout: 60000 });
+        const out = r.stdout + '\n' + r.stderr;
+        const tag = script + ' ' + args.join(' ');
+        assert.strictEqual(r.status, 1, tag + '\n' + out);
+        assert.match(r.stderr, /DISABLED: this legacy writer .* retired on 2026-11-02 and can no longer write/, tag + '\n' + out);
+        assert.match(r.stderr, /canada-charities-replace\.cjs --only=CA-N[TU] --write --allow-create/, tag + ': points to the guarded pipeline');
+        assert.ok(!/LIVE-ACCESS-BLOCKED|Firebase connected|WRITTEN|fetching|writing to Firestore|WRITE SUMMARY|dotenv|injected env/i.test(out), tag + ' did work:\n' + out);
+        assert.match(r.stderr, /LOADED:\[\]/, tag + ': the script must not load a single module before refusing');
+      }
+    }
+    assert.strictEqual(listing(), before, 'no report file was created in engine/reports');
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('RETIRED writers (NT, NU): the exported function also refuses and never touches the database it is given; requiring the module has no effect', async () => {
+  for (const [script, fn, id] of RETIRED) {
+    const db = recordingDb({ ['subnational_tax_exempt_entities/' + id]: legacyDoc(id) }, { allowDelete: true });
+    const mod = require(path.join(__dirname, script));
+    assert.deepStrictEqual(Object.keys(mod).sort(), ['DISABLED_MESSAGE', fn].sort(), script + ' exports only the refusing function and the message');
+    await assert.rejects(() => mod[fn](db, new Date().toISOString()), /DISABLED: this legacy writer/);
+    await assert.rejects(() => mod[fn](), /DISABLED/);
+    assert.deepStrictEqual(db.ops, [], script + ': the database received no operation at all');
+    assert.deepStrictEqual(db.store['subnational_tax_exempt_entities/' + id], legacyDoc(id));
+  }
+});
+
+test('RETIRED writers (NT, NU): static — the guard is the first executable statement (before any require), no direct-run block remains, the original body is not exported, and the files are kept for history', () => {
+  for (const [script, fn] of RETIRED) {
+    const src = fs.readFileSync(path.join(__dirname, script), 'utf8').replace(/\r\n/g, '\n');
+    const code = src.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
+    const guard = code.indexOf('require.main === module');
+    const firstRequire = code.indexOf('require(');
+    assert.ok(guard > 0 && firstRequire > guard, script + ': the guard comes before the first require()');
+    assert.match(code, /if \(require\.main === module\) \{\s*console\.error\(DISABLED_MESSAGE\);\s*process\.exit\(1\);\s*\}/, script);
+    assert.ok(!/main\(\)\s*\.catch|^main\(\)/m.test(code), script + ': nothing starts main()');
+    assert.ok(!/module\.exports\s*=\s*\{[^}]*legacyWrite/.test(code), script + ': the original body is not exported');
+    assert.ok(new RegExp('async function ' + fn + '\\(\\) \\{\\s*throw new Error\\(DISABLED_MESSAGE\\);\\s*\\}').test(code), script + ': the exported function only throws');
+    assert.ok(/DISABLED \(2026-11-02\)/.test(src) && /legacyWrite(Nt|Nu)CharitiesDisabled/.test(src), script + ' is still in the repository, marked disabled, with its history');
+  }
+});
+
+test('RETIRED writers: the hermetic import test and the legacy-writer static test still cover them, and no OTHER legacy script was changed by retiring them', () => {
+  ['canada-nt-write-charities.cjs', 'canada-nu-write-charities.cjs'].forEach((f) => assert.ok(LEGACY_SCRIPTS.includes(f), f + ' stays in the legacy list'));
+  assert.ok(LEGACY_SCRIPTS.every((f) => fs.existsSync(path.join(__dirname, f))), 'every legacy script is still in the repository');
+});
+
 runQueue().then(() => {
   console.log(`\n${passed} passed, ${failed} failed (zero Firestore, zero network)`);
   if (failed > 0) process.exitCode = 1;

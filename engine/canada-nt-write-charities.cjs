@@ -1,7 +1,13 @@
 /**
  * ============================================================================
- * ⚠️  THIS SCRIPT WRITES TO FIRESTORE WHEN EXECUTED.  ⚠️
+ * ⛔  DISABLED (2026-11-02) — THIS SCRIPT NO LONGER RUNS.  ⛔
  * ============================================================================
+ *
+ * Kept in the repository for history only. Direct execution exits with an error BEFORE any other code runs
+ * (no require, no credentials, no Firestore, no network, no files). It was superseded by the guarded CRA 2024
+ * pipeline, which creates NT create-only with a receipt and a tested rollback:
+ *     node engine/canada-charities-replace.cjs --only=CA-NT --write --allow-create
+ * The notes below describe the ORIGINAL (1998-source, merge-write) behaviour and are no longer true.
  *
  * CA-NT (Northwest Territories) — CV-DATA-NT-002 CRA Charities write ONLY.
  *
@@ -46,6 +52,14 @@
 
 'use strict';
 
+// FAIL CLOSED: this must stay the first executable statement of the file.
+const DISABLED_MESSAGE = '[canada-nt-write-charities] DISABLED: this legacy writer (1998 source, merge-write) was retired on 2026-11-02 and can no longer write. '
+  + 'Use the guarded pipeline instead: node engine/canada-charities-replace.cjs --only=CA-NT --write --allow-create';
+if (require.main === module) {
+  console.error(DISABLED_MESSAGE);
+  process.exit(1);
+}
+
 const fs = require('fs');
 const path = require('path');
 
@@ -58,7 +72,7 @@ const COLLECTION = 'subnational_tax_exempt_entities';
 const JURISDICTION_ID = 'CA-NT';
 const VERIFICATION_ID = 'CV-REC-001-2026-09-07-CV-DATA-NT-002';
 
-async function writeNtCharities(db, writeAt) {
+async function legacyWriteNtCharitiesDisabled(db, writeAt) { // eslint-disable-line no-unused-vars -- kept for history; not exported
   const result = {
     dataset_id: 'CV-DATA-NT-002',
     dataset_name: 'CRA Charities Registry — Northwest Territories org-level extract (MVP: name/type/category)',
@@ -182,13 +196,10 @@ async function main() {
   if (result.status !== 'WRITTEN') process.exit(1);
 }
 
-// Only executes when run directly (`node engine/canada-nt-write-charities.cjs`).
-// require()-ing this module elsewhere never triggers a Firestore write.
-if (require.main === module) {
-  main().catch((err) => {
-    console.error('[canada-nt-write-charities] fatal:', err);
-    process.exit(1);
-  });
+// The direct-run block was removed: running this file exits at the guard at the top.
+// The exported function now refuses before touching the database it is given.
+async function writeNtCharities() {
+  throw new Error(DISABLED_MESSAGE);
 }
 
-module.exports = { writeNtCharities };
+module.exports = { writeNtCharities, DISABLED_MESSAGE };
