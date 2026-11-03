@@ -22,7 +22,7 @@
 
 'use strict';
 
-const { CREATABLE_IDS, buildReceipt, confirmationToken } = require('./charities-creation-receipt.cjs');
+const { CREATABLE_IDS, buildReceipt } = require('./charities-creation-receipt.cjs');
 
 const COLLECTION = 'subnational_tax_exempt_entities';
 
@@ -269,7 +269,7 @@ async function replaceOne({ db, jurisdiction, payload, write, allowCreate = fals
       else {
         try {
           receipt = buildReceipt({ id, projectId, data: stored, createTime: created.createTime, updateTime: created.updateTime });
-          result.receipt = { ...(await writeReceipt({ receipt })), confirmation_token: confirmationToken(receipt) };
+          result.receipt = await writeReceipt({ receipt }); // path, bytes, sha256 of the receipt file; no authorization is created here
         } catch (e) { receiptProblem = String(e.message || e).slice(0, 300); if (receipt) result.receipt_content = receipt; }
       }
       result.status = receiptProblem ? 'CREATED_RECEIPT_FAILED' : (problems.length ? 'CREATED_VERIFICATION_FAILED' : 'CREATED');

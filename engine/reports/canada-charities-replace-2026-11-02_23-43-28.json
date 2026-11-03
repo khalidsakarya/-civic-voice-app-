@@ -78,8 +78,7 @@
       "receipt": {
         "path": "C:\\Users\\jem91\\civic-voice-backups\\firestore\\created__CA-NU__2026-11-02T23-43-47-130Z.receipt.json",
         "bytes": 1327,
-        "sha256": "a0bc01d95895a8e35217b26c14ff2666a0384629afb8a317f33417e3ffbe861d",
-        "confirmation_token": "CA-NU:87628dddd1a0"
+        "sha256": "a0bc01d95895a8e35217b26c14ff2666a0384629afb8a317f33417e3ffbe861d"
       },
       "summary": {
         "jurisdiction_id": "CA-NU",

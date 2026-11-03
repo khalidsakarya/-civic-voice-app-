@@ -91,7 +91,7 @@ async function run({
     r.summary = p.summary;
     results.push(r);
     const s = p.summary;
-    log(`  ${r.status.padEnd(26)} ${p.jurisdiction.id}  ${s.selected} of ${s.total_in_source} charities, revenue ${s.revenue_min_cad} .. ${s.revenue_max_cad}${r.backup ? `  backup: ${r.backup.path}` : ''}${r.receipt ? `  receipt: ${r.receipt.path}  rollback token: ${r.receipt.confirmation_token}` : ''}${r.error ? `  — ${r.error}` : ''}`);
+    log(`  ${r.status.padEnd(26)} ${p.jurisdiction.id}  ${s.selected} of ${s.total_in_source} charities, revenue ${s.revenue_min_cad} .. ${s.revenue_max_cad}${r.backup ? `  backup: ${r.backup.path}` : ''}${r.receipt ? `  receipt: ${r.receipt.path}` : ''}${r.error ? `  — ${r.error}` : ''}`);
   }
 
   if (db && typeof db.terminate === 'function') await db.terminate();

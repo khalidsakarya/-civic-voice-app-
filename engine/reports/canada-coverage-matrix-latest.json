@@ -388,10 +388,10 @@
       },
       "charities": {
         "status": "CRA 2024 — LIVE AND VERIFIED",
-        "write_status": "CREATED 2026-11-02 via `node engine/canada-charities-replace.cjs --only=CA-NT --write --allow-create` (create-only; no document existed; creation receipt saved and preserved). 100 records ranked by revenue.",
+        "write_status": "CREATED 2026-11-02 via `node engine/canada-charities-replace.cjs --only=CA-NT --write --allow-create` (create-only; no document existed; creation receipt saved in the private backup directory, no copy in the repository). 100 records ranked by revenue.",
         "source_quality": "Excellent — CRA \"2024 List of charities\" (published 2026-04-30, yearly), 101 Northwest Territories charities, 100 shown ranked by reported total revenue; optional bn / revenue_cad / expenditures_cad / assets_cad / fiscal_period_end; no placeholder zeros.",
         "blocker_type": "written/live",
-        "detail": "Verified by one targeted read (12/12 checks incl. receipt cross-check) and the live modal (\"Official snapshot\", \"100 organizations\", no $0, no console errors). Compliance record: compliance/records/CV-REC-001-2026-11-02-CV-DATA-NT-002-CRA2024 NT CRA Charities Verification.md. Creation receipt: compliance/receipts/created__CA-NT__2026-11-02T23-46-05-927Z.receipt.json (original in ~/civic-voice-backups/firestore). Rollback was not executed."
+        "detail": "Verified by one targeted read (12/12 checks incl. receipt cross-check) and the live modal (\"Official snapshot\", \"100 organizations\", no $0, no console errors). Compliance record: compliance/records/CV-REC-001-2026-11-02-CV-DATA-NT-002-CRA2024 NT CRA Charities Verification.md. Creation receipt: stored privately in ~/civic-voice-backups/firestore (created__CA-NT__2026-11-02T23-46-05-927Z.receipt.json); no copy in the repository. Rollback was not executed and no rollback authorization has been issued."
       },
       "grants": {
         "status": "NOT_FOUND — closest candidate is stale and narrow; Public Accounts mostly PDF",
@@ -416,10 +416,10 @@
       },
       "charities": {
         "status": "CRA 2024 — LIVE AND VERIFIED",
-        "write_status": "CREATED 2026-11-02 via `node engine/canada-charities-replace.cjs --only=CA-NU --write --allow-create` (create-only; no document existed; creation receipt saved and preserved). 35 records ranked by revenue.",
+        "write_status": "CREATED 2026-11-02 via `node engine/canada-charities-replace.cjs --only=CA-NU --write --allow-create` (create-only; no document existed; creation receipt saved in the private backup directory, no copy in the repository). 35 records ranked by revenue.",
         "source_quality": "Excellent — CRA \"2024 List of charities\" (published 2026-04-30, yearly), 35 Nunavut charities, 35 shown ranked by reported total revenue; optional bn / revenue_cad / expenditures_cad / assets_cad / fiscal_period_end; no placeholder zeros.",
         "blocker_type": "written/live",
-        "detail": "Verified by one targeted read (12/12 checks incl. receipt cross-check) and the live modal (\"Official snapshot\", \"35 organizations\", no $0, no console errors). Compliance record: compliance/records/CV-REC-001-2026-11-02-CV-DATA-NU-002-CRA2024 NU CRA Charities Verification.md. Creation receipt: compliance/receipts/created__CA-NU__2026-11-02T23-43-47-130Z.receipt.json (original in ~/civic-voice-backups/firestore). Rollback was not executed."
+        "detail": "Verified by one targeted read (12/12 checks incl. receipt cross-check) and the live modal (\"Official snapshot\", \"35 organizations\", no $0, no console errors). Compliance record: compliance/records/CV-REC-001-2026-11-02-CV-DATA-NU-002-CRA2024 NU CRA Charities Verification.md. Creation receipt: stored privately in ~/civic-voice-backups/firestore (created__CA-NU__2026-11-02T23-43-47-130Z.receipt.json); no copy in the repository. Rollback was not executed and no rollback authorization has been issued."
       },
       "grants": {
         "status": "NOT_FOUND — no open data portal exists at all",
@@ -664,7 +664,7 @@
       "3. Selection and wording: \"first 100 in file order\" is not a \"top\" list. Either rank by a real measure once financials exist, or sort alphabetically, and change the wording to \"Showing N of M registered charities\".",
       "4. Rewrite plan: re-write the 11 existing charity documents through a guarded, backed-up script (merge replaces the records array); hold the NT and NU charities writes until the source decision is made."
     ],
-    "status": "RESOLVED — all 13 provincial and territorial charity documents are on the CRA 2024 list and verified: YT (2026-10-27); BC, AB, SK, QC, MB, NS, ON, NB, NL (2026-10-31); PE, NU, NT (2026-11-02). CA-NU and CA-NT were created (create-only) with preserved receipts. Details: engine/reports/canada-charities-2024-prepared-latest.json.",
+    "status": "RESOLVED — all 13 provincial and territorial charity documents are on the CRA 2024 list and verified: YT (2026-10-27); BC, AB, SK, QC, MB, NS, ON, NB, NL (2026-10-31); PE, NU, NT (2026-11-02). CA-NU and CA-NT were created (create-only) with receipts preserved privately outside the repository. Details: engine/reports/canada-charities-2024-prepared-latest.json.",
     "yukon_pilot": {
       "result": "PASSED",
       "date": "2026-10-27",

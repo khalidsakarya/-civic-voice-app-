@@ -613,7 +613,7 @@
     "documents_not_yet_existing": 2,
     "records_prepared": 1235
   },
-  "status": "COMPLETE: all 13 provincial/territorial charity documents are on the CRA 2024 list and verified (YT 2026-10-27; BC, AB, SK, QC, MB, NS, ON, NB, NL 2026-10-31; PE, NU, NT 2026-11-02). Backlog: Legal Name vs Account Name secondary text. No rollback executed.",
+  "status": "COMPLETE: all 13 provincial/territorial charity documents are on the CRA 2024 list and verified (YT 2026-10-27; BC, AB, SK, QC, MB, NS, ON, NB, NL 2026-10-31; PE, NU, NT 2026-11-02). Backlog: Legal Name vs Account Name secondary text. No rollback executed. Security fix applied 2026-11-02: rollback authorization hardened; disclosed tokens invalid; receipts removed from the repository.",
   "firestore_dry_run_2026_10_27": {
     "generated_at": "2026-10-27T01:09:05.020Z",
     "command": "node engine/canada-charities-replace.cjs --only=CA-ON,CA-BC,CA-AB,CA-QC,CA-SK,CA-MB,CA-NS,CA-NB,CA-NL,CA-PE,CA-NT,CA-NU   (dry run: 12 targeted reads, 0 writes)",
@@ -1720,31 +1720,34 @@
         "Create-only: an existing document is refused (ABORTED_ALREADY_EXISTS); the write is Firestore create(), which itself fails if the document exists, so there is no check-then-write race.",
         "The write is the full 16-field payload; no mergeFields/merge, no other document, no collection query, no delete in the creation path.",
         "Writes still need an explicit --write AND --only; nothing runs on import; project guard runs before the first read.",
-        "A receipt writer is proven usable (written, read back, deleted) BEFORE the first Firestore operation; the run stops if it is not. After creation the document is read back, verified and a creation receipt (createTime, updateTime, SHA-256 of the stored data, verification_status, fetched_at) is saved outside the repository and printed with a rollback token.",
+        "A receipt writer is proven usable (written, read back, deleted) BEFORE the first Firestore operation; the run stops if it is not. After creation the document is read back, verified and a creation receipt (createTime, updateTime, SHA-256 of the stored data, verification_status, fetched_at) is saved in the private backup directory, outside the repository. A receipt carries no rollback authorization.",
         "If the receipt cannot be saved after the document was created, the run reports CREATED_RECEIPT_FAILED (exit code 1) and keeps the full receipt in its output so it can be saved by hand."
       ]
     },
     "rollback": {
       "scripts": [
+        "engine/canada-charities-rollback-authorize.cjs",
         "engine/canada-charities-created-rollback.cjs",
+        "engine/lib/charities-rollback-authorization.cjs",
         "engine/lib/charities-creation-rollback.cjs",
         "engine/lib/charities-creation-receipt.cjs"
       ],
       "applies_only_to": "subnational_tax_exempt_entities/CA-NT and /CA-NU",
+      "revision": "Hardened on 2026-11-02 (see security_incident_2026_11_02): the first design used a deterministic confirmation token derived from public data. That scheme was REMOVED; its two published values are permanently disclosed and rejected.",
       "refuses_unless_all_true": [
-        "a valid creation receipt names the document (format, kind, collection, id in {CA-NT, CA-NU}, project civic-voice-5ea94)",
+        "a valid creation receipt (private directory) names the document (format, kind, collection, id in {CA-NT, CA-NU}, project civic-voice-5ea94)",
         "the live Firebase project equals the receipt project (guard verified)",
+        "a PRIVATE authorization file, issued by a separate explicit command for exactly this receipt, document and project, verifies (random 256-bit nonce, HMAC-SHA256 under a random private key held only in the private directory); retired-format tokens and anything derived from the receipt, hash, id or timestamps are rejected",
+        "the operator confirms the exact Firebase project (--confirm-project) and the exact document path (--confirm-document); a valid authorization alone cannot delete",
         "the document exists and its createTime AND updateTime equal the receipt (same instance, never re-created, never modified)",
-        "SHA-256 of its current data equals the receipt; verification_status and fetched_at match",
-        "it holds no field the process does not own",
-        "--write and --confirm=<token> (id + first 12 hex of the data hash, printed by the dry run) were both given",
+        "SHA-256 of its current data equals the receipt; verification_status and fetched_at match; no foreign fields",
         "a full-document backup was saved and verified first (restorable with engine/canada-charities-restore.cjs)"
       ],
       "delete_is_atomic": "ref.delete({ lastUpdateTime }) — Firestore refuses it server-side if the document changed between the check and the delete; the document is re-read to confirm it is gone.",
-      "never": "It cannot delete any other document: the only reference built is COLLECTION + the validated receipt id; no query, no scan; this is the only file in the project containing a Firestore delete (static test).",
+      "never": "It cannot delete any other document: the only reference built is COLLECTION + the validated receipt id; no query, no scan; this is the only file in the project containing a Firestore delete (static test). No secret value is ever printed, logged or returned.",
       "dry_run_default": true
     },
-    "tests": "64 engine tests, 0 failed (zero Firestore, zero network). 17 mutation checks on the creation and rollback code (existing document overwritable, set instead of create, any id creatable in replaceOne and in the argument parser, receipt not required, preflight skipped, receipt for any id, createTime / updateTime / data hash / foreign fields / token / backup / project not checked, delete without precondition, dry run deleting): all caught. The UI compatibility suite adds 18 tests on the real NT/NU documents (30 util tests in total pass).",
+    "tests": "64 engine tests, 0 failed (zero Firestore, zero network). 17 mutation checks on the creation and rollback code (existing document overwritable, set instead of create, any id creatable in replaceOne and in the argument parser, receipt not required, preflight skipped, receipt for any id, createTime / updateTime / data hash / foreign fields / authorization / backup / project not checked, delete without precondition, dry run deleting): all caught. The UI compatibility suite adds 18 tests on the real NT/NU documents (30 util tests in total pass).",
     "ui_compatibility": {
       "today": "Both modals show the honest empty state (\"Official snapshot — Not loaded yet … This screen does not show placeholder or generated rows.\"), no rows, no dollar text, no console errors (checked live on 2026-11-02).",
       "after_creation_by_test": "With the exact documents that would be stored: all 100 / 35 records reach the table in ranked order; source line names \"2024 List of charities\" with the 2024 reporting period; NT reads \"Showing 100 of 101 charities (largest by revenue)\"; NU (all 35 shown) reads \"Official tax-exempt registry listing\"; no rawValue, no dollar text, \"Financial value not displayed in MVP\" logic applies (CRA dataset detected); the NT charity with no revenue is kept without an invented value; identical names are all shown (rows are keyed by index).",
@@ -1765,8 +1768,8 @@
       },
       {
         "step": "rollback (only if ever needed and separately authorized)",
-        "command": "node engine/canada-charities-created-rollback.cjs --receipt=<created__CA-XX__<timestamp>.receipt.json>   (dry run, prints the token)  then  --write --confirm=<token>",
-        "note": "never run automatically"
+        "command": "node engine/canada-charities-rollback-authorize.cjs --receipt=<receipt>   then   node engine/canada-charities-created-rollback.cjs --receipt=<receipt> --write --authorization-file=<private file> --confirm-project=civic-voice-5ea94 --confirm-document=subnational_tax_exempt_entities/CA-XX",
+        "note": "never run automatically; a dry run (no authorization needed) is the first step"
       }
     ],
     "estimated_firestore_operations": {
@@ -1776,7 +1779,7 @@
       "document_sizes": "NT 28.6 KB, NU 10.8 KB (limit 1 MiB)"
     },
     "unresolved_risks": [
-      "Creating a document is a production write that this tooling can only undo by DELETING it (the new rollback); that deletion needs its own explicit authorization (--write plus the token).",
+      "Creating a document is a production write that this tooling can only undo by DELETING it (the rollback); that deletion needs its own explicit authorization (a separately issued private authorization plus exact project and document confirmation).",
       "The old dedicated writers engine/canada-nt-write-charities.cjs and engine/canada-nu-write-charities.cjs can still be run directly (they delegate to the 2024 builder but merge-write without a receipt, backup or the new guards). Recommend disabling or deleting them before creation; not changed in this step.",
       "NT shows 11 rows named \"THE BISHOP OF THE ARCTIC\" and 4 \"THE ROMAN CATHOLIC EPISCOPAL CORPORATION OF MACKENZIE…\" (Legal Name of a registrant with many parish accounts). Account Name would disambiguate them; that enhancement is in the backlog and was not applied.",
       "NT #100 (Canada-Ghana Education Project) reports no revenue, and #100/#1 spread includes a charity reporting $20 revenue (GIRLS NEED CAMPS): both are exactly as the source states.",
@@ -1802,12 +1805,10 @@
         "status": "CREATED",
         "run_report": "engine/reports/canada-charities-replace-2026-11-02_23-43-28.json",
         "receipt": {
-          "file": "compliance/receipts/created__CA-NU__2026-11-02T23-43-47-130Z.receipt.json",
-          "original": "~/civic-voice-backups/firestore/created__CA-NU__2026-11-02T23-43-47-130Z.receipt.json",
+          "stored": "~/civic-voice-backups/firestore/created__CA-NU__2026-11-02T23-43-47-130Z.receipt.json (private; no copy in the repository)",
           "bytes": 1327,
-          "data_sha256": "87628dddd1a00c5017c95af67cab8edb4ec67036603439034d0e7dbcd57fe0b9",
-          "firestore_create_time": "2026-11-02T23:43:48.501Z",
-          "rollback_token_not_used": "CA-NU:87628dddd1a0"
+          "receipt_file_sha256": "a0bc01d95895a8e35217b26c14ff2666a0384629afb8a317f33417e3ffbe861d",
+          "firestore_create_time": "2026-11-02T23:43:48.500Z"
         },
         "targeted_read": "12/12 checks passed: records deep-equal a fresh rebuild; metadata; revenue ranking; count; no rawValue; unique valid BNs; exactly 16 owned fields; createTime = updateTime; receipt matches the live document (create/update times, data hash, verification_status, fetched_at)",
         "live_modal": {
@@ -1839,12 +1840,10 @@
         "status": "CREATED",
         "run_report": "engine/reports/canada-charities-replace-2026-11-02_23-45-50.json",
         "receipt": {
-          "file": "compliance/receipts/created__CA-NT__2026-11-02T23-46-05-927Z.receipt.json",
-          "original": "~/civic-voice-backups/firestore/created__CA-NT__2026-11-02T23-46-05-927Z.receipt.json",
+          "stored": "~/civic-voice-backups/firestore/created__CA-NT__2026-11-02T23-46-05-927Z.receipt.json (private; no copy in the repository)",
           "bytes": 1329,
-          "data_sha256": "53c87b2499c92f5a0e91624ac708cfcecf0b0fe2aa26800f7338d4e98e3b057f",
-          "firestore_create_time": "2026-11-02T23:46:07.262Z",
-          "rollback_token_not_used": "CA-NT:53c87b2499c9"
+          "receipt_file_sha256": "cfd318d991b7da5e073ffdb316d7c291abb65edc81719e78041deabc2971c154",
+          "firestore_create_time": "2026-11-02T23:46:07.262Z"
         },
         "targeted_read": "12/12 checks passed: records deep-equal a fresh rebuild; metadata; revenue ranking; count; no rawValue; unique valid BNs; exactly 16 owned fields; createTime = updateTime; receipt matches the live document (create/update times, data hash, verification_status, fetched_at)",
         "live_modal": {
@@ -1870,6 +1869,22 @@
         }
       }
     ],
-    "exact_operations_total": "NU: 3 dry-run reads + 2 reads + 1 create + 1 verification read; NT: 4 dry-run reads + 2 reads + 1 create + 1 verification read; 2 receipt files; plus 3 app reads per live modal open (economic, tax, grants). No deletes, no rollback, no other document touched, no scheduler activated."
+    "exact_operations_total": "NU: 3 dry-run reads + 2 reads + 1 create + 1 verification read; NT: 4 dry-run reads + 2 reads + 1 create + 1 verification read; 2 receipt files; plus 3 app reads per live modal open (economic, tax, grants). No deletes, no rollback, no other document touched, no scheduler activated.",
+    "receipts_note": "The two creation receipts are kept only in the private backup directory. Copies committed on 2026-11-02 (commit fe71770) were removed from the working tree by the forward security fix; earlier commits remain publicly accessible."
+  },
+  "security_incident_2026_11_02": {
+    "summary": "Commit fe71770 (pushed to the public repository on 2026-11-02) contained the two creation receipt copies and two deterministic rollback-confirmation tokens (document id + the first 12 hex characters of the receipt data hash), plus the full data hashes, in the compliance records and reports.",
+    "risk_assessment": "The values are a typed confirmation, not credentials: a rollback also required Firebase Admin credentials for civic-voice-5ea94 (never in the repository), an unchanged document, the project guard and a verified backup. Both documents were unchanged and no rollback was ever executed. They were nevertheless derivable from public data and are treated as permanently disclosed.",
+    "remediation": [
+      "The two receipt copies were removed from the tracked repository (originals preserved in the private backup directory).",
+      "Token values and full data hashes were removed from all tracked compliance records, prepared/run reports and the coverage matrix; non-sensitive audit references (receipt file name, receipt-file SHA-256, Firestore createTime, record counts) were kept.",
+      "The rollback authorization was replaced: random 256-bit nonce + HMAC under a random private key, stored only in the private directory, issued by a separate command, never printed or logged; deterministic tokens are rejected; the exact project and document must be confirmed; a token/authorization alone cannot delete; all receipt, project, createTime, updateTime, data-hash, backup and delete-precondition checks remain.",
+      "Git history was NOT rewritten and main was NOT force-pushed (explicit decision)."
+    ],
+    "old_values_status": "INVALID: the old token format is rejected by the new implementation (tested), and no value derived from a document id, hash, timestamp or other public metadata can authorize a rollback.",
+    "history_notice": "Historical commits (including fe71770) remain publicly accessible and still contain the disclosed values. They carry no authority under the new implementation.",
+    "references": [
+      "engine/reports/canada-charities-2024-prepared-latest.json → security_incident_2026_11_02, and compliance/security/SEC-2026-11-02-rollback-authorization-disclosure.md"
+    ]
   }
 }

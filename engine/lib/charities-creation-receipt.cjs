@@ -2,7 +2,8 @@
  * Creation receipts for NEWLY CREATED charity documents (CA-NT, CA-NU only).
  *
  * A receipt is what lets a later rollback prove "this exact document was created by this exact rollout and
- * nobody has changed it since". It records the Firestore createTime and updateTime of the document as read
+ * nobody has changed it since". It carries NO authorization: a rollback additionally needs a separately issued,
+ * private authorization (charities-rollback-authorization.cjs) and nothing here may be used to derive one. It records the Firestore createTime and updateTime of the document as read
  * back right after creation, plus a SHA-256 over the canonical form of the stored data.
  *
  * Properties (each covered by tests):
@@ -91,9 +92,6 @@ function validateReceipt(r) {
   return problems;
 }
 
-/** The token a human must type to authorize one specific rollback: id plus the first 12 hex characters of the data hash. */
-const confirmationToken = (receipt) => `${receipt.document.id}:${receipt.data_sha256.slice(0, 12)}`;
-
 /**
  * @returns {{ (args: { receipt: object }) => Promise<{ path: string, bytes: number, sha256: string }>, preflight: () => Promise<{ dir: string }> }}
  */
@@ -138,5 +136,5 @@ function createLocalReceiptWriter({ dir = resolveBackupDir(), now = () => new Da
 module.exports = {
   RECEIPT_FORMAT, RECEIPT_KIND, COLLECTION, CREATABLE_IDS,
   canonicalJson, dataSha256, timestampToParts, sameTimestamp,
-  buildReceipt, validateReceipt, confirmationToken, createLocalReceiptWriter,
+  buildReceipt, validateReceipt, createLocalReceiptWriter,
 };

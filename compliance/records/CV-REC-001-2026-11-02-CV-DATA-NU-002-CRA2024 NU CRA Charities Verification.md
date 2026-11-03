@@ -55,7 +55,7 @@
 | V-14 | Targeted read-back after creation | Pass | One read of `CA-NU` (12 of 12 checks): 35 records deep-equal a fresh rebuild from the official source; 2024 source metadata correct; revenue descending; no `rawValue`; valid unique BNs; exactly the 16 owned fields, none unexpected; createTime = updateTime (never modified) |
 | V-15 | Live UI | Pass | Nunavut "Tax Exempt / Charities" modal: "Official snapshot"; "35 organizations"; Official tax-exempt registry listing (all 35 charities are shown, so no "Showing N of M" line is expected); 35 rows numbered 1–35 in order, #1 NUNAVUT ARCTIC COLLEGE, #35 THE IQALUIT COMMUNITY GREENHOUSE SOCIETY; every row "Financial value not displayed in MVP"; no dollar text; source line names "2024 List of charities"; no "Not loaded yet" state; no console errors |
 | V-16 | No obsolete data | Pass | The document did not exist before; no 1998 data was ever stored (no reference to the 1998 package) |
-| V-17 | Creation receipt | Pass | `C:\Users\jem91\civic-voice-backups\firestore\created__CA-NU__2026-11-02T23-43-47-130Z.receipt.json` (1327 bytes; outside any git repository; copy preserved in `compliance/receipts/created__CA-NU__2026-11-02T23-43-47-130Z.receipt.json`). Records Firestore createTime/updateTime, SHA-256 of the stored data (`87628dddd1a00c5017c95af67cab8edb4ec67036603439034d0e7dbcd57fe0b9`), verification_status and fetched_at; all matched the live document. Rollback token (not used): `CA-NU:87628dddd1a0` |
+| V-17 | Creation receipt | Pass | A creation receipt (Firestore createTime/updateTime, data hash, verification_status, fetched_at; 1327 bytes) was saved in the private backup directory `~/civic-voice-backups/firestore/created__CA-NU__2026-11-02T23-43-47-130Z.receipt.json`, outside any git repository, and matched the live document at creation. **The repository holds no copy of the receipt** (a copy committed on 2026-11-02 was removed; see the security note below). Audit reference: SHA-256 of the receipt file `a0bc01d95895a8e35217b26c14ff2666a0384629afb8a317f33417e3ffbe861d`; Firestore createTime 2026-11-02T23:43:48.500Z. |
 | V-18 | Legacy writer retired | Pass | `engine/canada-nu-write-charities.cjs` fails closed on direct execution (commit 0aada56) before this creation |
 
 ---
@@ -78,7 +78,7 @@ Created at `subnational_tax_exempt_entities/CA-NU` with `create(payload)` — ex
 - Removed / replaced: none (new document). No other document was written.
 - Operations: 3 dry-run reads before creation (0 writes); creation run: 2 reads (existence check, read-back) + 1 create; 1 verification read; 1 receipt file; the live modal reads 3 small documents each time it opens. No delete, no query, no rollback executed.
 - Run report: `engine/reports/canada-charities-replace-2026-11-02_23-43-28.json`.
-- Rollback (NOT executed; separately authorized only): `node engine/canada-charities-created-rollback.cjs --receipt=<receipt>` (dry run prints the token), then `--write --confirm=CA-NU:87628dddd1a0`.
+- Rollback: NOT executed. A rollback requires a separately issued private authorization plus explicit confirmation of the exact Firebase project and document (`engine/canada-charities-rollback-authorize.cjs`, `engine/canada-charities-created-rollback.cjs`); no authorization has been issued for this document.
 
 ---
 
@@ -86,6 +86,7 @@ Created at `subnational_tax_exempt_entities/CA-NU` with `create(payload)` — ex
 
 - All 35 Nunavut charities in the source are shown; all 35 report revenue; no repeated names.
 - With this document, all 13 provincial and territorial charity documents are on the CRA 2024 list.
+- **Security note (2026-11-02):** the first version of this record and a copy of the creation receipt were published with deterministic rollback-confirmation values. Those values are permanently disclosed and are INVALID: the rollback mechanism was replaced by a private, randomly generated authorization, and the repository no longer holds receipt copies or any rollback value. Earlier commits remain publicly accessible (history was not rewritten). Details: compliance/security/SEC-2026-11-02-rollback-authorization-disclosure.md.
 - Service worker: a browser holding the previous app bundle may show old labels until its service worker updates; the data is read live and is correct immediately.
 - Display caveat: the name shown is the registered Legal Name, which for some registrants differs from the CRA "Account Name" (see `engine/reports/canada-charities-2024-prepared-latest.json`; showing Account Name as secondary text is a backlog item, not implemented).
 
