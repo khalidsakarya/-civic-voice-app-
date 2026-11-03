@@ -228,6 +228,14 @@ describe('reload-loop prevention', () => {
     expect(reload).toHaveBeenCalledTimes(1);
   });
 
+  test('a guard timestamp in the FUTURE (the clock was moved back) does not block a legitimate update (found in a real-browser run)', () => {
+    const { controller, container, reload } = waitingSetup({ storage: makeStorage({ [RELOAD_GUARD_KEY]: String(1_000_000_000 + 60 * MIN) }) });
+    controller.refresh();
+    container.changeController();
+    expect(controller.getState().status).toBe(S.APPLYING);
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
   test('with sessionStorage unavailable (throws) the page still reloads at most once', () => {
     const storage = { getItem: () => { throw new Error('blocked'); }, setItem: () => { throw new Error('blocked'); } };
     const { controller, container, reload } = waitingSetup({ storage });

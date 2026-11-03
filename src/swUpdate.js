@@ -141,7 +141,10 @@ export function createUpdateController({
     } catch {
       last = null;
     }
-    if (last && Number.isFinite(last) && now() - last < guardMs) {
+    const age = now() - last;
+    // A timestamp in the FUTURE (the clock was moved back) says nothing about how recent the last reload was, and
+    // would otherwise block updates until the clock catches up; a real reload loop needs a consistent clock.
+    if (last && Number.isFinite(last) && age >= 0 && age < guardMs) {
       // an update-triggered reload just happened: never reload again, whatever the browser reports
       set({ status: SW_UPDATE_STATUS.ERROR, message: MSG_RELOAD_BLOCKED, dismissed: false });
       return;

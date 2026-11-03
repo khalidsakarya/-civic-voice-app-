@@ -29,6 +29,8 @@ test('an available update shows an accessible polite status with "New version av
   const box = screen.getByRole('status');
   expect(box).toHaveAttribute('aria-live', 'polite');
   expect(box).toHaveTextContent('New version available —');
+  expect(box.textContent).not.toMatch(/focus-visible|outline|@media/); // the stylesheet is not part of the live region (found in a real-browser run)
+  expect(box.querySelector('style')).toBeNull();
   const refresh = screen.getByRole('button', { name: 'Refresh' });
   expect(refresh).toBeEnabled();
   expect(screen.getByRole('button', { name: 'Dismiss update notice' })).toBeInTheDocument();

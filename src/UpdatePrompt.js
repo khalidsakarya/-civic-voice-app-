@@ -40,21 +40,24 @@ export function UpdatePrompt({ controller }) {
   if (state.status === SW_UPDATE_STATUS.IDLE || state.dismissed) return null;
   const applying = state.status === SW_UPDATE_STATUS.APPLYING;
   return (
-    <div className="cv-update-prompt" role="status" aria-live="polite" data-testid="sw-update-prompt" style={box}>
+    <>
+      {/* kept outside the live region so only the message and buttons are part of it */}
       <style>{STYLE}</style>
-      <span>New version available —</span>
-      <button type="button" style={primary} disabled={applying} onClick={controller.refresh}>
-        {applying ? 'Updating…' : 'Refresh'}
-      </button>
-      <button type="button" style={ghost} aria-label="Dismiss update notice" onClick={controller.dismiss}>
-        ✕
-      </button>
-      {state.message ? (
-        <span role="alert" style={{ flexBasis: '100%', fontSize: 12, color: '#fecaca' }}>
-          {state.message}
-        </span>
-      ) : null}
-    </div>
+      <div className="cv-update-prompt" role="status" aria-live="polite" data-testid="sw-update-prompt" style={box}>
+        <span>New version available —</span>
+        <button type="button" style={primary} disabled={applying} onClick={controller.refresh}>
+          {applying ? 'Updating…' : 'Refresh'}
+        </button>
+        <button type="button" style={ghost} aria-label="Dismiss update notice" onClick={controller.dismiss}>
+          ✕
+        </button>
+        {state.message ? (
+          <span role="alert" style={{ flexBasis: '100%', fontSize: 12, color: '#fecaca' }}>
+            {state.message}
+          </span>
+        ) : null}
+      </div>
+    </>
   );
 }
 
