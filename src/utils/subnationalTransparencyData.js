@@ -43,7 +43,7 @@ export const SUBNATIONAL_SERIES_PERIOD_INTRO = {
   economic:
     'Each chart uses the latest official reporting period available for that category. Series may not share the same fiscal or calendar year.',
   tax:
-    'This registry reflects the latest official snapshot available from the source below. Registration or filing years may differ by organization.',
+    'This listing is a snapshot published by the source below, not a live feed. Registration or filing years may differ by organization.',
   grants:
     'Awards shown use the latest official reporting period published by the source below. Totals may combine more than one fiscal year.',
 };
@@ -638,6 +638,52 @@ export function formatCurrencyCompact(rawValue) {
   return `$${rawValue.toLocaleString()}`;
 }
 
+/** A CRA business number: 9 digits, "RR", 4 digits. Anything else is treated as absent. */
+const CRA_BN_RE = /^\d{9}RR\d{4}$/;
+
+/** @param {unknown} v @returns {string} the BN, or '' when missing or not in the CRA format */
+function normalizedBn(v) {
+  const s = trimStr(v);
+  return CRA_BN_RE.test(s) ? s : '';
+}
+
+/** Name used only to detect repeated displayed names: case, accents-as-written and repeated spaces are ignored. */
+export function displayNameKey(name) {
+  return trimStr(name).normalize('NFC').replace(/\s+/g, ' ').toLowerCase();
+}
+
+/**
+ * Display-only: for rows whose displayed Legal Name is repeated within this jurisdiction's list, attach `bnLabel`
+ * ("BN 123456789RR0001") so identical-looking rows can be told apart. Names, order, rankings and values are never
+ * changed; unique names and rows without a valid BN get no label.
+ * @template {{ name: string, bn?: string }} T
+ * @param {T[]} companies
+ * @returns {Array<T & { bnLabel?: string }>}
+ */
+export function annotateDuplicateNames(companies) {
+  const counts = new Map();
+  companies.forEach((c) => counts.set(displayNameKey(c.name), (counts.get(displayNameKey(c.name)) || 0) + 1));
+  return companies.map((c) => (counts.get(displayNameKey(c.name)) > 1 && c.bn ? { ...c, bnLabel: `BN ${c.bn}` } : c));
+}
+
+/**
+ * The existing table search (name, industry, exemption type) plus the business number. Order is preserved.
+ * @param {Array<{ name: string, industry: string, exemType: string, bn?: string }>} companies
+ * @param {string} query
+ */
+export function filterTaxExemptCompanies(companies, query) {
+  const q = String(query || '').trim().toLowerCase();
+  if (!q) return companies;
+  const bnQuery = q.replace(/[\s-]/g, '');
+  return companies.filter(
+    (c) =>
+      c.name.toLowerCase().includes(q) ||
+      c.industry.toLowerCase().includes(q) ||
+      c.exemType.toLowerCase().includes(q) ||
+      (Boolean(c.bn) && bnQuery.length >= 4 && c.bn.toLowerCase().includes(bnQuery)),
+  );
+}
+
 /** @param {unknown} row */
 function normalizeTaxExemptRow(row) {
   if (!row || typeof row !== 'object') return null;
@@ -663,6 +709,7 @@ function normalizeTaxExemptRow(row) {
     fmtValue: fmtFromDoc || formatCurrencyCompact(rawValue),
     rawValue,
     year,
+    bn: normalizedBn(row.bn),
   };
 }
 
@@ -694,7 +741,7 @@ export function parseSubnationalTaxFromEntitiesDoc(doc) {
     return { companies: [], sourceName: '', sourceUrl: '' };
   }
   const rows = Array.isArray(doc.records) ? doc.records : [];
-  const companies = rows.map((r) => normalizeTaxExemptRow(r)).filter(Boolean);
+  const companies = annotateDuplicateNames(rows.map((r) => normalizeTaxExemptRow(r)).filter(Boolean));
   return {
     companies,
     sourceName: trimStr(doc.data_source) || trimStr(doc.source_name),
@@ -968,6 +1015,18 @@ function buildGrantsPeriodCategories(doc) {
  * @param {'economic'|'tax'|'grants'} kind
  * @returns {{ intro: string; categories: Array<{ label: string; period: string }>; footnote: string }}
  */
+/**
+ * Accordion intro for a CRA charities document: names the filing-year source and says plainly that it is not a live
+ * registry. Returns '' for anything that is not a CRA charities document with a source year.
+ * @param {Record<string, unknown>|null|undefined} doc
+ */
+function craTaxIntroForDoc(doc) {
+  if (!doc || typeof doc !== 'object' || !Number.isInteger(doc.source_year)) return '';
+  const meta = { cvDataId: doc.cv_data_id, dataSource: doc.data_source, sourceUrl: doc.source_url, sourceName: doc.source_name, note: doc.note };
+  if (!isCraCharitiesDataset(meta, Array.isArray(doc.records) ? doc.records : [])) return '';
+  return `This is a snapshot of the CRA List of charities for the ${doc.source_year} filing year. It is not a live registry and does not show current registration status.`;
+}
+
 export function buildSubnationalModalPeriodMeta(doc, kind) {
   const intro = SUBNATIONAL_SERIES_PERIOD_INTRO[kind] || SUBNATIONAL_SERIES_PERIOD_INTRO.economic;
   if (!doc || typeof doc !== 'object') {
@@ -1014,7 +1073,7 @@ export function buildSubnationalModalPeriodMeta(doc, kind) {
     footnote = compositeNote;
   }
 
-  return { intro, categories, footnote };
+  return { intro: (kind === 'tax' && craTaxIntroForDoc(doc)) || intro, categories, footnote };
 }
 
 /**
@@ -1079,6 +1138,7 @@ export function buildTransparencyFieldsFromModalDocs(docs, jurisdictionName, isU
         recordsStored: numOrNull(taxDoc.records_stored),
         totalInSource: numOrNull(taxDoc.total_in_source),
         selectionBasis: trimStr(taxDoc.selection_basis) || null,
+        sourceYear: Number.isInteger(taxDoc.source_year) ? taxDoc.source_year : null,
         cvDataId: trimStr(taxDoc.cv_data_id) || null,
         dataSource: trimStr(taxDoc.data_source) || null,
         sourceUrl: trimStr(taxDoc.source_url) || null,
@@ -1513,7 +1573,9 @@ export function buildTaxTransparencyHeadlines(tax, meta) {
     sub:
       inSource != null && inSource > stored
         ? `Showing ${stored.toLocaleString()} of ${inSource.toLocaleString()} ${noun}${basis ? ` (${basis})` : ''}`
-        : 'Official tax-exempt registry listing',
+        : inSource != null && inSource === stored
+          ? `Showing all ${stored.toLocaleString()} ${noun} in the source`
+          : 'Official tax-exempt registry listing',
   });
 
   let topValue = 0;

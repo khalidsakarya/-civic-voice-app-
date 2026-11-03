@@ -34,6 +34,7 @@ import { resolveTrendPeriodLabel } from './utils/trendPeriodLabel';
 import {
   economicSocialFromExplorerItem,
   taxExemptFromExplorerItem,
+  filterTaxExemptCompanies,
   isCraCharitiesDataset,
   grantsGivenFromExplorerItem,
   formatCurrencyCompact,
@@ -15393,14 +15394,7 @@ function App() {
       provinceTransparencyFields === null;
     const taxHeadlines = buildTaxTransparencyHeadlines(taxLive, item.subnationalTaxHeadlineMeta);
 
-    const q = taxExemptSearch.toLowerCase();
-    const filtered = q
-      ? companies.filter(c =>
-          c.name.toLowerCase().includes(q) ||
-          c.industry.toLowerCase().includes(q) ||
-          c.exemType.toLowerCase().includes(q)
-        )
-      : companies;
+    const filtered = filterTaxExemptCompanies(companies, taxExemptSearch);
 
     const totalRaw = companies.reduce((s, c) => s + c.rawValue, 0);
     const fmtTotal = formatCurrencyCompact(totalRaw);
@@ -15428,7 +15422,9 @@ function App() {
                 <h2 className="sn-trans-modal-title font-bold text-gray-800 text-sm sm:text-lg">{jurisdictionLabel} — Tax Exempt / Charities</h2>
                 {(hasLiveData || transparencyLoading) ? (
                   <p className="sn-trans-modal-subtitle text-xs text-gray-500 mt-1">
-                    {isCraCharities ? 'CRA Charities Registry' : 'Official registry listing'}
+                    {isCraCharities
+                      ? (taxHeadlineMeta?.sourceYear ? `CRA List of charities · ${taxHeadlineMeta.sourceYear} filing year` : 'CRA List of charities')
+                      : 'Official registry listing'}
                     {isCraCharities
                       ? ` · ${taxHeadlineMeta?.dataSource || 'Canada Revenue Agency — Charities Directorate'}`
                       : (sourceName ? ` · ${sourceName}` : '')}
@@ -15448,7 +15444,7 @@ function App() {
                 type="text"
                 value={taxExemptSearch}
                 onChange={(e) => setTaxExemptSearch(e.target.value)}
-                placeholder="Search by company name, industry, or exemption type…"
+                placeholder={companies.some((c) => c.bn) ? 'Search by name, industry, exemption type, or BN…' : 'Search by company name, industry, or exemption type…'}
                 className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white"
               />
               {taxExemptSearch && (
@@ -15523,7 +15519,10 @@ function App() {
                   {filtered.map((co, i) => (
                     <div key={i} className="p-4">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="font-semibold text-gray-800 text-sm leading-snug">{co.name}</p>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-800 text-sm leading-snug">{co.name}</p>
+                          {co.bnLabel ? <p className="text-xs text-gray-400 mt-0.5" title="CRA business number">{co.bnLabel}</p> : null}
+                        </div>
                         {isCraCharities
                           ? <span className="text-xs text-gray-400 italic whitespace-nowrap flex-shrink-0">Financial value not displayed in MVP</span>
                           : <span className="font-bold text-amber-700 text-sm whitespace-nowrap flex-shrink-0">{co.fmtValue}</span>
@@ -15560,7 +15559,10 @@ function App() {
                           className={`border-b border-gray-50 hover:bg-amber-50/50 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/40'}`}
                         >
                           <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
-                          <td className="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">{co.name}</td>
+                          <td className="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">
+                            {co.name}
+                            {co.bnLabel ? <span className="block text-xs font-normal text-gray-400" title="CRA business number">{co.bnLabel}</span> : null}
+                          </td>
                           <td className="px-4 py-3">
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${co.industryColor}`}>{co.industry}</span>
                           </td>
@@ -15584,7 +15586,7 @@ function App() {
             )}
             {isCraCharities && hasLiveData && (
               <p className="text-xs text-gray-500 mt-4 px-1 leading-relaxed">
-                For MVP, CRA charity records show organization name, designation/type, and status only. Financial values are not displayed.
+                For MVP, CRA charity records show organization name, category, and designation/type only. Financial values and current registration status are not displayed.
               </p>
             )}
             {hasLiveData && sourceUrl && (

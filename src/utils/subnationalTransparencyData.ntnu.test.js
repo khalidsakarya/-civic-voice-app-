@@ -50,11 +50,11 @@ describe.each([
     expect(isCraCharitiesDataset(fields.subnationalTaxHeadlineMeta, tax.companies)).toBe(true);
   });
 
-  test('count wording: "Showing N of M charities (largest by revenue)" only when the list is partial, never "Top listing from N"', () => {
+  test('count wording: "Showing N of M charities (largest by revenue)" when partial, "Showing all N charities in the source" when complete, never "Top listing from N"', () => {
     const snapshot = headlines.metrics[0];
     expect(snapshot.label).toBe('Registry Snapshot');
     expect(snapshot.value).toBe(`${stored} organizations`);
-    expect(snapshot.sub).toBe(inSource > stored ? `Showing ${stored} of ${inSource} charities (largest by revenue)` : 'Official tax-exempt registry listing');
+    expect(snapshot.sub).toBe(inSource > stored ? `Showing ${stored} of ${inSource} charities (largest by revenue)` : `Showing all ${stored} charities in the source`);
     expect(JSON.stringify(headlines)).not.toMatch(/Top listing|Latest/);
   });
 
