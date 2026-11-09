@@ -147,7 +147,7 @@ Both `/service-worker.js` (Workbox) and `/firebase-messaging-sw.js` are register
 | 6 | Background delivery | Page in a background tab, then all tabs closed; send a targeted message | One OS notification (verify **no duplicate**); click opens the intended URL (verify the link handling) |
 | 7 | Browser restart | Quit and reopen the browser | Registrations persist; messages still delivered; no repeated token churn |
 | 8 | Multiple tabs | Two tabs open; deliver a message; apply an update in one | One notification; the other tab shows the refresh prompt and does not reload by itself |
-| 9 | Application update prompt (**repeat on the real Vercel preview** — the previews are access-protected, so the automated run used local builds) | Open the preview in a throwaway profile; push a second commit to the branch so the same preview URL serves build B; reload or wait for a visibility check | "New version available — Refresh" appears; no activation before the click; after the click one reload and the new bundle runs; Dismiss hides it |
+| 9 | Application update prompt (**repeat on the real Vercel preview** — the previews are access-protected, so the automated run used local builds) | Open the preview in a throwaway profile; deploy a genuinely different second build to the same branch alias as described in section 7.2/7.3 (a docs-only commit is not a new build); reload or wait for a visibility check | "New version available — Refresh" appears; no activation before the click; after the click one reload and the new bundle runs; Dismiss hides it |
 | 10 | Offline behaviour | Go offline (DevTools Network → Offline) and reload | App loads from the precache; no errors from update checks; prompt logic silent |
 | 11 | Old-token compatibility | Send a targeted test message to the legacy token **T1** after migration | Documented outcome (expected: not delivered, or `UNREGISTERED` after Phase 2); no crash; T2 unaffected |
 | 12 | Failed registration recovery | Block `/firebase-messaging-sw.js` (DevTools request blocking) or go offline during the flow, then restore | App works; old state untouched; the next load retries; no partial documents |
@@ -163,33 +163,55 @@ Both `/service-worker.js` (Workbox) and `/firebase-messaging-sw.js` are register
 
 ## 7. Testing the real Vercel preview (authorized reviewer)
 
-**Status: outstanding.** The four scenarios in section 1 passed on local production builds in real Chrome. They have **not** been run on an actual Vercel preview, because the previews are protected and the person running the local tests had no authorized Vercel session. This section says how an authorized reviewer can do it **without changing any security setting**.
+**Status: outstanding.** The four scenarios in section 1 passed on local production builds in real Chrome. They have **not** been run on an actual Vercel preview, because the previews are protected and the person running the local tests had no authorized Vercel session. This section says how an authorized reviewer can do it **without changing any security setting and without any public link**.
 
-### 7.1 Can a reviewer open the protected preview without changing production security? Yes.
+### 7.1 Access: authorized Vercel team access only
 **What was observed (settings themselves were not visible):** per-deployment preview URLs answer HTTP 302 to `vercel.com/sso-api` (Vercel Authentication), while the production aliases answer HTTP 200. That matches Vercel's **Standard Protection** scope ("protects all deployments except production domains") with the **Vercel Authentication** method. Preview access therefore never touches the production domains' settings.
 
-**Ways in, from Vercel's documentation, in order of preference:**
+**Use exactly one of these:**
 
-| # | Method | Changes a protection setting? | Notes |
-|---|---|---|---|
-| 1 | **Sign in to Vercel** with an account that is a team member with at least the Viewer role (or a project member / access-group member). Vercel authenticates automatically and sets a cookie for that URL. | **No** | Preferred. |
-| 2 | **Access request.** A reviewer with a Vercel account opens the preview and requests access; a team member with owner, member, admin or developer role approves it (project **Settings → Deployment Protection → Requests**, or the deployment's Share modal). | **No** (it grants one user access; revocable under **Access**) | Hobby teams allow only one external user. |
-| 3 | **Shareable Link.** On the deployment page choose **Share → "Anyone with the link"**; revoke by switching back to **"Only people with access"**. Created by team members with at least the Developer role. | **No** change to the project's Deployment Protection configuration, but that preview becomes reachable by anyone who holds the link until revoked | Use only if the owner approves; do not paste the link anywhere public; revoke afterwards. |
+1. **Sign in to Vercel with your own existing account** that is a member of the team (at least the Viewer role, or a project member / access-group member). Vercel authenticates automatically and sets a cookie for that URL.
+2. **Access request.** A reviewer with a Vercel account opens the preview and requests access; a team member with the owner, member, admin or developer role approves it (project **Settings → Deployment Protection → Requests**). This grants one named user access and is revocable under **Access**.
 
-**Deliberately not used (each changes security configuration):** *Protection Bypass for Automation* (a project-wide secret that bypasses protection for every deployment), *Deployment Protection Exceptions* (makes a domain public), and disabling Vercel Authentication. None of these has been enabled or changed.
+**Not allowed for this test (each one makes a preview reachable without a team login or changes a security setting):** *Shareable Links* ("Anyone with the link"), *Protection Bypass for Automation* (a project-wide secret), *Deployment Protection Exceptions*, and disabling Vercel Authentication. Do not create or paste any bypass link. Deployment Protection stays enabled throughout.
 
-Source: Vercel documentation pages for Deployment Protection, Vercel Authentication, Methods to bypass Deployment Protection, and Sharable Links (last updated Aug–Sep 2026).
+Source: Vercel documentation pages for Deployment Protection and Vercel Authentication (last updated Aug–Sep 2026).
 
-### 7.2 Which URL to test
-Each commit has its own immutable preview URL, and a service worker belongs to **one origin**, so scenario B (build A → build B on the same origin) needs the **branch alias** (the stable URL that always points at the branch's latest deployment). Find it in the Vercel dashboard: project → **Deployments** → the branch's deployment → **Domains**. (Both projects, `civic-voice-app` and `civic-voice-app-mb4y`, build every push; test either.) The per-commit URLs of the tip at the time of writing are listed in the PR.
+### 7.2 Why a separate test branch, and what makes a valid "build B"
+A service worker belongs to **one origin**, so "build A, then build B, same origin" needs a **branch alias** (the stable URL that always points at the branch's latest deployment) that serves two different builds one after the other. The per-commit URLs are immutable and each is its own origin, so they cannot be used for this. Use a **separate branch, `preview-test/sw-update`**, cut from this branch's tip. This PR's branch is never touched and the test branch is never merged.
 
-### 7.3 Steps for the reviewer (throwaway browser profile)
-1. Start a **fresh browser profile**, sign in to Vercel (method 1) or use the approved access (2/3), and open the branch alias. Before loading, open DevTools → **Network → Network request blocking** and block `*firestore.googleapis.com*`, `*fcm*.googleapis.com*`, `*firebaseinstallations.googleapis.com*`. **Do not** allow notifications and do not use the location or notification prompts in the app (they would register an FCM token / write to production).
-2. **A — fresh install:** DevTools → **Application → Service Workers** shows one worker at scope `/`, activated. No "New version available" prompt; the page does not reload by itself.
-3. **B — existing install:** push a trivial second commit to the branch (for example a comment in this document) so the alias serves a new build. Reload the tab; within a few seconds the prompt appears and Application → Service Workers shows a worker **"waiting to activate"**. Wait 10 s: nothing activates. Click **Refresh**: the page reloads **once** (Network tab with "Preserve log": one document request after the click), the new build runs, the prompt is gone and stays gone.
-4. **C — two tabs:** open the alias in two tabs, push another trivial commit, reload one tab so the update is detected. Click Refresh in tab 1 only: tab 1 reloads once, tab 2 does **not** reload, is still usable, shows its own prompt, and reloads once when you click Refresh there.
-5. **D — offline:** with the app installed, set Network to **Offline** and reload: the app still loads, there is no update prompt. Go back online: the next time the tab becomes visible after about 30 minutes the app checks for updates (a reload also checks).
-6. Record the results (and screenshots of Application → Service Workers) as a comment on the PR.
+**A documentation-only commit is NOT a valid build B.** The browser starts an update only when the bytes of `/service-worker.js` change. Workbox generates that file from a precache manifest that lists every build asset with its content hash (for example `/static/js/main.<hash>.js`) and `index.html`'s revision. A commit that does not change what is built (documentation, README, comments that the minifier removes, anything outside `src/` and `public/`) produces a **byte-identical** build, so no update exists to detect and the test would silently prove nothing.
+
+**A valid build change** must alter a bundled JavaScript module so that the `main.<hash>.js` file name changes, and must have no side effects. Use this marker, added as the **first line of `src/index.js`** on the test branch only:
+
+```js
+window.__CV_PREVIEW_TEST_BUILD__ = 'A';
+```
+
+It is a plain string assignment on `window`: no Firebase, no network, no notification code, no change to the production service-worker source. Use `'B'`, then `'C'` for later builds. (This is the same technique used for the local real-browser runs, where it produced a different main bundle name each time and the update was detected every time.)
+
+**Verify that the two builds really differ before relying on them:** open `https://<alias>/service-worker.js` (signed in) after each deploy and confirm that the precache list contains a different `main.<hash>.js` entry than before. If the file is identical, there is no update to test.
+
+### 7.3 Steps for the reviewer
+```bash
+git fetch origin
+git switch -c preview-test/sw-update origin/feature/sw-update-prompt-and-fcm-plan   # starts at the PR tip
+```
+Add the marker line with `'A'` as the first line of `src/index.js`, then:
+```bash
+git commit -am "TEST ONLY: marker build A" && git push -u origin preview-test/sw-update
+```
+Wait for the Vercel preview to be **Ready**. Find the **branch alias** in the dashboard (do not guess it, Vercel shortens long branch names): project → **Deployments** → filter by `preview-test/sw-update` → latest preview → **Domains**. Both projects (`civic-voice-app`, `civic-voice-app-mb4y`) build every push; test either.
+
+**Before loading the app (every profile):** DevTools → **Network → Network request blocking**, enable it and block `*firestore.googleapis.com*`, `*firebaseinstallations.googleapis.com*`, `*fcmregistrations.googleapis.com*`, `*fcm.googleapis.com*`, `*firebaseremoteconfig.googleapis.com*`, `*identitytoolkit.googleapis.com*`, `*securetoken.googleapis.com*`. **Do not** click any notification or "enable alerts" control, **do not** click Allow on any permission prompt (that would register an FCM token and write to production Firestore), and do not tick "Update on reload" or "Bypass for network" in DevTools.
+
+1. **Profile 1 (fresh Chrome profile), sign in to Vercel, open the alias with build A.**
+   **A — fresh install:** Application → Service Workers shows one worker at scope `/`, activated. No "New version available" prompt; the page does not reload by itself (wait 30 s).
+2. **B — existing install:** change the marker to `'B'`, commit and push to the same branch. Check `service-worker.js` differs (7.2). In the Profile 1 tab press F5. Within a few seconds the prompt appears and Application → Service Workers shows a worker **"waiting to activate"**. Wait 10 s: nothing activates and the page still runs build A. Click **Refresh**: the page reloads **once** (Network tab with "Preserve log": one document request after the click), build B runs, the prompt is gone and stays gone. Repeat once with the dismiss button (the ✕): the prompt disappears and the page keeps working without reloading.
+3. **C — two tabs (build B is still the live build):** open **Profile 2** (another fresh profile, signed in), open the alias in **two tabs** and let both load build B. Change the marker to `'C'`, commit, push, verify `service-worker.js` differs. Reload tab 1 so the update is detected. Click Refresh in tab 1 only: tab 1 reloads once, tab 2 does **not** reload, is still usable, shows its own prompt, and reloads once when you click Refresh there.
+4. **D — offline:** with the app installed in either profile, set Network to **Offline** and reload: the app still loads from the cache, there is no update prompt and no error loop. Go back online: the next time the tab becomes visible after about 30 minutes the app checks for updates (a reload also checks).
+5. Record, for every scenario: browser and version, the alias, the deployment URL and commit of each build, the `main.<hash>.js` name before and after, the result, and `Notification.permission` (must still be `default`). The read-only console script [`docs/sw-preview-probe.js`](sw-preview-probe.js) (paste it into the DevTools Console; it reads state only, never requests permission and never calls Firebase) prints these values. Post the results as a comment on the PR.
+6. **Cleanup:** `git push origin --delete preview-test/sw-update`; remove the throwaway profiles.
 
 **Caveat specific to protected previews:** the Vercel login cookie is valid for a limited time. When it expires, the worker's update check is redirected to the login page and fails; the app treats that as a failed check (quietly, with back-off) rather than as an update. Re-open the preview to refresh the session if updates stop appearing in a long test.
 
