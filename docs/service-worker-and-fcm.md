@@ -158,3 +158,40 @@ Both `/service-worker.js` (Workbox) and `/firebase-messaging-sw.js` are register
 ## 6. Rollback plan (this PR)
 - **Application-update part:** revert the PR. Behaviour returns to today's (no prompt). No data, Firestore, rules or worker changes are involved.
 - **Notification part:** not implemented, nothing to roll back.
+
+---
+
+## 7. Testing the real Vercel preview (authorized reviewer)
+
+**Status: outstanding.** The four scenarios in section 1 passed on local production builds in real Chrome. They have **not** been run on an actual Vercel preview, because the previews are protected and the person running the local tests had no authorized Vercel session. This section says how an authorized reviewer can do it **without changing any security setting**.
+
+### 7.1 Can a reviewer open the protected preview without changing production security? Yes.
+**What was observed (settings themselves were not visible):** per-deployment preview URLs answer HTTP 302 to `vercel.com/sso-api` (Vercel Authentication), while the production aliases answer HTTP 200. That matches Vercel's **Standard Protection** scope ("protects all deployments except production domains") with the **Vercel Authentication** method. Preview access therefore never touches the production domains' settings.
+
+**Ways in, from Vercel's documentation, in order of preference:**
+
+| # | Method | Changes a protection setting? | Notes |
+|---|---|---|---|
+| 1 | **Sign in to Vercel** with an account that is a team member with at least the Viewer role (or a project member / access-group member). Vercel authenticates automatically and sets a cookie for that URL. | **No** | Preferred. |
+| 2 | **Access request.** A reviewer with a Vercel account opens the preview and requests access; a team member with owner, member, admin or developer role approves it (project **Settings → Deployment Protection → Requests**, or the deployment's Share modal). | **No** (it grants one user access; revocable under **Access**) | Hobby teams allow only one external user. |
+| 3 | **Shareable Link.** On the deployment page choose **Share → "Anyone with the link"**; revoke by switching back to **"Only people with access"**. Created by team members with at least the Developer role. | **No** change to the project's Deployment Protection configuration, but that preview becomes reachable by anyone who holds the link until revoked | Use only if the owner approves; do not paste the link anywhere public; revoke afterwards. |
+
+**Deliberately not used (each changes security configuration):** *Protection Bypass for Automation* (a project-wide secret that bypasses protection for every deployment), *Deployment Protection Exceptions* (makes a domain public), and disabling Vercel Authentication. None of these has been enabled or changed.
+
+Source: Vercel documentation pages for Deployment Protection, Vercel Authentication, Methods to bypass Deployment Protection, and Sharable Links (last updated Aug–Sep 2026).
+
+### 7.2 Which URL to test
+Each commit has its own immutable preview URL, and a service worker belongs to **one origin**, so scenario B (build A → build B on the same origin) needs the **branch alias** (the stable URL that always points at the branch's latest deployment). Find it in the Vercel dashboard: project → **Deployments** → the branch's deployment → **Domains**. (Both projects, `civic-voice-app` and `civic-voice-app-mb4y`, build every push; test either.) The per-commit URLs of the tip at the time of writing are listed in the PR.
+
+### 7.3 Steps for the reviewer (throwaway browser profile)
+1. Start a **fresh browser profile**, sign in to Vercel (method 1) or use the approved access (2/3), and open the branch alias. Before loading, open DevTools → **Network → Network request blocking** and block `*firestore.googleapis.com*`, `*fcm*.googleapis.com*`, `*firebaseinstallations.googleapis.com*`. **Do not** allow notifications and do not use the location or notification prompts in the app (they would register an FCM token / write to production).
+2. **A — fresh install:** DevTools → **Application → Service Workers** shows one worker at scope `/`, activated. No "New version available" prompt; the page does not reload by itself.
+3. **B — existing install:** push a trivial second commit to the branch (for example a comment in this document) so the alias serves a new build. Reload the tab; within a few seconds the prompt appears and Application → Service Workers shows a worker **"waiting to activate"**. Wait 10 s: nothing activates. Click **Refresh**: the page reloads **once** (Network tab with "Preserve log": one document request after the click), the new build runs, the prompt is gone and stays gone.
+4. **C — two tabs:** open the alias in two tabs, push another trivial commit, reload one tab so the update is detected. Click Refresh in tab 1 only: tab 1 reloads once, tab 2 does **not** reload, is still usable, shows its own prompt, and reloads once when you click Refresh there.
+5. **D — offline:** with the app installed, set Network to **Offline** and reload: the app still loads, there is no update prompt. Go back online: the next time the tab becomes visible after about 30 minutes the app checks for updates (a reload also checks).
+6. Record the results (and screenshots of Application → Service Workers) as a comment on the PR.
+
+**Caveat specific to protected previews:** the Vercel login cookie is valid for a limited time. When it expires, the worker's update check is redirected to the login page and fails; the app treats that as a failed check (quietly, with back-off) rather than as an update. Re-open the preview to refresh the session if updates stop appearing in a long test.
+
+### 7.4 What the preview test adds
+The local run proved the logic against real Workbox in real Chrome; the preview run adds HTTPS, Vercel's headers and caching, and the real deployment pipeline. A pass there is the remaining evidence before merge.
