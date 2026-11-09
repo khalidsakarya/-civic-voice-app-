@@ -371,5 +371,8 @@ test('static: both scripts verify the Firebase project before the first read or 
 
 runQueue().then(() => {
   console.log(`\n${passed} passed, ${failed} failed (zero Firestore, zero network)`);
-  if (failed > 0) process.exitCode = 1;
+  // The batch script's main() is run in-process by the tests above and sets process.exitCode = 1 whenever one of the
+  // deliberately failing jurisdictions fails. That leaked into this process and made an all-green run exit 1.
+  // The exit status of THIS file must reflect only its own assertions (required for CI to be a trustworthy gate).
+  process.exitCode = failed > 0 ? 1 : 0;
 });

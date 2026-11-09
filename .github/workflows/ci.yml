@@ -1,0 +1,127 @@
+# Pull-request checks for Civic Voice Canada.
+#
+# Runs on every pull request that targets main. It is read-only by design:
+#   * the token can only read repository contents (nothing else is granted);
+#   * no repository secrets are referenced anywhere, so no Firebase Admin / service-account
+#     credential is ever available to these jobs (the engine tests replace firebase-admin with a
+#     tripwire; the UI tests and the build use only a placeholder public web key);
+#   * nothing here writes to Firestore, deploys, or publishes anything.
+# It is independent of "Sync US executive orders" (the monthly data job), which it does not touch.
+#
+# The "Required checks" job at the bottom is the single gate: it fails if ANY of the three jobs above
+# failed, was cancelled or was skipped. If branch protection is ever enabled, require only that one
+# check name. (Branch protection is configured separately and is NOT changed by this file.)
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+# A newer push to the same pull request supersedes the older run.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+# Least privilege for every job: read repository contents, nothing else.
+permissions:
+  contents: read
+
+env:
+  # Placeholder public web config so the bundle and tests never need the real .env (which is untracked).
+  # These are NOT secrets and are never sent anywhere: every network call is blocked or stubbed in the tests,
+  # and the build only embeds the strings.
+  REACT_APP_FIREBASE_API_KEY: ci-placeholder-not-a-real-key
+  CI: 'true'
+
+jobs:
+  engine-tests:
+    name: Engine tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Actions are pinned to full commit SHAs (checkout v4.2.2, setup-node v4.4.0) so a moved tag cannot change CI.
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      # Install exactly what package-lock.json says (fails if package.json and the lockfile disagree).
+      # --ignore-scripts: no dependency install script runs in CI.
+      - name: Install dependencies from the lockfile
+        run: npm ci --ignore-scripts
+      - name: Charities pipeline (2024 CRA list, replacement, receipts, rollback authorization)
+        run: node engine/test-cra-charities-2024.cjs
+      - name: Federal MVP
+        run: node engine/test-canada-federal-mvp.cjs
+      - name: Leader-profile content safety
+        run: node engine/test-leader-profile-content-safety.cjs
+      - name: StatCan WDS reliability
+        run: node engine/test-statcan-wds-reliability.cjs
+      - name: Subnational write safeguards
+        run: node engine/test-subnational-write-safeguards.cjs
+
+  ui-tests:
+    name: UI tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies from the lockfile
+        run: npm ci --ignore-scripts
+      - name: Run the UI test suites once (no watch mode)
+        run: npx react-scripts test --watchAll=false
+
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies from the lockfile
+        run: npm ci --ignore-scripts
+      # CI=true makes Create React App treat compiler warnings as errors, so a warning fails the build here.
+      - name: Production build
+        run: npm run build
+
+  required-checks:
+    name: Required checks
+    # always(): this gate must run (and fail) even when a job above failed or was cancelled,
+    # otherwise a skipped gate could be mistaken for a pass.
+    if: always()
+    needs: [engine-tests, ui-tests, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Fail unless every required job succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "job results: $RESULTS"
+          set -- $RESULTS
+          if [ "$#" -ne 3 ]; then
+            echo "::error::Expected 3 job results, got $#."
+            exit 1
+          fi
+          for r in $RESULTS; do
+            if [ "$r" != "success" ]; then
+              echo "::error::A required check did not succeed (result: $r)."
+              exit 1
+            fi
+          done
+          echo "All required checks succeeded."
