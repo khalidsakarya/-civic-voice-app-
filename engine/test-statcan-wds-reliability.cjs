@@ -19,6 +19,7 @@
 'use strict';
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const {
@@ -28,7 +29,11 @@ const {
   STATCAN_CA_COORD,
 } = require('./lib/subnational-unemployment-monthly.cjs');
 
-const REPORTS_DIR = path.join(__dirname, 'reports');
+// This is a live probe, not part of any data pipeline: its report is a throw-away test artifact. It used to be written to the
+// TRACKED file engine/reports/statcan-wds-reliability-test-latest.json, so every run dirtied the working tree. It now goes to
+// a temporary directory. Set CV_REPORTS_DIR (the same override the federal write scripts use) to choose another location,
+// e.g. CV_REPORTS_DIR=engine/reports to refresh the tracked copy on purpose. Production report generation is unchanged.
+const REPORTS_DIR = process.env.CV_REPORTS_DIR || path.join(os.tmpdir(), 'civic-voice-test-reports');
 const RUN_AT = new Date().toISOString();
 
 // All 9 jurisdictions named in the task, plus the 4 explicitly-required test

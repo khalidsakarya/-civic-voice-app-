@@ -58,10 +58,14 @@ jobs:
         run: node engine/test-canada-federal-mvp.cjs
       - name: Leader-profile content safety
         run: node engine/test-leader-profile-content-safety.cjs
-      - name: StatCan WDS reliability
-        run: node engine/test-statcan-wds-reliability.cjs
       - name: Subnational write safeguards
         run: node engine/test-subnational-write-safeguards.cjs
+      # Guards against a test writing into the tracked engine/reports directory (see the file for why).
+      - name: Tests never write tracked reports
+        run: node engine/test-no-tracked-report-writes.cjs
+      # NOT run here on purpose: engine/test-statcan-wds-reliability.cjs is a LIVE probe of Statistics Canada's web service.
+      # It makes real network calls and asserts nothing (it exits 0 even when every request is blocked), so it would be
+      # flaky and could never fail the gate. Run it by hand when investigating StatCan connectivity.
 
   ui-tests:
     name: UI tests
