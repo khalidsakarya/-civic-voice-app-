@@ -27,6 +27,8 @@ function registerValidSW(swUrl, config) {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
+      // lets the app's update controller watch this registration (waiting worker, update checks)
+      if (config && config.onRegistration) config.onRegistration(registration);
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (!installingWorker) return;
