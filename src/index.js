@@ -7,6 +7,8 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import { createUpdateController } from './swUpdate';
 import { mountUpdatePrompt } from './UpdatePrompt';
 
+window.__CV_PREVIEW_TEST_BUILD__ = 'A';
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
