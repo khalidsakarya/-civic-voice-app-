@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Document ID** | CV-CHK-002 |
-| **Version** | 0.1 |
+| **Version** | 0.2 |
 | **Status** | Draft |
 | **Owner** | Founder / Compliance Lead |
 | **Effective Date** | TBD — pending review |
@@ -139,7 +139,7 @@ A separate checklist will be required for US, UK, or Australian launches.
 | PRV-04 | App preferences (dark mode, follow state, home province) are stored in localStorage only — confirmed no server-side copy | CV-REG-002 | Critical | | | Developer | | | |
 | PRV-05 | No analytics SDK is deployed unless documented in CV-REG-002 and disclosed in CV-POL-001 | CV-REG-002 · CV-POL-001 | Critical | | | Developer · Privacy Lead | | | If deployed, must be disclosed before launch |
 | PRV-06 | No crash reporting SDK is deployed unless documented in CV-REG-002 and disclosed in CV-POL-001 | CV-REG-002 · CV-POL-001 | Critical | | | Developer · Privacy Lead | | | If deployed, must be disclosed before launch |
-| PRV-07 | No push notification tokens registered without user device permission (CV-SOP-005 §11.2) | CV-SOP-005 · CV-REG-002 | Critical | | | Developer | | | Not currently deployed — confirm feature status |
+| PRV-07 | No push notification tokens registered without user device permission (CV-SOP-005 §11.2) | CV-SOP-005 · CV-REG-002 | Critical | | | Developer | | | **2026-11-25 correction:** token registration IS implemented. Code review: browser permission is requested before any token is registered (both flows). No Consent Record exists (CV-SOP-005 §11.3). Cannot be marked until CV-ISS-021 is decided. |
 | PRV-08 | No user accounts or email addresses stored without the account/privacy controls defined in CV-POL-001 §4.4 | CV-POL-001 · CV-REG-002 | Critical | | | Developer · Privacy Lead | | | Accounts not currently enabled — confirm status |
 | PRV-09 | Data processing agreements (DPAs) confirmed or in progress with Vercel and Firebase/Google | CV-POL-001 | High | | | Founder | | | Required for cross-border transfer disclosure in CV-POL-001 §17 |
 | PRV-10 | User data retention periods confirmed and documented in CV-POL-001 §12 and CV-REG-002 | CV-POL-001 · CV-REG-002 | High | | | Privacy Lead | | | TBD periods in CV-POL-001 must be resolved before publication |
@@ -196,7 +196,7 @@ A separate checklist will be required for US, UK, or Australian launches.
 | Item ID | Requirement | Related Document | Priority | Pass / Fail / NA | Evidence | Owner | Reviewer | Date | Notes |
 |---|---|---|---|---|---|---|---|---|---|
 | CAS-01 | If email newsletter or promotional email is deployed at launch: express consent capture, sender ID, and unsubscribe mechanism are confirmed before first send | CV-SOP-005 | Critical | | | Compliance Lead | | | If not deployed at launch: NA |
-| CAS-02 | If push notifications are deployed at launch: device permission prompt used; notification token not registered before permission granted | CV-SOP-005 §11 | Critical | | | Developer · Compliance Lead | | | If not deployed at launch: NA |
+| CAS-02 | If push notifications are deployed at launch: device permission prompt used; notification token not registered before permission granted | CV-SOP-005 §11 | Critical | | | Developer · Compliance Lead | | | **2026-11-25 correction:** token registration is implemented (opt-in, user-initiated; the news-alerts flow writes fcm_tokens). "NA" applies only if the feature is removed or disabled before launch. See CV-ISS-021. |
 | CAS-03 | If donation or fundraising messages are deployed at launch: separate consent and legal review confirmed | CV-SOP-005 §13 | Critical | | | Founder · Compliance Lead | | | If not deployed at launch: NA |
 | CAS-04 | No pre-checked consent boxes exist anywhere in the app UI | CV-SOP-005 §15 | Critical | | | Developer · Compliance Lead | | | Applies even if communication features are not yet active |
 | CAS-05 | No communication feature sends a message to users without a valid Consent Record | CV-SOP-005 §8 | Critical | | | Compliance Lead | | | If no communication features deployed: NA |
@@ -368,3 +368,4 @@ The following records are produced as part of completing this checklist.
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 0.1 | 2026-08-02 | Founder / Compliance Lead | Initial draft — Canadian launch scope |
+| 0.2 | 2026-11-25 | Technical correction (pending owner / legal review) | PRV-07 and CAS-02 notes corrected: push token registration is implemented. See CV-ISS-021. |

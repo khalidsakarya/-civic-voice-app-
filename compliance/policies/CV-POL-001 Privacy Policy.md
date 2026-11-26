@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Document ID** | CV-POL-001 |
-| **Version** | 0.1 |
+| **Version** | 0.2 |
 | **Status** | Draft |
 | **Owner** | Founder / Privacy Lead |
 | **Effective Date** | TBD — pending legal review |
@@ -121,10 +121,10 @@ If you submit feedback or a data correction request, you may choose to include p
 information such as your name or email address. We will use this information only to
 respond to your request. See Section 10 for more detail.
 
-#### 4.6 Push Notifications (Future — Not Currently Active)
+#### 4.6 Push Notification Token (Current Feature, Opt-In; Sending Not Active)
 
-Push notification features have not been deployed. If push notifications are introduced,
-we will ask for your express consent before sending any notifications, and you will be able
+If you grant your browser's notification permission when the App asks (after you set your home region, or when you choose to enable news alerts), the App registers a push-notification token with Firebase Cloud Messaging (Google). The token is kept in your browser. If you enable news alerts, the token, a timestamp and the alert topic you chose are also saved in our database. The token identifies a browser on a device; it does not contain your name or email address. **[DRAFT, TBD pending legal review: how long tokens are kept, how a token can be removed, and consent-record handling. See CV-ISS-021.]** The App does not currently send push notifications automatically. **[TBD: Founder to confirm that none are sent manually.]** If notifications are sent in the future,
+we will rely on your express consent, and you will be able
 to opt out at any time. See Section 11 for more detail.
 
 ---
@@ -155,7 +155,7 @@ We use the personal information we collect for the following purposes only:
 | Display aggregate citizen-opinion counts in the App | Anonymous vote record (province, vote type, timestamp) | Legitimate interest (anonymous civic data) |
 | Gate citizen-opinion vote submission to Canadian residents | Province/territory derived from location permission | Consent (location permission) |
 | Respond to feedback or correction requests (future) | Name/email if provided by user | Consent |
-| Send update notifications to opted-in users (future) | Notification token | Consent |
+| Hold a notification token and the chosen alert topic so notifications can reach opted-in users (no automated sender is deployed; sending is future) | Notification token, alert topic, timestamp | Consent |
 | Security, abuse prevention, and infrastructure operation | Server/hosting logs (IP address via platform) | Legitimate interest |
 
 **We do not sell your personal information to any third party.**
@@ -233,7 +233,9 @@ In-app feedback forms, if deployed in the future, will be covered by an update t
 
 The in-app "Follow" feature delivers notifications **within the App interface only** — no
 message is sent to your device's notification system, no email is sent, and no notification
-token is registered.
+token is registered by the Follow feature.
+
+Separately, if you grant notification permission (see Section 4.6), the App registers a push-notification token for the news-alerts feature. No push notification is currently sent automatically. **[DRAFT, TBD pending legal review; see CV-ISS-021.]**
 
 If push notifications or email communications are introduced in the future:
 
@@ -395,3 +397,4 @@ Website: [www.priv.gc.ca](https://www.priv.gc.ca)
 | Version | Date | Author | Change |
 |---------|------|--------|--------|
 | 0.1 | 2026-07-26 | Founder / Privacy Lead | Initial draft — Canadian launch scope |
+| 0.2 | 2026-11-25 | Technical correction (pending owner / legal review) | Sections 4.6, 6 and 11 corrected to match the implementation: a push-notification token is registered after opt-in. Wording is a placeholder pending legal review. See CV-ISS-021. |
