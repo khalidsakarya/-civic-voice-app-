@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Document ID** | CV-CHK-003 |
-| **Version** | 0.1 |
+| **Version** | 0.2 |
 | **Status** | Draft |
 | **Owner** | Founder / Privacy Lead |
 | **Effective Date** | TBD — pending review |
@@ -176,7 +176,7 @@ checklist, CV-REG-002, and CV-POL-001 before the next App Store update is submit
 
 | Item ID | Apple Privacy Area | Data Type / Practice | Current App Status | Evidence | Label Decision | Linked to User? | Used for Tracking? | Purpose | Related Privacy Data Map Row | Reviewer | Date | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ID-01 | Identifiers | **Push notification token (FCM / APNs)** | Push notifications not deployed in current build; no notification token registered | | Not Collected — Feature Not Enabled | No | No | — | CV-REG-002: Push notification token row | | | Re-assess if push notifications are deployed before submission. Depends on CV-ISS-008 (account/notification decision) and CV-SOP-005 §11. |
+| ID-01 | Identifiers | **Push notification token (FCM / APNs)** | Token registration IS implemented in the current build (opt-in, user-initiated). No automated sender is deployed. See CV-ISS-021. | | Pending Decision: token is collected after opt-in unless the feature is disabled in the submitted build | No | No | — | CV-REG-002: Push notification token row | | | **2026-11-25 correction:** the earlier "not collected" decision was based on an incorrect statement. Confirm the Linked-to-user and Tracking answers for a device-linked token. Depends on CV-ISS-008, CV-ISS-021 and CV-SOP-005 §11. |
 | ID-02 | Other Data | **Saved app preferences (dark mode, home province, display settings)** | Stored in localStorage on device only — not transmitted to any server | | Declare as Not Collected | No | No | — | CV-REG-002: Local saved preferences row | | | Preferences never leave the device. Confirm by code review. |
 | ID-03 | Search and Browsing History | **Search history / in-app search queries** | No search history stored or transmitted | | Declare as Not Collected | No | No | — | Not in CV-REG-002 | | | Confirm no search query logging exists in submitted build. |
 
@@ -223,7 +223,7 @@ service integrated into the submitted build.
 | **Vercel (hosting / serverless)** | Yes | Server-side request logs including IP address and request metadata | Declare as Collected — server/infrastructure logs | [vercel.com/legal/privacy-policy](https://vercel.com/legal/privacy-policy) | | | |
 | **Firebase Analytics** | Confirm | If integrated: device ID, usage events, demographics | Declare as Collected if integrated | TBD | | | Depends on CV-ISS-006. If not integrated in submitted build: Not Collected — Feature Not Enabled. |
 | **Firebase Crashlytics** | Confirm | If integrated: crash reports, device info, OS version, stack traces | Declare as Collected if integrated | TBD | | | Depends on CV-ISS-007. If not integrated in submitted build: Not Collected — Feature Not Enabled. |
-| **Firebase Cloud Messaging (FCM)** | Confirm | If integrated: push notification token, device info | Declare as Collected if token registered | TBD | | | Depends on CV-ISS-008. If not deployed: Not Collected — Feature Not Enabled. |
+| **Firebase Cloud Messaging (FCM)** | Confirm | If integrated: push notification token, device info | Declare as Collected if token registered | TBD | | | Depends on CV-ISS-008. **2026-11-25 correction:** token registration is implemented; declare as Collected unless the feature is removed or disabled in the submitted build. If not deployed: Not Collected — Feature Not Enabled. |
 | **Firebase Authentication** | Confirm | If enabled: user ID, email, sign-in metadata | Declare as Collected if enabled | TBD | | | Depends on CV-ISS-008. If not enabled in submitted build: Not Collected — Feature Not Enabled. |
 | **Any other third-party SDK** | Confirm before submission | TBD | TBD | TBD | | | List all SDKs present in the build — including any UI libraries, charting libraries, or HTTP clients that make network requests |
 
@@ -355,3 +355,4 @@ Privacy Lead and Founder have signed off.
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 0.1 | 2026-08-02 | Founder / Privacy Lead | Initial draft — Canadian launch scope |
+| 0.2 | 2026-11-25 | Technical correction (pending owner / legal review) | ID-01 and the FCM SDK row corrected: token registration is implemented. See CV-ISS-021. |

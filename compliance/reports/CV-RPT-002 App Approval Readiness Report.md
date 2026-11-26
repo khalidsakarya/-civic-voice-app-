@@ -328,3 +328,11 @@ expected to be ready for App Store submission.
 |---|---|---|---|
 | 1.0 | 2026-08-16 | Founder / Technical Lead | Initial report — approval-readiness hardening pass complete |
 | 1.1 | 2026-08-23 | Founder / Technical Lead | CV-ISS-020 resolved and moved out of the blocker lists (§7.1, §10.2 → §10.3, §11). Composite index deployed, confirmed `READY`, and the previously failing query re-verified directly against Firestore with no error. |
+
+---
+
+## Addendum 2026-11-25 (technical correction; the report's status and findings above are unchanged)
+
+- §6.2 cites `Notification.requestPermission()` at "App.js line 5924"; the calls are now made from `src/fcmFlows.js` (two user-initiated flows).
+- The App Store review note says the app requests notification permission "to deliver Canadian government news alerts". **No notification sender is deployed** (verified 2026-11-25), so the note describes a delivery capability that does not exist today. Reword before submission. See CV-ISS-021.
+- Token facts: stored in browser localStorage in both flows and in `fcm_tokens/{token}` in the news-alerts flow; no Consent Record, in-app unsubscribe, or document cleanup exists.

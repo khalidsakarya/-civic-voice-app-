@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Document ID** | CV-SOP-005 |
-| **Version** | 0.1 |
+| **Version** | 0.2 |
 | **Status** | Draft |
 | **Owner** | Founder / Compliance Lead |
 | **Effective Date** | TBD — pending review |
@@ -111,7 +111,7 @@ classified and governed in the relevant section of this SOP.
 | Account security / password reset email | Functional — not a CEM | §14 | Future — not yet deployed |
 | Email newsletter / update digest | CEM — express consent required | §12 | Future — not yet deployed |
 | Feature announcement email | CEM — express consent required | §12 | Future — not yet deployed |
-| Push notification (civic update) | CEM if promotional; functional if account/security | §11 | Future — not yet deployed |
+| Push notification (civic update) | CEM if promotional; functional if account/security | §11 | Sending: not deployed (no sender found, 2026-11-25). Token registration: implemented after opt-in; see CV-REG-002 and CV-ISS-021 |
 | SMS message | CEM — express consent required | §7 | Future — not yet deployed |
 | Donation / fundraising solicitation | CEM — express consent required | §13 | Future — not yet deployed |
 | Political persuasion / party/candidate message | **Prohibited** — see §15 | §15 | Prohibited at all times |
@@ -591,3 +591,4 @@ before any electronic communication feature is launched.
 | Version | Date | Author | Change |
 |---|---|---|---|
 | 0.1 | 2026-07-26 | Founder / Compliance Lead | Initial draft — Canadian launch scope |
+| 0.2 | 2026-11-25 | Technical correction (pending owner / legal review) | Communication-types table: push sending is not deployed, but token registration is implemented. §11 requirements (consent record, unsubscribe, suppression) are not yet implemented in the app. See CV-ISS-021. |

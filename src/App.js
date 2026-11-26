@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import app, { db } from './firebase';
+import { runLocationFcmFlow, runNewsNotifFlow } from './fcmFlows';
 import { EXECUTIVE_ACTIONS_COLLECTION } from './constants/firestoreCollections';
 import { fetchSubnationalJurisdictions } from './firestore/fetchSubnationalJurisdictions';
 import { fetchSubnationalTransparencyForExplorerItem } from './firestore/fetchSubnationalTransparencyModalDocs';
@@ -5962,21 +5963,9 @@ function App() {
     setHomeRegion(region);
   };
 
-  const requestFcmToken = async () => {
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') return;
-      const sw = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-      const { getMessaging, getToken } = await import('firebase/messaging');
-      const messaging = getMessaging(app);
-      const token = await getToken(messaging, { serviceWorkerRegistration: sw, vapidKey: 'BAuHr-DKvbopzCzk-wVBzlAiYXA0cxuCO_Wq-A3rQJWe2wXwxnVzSk6tuK6VLI0na7kWm9S3Zp6EDud9M_BWvW8' });
-      if (token) localStorage.setItem('cvFCMToken', token);
-    } catch {
-      // Notifications are optional — fail silently
-    }
-  };
-
-  const NEWS_NOTIF_TOPICS = { CA: 'canada-news', US: 'us-news', UK: 'uk-news', AU: 'australia-news' };
+  // User-initiated flow. The push worker is registered at its dedicated scope and that registration is what
+  // getToken() receives (src/fcmScope.js, src/fcmFlows.js).
+  const requestFcmToken = () => runLocationFcmFlow({ app });
 
   const dismissNewsNotifBanner = (cc) => {
     setNewsNotifBannerDismissed(prev => {
@@ -5995,44 +5984,20 @@ function App() {
     dismissNewsNotifBanner(cc);
   };
 
-  const requestNewsNotif = async (cc) => {
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        setNewsNotifStatus(prev => {
-          const next = { ...prev, [cc]: 'denied' };
-          try { localStorage.setItem('cv_news_notif_status', JSON.stringify(next)); } catch (_) {}
-          return next;
-        });
-        dismissNewsNotifBanner(cc);
-        return;
-      }
-      const sw = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-      const { getMessaging, getToken } = await import('firebase/messaging');
-      const messaging = getMessaging(app);
-      const token = await getToken(messaging, {
-        serviceWorkerRegistration: sw,
-        vapidKey: 'BAuHr-DKvbopzCzk-wVBzlAiYXA0cxuCO_Wq-A3rQJWe2wXwxnVzSk6tuK6VLI0na7kWm9S3Zp6EDud9M_BWvW8',
-      });
-      if (token) {
-        localStorage.setItem('cvFCMToken', token);
-        // Topic field (e.g. 'canada-news': true) lets Cloud Function subscribe this token
-        await setDoc(doc(db, 'fcm_tokens', token), {
-          token,
-          [NEWS_NOTIF_TOPICS[cc] || 'general-news']: true,
-          ts: serverTimestamp(),
-        }, { merge: true });
-      }
+  // User-initiated flow (banner "Allow" / bell). Same permission, token storage and `fcm_tokens` document as before.
+  const requestNewsNotif = (cc) => runNewsNotifFlow({
+    cc,
+    app,
+    firestore: { db, doc, setDoc, serverTimestamp },
+    onStatus: (status) => {
       setNewsNotifStatus(prev => {
-        const next = { ...prev, [cc]: 'granted' };
+        const next = { ...prev, [cc]: status };
         try { localStorage.setItem('cv_news_notif_status', JSON.stringify(next)); } catch (_) {}
         return next;
       });
       dismissNewsNotifBanner(cc);
-    } catch (err) {
-      console.warn('[NewsNotif] FCM setup failed:', err.message);
-    }
-  };
+    },
+  });
 
   const requireRegion = (fn) => {
     const grantedAt = parseInt(localStorage.getItem('cvLocationGrantedAt') || '0', 10);
